@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
+
+    Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
+    Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
+
+    Route::post('/fetch-camp-report-by-users', [ReportingController::class, 'fetchCampReportByUsers'])->name('campaign.fetchCampReportByUsers');
+
+    Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
+    Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
+
+
 });
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
@@ -62,4 +73,4 @@ Route::get('/send-mail', function (MailController $controller) {
     return $controller->sendMail($mailData);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

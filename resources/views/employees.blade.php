@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Campaigns - Phishing awareness training program')
+@section('title', 'Employees - Phishing awareness training program')
 
 @section('main-content')
 
