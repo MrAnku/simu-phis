@@ -65,20 +65,20 @@
                                             <span class="side-menu__label">Reporting</span>
                                         </a>
                                     </li>
-                                    <li class="slide has-sub">
-                                        <a href="javascript:void(0);" class="side-menu__item">
+                                    <li class="slide has-sub {{ Request::is('phishing-emails') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('phishing-emails') ? 'active' : '' }}">
                                             <i class="bx bx-laptop side-menu__icon"></i>
                                             <span class="side-menu__label">Phishing Material</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
                                         </a>
-                                        <ul class="slide-menu child1"
+                                        <ul class="slide-menu child1 {{ Request::is('phishing-emails') ? 'active' : '' }}"
                                             style="position: relative; left: 0px; top: 0px; margin: 0px; transform: translate3d(119.2px, 287.2px, 0px);"
                                             data-popper-placement="bottom">
                                             <li class="slide side-menu__label1">
                                                 <a href="javascript:void(0)">Phishing Material</a>
                                             </li>
-                                            <li class="slide">
-                                                <a href="phishingEmails.php" class="side-menu__item">Phishing Emails</a>
+                                            <li class="slide {{ Request::is('phishing-emails') ? 'active' : '' }}">
+                                                <a href="{{route('phishing.emails')}}" class="side-menu__item {{ Request::is('phishing-emails') ? 'active' : '' }}">Phishing Emails</a>
                                             </li>
                                             <li class="slide">
                                                 <a href="phishingWebsites.php" class="side-menu__item">Phishing

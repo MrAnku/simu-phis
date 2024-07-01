@@ -4,6 +4,7 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\TrackingController;
@@ -52,6 +53,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
+
+
+    Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
+
 
 
 });
