@@ -13,6 +13,10 @@ class PhishingEmail extends Model
     protected $table = 'phishing_emails';
     public $timestamps = false;
 
+    protected $fillable = [
+        'name', 'email_subject', 'mailBodyFilePath', 'website', 'senderProfile', 'company_id'
+    ];
+
     public function web(): HasOne
     {
         return $this->hasOne(PhishingWebsite::class, 'id', 'website');

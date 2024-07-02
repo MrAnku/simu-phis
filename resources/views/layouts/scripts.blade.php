@@ -46,6 +46,11 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
+
+    setTimeout(() => {
+        
+    $('.toast').fadeOut()
+    }, 5000);
      </script>
 
 

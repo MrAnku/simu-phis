@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
+    //reporting routes
 
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
@@ -54,8 +55,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
 
+    //phishing emails route
 
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
+
+    Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
+
+    Route::post('/add-email-template', [PhishingEmailsController::class, 'addEmailTemplate'])->name('addEmailTemplate');
+
+
+    Route::post('/update-email-template', [PhishingEmailsController::class, 'updateTemplate'])->name('phishing.update');
+
+    Route::post('/delete-email-template', [PhishingEmailsController::class, 'deleteTemplate'])->name('phishing.template.delete');
+
+
 
 
 

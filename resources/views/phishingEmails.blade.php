@@ -45,14 +45,25 @@
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
                                                     <button type="button"
-                                                        {{-- onclick="viewInTemplate(
-                                                        `{{ $pemail->sender_p->profile_name }}`,
-                                                        `{{ $pemail->sender_profile->from_email }}`,
+                                                        onclick="viewInTemplate(
+                                                        `{{ $pemail->sender_p->profile_name ?? 'N/A' }}`,
+                                                        `{{ $pemail->sender_p->from_email ?? 'N/A' }}`,
                                                         `{{ $pemail->email_subject }}`,`mailBody{{ $pemail->id }}`
-                                                        )" --}}
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#viewPhishingmailModal"
+                                                        )"
+                                                        data-bs-toggle="modal" data-bs-target="#viewPhishingmailModal"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</button>
+
+                                                    @if ($pemail->company_id !== 'default')
+                                                        <button type="button"
+                                                            onclick="editETemplate(`{{ $pemail->id }}`)"
+                                                            data-bs-toggle="modal" data-bs-target="#editEtemplateModal"
+                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">Edit</button>
+
+                                                        <button type="button"
+                                                            onclick="deleteETemplate(`{{ $pemail->id }}`, `{{ $pemail->mailBodyFilePath }}`)"
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                    @endif
+
 
 
                                                 </div>
@@ -60,6 +71,9 @@
                                         </div>
                                     </div>
                                 @empty
+                                    <div class="col-lg-6">
+                                        No records found
+                                    </div>
                                 @endforelse
 
 
@@ -153,7 +167,8 @@
                                                                 <a href="javascript:void(0);">
                                                                     <div class="d-flex align-items-center">
                                                                         <span class="me-2 lh-1">
-                                                                            <i class="ri-draft-line align-middle fs-14"></i>
+                                                                            <i
+                                                                                class="ri-draft-line align-middle fs-14"></i>
                                                                         </span>
                                                                         <span class="flex-fill text-nowrap">
                                                                             Drafts
@@ -474,37 +489,292 @@
         </div>
     </div>
 
+    <!-- new phishing email template modal -->
+    <div class="modal fade" id="newPhishingmailModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Add Email Template</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{route('addEmailTemplate')}}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Email Template Name<sup
+                                    class="text-danger">*</sup></label>
+                            <input type="text" class="form-control" name="eTempName" placeholder="Template name"
+                                required>
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Email Subject<sup
+                                    class="text-danger">*</sup></label>
+                            <input type="text" class="form-control" name="eSubject"
+                                placeholder="i.e. Reset your password" required>
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Associated Website<sup
+                                    class="text-danger">*</sup></label>
+                            <select class="form-select" name="eAssoWebsite" required>
+
+                                @forelse ($phishingWebsites as $phishingWebsite)
+                                    <option value="{{ $phishingWebsite->id }}">{{ $phishingWebsite->name }}</option>
+                                @empty
+                                    <option value="">Websites not available</option>
+                                @endforelse
+
+                            </select>
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Sender Profile<sup
+                                    class="text-danger">*</sup></label>
+                            <select class="form-select" name="eSenderProfile" required>
+
+                                @forelse ($senderProfiles as $senderProfile)
+                                    <option value="{{ $senderProfile->id }}">{{ $senderProfile->profile_name }}</option>
+                                @empty
+                                    <option value="">Sender Profile not available</option>
+                                @endforelse
+
+
+                            </select>
+
+                        </div>
+                        <div class="my-3">
+                            <label for="formFile" class="form-label">Email Template File<sup
+                                    class="text-danger">*</sup></label>
+                            <input class="form-control" type="file" name="eMailFile" accept=".html" required>
+                            <div class="form-text my-3">
+                                Don't forget to add the shortcodes <code>@{{ user_name }}</code>,
+                                <code>@{{ tracker_img }}</code> and <code>@{{ website_url }}</code> in the Email
+                                Template File.
+                                <br>
+                                Tutorial Video <a href="https://youtube.com">Watch Now</a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
+                                Template</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- edit phishing email template modal -->
+    <div class="modal fade" id="editEtemplateModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Edit Email Template</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('phishing.update') }}" method="post">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Associate Website<sup
+                                    class="text-danger">*</sup></label>
+                            <select class="form-select" name="updateEAssoWebsite" id="updateEAssoWebsite" required>
+                                <option value="0">Choose</option>
+
+                                @forelse ($phishingWebsites as $phishingWebsite)
+                                    <option value="{{ $phishingWebsite->id }}">{{ $phishingWebsite->name }}</option>
+                                @empty
+                                    <option value="">Websites not available</option>
+                                @endforelse
+                            </select>
+                            <input type="hidden" name="editEtemp" id="editEtemp">
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Sender Profile<sup
+                                    class="text-danger">*</sup></label>
+                            <select class="form-select" name="updateESenderProfile" id="updateESenderProfile" required>
+                                <option value="0">Choose</option>
+                                @forelse ($senderProfiles as $senderProfile)
+                                    <option value="{{ $senderProfile->id }}">{{ $senderProfile->profile_name }}</option>
+                                @empty
+                                    <option value="">Sender Profile not available</option>
+                                @endforelse
+                            </select>
+
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Update
+                                Template</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- -------------------Modals------------------------ --}}
 
 
+    {{-- ------------------------------Toasts---------------------- --}}
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        @if (session('success'))
+            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-success text-fixed-white">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-danger text-fixed-white">
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                    aria-atomic="true">
+                    <div class="toast-header bg-danger text-fixed-white">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ $error }}
+                    </div>
+                </div>
+            @endforeach
+        @endif
+
+
+    </div>
+
+    {{-- ------------------------------Toasts---------------------- --}}
+
+
     @push('newcss')
-    <style>
-        .htmlPhishingGrid {
-            overflow: scroll;
-            border: 1px solid #8080804a;
-            border-radius: 6px;
-            max-height: 300px;
-            /* filter: brightness(0.9); */
+        <style>
+            .htmlPhishingGrid {
+                overflow: scroll;
+                border: 1px solid #8080804a;
+                border-radius: 6px;
+                max-height: 300px;
+                /* filter: brightness(0.9); */
 
-        }
+            }
 
-        .phishing-iframe {
-            width: 100%;
-            height: 300px;
-            margin: 0;
-            padding: 0;
-        }
+            .phishing-iframe {
+                width: 100%;
+                height: 300px;
+                margin: 0;
+                padding: 0;
+            }
 
-        #displayMailBodyContent iframe,
-        .htmlPhishingGrid iframe {
-            width: 100%;
-            height: 100vh;
-            border: none;
-        }
-    </style>
+            #displayMailBodyContent iframe,
+            .htmlPhishingGrid iframe {
+                width: 100%;
+                height: 100vh;
+                border: none;
+            }
+        </style>
     @endpush
 
     @push('newscripts')
+        <script>
+            function viewInTemplate(from_name, from_email, email_subject, mail_body) {
+                $("#displayMailBodyContent").html($(`#${mail_body}`).html());
+                $("#displayMailSubject").html(email_subject);
+                $("#displayFromName").html(from_name);
+                $("#displayFromEmail").html(from_email);
+            }
+
+            function deleteETemplate(tempid, filelocation) {
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Deleting this template will delete the campaigns associated with this email template.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e6533c',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Delete'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: "{{route('phishing.template.delete')}}",
+                            data: {
+                                tempid: tempid,
+                                filelocation: filelocation
+                            },
+                            success: function(res) {
+                                // console.log(res)
+                                // window.location.reload();
+                                window.location.href = window.location.href;
+                            }
+                        })
+                    }
+                })
+
+
+
+                // if (confirm(
+                //         'Deleting this template will delete the campaigns associated with this email template. Are you sure?'
+                //     )) {
+                //     $.post({
+                //         url: 'phishingEmails.php?deleteTemplate=1',
+                //         data: {
+                //             tempid: tempid,
+                //             filelocation: filelocation
+                //         },
+                //         success: function(res) {
+                //             // console.log(res)
+                //             // window.location.reload();
+                //             window.location.href = window.location.href;
+                //         }
+                //     })
+                // } else {
+                //     return false;
+                // }
+            }
+
+            function editETemplate(id) {
+                editEtemp.value = id;
+                $.post({
+                    url: `{{ route('phishing.getTemplateById') }}`,
+                    data: {
+                        'id': id
+                    },
+                    success: function(res) {
+                        if (res.status === 1) {
+                            $("#updateEAssoWebsite").val(res.data.website)
+                            $("#updateESenderProfile").val(res.data.senderProfile)
+                        }
+
+                        // console.log(JSON.parse(res));
+                    }
+                })
+            }
+        </script>
     @endpush
 
 @endsection
