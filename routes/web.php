@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\PhishingEmailsController;
+use App\Http\Controllers\PhishingWebsitesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\TrackingController;
@@ -58,15 +59,18 @@ Route::middleware('auth')->group(function () {
     //phishing emails route
 
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
-
     Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
-
     Route::post('/add-email-template', [PhishingEmailsController::class, 'addEmailTemplate'])->name('addEmailTemplate');
-
-
     Route::post('/update-email-template', [PhishingEmailsController::class, 'updateTemplate'])->name('phishing.update');
-
     Route::post('/delete-email-template', [PhishingEmailsController::class, 'deleteTemplate'])->name('phishing.template.delete');
+
+
+    //phishing websites routes
+    
+    Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
+    Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
+    Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
+
 
 
 
