@@ -8,6 +8,7 @@ use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\PhishingWebsitesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportingController;
+use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +72,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
 
+
+    //sender profiles routes
+    Route::get('/sender-profiles', [SenderProfileController::class, 'index'])->name('senderprofile.index');
+    Route::post('/delete-sender-profile', [SenderProfileController::class, 'deleteSenderProfile'])->name('senderprofile.delete');
+    Route::post('/add-sender-profile', [SenderProfileController::class, 'addSenderProfile'])->name('senderprofile.add');
+    Route::get('/get-sender-profile/{id}', [SenderProfileController::class, 'getSenderProfile'])->name('senderprofile.get');
+
+    Route::post('/update-sender-profile', [SenderProfileController::class, 'updateSenderProfile'])->name('senderprofile.update');
 
 
 

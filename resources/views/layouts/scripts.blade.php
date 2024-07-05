@@ -47,10 +47,10 @@
         }
     });
 
-    setTimeout(() => {
+    // setTimeout(() => {
         
-    $('.toast').fadeOut()
-    }, 5000);
+    // $('.toast').fadeOut()
+    // }, 5000);
      </script>
 
 

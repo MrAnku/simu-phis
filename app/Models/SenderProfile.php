@@ -12,6 +12,17 @@ class SenderProfile extends Model
     protected $table = 'senderprofile';
     public $timestamps = false;
 
+    protected $fillable = [
+        'profile_name',
+        'from_name',
+        'from_email',
+        'host',
+        'username',
+        'password',
+        'company_id'
+    ];
+
+
     public function phishingEmail()
     {
         return $this->belongsTo(PhishingEmail::class, 'senderProfile', 'id');

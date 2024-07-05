@@ -65,13 +65,13 @@
                                             <span class="side-menu__label">Reporting</span>
                                         </a>
                                     </li>
-                                    <li class="slide has-sub {{ Request::is(['phishing-emails', 'phishing-websites']) ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is(['phishing-emails', 'phishing-websites']) ? 'active' : '' }}">
+                                    <li class="slide has-sub {{ Request::is(['phishing-emails', 'phishing-websites', 'sender-profiles']) ? 'open' : '' }}">
+                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is(['phishing-emails', 'phishing-websites', 'sender-profiles']) ? 'active' : '' }}">
                                             <i class="bx bx-laptop side-menu__icon"></i>
                                             <span class="side-menu__label">Phishing Material</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
                                         </a>
-                                        <ul class="slide-menu child1 {{ Request::is(['phishing-emails', 'phishing-websites']) ? 'active' : '' }}"
+                                        <ul class="slide-menu child1 {{ Request::is(['phishing-emails', 'phishing-websites', 'sender-profiles']) ? 'active' : '' }}"
                                             style="position: relative; left: 0px; top: 0px; margin: 0px; transform: translate3d(119.2px, 287.2px, 0px);"
                                             data-popper-placement="bottom">
                                             <li class="slide side-menu__label1">
@@ -84,8 +84,8 @@
                                                 <a href="{{route('phishing.websites')}}" class="side-menu__item {{ Request::is('phishing-websites') ? 'active' : '' }}">Phishing
                                                     Websites</a>
                                             </li>
-                                            <li class="slide">
-                                                <a href="senderProfiles.php" class="side-menu__item">Sender Profiles</a>
+                                            <li class="slide {{ Request::is('sender-profiles') ? 'active' : '' }}">
+                                                <a href="{{route('senderprofile.index')}}" class="side-menu__item {{ Request::is('sender-profiles') ? 'active' : '' }}">Sender Profiles</a>
                                             </li>
                                         </ul>
                                     </li>
