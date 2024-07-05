@@ -11,4 +11,14 @@ class TrainingModule extends Model
 
     protected $table = 'training_modules';
     public $timestamps = false;
+
+    protected $fillable = [
+        'name', 
+        'estimated_time', 
+        'cover_image', 
+        'passing_score', 
+        'json_quiz', 
+        'module_language', 
+        'company_id'
+    ];
 }
