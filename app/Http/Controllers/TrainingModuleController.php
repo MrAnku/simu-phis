@@ -177,4 +177,50 @@ class TrainingModuleController extends Controller
             return redirect()->back()->with('error', 'Failed to delete Training');
         }
     }
+
+    public function trainingPreview($trainingid)
+    {
+       
+        // Pass data to the view
+        return view('previewTraining', ['trainingid'=>$trainingid]);
+    }
+
+    public function loadPreviewTrainingContent($trainingid)
+    {
+        // Decode the ID
+        $id = base64_decode($trainingid);
+
+        // Validate the ID
+        if ($id === false || !ctype_digit($id)) {
+            return response()->json(['status'=> 0, 'msg' => 'Invalid training module ID.']);
+        }
+
+        // Fetch the training data
+        $trainingData = TrainingModule::find($id);
+
+        // Check if the training module exists
+        if (!$trainingData) {
+            return response()->json(['status'=> 0, 'msg' => 'Training Module Not Found']);
+        }
+
+        // Access the module_language attribute
+        $moduleLanguage = $trainingData->module_language;
+
+        // You can now use $moduleLanguage as needed
+        if ($moduleLanguage !== 'en') {
+
+            $jsonQuiz = json_decode($trainingData->json_quiz, true);
+
+            $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+            $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+            // var_dump($translatedArray);
+
+            $trainingData->json_quiz = $translatedJson_quiz;
+            // var_dump($trainingData);
+            // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+        }
+
+        // Pass data to the view
+        return response()->json(['status'=> 1, 'jsonData' => $trainingData]);
+    }
 }

@@ -63,3 +63,123 @@ if (!function_exists('generateRandomDate')) {
         return $formattedDate;
     }
 }
+
+if (!function_exists('translateArrayValues')) {
+    function translateArrayValues($array, $targetLang)
+    {
+        $translationArr = [];
+        foreach ($array as $obj) {
+
+            foreach ($obj as $key => $value) {
+
+                array_push($translationArr, $value);
+            }
+        }
+
+        $translatedArr = changeTrainingLang($translationArr, $targetLang);
+
+        //  var_dump($translatedArr);
+
+        $qobj = [];
+        $qarr = [];
+
+        $x = 0;
+        foreach ($array as $obj) {
+
+            foreach ($obj as $key => $value) {
+                if ($key == 'qtype') {
+                    $qobj[$key] = $value;
+                } elseif ($key == 'correctOption') {
+                    $qobj[$key] = $value;
+                } elseif ($key == 'videoUrl') {
+
+                    if (isYouTubeLink($value)) {
+                        $qobj[$key] = $value;
+                    } else {
+                        $qobj[$key] = changeVideoLanguage($value, $targetLang);
+                    }
+                } else {
+                    $qobj[$key] = $translatedArr['translatedText'][$x];
+                }
+                $x++;
+            }
+            array_push($qarr, $qobj);
+            $qobj = [];
+        }
+
+        return $qarr;
+    }
+}
+
+if (!function_exists('changeTrainingLang')) {
+    function changeTrainingLang($content, $targetLang)
+    {
+        // API endpoint
+        $apiEndpoint = "http://65.21.191.199/translate";
+
+        // Request body
+        $requestBody = [
+            "q" => $content,
+            "source" => "en",
+            "target" => $targetLang,
+        ];
+
+        // Initialize cURL session
+        $curl = curl_init();
+
+        // Set cURL options
+        curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($requestBody));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+
+        // Execute cURL request
+        $response = curl_exec($curl);
+
+        // Check for errors
+        if (curl_errno($curl)) {
+            // echo 'cURL error: ' . curl_error($curl);
+            // exit;
+        }
+
+        // Close cURL session
+        curl_close($curl);
+
+        // Decode the JSON response
+        $responseData = json_decode($response, true);
+
+        // echo $responseData;
+
+        return $responseData;
+    }
+}
+
+if (!function_exists('isYouTubeLink')) {
+    function isYouTubeLink($url)
+    {
+        $pattern = '/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([a-zA-Z0-9_-]{11})$/';
+        return preg_match($pattern, $url);
+    }
+}
+
+if (!function_exists('changeVideoLanguage')) {
+    function changeVideoLanguage($url, $lang)
+    {
+        // Convert the language code to uppercase
+        $lang = strtoupper($lang);
+
+        // Find the position of the last dot in the URL (to locate the file extension)
+        $pos = strrpos($url, '.');
+
+        // If no dot is found, return the original URL
+        if ($pos === false) {
+            return $url;
+        }
+
+        // Insert the language code before the file extension
+        $newUrl = substr($url, 0, $pos) . '-' . $lang . substr($url, $pos);
+
+        return $newUrl;
+    }
+}

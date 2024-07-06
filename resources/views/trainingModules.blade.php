@@ -44,7 +44,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
-                                                    <a href="https://google.com" target="_blank"
+                                                    <a href="{{route('trainingmodule.preview', base64_encode($trainingModule->id))}}" target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
                                                     @if ($trainingModule->company_id !== 'default')
