@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingById'])->name('trainingmodule.getTrainingById');
 
     Route::post('/update-training-module', [TrainingModuleController::class, 'updateTrainingModule'])->name('trainingmodule.update');
+    Route::post('/delete-training-module', [TrainingModuleController::class, 'deleteTraining'])->name('trainingmodule.delete');
 
 
 

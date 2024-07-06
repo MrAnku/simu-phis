@@ -95,7 +95,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('trainingmodule.add')}}" id="newModuleForm" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('trainingmodule.add') }}" id="newModuleForm" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <div class="col-lg-4">
@@ -260,7 +261,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('trainingmodule.update')}}" id="editModuleForm" method="post" enctype="multipart/form-data">
+                    <form action="{{ route('trainingmodule.update') }}" id="editModuleForm" method="post"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <div class="col-lg-4">
@@ -966,24 +968,51 @@
             }
 
             function deleteTrainingModule(trainingid, filelocation) {
-                if (confirm(
-                        'Deleting this Training will delete the campaigns and training assigned employees associated with this training. Are you sure?'
-                        )) {
-                    $.post({
-                        url: 'trainingModules.php',
-                        data: {
-                            deleteTraining: 1,
-                            trainingid: trainingid,
-                            cover_image: filelocation
-                        },
-                        success: function(res) {
-                            // console.log(res)
-                            window.location.href = window.location.href;
-                        }
-                    })
-                } else {
-                    return false;
-                }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "If this training is associated with any campaign or training assigned employees. Then the campaign and the assigned training will be deleted.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e6533c',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Delete'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: "{{route('trainingmodule.delete')}}",
+                            data: {
+                                deleteTraining: 1,
+                                trainingid: trainingid,
+                                cover_image: filelocation
+                            },
+                            success: function(res) {
+                                // console.log(res)
+                                window.location.href = window.location.href;
+                            }
+                        })
+                    }
+                })
+
+
+                // if (confirm(
+                //         'If this training is associated with any campaign or training assigned employees. Then the campaign and the assigned training will be deleted.'
+                //     )) {
+                //     $.post({
+                //         url: 'trainingModules.php',
+                //         data: {
+                //             deleteTraining: 1,
+                //             trainingid: trainingid,
+                //             cover_image: filelocation
+                //         },
+                //         success: function(res) {
+                //             // console.log(res)
+                //             window.location.href = window.location.href;
+                //         }
+                //     })
+                // } else {
+                //     return false;
+                // }
             }
 
 
@@ -1164,7 +1193,7 @@
                 $.get({
                     url: `/get-training-module/${id}`,
                     success: function(resJson) {
-                         console.log(resJson);
+                        console.log(resJson);
 
                         document.getElementById('editforms').innerHTML = '';
                         // const resJson = JSON.parse(res);

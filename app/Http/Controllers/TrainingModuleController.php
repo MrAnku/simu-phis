@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TrainingModule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TrainingModuleController extends Controller
 {
@@ -129,6 +131,50 @@ class TrainingModuleController extends Controller
             return redirect()->back()->with('success', 'Training updated successfully');
         } else {
             return redirect()->back()->with('error', 'Failed to update Training');
+        }
+    }
+
+    public function deleteTraining(Request $request)
+    {
+        $request->validate([
+            'trainingid' => 'required|integer|exists:training_modules,id',
+            'cover_image' => 'nullable|string',
+        ]);
+
+        $trainingId = $request->input('trainingid');
+        $coverImage = $request->input('cover_image');
+        $company_id = auth()->user()->company_id;
+
+        // Deleting from reports
+        $campaigns = DB::table('all_campaigns')
+            ->where('training_module', $trainingId)
+            ->where('company_id', $company_id)
+            ->get();
+
+        if ($campaigns->count() > 0) {
+            $campIdArray = $campaigns->pluck('campaign_id');
+
+            foreach ($campIdArray as $campId) {
+                DB::table('all_campaigns')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
+                DB::table('campaign_live')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
+                DB::table('campaign_reports')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
+            }
+        }
+
+        DB::table('training_assigned_users')->where('training', $trainingId)->where('company_id', $company_id)->delete();
+        $isDeletedFromTrainingModules = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->delete();
+
+        if ($isDeletedFromTrainingModules && $coverImage != 'defaultTraining.jpg') {
+            $coverFile = 'uploads/trainingModule/' . $coverImage;
+            if (Storage::exists($coverFile)) {
+                Storage::delete($coverFile);
+            }
+        }
+
+        if ($isDeletedFromTrainingModules) {
+            return redirect()->back()->with('success', 'Training deleted successfully');
+        } else {
+            return redirect()->back()->with('error', 'Failed to delete Training');
         }
     }
 }

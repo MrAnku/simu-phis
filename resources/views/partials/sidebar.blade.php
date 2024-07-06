@@ -89,8 +89,8 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li class="slide">
-                                        <a href="trainingModules.php" class="side-menu__item">
+                                    <li class="slide {{ Request::is('training-modules') ? 'active' : '' }}">
+                                        <a href="{{route('trainingmodule.index')}}" class="side-menu__item {{ Request::is('training-modules') ? 'active' : '' }}">
                                             <i class="bx bx-windows side-menu__icon"></i>
                                             <span class="side-menu__label">Training Modules</span>
                                         </a>
