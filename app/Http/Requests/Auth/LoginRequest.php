@@ -45,9 +45,30 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                // 'email' => trans('auth.failed'),
+                'email' => 'Invalid credentials',
             ]);
         }
+
+        
+        $user = Auth::user();
+
+        // Check if user's account is approved or not
+        if ($user->approved == 0) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Your account is not approved yet!',
+            ]);
+        }
+         // Check if user's account is active or not
+        if ($user->service_status == 0) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Your service is on hold. Please contact your service provider.',
+            ]);
+        }
+
+        
 
         RateLimiter::clear($this->throttleKey());
     }

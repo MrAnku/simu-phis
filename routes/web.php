@@ -9,6 +9,7 @@ use App\Http\Controllers\PhishingWebsitesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\TrainingModuleController;
 use Illuminate\Support\Facades\Route;
@@ -24,17 +25,20 @@ Route::middleware('auth')->group(function () {
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // index page routes
+    // index page routes-----------------------------------------------------
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/get-pie-data', [DashboardController::class, 'getPieData'])->name('get.pie.data');
     Route::get('/get-line-chart-data', [DashboardController::class, 'getLineChartData'])->name('get.line.chart.data');
     Route::get('/get-total-assets', [DashboardController::class, 'getTotalAssets'])->name('get.total.assets');
 
-    //campaigns page routes
+    //campaigns page routes------------------------------------------------------
+
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns');
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
 
-    //employees route
+    //employees route-------------------------------------------------------------
+
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
     Route::post('/employees/send-domain-verify-otp', [EmployeesController::class, 'sendDomainVerifyOtp'])->name('sendDomainVerificationOtp');
 
@@ -48,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
-    //reporting routes
+    //reporting routes-----------------------------------------------------------------
 
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
@@ -58,7 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
 
-    //phishing emails route
+    //phishing emails route---------------------------------------------------------------
 
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
     Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
@@ -67,14 +71,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/delete-email-template', [PhishingEmailsController::class, 'deleteTemplate'])->name('phishing.template.delete');
 
 
-    //phishing websites routes
+    //phishing websites routes-------------------------------------------------------------
     
     Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
 
 
-    //sender profiles routes
+    //sender profiles routes-----------------------------------------------------------------
     Route::get('/sender-profiles', [SenderProfileController::class, 'index'])->name('senderprofile.index');
     Route::post('/delete-sender-profile', [SenderProfileController::class, 'deleteSenderProfile'])->name('senderprofile.delete');
     Route::post('/add-sender-profile', [SenderProfileController::class, 'addSenderProfile'])->name('senderprofile.add');
@@ -82,7 +86,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/update-sender-profile', [SenderProfileController::class, 'updateSenderProfile'])->name('senderprofile.update');
 
-    //training module routes
+    //training module routes-------------------------------------------------------------------------
     Route::get('/training-modules', [TrainingModuleController::class, 'index'])->name('trainingmodule.index');
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining'])->name('trainingmodule.add');
     Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingById'])->name('trainingmodule.getTrainingById');
@@ -93,6 +97,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
     
     Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
+
+    ///settings route------------------------------------------------------------------------------------
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/update-profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
+    Route::post('/settings/update-password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
+    Route::post('/settings/update-mfa', [SettingsController::class, 'updateMFA'])->name('settings.update.mfa');
+    Route::post('/settings/update-lang', [SettingsController::class, 'updateLang'])->name('settings.update.lang');
+    Route::post('/settings/update-phish-edu', [SettingsController::class, 'updatePhishingEdu'])->name('settings.update.phish.edu');
+    Route::post('/settings/update-train-freq', [SettingsController::class, 'updateTrainFreq'])->name('settings.update.train.freq');
+    Route::post('/settings/update-reporting', [SettingsController::class, 'updateReporting'])->name('settings.update.reporting');
+    Route::post('/settings/acc-dectivate', [SettingsController::class, 'deactivateAccount'])->name('settings.acc.deactivate');
+
 
 
 

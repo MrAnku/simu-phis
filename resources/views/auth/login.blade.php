@@ -58,11 +58,9 @@
                                 <div class="col-xl-12">
                                     <label for="signin-username" class="form-label text-default">Email</label>
                                     <input type="text"
-                                        class="form-control form-control-lg @error('email') is-invalid @enderror"
+                                        class="form-control form-control-lg"
                                         name="email" placeholder="john@domain.com">
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    
                                 </div>
                                 <div class="col-xl-12 mb-2">
                                     <label for="signin-password" class="form-label text-default d-block">Password<a
@@ -70,15 +68,13 @@
                                             class="float-end text-secondary">Forget password ?</a></label>
                                     <div class="input-group">
                                         <input type="password"
-                                            class="form-control form-control-lg @error('password') is-invalid @enderror"
+                                            class="form-control form-control-lg"
                                             name="password" id="login-password" placeholder="password">
                                         <button class="btn btn-light" type="button"
                                             onclick="createpassword('login-password',this)" id="button-addon2"><i
                                                 class="ri-eye-off-line align-middle"></i></button>
 
-                                        @error('password')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        
                                     </div>
                                     <div class="mt-2">
                                         <div class="form-check">
@@ -136,6 +132,55 @@
             </div>
         </div>
     </div>
+
+     {{-- ------------------------------Toasts---------------------- --}}
+
+     <div class="toast-container position-fixed top-0 end-0 p-3">
+        @if (session('success'))
+            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-success text-fixed-white">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-danger text-fixed-white">
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                    aria-atomic="true">
+                    <div class="toast-header bg-danger text-fixed-white">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ $error }}
+                    </div>
+                </div>
+            @endforeach
+        @endif
+
+
+    </div>
+
+    {{-- ------------------------------Toasts---------------------- --}}
 
 
     <!-- Bootstrap JS -->

@@ -233,57 +233,12 @@
                         })
                     }
                 })
-
-
-                // if (confirm('Are you sure you want to delete?')) {
-                //     $.post({
-                //         url: 'phishingWebsites.php?deleteWeb=1',
-                //         data: {
-                //             websiteid: webId,
-                //             filename: filename
-                //         },
-                //         success: function(res) {
-                //             console.log(res)
-                //             window.location.href = window.location.href;
-                //         }
-                //     })
-                // } else {
-                //     return false;
-                // }
+             
 
             }
 
 
-            // function deleteETemplate(tempid, filelocation) {
-
-            //     Swal.fire({
-            //         title: 'Are you sure?',
-            //         text: "Deleting this template will delete the campaigns associated with this email template.",
-            //         icon: 'warning',
-            //         showCancelButton: true,
-            //         confirmButtonColor: '#e6533c',
-            //         cancelButtonColor: '#d33',
-            //         confirmButtonText: 'Delete'
-            //     }).then((result) => {
-            //         if (result.isConfirmed) {
-            //             $.post({
-            //                 url: "{{ route('phishing.template.delete') }}",
-            //                 data: {
-            //                     tempid: tempid,
-            //                     filelocation: filelocation
-            //                 },
-            //                 success: function(res) {
-            //                     // console.log(res)
-            //                     // window.location.reload();
-            //                     window.location.href = window.location.href;
-            //                 }
-            //             })
-            //         }
-            //     })
-
-
-
-            // }
+          
         </script>
     @endpush
 

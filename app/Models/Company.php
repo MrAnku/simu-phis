@@ -48,4 +48,10 @@ class Company extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function company_settings(){
+
+        return $this->hasOne(Settings::class, 'company_id', 'company_id');
+    }
+
 }
