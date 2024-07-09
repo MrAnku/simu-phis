@@ -12,6 +12,8 @@ use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\TrainingModuleController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -104,12 +106,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/update-profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
     Route::post('/settings/update-password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
     Route::post('/settings/update-mfa', [SettingsController::class, 'updateMFA'])->name('settings.update.mfa');
+    Route::post('/settings/verify-mfa', [SettingsController::class, 'verifyMFA'])->name('settings.verify.mfa');
     Route::post('/settings/update-lang', [SettingsController::class, 'updateLang'])->name('settings.update.lang');
     Route::post('/settings/update-phish-edu', [SettingsController::class, 'updatePhishingEdu'])->name('settings.update.phish.edu');
     Route::post('/settings/update-train-freq', [SettingsController::class, 'updateTrainFreq'])->name('settings.update.train.freq');
     Route::post('/settings/update-reporting', [SettingsController::class, 'updateReporting'])->name('settings.update.reporting');
     Route::post('/settings/acc-dectivate', [SettingsController::class, 'deactivateAccount'])->name('settings.acc.deactivate');
 
+    //
+    Route::get('/auth-user', function(){
+        $companyid = Auth::user()->company_id;
+        $comp_settings = DB::table('company_settings')->where('company_id', $companyid)->get();
+        return $comp_settings;
+    })->name('auth-user');
 
 
 

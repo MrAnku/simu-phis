@@ -938,6 +938,47 @@
 
     {{-- -------------------Modals------------------------ --}}
 
+    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Setup Multi Factor Authentication</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div class="my-5 d-flex justify-content-center" style="margin-bottom: 1rem !important;">
+                            <img src="" alt="mfa_qr" id="mfa_qr" width="200">
+                           
+                        </div>
+                        <div class="card custom-card">
+                            <div class="card-body p-5">
+                                <p class="h5 fw-semibold mb-2 text-center">Enter MFA Code</p>
+                                <p class="text-center">Enter the code from Google Authenticator</p>
+                                <form action="{{ route('settings.verify.mfa') }}" method="post">
+                                    @csrf
+                                    <div class="row gy-3">
+                                        <div class="col-xl-12">
+                                            <input type="text" class="form-control form-control-lg" name="totp_code" placeholder="xxxxxx">
+                                            <input type="hidden" name="secret" value="" id="mfa_secret">
+                                        </div>
+                                        <div class="col-xl-12 d-grid mt-2">
+                                            <button type="submit" name="verifyMfaCode" class="btn btn-lg btn-primary">Verify</button>
+                                        </div>
+                                    </div>
+                                </form>
+        
+                               
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     {{-- -------------------Modals------------------------ --}}
 
@@ -1125,11 +1166,16 @@
                         },
                         success: function(res) {
                             if (res.status == 1) {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+
+                                $("#mfa_qr").attr("src", res.QR_Image);
+                                $("#mfa_secret").val(res.secretKey);
+
+                                $("#mfaModal").modal('show');
+                                // Swal.fire(
+                                //     res.msg,
+                                //     '',
+                                //     'success'
+                                // )
                             } else {
                                 Swal.fire(
                                     res.msg,
@@ -1137,6 +1183,7 @@
                                     'error'
                                 )
                             }
+                            // console.log(res)
                         }
                     })
                 } else {
