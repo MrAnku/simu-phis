@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\PhishingWebsitesController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+
 
 
 
@@ -125,6 +128,28 @@ Route::middleware('auth')->group(function () {
 
 
 });
+
+//------------------------admin route----------------------//
+
+Route::get('/admin', function () {
+    return redirect()->route('admin.login');
+});
+
+Route::get('admin/login', [AdminLoginController::class, 'showLoginPage'])
+->name('admin.login');
+
+Route::post('admin/login', [AdminLoginController::class, 'doAdminLogin'])
+->name('admin.doLogin');
+
+Route::middleware(['isAdminLoggedIn'])->group(function(){
+
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
+
+});
+
+
+//------------------------admin route----------------------//
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
 
