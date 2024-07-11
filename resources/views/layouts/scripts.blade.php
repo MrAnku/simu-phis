@@ -23,6 +23,11 @@
  
  <script src="{{asset('assets')}}/libs/sweetalert2/sweetalert2.min.js"></script>
 
+ <!-- Apex Charts JS -->
+ <script src="{{asset('assets')}}/libs/apexcharts/apexcharts.min.js"></script>
+
+ <script src="{{asset('assets')}}/js/ecommerce-dashboard.js"></script>
+
 
 
 

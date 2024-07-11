@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
@@ -77,7 +78,7 @@ Route::middleware('auth')->group(function () {
 
 
     //phishing websites routes-------------------------------------------------------------
-    
+
     Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
@@ -100,7 +101,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/delete-training-module', [TrainingModuleController::class, 'deleteTraining'])->name('trainingmodule.delete');
 
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
-    
+
     Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
 
     ///settings route------------------------------------------------------------------------------------
@@ -117,16 +118,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/acc-dectivate', [SettingsController::class, 'deactivateAccount'])->name('settings.acc.deactivate');
 
     //
-    Route::get('/auth-user', function(){
+    Route::get('/auth-user', function () {
         $companyid = Auth::user()->company_id;
         $comp_settings = DB::table('company_settings')->where('company_id', $companyid)->get();
         return $comp_settings;
     })->name('auth-user');
-
-
-
-
-
 });
 
 //------------------------admin route----------------------//
@@ -136,16 +132,27 @@ Route::get('/admin', function () {
 });
 
 Route::get('admin/login', [AdminLoginController::class, 'showLoginPage'])
-->name('admin.login');
+    ->name('admin.login');
 
 Route::post('admin/login', [AdminLoginController::class, 'doAdminLogin'])
-->name('admin.doLogin');
+    ->name('admin.doLogin');
 
-Route::middleware(['isAdminLoggedIn'])->group(function(){
+Route::middleware(['isAdminLoggedIn'])->group(function () {
 
-    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('admin/partners', [PartnerController::class, 'index'])->name('admin.partners');
+    Route::post('admin/approve-partner', [PartnerController::class, 'approvePartner'])->name('admin.approvePartner');
+    Route::post('admin/hold-service', [PartnerController::class, 'holdService'])->name('admin.holdService');
+    Route::post('admin/start-service', [PartnerController::class, 'startService'])->name('admin.startService');
+    Route::post('admin/reject-approval', [PartnerController::class, 'rejectApproval'])->name('admin.rejectApproval');
+    Route::post('admin/delete-partner', [PartnerController::class, 'deletePartner'])->name('admin.deletePartner');
+    Route::post('admin/delete-notice', [PartnerController::class, 'deleteNotice'])->name('admin.deleteNotice');
+
+    Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');
+
+
+
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
-
 });
 
 
