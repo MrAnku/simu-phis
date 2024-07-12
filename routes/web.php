@@ -128,7 +128,12 @@ Route::middleware('auth')->group(function () {
 //------------------------admin route----------------------//
 
 Route::get('/admin', function () {
-    return redirect()->route('admin.login');
+    if (!Auth::guard('admin')->check()) {
+        return redirect()->route('admin.login');
+    }else{
+
+        return redirect()->route('admin.dashboard');
+    }
 });
 
 Route::get('admin/login', [AdminLoginController::class, 'showLoginPage'])
@@ -140,6 +145,9 @@ Route::post('admin/login', [AdminLoginController::class, 'doAdminLogin'])
 Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    //-----------------partners route ------------------------//
+
     Route::get('admin/partners', [PartnerController::class, 'index'])->name('admin.partners');
     Route::post('admin/approve-partner', [PartnerController::class, 'approvePartner'])->name('admin.approvePartner');
     Route::post('admin/hold-service', [PartnerController::class, 'holdService'])->name('admin.holdService');

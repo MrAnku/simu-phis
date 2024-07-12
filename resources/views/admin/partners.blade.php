@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Admin | simUphish')
+@section('title', 'Partners | simUphish')
 
 @section('main-content')
 

@@ -9,8 +9,10 @@ use App\Mail\Admin\PartnerHold;
 use App\Mail\Admin\PartnerReject;
 use App\Mail\Admin\PartnerResume;
 use App\Models\AdminNoticeToPartner;
+use App\Models\Company;
 use App\Models\Partner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class PartnerController extends Controller
@@ -149,14 +151,33 @@ class PartnerController extends Controller
 
     // Delete Partner
     public function deletePartner(Request $request)
-    {
-        $partnerId = $request->input('partnerId');
+{
+    $partnerId = $request->input('partnerId');
+
+    try {
+        // Start a transaction
+        DB::beginTransaction();
 
         $partner = Partner::findOrFail($partnerId);
+        $partner_id = $partner->partner_id;
+
+        // Delete the partner
         $partner->delete();
 
+        // Delete companies associated with this partner
+        Company::where('partner_id', $partner_id)->delete();
+
+        // Commit the transaction
+        DB::commit();
+
         return response()->json(['status' => 1, 'msg' => 'Partner deleted.']);
+    } catch (\Exception $e) {
+        // Rollback the transaction if something goes wrong
+        DB::rollBack();
+
+        return response()->json(['status' => 0, 'msg' => 'Error deleting partner.']);
     }
+}
 
     public function deleteNotice(Request $request){
 
