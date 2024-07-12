@@ -146,6 +146,7 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/start-service', [PartnerController::class, 'startService'])->name('admin.startService');
     Route::post('admin/reject-approval', [PartnerController::class, 'rejectApproval'])->name('admin.rejectApproval');
     Route::post('admin/delete-partner', [PartnerController::class, 'deletePartner'])->name('admin.deletePartner');
+    Route::post('admin/add-notice', [PartnerController::class, 'addNotice'])->name('admin.addNotice');
     Route::post('admin/delete-notice', [PartnerController::class, 'deleteNotice'])->name('admin.deleteNotice');
 
     Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');

@@ -23,15 +23,15 @@
             </div>
             <ul class="main-menu active" style="margin-left: 0px; margin-right: 0px;">
 
-                <li class="slide active">
-                    <a href="index.php" class="side-menu__item active">
+                <li class="slide {{ Request::is('admin/dashboard') ? 'active' : '' }}">
+                    <a href="{{route('admin.dashboard')}}" class="side-menu__item {{ Request::is('admin/dashboard') ? 'active' : '' }}">
                         <i class="bx bx-home side-menu__icon"></i>
                         <span class="side-menu__label">Dashboard</span>
                     </a>
                 </li>
 
-                <li class="slide">
-                    <a href="partners.php" class="side-menu__item">
+                <li class="slide {{ Request::is('admin/partners') ? 'active' : '' }}">
+                    <a href="{{route('admin.partners')}}" class="side-menu__item {{ Request::is('admin/partners') ? 'active' : '' }}">
                         <i class="bx bx-group side-menu__icon"></i>
                         <span class="side-menu__label">Partners</span>
                     </a>

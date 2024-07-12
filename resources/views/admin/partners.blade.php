@@ -190,7 +190,8 @@
                         </ul>
                         <div class="tab-content">
                             <div class="tab-pane active show" id="newnotice" role="tabpanel">
-                                <form action="" method="post">
+                                <form action="{{route('admin.addNotice')}}" method="post">
+                                    @csrf
                                     <div class="row mb-3">
                                         <label for="inputEmail3" class="col-sm-6 col-form-label">Select Partner</label>
                                         <div class="col-sm-6">
@@ -243,8 +244,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {{-- @if ($all_partners->notices->count() > 0) --}}
-                                                @foreach ($all_partners->notices as $notice)
+                                            @if ($notices->count() > 0)
+                                                @foreach ($notices as $notice)
                                                     <tr>
                                                         <td>{{ $notice->partner->full_name }}</td>
                                                         <td>{{ $notice->partner->email }}</td>
@@ -265,11 +266,11 @@
                                                         </td>
                                                     </tr>
                                                 @endforeach
-                                            {{-- @else
+                                            @else
                                                 <tr>
                                                     <td colspan="6" class="text-center">No records found</td>
                                                 </tr>
-                                            @endif --}}
+                                            @endif
 
 
 

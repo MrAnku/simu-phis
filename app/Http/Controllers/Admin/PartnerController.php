@@ -19,8 +19,10 @@ class PartnerController extends Controller
     public function index(){
         $all_partners = Partner::with('notices')->get();
 
-        return view('admin.partners', compact('all_partners'));
-        // return $all_partners;
+        $notices = AdminNoticeToPartner::with('partner')->get();
+
+        return view('admin.partners', compact('all_partners', 'notices'));
+        // return $notices;
     }
 
     // Check if email exists
@@ -166,6 +168,29 @@ class PartnerController extends Controller
 
         if($notice){
             $notice->delete();
+            return response()->json(['status' => 1, 'msg' => 'Notice Deleted Successfully']);
         }
+
+        return response()->json(['status' => 0, 'msg' => 'Something went wrong']);
     }
+    public function addNotice(Request $request)
+    {
+        $request->validate([
+            'partner' => 'required|exists:partners,partner_id',
+            'title' => 'required|string|max:255',
+            'msg' => 'required|string',
+        ]);
+
+        $notice = new AdminNoticeToPartner();
+        $notice->partner_id = $request->input('partner');
+        $notice->notice_title = $request->input('title');
+        $notice->notice_msg = $request->input('msg');
+        $notice->date = date('Y-m-d');
+
+        $notice->save();
+
+        return redirect()->back()->with('success', 'Notice added successfully');
+    }
+
+    
 }

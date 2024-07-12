@@ -11,4 +11,9 @@ class AdminNoticeToPartner extends Model
 
     protected $table = 'admin_notice_to_partner';
     public $timestamps = false;
+
+    public function partner()
+    {
+        return $this->belongsTo(Partner::class, 'partner_id', 'partner_id');
+    }
 }
