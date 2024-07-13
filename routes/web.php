@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminPhishingEmailController;
+use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\WhiteLabelController;
@@ -189,6 +190,14 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/delete-email-template', [AdminPhishingEmailController::class, 'deleteTemplate'])->name('admin.phishing.template.delete');
 
     //----------------phishing emails route ----------------------//
+
+    //----------------phishing websites route -------------------------//
+
+    Route::get('admin/phishing-websites', [AdminPhishingWebsiteController::class, 'index'])->name('admin.phishing.websites');
+    Route::post('admin/delete-website', [AdminPhishingWebsiteController::class, 'deleteWebsite'])->name('admin.phishing.website.delete');
+    Route::post('admin/add-phishing-website', [AdminPhishingWebsiteController::class, 'addPhishingWebsite'])->name('admin.phishing.website.add');
+
+    //----------------phishing websites route -------------------------//
 
 
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
