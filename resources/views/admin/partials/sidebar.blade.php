@@ -61,29 +61,32 @@
                         <span class="side-menu__label">Reporting</span>
                     </a>
                 </li> -->
-                <li class="slide has-sub">
-                    <a href="javascript:void(0);" class="side-menu__item">
+                <li class="slide has-sub {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'open' : '' }}">
+                    <a href="javascript:void(0);" class="side-menu__item {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'active' : '' }}">
                         <i class="bx bx-laptop side-menu__icon"></i>
                         <span class="side-menu__label">Phishing Material</span>
                         <i class="fe fe-chevron-right side-menu__angle"></i>
                     </a>
-                    <ul class="slide-menu child1" style="position: relative; left: 0px; top: 0px; margin: 0px; transform: translate3d(119.2px, 236.8px, 0px);" data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
+                    <ul class="slide-menu child1 {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'active' : '' }}"
+                        style="position: relative; left: 0px; top: 0px; margin: 0px; transform: translate3d(119.2px, 287.2px, 0px);"
+                        data-popper-placement="bottom">
                         <li class="slide side-menu__label1">
                             <a href="javascript:void(0)">Phishing Material</a>
                         </li>
-                        <li class="slide">
-                            <a href="phishingEmails.php" class="side-menu__item">Phishing Emails</a>
+                        <li class="slide {{ Request::is('admin/phishing-emails') ? 'active' : '' }}">
+                            <a href="{{route('admin.phishingEmails')}}" class="side-menu__item {{ Request::is('admin/phishing-emails') ? 'active' : '' }}">Phishing Emails</a>
                         </li>
-                        <li class="slide">
-                            <a href="phishingWebsites.php" class="side-menu__item">Phishing Websites</a>
+                        <li class="slide {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">
+                            <a href="{{route('phishing.websites')}}" class="side-menu__item {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">Phishing
+                                Websites</a>
                         </li>
-                        <li class="slide">
-                            <a href="senderProfiles.php" class="side-menu__item">Sender Profiles</a>
+                        <li class="slide {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">
+                            <a href="{{route('senderprofile.index')}}" class="side-menu__item {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">Sender Profiles</a>
                         </li>
                     </ul>
                 </li>
-                <li class="slide">
-                    <a href="trainingModules.php" class="side-menu__item">
+                <li class="slide {{ Request::is('training-modules') ? 'active' : '' }}">
+                    <a href="{{route('trainingmodule.index')}}" class="side-menu__item {{ Request::is('training-modules') ? 'active' : '' }}">
                         <i class="bx bx-windows side-menu__icon"></i>
                         <span class="side-menu__label">Training Modules</span>
                     </a>

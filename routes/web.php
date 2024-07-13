@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\WhiteLabelController;
@@ -177,6 +178,17 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/stop-whitelabel', [WhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
     Route::post('admin/reject-whitelabel', [WhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
     //-----------------whitelabel requests route--------------//
+
+    //----------------phishing emails route ----------------------//
+
+    Route::get('admin/phishing-emails', [AdminPhishingEmailController::class, 'index'])->name('admin.phishingEmails');
+
+    Route::post('admin/phishing-email', [AdminPhishingEmailController::class, 'getTemplateById'])->name('admin.phishing.getTemplateById');
+    Route::post('admin/add-email-template', [AdminPhishingEmailController::class, 'addEmailTemplate'])->name('admin.addEmailTemplate');
+    Route::post('admin/update-email-template', [AdminPhishingEmailController::class, 'updateTemplate'])->name('admin.phishing.update');
+    Route::post('admin/delete-email-template', [AdminPhishingEmailController::class, 'deleteTemplate'])->name('admin.phishing.template.delete');
+
+    //----------------phishing emails route ----------------------//
 
 
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
