@@ -54,4 +54,8 @@ class Company extends Authenticatable
         return $this->hasOne(Settings::class, 'company_id', 'company_id');
     }
 
+    public function partner(){
+        return $this->belongsTo(Partner::class, 'partner_id', 'partner_id');
+    }
+
 }

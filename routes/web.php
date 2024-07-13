@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PartnerController;
+use App\Http\Controllers\Admin\WhiteLabelController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
@@ -130,7 +132,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/admin', function () {
     if (!Auth::guard('admin')->check()) {
         return redirect()->route('admin.login');
-    }else{
+    } else {
 
         return redirect()->route('admin.dashboard');
     }
@@ -159,6 +161,22 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');
 
+    //-----------------partners route ------------------------//
+
+    //-------------------companies route ---------------------//
+    Route::get('admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
+    Route::post('/admin/companies/approve', [CompanyController::class, 'approveCompany'])->name('admin.companies.approve');
+    Route::post('/admin/companies/reject', [CompanyController::class, 'rejectApproval'])->name('admin.companies.reject');
+    Route::post('/admin/companies/delete', [CompanyController::class, 'deleteCompany'])->name('admin.companies.delete');
+
+    //-------------------companies route ---------------------//
+
+    //-----------------whitelabel requests route--------------//
+    Route::get('admin/whitelabel-req', [WhiteLabelController::class, 'index'])->name('admin.whitelabel');
+    Route::post('admin/approve-whitelabel', [WhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
+    Route::post('admin/stop-whitelabel', [WhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
+    Route::post('admin/reject-whitelabel', [WhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
+    //-----------------whitelabel requests route--------------//
 
 
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');

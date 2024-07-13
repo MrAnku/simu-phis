@@ -37,14 +37,14 @@
                     </a>
                 </li>
 
-                <li class="slide">
-                    <a href="companies.php" class="side-menu__item">
+                <li class="slide {{ Request::is('admin/companies') ? 'active' : '' }}">
+                    <a href="{{route('admin.companies')}}" class="side-menu__item {{ Request::is('admin/companies') ? 'active' : '' }}">
                         <i class="bx bx-buildings side-menu__icon"></i>
                         <span class="side-menu__label">Companies</span>
                     </a>
                 </li>
-                <li class="slide">
-                    <a href="whitelabel-req.php" class="side-menu__item">
+                <li class="slide {{ Request::is('admin/whitelabel-req') ? 'active' : '' }}">
+                    <a href="{{route('admin.whitelabel')}}" class="side-menu__item {{ Request::is('admin/whitelabel-req') ? 'active' : '' }}">
                         <i class="bx bx-leaf side-menu__icon"></i>
                         <span class="side-menu__label">Whitelabel Requests</span>
                     </a>
