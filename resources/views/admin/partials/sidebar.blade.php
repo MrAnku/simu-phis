@@ -77,16 +77,16 @@
                             <a href="{{route('admin.phishingEmails')}}" class="side-menu__item {{ Request::is('admin/phishing-emails') ? 'active' : '' }}">Phishing Emails</a>
                         </li>
                         <li class="slide {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">
-                            <a href="{{route('phishing.websites')}}" class="side-menu__item {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">Phishing
+                            <a href="{{route('admin.phishing.websites')}}" class="side-menu__item {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">Phishing
                                 Websites</a>
                         </li>
                         <li class="slide {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">
-                            <a href="{{route('senderprofile.index')}}" class="side-menu__item {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">Sender Profiles</a>
+                            <a href="{{route('admin.senderprofile.index')}}" class="side-menu__item {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">Sender Profiles</a>
                         </li>
                     </ul>
                 </li>
-                <li class="slide {{ Request::is('training-modules') ? 'active' : '' }}">
-                    <a href="{{route('trainingmodule.index')}}" class="side-menu__item {{ Request::is('training-modules') ? 'active' : '' }}">
+                <li class="slide {{ Request::is('admin/training-modules') ? 'active' : '' }}">
+                    <a href="{{route('admin.trainingmodule.index')}}" class="side-menu__item {{ Request::is('admin/training-modules') ? 'active' : '' }}">
                         <i class="bx bx-windows side-menu__icon"></i>
                         <span class="side-menu__label">Training Modules</span>
                     </a>

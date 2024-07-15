@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\AdminSenderProfileController;
+use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\WhiteLabelController;
@@ -198,6 +200,35 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/add-phishing-website', [AdminPhishingWebsiteController::class, 'addPhishingWebsite'])->name('admin.phishing.website.add');
 
     //----------------phishing websites route -------------------------//
+
+
+    //----------------------sender profiles route ----------------------//
+
+    Route::get('admin/sender-profiles', [AdminSenderProfileController::class, 'index'])->name('admin.senderprofile.index');
+    Route::post('admin/delete-sender-profile', [AdminSenderProfileController::class, 'deleteSenderProfile'])->name('admin.senderprofile.delete');
+    Route::post('admin/add-sender-profile', [AdminSenderProfileController::class, 'addSenderProfile'])->name('admin.senderprofile.add');
+    Route::get('admin/get-sender-profile/{id}', [AdminSenderProfileController::class, 'getSenderProfile'])->name('admin.senderprofile.get');
+
+    Route::post('admin/update-sender-profile', [AdminSenderProfileController::class, 'updateSenderProfile'])->name('admin.senderprofile.update');
+
+    //----------------------sender profiles route ----------------------//
+    
+
+    //---------------------------training module route -----------------//
+
+    Route::get('admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.trainingmodule.index');
+    Route::post('admin/add-training-module', [AdminTrainingModuleController::class, 'addTraining'])->name('admin.trainingmodule.add');
+    Route::get('admin/get-training-module/{id}', [AdminTrainingModuleController::class, 'getTrainingById'])->name('admin.trainingmodule.getTrainingById');
+
+    Route::post('admin/update-training-module', [AdminTrainingModuleController::class, 'updateTrainingModule'])->name('admin.trainingmodule.update');
+
+    Route::post('admin/delete-training-module', [AdminTrainingModuleController::class, 'deleteTraining'])->name('admin.trainingmodule.delete');
+
+    Route::get('admin/training-preview/{trainingid}', [AdminTrainingModuleController::class, 'trainingPreview'])->name('admin.trainingmodule.preview');
+
+    Route::get('admin/training-preview-content/{trainingid}', [AdminTrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
+
+    //---------------------------training module route -----------------//
 
 
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
