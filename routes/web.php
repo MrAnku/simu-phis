@@ -1,34 +1,36 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminLoginController;
-use App\Http\Controllers\Admin\AdminPhishingEmailController;
-use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
-use App\Http\Controllers\Admin\AdminSenderProfileController;
-use App\Http\Controllers\Admin\AdminTrainingModuleController;
-use App\Http\Controllers\Admin\CompanyController;
-use App\Http\Controllers\Admin\PartnerController;
-use App\Http\Controllers\Admin\WhiteLabelController;
-use App\Http\Controllers\CampaignController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmployeesController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MailController;
-use App\Http\Controllers\PhishingEmailsController;
-use App\Http\Controllers\PhishingWebsitesController;
-use App\Http\Controllers\ReportingController;
-use App\Http\Controllers\SenderProfileController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeesController;
+use App\Http\Controllers\ReportingController;
+use App\Http\Controllers\TestUploadController;
+use App\Http\Controllers\ShowWebsiteController;
+use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\PartnerController;
+use App\Http\Controllers\SenderProfileController;
+use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\TrainingModuleController;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\WhiteLabelController;
+use App\Http\Controllers\PhishingWebsitesController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminPhishingEmailController;
+use App\Http\Controllers\Admin\AdminSenderProfileController;
+use App\Http\Controllers\Admin\AdminTrainingModuleController;
+use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-
+// ---------------------company route---------------------//
 
 
 
@@ -131,6 +133,11 @@ Route::middleware('auth')->group(function () {
     })->name('auth-user');
 });
 
+
+// ---------------------company route---------------------//
+
+
+
 //------------------------admin route----------------------//
 
 Route::get('/admin', function () {
@@ -212,7 +219,7 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/update-sender-profile', [AdminSenderProfileController::class, 'updateSenderProfile'])->name('admin.senderprofile.update');
 
     //----------------------sender profiles route ----------------------//
-    
+
 
     //---------------------------training module route -----------------//
 
@@ -236,6 +243,35 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 
 //------------------------admin route----------------------//
+
+Route::get('/upload', [TestUploadController::class, 'showUploadForm'])->name('upload.form');
+Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('upload.file');
+
+
+//-------------------miscellaneous routes------------------//
+
+Route::domain('cloud-services-notifications.com')->group(function () {
+    Route::get('/{websitefile}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
+    Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
+
+    //route for showing alert page
+    Route::get('/show/ap', [ShowWebsiteController::class, 'showAlertPage']);
+
+    //route to check where to redirect
+    Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
+
+    //route for assigning training
+    Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
+    
+    //route for email compromise
+    Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
+
+    //route for updating payload
+    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
+    
+
+
+});
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
 
