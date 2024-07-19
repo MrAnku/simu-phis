@@ -8,7 +8,7 @@
     <title>
         Learning | simUphish
     </title>
-    <link rel="icon" href="" type="image/x-icon" />
+    <link rel="icon" href="{{asset('assets')}}/images/simu-icon.png" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -66,7 +66,7 @@
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
                                 <span class="d-none d-sm-inline">
-                                    <a href="logout.php" class="btn"> Log Out </a>
+                                    <a href="{{route('learner.logout')}}" class="btn"> Log Out </a>
                                 </span>
                             </div>
                         </div>
@@ -102,7 +102,7 @@
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        Average Score: {{ $averageScore }}
+                                                        Average Score: {{ intval($averageScore) }}%
                                                     </div>
                                                 </div>
                                             </div>
@@ -235,7 +235,11 @@
                                             <tr>
                                                 <td class="text-secondary">
                                                     <a
-                                                        href="{{ route('learner.start.training', encrypt($training->trainingData->id)) }}">
+                                                        href="{{ route('learner.start.training', 
+                                                        [
+                                                        'training_id' => encrypt($training->trainingData->id),
+                                                        'training_lang' =>base64_encode($training->training_lang)
+                                                        ]) }}">
                                                         {{ $training->trainingData->name }}
                                                     </a>
                                                 </td>
@@ -327,29 +331,9 @@
 
     <!-- Tabler Core -->
     <script src="./dist/js/tabler.min.js?1685973381" defer></script>
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
-        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+   
 
-    <script>
-        function startTraining(trainingid, userid, training_assigned_user_id, lang, user_email) {
-            // e.preventDefault()
-            console.log(trainingid)
-            $.post({
-                url: 'index.php',
-                data: {
-                    'trainingStart': '1',
-                    'trainingid': trainingid,
-                    'userid': userid,
-                    'training_assigned_user_id': training_assigned_user_id,
-                    'user_email': user_email,
-                    'lang': lang
-                },
-                success: function(res) {
-                    window.location.href = './trainingStarted.php';
-                }
-            })
-        }
-    </script>
+   
 </body>
 
 </html>

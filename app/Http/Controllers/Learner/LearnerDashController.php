@@ -34,18 +34,19 @@ class LearnerDashController extends Controller
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount'));
     }
 
-    public function startTraining($training_id)
+    public function startTraining($training_id, $training_lang)
     {
 
         // $training_id = decrypt($training_id);
 
-        return view('learning.training', ['trainingid' => $training_id]);
+        return view('learning.training', ['trainingid' => $training_id, 'training_lang'=>$training_lang]);
     }
 
-    public function loadTraining($training_id)
+    public function loadTraining($training_id, $training_lang)
     {
         // Decode the ID
         $id = decrypt($training_id);
+        $training_lang = base64_decode($training_lang);
 
         // Validate the ID
         if ($id === false) {
@@ -61,7 +62,7 @@ class LearnerDashController extends Controller
         }
 
         // Access the module_language attribute
-        $moduleLanguage = $trainingData->module_language;
+        $moduleLanguage = $training_lang;
 
         // You can now use $moduleLanguage as needed
         if ($moduleLanguage !== 'en') {

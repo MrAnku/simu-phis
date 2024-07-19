@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>Login | simUphish Learning</title>
 
-  <link rel="icon" href="" type="image/x-icon" />
+  <link rel="icon" href="{{asset('assets')}}/images/simu-icon.png" type="image/x-icon" />
 
   <!-- CSS files -->
   <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />

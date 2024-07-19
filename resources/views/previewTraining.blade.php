@@ -102,7 +102,7 @@
                     <div class="btns d-flex justify-content-center">
 
                         <button type="button" id="nextButton" class="btn btn-outline-primary my-3 active">Next</button>
-                        <a href="./" id="dashboardBtn" class="btn btn-outline-primary my-3"
+                        <a href="{{route('trainingmodule.index')}}" id="dashboardBtn" class="btn btn-outline-primary my-3"
                             style="display: none;">Dashboard</a>
                     </div>
                 </div>

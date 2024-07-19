@@ -17,7 +17,7 @@
     <link href="/dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
     <link href="/dist/css/demo.min.css?1685973381" rel="stylesheet" />
 
-    <link rel="icon" href="" type="image/x-icon">
+    <link rel="icon" href="{{asset('assets')}}/images/simu-icon.png" type="image/x-icon">
     <style>
         @import url("https://rsms.me/inter/inter.css");
 
@@ -77,7 +77,7 @@
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href=".">
-                        <img src="" alt="" class="navbar-brand-image"
+                        <img src="/assets/images/simu-logo-dark.png" alt="" class="navbar-brand-image"
                             style="width: 181px; height: auto;" />
                     </a>
                 </h1>
@@ -98,6 +98,7 @@
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
                                 <span class="d-none d-sm-inline">
+                                    <a href="{{ route('learner.dashboard') }}" class="btn btn-outline-primary my-3 active">Back</a>
                                     <a href="{{ route('learner.logout') }}" class="btn"> Log Out </a>
                                 </span>
                             </div>
@@ -110,7 +111,7 @@
                 <div class="container-xl">
                     <div id="preloader" style="text-align: center;">
 
-                        <img src="/static/preloader.gif" alt="" srcset="">
+                        <img src="/dist/preloader.gif" alt="" srcset="">
                     </div>
                     <div class="row row-deck row-cards">
 
@@ -156,7 +157,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="iconbox d-flex justify-content-center align-items-center">
-                        <img src="/static/corr_ans_icon.png" alt="" srcset="" style="width: 100px;">
+                        <img src="/dist/corr_ans_icon.png" alt="" srcset="" style="width: 65px;">
                         <h4 class="text-center">Correct Answer</h4>
                     </div>
                     <div id="corrAnsDesc">
@@ -177,8 +178,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="iconbox d-flex justify-content-center align-items-center">
-                        <img src="/static/wrong_ans_icon.png" alt="" srcset=""
-                            style="width: 75px; margin-right: 19px;">
+                        <img src="/dist/wrong_ans_icon.png" alt="" srcset=""
+                            style="width: 47px; margin-right: 19px;">
                         <h4 class="text-center">Wrong Answer</h4>
                     </div>
                     <div id="wrongAnsDesc" class="mt-3">
@@ -481,7 +482,7 @@
         }
         //const urlParams = new URLSearchParams(window.location.search);
         $.get({
-            url: '/loadTrainingContent/{{ $trainingid }}',
+            url: '/loadTrainingContent/{{ $trainingid }}/{{$training_lang}}',
             success: function(res) {
                 //   console.log(res)
                 if (res.status === 1) {

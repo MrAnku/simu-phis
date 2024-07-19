@@ -99,7 +99,7 @@
                         enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-lg-4">
+                            <div class="col-lg-6">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Module name</span>
                                     <input type="text" class="form-control" name="moduleName"
@@ -107,7 +107,7 @@
                                         aria-describedby="basic-addon1" data-name="Module name" required>
                                 </div>
                             </div>
-                            <div class="col-lg-4">
+                            <div class="col-lg-6">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Passing Score</span>
                                     <input type="number" class="form-control" id="mPassingScore" name="mPassingScore"
@@ -116,7 +116,7 @@
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>
-                            <div class="col-lg-4">
+                            {{-- <div class="col-lg-4">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Module Language</span>
                                     <select class="form-select" name="mModuleLang" id="inputGroupSelect01">
@@ -197,7 +197,7 @@
                                         <option value="cy">Welsh</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <div class="row">
@@ -265,7 +265,7 @@
                         enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-lg-4">
+                            <div class="col-lg-6">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Module name</span>
                                     <input type="text" class="form-control" name="moduleName" id="editModuleName"
@@ -273,7 +273,7 @@
                                         aria-describedby="basic-addon1" data-name="Module name" required="">
                                 </div>
                             </div>
-                            <div class="col-lg-4">
+                            <div class="col-lg-6">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Passing Score</span>
                                     <input type="number" class="form-control" id="editmPassingScore"
@@ -283,7 +283,7 @@
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>
-                            <div class="col-lg-4">
+                            {{-- <div class="col-lg-4">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Module Language</span>
                                     <select class="form-select" name="mModuleLang" id="editLang">
@@ -364,7 +364,7 @@
                                         <option value="cy">Welsh</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <div class="row">
@@ -1199,7 +1199,7 @@
                         // const resJson = JSON.parse(res);
                         editModuleName.value = resJson.name;
                         editmPassingScore.value = resJson.passing_score;
-                        editLang.value = resJson.module_language;
+                        // editLang.value = resJson.module_language;
                         // editCoverImageFile.value = resJson.cover_image;
                         editMCompTime.value = resJson.estimated_time;
 
