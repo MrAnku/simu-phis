@@ -25,8 +25,8 @@ class TestUploadController extends Controller
         Storage::disk('s3')->put($filePath, file_get_contents($file));
 
         // Get CloudFront URL
-        // $url = Storage::disk('s3')->url($filePath);
+        $url = Storage::disk('s3')->url($filePath);
 
-        return response()->json(['status' => 'file uploaded']);
+        return response()->json(['url' => $url]);
     }
 }

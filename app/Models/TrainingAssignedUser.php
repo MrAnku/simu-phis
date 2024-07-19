@@ -11,4 +11,8 @@ class TrainingAssignedUser extends Model
 
     protected $table = 'training_assigned_users';
     public $timestamps = false;
+
+    public function trainingData(){
+        return $this->hasOne(TrainingModule::class, 'id', 'training');
+    }
 }

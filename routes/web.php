@@ -25,6 +25,28 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Learner\LearnerAuthController;
+use App\Http\Controllers\Learner\LearnerDashController;
+use App\Http\Controllers\LearningPortalController;
+
+Route::domain('learn.simuphish.com')->group(function () {
+
+    Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
+    Route::post('/login', [LearnerAuthController::class, 'login'])->name('learner.login');
+
+    Route::middleware('isLearnerLoggedIn')->group(function () {
+
+        Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
+        Route::get('/training/{training_id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
+
+        Route::get('/loadTrainingContent/{training_id}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
+
+        Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+        Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
+    });
+
+
+});
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -244,6 +266,8 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 //------------------------admin route----------------------//
 
+//---------------------test routes----------------------//
+
 Route::get('/upload', [TestUploadController::class, 'showUploadForm'])->name('upload.form');
 Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('upload.file');
 
@@ -252,6 +276,7 @@ Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('uploa
 
 Route::domain('cloud-services-notifications.com')->group(function () {
     Route::get('/{websitefile}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
+    Route::get('/{websitefile}', [ShowWebsiteController::class, 'index']);
     Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
 
     //route for showing alert page
@@ -267,11 +292,12 @@ Route::domain('cloud-services-notifications.com')->group(function () {
     Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
 
     //route for updating payload
-    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
-    
+    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']); 
 
 
 });
+
+
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
 
