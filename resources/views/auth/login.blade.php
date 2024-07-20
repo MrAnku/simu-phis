@@ -8,10 +8,10 @@
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> simUphish - Login </title>
+    <title> {{$companyName}} - Login </title>
 
     <!-- Favicon -->
-    <link rel="icon" href="assets/images/simu-icon.png" type="image/x-icon">
+    <link rel="icon" href="{{$companyFavicon}}" type="image/x-icon">
 
     <!-- Main Theme Js -->
     <script src="assets/js/authentication-main.js"></script>
@@ -43,14 +43,14 @@
             <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-6 col-sm-8 col-12">
                 <div class="my-5 d-flex justify-content-center" style="margin-bottom: 1rem !important;">
                     <a href="#">
-                        <img src="assets/images/simu-logo-dark.png" alt="logo" class="desktop-logo">
-                        <img src="assets/images/simu-logo.png" alt="logo" class="desktop-dark">
+                        <img src="{{$companyLogoDark}}" alt="logo" class="desktop-dark">
+                        <img src="{{$companyLogoLight}}" alt="logo" class="desktop-logo">
                     </a>
                 </div>
                 <div class="card custom-card">
                     <div class="card-body p-5">
                         <p class="h5 fw-semibold mb-2 text-center">Sign In</p>
-                        <p class="mb-4 text-muted op-7 fw-normal text-center">Welcome to simUphish</p>
+                        <p class="mb-4 text-muted op-7 fw-normal text-center">Welcome to {{$companyName}}</p>
                         <form action="{{ route('login') }}" method="POST">
                             @csrf
 

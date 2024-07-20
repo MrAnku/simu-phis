@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'isAdminLoggedIn' => \App\Http\Middleware\AdminAuthenticate::class,
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
+            'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

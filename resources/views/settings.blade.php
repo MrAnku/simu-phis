@@ -26,8 +26,9 @@
                 <div class="col-xl-4">
                     <div class="card custom-card">
                         <div class="platform-info">
-                            <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="logo" class="desktop-logo"
-                                width="100">
+                            
+                                <img src="{{$companyLogoDark}}" alt="logo" class="desktop-logo" width="250" style="margin-bottom: 20px;">
+
                             <h5>Platform Super Admin</h5>
                             <p>{{ $all_settings->email }}</p>
                         </div>

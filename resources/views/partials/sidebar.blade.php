@@ -3,12 +3,12 @@
     <!-- Start::main-sidebar-header -->
     <div class="main-sidebar-header">
         <a href="./" class="header-logo">
-            <img src="assets/images/simu-logo.png" alt="logo" class="desktop-logo">
-            <img src="assets/images/simu-logo.png" alt="logo" class="toggle-logo">
-            <img src="assets/images/simu-logo.png" alt="logo" class="desktop-dark">
-            <img src="assets/images/simu-icon.png" alt="logo" class="toggle-dark">
-            <img src="assets/images/simu-logo.png" alt="logo" class="desktop-white">
-            <img src="assets/images/simu-logo.png" alt="logo" class="toggle-white">
+            <img src="{{$companyLogoLight}}" alt="logo" class="desktop-logo">
+            <img src="{{$companyLogoLight}}" alt="logo" class="toggle-logo">
+            <img src="{{$companyLogoLight}}" alt="logo" class="desktop-dark">
+            <img src="{{$companyFavicon}}" alt="logo" class="toggle-dark">
+            <img src="{{$companyLogoLight}}" alt="logo" class="desktop-white">
+            <img src="{{$companyLogoLight}}" alt="logo" class="toggle-white">
         </a>
     </div>
     <!-- End::main-sidebar-header -->

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Phishing Websites - Phishing awareness training program')
+@section('title', 'Sender Profiles - Phishing awareness training program')
 
 @section('main-content')
 
@@ -45,7 +45,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($senderProfile->company_id == 'default')
-                                                        {{ 'simUphish Managed' }}
+                                                        {{ $companyName . ' Managed' }}
                                                     @else
                                                         {{ 'Custom' }}
                                                     @endif
