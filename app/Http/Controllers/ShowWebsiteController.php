@@ -6,6 +6,7 @@ use App\Mail\TrainingAssignedEmail;
 use App\Models\Settings;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -123,12 +124,17 @@ class ShowWebsiteController extends Controller
                         $checkAssignedUserLoginEmail = $userCredentials->login_username;
                         $checkAssignedUserLoginPass = $userCredentials->login_password;
 
+                        $learnSiteAndLogo = $this->checkWhitelabeled($company_id);
+
                         $mailData = [
+                            'user_name' => $userName,
                             'training_name' => $userTrainingModuleName->name,
                             'login_email' => $checkAssignedUserLoginEmail,
                             'login_pass' => $checkAssignedUserLoginPass,
-                            'learning_site' => 'https://learn.simuphish.com',
-                            'logo' => 'https://simuphish.com/wp-content/uploads/2023/09/simu-logo-main-01-1024x312.png'
+                            'company_name' => $learnSiteAndLogo['company_name'],
+                            'company_email' => $learnSiteAndLogo['company_email'],
+                            'learning_site' => $learnSiteAndLogo['learn_domain'],
+                            'logo' => $learnSiteAndLogo['logo']
                         ];
 
                         Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
@@ -165,12 +171,17 @@ class ShowWebsiteController extends Controller
                             if ($res2) {
                                 // echo "user created successfully";
 
+                                $learnSiteAndLogo = $this->checkWhitelabeled($company_id);
+
                                 $mailData = [
+                                    'user_name' => $userName,
                                     'training_name' => $userTrainingModuleName->name,
                                     'login_email' => $checkAssignedUserLoginEmail,
                                     'login_pass' => $checkAssignedUserLoginPass,
-                                    'learning_site' => 'https://learn.simuphish.com',
-                                    'logo' => 'https://simuphish.com/wp-content/uploads/2023/09/simu-logo-main-01-1024x312.png'
+                                    'company_name' => $learnSiteAndLogo['company_name'],
+                                    'company_email' => $learnSiteAndLogo['company_email'],
+                                    'learning_site' => $learnSiteAndLogo['learn_domain'],
+                                    'logo' => $learnSiteAndLogo['logo']
                                 ];
 
                                 Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
@@ -227,12 +238,17 @@ class ShowWebsiteController extends Controller
                             if ($res2 && $res3) {
                                 // echo "user created successfully";
 
+                                $learnSiteAndLogo = $this->checkWhitelabeled($company_id);
+
                                 $mailData = [
+                                    'user_name' => $userName,
                                     'training_name' => $userTrainingModuleName->name,
                                     'login_email' => $userLoginEmail,
                                     'login_pass' => $userLoginPass,
-                                    'learning_site' => 'https://learn.simuphish.com',
-                                    'logo' => 'https://simuphish.com/wp-content/uploads/2023/09/simu-logo-main-01-1024x312.png'
+                                    'company_name' => $learnSiteAndLogo['company_name'],
+                                    'company_email' => $learnSiteAndLogo['company_email'],
+                                    'learning_site' => $learnSiteAndLogo['learn_domain'],
+                                    'logo' => $learnSiteAndLogo['logo']
                                 ];
 
                                 Mail::to($userLoginEmail)->send(new TrainingAssignedEmail($mailData));
@@ -271,13 +287,33 @@ class ShowWebsiteController extends Controller
     }
 
     // Function to check if the campaign is whitelabeled
-    private function checkWhitelabeled($campid)
+    private function checkWhitelabeled($company_id)
     {
-        // Implement your logic to check whitelabeling here
-        // For example:
-        return DB::table('whitelabels')
-            ->where('id', $campid)
+        $company = Company::with('partner')->where('company_id', $company_id)->first();
+
+        $partner_id = $company->partner->partner_id;
+        $company_email = $company->email;
+
+        $isWhitelabled = DB::table('white_labelled_partner')
+            ->where('partner_id', $partner_id)
+            ->where('approved_by_admin', 1)
             ->first();
+
+        if ($isWhitelabled) {
+            return [
+                'company_email' => $company_email,
+                'learn_domain' => $isWhitelabled->learn_domain,
+                'company_name' => $isWhitelabled->company_name,
+                'logo' => url('/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo)
+            ];
+        }
+
+        return [
+            'company_email' => env('MAIL_FROM_ADDRESS'),
+            'learn_domain' => 'learn.simuphish.com',
+            'company_name' => 'simUphish',
+            'logo' => url('/assets/images/simu-logo-dark.png')
+        ];
     }
 
     // Function to generate a random password
@@ -288,7 +324,7 @@ class ShowWebsiteController extends Controller
         return Str::random(16);
     }
 
-    
+
 
     public function handleCompromisedEmail(Request $request)
     {

@@ -3,11 +3,12 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class TrainingAssignedEmail extends Mailable
 {
@@ -28,8 +29,11 @@ class TrainingAssignedEmail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = $this->mailData['company_name'] . ' Training';
+        $fromName = $this->mailData['company_name']; 
+        $fromEmail = $this->mailData['company_email'];
         return new Envelope(
-            subject: 'simUphish Training',
+            subject: $subject,
         );
     }
 

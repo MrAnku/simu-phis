@@ -817,7 +817,7 @@
                                                                     name="phish_redirect" value="simuEducation"
                                                                     id="simuEducation">
                                                                 <label class="form-check-label" for="simuEducation">
-                                                                    Redirect to the {{ $all_settings->company_name }}
+                                                                    Redirect to the {{ $companyName }}
                                                                     education website
                                                                 </label>
                                                             </div>

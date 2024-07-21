@@ -1,4 +1,4 @@
-<link rel="icon" href="{{$companyFavicon}}" type="image/x-icon">
+<link rel="icon" href="{{$companyFavicon ?? asset('assets/images/simu-icon.png')}}" type="image/x-icon">
 
 
     <!-- Choices JS -->
