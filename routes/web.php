@@ -71,6 +71,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns');
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
+    Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
 
     //employees route-------------------------------------------------------------
 
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/employees/viewUsers/{groupid}', [EmployeesController::class, 'viewUsers'])->name('employee.viewUsers');
     Route::post('/employees/deleteUser', [EmployeesController::class, 'deleteUser'])->name('employee.deleteUser');
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
+    Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
     //reporting routes-----------------------------------------------------------------

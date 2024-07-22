@@ -227,57 +227,114 @@ class EmployeesController extends Controller
         return $userCount <= (int)$noOfEmp;
     }
 
-    public function deleteGroup(Request $request){
-       
-            $grpId = $request->input('group_id');
-            $companyId = Auth::user()->company_id;
-    
-            DB::beginTransaction();
-            try {
-                // Delete the group
-                UsersGroup::where('group_id', $grpId)
+    public function deleteGroup(Request $request)
+    {
+
+        $grpId = $request->input('group_id');
+        $companyId = Auth::user()->company_id;
+
+        DB::beginTransaction();
+        try {
+            // Delete the group
+            UsersGroup::where('group_id', $grpId)
+                ->where('company_id', $companyId)
+                ->delete();
+
+            // Find all users in the group
+            $users = Users::where('group_id', $grpId)->get();
+
+            // Delete associated data for each user
+            foreach ($users as $user) {
+                DB::table('user_login')->where('user_id', $user->id)->delete();
+                TrainingAssignedUser::where('user_id', $user->id)->delete();
+            }
+
+            // Check if any campaigns are using this group
+            $campaigns = Campaign::where('users_group', $grpId)
+                ->where('company_id', $companyId)
+                ->get();
+
+            foreach ($campaigns as $campaign) {
+                Campaign::where('campaign_id', $campaign->campaign_id)
                     ->where('company_id', $companyId)
                     ->delete();
-    
-                // Find all users in the group
-                $users = Users::where('group_id', $grpId)->get();
-    
-                // Delete associated data for each user
-                foreach ($users as $user) {
-                    DB::table('user_login')->where('user_id', $user->id)->delete();
-                    TrainingAssignedUser::where('user_id', $user->id)->delete();
-                }
-    
-                // Check if any campaigns are using this group
-                $campaigns = Campaign::where('users_group', $grpId)
+
+                CampaignLive::where('campaign_id', $campaign->campaign_id)
                     ->where('company_id', $companyId)
-                    ->get();
-    
-                foreach ($campaigns as $campaign) {
-                    Campaign::where('campaign_id', $campaign->campaign_id)
-                        ->where('company_id', $companyId)
-                        ->delete();
-    
-                    CampaignLive::where('campaign_id', $campaign->campaign_id)
-                        ->where('company_id', $companyId)
-                        ->delete();
-    
-                    CampaignReport::where('campaign_id', $campaign->campaign_id)
-                        ->where('company_id', $companyId)
-                        ->delete();
-                }
-    
-                // Delete all users in the group
-                Users::where('group_id', $grpId)->delete();
-    
-                DB::commit();
-    
-                return response()->json(['status' => 1, 'msg' => 'Employee group deleted successfully']);
-            } catch (\Exception $e) {
-                DB::rollBack();
-    
-                return response()->json(['status' => 0, 'msg' => 'An error occurred while deleting the employee group']);
+                    ->delete();
+
+                CampaignReport::where('campaign_id', $campaign->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->delete();
             }
+
+            // Delete all users in the group
+            Users::where('group_id', $grpId)->delete();
+
+            DB::commit();
+
+            return response()->json(['status' => 1, 'msg' => 'Employee group deleted successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['status' => 0, 'msg' => 'An error occurred while deleting the employee group']);
         }
-   
+    }
+
+    public function importCsv(Request $request)
+    {
+        $grpId = $request->input('groupid');
+        $file = $request->file('usrCsv');
+        $companyId = Auth::user()->company_id;
+
+        // Path to store the uploaded file
+        $path = $file->storeAs('uploads', $file->getClientOriginalName());
+
+        // Read data from CSV file
+        if (($handle = fopen(storage_path('app/' . $path), "r")) !== FALSE) {
+            // Flag to track if it's the first row
+            $firstRow = true;
+
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                // Skip the first row
+                if ($firstRow) {
+                    $firstRow = false;
+                    continue;
+                }
+
+                $name = $data[0];
+                $email = $data[1];
+                $company = $data[2];
+                $job_title = $data[3];
+
+                if ($this->domainVerified($email, $companyId)) {
+                    if ($this->uniqueEmail($email)) {
+                        if ($this->checkLimit($companyId)) {
+                            // Users::create([
+                            //     'group_id' => $grpId,
+                            //     'user_name' => $name,
+                            //     'user_email' => $email,
+                            //     'user_company' => $company,
+                            //     'user_job_title' => $job_title,
+                            //     'company_id' => $companyId,
+                            // ]);
+
+                            $user = new Users();
+                            $user->group_id = $grpId;
+                            $user->user_name = $name;
+                            $user->user_email = $email;
+                            $user->user_company = $company;
+                            $user->user_job_title = $job_title;
+                            $user->company_id = $companyId;
+                            $user->save();
+                        }
+                    }
+                }
+            }
+            fclose($handle);
+            return redirect()->back()->with('success', 'CSV file imported successfully!');
+        } else {
+            return redirect()->back()->with('error', 'Error: Unable to open file.');
+        }
+    }
 }

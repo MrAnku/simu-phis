@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Campaign;
-use App\Models\CampaignLive;
-use App\Models\CampaignReport;
-use App\Models\PhishingEmail;
-use App\Models\TrainingModule;
-use App\Models\UsersGroup;
 use Carbon\Carbon;
-use Illuminate\Foundation\Auth\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Campaign;
+use App\Models\UsersGroup;
 use Illuminate\Support\Str;
+use App\Models\CampaignLive;
+use Illuminate\Http\Request;
+use App\Models\PhishingEmail;
+use App\Models\CampaignReport;
+use App\Models\TrainingModule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
 {
@@ -107,7 +108,7 @@ class CampaignController extends Controller
             ->first();
 
         if ($phishingEmail) {
-            return response()->json(['message' => 'Sender profile or Website is not associated with the selected phishing email template'], 400);
+            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template'], 400);
         }
 
         $campId = generateRandom(); // Assuming you have a method to generate a random ID
@@ -120,7 +121,7 @@ class CampaignController extends Controller
             $users = User::where('group_id', $usersGroup)->get();
 
             if ($users->isEmpty()) {
-                return response()->json(['message' => 'No employees available in this group'], 400);
+                return response()->json(['status' => 0, 'msg' => 'No employees available in this group'], 400);
             }
 
             foreach ($users as $user) {
@@ -185,7 +186,7 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            return response()->json(['message' => 'Campaign created and running']);
+            return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
         }
 
         if ($launchType == 'scheduled') {
@@ -225,7 +226,7 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            return response()->json(['message' => 'Campaign created successfully']);
+            return response()->json(['status' => 1, 'msg' => 'Campaign created scheduled!']);
         }
 
         if ($launchType == 'schLater') {
@@ -246,7 +247,31 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            return response()->json(['message' => 'Campaign scheduled successfully']);
+            return response()->json(['status' => 1, 'msg' => 'Campaign scheduled successfully!']);
+        }
+    }
+
+    public function deleteCampaign(Request $request)
+    {
+        $campid = $request->input('campid');
+
+        try {
+            DB::beginTransaction();
+
+            $res1 = Campaign::where('campaign_id', $campid)->delete();
+            $res2 = CampaignLive::where('campaign_id', $campid)->delete();
+            $res3 = CampaignReport::where('campaign_id', $campid)->delete();
+
+            if ($res1 && $res2 && $res3) {
+                DB::commit();
+                return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+            } else {
+                DB::rollBack();
+                return response()->json(['status' => 0, 'msg' => 'Error: Unable to delete campaign'], 500);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 

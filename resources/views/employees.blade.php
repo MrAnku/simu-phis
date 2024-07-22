@@ -353,7 +353,8 @@
                                     </form>
                                 </div>
                                 <div class="tab-pane text-muted" id="usingCsv" role="tabpanel">
-                                    <form action="" method="post" enctype="multipart/form-data">
+                                    <form action="{{route('employee.importCsv')}}" method="post" enctype="multipart/form-data">
+                                        @csrf
                                         <div class="row align-items-center">
                                             <div class="col-lg-9">
                                                 <div class="mb-3">
