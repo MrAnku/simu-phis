@@ -62,7 +62,7 @@ class CampaignController extends Controller
 
                 default:
                     $campaign->status_button = '<button type="button" class="btn btn-success rounded-pill btn-wave waves-effect waves-light">Completed</button>';
-                    $campaign->relaunch_btn = '<button class="btn btn-icon btn-success btn-wave waves-effect waves-light" onclick="relaunch_camp(\'' . e($campaign->id) . '\')" title="Re-Launch"><i class="bx bx-sync"></i></button>';
+                    $campaign->relaunch_btn = '<button class="btn btn-icon btn-success btn-wave waves-effect waves-light" onclick="relaunch_camp(\'' . base64_encode($campaign->campaign_id) . '\')" title="Re-Launch"><i class="bx bx-sync"></i></button>';
                     break;
             }
 
@@ -300,6 +300,64 @@ class CampaignController extends Controller
             DB::rollBack();
             return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function relaunchCampaign(Request $request){
+
+        $campid = base64_decode($request->campid);
+        $dateTime = Carbon::now();
+        $formattedDateTime = $dateTime->format('m/d/Y g:i A');
+
+        $company_id = Auth::user()->company_id;
+
+        Campaign::where('campaign_id', $campid)->update([
+            'launch_time' => $formattedDateTime,
+            'status' => 'running'
+        ]);
+
+        CampaignReport::where('campaign_id', $campid)
+        ->where('company_id', $company_id)
+        ->update([
+            'scheduled_date' => $formattedDateTime,
+            'status' => 'running',
+            'emails_delivered' => 0,
+            'emails_viewed' => 0,
+            'payloads_clicked' => 0,
+            'emp_compromised' => 0,
+            'email_reported' => 0,
+            'training_assigned' => 0,
+            'training_completed' => 0,
+        ]);
+
+        //deleting old campaign live
+        CampaignLive::where('campaign_id', $campid)->delete();
+
+        $campaign = Campaign::where('campaign_id', $campid)->first();
+
+        $users = User::where('group_id', $campaign->users_group)->get();
+
+            if ($users->isEmpty()) {
+                
+            }
+
+            foreach ($users as $user) {
+                CampaignLive::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'user_id' => $user->id,
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    'training_module' => $campaign->training_module,
+                    'training_lang' => $campaign->training_module,
+                    'launch_time' => $formattedDateTime,
+                    'phishing_material' => $campaign->phishing_material,
+                    'email_lang' => $campaign->email_lang,
+                    'sent' => '0',
+                    'company_id' => $company_id,
+                ]);
+            }
+
+
     }
 
     

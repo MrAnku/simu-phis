@@ -72,6 +72,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns');
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
     Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
+    Route::post('/campaigns/relaunch', [CampaignController::class, 'relaunchCampaign'])->name('campaigns.relaunch');
 
     //employees route-------------------------------------------------------------
 
