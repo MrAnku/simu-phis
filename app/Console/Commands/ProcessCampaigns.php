@@ -2,22 +2,24 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
+use App\Models\Users;
+use App\Models\Company;
+use App\Models\Campaign;
+use App\Mail\CampaignMail;
+use App\Models\CampaignLive;
+use App\Models\SenderProfile;
+use App\Models\CampaignReport;
+use App\Models\TrainingModule;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\Campaign;
-use App\Models\Users;
+use App\Mail\TrainingAssignedEmail;
+use Illuminate\Support\Facades\Log;
 use App\Models\TrainingAssignedUser;
-use App\Models\SenderProfile;
-use App\Models\CampaignLive;
-use App\Models\CampaignReport;
-use App\Mail\CampaignMail;
-use App\Models\TrainingModule;
-use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ProcessCampaigns extends Command
@@ -46,9 +48,9 @@ class ProcessCampaigns extends Command
 
   public function handle()
   {
-    $this->processScheduledCampaigns();
+    // $this->processScheduledCampaigns();
     $this->sendCampaignEmails();
-    // $this->updateRunningCampaigns();
+    $this->updateRunningCampaigns();
   }
 
   private function processScheduledCampaigns()
@@ -63,41 +65,43 @@ class ProcessCampaigns extends Command
         ->where('company_id', $company_id)
         ->get();
 
-      foreach ($campaigns as $campaign) {
-        $email_freq = $campaign->email_freq;
-        $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-        $expire_after = $campaign->expire_after ? Carbon::createFromFormat('Y-m-d', $campaign->expire_after) : null;
-        $currentDateTime = Carbon::now();
+      if ($campaigns) {
+        foreach ($campaigns as $campaign) {
+          $email_freq = $campaign->email_freq;
+          $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
+          $expire_after = $campaign->expire_after ? Carbon::createFromFormat('Y-m-d', $campaign->expire_after) : null;
+          $currentDateTime = Carbon::now();
 
-        if ($launchTime->lessThan($currentDateTime)) {
+          if ($launchTime->lessThan($currentDateTime)) {
 
-          $this->makeCampaignLive($campaign->campaign_id);
+            $this->makeCampaignLive($campaign->campaign_id);
 
-          if ($email_freq !== 'one') {
-            switch ($email_freq) {
-              case 'weekly':
-                $launchTime->addWeek();
-                break;
-              case 'monthly':
-                $launchTime->addMonth();
-                break;
-              case 'quaterly':
-                $launchTime->addMonths(3);
-                break;
-              default:
-                break;
-            }
-
-            if ($expire_after !== null) {
-              if($launchTime->lessThan($expire_after)){
-                echo "launch time updated but not pending";
-                $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-              }else{
-                echo "status completed by expire after condition check";
-                $campaign->update(['status' => 'completed']);
+            if ($email_freq !== 'one') {
+              switch ($email_freq) {
+                case 'weekly':
+                  $launchTime->addWeek();
+                  break;
+                case 'monthly':
+                  $launchTime->addMonth();
+                  break;
+                case 'quaterly':
+                  $launchTime->addMonths(3);
+                  break;
+                default:
+                  break;
               }
-            } else {
-              $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+
+              if ($expire_after !== null) {
+                if ($launchTime->lessThan($expire_after)) {
+                  echo "launch time updated but not pending";
+                  $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+                } else {
+                  echo "status completed by expire after condition check";
+                  $campaign->update(['status' => 'completed']);
+                }
+              } else {
+                $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+              }
             }
           }
         }
@@ -107,49 +111,44 @@ class ProcessCampaigns extends Command
 
   private function makeCampaignLive($campaignid)
   {
-      // Retrieve the campaign instance
-      $campaign = Campaign::where('campaign_id', $campaignid)->first();
-      
-      // Check if the campaign exists
-      if (!$campaign) {
-          return response()->json(['message' => 'Campaign not found'], 404);
-      }
-  
-      // Retrieve the users in the specified group
-      $users = User::where('group_id', $campaign->users_group)->get();
-  
-      // Check if users exist in the group
-      if ($users->isEmpty()) {
-          return response()->json(['message' => 'No employees available in this group'], 400);
-      } else {
-          // Iterate through the users and create CampaignLive entries
-          foreach ($users as $user) {
-              CampaignLive::create([
-                  'campaign_id' => $campaign->campaign_id,
-                  'campaign_name' => $campaign->campaign_name,
-                  'user_id' => $user->id,
-                  'user_name' => $user->user_name,
-                  'user_email' => $user->user_email,
-                  'training_module' => $campaign->training_module,
-                  'training_lang' => $campaign->training_lang,
-                  'launch_time' => $campaign->launch_time,
-                  'phishing_material' => $campaign->phishing_material,
-                  'email_lang' => $campaign->email_lang,
-                  'sent' => '0',
-                  'company_id' => $campaign->company_id,
-              ]);
-          }
-  
-          // Update the campaign status to 'running'
-          $campaign->update(['status' => 'running']);
-  
-          // Update the status in CampaignReport
-          CampaignReport::where('campaign_id', $campaignid)->update(['status' => 'running']);
+    // Retrieve the campaign instance
+    $campaign = Campaign::where('campaign_id', $campaignid)->first();
 
-          echo 'made campaign running from makeCampaignLive Method';
+    // Retrieve the users in the specified group
+    $users = User::where('group_id', $campaign->users_group)->get();
+
+    // Check if users exist in the group
+    if ($users->isEmpty()) {
+      Log::error('No employees available in this group GroupID:' . $campaign->users_group);
+    } else {
+      // Iterate through the users and create CampaignLive entries
+      foreach ($users as $user) {
+        CampaignLive::create([
+          'campaign_id' => $campaign->campaign_id,
+          'campaign_name' => $campaign->campaign_name,
+          'user_id' => $user->id,
+          'user_name' => $user->user_name,
+          'user_email' => $user->user_email,
+          'training_module' => $campaign->training_module,
+          'training_lang' => $campaign->training_lang,
+          'launch_time' => $campaign->launch_time,
+          'phishing_material' => $campaign->phishing_material,
+          'email_lang' => $campaign->email_lang,
+          'sent' => '0',
+          'company_id' => $campaign->company_id,
+        ]);
       }
+
+      // Update the campaign status to 'running'
+      $campaign->update(['status' => 'running']);
+
+      // Update the status in CampaignReport
+      CampaignReport::where('campaign_id', $campaignid)->update(['status' => 'running']);
+
+      echo 'made campaign running from makeCampaignLive Method';
+    }
   }
-  
+
 
   private function sendCampaignEmails()
   {
@@ -182,7 +181,7 @@ class ProcessCampaigns extends Command
 
             if ($senderProfile && $websiteColumns) {
               $websiteFilePath = $websiteColumns->domain . '/' . $websiteColumns->file;
-              $websiteFilePath .= '?sessionid=' . generateRandom(32) . '&token=' . $campaign->id . '&usrid=' . $usrId;
+              $websiteFilePath .= '?sessionid=' . generateRandom(100) . '&token=' . $campaign->id . '&usrid=' . $usrId;
 
               // $mailBody = file_get_contents($phishingMaterial->mailBodyFilePath);
               $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
@@ -217,68 +216,224 @@ class ProcessCampaigns extends Command
               $campaign->update(['sent' => 1]);
 
               $this->updateCampaignReports($campaign_id, 'emails_delivered');
+            } else {
+              echo "sender profile or website is not associated";
             }
           }
         }
 
         if (!$phishingMaterialId) {
-          $checkAssignedUser = TrainingAssignedUser::where('user_id', $usrId)
-            ->where('training', $training_module)
-            ->first();
 
-          if ($checkAssignedUser) {
-            $userCredentials = DB::table('user_login')->where('login_username', $usrId)->first();
-
-            $mailBody = $this->generateAlertMailBody(
-              $this->trainingModuleName($checkAssignedUser->training),
-              $userCredentials->login_username,
-              $userCredentials->login_password,
-              env('SIMUPHISH_LEARNING_URL'),
-              public_path('assets/images/simu-logo-dark.png')
-            );
-
-            $this->assignTrainingMail($checkAssignedUser->user_email, $mailBody);
-
-            $campaign->update(['training_assigned' => 1, 'sent' => 1]);
-
-            $this->updateCampaignReports($campaign_id, 'training_assigned');
-          } else {
-            $userLoginEmail = $email;
-            $userLoginPass = generateRandom(16);
-
-            $current_date = now();
-            $date_after_14_days = now()->addDays(14);
-
-            $newAssignedUser = new TrainingAssignedUser();
-            $newAssignedUser->campaign_id = $campaign_id;
-            $newAssignedUser->user_id = $usrId;
-            $newAssignedUser->user_name = $user_Name;
-            $newAssignedUser->user_email = $userLoginEmail;
-            $newAssignedUser->training = $training_module;
-            $newAssignedUser->training_lang = $training_lang;
-            $newAssignedUser->assigned_date = $current_date;
-            $newAssignedUser->training_due_date = $date_after_14_days;
-            $newAssignedUser->company_id = $company_id;
-            $newAssignedUser->save();
-
-            $res3 = DB::table('user_login')->updateOrInsert(
-              ['user_id' => $usrId],
-              ['login_username' => $userLoginEmail, 'login_password' => $userLoginPass]
-            );
-
-            if ($res3) {
-              $mailBody = $this->generateAlertMailBody($this->trainingModuleName($training_module), $userLoginEmail, $userLoginPass, env('SIMUPHISH_LEARNING_URL'), public_path('assets/images/simu-logo-dark.png'));
-
-              $this->assignTrainingMail($userLoginEmail, $mailBody);
-
-              $campaign->update(['training_assigned' => 1, 'sent' => 1]);
-
-              $this->updateCampaignReports($campaign_id, ['training_assigned', 'emails_delivered']);
-            }
-          }
+          $this->sendTraining($campaign);
         }
       }
     }
+  }
+
+  private function sendTraining($campaign)
+  {
+    // Check if training is already assigned to the user
+    $checkAssignedUser = DB::table('training_assigned_users')
+      ->where('user_id', $campaign->user_id)
+      ->where('training', $campaign->training)
+      ->first();
+
+    if ($checkAssignedUser) {
+      $checkAssignedUseremail = $checkAssignedUser->user_email;
+
+      // Fetch user credentials
+      $userCredentials = DB::table('user_login')
+        ->where('login_username', $checkAssignedUseremail)
+        ->first();
+
+      $checkAssignedUserLoginEmail = $userCredentials->login_username;
+      $checkAssignedUserLoginPass = $userCredentials->login_password;
+
+      $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
+
+      $mailData = [
+        'user_name' => $campaign->user_name,
+        'training_name' => $this->trainingModuleName($campaign->training_module),
+        'login_email' => $checkAssignedUserLoginEmail,
+        'login_pass' => $checkAssignedUserLoginPass,
+        'company_name' => $learnSiteAndLogo['company_name'],
+        'company_email' => $learnSiteAndLogo['company_email'],
+        'learning_site' => $learnSiteAndLogo['learn_domain'],
+        'logo' => $learnSiteAndLogo['logo']
+      ];
+
+      Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
+
+      $campaign->update(['sent' => 1]);
+      $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+
+    } else {
+      // Check if user login already exists
+      $checkLoginExist = DB::table('user_login')
+        ->where('login_username', $campaign->user_email)
+        ->first();
+
+      if ($checkLoginExist) {
+        $checkAssignedUserLoginEmail = $checkLoginExist->login_username;
+        $checkAssignedUserLoginPass = $checkLoginExist->login_password;
+
+        // Insert into training_assigned_users table
+        $current_date = now()->toDateString();
+        $date_after_14_days = now()->addDays(14)->toDateString();
+        $res2 = DB::table('training_assigned_users')
+          ->insert([
+            'campaign_id' => $campaign->campaign_id,
+            'user_id' => $campaign->user_id,
+            'user_name' => $campaign->user_name,
+            'user_email' => $campaign->user_email,
+            'training' => $campaign->training_module,
+            'training_lang' => $campaign->training_lang,
+            'assigned_date' => $current_date,
+            'training_due_date' => $date_after_14_days,
+            'company_id' => $campaign->company_id
+          ]);
+
+        if ($res2) {
+          // echo "user created successfully";
+
+          $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
+
+          $mailData = [
+            'user_name' => $campaign->user_name,
+            'training_name' => $this->trainingModuleName($campaign->training_module),
+            'login_email' => $checkAssignedUserLoginEmail,
+            'login_pass' => $checkAssignedUserLoginPass,
+            'company_name' => $learnSiteAndLogo['company_name'],
+            'company_email' => $learnSiteAndLogo['company_email'],
+            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'logo' => $learnSiteAndLogo['logo']
+          ];
+
+          Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
+
+          // Update campaign_live table
+          DB::table('campaign_live')
+            ->where('id', $campaign->id)
+            ->update(['training_assigned' => 1]);
+
+          // Update campaign_reports table
+          $reportsTrainingAssignCount = DB::table('campaign_reports')
+            ->where('campaign_id', $campaign->campaign_id)
+            ->first();
+
+          if ($reportsTrainingAssignCount) {
+            $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
+
+            DB::table('campaign_reports')
+              ->where('campaign_id', $campaign->campaign_id)
+              ->update(['training_assigned' => $training_assigned]);
+          }
+
+          $campaign->update(['sent' => 1]);
+          $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+        } else {
+          return response()->json(['error' => 'Failed to create user']);
+        }
+      } else {
+        // Insert into training_assigned_users and user_login tables
+        $current_date = now()->toDateString();
+        $date_after_14_days = now()->addDays(14)->toDateString();
+
+        $res2 = DB::table('training_assigned_users')
+          ->insert([
+            'campaign_id' => $campaign->campaign_id,
+            'user_id' => $campaign->user_id,
+            'user_name' => $campaign->user_name,
+            'user_email' => $campaign->user_email,
+            'training' => $campaign->training,
+            'training_lang' => $campaign->training_lang,
+            'assigned_date' => $current_date,
+            'training_due_date' => $date_after_14_days,
+            'company_id' => $campaign->company_id
+          ]);
+
+        $userLoginPass = generateRandom(16);
+
+        $res3 = DB::table('user_login')
+          ->insert([
+            'user_id' => $campaign->user_id,
+            'login_username' => $campaign->user_email,
+            'login_password' => $userLoginPass
+          ]);
+
+        if ($res2 && $res3) {
+          // echo "user created successfully";
+
+          $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
+
+          $mailData = [
+            'user_name' => $campaign->user_name,
+            'training_name' => $this->trainingModuleName($campaign->training_module),
+            'login_email' => $campaign->user_email,
+            'login_pass' => $userLoginPass,
+            'company_name' => $learnSiteAndLogo['company_name'],
+            'company_email' => $learnSiteAndLogo['company_email'],
+            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'logo' => $learnSiteAndLogo['logo']
+          ];
+
+          Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData));
+
+          // Update campaign_live table
+          DB::table('campaign_live')
+            ->where('id', $campaign->id)
+            ->update(['training_assigned' => 1]);
+
+          // Update campaign_reports table
+          $reportsTrainingAssignCount = DB::table('campaign_reports')
+            ->where('campaign_id', $campaign->campaign_id)
+            ->first();
+
+          if ($reportsTrainingAssignCount) {
+            $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
+
+            DB::table('campaign_reports')
+              ->where('campaign_id', $campaign->campaign_id)
+              ->update(['training_assigned' => $training_assigned]);
+          }
+
+          $campaign->update(['sent' => 1]);
+          $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+          
+        } else {
+          return response()->json(['error' => 'Failed to create user']);
+        }
+      }
+    }
+  }
+
+  private function checkWhitelabeled($company_id)
+  {
+    $company = Company::with('partner')->where('company_id', $company_id)->first();
+
+    $partner_id = $company->partner->partner_id;
+    $company_email = $company->email;
+
+    $isWhitelabled = DB::table('white_labelled_partner')
+      ->where('partner_id', $partner_id)
+      ->where('approved_by_admin', 1)
+      ->first();
+
+    if ($isWhitelabled) {
+      return [
+        'company_email' => $company_email,
+        'learn_domain' => $isWhitelabled->learn_domain,
+        'company_name' => $isWhitelabled->company_name,
+        'logo' => url('/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo)
+      ];
+    }
+
+    return [
+      'company_email' => env('MAIL_FROM_ADDRESS'),
+      'learn_domain' => 'learn.simuphish.com',
+      'company_name' => 'simUphish',
+      'logo' => url('/assets/images/simu-logo-dark.png')
+    ];
   }
 
   private function trainingModuleName($moduleid)
@@ -294,13 +449,12 @@ class ProcessCampaigns extends Command
     $runningCampaigns = Campaign::where('status', 'running')->get();
 
     foreach ($runningCampaigns as $campaign) {
-      $campaign_id = $campaign->campaign_id;
 
-      $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign_id)->count();
+      $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign->campaign_id)->count();
 
       if ($checkSent == 0) {
-        Campaign::where('campaign_id', $campaign_id)->update(['status' => 'completed']);
-        CampaignReport::where('campaign_id', $campaign_id)->update(['status' => 'completed']);
+        Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
+        CampaignReport::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
 
         echo 'status updated by updateRunningCampaign method';
       }
@@ -385,692 +539,5 @@ class ProcessCampaigns extends Command
     } else {
       return false;
     }
-  }
-
-  private function assignTrainingMail($userLoginEmail, $mailBody)
-  {
-    try {
-      Mail::html($mailBody, function ($message) use ($userLoginEmail) {
-        $message->to($userLoginEmail)
-          ->subject('simUphish Training');
-      });
-    } catch (\Exception $e) {
-      // Handle the error (e.g., log it or notify an admin)
-      Log::error('Failed to send email: ' . $e->getMessage());
-    }
-  }
-
-  private function generateAlertMailBody($training_name, $username, $password, $website, $logo)
-  {
-    return '<!DOCTYPE html>
-      
-          <html
-            lang="en"
-            xmlns:o="urn:schemas-microsoft-com:office:office"
-            xmlns:v="urn:schemas-microsoft-com:vml"
-          >
-            <head>
-              <title></title>
-              <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-              <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-              <!--[if mso
-                ]><xml
-                  ><o:OfficeDocumentSettings
-                    ><o:PixelsPerInch>96</o:PixelsPerInch
-                    ><o:AllowPNG /></o:OfficeDocumentSettings></xml
-              ><![endif]-->
-              <!--[if !mso]><!-->
-              <!--<![endif]-->
-              <style>
-                * {
-                  box-sizing: border-box;
-                }
-          
-                body {
-                  margin: 0;
-                  padding: 0;
-                }
-          
-                a[x-apple-data-detectors] {
-                  color: inherit !important;
-                  text-decoration: inherit !important;
-                }
-          
-                #MessageViewBody a {
-                  color: inherit;
-                  text-decoration: none;
-                }
-          
-                p {
-                  line-height: inherit;
-                }
-          
-                .desktop_hide,
-                .desktop_hide table {
-                  mso-hide: all;
-                  display: none;
-                  max-height: 0px;
-                  overflow: hidden;
-                }
-          
-                .image_block img + div {
-                  display: none;
-                }
-          
-                @media (max-width: 520px) {
-                  .desktop_hide table.icons-inner {
-                    display: inline-block !important;
-                  }
-          
-                  .icons-inner {
-                    text-align: center;
-                  }
-          
-                  .icons-inner td {
-                    margin: 0 auto;
-                  }
-          
-                  .mobile_hide {
-                    display: none;
-                  }
-          
-                  .row-content {
-                    width: 100% !important;
-                  }
-          
-                  .stack .column {
-                    width: 100%;
-                    display: block;
-                  }
-          
-                  .mobile_hide {
-                    min-height: 0;
-                    max-height: 0;
-                    max-width: 0;
-                    overflow: hidden;
-                    font-size: 0px;
-                  }
-          
-                  .desktop_hide,
-                  .desktop_hide table {
-                    display: table !important;
-                    max-height: none !important;
-                  }
-                }
-              </style>
-            </head>
-            <body
-              style="
-                background-color: #ffffff;
-                margin: 0;
-                padding: 0;
-                -webkit-text-size-adjust: none;
-                text-size-adjust: none;
-              "
-            >
-              <table
-                border="0"
-                cellpadding="0"
-                cellspacing="0"
-                class="nl-container"
-                role="presentation"
-                style="
-                  mso-table-lspace: 0pt;
-                  mso-table-rspace: 0pt;
-                  background-color: #ffffff;
-                "
-                width="100%"
-              >
-                <tbody>
-                  <tr>
-                    <td>
-                      <table
-                        align="center"
-                        border="0"
-                        cellpadding="0"
-                        cellspacing="0"
-                        class="row row-1"
-                        role="presentation"
-                        style="mso-table-lspace: 0pt; mso-table-rspace: 0pt"
-                        width="100%"
-                      >
-                        <tbody>
-                          <tr>
-                            <td>
-                              <table
-                                align="center"
-                                border="0"
-                                cellpadding="0"
-                                cellspacing="0"
-                                class="row-content stack"
-                                role="presentation"
-                                style="
-                                  mso-table-lspace: 0pt;
-                                  mso-table-rspace: 0pt;
-                                  color: #000000;
-                                  width: 500px;
-                                  margin: 0 auto;
-                                "
-                                width="500"
-                              >
-                                <tbody>
-                                  <tr>
-                                    <td
-                                      class="column column-1"
-                                      style="
-                                        mso-table-lspace: 0pt;
-                                        mso-table-rspace: 0pt;
-                                        font-weight: 400;
-                                        text-align: left;
-                                        padding-bottom: 5px;
-                                        padding-top: 5px;
-                                        vertical-align: top;
-                                        border-top: 0px;
-                                        border-right: 0px;
-                                        border-bottom: 0px;
-                                        border-left: 0px;
-                                      "
-                                      width="100%"
-                                    >
-                                      <table
-                                        border="0"
-                                        cellpadding="0"
-                                        cellspacing="0"
-                                        class="image_block block-1"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td
-                                            class="pad"
-                                            style="
-                                              width: 100%;
-                                              padding-right: 0px;
-                                              padding-left: 0px;
-                                            "
-                                          >
-                                            <div
-                                              align="center"
-                                              class="alignment"
-                                              style="line-height: 10px"
-                                            >
-                                              <div style="max-width: 250px">
-                                                <img
-                                                  height="auto"
-                                                  src="' . $logo . '"
-                                                  style="
-                                                    display: block;
-                                                    height: auto;
-                                                    border: 0;
-                                                    width: 100%;
-                                                  "
-                                                  width="250"
-                                                />
-                                              </div>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <div
-                                        class="spacer_block block-2"
-                                        style="
-                                          height: 30px;
-                                          line-height: 30px;
-                                          font-size: 1px;
-                                        "
-                                      >
-                                         
-                                      </div>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="heading_block block-3"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <h1
-                                              style="
-                                                margin: 0;
-                                                color: #1e0e4b;
-                                                direction: ltr;
-                                                font-family: Arial, "Helvetica Neue",
-                                                  Helvetica, sans-serif;
-                                                font-size: 27px;
-                                                font-weight: 700;
-                                                letter-spacing: normal;
-                                                line-height: 120%;
-                                                text-align: center;
-                                                margin-top: 0;
-                                                margin-bottom: 0;
-                                                mso-line-height-alt: 32.4px;
-                                              "
-                                            >
-                                              <span class="tinyMce-placeholder"
-                                                >Hey there, You were in attack</span
-                                              >
-                                            </h1>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="paragraph_block block-4"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                          word-break: break-word;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div
-                                              style="
-                                                color: #444a5b;
-                                                direction: ltr;
-                                                font-family: Arial, "Helvetica Neue",
-                                                  Helvetica, sans-serif;
-                                                font-size: 15px;
-                                                font-weight: 400;
-                                                letter-spacing: 0px;
-                                                line-height: 120%;
-                                                text-align: left;
-                                                mso-line-height-alt: 18px;
-                                              "
-                                            >
-                                              <p style="margin: 0">
-                                                Training
-                                                <em><strong>' . $training_name . ' </strong></em>is
-                                                assigned to you. Kindly login to our
-                                                Learning Portal to complete you training.
-                                              </p>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="divider_block block-5"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div align="center" class="alignment">
-                                              <table
-                                                border="0"
-                                                cellpadding="0"
-                                                cellspacing="0"
-                                                role="presentation"
-                                                style="
-                                                  mso-table-lspace: 0pt;
-                                                  mso-table-rspace: 0pt;
-                                                "
-                                                width="100%"
-                                              >
-                                                <tr>
-                                                  <td
-                                                    class="divider_inner"
-                                                    style="
-                                                      font-size: 1px;
-                                                      line-height: 1px;
-                                                      border-top: 1px solid #dddddd;
-                                                    "
-                                                  >
-                                                    <span> </span>
-                                                  </td>
-                                                </tr>
-                                              </table>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="paragraph_block block-6"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                          word-break: break-word;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div
-                                              style="
-                                                color: #444a5b;
-                                                direction: ltr;
-                                                font-family: Arial, "Helvetica Neue",
-                                                  Helvetica, sans-serif;
-                                                font-size: 15px;
-                                                font-weight: 400;
-                                                letter-spacing: 0px;
-                                                line-height: 120%;
-                                                text-align: left;
-                                                mso-line-height-alt: 18px;
-                                              "
-                                            >
-                                              <p style="margin: 0">
-                                                Username:
-                                                <strong>' . $username . '</strong>
-                                              </p>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="paragraph_block block-7"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                          word-break: break-word;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div
-                                              style="
-                                                color: #444a5b;
-                                                direction: ltr;
-                                                font-family: Arial, "Helvetica Neue",
-                                                  Helvetica, sans-serif;
-                                                font-size: 15px;
-                                                font-weight: 400;
-                                                letter-spacing: 0px;
-                                                line-height: 120%;
-                                                text-align: left;
-                                                mso-line-height-alt: 18px;
-                                              "
-                                            >
-                                              <p style="margin: 0">
-                                                Password: <strong>' . $password . '</strong>
-                                              </p>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="divider_block block-8"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div align="center" class="alignment">
-                                              <table
-                                                border="0"
-                                                cellpadding="0"
-                                                cellspacing="0"
-                                                role="presentation"
-                                                style="
-                                                  mso-table-lspace: 0pt;
-                                                  mso-table-rspace: 0pt;
-                                                "
-                                                width="100%"
-                                              >
-                                                <tr>
-                                                  <td
-                                                    class="divider_inner"
-                                                    style="
-                                                      font-size: 1px;
-                                                      line-height: 1px;
-                                                      border-top: 1px solid #dddddd;
-                                                    "
-                                                  >
-                                                    <span> </span>
-                                                  </td>
-                                                </tr>
-                                              </table>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <table
-                                        border="0"
-                                        cellpadding="10"
-                                        cellspacing="0"
-                                        class="button_block block-9"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td class="pad">
-                                            <div align="center" class="alignment">
-                                              <!--[if mso]>
-          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="google.com" style="height:42px;width:135px;v-text-anchor:middle;" arcsize="10%" stroke="false" fillcolor="#7747ff">
-          <w:anchorlock/>
-          <v:textbox inset="0px,0px,0px,0px">
-          <center style="color:#ffffff; font-family:Arial, sans-serif; font-size:16px">
-          <!
-                                              [endif]--><a
-                                                href="' . $website . '"
-                                                style="
-                                                  text-decoration: none;
-                                                  display: inline-block;
-                                                  color: #ffffff;
-                                                  background-color: #7747ff;
-                                                  border-radius: 4px;
-                                                  width: auto;
-                                                  border-top: 0px solid transparent;
-                                                  font-weight: 400;
-                                                  border-right: 0px solid transparent;
-                                                  border-bottom: 0px solid transparent;
-                                                  border-left: 0px solid transparent;
-                                                  padding-top: 5px;
-                                                  padding-bottom: 5px;
-                                                  font-family: Arial, "Helvetica Neue",
-                                                    Helvetica, sans-serif;
-                                                  font-size: 16px;
-                                                  text-align: center;
-                                                  mso-border-alt: none;
-                                                  word-break: keep-all;
-                                                "
-                                                target="_blank"
-                                                ><span
-                                                  style="
-                                                    padding-left: 20px;
-                                                    padding-right: 20px;
-                                                    font-size: 16px;
-                                                    display: inline-block;
-                                                    letter-spacing: normal;
-                                                  "
-                                                  ><span
-                                                    style="
-                                                      word-break: break-word;
-                                                      line-height: 32px;
-                                                    "
-                                                    >Start Training Now</span
-                                                  ></span
-                                                ></a
-                                              >><!--[if mso]></center></v:textbox></v:roundrect><![endif]-->
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <table
-                        align="center"
-                        border="0"
-                        cellpadding="0"
-                        cellspacing="0"
-                        class="row row-2"
-                        role="presentation"
-                        style="
-                          mso-table-lspace: 0pt;
-                          mso-table-rspace: 0pt;
-                          background-color: #ffffff;
-                        "
-                        width="100%"
-                      >
-                        <tbody>
-                          <tr>
-                            <td>
-                              <table
-                                align="center"
-                                border="0"
-                                cellpadding="0"
-                                cellspacing="0"
-                                class="row-content stack"
-                                role="presentation"
-                                style="
-                                  mso-table-lspace: 0pt;
-                                  mso-table-rspace: 0pt;
-                                  color: #000000;
-                                  background-color: #ffffff;
-                                  width: 500px;
-                                  margin: 0 auto;
-                                "
-                                width="500"
-                              >
-                                <tbody>
-                                  <tr>
-                                    <td
-                                      class="column column-1"
-                                      style="
-                                        mso-table-lspace: 0pt;
-                                        mso-table-rspace: 0pt;
-                                        font-weight: 400;
-                                        text-align: left;
-                                        padding-bottom: 5px;
-                                        padding-top: 5px;
-                                        vertical-align: top;
-                                        border-top: 0px;
-                                        border-right: 0px;
-                                        border-bottom: 0px;
-                                        border-left: 0px;
-                                      "
-                                      width="100%"
-                                    >
-                                      <table
-                                        border="0"
-                                        cellpadding="0"
-                                        cellspacing="0"
-                                        class="icons_block block-1"
-                                        role="presentation"
-                                        style="
-                                          mso-table-lspace: 0pt;
-                                          mso-table-rspace: 0pt;
-                                          text-align: center;
-                                        "
-                                        width="100%"
-                                      >
-                                        <tr>
-                                          <td
-                                            class="pad"
-                                            style="
-                                              vertical-align: middle;
-                                              color: #1e0e4b;
-                                              font-family: "Inter", sans-serif;
-                                              font-size: 15px;
-                                              padding-bottom: 5px;
-                                              padding-top: 5px;
-                                              text-align: center;
-                                            "
-                                          >
-                                            <table
-                                              cellpadding="0"
-                                              cellspacing="0"
-                                              role="presentation"
-                                              style="
-                                                mso-table-lspace: 0pt;
-                                                mso-table-rspace: 0pt;
-                                              "
-                                              width="100%"
-                                            >
-                                              <tr>
-                                                <td
-                                                  class="alignment"
-                                                  style="
-                                                    vertical-align: middle;
-                                                    text-align: center;
-                                                  "
-                                                >
-                                                  <!--[if vml]><table align="center" cellpadding="0" cellspacing="0" role="presentation" style="display:inline-block;padding-left:0px;padding-right:0px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;"><![endif]-->
-                                                  <!--[if !vml]><!-->
-                                                  <table
-                                                    cellpadding="0"
-                                                    cellspacing="0"
-                                                    class="icons-inner"
-                                                    role="presentation"
-                                                    style="
-                                                      mso-table-lspace: 0pt;
-                                                      mso-table-rspace: 0pt;
-                                                      display: inline-block;
-                                                      margin-right: -4px;
-                                                      padding-left: 0px;
-                                                      padding-right: 0px;
-                                                    "
-                                                  >
-                                                    <!--<![endif]-->
-                                                  </table>
-                                                </td>
-                                              </tr>
-                                            </table>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <!-- End -->
-            </body>
-          </html>
-          ';
   }
 }

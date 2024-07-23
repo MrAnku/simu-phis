@@ -22,7 +22,7 @@
                                     <div class="mb-2">Since Last Campaign Delivery</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            15 Day(s)
+                                            {{$daysSinceLastDelivery}} Day(s)
                                         </span>
                                     </div>
 
@@ -45,7 +45,7 @@
                                     <div class="mb-2">Total Sent Emails</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            2 Delivered
+                                            {{$all_sent}} Delivered
                                         </span>
                                     </div>
 
@@ -68,7 +68,7 @@
                                     <div class="mb-2">Mail Opened</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            0 Opened
+                                            {{$mail_open}} Opened
                                         </span>
                                     </div>
 

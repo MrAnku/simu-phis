@@ -18,6 +18,7 @@ class CampaignReport extends Model
         'campaign_type',
         'status',
         'email_lang',
+        'training_lang',
         'scheduled_date',
         'company_id',
     ];

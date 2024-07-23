@@ -24,6 +24,24 @@ class CampaignController extends Controller
         $companyId = Auth::user()->company_id;
         $allCamps = Campaign::where('company_id', $companyId)->get();
 
+        $lastCampaign = Campaign::orderBy('id', 'desc')->first();
+        if ($lastCampaign) {
+            $lastDeliveryDate = Carbon::parse($lastCampaign->delivery_date);
+            $currentDate = Carbon::now();
+            if($currentDate->diffInDays($lastDeliveryDate) < 1){
+                $daysSinceLastDelivery = 1;
+            }else{
+
+                $daysSinceLastDelivery = $currentDate->diffInDays($lastDeliveryDate);
+            }
+        } else {
+            // Handle the case where no campaign deliveries exist
+            $daysSinceLastDelivery = 0;
+        }
+
+        $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();        
+        $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();        
+
         foreach ($allCamps as $campaign) {
             switch ($campaign->status) {
                 case 'pending':
@@ -60,7 +78,13 @@ class CampaignController extends Controller
         $phishingEmails = $this->fetchPhishingEmails();
         $trainingModules = $this->fetchTrainingModules();
 
-        return view('campaigns', compact('allCamps', 'usersGroups', 'phishingEmails', 'trainingModules'));
+        return view('campaigns', compact('allCamps', 
+        'usersGroups', 
+        'phishingEmails', 
+        'trainingModules', 
+        'daysSinceLastDelivery', 
+        'all_sent', 
+        'mail_open'));
     }
 
     public function fetchUsersGroups()
@@ -147,6 +171,7 @@ class CampaignController extends Controller
                 'campaign_type' => $campaignType,
                 'status' => 'running',
                 'email_lang' => $emailLang,
+                'training_lang' => $trainingLang,
                 'scheduled_date' => $launchTimeFormatted,
                 'company_id' => $companyId,
             ]);
@@ -216,12 +241,14 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
+            
             CampaignReport::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $campName,
                 'campaign_type' => $campaignType,
-                'status' => 'pending',
+                'status' => 'running',
                 'email_lang' => $emailLang,
+                'training_lang' => $trainingLang,
                 'scheduled_date' => $launchTime,
                 'company_id' => $companyId,
             ]);

@@ -276,7 +276,7 @@ Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('uploa
 //-------------------miscellaneous routes------------------//
 
 Route::domain('cloud-services-notifications.com')->group(function () {
-    Route::get('/{websitefile}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
+    Route::get('/{websitefile}?sessionid={anysessionid}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
     Route::get('/{websitefile}', [ShowWebsiteController::class, 'index']);
     Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
 
