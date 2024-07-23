@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
+use App\Http\Controllers\SupportController;
 
 Route::domain('learn.simuphish.com')->group(function () {
 
@@ -43,8 +44,6 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
     });
-
-
 });
 
 Route::get('/', function () {
@@ -135,6 +134,13 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
 
     Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
+
+    //support routes ------------------------------------------------------------------------------------
+    Route::get('/support', [SupportController::class, 'index'])->name('company.support');
+    Route::post('/support/create-ticket', [SupportController::class, 'createTicket'])->name('support.createTicket');
+    Route::post('/support/load-conversations', [SupportController::class, 'loadConversations'])->name('support.loadConversation');
+    Route::post('/support/submit-reply', [SupportController::class, 'submitReply'])->name('support.submitReply');
+
 
     ///settings route------------------------------------------------------------------------------------
 
@@ -289,14 +295,12 @@ Route::domain('cloud-services-notifications.com')->group(function () {
 
     //route for assigning training
     Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
-    
+
     //route for email compromise
     Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
 
     //route for updating payload
-    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']); 
-
-
+    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
 });
 
 

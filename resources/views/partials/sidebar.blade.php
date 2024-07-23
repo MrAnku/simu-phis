@@ -95,6 +95,12 @@
                                             <span class="side-menu__label">Training Modules</span>
                                         </a>
                                     </li>
+                                    <li class="slide {{ Request::is('support') ? 'active' : '' }}">
+                                        <a href="{{route('company.support')}}" class="side-menu__item {{ Request::is('support') ? 'active' : '' }}">
+                                            <i class="bx bx-support side-menu__icon"></i>
+                                            <span class="side-menu__label">Support Ticket</span>
+                                        </a>
+                                    </li>
 
 
                                 </ul>
