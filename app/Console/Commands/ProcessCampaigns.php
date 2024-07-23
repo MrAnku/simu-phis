@@ -235,7 +235,7 @@ class ProcessCampaigns extends Command
     // Check if training is already assigned to the user
     $checkAssignedUser = DB::table('training_assigned_users')
       ->where('user_id', $campaign->user_id)
-      ->where('training', $campaign->training)
+      ->where('training', $campaign->training_module)
       ->first();
 
     if ($checkAssignedUser) {
@@ -262,11 +262,12 @@ class ProcessCampaigns extends Command
         'logo' => $learnSiteAndLogo['logo']
       ];
 
-      Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
+      $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
-      $campaign->update(['sent' => 1]);
-      $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
-
+      if ($isMailSent) {
+        $campaign->update(['sent' => 1]);
+        $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+      }
     } else {
       // Check if user login already exists
       $checkLoginExist = DB::table('user_login')
@@ -309,28 +310,30 @@ class ProcessCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
           ];
 
-          Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
+          $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
-          // Update campaign_live table
-          DB::table('campaign_live')
-            ->where('id', $campaign->id)
-            ->update(['training_assigned' => 1]);
+          if ($isMailSent) {
+            // Update campaign_live table
+            DB::table('campaign_live')
+              ->where('id', $campaign->id)
+              ->update(['training_assigned' => 1]);
 
-          // Update campaign_reports table
-          $reportsTrainingAssignCount = DB::table('campaign_reports')
-            ->where('campaign_id', $campaign->campaign_id)
-            ->first();
-
-          if ($reportsTrainingAssignCount) {
-            $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
-
-            DB::table('campaign_reports')
+            // Update campaign_reports table
+            $reportsTrainingAssignCount = DB::table('campaign_reports')
               ->where('campaign_id', $campaign->campaign_id)
-              ->update(['training_assigned' => $training_assigned]);
-          }
+              ->first();
 
-          $campaign->update(['sent' => 1]);
-          $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+            if ($reportsTrainingAssignCount) {
+              $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
+
+              DB::table('campaign_reports')
+                ->where('campaign_id', $campaign->campaign_id)
+                ->update(['training_assigned' => $training_assigned]);
+            }
+
+            $campaign->update(['sent' => 1]);
+            $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+          }
         } else {
           return response()->json(['error' => 'Failed to create user']);
         }
@@ -377,29 +380,30 @@ class ProcessCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
           ];
 
-          Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData));
+          $isMailSent = Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData));
 
-          // Update campaign_live table
-          DB::table('campaign_live')
-            ->where('id', $campaign->id)
-            ->update(['training_assigned' => 1]);
+          if ($isMailSent) {
+            // Update campaign_live table
+            DB::table('campaign_live')
+              ->where('id', $campaign->id)
+              ->update(['training_assigned' => 1]);
 
-          // Update campaign_reports table
-          $reportsTrainingAssignCount = DB::table('campaign_reports')
-            ->where('campaign_id', $campaign->campaign_id)
-            ->first();
-
-          if ($reportsTrainingAssignCount) {
-            $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
-
-            DB::table('campaign_reports')
+            // Update campaign_reports table
+            $reportsTrainingAssignCount = DB::table('campaign_reports')
               ->where('campaign_id', $campaign->campaign_id)
-              ->update(['training_assigned' => $training_assigned]);
-          }
+              ->first();
 
-          $campaign->update(['sent' => 1]);
-          $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
-          
+            if ($reportsTrainingAssignCount) {
+              $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
+
+              DB::table('campaign_reports')
+                ->where('campaign_id', $campaign->campaign_id)
+                ->update(['training_assigned' => $training_assigned]);
+            }
+
+            $campaign->update(['sent' => 1]);
+            $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+          }
         } else {
           return response()->json(['error' => 'Failed to create user']);
         }
