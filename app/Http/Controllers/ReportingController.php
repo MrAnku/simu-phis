@@ -2,27 +2,77 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\Users;
 use App\Models\Campaign;
 use App\Models\CampaignLive;
-use App\Models\CampaignReport;
-use App\Models\TrainingAssignedUser;
-use App\Models\TrainingModule;
-use App\Models\Users;
 use Illuminate\Http\Request;
+use App\Models\CampaignReport;
+use App\Models\TrainingModule;
+use Illuminate\Support\Facades\DB;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 
 class ReportingController extends Controller
 {
     //
-    public function index(){
+    public function index()
+    {
 
         $camps = CampaignReport::all();
 
         $emails_delivered = $camps->sum('emails_delivered');
         $training_assigned = $camps->sum('training_assigned');
-       
+
         return view('reporting', compact('camps', 'emails_delivered', 'training_assigned'));
     }
+
+    public function getChartData()
+{
+    $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
+    $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
+
+    $data = DB::table('campaign_live')
+        ->select(
+            DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) as date'),
+            DB::raw('SUM(mail_open) as mail_open'),
+            DB::raw('SUM(payload_clicked) as payload_clicked'),
+            DB::raw('SUM(emp_compromised) as emp_compromised'),
+            DB::raw('SUM(email_reported) as email_reported')
+        )
+        ->whereBetween(DB::raw('STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")'), [$startDate, $endDate])
+        ->groupBy(DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p"))'))
+        ->orderBy('date', 'asc')
+        ->get();
+
+    // Initialize dates array for the last 12 days
+    $dates = [];
+    for ($i = 11; $i >= 0; $i--) {
+        $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
+    }
+
+    $formattedData = [
+        'dates' => $dates,
+        'mail_open' => array_fill(0, 12, 0),
+        'payload_clicked' => array_fill(0, 12, 0),
+        'employee_compromised' => array_fill(0, 12, 0),
+        'email_reported' => array_fill(0, 12, 0),
+    ];
+
+    foreach ($data as $item) {
+        $index = array_search($item->date, $formattedData['dates']);
+        if ($index !== false) {
+            $formattedData['mail_open'][$index] = (int) $item->mail_open;
+            $formattedData['payload_clicked'][$index] = (int) $item->payload_clicked;
+            $formattedData['employee_compromised'][$index] = (int) $item->emp_compromised;
+            $formattedData['email_reported'][$index] = (int) $item->email_reported;
+        }
+    }
+
+    return response()->json($formattedData);
+}
+
+
 
     public function fetchCampaignReport(Request $request)
     {

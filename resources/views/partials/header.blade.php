@@ -7,7 +7,7 @@
         <div class="header-content-left">
 
             <!-- Start::header-element -->
-            <div class="header-element">
+            {{-- <div class="header-element">
                 <div class="horizontal-logo">
                     <a href="index.html" class="header-logo">
                         <img src="assets/images/brand-logos/desktop-logo.png" alt="logo" class="desktop-logo">
@@ -18,7 +18,7 @@
                         <img src="assets/images/brand-logos/toggle-white.png" alt="logo" class="toggle-white">
                     </a>
                 </div>
-            </div>
+            </div> --}}
             <!-- End::header-element -->
 
             <!-- Start::header-element -->

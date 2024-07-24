@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $companyName .' - Phishing awareness training program')
+@section('title', $companyName . ' - Phishing awareness training program')
 
 @section('main-content')
 
@@ -22,8 +22,8 @@
                                 Overview</a>
                         </li>
                         <!-- <li class="nav-item" role="presentation">
-                                        <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#training-overview" aria-selected="false" tabindex="-1">Yearly Training Overview</a>
-                                    </li> -->
+                                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#training-overview" aria-selected="false" tabindex="-1">Yearly Training Overview</a>
+                                                        </li> -->
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane text-muted active show" id="phish-overview" role="tabpanel">
@@ -166,8 +166,11 @@
         </div>
     </div>
 
+   
+
     @push('newscripts')
         <!-- Include Axios -->
+
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
         <script>
@@ -221,14 +224,23 @@
                                 backgroundColor: 'rgb(132, 90, 223)',
                                 borderColor: 'rgb(132, 90, 223)',
                                 data: lineChartData.map(function(data) {
-                                    return data.no_of_camps;
+                                    return Math.round(data.no_of_camps);
                                 }),
                             }]
                         };
                         var config = {
                             type: 'line',
                             data: data,
-                            options: {}
+                            options: {
+                                scales: {
+
+                                    y: {
+                                        type: 'linear',
+                                        min: 0,
+                                        max: 10
+                                    }
+                                }
+                            }
                         };
                         new Chart(document.getElementById('chartjs-line'), config);
                     })
@@ -236,9 +248,13 @@
                         console.error('Error fetching line chart data:', error);
                     });
 
-                    axios.get('{{ route('get.total.assets') }}')
+                axios.get('{{ route('get.total.assets') }}')
             });
         </script>
+
+        <!-- Apex Charts JS -->
+        <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
+        
     @endpush
 
 @endsection

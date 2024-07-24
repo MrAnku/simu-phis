@@ -38,7 +38,7 @@ class DashboardController extends Controller
             $monthName = now()->subMonths($i)->format('F');
 
             $noOfCampaigns = DB::table('all_campaigns')
-                ->whereRaw('MONTHNAME(launch_time) = ? AND company_id = ?', [$monthName, Auth::user()->company_id])
+                ->whereRaw('MONTHNAME(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND company_id = ?', [$monthName, Auth::user()->company_id])
                 ->count();
 
             $lastSixMonthsData[] = [

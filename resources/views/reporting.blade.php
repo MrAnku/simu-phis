@@ -77,6 +77,19 @@
             </div>
 
             <div class="row">
+                <div class="col-lg-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">Employees Interaction</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="dashed-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
                         <div class="card-header">
@@ -326,7 +339,11 @@
                 align-items: center;
             }
         </style>
+
+        <link rel="stylesheet" href="assets/libs/apexcharts/apexcharts.css">
     @endpush
+
+
 
     @push('newscripts')
         <!-- Datatables Cdn -->
@@ -527,6 +544,161 @@
                 "pageLength": 10,
                 // scrollX: true
             });
+        </script>
+
+        <script>
+            $.get({
+                url: '{{ route('campaign.getChartData') }}',
+                success: function(res) {
+                    //console.log(res)
+                    var chartData = res;
+
+                    /* dashed chart */
+                    var options = {
+                        series: [{
+                                name: "Mail Open",
+                                data: chartData.mail_open
+                            },
+                            {
+                                name: "Payload Clicked",
+                                data: chartData.payload_clicked
+                            },
+                            {
+                                name: 'Employee Compromised',
+                                data: chartData.employee_compromised
+                            },
+                            {
+                                name: 'Email Reported',
+                                data: chartData.email_reported
+                            }
+
+                        ],
+                        chart: {
+                            height: 320,
+                            type: 'line',
+                            zoom: {
+                                enabled: false
+                            },
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        stroke: {
+                            width: [3, 4, 3],
+                            curve: 'straight',
+                            dashArray: [0, 8, 5]
+                        },
+                        colors: ["#845adf", "#23b7e5", "#f5b849", "#f55679"],
+                        title: {
+                            text: 'Employees interation of last 12 days',
+                            align: 'left',
+                            style: {
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                color: '#8c9097'
+                            },
+                        },
+                        legend: {
+                            tooltipHoverFormatter: function(val, opts) {
+                                return val + ' - ' + opts.w.globals.series[opts.seriesIndex][opts
+                                    .dataPointIndex
+                                ] + ''
+                            }
+                        },
+                        markers: {
+                            size: 0,
+                            hover: {
+                                sizeOffset: 6
+                            }
+                        },
+                        xaxis: {
+                            categories: chartData.dates,
+                            labels: {
+                                show: true,
+                                style: {
+                                    colors: "#8c9097",
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    cssClass: 'apexcharts-xaxis-label',
+                                },
+                            }
+                        },
+                        yaxis: {
+                            labels: {
+                                show: true,
+                                style: {
+                                    colors: "#8c9097",
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    cssClass: 'apexcharts-xaxis-label',
+                                },
+                            }
+                        },
+                        tooltip: {
+                            y: [{
+                                    title: {
+                                        formatter: function(val) {
+                                            return val
+                                        }
+                                    }
+                                },
+                                {
+                                    title: {
+                                        formatter: function(val) {
+                                            return val
+                                        }
+                                    }
+                                },
+                                {
+                                    title: {
+                                        formatter: function(val) {
+                                            return val;
+                                        }
+                                    }
+                                },
+                                {
+                                    title: {
+                                        formatter: function(val) {
+                                            return val;
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        grid: {
+                            borderColor: '#f1f1f1',
+                        }
+                    };
+                    var chart = new ApexCharts(document.querySelector("#dashed-chart"), options);
+                    chart.render();
+
+
+
+
+                }
+            })
+
+
+
+            function getLastNDays(n) {
+                const days = [];
+                const today = new Date();
+
+                for (let i = 0; i < n; i++) {
+                    const date = new Date();
+                    date.setDate(today.getDate() - i);
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = date.toLocaleString('default', {
+                        month: 'short'
+                    });
+                    days.push(`${day} ${month}`);
+                }
+
+                return days.reverse();
+            }
+
+            // const categories = getLastNDays(10);
+            // console.log(categories);
         </script>
     @endpush
 

@@ -92,6 +92,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //reporting routes-----------------------------------------------------------------
 
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
+    Route::get('/reporting/get-chart-data', [ReportingController::class, 'getChartData'])->name('campaign.getChartData');
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
 
     Route::post('/fetch-camp-report-by-users', [ReportingController::class, 'fetchCampReportByUsers'])->name('campaign.fetchCampReportByUsers');
