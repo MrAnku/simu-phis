@@ -306,9 +306,25 @@
 
 
     @push('newcss')
+    <style>
+        .selected {
+            background-color: #f0f0f0; /* Adjust the color to your preference */
+        }
+    </style>
     @endpush
 
     @push('newscripts')
+    <script>
+        $(document).ready(function () {
+            $('.checkforactive').on('click', function () {
+                // Remove 'selected' class from all chat items
+                $('.checkforactive').removeClass('selected');
+    
+                // Add 'selected' class to the clicked chat item
+                $(this).addClass('selected');
+            });
+        });
+    </script>
 
     <script>
         function createChatHtml(res) {
@@ -339,7 +355,7 @@
                                                                 <span class="chatting-user-info">
                                                                     <span class="msg-sent-time"><span class="chat-read-mark align-middle d-inline-flex"></i></span>${obj.date}</span> You
                                                                 </span>
-                                                                <div class="main-chat-msg">
+                                                                <div class="main-chat-msg d-flex justify-content-end">
                                                                     <div>
                                                                         <p class="mb-0">${obj.msg}</p>
                                                                     </div>

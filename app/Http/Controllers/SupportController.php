@@ -89,7 +89,7 @@ class SupportController extends Controller
         $today = now();
         $company_id = Auth::user()->company_id;
 
-        DB::table('cp_tkts_conversations')->insert([
+        DB::table('cp-tkts_conversations')->insert([
             'tkt_id' => $tkt_id,
             'person' => 'company',
             'msg' => $msg,
