@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\WhatsappCampaignController;
 
 Route::domain('learn.simuphish.com')->group(function () {
 
@@ -72,6 +73,11 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
     Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
     Route::post('/campaigns/relaunch', [CampaignController::class, 'relaunchCampaign'])->name('campaigns.relaunch');
+
+    //whatsapp Campaign
+    Route::get('/whatsapp-campaign', [WhatsappCampaignController::class, 'index'])->name('whatsapp.campaign');
+    Route::get('/whatsapp-templates', [WhatsappCampaignController::class, 'getTemplates'])->name('whatsapp.templates');
+    Route::post('/whatsapp-submit-campaign', [WhatsappCampaignController::class, 'submitCampaign'])->name('whatsapp.submitCampaign');
 
     //employees route-------------------------------------------------------------
 

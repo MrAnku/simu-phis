@@ -290,6 +290,7 @@
                                     <th>Email</th>
                                     <th>Company</th>
                                     <th>Job Title</th>
+                                    <th>WhatsApp</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -329,26 +330,33 @@
                                     <form action="" method="post" id="adduserForm">
                                         <div class="row">
 
-                                            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <label for="input-label" class="form-label">Name<sup class="text-danger">*</sup></label>
                                                 <input type="text" class="form-control" name="usrName" required>
                                                 <input type="hidden" name="groupid" class="groupid">
                                             </div>
-                                            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <label for="input-label" class="form-label">Email<sup class="text-danger">*</sup></label>
                                                 <input type="text" class="form-control" name="usrEmail">
                                             </div>
-                                            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <label for="input-label" class="form-label">Company</label>
                                                 <input type="text" class="form-control" name="usrCompany">
                                             </div>
-                                            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                                            <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <label for="input-label" class="form-label">Job Title</label>
                                                 <input type="text" class="form-control" name="usrJobTitle">
                                             </div>
-                                            <div class="text-end">
-                                                <button type="submit" name="addUsr" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add Employee</button>
+                                            <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
+                                                <label for="input-label" class="form-label">WhatsApp No.</label>
+                                                <input type="text" class="form-control" placeholder="919876543210" name="usrWhatsapp" id="usrWhatsapp">
                                             </div>
+                                            <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
+                                                <div class="text-start">
+                                                    <button type="submit" name="addUsr" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add Employee</button>
+                                                </div>
+                                            </div>
+                                            
                                         </div>
                                     </form>
                                 </div>
@@ -387,6 +395,7 @@
                                     <th>Email</th>
                                     <th>Company</th>
                                     <th>Job Title</th>
+                                    <th>WhatsApp</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

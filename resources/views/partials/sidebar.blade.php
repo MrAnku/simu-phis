@@ -51,6 +51,13 @@
                                             <span class="side-menu__label">Campaigns</span>
                                         </a>
                                     </li>
+                                    <li class="slide {{ Request::is('whatsapp-campaign') ? 'active' : '' }}">
+                                        <a href="{{ route('whatsapp.campaign') }}"
+                                            class="side-menu__item {{ Request::is('whatsapp-campaign') ? 'active' : '' }}">
+                                            <i class="bx bxl-whatsapp side-menu__icon"></i>
+                                            <span class="side-menu__label">WhatsApp Campaigns</span>
+                                        </a>
+                                    </li>
                                     <li class="slide {{ Request::is('employees') ? 'active' : '' }}">
                                         <a href="{{ route('employees') }}"
                                             class="side-menu__item {{ Request::is('employees') ? 'active' : '' }}">

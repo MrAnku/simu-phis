@@ -174,6 +174,7 @@ class EmployeesController extends Controller
         $usrEmail = $request->input('usrEmail');
         $usrCompany = $request->input('usrCompany');
         $usrJobTitle = $request->input('usrJobTitle');
+        $usrWhatsapp = $request->input('usrWhatsapp');
         $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
 
         if ($this->domainVerified($usrEmail, $companyId)) {
@@ -185,6 +186,7 @@ class EmployeesController extends Controller
                     $user->user_email = $usrEmail;
                     $user->user_company = $usrCompany;
                     $user->user_job_title = $usrJobTitle;
+                    $user->whatsapp = $usrWhatsapp;
                     $user->company_id = $companyId;
 
                     if ($user->save()) {
@@ -306,6 +308,7 @@ class EmployeesController extends Controller
                 $email = $data[1];
                 $company = $data[2];
                 $job_title = $data[3];
+                $whatsapp = $data[4];
 
                 if ($this->domainVerified($email, $companyId)) {
                     if ($this->uniqueEmail($email)) {
@@ -325,6 +328,7 @@ class EmployeesController extends Controller
                             $user->user_email = $email;
                             $user->user_company = $company;
                             $user->user_job_title = $job_title;
+                            $user->whatsapp = $whatsapp;
                             $user->company_id = $companyId;
                             $user->save();
                         }
