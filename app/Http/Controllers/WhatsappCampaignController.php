@@ -10,14 +10,17 @@ use Illuminate\Support\Facades\Http;
 
 class WhatsappCampaignController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $company_id = auth()->user()->company_id;
         $all_users = UsersGroup::where('company_id', $company_id)->get();
         $templates = $this->getTemplates()['templates'];
-        return view('whatsapp-campaign', compact('all_users', 'templates'));
+        $campaigns = WhatsappCampaign::where('company_id', $company_id)->get();
+        return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns'));
     }
 
-    public function getTemplates(){
+    public function getTemplates()
+    {
         $response = Http::withOptions(['verify' => false])->get(env('WHATSAPP_CRM') . '/getTemplates', [
             'token' => env('WHATSAPP_CRM_TOKEN')
         ]);
@@ -29,7 +32,8 @@ class WhatsappCampaignController extends Controller
         return null;
     }
 
-    public function submitCampaign(Request $request){
+    public function submitCampaign(Request $request)
+    {
 
         $company_id = auth()->user()->company_id;
 
@@ -43,6 +47,57 @@ class WhatsappCampaignController extends Controller
         $new_campaign->created_at = now();
         $new_campaign->save();
 
-        // return $request;
+        $response = $this->sendWhatsAppMsg($request);
+
+        return $response;
+    }
+
+    public function sendWhatsAppMsg($campaignData)
+    {
+
+        $users = Users::where('group_id', $campaignData->user_group)->get();
+
+        foreach ($users as $user) {
+            $url = env('WHATSAPP_CRM') . '/sendtemplatemessage';  
+
+            $payload = [
+                "token" => env('WHATSAPP_CRM_TOKEN'),
+                "phone" => $user->whatsapp,
+                "template_name" => $campaignData->template_name,
+                "template_language" => $campaignData->template_language,
+                "components" => $campaignData->components
+            ];
+
+            // Make the POST request
+            $response = Http::withOptions(['verify' => false])->post($url, $payload);
+
+            // Handle the response
+            if ($response->successful()) {
+                // Success handling
+                return response()->json($response->json());
+            } else {
+                // Error handling
+                return response()->json(['error' => 'Request failed'], $response->status());
+            }
+        }
+    }
+
+    public function deleteCampaign(Request $request){
+
+        $request->validate([
+            'campid' => 'required'
+        ]);
+
+        $campaign = WhatsappCampaign::where('camp_id', $request->campid)->first();
+
+        if($campaign){
+            
+            $campaign->delete();    
+            return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+        }else{
+            return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
+        }
+
+
     }
 }

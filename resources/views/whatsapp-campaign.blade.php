@@ -21,11 +21,47 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Phishing Websites
+                                All WhatsApp Campaigns
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Campaign Name</th>
+                                            <th>Template Name</th>
+                                            <th>Employee Group</th>
+                                            <th>Launch Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($campaigns as $campaign)
+                                            <tr>
+                                                <td>{{ $campaign->camp_name }}</td>
+                                                <td>{{ $campaign->template_name }}</td>
+                                                <td>{{ $campaign->user_group }}</td>
+                                                <td>{{ $campaign->created_at }}</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                        onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
+                                                        Delete
+                                                    </button>
 
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center">No records found</td>
+                                            </tr>
+                                        @endforelse
+
+
+
+                                    </tbody>
+                                </table>
+                            </div>
 
                         </div>
                     </div>
@@ -47,78 +83,77 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="input-label" class="form-label">Campaign name<sup
-                                    class="text-danger">*</sup></label>
-                            <input type="text" class="form-control" id="camp_name" placeholder="Template name" required>
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Campaign name<sup class="text-danger">*</sup></label>
+                        <input type="text" class="form-control" id="camp_name" placeholder="Template name" required>
 
+                    </div>
+                    <div class="mb-3">
+                        <label for="whatsapp-template" class="form-label">Template</label>
+                        <select class="form-select" aria-label="Default select example" name="whatsapp_template"
+                            id="whatsapp_template">
+                            <option value="">Choose Template</option>
+                            @forelse ($templates as $template)
+                                <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
+                                    data-lang="{{ $template['language'] }}" data-msg="{{ $template['components'] }}">
+                                    {{ $template['name'] }} -
+                                    {{ $template['status'] }}</option>
+                            @empty
+                                <option value="">No templates available</option>
+                            @endforelse
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3 row" id="template_info" style="display: none;">
+                        <div class="col-lg-6">
+                            <label for="template_category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="template_category" disabled>
                         </div>
-                        <div class="mb-3">
-                            <label for="whatsapp-template" class="form-label">Template</label>
-                            <select class="form-select" aria-label="Default select example" name="whatsapp_template"
-                                id="whatsapp_template">
-                                <option value="">Choose Template</option>
-                                @forelse ($templates as $template)
-                                    <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
-                                        data-lang="{{ $template['language'] }}" data-msg="{{ $template['components'] }}">
-                                        {{ $template['name'] }} -
-                                        {{ $template['status'] }}</option>
-                                @empty
-                                    <option value="">No templates available</option>
-                                @endforelse
-
-                            </select>
-
+                        <div class="col-lg-6">
+                            <label for="template_lang" class="form-label">Language</label>
+                            <input type="text" class="form-control" id="template_lang" disabled>
                         </div>
-
-                        <div class="mb-3 row" id="template_info" style="display: none;">
-                            <div class="col-lg-6">
-                                <label for="template_category" class="form-label">Category</label>
-                                <input type="text" class="form-control" id="template_category" disabled>
-                            </div>
-                            <div class="col-lg-6">
-                                <label for="template_lang" class="form-label">Language</label>
-                                <input type="text" class="form-control" id="template_lang" disabled>
-                            </div>
-                            <div class="col-lg-12 my-3">
-                                <div class="chat-container">
-                                    {{-- <div class="chat-bubble sender">
+                        <div class="col-lg-12 my-3">
+                            <div class="chat-container">
+                                {{-- <div class="chat-bubble sender">
                                         <p>Hello! How are you?</p>
                                         <span class="timestamp">10:30 AM</span>
                                     </div> --}}
-                                    <div class="chat-bubble receiver">
-                                        <p id="msg-body">I'm good, thanks! How about you?</p>
-                                        <span class="timestamp">10:32 AM</span>
-                                    </div>
-                                </div>
-
-                                <div class="row variableInputs" id="variableInputs">
-
-                                  
+                                <div class="chat-bubble receiver">
+                                    <p id="msg-body">I'm good, thanks! How about you?</p>
+                                    <span class="timestamp">10:32 AM</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="input-label" class="form-label">Employee Group</label>
-                            <div class="d-flex">
 
-                                {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
-                                <select class="form-select" aria-label="Default select example" id="usrGroup">
-                                    @forelse ($all_users as $user)
-                                        <option value="{{ $user->group_id }}">{{ $user->group_name }}</option>
-                                    @empty
-                                        <option value="">No Employees Group Available</option>
-                                    @endforelse
+                            <div class="row variableInputs" id="variableInputs">
 
-                                </select>
+
                             </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Employee Group</label>
+                        <div class="d-flex">
 
+                            {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                            <select class="form-select" aria-label="Default select example" id="usrGroup">
+                                @forelse ($all_users as $user)
+                                    <option value="{{ $user->group_id }}">{{ $user->group_name }}</option>
+                                @empty
+                                    <option value="">No Employees Group Available</option>
+                                @endforelse
+
+                            </select>
                         </div>
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
-                                onclick="submitCampaign();">Add
-                                Campaign</button>
-                        </div>
+
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
+                            onclick="submitCampaign();">Add
+                            Campaign</button>
+                    </div>
 
                 </div>
             </div>
@@ -319,12 +354,10 @@
                     });
                 });
 
-                var componentsArray = [
-                    {
-                        type: "body",
-                        parameters: valuesArray
-                    }
-                ]
+                var componentsArray = [{
+                    type: "body",
+                    parameters: valuesArray
+                }]
 
                 var finalBody = {
                     camp_name: camp_name.value,
@@ -336,12 +369,44 @@
                     components: componentsArray
                 }
 
-                console.log(finalBody);
+                //console.log(finalBody);
                 $.post({
                     url: '{{ route('whatsapp.submitCampaign') }}',
                     data: finalBody,
-                    success: function(res){
+                    success: function(res) {
                         console.log(res)
+                    }
+                })
+            }
+
+            function checkResponse(res) {
+                if (res.status == 1) {
+                    Swal.fire(
+                        res.msg,
+                        '',
+                        'success'
+                    ).then(function() {
+                        window.location.href = window.location.href
+                    })
+                } else {
+                    Swal.fire(
+                        'Something went wrong...',
+                        '',
+                        'error'
+                    ).then(function() {
+                        window.location.href = window.location.href
+                    })
+                }
+            }
+
+            function deleteCamp(campid) {
+                $.post({
+                    url: '{{ route('whatsapp.deleteCampaign') }}',
+                    data: {
+                        campid: campid
+                    },
+                    success: function(res){
+                        checkResponse(res);
                     }
                 })
             }
