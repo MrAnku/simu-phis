@@ -7,10 +7,14 @@
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
 
-            <div class="d-flex justify-content-between">
+            <div class="d-flex" style="gap: 10px;">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
                         data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary mb-3" onclick="fetchTemplates()" data-bs-toggle="modal"
+                        data-bs-target="#templatesModal">Available Templates</button>
                 </div>
 
             </div>
@@ -39,12 +43,18 @@
                                     <tbody>
                                         @forelse ($campaigns as $campaign)
                                             <tr>
-                                                <td>{{ $campaign->camp_name }}</td>
+                                                <td>
+                                                    <a href="#" class="text-primary"
+                                                        onclick="fetchCampaignDetails('{{ $campaign->camp_id }}')"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#campaignReportModal">{{ $campaign->camp_name }}</a>
+
+                                                </td>
                                                 <td>{{ $campaign->template_name }}</td>
-                                                <td>{{ $campaign->user_group }}</td>
+                                                <td>{{ $campaign->user_group_name ?? 'N/A' }}</td>
                                                 <td>{{ $campaign->created_at }}</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                    <button type="button" class="btn btn-sm btn-danger"
                                                         onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
                                                         Delete
                                                     </button>
@@ -91,7 +101,7 @@
                     <div class="mb-3">
                         <label for="whatsapp-template" class="form-label">Template</label>
                         <select class="form-select" aria-label="Default select example" name="whatsapp_template"
-                            id="whatsapp_template">
+                            id="whatsapp_template" required>
                             <option value="">Choose Template</option>
                             @forelse ($templates as $template)
                                 <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
@@ -160,6 +170,71 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="campaignReportModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Campaign Report</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Employee name</th>
+                                    <th scope="col">WhatsApp No.</th>
+                                    <th scope="col">Template Name</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="camp_users">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="templatesModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-modal="true"
+        role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">WhatsApp Templates</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status" id="temp_spinner">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+
+                    <div class="table-responsive" id="temp_table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Components</th>
+                                </tr>
+                            </thead>
+                            <tbody id="temps">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -315,19 +390,27 @@
                     if (e.type === 'BODY') {
                         var text = e.text;
                         var matches = text.match(regex);
-
+                        // console.log(matches);
                         var inputs = '';
-                        matches.forEach(varib => {
-                            var input = `<div class="col-lg-4">
+
+                        if (matches == null) {
+                            $("#msg-body").text(e.text);
+                            $("#variableInputs").html(inputs);
+                        } else {
+                            matches.forEach(varib => {
+                                var input = `<div class="col-lg-4">
                                         <label class="form-label">Variable ${varib}</label>
                                         <input type="text" class="form-control" name="temp_variable"
                                             placeholder="enter value">
                                     </div>`;
-                            inputs += input;
-                        })
-                        // console.log(matches);
-                        $("#variableInputs").html(inputs);
-                        $("#msg-body").text(e.text);
+                                inputs += input;
+                            })
+                            // console.log(matches);
+                            $("#variableInputs").html(inputs);
+                            $("#msg-body").text(e.text);
+                        }
+
+
                     }
                 });
 
@@ -342,22 +425,31 @@
 
             function submitCampaign() {
                 var inputs = $("input[name='temp_variable']");
-
-                // Create an array to hold the values
+                var componentsArray = [];
                 var valuesArray = [];
 
-                // Iterate over the inputs and collect their values
-                inputs.each(function() {
-                    valuesArray.push({
-                        type: "text",
-                        text: $(this).val()
+                // console.log(inputs.length);
+                if (inputs.length !== 0) {
+                    // Iterate over the inputs and collect their values
+                    inputs.each(function() {
+                        valuesArray.push({
+                            type: "text",
+                            text: $(this).val()
+                        });
                     });
-                });
 
-                var componentsArray = [{
-                    type: "body",
-                    parameters: valuesArray
-                }]
+                    componentsArray = [{
+                        type: "body",
+                        parameters: valuesArray
+                    }]
+                }
+
+                // // Create an array to hold the values
+                // var valuesArray = [];
+
+
+
+
 
                 var finalBody = {
                     camp_name: camp_name.value,
@@ -369,12 +461,12 @@
                     components: componentsArray
                 }
 
-                //console.log(finalBody);
+                // console.log(finalBody);
                 $.post({
                     url: '{{ route('whatsapp.submitCampaign') }}',
                     data: finalBody,
                     success: function(res) {
-                        console.log(res)
+                        checkResponse(res)
                     }
                 })
             }
@@ -400,13 +492,114 @@
             }
 
             function deleteCamp(campid) {
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "The campaign will be deleted with their report.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e6533c',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Delete'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: '{{ route('whatsapp.deleteCampaign') }}',
+                            data: {
+                                campid: campid
+                            },
+                            success: function(res) {
+                                checkResponse(res);
+                            }
+                        })
+                    }
+                })
+
+            }
+
+            function fetchCampaignDetails(campid) {
                 $.post({
-                    url: '{{ route('whatsapp.deleteCampaign') }}',
+                    url: '{{ route('whatsapp.fetchCamp') }}',
                     data: {
                         campid: campid
                     },
-                    success: function(res){
-                        checkResponse(res);
+                    success: function(res) {
+                        var row = '';
+                        if (res) {
+                            res.forEach((e) => {
+                                row += `
+                                <tr class="">
+                                    <td scope="row">${e.user_name}</td>
+                                    <td>${e.user_whatsapp}</td>
+                                    <td>${e.template_name}</td>
+                                    <td>
+                                        <span class="badge bg-${e.status == 'pending' ? 'warning' : 'success'}-transparent">${e.status}</span>
+                                    </td>
+                                    <td>${e.created_at}</td>
+                                </tr>
+                                `;
+                            })
+
+                            $("#camp_users").html(row);
+
+                        }
+                    }
+                })
+            }
+
+            function fetchTemplates() {
+                $("#temp_table").hide();
+                $("#temp_spinner").show();
+                $.get({
+                    url: '{{ route('whatsapp.templates') }}',
+                    success: function(res) {
+
+                        var row = '';
+                        var header = '';
+                        var body = '';
+                        var footer = '';
+                        var components = '';
+                        if (res) {
+                            res.templates.forEach((e) => {
+                                components = JSON.parse(e.components);
+                                components.forEach((e2) => {
+                                    if (e2.type === 'HEADER' && e2.format === 'TEXT') {
+                                        header = e2.text
+                                    }
+                                    if (e2.type === 'BODY') {
+                                        body = e2.text
+                                    }
+                                    if (e2.type === 'FOOTER') {
+                                        footer = e2.text
+                                    }
+                                })
+                                row += `
+                                <tr class="">
+                                    <td scope="row">${e.name}</td>
+                                    <td>
+                                        <span class="badge bg-${e.status == 'APPROVED' ? 'success' : 'warning'}-transparent">${e.status}</span>
+                                    </td>
+                                    <td>
+                                        <strong>${header}</strong>
+                                        <br>
+                                        ${body}
+                                        <br>
+                                        <strong>${footer}</strong>
+                                    </td>
+                                    
+                                </tr>
+                                `;
+                            })
+
+                            $("#temps").html(row);
+
+                            $("#temp_spinner").hide();
+                            $("#temp_table").show();
+
+                        }
+
+
+                        console.log(res);
                     }
                 })
             }
