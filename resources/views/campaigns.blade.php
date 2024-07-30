@@ -22,7 +22,7 @@
                                     <div class="mb-2">Since Last Campaign Delivery</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$daysSinceLastDelivery}} Day(s)
+                                            {{ $daysSinceLastDelivery }} Day(s)
                                         </span>
                                     </div>
 
@@ -45,7 +45,7 @@
                                     <div class="mb-2">Total Sent Emails</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$all_sent}} Delivered
+                                            {{ $all_sent }} Delivered
                                         </span>
                                     </div>
 
@@ -68,7 +68,7 @@
                                     <div class="mb-2">Mail Opened</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$mail_open}} Opened
+                                            {{ $mail_open }} Opened
                                         </span>
                                     </div>
 
@@ -201,10 +201,10 @@
     {{-- ------------------------------Toasts---------------------- --}}
 
 
-    {{----------------------- modals ------------------------}}
+    {{-- --------------------- modals ---------------------- --}}
 
-     <!-- new campaign modal -->
-     <div class="modal fade" id="newCampModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- new campaign modal -->
+    <div class="modal fade" id="newCampModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -273,7 +273,8 @@
                                                         Group</label>
                                                     <select class="form-control required" id="users_group">
                                                         @foreach ($usersGroups as $group)
-                                                            <option value="{{ $group->group_id }}">{{ $group->group_name }}
+                                                            <option value="{{ $group->group_id }}">
+                                                                {{ $group->group_name }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -570,9 +571,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                        <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                    </div> -->
+                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -1110,10 +1111,121 @@
         </div>
     </div>
 
+    <!-- view material modal -->
+    <div class="modal fade" id="viewMaterialModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Phishing Material</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="min-height: 100vh;">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-3 tab-style-6" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="products-tab" data-bs-toggle="tab"
+                                    data-bs-target="#email-tab-pane" type="button" role="tab"
+                                    aria-controls="email-tab-pane" aria-selected="true"><i
+                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>Email</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="sales-tab" data-bs-toggle="tab"
+                                    data-bs-target="#website-tab-pane" type="button" role="tab"
+                                    aria-controls="website-tab-pane" aria-selected="false" tabindex="-1"><i
+                                        class="bx bx-globe me-1 align-middle d-inline-block"></i>Website</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="profit-tab" data-bs-toggle="tab"
+                                    data-bs-target="#senderp-tab-pane" type="button" role="tab"
+                                    aria-controls="senderp-tab-pane" aria-selected="false" tabindex="-1"><i
+                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>Sender Profile</button>
+                            </li>
 
-    {{----------------------- modals ------------------------}}
+                        </ul>
+                        <div class="tab-content" id="myTabContent2">
+                            <div class="tab-pane fade p-3 border-bottom-0 active show" id="email-tab-pane"
+                                role="tabpanel" aria-labelledby="products-tab" tabindex="0">
 
-   
+                                <div class="row mb-3">
+                                    <label for="vphishEmail" class="col-sm-6 col-form-label">Phishing Email</label>
+                                    <div class="col-sm-6">
+                                        <input type="email" class="form-control" id="vphishEmail" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label for="vSub" class="col-sm-6 col-form-label">Email Subject</label>
+                                    <div class="col-sm-6">
+                                        <input type="email" class="form-control" id="vSub" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label for="inputEmail3" class="col-sm-6 col-form-label">Employee Requirements</label>
+                                    <div class="col-sm-6">
+                                        <input type="email" class="form-control" id="inputEmail3"
+                                            value="Email Address | Name" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-lg-12" id="phishPrev" style="background: white;">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade p-3" id="website-tab-pane" role="tabpanel"
+                                aria-labelledby="sales-tab" tabindex="0">
+
+                                <div class="row mb-3">
+                                    <label for="vphishWeb" class="col-sm-6 col-form-label">Phishing Website</label>
+                                    <div class="col-sm-6">
+                                        <input type="email" class="form-control" id="vphishWeb" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label for="vPhishUrl" class="col-sm-6 col-form-label">Website URL</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" id="vPhishUrl" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-lg-12" id="websitePrev" style="background: white;">
+                                        <iframe class="phishing-iframe" src="" style="height: 500px;">
+
+                                        </iframe>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="tab-pane fade p-3" id="senderp-tab-pane" role="tabpanel"
+                                aria-labelledby="profit-tab" tabindex="0">
+
+                                <div class="row mb-3">
+                                    <label for="vsenderProf" class="col-sm-6 col-form-label">Sender Profile</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" id="vsenderProf" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label for="vDispName" class="col-sm-6 col-form-label">Display Name & Address</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" id="vDispName" disabled>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    {{-- --------------------- modals ---------------------- --}}
+
+
     @push('newcss')
         <link rel="stylesheet" href="assets/css/campaigns.css">
     @endpush
@@ -1121,21 +1233,57 @@
     @push('newscripts')
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-         <!-- Datatables Cdn -->
-         <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-         <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-         <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-         <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-         <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.6/pdfmake.min.js"></script>
-         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-         <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <!-- Datatables Cdn -->
+        <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.6/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 
         <script src="assets/js/campaigns.js"></script>
 
         <script>
+            function showMaterialDetails(btn, name, subject, website, senderProfile) {
+
+                $("#viewMaterialModal").modal('show');
+                $("#newCampModal").hide();
+
+                var htmlmaterial = $(btn).parent().parent().parent().prev().html();
+                $("#vphishEmail").val(name);
+                $("#vSub").val(subject);
+
+                $.post({
+                    url: '{{ route('campaigns.fetch.phish.data') }}',
+                    data: {
+                        fetchPhisData: 1,
+                        website: website,
+                        senderProfile: senderProfile
+                    },
+                    success: function(jsonRes) {
+                        $("#websitePrev iframe").attr('src',
+                            `https://${jsonRes.website_url}/${jsonRes.website_file}`);
+                        $("#vphishWeb").val(jsonRes.website_name);
+
+
+                        $("#vPhishUrl").val("https://" + jsonRes.website_url);
+                        $("#vsenderProf").val(jsonRes.senderProfile);
+                        $("#vDispName").val(jsonRes.displayName + "<" + jsonRes.address + ">");
+
+                        // window.location.reload()
+                        // window.location.href = window.location.href;
+                    }
+                })
+
+
+                $("#phishPrev").html(htmlmaterial)
+                // console.log(phishName);
+            }
+
             function fetchCampaignDetails(campid) {
                 // console.log(campid)
                 $.post({
@@ -1309,6 +1457,8 @@
                 }
 
 
+
+
             }
 
             $('#datatable-basic').DataTable({
@@ -1318,6 +1468,11 @@
                 },
                 "pageLength": 10,
                 // scrollX: true
+            });
+
+            $('#viewMaterialModal').on('hidden.bs.modal', function() {
+                // Your function here
+                $("#newCampModal").show();
             });
         </script>
 

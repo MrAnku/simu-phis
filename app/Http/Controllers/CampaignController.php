@@ -360,5 +360,39 @@ class CampaignController extends Controller
 
     }
 
+    public function fetchPhishData(Request $request)
+    {
+        $website = $request->input('website');
+        $senderProfile = $request->input('senderProfile');
+
+        $phishData = [];
+
+        // Fetch website data
+        $websiteData = DB::table('phishing_websites')->where('id', $website)->first();
+        if ($websiteData) {
+            $phishData['website_name'] = $websiteData->name;
+            $phishData['website_url'] = $websiteData->domain;
+            $phishData['website_file'] = $websiteData->file;
+        } else {
+            $phishData['website_name'] = "";
+            $phishData['website_url'] = "";
+            $phishData['website_file'] = "";
+        }
+
+        // Fetch sender profile data
+        $senderData = DB::table('senderprofile')->where('id', $senderProfile)->first();
+        if ($senderData) {
+            $phishData['senderProfile'] = $senderData->profile_name;
+            $phishData['displayName'] = $senderData->from_name;
+            $phishData['address'] = $senderData->from_email;
+        } else {
+            $phishData['senderProfile'] = "";
+            $phishData['displayName'] = "";
+            $phishData['address'] = "";
+        }
+
+        return response()->json($phishData, 200, [], JSON_PRETTY_PRINT);
+    }
+
     
 }

@@ -22,8 +22,8 @@
                                 Overview</a>
                         </li>
                         <!-- <li class="nav-item" role="presentation">
-                                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#training-overview" aria-selected="false" tabindex="-1">Yearly Training Overview</a>
-                                                        </li> -->
+                                                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#training-overview" aria-selected="false" tabindex="-1">Yearly Training Overview</a>
+                                                                </li> -->
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane text-muted active show" id="phish-overview" role="tabpanel">
@@ -163,10 +163,62 @@
             </div>
             <!-- End::row-1 -->
 
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Dark Web Activity (5 Most Recent Breaches)
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table text-nowrap table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Employee Email</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Breached</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">anant@sparrowhost.in</th>
+                                            <td>Anant kumar</td>
+                                            <td>
+                                                <span class="badge bg-danger">Breached</span>
+                                                
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">rahul@sparrowhost.in</th>
+                                            <td>Rahul kumar</td>
+                                            <td>
+                                                <span class="badge bg-success">Not Breached</span>
+                                                
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">samresh@sparrowhost.in</th>
+                                            <td>Samresh kumar</td>
+                                            <td>
+                                                <span class="badge bg-danger">Breached</span>
+                                                
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
 
-   
+
 
     @push('newscripts')
         <!-- Include Axios -->
@@ -254,7 +306,6 @@
 
         <!-- Apex Charts JS -->
         <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
-        
     @endpush
 
 @endsection

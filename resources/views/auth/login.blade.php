@@ -222,6 +222,14 @@
 
     <!-- Show Password JS -->
     <script src="assets/js/show-password.js"></script>
+    <script>
+        $('button.btn.btn-primary').click(function() {
+         // Your code here
+         $(this).html(
+             `<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>`
+             );
+     });
+    </script>
 
 </body>
 
