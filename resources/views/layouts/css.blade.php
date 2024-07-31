@@ -2,7 +2,7 @@
 
 
     <!-- Choices JS -->
-    <script src="{{asset('assets')}}/libs/choices.js/public/scripts/choices.min.js"></script>
+    {{-- <script src="{{asset('assets')}}/libs/choices.js/public/scripts/choices.min.js"></script> --}}
 
     <!-- Main Theme Js -->
     <script src="{{asset('assets')}}/js/main.js"></script>
@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="{{asset('assets')}}/libs/@simonwep/pickr/themes/nano.min.css">
 
     <!-- Choices Css -->
-    <link rel="stylesheet" href="{{asset('assets')}}/libs/choices.js/public/styles/choices.min.css">
+    {{-- <link rel="stylesheet" href="{{asset('assets')}}/libs/choices.js/public/styles/choices.min.css"> --}}
 
 
     <link rel="stylesheet" href="{{asset('assets')}}/libs/jsvectormap/css/jsvectormap.min.css">
