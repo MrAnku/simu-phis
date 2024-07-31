@@ -316,6 +316,14 @@ Route::domain('cloud-services-notifications.com')->group(function () {
 
     //route for updating payload
     Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
+
+    //route for whatsapp campaign
+    Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
+    Route::post('/c/update-payload', [WhatsappCampaignController::class, 'updatePayload'])->name('whatsapp.update.payload');
+    Route::post('/c/update-emp-comp', [WhatsappCampaignController::class, 'updateEmpComp'])->name('whatsapp.update.emp.comp');
+    Route::get('/c/alert/user', function () {
+        return view('whatsapp-alert');
+    })->name('whatsapp.phish.alert');
 });
 
 

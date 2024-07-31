@@ -22,7 +22,7 @@ class WhatsappCampaignController extends Controller
             $templates = $this->getTemplates()['templates'];
             $campaigns = WhatsappCampaign::where('company_id', $company_id)->get();
             return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns'));
-        }else{
+        } else {
             return view('whatsapp-unavailable');
         }
     }
@@ -139,5 +139,42 @@ class WhatsappCampaignController extends Controller
         $campaign = DB::table('whatsapp_camp_users')->where('camp_id', $request->campid)->where('company_id', $company_id)->get();
 
         return response()->json($campaign);
+    }
+
+    public function showWebsite($campaign_id)
+    {
+
+        // $camp_id = base64_decode($campaign_id);
+
+        return view('whatsapp-website', compact('campaign_id'));
+    }
+
+    public function updatePayload(Request $request)
+    {
+
+        $cid = base64_decode($request->cid);
+
+        $user = DB::table('whatsapp_camp_users')->where('id', $cid)->where('link_clicked', 0)->first();
+
+        if ($user) {
+            DB::table('whatsapp_camp_users')->where('id', $cid)->update(['link_clicked' => 1]);
+            return response()->json(['status' => 1, 'msg' => 'Payload updated']);
+        } else {
+            return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
+        }
+    }
+
+    public function updateEmpComp(Request $request)
+    {
+        $cid = base64_decode($request->cid);
+
+        $user = DB::table('whatsapp_camp_users')->where('id', $cid)->where('emp_compromised', 0)->first();
+
+        if ($user) {
+            DB::table('whatsapp_camp_users')->where('id', $cid)->update(['emp_compromised' => 1]);
+            return response()->json(['status' => 1, 'msg' => 'emp compromised updated']);
+        } else {
+            return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
+        }
     }
 }

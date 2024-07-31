@@ -175,7 +175,7 @@
 
     <div class="modal fade" id="campaignReportModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h6 class="modal-title">Campaign Report</h6>
@@ -190,6 +190,8 @@
                                     <th scope="col">WhatsApp No.</th>
                                     <th scope="col">Template Name</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Link Clicked</th>
+                                    <th scope="col">Employee Compromised</th>
                                     <th scope="col">Date</th>
                                 </tr>
                             </thead>
@@ -570,6 +572,8 @@
                         var row = '';
                         if (res) {
                             res.forEach((e) => {
+
+                              
                                 row += `
                                 <tr class="">
                                     <td scope="row">${e.user_name}</td>
@@ -577,6 +581,12 @@
                                     <td>${e.template_name}</td>
                                     <td>
                                         <span class="badge bg-${e.status == 'pending' ? 'warning' : 'success'}-transparent">${e.status}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${e.link_clicked == 0 ? 'warning' : 'success'}-transparent">${e.link_clicked == 0 ? 'No' : 'Yes'}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${e.emp_compromised == 0 ? 'warning' : 'success'}-transparent">${e.emp_compromised == 0 ? 'No' : 'Yes'}</span>
                                     </td>
                                     <td>${e.created_at}</td>
                                 </tr>
