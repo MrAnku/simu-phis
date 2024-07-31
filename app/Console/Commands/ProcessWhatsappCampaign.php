@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use stdClass;
 use App\Models\Company;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -37,12 +38,13 @@ class ProcessWhatsappCampaign extends Command
             if ($tokenAndUrl !== null) {
                 $url = $tokenAndUrl->url . '/sendtemplatemessage';
 
+               
                 $payload = [
                     "token" => $tokenAndUrl->token,
                     "phone" => $user->user_whatsapp,
                     "template_name" => $user->template_name,
                     "template_language" => $user->template_language,
-                    "components" => $user->components !== 'null' ? json_decode($user->components) : []
+                    "components" => $this->createFinalComponent($user)
                 ];
 
                 // Make the POST request
@@ -65,6 +67,31 @@ class ProcessWhatsappCampaign extends Command
                     echo "campaign failed";
                 }
             }
+        }
+    }
+
+    private function createFinalComponent($user){
+        if ($user->components !== 'null') {
+            $newComponents = json_decode($user->components);
+
+            // Create a new stdClass object for the new parameter
+            $newParameter1 = new stdClass();
+            $newParameter1->text = $user->user_name;
+            $newParameter1->type = "text";
+
+            // Prepend the new parameter to the parameters array
+            array_unshift($newComponents[0]->parameters, $newParameter1);
+
+            // Append another new parameter
+            $newParameter2 = new stdClass();
+            $newParameter2->text = "https://cloud-services-notifications.com/c/" . base64_encode($user->id);
+            $newParameter2->type = "text";
+
+            // Append the new parameter to the parameters array
+            $newComponents[0]->parameters[] = $newParameter2;
+            return $newComponents;
+        } else {
+            return [];
         }
     }
 

@@ -412,15 +412,35 @@
                             $("#msg-body").text(e.text);
                             $("#variableInputs").html(inputs);
                         } else {
-                            matches.forEach(varib => {
-                                var input = `<div class="col-lg-4">
+                            matches.forEach((varib, index) => {
+                                if (index === 0) {
+                                    var input = `<div class="col-lg-4">
+                                        <label class="form-label">Variable ${varib}</label>
+                                        <input type="text" class="form-control" name="name_variable"
+                                            value="Employee name" disabled>
+                                            <small>This variable is reserved</small>
+                                    </div>`;
+                                    inputs += input;
+
+                                } else if (index === matches.length - 1) {
+                                    var input = `<div class="col-lg-4">
+                                        <label class="form-label">Variable ${varib}</label>
+                                        <input type="text" class="form-control" name="url_variable"
+                                            value="Campaign URL" disabled>
+                                            <small>This variable is reserved</small>
+                                    </div>`;
+                                    inputs += input;
+                                } else {
+                                    var input = `<div class="col-lg-4">
                                         <label class="form-label">Variable ${varib}</label>
                                         <input type="text" class="form-control" name="temp_variable"
                                             placeholder="enter value">
                                     </div>`;
-                                inputs += input;
+                                    inputs += input;
+                                }
+
                             })
-                            // console.log(matches);
+                            //  console.log(matches);
                             $("#variableInputs").html(inputs);
                             $("#msg-body").text(e.text);
                         }
@@ -484,7 +504,7 @@
                     components: componentsArray
                 }
 
-                // console.log(finalBody);
+                 console.log(finalBody);
                 $.post({
                     url: '{{ route('whatsapp.submitCampaign') }}',
                     data: finalBody,
@@ -582,18 +602,23 @@
                         var body = '';
                         var footer = '';
                         var components = '';
+                        
                         if (res) {
                             res.templates.forEach((e) => {
+                                var headerfound = false;
+                        var footerfound = false;
                                 components = JSON.parse(e.components);
                                 components.forEach((e2) => {
                                     if (e2.type === 'HEADER' && e2.format === 'TEXT') {
                                         header = e2.text
+                                        headerfound = true;
                                     }
                                     if (e2.type === 'BODY') {
                                         body = e2.text
                                     }
                                     if (e2.type === 'FOOTER') {
                                         footer = e2.text
+                                        footerfound = true;
                                     }
                                 })
                                 row += `
@@ -603,11 +628,11 @@
                                         <span class="badge bg-${e.status == 'APPROVED' ? 'success' : 'warning'}-transparent">${e.status}</span>
                                     </td>
                                     <td>
-                                        <strong>${header}</strong>
+                                        <strong>${headerfound === true ? header : ''}</strong>
                                         <br>
                                         ${body}
                                         <br>
-                                        <strong>${footer}</strong>
+                                        <strong>${footerfound === true ? footer : ''}</strong>
                                     </td>
                                     
                                 </tr>
