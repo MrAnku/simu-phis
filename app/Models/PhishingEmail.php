@@ -14,7 +14,7 @@ class PhishingEmail extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'name', 'email_subject', 'mailBodyFilePath', 'website', 'senderProfile', 'company_id'
+        'name', 'email_subject', 'difficulty', 'mailBodyFilePath', 'website', 'senderProfile', 'company_id'
     ];
 
     public function web(): HasOne

@@ -48,12 +48,14 @@ class PhishingEmailsController extends Controller
 
         $data = $request->validate([
             'editEtemp' => 'required',
+            'difficulty' => 'required',
             'updateESenderProfile' => 'required',
             'updateEAssoWebsite' => 'required'
         ]);
 
         $phishingEmail = PhishingEmail::find($data['editEtemp']);
         $phishingEmail->website = $data['updateEAssoWebsite'];
+        $phishingEmail->difficulty = $data['difficulty'];
         $phishingEmail->senderProfile = $data['updateESenderProfile'];
         $isUpdated = $phishingEmail->save();
 
@@ -111,6 +113,7 @@ class PhishingEmailsController extends Controller
             'eMailFile' => 'required|file|mimes:html',
             'eTempName' => 'required|string|max:255',
             'eSubject' => 'required|string|max:255',
+            'difficulty' => 'required|string|max:30',
             'eAssoWebsite' => 'required|string|max:255',
             'eSenderProfile' => 'required|string|max:255',
         ]);
@@ -119,6 +122,7 @@ class PhishingEmailsController extends Controller
 
         $eTempName = $request->input('eTempName');
         $eSubject = $request->input('eSubject');
+        $difficulty = $request->input('difficulty');
         $eAssoWebsite = $request->input('eAssoWebsite');
         $eSenderProfile = $request->input('eSenderProfile');
         $eMailFile = $request->file('eMailFile');
@@ -137,6 +141,7 @@ class PhishingEmailsController extends Controller
             $isInserted = PhishingEmail::create([
                 'name' => $eTempName,
                 'email_subject' => $eSubject,
+                'difficulty' => $difficulty,
                 'mailBodyFilePath' => $path,
                 'website' => $eAssoWebsite,
                 'senderProfile' => $eSenderProfile,

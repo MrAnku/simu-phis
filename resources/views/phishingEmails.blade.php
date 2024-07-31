@@ -13,32 +13,75 @@
                         data-bs-target="#newPhishingmailModal">New Email Template</button>
                 </div>
 
+                <div class="row">
+                    <div class="col-auto">
+                        <label for="" class="col-form-label">Filter</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select" aria-label="Default select example" id="filterDiff">
+                            <option value="" selected>Difficulty</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <div class="col-auto">
+                        <a href="#" id="clearFilter"  style="display: none;">Clear Filter</a>
+                    </div>
+
+                </div>
+
             </div>
 
 
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
                                 Manage Phishing Emails
+                            </div>
+
+                            <div
+                                style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        ">
+
+                                <input type="text" class="form-control" id="templateSearch"
+                                    placeholder="Search template">
+                                <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>
                         <div class="card-body">
 
                             <div class="row">
                                 @forelse ($phishingEmails as $pemail)
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-6 email_templates" data-diff="{{ $pemail->difficulty ?? '' }}">
                                         <div class="card custom-card">
                                             <div class="card-header">
                                                 <div class="d-flex align-items-center w-100">
 
                                                     <div class="">
-                                                        <div class="fs-15 fw-semibold"></div>
+                                                        <div class="fs-15 fw-semibold">{{ $pemail->name }}</div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="card-body htmlPhishingGrid" id="mailBody{{ $pemail->id }}">
+
+                                                @if ($pemail->difficulty == 'easy')
+                                                    <span class="badge bg-outline-success">Easy</span>
+                                                @elseif ($pemail->difficulty == 'medium')
+                                                    <span class="badge bg-outline-warning">Medium</span>
+                                                @elseif ($pemail->difficulty == 'hard')
+                                                    <span class="badge bg-outline-danger">Hard</span>
+                                                @else
+                                                    <span class="badge bg-outline-secondary">Unknown</span>
+                                                @endif
+
+
                                                 <iframe class="phishing-iframe"
                                                     src="{{ Storage::url($pemail->mailBodyFilePath) }}"></iframe>
                                             </div>
@@ -118,7 +161,8 @@
                                                         style="height: auto; overflow: hidden scroll;">
                                                         <div class="simplebar-content" style="padding: 16px;">
                                                             <li class="px-0 pt-0">
-                                                                <span class="fs-11 text-muted op-7 fw-semibold">MAILS</span>
+                                                                <span
+                                                                    class="fs-11 text-muted op-7 fw-semibold">MAILS</span>
                                                             </li>
                                                             <li class="active mail-type">
                                                                 <a href="javascript:void(0);">
@@ -499,7 +543,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('addEmailTemplate')}}" method="post" enctype="multipart/form-data">
+                    <form action="{{ route('addEmailTemplate') }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label for="input-label" class="form-label">Email Template Name<sup
@@ -514,6 +558,14 @@
                             <input type="text" class="form-control" name="eSubject"
                                 placeholder="i.e. Reset your password" required>
 
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Difficulty</label>
+                            <select class="form-select" name="difficulty" aria-label="Default select example">
+                                <option value="easy" selected>Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="input-label" class="form-label">Associated Website<sup
@@ -595,6 +647,17 @@
                             <input type="hidden" name="editEtemp" id="editEtemp">
 
                         </div>
+
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Difficulty</label>
+                            <select class="form-select" name="difficulty" id="difficulty"
+                                aria-label="Default select example">
+                                <option value="easy" selected>Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label for="input-label" class="form-label">Sender Profile<sup
                                     class="text-danger">*</sup></label>
@@ -676,6 +739,7 @@
         <style>
             .htmlPhishingGrid {
                 overflow: scroll;
+                scrollbar-width: none;
                 border: 1px solid #8080804a;
                 border-radius: 6px;
                 max-height: 300px;
@@ -689,6 +753,8 @@
                 margin: 0;
                 padding: 0;
             }
+
+
 
             #displayMailBodyContent iframe,
             .htmlPhishingGrid iframe {
@@ -721,7 +787,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "{{route('phishing.template.delete')}}",
+                            url: "{{ route('phishing.template.delete') }}",
                             data: {
                                 tempid: tempid,
                                 filelocation: filelocation
@@ -767,6 +833,7 @@
                     success: function(res) {
                         if (res.status === 1) {
                             $("#updateEAssoWebsite").val(res.data.website)
+                            $("#difficulty").val(res.data.difficulty)
                             $("#updateESenderProfile").val(res.data.senderProfile)
                         }
 
@@ -774,6 +841,46 @@
                     }
                 })
             }
+
+            // Event listener for input field change
+            $('#templateSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+
+                // Loop through each template card
+                $('.email_templates').each(function() {
+                    var templateName = $(this).find('.fw-semibold').text()
+                        .toLowerCase(); // Get the template name and convert it to lowercase
+
+                    // If the template name contains the search value, show the card; otherwise, hide it
+                    if (templateName.includes(searchValue)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            $('#filterDiff').on('change', function() {
+                var selectedDifficulty = $(this).val();
+                $('#clearFilter').show();
+
+                $('.email_templates').each(function() {
+                    var templateDifficulty = $(this).data('diff');
+
+                    if (selectedDifficulty === '' || templateDifficulty === selectedDifficulty) {
+                        $(this).show(); // Show the template
+                    } else {
+                        $(this).hide(); // Hide the template
+                    }
+                });
+            });
+
+            $('#clearFilter').on('click', function() {
+                $('#filterDiff').val(''); // Reset the dropdown to default value
+                $('.email_templates').show(); // Show all templates
+
+                $(this).hide();
+            });
         </script>
     @endpush
 

@@ -12,6 +12,8 @@
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
                         data-bs-target="#newWebsiteModal">New Website</button>
                 </div>
+                
+               
 
             </div>
 
@@ -19,22 +21,33 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
                                 Manage Phishing Websites
+                            </div>
+
+                            <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        ">
+                                
+                                <input type="text" class="form-control" id="templateSearch"
+                                    placeholder="Search website">
+                                    <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>
                         <div class="card-body">
 
                             <div class="row">
                                 @forelse ($phishingWebsites as $phishingWebsite)
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-6 website_templates">
                                         <div class="card custom-card">
                                             <div class="card-header">
                                                 <div class="d-flex align-items-center w-100">
 
                                                     <div class="">
-                                                        <div class="fs-15 fw-semibold"></div>
+                                                        <div class="fs-15 fw-semibold">{{ $phishingWebsite->name }}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -236,6 +249,24 @@
              
 
             }
+
+             // Event listener for input field change
+             $('#templateSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+
+                // Loop through each template card
+                $('.website_templates').each(function() {
+                    var templateName = $(this).find('.fw-semibold').text()
+                .toLowerCase(); // Get the template name and convert it to lowercase
+
+                    // If the template name contains the search value, show the card; otherwise, hide it
+                    if (templateName.includes(searchValue)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
 
 
           

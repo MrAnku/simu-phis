@@ -265,6 +265,7 @@
                 // Get line chart data
                 axios.get('{{ route('get.line.chart.data') }}')
                     .then(function(response) {
+                    console.log(response.data)
                         var lineChartData = response.data;
                         var labels = lineChartData.map(function(data) {
                             return data.month;

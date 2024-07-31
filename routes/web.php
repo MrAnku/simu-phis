@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\SupportController;
@@ -151,6 +152,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/support/create-ticket', [SupportController::class, 'createTicket'])->name('support.createTicket');
     Route::post('/support/load-conversations', [SupportController::class, 'loadConversations'])->name('support.loadConversation');
     Route::post('/support/submit-reply', [SupportController::class, 'submitReply'])->name('support.submitReply');
+
+    //brand monitoring routes
+    Route::get('/brand-monitoring', [BrandMonitoringController::class, 'index'])->name('brand.monitoring');
 
 
     ///settings route------------------------------------------------------------------------------------

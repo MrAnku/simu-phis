@@ -32,23 +32,30 @@ class DashboardController extends Controller
     public function getLineChartData()
     {
         $lastSixMonthsData = [];
-        $currentMonthName = now()->format('F');
-
+    
+        // Start from the current month
+        $currentDate = now();
+    
         for ($i = 0; $i < 6; $i++) {
-            $monthName = now()->subMonths($i)->format('F');
-
+            // Subtract months from the current date to get each month
+            $monthDate = $currentDate->copy()->subMonthsNoOverflow($i);
+            $monthName = $monthDate->format('F');
+            $year = $monthDate->format('Y');
+    
             $noOfCampaigns = DB::table('all_campaigns')
-                ->whereRaw('MONTHNAME(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND company_id = ?', [$monthName, Auth::user()->company_id])
+                ->whereRaw('MONTHNAME(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND YEAR(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND company_id = ?', [$monthName, $year, Auth::user()->company_id])
                 ->count();
-
+    
             $lastSixMonthsData[] = [
                 'month' => $monthName,
                 'no_of_camps' => $noOfCampaigns
             ];
         }
-
+    
         return response()->json(array_reverse($lastSixMonthsData));
     }
+  
+
 
     public function getTotalAssets()
     {
