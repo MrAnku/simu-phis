@@ -111,12 +111,12 @@
 
                         </div>
                         <div class="mb-3">
-                            <label for="formFile" class="form-label">Website File</label>
+                            <label for="formFile" class="form-label">Website File<sup class="text-danger">*</sup></label>
                             <input class="form-control" type="file" name="webFile" accept=".html" required>
 
                         </div>
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website Domain</label>
+                            <label for="input-label" class="form-label">Website Domain<sup class="text-danger">*</sup></label>
                             <div class="d-flex">
 
                                 {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}

@@ -99,7 +99,7 @@
 
                     </div>
                     <div class="mb-3">
-                        <label for="whatsapp-template" class="form-label">Template</label>
+                        <label for="whatsapp-template" class="form-label">Template<sup class="text-danger">*</sup></label>
                         <select class="form-select" aria-label="Default select example" name="whatsapp_template"
                             id="whatsapp_template" required>
                             <option value="">Choose Template</option>
@@ -132,7 +132,9 @@
                                         <span class="timestamp">10:30 AM</span>
                                     </div> --}}
                                 <div class="chat-bubble receiver">
-                                    <p id="msg-body">I'm good, thanks! How about you?</p>
+                                    <strong id="msg-header"></strong>
+                                    <p id="msg-body"></p>
+                                    <p class="timestamp text-start" id="msg-footer"></p>
                                     <span class="timestamp">10:32 AM</span>
                                 </div>
                             </div>
@@ -144,7 +146,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">Employee Group</label>
+                        <label for="input-label" class="form-label">Employee Group<sup class="text-danger">*</sup></label>
                         <div class="d-flex">
 
                             {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
@@ -384,9 +386,22 @@
                 var category = selectedOption.data('cat');
                 var language = selectedOption.data('lang');
                 var msg = selectedOption.data('msg');
+                var headerFound = false;
+                var footerFound = false;
                 var regex = /\{\{\d+\}\}/g;
-                // console.log(msg)
+                console.log(msg)
                 msg.forEach(e => {
+                    if (e.type === 'HEADER' && e.format === 'TEXT') {
+                        $("#msg-header").text(e.text);
+                        headerFound = true;
+                    }
+
+                    if (e.type === 'FOOTER') {
+                        $("#msg-footer").text(e.text);
+                        footerFound = true;
+                    }
+
+
                     if (e.type === 'BODY') {
                         var text = e.text;
                         var matches = text.match(regex);
@@ -413,6 +428,14 @@
 
                     }
                 });
+
+                if (!headerFound) {
+                    $("#msg-header").text('');
+                }
+
+                if (!footerFound) {
+                    $("#msg-footer").text('');
+                }
 
                 $("#template_category").val(category);
                 $("#template_lang").val(language);

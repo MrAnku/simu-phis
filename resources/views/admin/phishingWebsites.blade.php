@@ -115,7 +115,6 @@
                             <label for="input-label" class="form-label">Website Domain<sup class="text-danger">*</sup></label>
                             <div class="d-flex">
 
-                                <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain">
                                 <select class="form-select" aria-label="Default select example" name="domain">
                                     <option value="cloud-services-notifications.com">cloud-services-notifications.com
                                     </option>
