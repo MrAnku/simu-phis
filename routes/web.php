@@ -67,6 +67,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/get-pie-data', [DashboardController::class, 'getPieData'])->name('get.pie.data');
     Route::get('/get-line-chart-data', [DashboardController::class, 'getLineChartData'])->name('get.line.chart.data');
     Route::get('/get-total-assets', [DashboardController::class, 'getTotalAssets'])->name('get.total.assets');
+    Route::get('/whatsappreport-chart-data', [DashboardController::class, 'whatsappReport']);
+    Route::get('/dash/get-payload-click-data', [DashboardController::class, 'getPayloadClickData']);
+    Route::get('/dash/get-emailreported-data', [DashboardController::class, 'getEmailReportedData']);
 
     //campaigns page routes------------------------------------------------------
 

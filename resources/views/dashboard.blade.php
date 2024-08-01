@@ -7,70 +7,6 @@
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
 
-            <!-- Start::page-header -->
-
-
-            <!-- End::page-header -->
-
-            <div class="card custom-card">
-
-                <div class="card-body">
-                    <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                href="#phish-overview" aria-selected="false" tabindex="-1">Yearly Phishing
-                                Overview</a>
-                        </li>
-                        <!-- <li class="nav-item" role="presentation">
-                                                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#training-overview" aria-selected="false" tabindex="-1">Yearly Training Overview</a>
-                                                                </li> -->
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane text-muted active show" id="phish-overview" role="tabpanel">
-                            <div class="row">
-                                <div class="col-xxl-8 col-xl-12">
-                                    <div class="card custom-card">
-
-                                        <div class="card-body">
-                                            <canvas id="chartjs-line" class="chartjs-chart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-xxl-4 col-xl-12">
-                                    <div class="card custom-card">
-                                        <div class="card-header">
-                                            <div class="card-title">Emails and Trainings</div>
-                                        </div>
-                                        <div class="card-body">
-                                            <canvas id="chartjs-doughnut" class="chartjs-chart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane text-muted" id="training-overview" role="tabpanel">
-                            <div class="row">
-                                <div class="col-xxl-8 col-xl-12">
-                                    <div class="card custom-card">
-
-                                        <div class="card-body">
-                                            <!-- <canvas id="chartjs-line" class="chartjs-chart"></canvas> -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-xxl-4 col-xl-12">
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-            <!-- Start::row-1 -->
             <div class="row">
                 <div class="col-lg-3">
                     <div class="card custom-card overflow-hidden">
@@ -161,9 +97,163 @@
                     </div>
                 </div>
             </div>
+
+
+            <div class="row">
+                <div class="col-lg-7">
+
+
+                    <div class="card custom-card">
+
+                        <div class="card-body">
+                            <canvas id="chartjs-line" class="chartjs-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">Emails and Trainings</div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="chartjs-doughnut" class="chartjs-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="card custom-card">
+                        <div class="card custom-card upgrade-card text-fixed-white">
+                            <div class="card-body text-fixed-white">
+                                <span class="avatar avatar-xxl">
+                                    {{-- <img src="assets/images/media/media-84.png" alt=""> --}}
+                                </span>
+                                <div class="upgrade-card-content">
+                                    <span class="op-7 fw-normal mb-1">Employees Limit</span>
+                                    <span
+                                        class="fs-24 fw-semibold d-block mb-5 upgrade-text">{{ auth()->user()->employees }}</span>
+                                    <button type="button"
+                                        class="btn btn-sm btn-light btn-wave waves-effect waves-light">Upgrade Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Start::row-1 -->
+
             <!-- End::row-1 -->
 
             <div class="row">
+                <div class="col-lg-4">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">WhatsApp Campaign Report</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="bar-group"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card custom-card">
+                        <div class="card-header  justify-content-between">
+                            <div class="card-title">
+                                Recent Campaigns
+                            </div>
+
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled crm-top-deals mb-0">
+                                @forelse ($recentSixCampaigns as $camp)
+                                    <li>
+                                        <div class="d-flex align-items-top flex-wrap">
+                                            <div class="me-2">
+                                                <span class="avatar avatar-sm avatar-rounded">
+                                                    <img src="https://cdn-icons-png.freepik.com/512/3122/3122573.png"
+                                                        alt="">
+                                                </span>
+                                            </div>
+                                            <div class="flex-fill">
+                                                <p class="fw-semibold mb-0">{{ $camp->campaign_name }}</p>
+                                                <span class="text-muted fs-12">{{ $camp->campaign_type }}</span>
+                                            </div>
+                                            <div class="fw-semibold fs-15">{{ $camp->status }}</div>
+                                        </div>
+                                    </li>
+                                @empty
+                                @endforelse
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card custom-card">
+                                <div class="card-body p-1">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div id="analytics-views"></div>
+                                        <div class="p-2">
+                                            <p class="mb-1 text-muted">Payload Clicks</p>
+                                            <h5 class="fw-semibold mb-0" id="all-payload-clicks"></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card custom-card">
+                                <div class="card-body p-1">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div id="analytics-views-2"></div>
+                                        <div class="p-2">
+                                            <p class="mb-1 text-muted">Email Reported</p>
+                                            <h5 class="fw-semibold mb-0" id="all-email-reported"></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="card custom-card">
+                        <div class="card-header justify-content-between">
+                            <div class="card-title">
+                                Employee compromised
+                            </div>
+
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <h4 class="fw-bold mb-0">{{$totalEmpCompromised}}</h4>
+                                <div class="ms-2">
+                                   
+                                    <span class="text-muted ms-1">Employees compromised</span>
+                                </div>
+                            </div>
+                            
+                            <ul class="list-unstyled mb-0 pt-2 crm-deals-status">
+                                @forelse ($campaignsWithReport as $r)
+                                <li class="primary">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>{{$r->campaign_name}}</div>
+                                        <div class="fs-12 text-muted">{{$r->emp_compromised}}</div>
+                                    </div>
+                                </li>
+                                @empty
+                                    
+                                @endforelse
+                               
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-lg-12">
                     <div class="card custom-card">
                         <div class="card-header">
@@ -187,7 +277,7 @@
                                             <td>Anant kumar</td>
                                             <td>
                                                 <span class="badge bg-danger">Breached</span>
-                                                
+
                                             </td>
                                         </tr>
                                         <tr>
@@ -195,7 +285,7 @@
                                             <td>Rahul kumar</td>
                                             <td>
                                                 <span class="badge bg-success">Not Breached</span>
-                                                
+
                                             </td>
                                         </tr>
                                         <tr>
@@ -203,7 +293,7 @@
                                             <td>Samresh kumar</td>
                                             <td>
                                                 <span class="badge bg-danger">Breached</span>
-                                                
+
                                             </td>
                                         </tr>
                                     </tbody>
@@ -265,7 +355,7 @@
                 // Get line chart data
                 axios.get('{{ route('get.line.chart.data') }}')
                     .then(function(response) {
-                    console.log(response.data)
+                        console.log(response.data)
                         var lineChartData = response.data;
                         var labels = lineChartData.map(function(data) {
                             return data.month;
@@ -307,6 +397,195 @@
 
         <!-- Apex Charts JS -->
         <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
+
+        {{-- Whatsapp campaign report chart --}}
+        <script>
+            /* grouped bar chart */
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/whatsappreport-chart-data',
+                    method: 'GET',
+                    success: function(response) {
+                        var options = {
+                            series: [{
+                                name: 'Link Clicked',
+                                data: response.link_clicked
+                            }, {
+                                name: 'Emp Compromised',
+                                data: response.emp_compromised
+                            }],
+                            chart: {
+                                type: 'bar',
+                                height: 320
+                            },
+                            plotOptions: {
+                                bar: {
+                                    horizontal: true,
+                                    dataLabels: {
+                                        position: 'top',
+                                    },
+                                }
+                            },
+                            grid: {
+                                borderColor: '#f2f5f7',
+                            },
+                            colors: ["#845adf", "#23b7e5"],
+                            dataLabels: {
+                                enabled: true,
+                                offsetX: -6,
+                                style: {
+                                    fontSize: '10px',
+                                    colors: ['#fff']
+                                }
+                            },
+                            stroke: {
+                                show: true,
+                                width: 1,
+                                colors: ['#fff']
+                            },
+                            tooltip: {
+                                shared: true,
+                                intersect: false
+                            },
+                            xaxis: {
+                                categories: response.months,
+                                labels: {
+                                    show: true,
+                                    style: {
+                                        colors: "#8c9097",
+                                        fontSize: '11px',
+                                        fontWeight: 600,
+                                        cssClass: 'apexcharts-xaxis-label',
+                                    },
+                                }
+                            },
+                            yaxis: {
+                                labels: {
+                                    show: true,
+                                    style: {
+                                        colors: "#8c9097",
+                                        fontSize: '11px',
+                                        fontWeight: 600,
+                                        cssClass: 'apexcharts-yaxis-label',
+                                    },
+                                }
+                            }
+                        };
+
+                        var chart = new ApexCharts(document.querySelector("#bar-group"), options);
+                        chart.render();
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            /* Payload Clicks Chart */
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/dash/get-payload-click-data',
+                    method: 'GET',
+                    success: function(response) {
+                        $("#all-payload-clicks").text(response.payload_clicks);
+                        var options = {
+                            chart: {
+                                height: 120,
+                                width: 100,
+                                type: "radialBar",
+                            },
+                            series: [response.percentage],
+                            colors: ["#7f4bcc"],
+                            plotOptions: {
+                                radialBar: {
+                                    hollow: {
+                                        margin: 0,
+                                        size: "50%",
+                                        background: "#fff"
+                                    },
+                                    dataLabels: {
+                                        name: {
+                                            offsetY: -10,
+                                            color: "#010608",
+                                            fontSize: "10px",
+                                            show: false
+                                        },
+                                        value: {
+                                            offsetY: 5,
+                                            color: "#010608",
+                                            fontSize: "12px",
+                                            show: true,
+                                            fontWeight: 800
+                                        }
+                                    }
+                                }
+                            },
+                            stroke: {
+                                lineCap: "round"
+                            },
+                            labels: ["Payload Clicks"]
+                        };
+
+                        document.querySelector("#analytics-views").innerHTML = ""
+                        var chart6 = new ApexCharts(document.querySelector("#analytics-views"), options);
+                        chart6.render();
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            /* Email reported Chart */
+            $(document).ready(function() {
+                $.ajax({
+                    url: '/dash/get-emailreported-data',
+                    method: 'GET',
+                    success: function(response) {
+                        $("#all-email-reported").text(response.email_reported);
+                        var options = {
+                            chart: {
+                                height: 120,
+                                width: 100,
+                                type: "radialBar",
+                            },
+                            series: [response.percentage],
+                            colors: ["#7f4bcc"],
+                            plotOptions: {
+                                radialBar: {
+                                    hollow: {
+                                        margin: 0,
+                                        size: "50%",
+                                        background: "#fff"
+                                    },
+                                    dataLabels: {
+                                        name: {
+                                            offsetY: -10,
+                                            color: "#010608",
+                                            fontSize: "10px",
+                                            show: false
+                                        },
+                                        value: {
+                                            offsetY: 5,
+                                            color: "#010608",
+                                            fontSize: "12px",
+                                            show: true,
+                                            fontWeight: 800
+                                        }
+                                    }
+                                }
+                            },
+                            stroke: {
+                                lineCap: "round"
+                            },
+                            labels: ["Email Reported"]
+                        };
+
+                        document.querySelector("#analytics-views-2").innerHTML = ""
+                        var chart6 = new ApexCharts(document.querySelector("#analytics-views-2"), options);
+                        chart6.render();
+                    }
+                });
+            });
+        </script>
     @endpush
 
 @endsection

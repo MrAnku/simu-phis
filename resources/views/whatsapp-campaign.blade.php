@@ -418,24 +418,24 @@
                                 if (index === 0) {
                                     var input = `<div class="col-lg-4">
                                         <label class="form-label">Variable ${varib}</label>
-                                        <input type="text" class="form-control" name="name_variable"
+                                        <input type="text" class="form-control form-control-sm" name="name_variable"
                                             value="Employee name" disabled>
-                                            <small>This variable is reserved</small>
+                                            <small class="mb-3">This variable is reserved</small>
                                     </div>`;
                                     inputs += input;
 
                                 } else if (index === matches.length - 1) {
                                     var input = `<div class="col-lg-4">
                                         <label class="form-label">Variable ${varib}</label>
-                                        <input type="text" class="form-control" name="url_variable"
+                                        <input type="text" class="form-control form-control-sm" name="url_variable"
                                             value="Campaign URL" disabled>
-                                            <small>This variable is reserved</small>
+                                            <small class="mb-3">This variable is reserved</small>
                                     </div>`;
                                     inputs += input;
                                 } else {
                                     var input = `<div class="col-lg-4">
                                         <label class="form-label">Variable ${varib}</label>
-                                        <input type="text" class="form-control" name="temp_variable"
+                                        <input type="text" class="form-control form-control-sm" name="temp_variable"
                                             placeholder="enter value">
                                     </div>`;
                                     inputs += input;

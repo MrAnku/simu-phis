@@ -2,18 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
+use App\Models\CampaignReport;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $companyId = Auth::user()->company_id;
 
         $data = $this->getTotalAssets();
 
-        return view('dashboard', compact('data'));
+        $recentSixCampaigns = Campaign::where('company_id', $companyId)
+            ->orderBy('id', 'desc')
+            ->take(6)
+            ->get();
+
+        $campaignsWithReport = CampaignReport::where('company_id', $companyId)->take(4)->get();   
+        $totalEmpCompromised = CampaignReport::where('company_id', $companyId)
+        ->sum('emp_compromised');
+
+
+        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised'));
     }
 
     public function getPieData()
@@ -32,30 +46,28 @@ class DashboardController extends Controller
     public function getLineChartData()
     {
         $lastSixMonthsData = [];
-    
+
         // Start from the current month
         $currentDate = now();
-    
+
         for ($i = 0; $i < 6; $i++) {
             // Subtract months from the current date to get each month
             $monthDate = $currentDate->copy()->subMonthsNoOverflow($i);
             $monthName = $monthDate->format('F');
             $year = $monthDate->format('Y');
-    
+
             $noOfCampaigns = DB::table('all_campaigns')
                 ->whereRaw('MONTHNAME(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND YEAR(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND company_id = ?', [$monthName, $year, Auth::user()->company_id])
                 ->count();
-    
+
             $lastSixMonthsData[] = [
                 'month' => $monthName,
                 'no_of_camps' => $noOfCampaigns
             ];
         }
-    
+
         return response()->json(array_reverse($lastSixMonthsData));
     }
-  
-
 
     public function getTotalAssets()
     {
@@ -93,5 +105,102 @@ class DashboardController extends Controller
             'phishing_websites' => $phishingWebsitesCount,
             'training_modules' => $trainingModulesCount,
         ];
+    }
+
+    public function whatsappReport()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $now = Carbon::now();
+        $months = [];
+
+        // Generate an array for the previous four months with formatted month and year
+        for ($i = 0; $i < 4; $i++) {
+            $date = $now->copy()->subMonths($i);
+            $monthFormatted = $date->format('M y');
+            $months[$monthFormatted] = [
+                'link_clicked' => 0,
+                'emp_compromised' => 0
+            ];
+        }
+
+        $data = DB::table('whatsapp_camp_users')
+            ->select(
+                DB::raw('SUM(link_clicked) as link_clicked'),
+                DB::raw('SUM(emp_compromised) as emp_compromised'),
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month')
+            )
+            ->where('created_at', '>=', $now->copy()->subMonths(4)->startOfMonth())
+            ->where('company_id', $companyId)
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
+
+        // Merge the query results with the months array
+        foreach ($data as $item) {
+            $date = Carbon::createFromFormat('Y-m', $item->month);
+            $monthFormatted = $date->format('M y');
+            $months[$monthFormatted] = [
+                'link_clicked' => (int) $item->link_clicked,
+                'emp_compromised' => (int) $item->emp_compromised
+            ];
+        }
+
+        // Prepare the final data structure
+        $chartData = [
+            'months' => array_keys($months),
+            'link_clicked' => array_column($months, 'link_clicked'),
+            'emp_compromised' => array_column($months, 'emp_compromised')
+        ];
+
+        return response()->json($chartData);
+    }
+
+    public function getPayloadClickData()
+    {
+        $companyId = Auth::user()->company_id;
+        // Fetch the total number of records
+        $totalRecords = DB::table('campaign_live')->where('company_id', $companyId)->count();
+
+        // Fetch the number of records with payload clicks
+        $payloadClickRecords = DB::table('campaign_live')
+            ->where('payload_clicked', '>', 0)
+            ->where('company_id', $companyId)
+            ->count();
+
+        // Calculate the percentage
+        $percentage = ($totalRecords > 0) ? ($payloadClickRecords / $totalRecords) * 100 : 0;
+
+        // Prepare the data to send to the frontend
+        $data = [
+            'percentage' => round($percentage, 2), // Round to 2 decimal places
+            'payload_clicks' => $payloadClickRecords
+        ];
+
+        return response()->json($data);
+    }
+
+    public function getEmailReportedData()
+    {
+        $companyId = Auth::user()->company_id;
+        // Fetch the total number of records
+        $totalRecords = DB::table('campaign_live')->where('company_id', $companyId)->count();
+
+        // Fetch the number of records with payload clicks
+        $emailReportedRecords = DB::table('campaign_live')
+            ->where('email_reported', '>', 0)
+            ->where('company_id', $companyId)
+            ->count();
+
+        // Calculate the percentage
+        $percentage = ($totalRecords > 0) ? ($emailReportedRecords / $totalRecords) * 100 : 0;
+
+        // Prepare the data to send to the frontend
+        $data = [
+            'percentage' => round($percentage, 2), // Round to 2 decimal places
+            'email_reported' => $emailReportedRecords
+        ];
+
+        return response()->json($data);
     }
 }
