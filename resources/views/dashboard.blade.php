@@ -100,7 +100,7 @@
 
 
             <div class="row">
-                <div class="col-lg-7">
+                <div class="col-lg-6">
 
 
                     <div class="card custom-card">
@@ -120,19 +120,87 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-3">
+
                     <div class="card custom-card">
-                        <div class="card custom-card upgrade-card text-fixed-white">
-                            <div class="card-body text-fixed-white">
-                                <span class="avatar avatar-xxl">
-                                    {{-- <img src="assets/images/media/media-84.png" alt=""> --}}
-                                </span>
-                                <div class="upgrade-card-content">
-                                    <span class="op-7 fw-normal mb-1">Employees Limit</span>
-                                    <span
-                                        class="fs-24 fw-semibold d-block mb-5 upgrade-text">{{ auth()->user()->employees }}</span>
-                                    <button type="button"
-                                        class="btn btn-sm btn-light btn-wave waves-effect waves-light">Upgrade Now</button>
+                        <div class="card-header">
+                            <div class="card-title">Package</div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="d-flex align-items-center justify-content-between mb-0">
+                                <p class="mb-0 fs-20 fw-semibold">{{$package['total_emp']}} of {{$package['alloted_emp']}}</p>
+                                <p class="fw-semibold fs-14 mb-0">Employees</p>
+                            </div>
+                            <div class="d-flex align-items-center my-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-indigo" role="progressbar" style="width: {{$package['used_percent']}}%"
+                                            aria-valuenow="{{$package['used_percent']}}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">Active Attack Vector</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="card custom-card">
+                                        <div class="card-body"
+                                            style="
+                                    border-radius: 10px;
+    border: 1px solid #a3a3a3;
+    padding: 7px;
+                                ">
+                                            <div class="d-flex flex-column align-items-center justify-content-between">
+                                                <div>
+                                                    <span class="avatar avatar-md avatar-rounded fs-18">
+                                                        <i class="bi bi-envelope fs-24"
+                                                            style="
+                                                    color: #808080;
+                                                    font-size: 38px;
+                                                "></i>
+                                                    </span>
+                                                </div>
+                                                <div class="my-1">
+                                                    <p class="mb-0 text-muted text-center">Phishing</p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card custom-card">
+                                        <div class="card-body"
+                                            style="
+                                    border-radius: 10px;
+    border: 1px solid #a3a3a3;
+    padding: 7px;
+                                ">
+                                            <div class="d-flex flex-column align-items-center justify-content-between">
+                                                <div>
+                                                    <span class="avatar avatar-md avatar-rounded fs-18">
+                                                        <i class="bi bi-whatsapp fs-16"
+                                                            style="
+                                                    color: #808080;
+                                                    font-size: 38px;
+                                                "></i>
+                                                    </span>
+                                                </div>
+                                                <div class="my-1">
+                                                    <p class="mb-0 text-muted text-center">WhatsApp</p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -231,25 +299,24 @@
                         </div>
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
-                                <h4 class="fw-bold mb-0">{{$totalEmpCompromised}}</h4>
+                                <h4 class="fw-bold mb-0">{{ $totalEmpCompromised ?? 0 }}</h4>
                                 <div class="ms-2">
-                                   
+
                                     <span class="text-muted ms-1">Employees compromised</span>
                                 </div>
                             </div>
-                            
+
                             <ul class="list-unstyled mb-0 pt-2 crm-deals-status">
                                 @forelse ($campaignsWithReport as $r)
-                                <li class="primary">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>{{$r->campaign_name}}</div>
-                                        <div class="fs-12 text-muted">{{$r->emp_compromised}}</div>
-                                    </div>
-                                </li>
+                                    <li class="primary">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>{{ $r->campaign_name }}</div>
+                                            <div class="fs-12 text-muted">{{ $r->emp_compromised }}</div>
+                                        </div>
+                                    </li>
                                 @empty
-                                    
                                 @endforelse
-                               
+
                             </ul>
                         </div>
                     </div>

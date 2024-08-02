@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\CampaignReport;
+use App\Models\Users;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,8 +27,10 @@ class DashboardController extends Controller
         $totalEmpCompromised = CampaignReport::where('company_id', $companyId)
         ->sum('emp_compromised');
 
+        $package = $this->getPackage();
 
-        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised'));
+
+        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package'));
     }
 
     public function getPieData()
@@ -202,5 +205,22 @@ class DashboardController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    public function getPackage(){
+        $companyId = Auth::user()->company_id;
+        $employees = Users::where('company_id', $companyId)->count();
+
+        $allotedEmployees = (int)Auth::user()->employees;
+
+        $usedPercent = ($employees > 0) ? ($employees/$allotedEmployees) * 100 : 0;
+
+        $package = [
+            "alloted_emp" => $allotedEmployees,
+            "total_emp" => $employees,
+            "used_percent" => $usedPercent
+        ];
+
+        return $package;
     }
 }
