@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="col-auto">
-                        <a href="#" id="clearFilter"  style="display: none;">Clear Filter</a>
+                        <a href="#" id="clearFilter" style="display: none;">Clear Filter</a>
                     </div>
 
                 </div>
@@ -55,7 +55,7 @@
                                 <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body all-email-templates">
 
                             <div class="row">
                                 @forelse ($phishingEmails as $pemail)
@@ -761,6 +761,29 @@
                 width: 100%;
                 height: 100vh;
                 border: none;
+            }
+
+            .all-email-templates::-webkit-scrollbar {
+                width: 12px;
+                height: 12px;
+            }
+
+            .all-email-templates::-webkit-scrollbar-track {
+                background: #ecf0f1 !important;
+                border-radius: 10px;
+            }
+
+            .all-email-templates::-webkit-scrollbar-thumb {
+                background: #3498db !important;
+                border-radius: 10px;
+                border: 2px solid transparent;
+                /* Adds some space around the thumb */
+                background-clip: content-box;
+                /* Keeps the thumb within the space */
+            }
+
+            .all-email-templates {
+                overflow-y: scroll;
             }
         </style>
     @endpush

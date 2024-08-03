@@ -43,8 +43,8 @@
             <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-6 col-sm-8 col-12">
                 <div class="my-5 d-flex justify-content-center">
                     <a href="#">
-                        <img src="{{ asset('assets') }}/images/simu-logo-dark.png" alt="logo" class="desktop-logo">
-                        <img src="{{ asset('assets') }}/images/simu-logo.png" alt="logo" class="desktop-dark">
+                        <img src="{{$companyLogoDark}}" alt="logo" class="desktop-logo">
+                        <img src="{{$companyLogoLight}}" alt="logo" class="desktop-dark">
                     </a>
                 </div>
                 <div class="card custom-card">
@@ -93,7 +93,7 @@
                                 </div>
                             </div>
                             <div class="text-center">
-                                <p class="fs-12 text-muted mt-3">Login to your account <a href="login.php"
+                                <p class="fs-12 text-muted mt-3">Login to your account <a href="{{route('login')}}"
                                         class="text-primary">Log In</a></p>
                             </div>
                         </div>

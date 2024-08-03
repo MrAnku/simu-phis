@@ -7,15 +7,23 @@
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
 
-            <div class="d-flex" style="gap: 10px;">
-                <div>
-                    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
+            <div class="d-flex justify-content-between" style="gap: 10px;">
+                <div class="d-flex" style="gap: 10px;">
+                    <div>
+                        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
+                            data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary mb-3" onclick="fetchTemplates()"
+                            data-bs-toggle="modal" data-bs-target="#templatesModal">Available Templates</button>
+                    </div>
                 </div>
+
                 <div>
-                    <button type="button" class="btn btn-secondary mb-3" onclick="fetchTemplates()" data-bs-toggle="modal"
-                        data-bs-target="#templatesModal">Available Templates</button>
+                    <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
+                        data-bs-target="#newtemplatesModal">Request New Template</button>
                 </div>
+
 
             </div>
 
@@ -83,6 +91,58 @@
 
     {{-- -------------------Modals------------------------ --}}
 
+    <!-- new template modal -->
+    <div class="modal fade" id="newtemplatesModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Request New Template</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{route('whatsapp.newTemplate')}}" method="post">
+                        @csrf
+                  
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Template name<sup class="text-danger">*</sup></label>
+                        <input type="text" name="temp_name" class="form-control" id="camp_name"
+                            placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
+                        <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;" placeholder="Hi @{{var}} .....your content......@{{var}}....Please click the link below to get started @{{var}}" required></textarea>
+
+                        
+                    </div>
+                    <div class="mb-3">
+                        <ul>
+                            <li>
+                                <small>
+                                    Add <span class="text-secondary">@{{var}}</span> for variable. For example Hello <span class="text-secondary">@{{var}}</span> Thank you for choosing our services.
+                                </small>
+                            </li>
+                            <li>
+                                <small>
+                                    Please add minimum 3 and maximum 4 variables in which the <span class="text-secondary">first and last variable will be reserved</span> for Employee name and campaign url.
+                                </small>
+                            </li>
+                        </ul>
+                        
+                        
+                    </div>
+
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
+                            onclick="submitCampaign();">Request Template</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- new whatsapp campaign add -->
     <div class="modal fade" id="newWhatsappCampaignModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-hidden="true">
@@ -146,7 +206,8 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">Employee Group<sup class="text-danger">*</sup></label>
+                        <label for="input-label" class="form-label">Employee Group<sup
+                                class="text-danger">*</sup></label>
                         <div class="d-flex">
 
                             {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
@@ -172,7 +233,7 @@
         </div>
     </div>
 
-
+    <!-- whatsapp campaign report modal -->
     <div class="modal fade" id="campaignReportModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-modal="true" role="dialog">
         <div class="modal-dialog modal-xl">
@@ -205,6 +266,7 @@
         </div>
     </div>
 
+    <!-- All templates modal -->
     <div class="modal fade" id="templatesModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-modal="true"
         role="dialog">
         <div class="modal-dialog modal-lg">
@@ -506,7 +568,7 @@
                     components: componentsArray
                 }
 
-                 console.log(finalBody);
+                console.log(finalBody);
                 $.post({
                     url: '{{ route('whatsapp.submitCampaign') }}',
                     data: finalBody,
@@ -573,7 +635,7 @@
                         if (res) {
                             res.forEach((e) => {
 
-                              
+
                                 row += `
                                 <tr class="">
                                     <td scope="row">${e.user_name}</td>
@@ -612,11 +674,11 @@
                         var body = '';
                         var footer = '';
                         var components = '';
-                        
+
                         if (res) {
                             res.templates.forEach((e) => {
                                 var headerfound = false;
-                        var footerfound = false;
+                                var footerfound = false;
                                 components = JSON.parse(e.components);
                                 components.forEach((e2) => {
                                     if (e2.type === 'HEADER' && e2.format === 'TEXT') {

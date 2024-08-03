@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreWhatsAppTemplateRequest;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\UsersGroup;
 use Illuminate\Http\Request;
 use App\Models\WhatsappCampaign;
+use App\Models\WhatsappTempRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -176,5 +178,25 @@ class WhatsappCampaignController extends Controller
         } else {
             return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
         }
+    }
+
+    public function newTemplate(StoreWhatsAppTemplateRequest $request){
+
+        $company_id = auth()->user()->company_id;
+        $partner_id = auth()->user()->partner_id;
+
+        // Validation has already been performed at this point
+        $validated = $request->validated();
+
+        // Store the template
+        $template = new WhatsappTempRequest();
+        $template->template_name = $validated['temp_name'];
+        $template->template_body = $validated['temp_body'];
+        $template->company_id = $company_id;
+        $template->partner_id = $partner_id;
+        $template->created_at = now();
+        $template->save();
+
+        return redirect()->back()->with('success', 'New template request added successfully.');
     }
 }

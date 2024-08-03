@@ -87,6 +87,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/whatsapp-delete-campaign', [WhatsappCampaignController::class, 'deleteCampaign'])->name('whatsapp.deleteCampaign');
     Route::post('/whatsapp-fetch-campaign', [WhatsappCampaignController::class, 'fetchCampaign'])->name('whatsapp.fetchCamp');
 
+    Route::post('/whatsapp-new-template', [WhatsappCampaignController::class, 'newTemplate'])->name('whatsapp.newTemplate');
+
     //employees route-------------------------------------------------------------
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
