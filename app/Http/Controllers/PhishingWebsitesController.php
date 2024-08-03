@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class PhishingWebsitesController extends Controller
@@ -94,5 +95,77 @@ class PhishingWebsitesController extends Controller
         $phishingWebsite->save();
 
         return redirect()->back()->with('success', 'New website is added');
+    }
+
+    public function generateWebsite(Request $request){
+
+        $request->validate([
+            'description' => 'required|string',
+            'company_name' => 'required|string',
+            'logo_url' => 'required|url',
+        ]);
+
+        $description = $request->input('description');
+        $companyName = $request->input('company_name');
+        $logoUrl = $request->input('logo_url');
+
+        $openaiApiKey = env('OPENAI_API_KEY');
+        $prompt = 'Based on the following description, modify the given HTML template of a login page. Description: ' . $description;
+
+        $data = [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'user', 'content' => $prompt],
+            ],
+        ];
+
+        $response = Http::withOptions(['verify' => false])->withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $openaiApiKey,
+        ])->post('https://api.openai.com/v1/chat/completions', $data);
+
+        if ($response->failed()) {
+            return response()->json([
+                'status' => 0,
+                'msg' => $response->body(),
+            ]);
+        }
+
+        $responseData = $response->json();
+
+        if (!isset($responseData['choices'][0]['message']['content'])) {
+            return response()->json([
+                'status' => 0,
+                'msg' => $responseData,
+            ]);
+        }
+
+        $generatedContent = $responseData['choices'][0]['message']['content'];
+
+        // Generate unique directory name
+        $timestamp = time();
+        $directory = 'public/ai_site_temp/site_' . $timestamp;
+
+        // Read the predefined template
+        $template = Storage::get('public/login_template.html');
+        if ($template === false) {
+            return response()->json(['status'=> 0, 'msg' => 'Could not read the template file.']);
+        }
+
+        // Replace placeholders with user-provided values
+        $finalContent = str_replace('%company_name%', $companyName, $template);
+        $finalContent = str_replace('%logo_url%', $logoUrl, $finalContent);
+
+        // Apply additional modifications based on generated content
+        $finalContent = str_replace('<!-- Content -->', $generatedContent, $finalContent);
+
+        // Save the final content to a new file
+        Storage::put($directory . '/index.html', $finalContent);
+
+        return response()->json([
+            'status' => 1,
+            'msg' => Storage::url($directory . '/index.html'),
+        ]);
+
     }
 }

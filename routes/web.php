@@ -130,6 +130,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
+    Route::post('/generate-phishing-website', [PhishingWebsitesController::class, 'generateWebsite'])->name('phishing.generate.website');
 
 
     //sender profiles routes-----------------------------------------------------------------

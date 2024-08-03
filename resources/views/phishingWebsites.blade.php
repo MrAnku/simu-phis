@@ -7,13 +7,18 @@
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
 
-            <div class="d-flex justify-content-between">
+            <div class="d-flex" style="gap: 10px;">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
                         data-bs-target="#newWebsiteModal">New Website</button>
                 </div>
-                
-               
+
+                <div>
+                    <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
+                        data-bs-target="#generateWebsiteModal">Generate website with AI</button>
+                </div>
+
+
 
             </div>
 
@@ -26,15 +31,15 @@
                                 Manage Phishing Websites
                             </div>
 
-                            <div style="
+                            <div
+                                style="
                             display: flex;
                             align-items: center;
                             gap: 10px;
                         ">
-                                
-                                <input type="text" class="form-control" id="templateSearch"
-                                    placeholder="Search website">
-                                    <i class='bx bx-search fs-23'></i>
+
+                                <input type="text" class="form-control" id="templateSearch" placeholder="Search website">
+                                <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>
                         <div class="card-body">
@@ -94,8 +99,8 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-     <!-- new website add -->
-     <div class="modal fade" id="newWebsiteModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- new website add -->
+    <div class="modal fade" id="newWebsiteModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -103,7 +108,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('phishing.website.add')}}" method="post" enctype="multipart/form-data">
+                    <form action="{{ route('phishing.website.add') }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label for="input-label" class="form-label">Website name<sup class="text-danger">*</sup></label>
@@ -116,20 +121,67 @@
 
                         </div>
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website Domain<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">Website Domain<sup
+                                    class="text-danger">*</sup></label>
                             <div class="d-flex">
 
                                 {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                 <select class="form-select" aria-label="Default select example" name="domain">
-                                    <option value="cloud-services-notifications.com">cloud-services-notifications.com</option>
+                                    <option value="cloud-services-notifications.com">cloud-services-notifications.com
+                                    </option>
                                 </select>
                             </div>
 
                         </div>
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add Website</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
+                                Website</button>
                         </div>
                     </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- generate website with ai -->
+    <div class="modal fade" id="generateWebsiteModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Generate website with AI</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Description<sup class="text-danger">*</sup></label>
+                        <input type="text" class="form-control" id="web_des"
+                            placeholder="Enter your website description" required>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">Company Name<sup class="text-danger">*</sup></label>
+                        <input type="text" class="form-control" id="com_name"
+                            placeholder="Enter the company name which would be appear as heading on website" required>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Logo url<sup class="text-danger">*</sup></label>
+                        <input type="text" class="form-control" id="logo_url"
+                            placeholder="Enter the website url link" required>
+
+                    </div>
+                    <div class="mb-3">
+                        <button onclick="generateWebsite(this)"
+                            class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Generate Website</button>
+                    </div>
+
+                    <div class="mb-3" id="iframe-container" style="display:none;">
+                        <iframe id="generated-site-iframe" width="100%" height="600px"></iframe>
+                    </div>
 
                 </div>
             </div>
@@ -234,7 +286,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{route('phishing.website.delete')}}',
+                            url: '{{ route('phishing.website.delete') }}',
                             data: {
                                 websiteid: webId,
                                 filename: filename
@@ -246,18 +298,18 @@
                         })
                     }
                 })
-             
+
 
             }
 
-             // Event listener for input field change
-             $('#templateSearch').on('input', function() {
+            // Event listener for input field change
+            $('#templateSearch').on('input', function() {
                 var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
 
                 // Loop through each template card
                 $('.website_templates').each(function() {
                     var templateName = $(this).find('.fw-semibold').text()
-                .toLowerCase(); // Get the template name and convert it to lowercase
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
                     // If the template name contains the search value, show the card; otherwise, hide it
                     if (templateName.includes(searchValue)) {
@@ -268,8 +320,32 @@
                 });
             });
 
-
-          
+            function generateWebsite(btn) {
+                console.log("website is generating..");
+                $(btn).html(
+                    `<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>`
+                );
+                $.post({
+                    url: '{{ route('phishing.generate.website') }}',
+                    data: {
+                        description: web_des.value,
+                        company_name: com_name.value,
+                        logo_url: logo_url.value
+                    },
+                    success: function(res) {
+                        console.log(res)
+                        $(btn).html(
+                    `Generate Website`
+                );
+                        if (res.status === 1) {
+                            $('#generated-site-iframe').attr('src', res.msg);
+                            $('#iframe-container').show();
+                        } else {
+                            alert('Error: Could not generate website.');
+                        }
+                    }
+                })
+            }
         </script>
     @endpush
 
