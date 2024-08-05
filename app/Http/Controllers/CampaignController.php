@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Users;
 use App\Models\Campaign;
 use App\Models\UsersGroup;
 use Illuminate\Support\Str;
@@ -179,7 +180,7 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            
+
 
             Campaign::create([
                 'campaign_id' => $campId,
@@ -269,7 +270,7 @@ class CampaignController extends Controller
         }
     }
 
-    public function generateRandomDate($dateS, $timeS, $timeE, $timeZone)
+    public function generateRandomDate($dateS, $timeS, $timeE, $timeZone = 'Asia/Kolkata')
     {
         $dateString = $dateS;
         $timeStart = $timeS;
@@ -307,11 +308,11 @@ class CampaignController extends Controller
         // try {
         //     DB::beginTransaction();
 
-            $res1 = Campaign::where('campaign_id', $campid)->delete();
-            $res2 = CampaignLive::where('campaign_id', $campid)->delete();
-            $res3 = CampaignReport::where('campaign_id', $campid)->delete();
+        $res1 = Campaign::where('campaign_id', $campid)->delete();
+        $res2 = CampaignLive::where('campaign_id', $campid)->delete();
+        $res3 = CampaignReport::where('campaign_id', $campid)->delete();
 
-            return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+        return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
 
         //     if ($res1 && $res2 && $res3) {
         //         DB::commit();
@@ -414,5 +415,142 @@ class CampaignController extends Controller
         }
 
         return response()->json($phishData, 200, [], JSON_PRETTY_PRINT);
+    }
+
+    public function rescheduleCampaign(Request $request)
+    {
+        
+        $companyId = Auth::user()->company_id;
+
+        $request->validate([
+            'rschType' => 'required',
+            'campid' => 'required'
+        ]);
+
+        if ($request->rschType == 'immediately') {
+
+            $launchTime = Carbon::now()->format("m/d/Y g:i A");
+            $email_freq = $request->emailFreq;
+            $expire_after = $request->rexpire_after;
+
+            $campaign = $this->makeCampaignLive($request->campid, $launchTime, $email_freq, $expire_after);
+
+            $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
+
+            if(!$isreportexist){
+                CampaignReport::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'campaign_type' => $campaign->campaign_type,
+                    'status' => 'running',
+                    'email_lang' => $campaign->email_lang,
+                    'training_lang' => $campaign->training_lang,
+                    'scheduled_date' => $launchTime,
+                    'company_id' => $companyId,
+                ]);
+            }else{
+                CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
+                    'scheduled_date' => $launchTime,
+                    'status' => 'running'
+                ]);
+            }           
+           
+        }
+
+        if($request->rschType == 'scheduled'){          
+
+            
+            $schedule_date = $request->rsc_launch_time;
+            $startTime = $request->startTime;
+            $endTime = $request->endTime;
+            $timeZone = $request->rschTimeZone;
+            $email_freq = $request->emailFreq;
+            $expire_after = $request->rexpire_after;
+
+            $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime);
+
+            $campaign = Campaign::where('id', $request->campid)->first();
+
+            $campaign->launch_time = $launchTime;
+            $campaign->launch_type = 'scheduled';
+            $campaign->email_freq = $email_freq;
+            $campaign->startTime = $startTime;
+            $campaign->endTime = $endTime;
+            $campaign->timeZone = $timeZone;
+            $campaign->expire_after = $expire_after;
+            $campaign->status = 'pending';
+            $campaign->save();
+
+            $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
+
+            if(!$isreportexist){
+                CampaignReport::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'campaign_type' => $campaign->campaign_type,
+                    'status' => 'pending',
+                    'email_lang' => $campaign->email_lang,
+                    'training_lang' => $campaign->training_lang,
+                    'scheduled_date' => $launchTime,
+                    'company_id' => $companyId,
+                ]);
+            }else{
+                CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
+                    'scheduled_date' => $launchTime,
+                    'status' => 'pending'
+                ]);
+            }     
+        }
+
+        return redirect()->back()->with('success', 'Campaign rescheduled successfully');
+
+        
+    }
+
+    private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
+    {
+        $companyId = Auth::user()->company_id;
+        // Retrieve the campaign instance
+        $campaign = Campaign::where('id', $campaignid)->first();
+
+        // Retrieve the users in the specified group
+        $users = Users::where('group_id', $campaign->users_group)->get();
+
+        // Check if users exist in the group
+        if ($users->isEmpty()) {
+            return redirect()->back()->with('error', 'No employees available in this group GroupID:' . $campaign->users_group);
+        } else {
+            // Iterate through the users and create CampaignLive entries
+            foreach ($users as $user) {
+                CampaignLive::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'user_id' => $user->id,
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    'training_module' => $campaign->training_module,
+                    'training_lang' => $campaign->training_lang,
+                    'launch_time' => $campaign->launch_time,
+                    'phishing_material' => $campaign->phishing_material,
+                    'email_lang' => $campaign->email_lang,
+                    'sent' => '0',
+                    'company_id' => $campaign->company_id,
+                ]);
+            }
+
+            // Update the campaign status to 'running'
+            $campaign->update([
+                'status' => 'running',
+                'launch_type' => 'immediately',
+                'launch_time' => $launch_time,
+                'email_freq' => $email_freq,
+                'expire_after' => $expire_after
+
+            ]);
+
+            
+        }
+
+        return $campaign;
     }
 }

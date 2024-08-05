@@ -78,6 +78,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
     Route::post('/campaigns/relaunch', [CampaignController::class, 'relaunchCampaign'])->name('campaigns.relaunch');
     Route::post('/campaigns/fetch-phish-data', [CampaignController::class, 'fetchPhishData'])->name('campaigns.fetch.phish.data');
+    Route::post('/campaigns/reschedule', [CampaignController::class, 'rescheduleCampaign'])->name('reschedule.campaign');
 
 
     //whatsapp Campaign

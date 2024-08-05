@@ -86,7 +86,7 @@ class ProcessCampaigns extends Command
     $campaign = Campaign::where('campaign_id', $campaignid)->first();
 
     // Retrieve the users in the specified group
-    $users = User::where('group_id', $campaign->users_group)->get();
+    $users = Users::where('group_id', $campaign->users_group)->get();
 
     // Check if users exist in the group
     if ($users->isEmpty()) {

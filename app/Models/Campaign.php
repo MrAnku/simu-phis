@@ -31,4 +31,8 @@ class Campaign extends Model
         'status',
         'company_id'
     ];
+
+    public function noOfUsers(){
+        return $this->hasMany(Users::class, 'group_id', 'users_group');
+    }
 }

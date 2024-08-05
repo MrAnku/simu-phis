@@ -120,8 +120,39 @@
                                                 </td>
                                                 <td>{{ $campaign->campaign_type }}</td>
                                                 <td>{!! $campaign->status_button !!}</td>
-                                                <td>{{ $campaign->users_group_name }}</td>
-                                                <td>{{ e($campaign->launch_time) }}</td>
+                                                <td class="text-center">
+                                                    {{ $campaign->users_group_name }}
+                                                   
+                                                </td>
+                                                <td class="text-center">
+                                                    <div>
+                                                        
+                                                            @if ($campaign->launch_type == 'schLater')
+                                                            <small class="text-danger">
+                                                                Not scheduled
+                                                            </small>
+                                                            @else
+                                                            <small>
+                                                                {{$campaign->launch_type}}
+                                                            </small>
+                                                            @endif
+                                                            
+                                                        
+                                                    </div>
+                                                    
+                                                    {{ e($campaign->launch_time) }}
+                                                    
+                                                    <div>
+                                                        <small>
+                                                            @if ($campaign->email_freq == 'one')
+                                                                Once
+                                                            @else
+                                                                {{$campaign->email_freq}}
+                                                            @endif
+                                                            
+                                                        </small>
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     {!! $campaign->relaunch_btn ?? '' !!}
                                                     {!! $campaign->reschedule_btn ?? '' !!}
@@ -915,8 +946,7 @@
                                             </div>
                                             <div class="col-lg-6 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Schedule Between
-                                                        Days</label>
+                                                    <label for="input-label" class="form-label">Schedule Date</label>
                                                     <input type="text" class="form-control" id="revBtwDays" disabled
                                                         readonly>
                                                 </div>
@@ -1220,6 +1250,209 @@
         </div>
     </div>
 
+    <!-- re-schedule campaign modal -->
+    <div class="modal fade" id="reschedulemodal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Re-Schedule Campaign
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{route('reschedule.campaign')}}" method="post" id="rescheduleForm">
+                        @csrf
+                        <p class="text-center">Schedule Type</p>
+                        <div class="form-card">
+                            <div class="d-flex justify-content-center">
+                                <div class="checkb mx-1">
+
+                                    <input type="radio" class="btn-check" name="rschType" data-val="Imediately" value="immediately" id="rimediateBtn" checked>
+                                    <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Campaign will begin delivering emails within 1-3 minutes of submission." id="rimediateLabelBtn" for="rimediateBtn">Deliver Immediately </label>
+                                </div>
+                                <div class="checkb mx-1">
+
+                                    <input type="radio" class="btn-check" name="rschType" data-val="Setup Schedule" value="scheduled" id="rScheduleBtn">
+                                    <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Campaign will deliver emails using a defined schedule over a period of hours and days (e.g. 9am-5pm Monday-Friday)." id="rscheduleLabelBtn" for="rScheduleBtn">Setup Schedule</label>
+                                </div>
+
+
+
+                            </div>
+                            <div id="rdvSchedule2" class="d-none">
+                                <label class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>Note:</b>We will capture employee interactions as long as a campaign remains active (isn't updated or deleted). </label>
+                                <div class="row mb-3">
+                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule Date<i class='bx bx-info-circle p-2' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Select schedule date for started shooting this campaign"></i> </label>
+                                    <div class="col-sm-8">
+                                        <div class="form-group">
+                                            <div class="input-group">
+
+                                                <input type="text" class="form-control flatpickr-input active" name="rsc_launch_time" id="rschBetRange" placeholder="YYYY-MM-DD" required readonly="readonly">
+                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule (Between Times) <i class='bx bx-info-circle p-2' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="We recommend scheduling campaigns between business hours to get the most ineraction (e.g. 9am - 5pm)"></i></label>
+                                    <div class="col-sm-8">
+                                        <div class="form-group d-flex">
+                                            <input type="time" id="rschTimeStart" name="startTime" class="form-control" value="09:00" step="60">
+                                            <label class="col-md-1 m-t-15" style="text-align:center"> To </label>
+                                            <input type="time" id="rschTimeEnd" name="endTime" class="form-control" value="17:00" step="60">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule (Time Zone) <i class='bx bx-info-circle p-2' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Select the timezone that best aligns with your business hours."></i></label>
+                                    <div class="col-sm-8">
+                                        <div class="form-group d-flex">
+                                            <select class="select2 form-control custom-select select2-hidden-accessible" style="width: 100%" id="rschTimeZone" name="rschTimeZone">
+                                                <option value="Australia/Canberra" data-select2-id="390">(GMT+10:00) Canberra, Melbourne, Sydney</option>
+                                                <option value="Etc/GMT+12">(GMT-12:00) International Date Line West</option>
+                                                <option value="Pacific/Midway">(GMT-11:00) Midway Island, Samoa</option>
+                                                <option value="Pacific/Honolulu">(GMT-10:00) Hawaii</option>
+                                                <option value="US/Alaska">(GMT-09:00) Alaska</option>
+                                                <option value="America/Los_Angeles">(GMT-08:00) Pacific Time (US &amp; Canada)</option>
+                                                <option value="America/Tijuana">(GMT-08:00) Tijuana, Baja California</option>
+                                                <option value="US/Arizona">(GMT-07:00) Arizona</option>
+                                                <option value="America/Chihuahua">(GMT-07:00) Chihuahua, La Paz, Mazatlan</option>
+                                                <option value="US/Mountain">(GMT-07:00) Mountain Time (US &amp; Canada)</option>
+                                                <option value="America/Managua">(GMT-06:00) Central America</option>
+                                                <option value="US/Central">(GMT-06:00) Central Time (US &amp; Canada)</option>
+                                                <option value="America/Mexico_City">(GMT-06:00) Guadalajara, Mexico City, Monterrey</option>
+                                                <option value="Canada/Saskatchewan">(GMT-06:00) Saskatchewan</option>
+                                                <option value="America/Bogota">(GMT-05:00) Bogota, Lima, Quito, Rio Branco</option>
+                                                <option value="US/Eastern">(GMT-05:00) Eastern Time (US &amp; Canada)</option>
+                                                <option value="US/East-Indiana">(GMT-05:00) Indiana (East)</option>
+                                                <option value="Canada/Atlantic">(GMT-04:00) Atlantic Time (Canada)</option>
+                                                <option value="America/Caracas">(GMT-04:00) Caracas, La Paz</option>
+                                                <option value="America/Manaus">(GMT-04:00) Manaus</option>
+                                                <option value="America/Santiago">(GMT-04:00) Santiago</option>
+                                                <option value="Canada/Newfoundland">(GMT-03:30) Newfoundland</option>
+                                                <option value="America/Sao_Paulo">(GMT-03:00) Brasilia</option>
+                                                <option value="America/Argentina/Buenos_Aires">(GMT-03:00) Buenos Aires, Georgetown</option>
+                                                <option value="America/Godthab">(GMT-03:00) Greenland</option>
+                                                <option value="America/Montevideo">(GMT-03:00) Montevideo</option>
+                                                <option value="America/Noronha">(GMT-02:00) Mid-Atlantic</option>
+                                                <option value="Atlantic/Cape_Verde">(GMT-01:00) Cape Verde Is.</option>
+                                                <option value="Atlantic/Azores">(GMT-01:00) Azores</option>
+                                                <option value="Africa/Casablanca">(GMT+00:00) Casablanca, Monrovia, Reykjavik</option>
+                                                <option value="Etc/Greenwich" data-select2-id="418">(GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London</option>
+                                                <option value="Europe/Amsterdam">(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</option>
+                                                <option value="Europe/Belgrade">(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague</option>
+                                                <option value="Europe/Brussels">(GMT+01:00) Brussels, Copenhagen, Madrid, Paris</option>
+                                                <option value="Europe/Sarajevo">(GMT+01:00) Sarajevo, Skopje, Warsaw, Zagreb</option>
+                                                <option value="Africa/Lagos">(GMT+01:00) West Central Africa</option>
+                                                <option value="Asia/Amman">(GMT+02:00) Amman</option>
+                                                <option value="Europe/Athens">(GMT+02:00) Athens, Bucharest, Istanbul</option>
+                                                <option value="Asia/Beirut">(GMT+02:00) Beirut</option>
+                                                <option value="Africa/Cairo">(GMT+02:00) Cairo</option>
+                                                <option value="Africa/Harare">(GMT+02:00) Harare, Pretoria</option>
+                                                <option value="Europe/Helsinki">(GMT+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius</option>
+                                                <option value="Asia/Jerusalem">(GMT+02:00) Jerusalem</option>
+                                                <option value="Europe/Minsk">(GMT+02:00) Minsk</option>
+                                                <option value="Africa/Windhoek">(GMT+02:00) Windhoek</option>
+                                                <option value="Asia/Kuwait">(GMT+03:00) Kuwait, Riyadh, Baghdad</option>
+                                                <option value="Europe/Moscow">(GMT+03:00) Moscow, St. Petersburg, Volgograd</option>
+                                                <option value="Africa/Nairobi">(GMT+03:00) Nairobi</option>
+                                                <option value="Asia/Tbilisi">(GMT+03:00) Tbilisi</option>
+                                                <option value="Asia/Tehran">(GMT+03:30) Tehran</option>
+                                                <option value="Asia/Muscat">(GMT+04:00) Abu Dhabi, Muscat</option>
+                                                <option value="Asia/Baku">(GMT+04:00) Baku</option>
+                                                <option value="Asia/Yerevan">(GMT+04:00) Yerevan</option>
+                                                <option value="Asia/Kabul">(GMT+04:30) Kabul</option>
+                                                <option value="Asia/Yekaterinburg">(GMT+05:00) Yekaterinburg</option>
+                                                <option value="Asia/Karachi">(GMT+05:00) Islamabad, Karachi, Tashkent</option>
+                                                <option value="Asia/Calcutta">(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi</option>
+                                                <option value="Asia/Calcutta">(GMT+05:30) Sri Jayawardenapura</option>
+                                                <option value="Asia/Katmandu">(GMT+05:45) Kathmandu</option>
+                                                <option value="Asia/Almaty">(GMT+06:00) Almaty, Novosibirsk</option>
+                                                <option value="Asia/Dhaka">(GMT+06:00) Astana, Dhaka</option>
+                                                <option value="Asia/Rangoon">(GMT+06:30) Yangon (Rangoon)</option>
+                                                <option value="Asia/Bangkok">(GMT+07:00) Bangkok, Hanoi, Jakarta</option>
+                                                <option value="Asia/Krasnoyarsk">(GMT+07:00) Krasnoyarsk</option>
+                                                <option value="Asia/Hong_Kong">(GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi</option>
+                                                <option value="Asia/Kuala_Lumpur">(GMT+08:00) Kuala Lumpur, Singapore</option>
+                                                <option value="Asia/Irkutsk">(GMT+08:00) Irkutsk, Ulaan Bataar</option>
+                                                <option value="Australia/Perth">(GMT+08:00) Perth</option>
+                                                <option value="Asia/Taipei">(GMT+08:00) Taipei</option>
+                                                <option value="Asia/Tokyo">(GMT+09:00) Osaka, Sapporo, Tokyo</option>
+                                                <option value="Asia/Seoul">(GMT+09:00) Seoul</option>
+                                                <option value="Asia/Yakutsk">(GMT+09:00) Yakutsk</option>
+                                                <option value="Australia/Adelaide">(GMT+09:30) Adelaide</option>
+                                                <option value="Australia/Darwin">(GMT+09:30) Darwin</option>
+                                                <option value="Australia/Brisbane">(GMT+10:00) Brisbane</option>
+                                                <option value="Australia/Canberra">(GMT+10:00) Canberra, Melbourne, Sydney</option>
+                                                <option value="Australia/Hobart">(GMT+10:00) Hobart</option>
+                                                <option value="Pacific/Guam">(GMT+10:00) Guam, Port Moresby</option>
+                                                <option value="Asia/Vladivostok">(GMT+10:00) Vladivostok</option>
+                                                <option value="Asia/Magadan">(GMT+11:00) Magadan, Solomon Is., New Caledonia</option>
+                                                <option value="Pacific/Auckland">(GMT+12:00) Auckland, Wellington</option>
+                                                <option value="Pacific/Fiji">(GMT+12:00) Fiji, Kamchatka, Marshall Is.</option>
+                                                <option value="Pacific/Tongatapu">(GMT+13:00) Nuku'alofa</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <hr style="margin: 4px;">
+                            <div id="remail_frequency">
+
+                                <p class="text-center">Email Frequency</p>
+                                <div class="d-flex justify-content-center">
+
+                                    <div class="checkb mx-1">
+
+                                        <input type="radio" class="btn-check" name="emailFreq" data-val="One-off" value="one" id="rfoneoff" checked>
+                                        <label class="btn btn-outline-dark mb-3" for="rfoneoff">One-off</label>
+                                    </div>
+                                    <div class="checkb mx-1">
+
+                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Monthly" value="monthly" id="rfmonthly">
+                                        <label class="btn btn-outline-dark mb-3" for="rfmonthly">Monthly</label>
+                                    </div>
+
+                                    <div class="checkb mx-1">
+
+                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Weekly" value="weekly" id="rfweekly">
+                                        <label class="btn btn-outline-dark mb-3" for="rfweekly">Weekly</label>
+                                    </div>
+                                    <div class="checkb mx-1">
+
+                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Quaterly" value="quaterly" id="rfquaterly">
+                                        <label class="btn btn-outline-dark mb-3" for="rfquaterly">Quaterly</label>
+                                    </div>
+                                    <div id="rexp_after" class="d-none">
+                                        <div class="input-group">
+                                            <div class="input-group-text text-muted"> Expire After</div>
+                                            <input type="text" class="form-control flatpickr-input active" name="rexpire_after" id="rexpire_after" placeholder="Choose date" readonly="readonly">
+                                            <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <input type="hidden" name="campid" id="recampid">
+                                <button type="submit" id="rescheduleBtn" class="btn btn-primary btn-wave waves-effect waves-light">Re-schedule</button>
+                            </div>
+
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     {{-- --------------------- modals ---------------------- --}}
@@ -1487,10 +1720,12 @@
             flatpickr("#schBetRange", {
                 
                 minDate: "today",
+                defaultDate: "today",
                 dateFormat: "Y-m-d",
             });
             flatpickr("#rschBetRange", {
                 minDate: "today",
+                defaultDate: "today",
                 dateFormat: "Y-m-d",
             });
             flatpickr("#expire_after", {
