@@ -26,6 +26,7 @@ class Campaign extends Model
         'email_freq',
         'startTime',
         'endTime',
+        'timeZone',
         'expire_after',
         'status',
         'company_id'

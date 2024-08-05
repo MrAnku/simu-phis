@@ -48,7 +48,7 @@ class ProcessCampaigns extends Command
 
   public function handle()
   {
-    // $this->processScheduledCampaigns();
+     $this->processScheduledCampaigns();
     $this->sendCampaignEmails();
     $this->updateRunningCampaigns();
   }
@@ -61,48 +61,19 @@ class ProcessCampaigns extends Command
       $company_id = $company->company_id;
 
       $campaigns = Campaign::where('status', 'pending')
-        ->where('launch_type', 'scheduled')
         ->where('company_id', $company_id)
         ->get();
 
       if ($campaigns) {
         foreach ($campaigns as $campaign) {
-          $email_freq = $campaign->email_freq;
           $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-          $expire_after = $campaign->expire_after ? Carbon::createFromFormat('Y-m-d', $campaign->expire_after) : null;
           $currentDateTime = Carbon::now();
 
           if ($launchTime->lessThan($currentDateTime)) {
 
             $this->makeCampaignLive($campaign->campaign_id);
 
-            if ($email_freq !== 'one') {
-              switch ($email_freq) {
-                case 'weekly':
-                  $launchTime->addWeek();
-                  break;
-                case 'monthly':
-                  $launchTime->addMonth();
-                  break;
-                case 'quaterly':
-                  $launchTime->addMonths(3);
-                  break;
-                default:
-                  break;
-              }
-
-              if ($expire_after !== null) {
-                if ($launchTime->lessThan($expire_after)) {
-                  echo "launch time updated but not pending";
-                  $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-                } else {
-                  echo "status completed by expire after condition check";
-                  $campaign->update(['status' => 'completed']);
-                }
-              } else {
-                $campaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-              }
-            }
+            $campaign->update(['status' => 'running']);
           }
         }
       }
@@ -145,7 +116,7 @@ class ProcessCampaigns extends Command
       // Update the status in CampaignReport
       CampaignReport::where('campaign_id', $campaignid)->update(['status' => 'running']);
 
-      echo 'made campaign running from makeCampaignLive Method';
+      echo 'Campaign is live';
     }
   }
 
@@ -450,9 +421,9 @@ class ProcessCampaigns extends Command
 
   private function updateRunningCampaigns()
   {
-    $runningCampaigns = Campaign::where('status', 'running')->get();
+    $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'one')->get();
 
-    foreach ($runningCampaigns as $campaign) {
+    foreach ($oneOffCampaigns as $campaign) {
 
       $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign->campaign_id)->count();
 
@@ -460,7 +431,86 @@ class ProcessCampaigns extends Command
         Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
         CampaignReport::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
 
-        echo 'status updated by updateRunningCampaign method';
+        echo 'Campaign completed';
+      }
+    }
+
+    $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'one')->get();
+
+    if ($recurrCampaigns) {
+
+      foreach ($recurrCampaigns as $recurrCampaign) {
+
+        $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $recurrCampaign->campaign_id)->count();
+
+        if ($checkSent == 0) {
+
+          if ($recurrCampaign->expire_after !== null) {
+
+            $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
+            $expire_after = Carbon::createFromFormat("Y-m-d", $recurrCampaign->expire_after);
+
+            if ($launchTime->lessThan($expire_after)){
+
+              $email_freq = $recurrCampaign->email_freq;
+
+              switch ($email_freq) {
+                case 'weekly':
+                  $launchTime->addWeek();
+                  break;
+                case 'monthly':
+                  $launchTime->addMonth();
+                  break;
+                case 'quaterly':
+                  $launchTime->addMonths(3);
+                  break;
+                default:
+                  break;
+              }
+
+              $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+
+              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
+                'status' => 'pending',
+                'scheduled_date' => $launchTime->format("m/d/Y g:i A")
+              ]);
+
+            }else{
+              $recurrCampaign->update(['status' => 'completed']);
+
+              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
+                'status' => 'completed'
+              ]);
+            }
+
+          
+          } else {
+
+            $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
+            $email_freq = $recurrCampaign->email_freq;
+
+              switch ($email_freq) {
+                case 'weekly':
+                  $launchTime->addWeek();
+                  break;
+                case 'monthly':
+                  $launchTime->addMonth();
+                  break;
+                case 'quaterly':
+                  $launchTime->addMonths(3);
+                  break;
+                default:
+                  break;
+              }
+
+              $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+
+              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
+                'status' => 'pending',
+                'scheduled_date' => $launchTime->format("m/d/Y g:i A")
+              ]);
+          }
+        }
       }
     }
   }

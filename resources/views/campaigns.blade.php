@@ -583,9 +583,9 @@
                                                     (isn't updated or deleted). </label>
                                                 <div class="row mb-3">
                                                     <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule
-                                                        (Between Days)<i class='bx bx-info-circle p-2'
+                                                        Date<i class='bx bx-info-circle p-2'
                                                             data-bs-toggle="tooltip" data-bs-placement="top"
-                                                            data-bs-original-title="We recommend scheduling campaigns between business days to get the most ineraction (e.g. Monday - Friday)"></i>
+                                                            data-bs-original-title="Select a particular date for shooting this campaign"></i>
                                                     </label>
                                                     <div class="col-sm-8">
                                                         <div class="form-group">
@@ -593,8 +593,7 @@
 
                                                                 <input type="text"
                                                                     class="form-control flatpickr-input active"
-                                                                    id="schBetRange" value="2024-05-16 to 2024-05-30"
-                                                                    placeholder="YYYY-MM-DD to YYYY-MM-DD"
+                                                                    id="schBetRange" placeholder="YYYY-MM-DD"
                                                                     readonly="readonly">
                                                                 <div class="input-group-text text-muted"> <i
                                                                         class="ri-calendar-line"></i> </div>
@@ -731,9 +730,9 @@
                                                                     Yekaterinburg</option>
                                                                 <option value="Asia/Karachi">(GMT+05:00) Islamabad,
                                                                     Karachi, Tashkent</option>
-                                                                <option value="Asia/Calcutta">(GMT+05:30) Chennai, Kolkata,
+                                                                <option value="Asia/Kolkata">(GMT+05:30) Chennai, Kolkata,
                                                                     Mumbai, New Delhi</option>
-                                                                <option value="Asia/Calcutta">(GMT+05:30) Sri
+                                                                <option value="Asia/Kolkata">(GMT+05:30) Sri
                                                                     Jayawardenapura</option>
                                                                 <option value="Asia/Katmandu">(GMT+05:45) Kathmandu
                                                                 </option>
@@ -1486,12 +1485,11 @@
             });
 
             flatpickr("#schBetRange", {
-                mode: "range",
+                
                 minDate: "today",
                 dateFormat: "Y-m-d",
             });
             flatpickr("#rschBetRange", {
-                mode: "range",
                 minDate: "today",
                 dateFormat: "Y-m-d",
             });

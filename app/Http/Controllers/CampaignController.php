@@ -28,9 +28,9 @@ class CampaignController extends Controller
         if ($lastCampaign) {
             $lastDeliveryDate = Carbon::parse($lastCampaign->delivery_date);
             $currentDate = Carbon::now();
-            if($currentDate->diffInDays($lastDeliveryDate) < 1){
+            if ($currentDate->diffInDays($lastDeliveryDate) < 1) {
                 $daysSinceLastDelivery = 1;
-            }else{
+            } else {
 
                 $daysSinceLastDelivery = $currentDate->diffInDays($lastDeliveryDate);
             }
@@ -39,8 +39,8 @@ class CampaignController extends Controller
             $daysSinceLastDelivery = 0;
         }
 
-        $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();        
-        $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();        
+        $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();
+        $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();
 
         foreach ($allCamps as $campaign) {
             switch ($campaign->status) {
@@ -78,13 +78,15 @@ class CampaignController extends Controller
         $phishingEmails = $this->fetchPhishingEmails();
         $trainingModules = $this->fetchTrainingModules();
 
-        return view('campaigns', compact('allCamps', 
-        'usersGroups', 
-        'phishingEmails', 
-        'trainingModules', 
-        'daysSinceLastDelivery', 
-        'all_sent', 
-        'mail_open'));
+        return view('campaigns', compact(
+            'allCamps',
+            'usersGroups',
+            'phishingEmails',
+            'trainingModules',
+            'daysSinceLastDelivery',
+            'all_sent',
+            'mail_open'
+        ));
     }
 
     public function fetchUsersGroups()
@@ -120,6 +122,7 @@ class CampaignController extends Controller
         $phishMaterial = $request->input('phish_material');
         $launchTime = $request->input('launch_time');
         $launchType = $request->input('schType');
+        $timeZone = $request->input('schTimeZone');
         $frequency = $request->input('emailFreq');
         $expAfter = $request->input('expire_after');
         $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
@@ -176,21 +179,7 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            $cstatus = 'running';
-
-            if ($frequency == 'weekly') {
-                $scheduledDate->addWeek();
-                $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
-                $cstatus = 'pending';
-            } elseif ($frequency == 'monthly') {
-                $scheduledDate->addMonth();
-                $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
-                $cstatus = 'pending';
-            } elseif ($frequency == 'quaterly') {
-                $scheduledDate->addMonths(3);
-                $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
-                $cstatus = 'pending';
-            }
+            
 
             Campaign::create([
                 'campaign_id' => $campId,
@@ -206,8 +195,9 @@ class CampaignController extends Controller
                 'email_freq' => $frequency,
                 'startTime' => '00:00:00',
                 'endTime' => '00:00:00',
+                'timeZone' => $timeZone,
                 'expire_after' => $expAfter,
-                'status' => $cstatus,
+                'status' => 'running',
                 'company_id' => $companyId,
             ]);
 
@@ -215,12 +205,12 @@ class CampaignController extends Controller
         }
 
         if ($launchType == 'scheduled') {
-            $betweenDays = $request->input('schBetRange');
+            $schedule_date = $request->input('schBetRange');
             $startTime = $request->input('schTimeStart');
             $endTime = $request->input('schTimeEnd');
-            $timeZone = $request->input('schTimeZone');
+            $timeZone = $request->input('schTimeZone', 'Asia/Kolkata');
 
-            $launchTime = generateRandomDate($betweenDays, $startTime, $endTime);
+            $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime, $timeZone);
 
             Campaign::create([
                 'campaign_id' => $campId,
@@ -236,17 +226,18 @@ class CampaignController extends Controller
                 'email_freq' => $frequency,
                 'startTime' => $startTime,
                 'endTime' => $endTime,
+                'timeZone' => $timeZone,
                 'expire_after' => $expAfter,
                 'status' => 'pending',
                 'company_id' => $companyId,
             ]);
 
-            
+
             CampaignReport::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $campName,
                 'campaign_type' => $campaignType,
-                'status' => 'running',
+                'status' => 'pending',
                 'email_lang' => $emailLang,
                 'training_lang' => $trainingLang,
                 'scheduled_date' => $launchTime,
@@ -278,31 +269,65 @@ class CampaignController extends Controller
         }
     }
 
+    public function generateRandomDate($dateS, $timeS, $timeE, $timeZone)
+    {
+        $dateString = $dateS;
+        $timeStart = $timeS;
+        $timeEnd = $timeE;
+
+        // Create a Carbon instance from the date string
+        $date = Carbon::createFromFormat('Y-m-d', $dateString, $timeZone);
+
+        // Parse the start and end times
+        $startTime = Carbon::createFromFormat('H:i', $timeStart, $timeZone);
+        $endTime = Carbon::createFromFormat('H:i', $timeEnd, $timeZone);
+
+        // Calculate the total minutes in the range
+        $totalMinutes = $startTime->diffInMinutes($endTime);
+
+        // Generate a random number of minutes to add to the start time
+        $randomMinutes = rand(0, $totalMinutes);
+
+        // Add the random minutes to the start time
+        $randomTime = $startTime->copy()->addMinutes($randomMinutes);
+
+        // Combine the date with the random time
+        $date->setTime($randomTime->hour, $randomTime->minute);
+
+        // Format the date and time as requested
+        $formattedDate = $date->format('m/d/Y h:i A');
+
+        return $formattedDate;
+    }
+
     public function deleteCampaign(Request $request)
     {
         $campid = $request->input('campid');
 
-        try {
-            DB::beginTransaction();
+        // try {
+        //     DB::beginTransaction();
 
             $res1 = Campaign::where('campaign_id', $campid)->delete();
             $res2 = CampaignLive::where('campaign_id', $campid)->delete();
             $res3 = CampaignReport::where('campaign_id', $campid)->delete();
 
-            if ($res1 && $res2 && $res3) {
-                DB::commit();
-                return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
-            } else {
-                DB::rollBack();
-                return response()->json(['status' => 0, 'msg' => 'Error: Unable to delete campaign'], 500);
-            }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
-        }
+            return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+
+        //     if ($res1 && $res2 && $res3) {
+        //         DB::commit();
+        //         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+        //     } else {
+        //         DB::rollBack();
+        //         return response()->json(['status' => 0, 'msg' => 'Error: Unable to delete campaign'], 500);
+        //     }
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
+        // }
     }
 
-    public function relaunchCampaign(Request $request){
+    public function relaunchCampaign(Request $request)
+    {
 
         $campid = base64_decode($request->campid);
         $dateTime = Carbon::now();
@@ -316,18 +341,18 @@ class CampaignController extends Controller
         ]);
 
         CampaignReport::where('campaign_id', $campid)
-        ->where('company_id', $company_id)
-        ->update([
-            'scheduled_date' => $formattedDateTime,
-            'status' => 'running',
-            'emails_delivered' => 0,
-            'emails_viewed' => 0,
-            'payloads_clicked' => 0,
-            'emp_compromised' => 0,
-            'email_reported' => 0,
-            'training_assigned' => 0,
-            'training_completed' => 0,
-        ]);
+            ->where('company_id', $company_id)
+            ->update([
+                'scheduled_date' => $formattedDateTime,
+                'status' => 'running',
+                'emails_delivered' => 0,
+                'emails_viewed' => 0,
+                'payloads_clicked' => 0,
+                'emp_compromised' => 0,
+                'email_reported' => 0,
+                'training_assigned' => 0,
+                'training_completed' => 0,
+            ]);
 
         //deleting old campaign live
         CampaignLive::where('campaign_id', $campid)->delete();
@@ -336,28 +361,25 @@ class CampaignController extends Controller
 
         $users = User::where('group_id', $campaign->users_group)->get();
 
-            if ($users->isEmpty()) {
-                
-            }
+        if ($users->isEmpty()) {
+        }
 
-            foreach ($users as $user) {
-                CampaignLive::create([
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => $campaign->training_module,
-                    'training_lang' => $campaign->training_module,
-                    'launch_time' => $formattedDateTime,
-                    'phishing_material' => $campaign->phishing_material,
-                    'email_lang' => $campaign->email_lang,
-                    'sent' => '0',
-                    'company_id' => $company_id,
-                ]);
-            }
-
-
+        foreach ($users as $user) {
+            CampaignLive::create([
+                'campaign_id' => $campaign->campaign_id,
+                'campaign_name' => $campaign->campaign_name,
+                'user_id' => $user->id,
+                'user_name' => $user->user_name,
+                'user_email' => $user->user_email,
+                'training_module' => $campaign->training_module,
+                'training_lang' => $campaign->training_module,
+                'launch_time' => $formattedDateTime,
+                'phishing_material' => $campaign->phishing_material,
+                'email_lang' => $campaign->email_lang,
+                'sent' => '0',
+                'company_id' => $company_id,
+            ]);
+        }
     }
 
     public function fetchPhishData(Request $request)
@@ -393,6 +415,4 @@ class CampaignController extends Controller
 
         return response()->json($phishData, 200, [], JSON_PRETTY_PRINT);
     }
-
-    
 }
