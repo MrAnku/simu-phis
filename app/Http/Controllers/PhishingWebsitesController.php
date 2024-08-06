@@ -20,7 +20,7 @@ class PhishingWebsitesController extends Controller
 
         $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
             ->orWhere('company_id', 'default')
-            ->paginate(20);
+            ->get();
         return view('phishingWebsites', compact('phishingWebsites'));
     }
 

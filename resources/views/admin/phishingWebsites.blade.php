@@ -24,15 +24,15 @@
                                 Manage Phishing Websites
                             </div>
 
-                            <div style="
+                            <div
+                                style="
                             display: flex;
                             align-items: center;
                             gap: 10px;
                         ">
-                                
-                                <input type="text" class="form-control" id="templateSearch"
-                                    placeholder="Search website">
-                                    <i class='bx bx-search fs-23'></i>
+
+                                <input type="text" class="form-control" id="templateSearch" placeholder="Search website">
+                                <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>
                         <div class="card-body">
@@ -59,10 +59,10 @@
                                                         target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
-                                                        <button type="button"
-                                                            onclick="deleteWebsite(`{{ $phishingWebsite->id }}`, `{{ $phishingWebsite->file }}`)"
-                                                            target="_blank"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                    <button type="button"
+                                                        onclick="deleteWebsite(`{{ $phishingWebsite->id }}`, `{{ $phishingWebsite->file }}`)"
+                                                        target="_blank"
+                                                        class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
 
 
 
@@ -80,6 +80,8 @@
 
 
                             </div>
+
+                           
                         </div>
                     </div>
                 </div>
@@ -112,7 +114,8 @@
 
                         </div>
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website Domain<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">Website Domain<sup
+                                    class="text-danger">*</sup></label>
                             <div class="d-flex">
 
                                 <select class="form-select" aria-label="Default select example" name="domain">
@@ -250,7 +253,7 @@
                 // Loop through each template card
                 $('.website_templates').each(function() {
                     var templateName = $(this).find('.fw-semibold').text()
-                .toLowerCase(); // Get the template name and convert it to lowercase
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
                     // If the template name contains the search value, show the card; otherwise, hide it
                     if (templateName.includes(searchValue)) {

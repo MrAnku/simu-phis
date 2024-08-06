@@ -85,15 +85,8 @@
                                     </div>
                                 @endforelse
 
-
-
-
                             </div>
-                            <div class="row">
-                                <div class="col-lg-12 text-center">
-                                    {{$phishingWebsites->links()}}
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
