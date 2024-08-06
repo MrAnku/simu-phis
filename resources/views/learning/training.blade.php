@@ -301,7 +301,8 @@
             $.post({
                 url: '/update-training-score',
                 data: {
-                    trainingScore: percent
+                    trainingScore: percent,
+                    training: '{{ $trainingid }}'
                 },
                 success: function(res) {
                     // console.log(res)

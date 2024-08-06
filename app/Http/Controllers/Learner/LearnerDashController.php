@@ -87,7 +87,10 @@ class LearnerDashController extends Controller
         // Validate the request
         $request->validate([
             'trainingScore' => 'required|integer',
+            'training' => 'required',
         ]);
+
+
 
         $trainingScore = $request->input('trainingScore');
 
@@ -95,10 +98,13 @@ class LearnerDashController extends Controller
         $user_email = session('learner')->login_username;
         $user_id = session('learner')->user_id;
 
+        $training = decrypt($request->training);
+
         // Fetch the current personal best score
         $isScoreGreaterThanBefore = DB::table('training_assigned_users')
             ->where('user_id', $user_id)
             ->where('user_email', $user_email)
+            ->where('training', $training)
             ->value('personal_best');
 
         $previousScore = (int)$isScoreGreaterThanBefore;
@@ -109,6 +115,7 @@ class LearnerDashController extends Controller
             DB::table('training_assigned_users')
                 ->where('user_id', $user_id)
                 ->where('user_email', $user_email)
+                ->where('training', $training)
                 ->update(['personal_best' => $currentScore]);
 
             if ($currentScore == 100) {
@@ -116,6 +123,7 @@ class LearnerDashController extends Controller
                 DB::table('training_assigned_users')
                     ->where('user_id', $user_id)
                     ->where('user_email', $user_email)
+                    ->where('training', $training)
                     ->update([
                         'completed' => 1,
                         'completion_date' => now()->format('Y-m-d'),
