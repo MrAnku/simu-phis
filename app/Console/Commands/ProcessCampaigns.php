@@ -48,7 +48,7 @@ class ProcessCampaigns extends Command
 
   public function handle()
   {
-     $this->processScheduledCampaigns();
+    $this->processScheduledCampaigns();
     $this->sendCampaignEmails();
     $this->updateRunningCampaigns();
   }
@@ -166,8 +166,13 @@ class ProcessCampaigns extends Command
 
 
               if ($email_lang !== 'en') {
-                $templateBodyPath = 'translated_temp/translated_file.html';
-                Storage::disk('public')->put($templateBodyPath, $mailBody);
+                $templateBodyPath = public_path('translated_temp/translated_file.html');
+                // Ensure the directory exists
+                if (!File::exists(dirname($templateBodyPath))) {
+                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
+                }
+                // Put the file in the public directory
+                File::put($templateBodyPath, $mailBody);
                 $mailBody = $this->changeEmailLang($templateBodyPath, $email_lang);
               }
 
@@ -450,7 +455,7 @@ class ProcessCampaigns extends Command
             $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
             $expire_after = Carbon::createFromFormat("Y-m-d", $recurrCampaign->expire_after);
 
-            if ($launchTime->lessThan($expire_after)){
+            if ($launchTime->lessThan($expire_after)) {
 
               $email_freq = $recurrCampaign->email_freq;
 
@@ -474,41 +479,38 @@ class ProcessCampaigns extends Command
                 'status' => 'pending',
                 'scheduled_date' => $launchTime->format("m/d/Y g:i A")
               ]);
-
-            }else{
+            } else {
               $recurrCampaign->update(['status' => 'completed']);
 
               CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
                 'status' => 'completed'
               ]);
             }
-
-          
           } else {
 
             $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
             $email_freq = $recurrCampaign->email_freq;
 
-              switch ($email_freq) {
-                case 'weekly':
-                  $launchTime->addWeek();
-                  break;
-                case 'monthly':
-                  $launchTime->addMonth();
-                  break;
-                case 'quaterly':
-                  $launchTime->addMonths(3);
-                  break;
-                default:
-                  break;
-              }
+            switch ($email_freq) {
+              case 'weekly':
+                $launchTime->addWeek();
+                break;
+              case 'monthly':
+                $launchTime->addMonth();
+                break;
+              case 'quaterly':
+                $launchTime->addMonths(3);
+                break;
+              default:
+                break;
+            }
 
-              $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+            $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
 
-              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
-                'status' => 'pending',
-                'scheduled_date' => $launchTime->format("m/d/Y g:i A")
-              ]);
+            CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
+              'status' => 'pending',
+              'scheduled_date' => $launchTime->format("m/d/Y g:i A")
+            ]);
           }
         }
       }
@@ -563,35 +565,47 @@ class ProcessCampaigns extends Command
 
   private function changeEmailLang($tempBodyFile, $email_lang)
   {
-
     // API endpoint
     $apiEndpoint = "http://65.21.191.199/translate_file";
 
+    // Create a CURLFile object with the public path
+    $file = new \CURLFile($tempBodyFile);
 
-    // Make the API request
-    $response = Http::attach(
-      'file',
-      public_path($tempBodyFile),
-      'translated_file.html'
-    )->post($apiEndpoint, [
-      'source' => 'en',
-      'target' => $email_lang,
-    ]);
+    // Request body
+    $requestBody = [
+      "source" => "en",
+      "target" => $email_lang,
+      "file" => $file
+    ];
 
-    // Check for successful response
-    if ($response->successful()) {
-      $responseData = $response->json();
-      $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
+    // Initialize cURL session
+    $curl = curl_init();
 
-      return $translatedMailBody;
+    // Set cURL options
+    curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody); // Use CURLOPT_POSTFIELDS directly
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
-      // Optionally, save the translated file locally
-      // $newFilePath = "translated_temps/translated_file.html";
-      // Storage::disk('public')->put($newFilePath, $translatedMailBody);
+    // Execute cURL request
+    $response = curl_exec($curl);
 
-      // return response()->json(['translatedMailBody' => $translatedMailBody]);
-    } else {
-      return false;
+    // Check for errors
+    if (curl_errno($curl)) {
+      // echo 'cURL error: ' . curl_error($curl);
+      // exit;
+      return null; // or handle error as needed
     }
+
+    // Close cURL session
+    curl_close($curl);
+
+    // Decode the JSON response
+    $responseData = json_decode($response, true);
+
+    // Retrieve the translated mail body content
+    $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
+
+    return $translatedMailBody;
   }
 }
