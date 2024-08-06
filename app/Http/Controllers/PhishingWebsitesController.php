@@ -145,9 +145,8 @@ class PhishingWebsitesController extends Controller
 
         $generatedContent = $responseData['choices'][0]['message']['content'];
 
-        // Generate unique directory name
         $timestamp = time();
-        $directory = 'public/ai_site_temp/site_' . $timestamp;
+        $directory = 'ai_site_temp/site_' . $timestamp;
 
         // Read the predefined template
         $template = Storage::get('public/login_template.html');
@@ -163,7 +162,7 @@ class PhishingWebsitesController extends Controller
         $finalContent = str_replace('<!-- Content -->', $generatedContent, $finalContent);
 
         // Save the final content to a new file
-        Storage::put($directory . '/index.html', $finalContent);
+        Storage::disk('public')->put($directory . '/index.html', $finalContent);
 
         return response()->json([
             'status' => 1,

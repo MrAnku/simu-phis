@@ -15,7 +15,7 @@
 
                 <div>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#generateWebsiteModal">Generate website with AI</button>
+                        data-bs-target="#generateWebsiteModal">Gen4 AI Builder</button>
                 </div>
 
 
@@ -57,7 +57,7 @@
                                                 </div>
                                             </div>
                                             <div class="card-body htmlPhishingGrid">
-                                                <iframe class="phishing-iframe"
+                                                <iframe sandbox="allow-same-origin allow-forms" class="phishing-iframe"
                                                     src="{{ Storage::url('uploads/phishingMaterial/phishing_websites/' . $phishingWebsite->file) }}"></iframe>
                                             </div>
                                             <div class="card-footer">
