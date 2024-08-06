@@ -84,7 +84,7 @@ class ProcessWhatsappCampaign extends Command
 
             // Append another new parameter
             $newParameter2 = new stdClass();
-            $newParameter2->text = "https://cloud-services-notifications.com/c/" . base64_encode($user->id);
+            $newParameter2->text = "https://".env('PHISHING_WEBSITE_DOMAIN')."/c/" . base64_encode($user->id);
             $newParameter2->type = "text";
 
             // Append the new parameter to the parameters array

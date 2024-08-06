@@ -339,30 +339,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <th scope="row">anant@sparrowhost.in</th>
-                                            <td>Anant kumar</td>
-                                            <td>
-                                                <span class="badge bg-danger">Breached</span>
-
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">rahul@sparrowhost.in</th>
-                                            <td>Rahul kumar</td>
-                                            <td>
-                                                <span class="badge bg-success">Not Breached</span>
-
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">samresh@sparrowhost.in</th>
-                                            <td>Samresh kumar</td>
-                                            <td>
-                                                <span class="badge bg-danger">Breached</span>
-
-                                            </td>
-                                        </tr>
+                                       
                                     </tbody>
                                 </table>
                             </div>

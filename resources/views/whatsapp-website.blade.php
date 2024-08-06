@@ -152,7 +152,7 @@
         </svg>
     </div>
     <div class="container">
-        <h2>Basic Information Form</h2>
+        <h2>Enter your details</h2>
         <form id="userForm">
             <div class="form-group">
                 <label for="name">Name:</label>
@@ -191,7 +191,7 @@
             var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
             // console.log(urlSegment);
             $.post({
-                url: '{{ route('whatsapp.update.payload') }}',
+                url: '/c/update-payload',
                 data: {
                     updatePayload: 1,
                     cid: urlSegment
@@ -210,7 +210,7 @@
 
                 if (urlSegment !== 'c') {
                     $.post({
-                        url: '{{ route('whatsapp.update.emp.comp') }}',
+                        url: '/c/update-emp-comp',
                         data: {
                             updateempcomp: 1,
                             cid: urlSegment

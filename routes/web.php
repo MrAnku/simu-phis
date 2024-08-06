@@ -305,7 +305,7 @@ Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('uploa
 
 //-------------------miscellaneous routes------------------//
 
-Route::domain('web.app-notifications.net')->group(function () {
+Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
     Route::get('/{websitefile}?sessionid={anysessionid}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
     Route::get('/{websitefile}', [ShowWebsiteController::class, 'index']);
     Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
