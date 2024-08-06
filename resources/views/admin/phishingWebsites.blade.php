@@ -116,7 +116,7 @@
                             <div class="d-flex">
 
                                 <select class="form-select" aria-label="Default select example" name="domain">
-                                    <option value="cloud-services-notifications.com">cloud-services-notifications.com
+                                    <option value="web.app-notifications.net">web.app-notifications.net
                                     </option>
                                 </select>
                             </div>

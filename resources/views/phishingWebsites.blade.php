@@ -89,6 +89,11 @@
 
 
                             </div>
+                            <div class="row">
+                                <div class="col-lg-12 text-center">
+                                    {{$phishingWebsites->links()}}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,7 +132,7 @@
 
                                 {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                 <select class="form-select" aria-label="Default select example" name="domain">
-                                    <option value="cloud-services-notifications.com">cloud-services-notifications.com
+                                    <option value="web.app-notifications.net">web.app-notifications.net
                                     </option>
                                 </select>
                             </div>
@@ -181,6 +186,11 @@
 
                     <div class="mb-3" id="iframe-container" style="display:none;">
                         <iframe id="generated-site-iframe" width="100%" height="600px"></iframe>
+                        <div class="text-end">
+                            <button data-bs-toggle="modal" id="saveSite"
+                            data-bs-target="#saveGeneratedSiteModal"
+                            class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save</button>
+                        </div>
                     </div>
 
                 </div>
@@ -188,6 +198,50 @@
         </div>
     </div>
 
+
+    <!--save  generated website with ai -->
+    <div class="modal fade" id="saveGeneratedSiteModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Save Generated Website</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{{ route('phishing.website.saveGeneratedSite') }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Website name<sup class="text-danger">*</sup></label>
+                            <input type="text" class="form-control" name="webName" placeholder="Template name" required>
+                            <input type="hidden" name="sitePagePath" id="sitePagePath">
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Website Domain<sup
+                                    class="text-danger">*</sup></label>
+                            <div class="d-flex">
+
+                                {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                <select class="form-select" aria-label="Default select example" name="domain">
+                                    <option value="web.app-notifications.net">web.app-notifications.net
+                                    </option>
+                                </select>
+                            </div>
+
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save
+                                Website</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
 
 
 
@@ -339,6 +393,7 @@
                 );
                         if (res.status === 1) {
                             $('#generated-site-iframe').attr('src', res.msg);
+                            $('#sitePagePath').val(res.msg);
                             $('#iframe-container').show();
                         } else {
                             alert('Error: Could not generate website.');

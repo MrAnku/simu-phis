@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +20,7 @@ class PhishingWebsitesController extends Controller
 
         $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
             ->orWhere('company_id', 'default')
-            ->get();
+            ->paginate(20);
         return view('phishingWebsites', compact('phishingWebsites'));
     }
 
@@ -97,7 +99,8 @@ class PhishingWebsitesController extends Controller
         return redirect()->back()->with('success', 'New website is added');
     }
 
-    public function generateWebsite(Request $request){
+    public function generateWebsite(Request $request)
+    {
 
         $request->validate([
             'description' => 'required|string',
@@ -149,7 +152,7 @@ class PhishingWebsitesController extends Controller
         // Read the predefined template
         $template = Storage::get('public/login_template.html');
         if ($template === false) {
-            return response()->json(['status'=> 0, 'msg' => 'Could not read the template file.']);
+            return response()->json(['status' => 0, 'msg' => 'Could not read the template file.']);
         }
 
         // Replace placeholders with user-provided values
@@ -166,6 +169,50 @@ class PhishingWebsitesController extends Controller
             'status' => 1,
             'msg' => Storage::url($directory . '/index.html'),
         ]);
+    }
 
+    public function saveGeneratedSite(Request $request)
+    {
+        $company_id = auth()->user()->company_id;
+        // Validate the request
+        $request->validate([
+            'webName' => 'required|string|max:255',
+            'domain' => 'required|string',
+            'sitePagePath' => 'required|string'
+        ]);
+
+        $webName = $request->input('webName');
+        $domain = $request->input('domain');
+        $sitePagePath = $request->input('sitePagePath');
+
+        // Define the source and destination paths
+        $sourcePath = public_path($sitePagePath);
+        $destinationPath = public_path('storage/uploads/phishingMaterial/phishing_websites');
+
+        // Ensure the destination directory exists
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0755, true);
+        }
+
+        // Generate a new alphanumeric filename
+        $newFileName = Str::random(32) . '.html';
+
+
+        if (File::exists($sourcePath)) {
+            File::move($sourcePath, $destinationPath . '/' . $newFileName);
+
+            // Insert into database
+            $phishingWebsite = new PhishingWebsite();
+            $phishingWebsite->name = $webName;
+            $phishingWebsite->file = $newFileName;
+            $phishingWebsite->domain = $domain;
+            $phishingWebsite->company_id = $company_id;
+            $phishingWebsite->save();
+        }
+
+        // Save the data in the database or perform other actions as needed
+
+        // Return a response or redirect
+        return redirect()->back()->with('success', 'Website saved successfully.');
     }
 }

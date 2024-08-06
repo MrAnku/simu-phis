@@ -105,7 +105,7 @@
                   
                     <div class="mb-3">
                         <label for="input-label" class="form-label">Template name<sup class="text-danger">*</sup></label>
-                        <input type="text" name="temp_name" class="form-control" id="camp_name"
+                        <input type="text" name="temp_name" class="form-control" id="temp_name"
                             placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
 
                     </div>
