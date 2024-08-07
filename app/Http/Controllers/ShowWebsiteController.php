@@ -7,6 +7,7 @@ use App\Models\Settings;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use App\Models\Company;
+use App\Models\PhishingWebsite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -14,18 +15,76 @@ use Illuminate\Support\Facades\Mail;
 
 class ShowWebsiteController extends Controller
 {
-    public function index($websitefile)
+    public function index($dynamicvalue)
     {
 
-        $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$websitefile}");
+        $queryParams = request()->query();
 
-        if (File::exists($filePath)) {
-            $content = File::get($filePath);
-            return response($content)->header('Content-Type', 'text/html');
-        } else {
-            abort(404, 'Not Found');
+        // Access dynamic parameters
+        $c = $queryParams['c'] ?? null;
+        $p = $queryParams['p'] ?? null;
+        $l = $queryParams['l'] ?? null;
+
+        //checking if this page is already visited and expiry
+
+        $visited = DB::table('phish_websites_sessions')->where([
+            'user' => $dynamicvalue,
+            'session' => $c,
+            'website_id' => $p,
+            'website_name' => $l
+        ])->first();
+
+        if ($visited) {
+
+            if ($visited->expiry > now()) {
+
+                $website = PhishingWebsite::find($p);
+
+                if ($website) {
+                    $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
+
+                    if (File::exists($filePath)) {
+                        $content = File::get($filePath);
+                        return response($content)->header('Content-Type', 'text/html');
+                    } else {
+                        echo "file not found";
+                    }                   
+                }else{
+                    echo "file not found";
+                }
+            } else {
+
+                abort(404);
+            }
+        }else{
+            $website = PhishingWebsite::find($p);
+
+            if ($website) {
+                $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
+
+                if (File::exists($filePath)) {
+
+                    DB::table('phish_websites_sessions')->insert([
+                        'user' => $dynamicvalue,
+                        'session' => $c,
+                        'website_id' => $p,
+                        'website_name' => $l,
+                        'expiry' => now()->addMinutes(10)
+                    ]);
+
+                    $content = File::get($filePath);
+                    return response($content)->header('Content-Type', 'text/html');
+                } else {
+                    echo "file not found";
+                }
+
+                
+            }else{
+                echo "file not found";
+            }
         }
     }
+    
 
     public function loadjs()
     {

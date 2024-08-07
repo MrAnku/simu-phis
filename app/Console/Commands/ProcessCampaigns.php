@@ -7,6 +7,7 @@ use App\Models\Users;
 use App\Models\Company;
 use App\Models\Campaign;
 use App\Mail\CampaignMail;
+use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use App\Models\SenderProfile;
 use App\Models\CampaignReport;
@@ -151,8 +152,33 @@ class ProcessCampaigns extends Command
             $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
 
             if ($senderProfile && $websiteColumns) {
-              $websiteFilePath = $websiteColumns->domain . '/' . $websiteColumns->file;
-              $websiteFilePath .= '?sessionid=' . generateRandom(100) . '&token=' . $campaign->id . '&usrid=' . $usrId;
+
+              // Generate random parts
+              $randomString1 = Str::random(6);
+              $randomString2 = Str::random(10);
+              $slugName = Str::slug($websiteColumns->name);
+
+              // Construct the base URL
+              $baseUrl = "https://{$randomString1}-{$slugName}.{$websiteColumns->domain}/{$randomString2}";
+
+              // Define query parameters
+              $params = [
+                'v' => 'r',
+                'c' => Str::random(10),
+                'p' => $websiteColumns->id,
+                'l' => $slugName,
+                'token' => $campaign->id,
+                'usrid' => $usrId
+              ];
+
+              // Build query string and final URL
+              $queryString = http_build_query($params);
+              $websiteFilePath = $baseUrl . '?' . $queryString;
+
+
+
+              // $websiteFilePath = $websiteColumns->domain . '/' . $websiteColumns->file;
+              // $websiteFilePath .= '?sessionid=' . generateRandom(100) . '&token=' . $campaign->id . '&usrid=' . $usrId;
 
               // $mailBody = file_get_contents($phishingMaterial->mailBodyFilePath);
               $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);

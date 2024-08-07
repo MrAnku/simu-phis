@@ -217,7 +217,7 @@
                         },
                         success: function(res) {
                             // console.log(res);
-                            window.location.href = '{{route('whatsapp.phish.alert')}}'
+                            window.location.href = '/c/alert/user'
                         }
                     })
                 }

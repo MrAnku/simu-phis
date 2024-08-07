@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use stdClass;
 use App\Models\Company;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -84,7 +85,8 @@ class ProcessWhatsappCampaign extends Command
 
             // Append another new parameter
             $newParameter2 = new stdClass();
-            $newParameter2->text = "https://".env('PHISHING_WEBSITE_DOMAIN')."/c/" . base64_encode($user->id);
+            $randomString1 = Str::random(3);
+            $newParameter2->text = "https://".$randomString1.".".env('PHISHING_WEBSITE_DOMAIN')."/c/" . base64_encode($user->id);
             $newParameter2->type = "text";
 
             // Append the new parameter to the parameters array

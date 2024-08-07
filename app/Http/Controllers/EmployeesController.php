@@ -43,7 +43,7 @@ class EmployeesController extends Controller
         $domain = explode("@", $verifyEmail)[1];
 
         $notAllowedDomains = [
-            // 'gmail.com',
+            'gmail.com',
             'yahoo.com',
             'icloud.com',
             'zoho.com',

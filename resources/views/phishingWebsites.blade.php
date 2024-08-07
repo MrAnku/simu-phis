@@ -62,7 +62,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
-                                                    <a href="https://{{ $phishingWebsite->domain }}/{{ $phishingWebsite->file }}"
+                                                    <a href="http://{{Str::random(6)}}-{{Str::slug($phishingWebsite->name)}}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{Str::random(10)}}&p={{$phishingWebsite->id}}&l={{Str::slug($phishingWebsite->name)}}"
                                                         target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
@@ -217,7 +217,7 @@
 
                                 {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                 <select class="form-select" aria-label="Default select example" name="domain">
-                                    <option value="web.app-notifications.net">web.app-notifications.net
+                                    <option value="app-notifications.net">app-notifications.net
                                     </option>
                                 </select>
                             </div>

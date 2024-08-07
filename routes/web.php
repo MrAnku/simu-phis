@@ -31,6 +31,8 @@ use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\WhatsappCampaignController;
 
+//---------------learning portal routes------------//
+
 Route::domain('learn.simuphish.com')->group(function () {
 
     Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
@@ -46,6 +48,52 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
     });
+});
+
+//-------------------miscellaneous routes------------------//
+
+Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function(){
+
+    Route::get('/', function(){
+        abort(404, 'Page not found');
+    });
+
+});
+
+Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
+
+    Route::get('/', function(){
+        abort(404, 'Page not found');
+    });
+
+    Route::get('{dynamicvalue}', [ShowWebsiteController::class, 'index']);
+
+    // Route::get('/{websitefile}?sessionid={anysessionid}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
+    
+    Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
+
+    //route for showing alert page
+    Route::get('/show/ap', [ShowWebsiteController::class, 'showAlertPage']);
+
+    //route to check where to redirect
+    Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
+
+    //route for assigning training
+    Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
+
+    //route for email compromise
+    Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
+
+    //route for updating payload
+    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
+
+    //route for whatsapp campaign
+    Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
+    Route::post('/c/update-payload', [WhatsappCampaignController::class, 'updatePayload'])->name('whatsapp.update.payload');
+    Route::post('/c/update-emp-comp', [WhatsappCampaignController::class, 'updateEmpComp'])->name('whatsapp.update.emp.comp');
+    Route::get('/c/alert/user', function () {
+        return view('whatsapp-alert');
+    })->name('whatsapp.phish.alert');
 });
 
 Route::get('/', function () {
@@ -303,36 +351,7 @@ Route::get('/upload', [TestUploadController::class, 'showUploadForm'])->name('up
 Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('upload.file');
 
 
-//-------------------miscellaneous routes------------------//
 
-Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
-    Route::get('/{websitefile}?sessionid={anysessionid}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
-    Route::get('/{websitefile}', [ShowWebsiteController::class, 'index']);
-    Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
-
-    //route for showing alert page
-    Route::get('/show/ap', [ShowWebsiteController::class, 'showAlertPage']);
-
-    //route to check where to redirect
-    Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
-
-    //route for assigning training
-    Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
-
-    //route for email compromise
-    Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
-
-    //route for updating payload
-    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
-
-    //route for whatsapp campaign
-    Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
-    Route::post('/c/update-payload', [WhatsappCampaignController::class, 'updatePayload'])->name('whatsapp.update.payload');
-    Route::post('/c/update-emp-comp', [WhatsappCampaignController::class, 'updateEmpComp'])->name('whatsapp.update.emp.comp');
-    Route::get('/c/alert/user', function () {
-        return view('whatsapp-alert');
-    })->name('whatsapp.phish.alert');
-});
 
 
 
