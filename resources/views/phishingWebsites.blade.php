@@ -125,7 +125,7 @@
 
                                 {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                 <select class="form-select" aria-label="Default select example" name="domain">
-                                    <option value="web.app-notifications.net">web.app-notifications.net
+                                    <option value="app-notifications.net">app-notifications.net
                                     </option>
                                 </select>
                             </div>
