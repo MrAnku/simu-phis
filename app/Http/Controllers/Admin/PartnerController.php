@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Mail\Admin\PartnerApprove;
-use App\Mail\Admin\PartnerCreated;
-use App\Mail\Admin\PartnerHold;
-use App\Mail\Admin\PartnerReject;
-use App\Mail\Admin\PartnerResume;
-use App\Models\AdminNoticeToPartner;
 use App\Models\Company;
 use App\Models\Partner;
 use Illuminate\Http\Request;
+use App\Mail\Admin\PartnerHold;
+use App\Mail\Admin\PartnerReject;
+use App\Mail\Admin\PartnerResume;
+use App\Mail\Admin\PartnerApprove;
+use App\Mail\Admin\PartnerCreated;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\AdminNoticeToPartner;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class PartnerController extends Controller
@@ -72,7 +73,7 @@ class PartnerController extends Controller
             $partner->approved = 1;
             $partner->service_status = $service_status;
             $partner->username = $email;
-            $partner->password = $pass; //bcrypt($pass);
+            $partner->password = Hash::make($pass); //bcrypt($pass);
             $partner->save();
 
             if ($service_status == 1) {
