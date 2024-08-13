@@ -99,7 +99,20 @@ class DashboardController extends Controller
             ->count();
 
         // Get training modules
-        $trainingModulesCount = DB::table('training_modules')->count();
+        $trainingModulesCount = DB::table('training_modules')
+        ->where(function ($query) use ($companyId) {
+            $query->where('company_id', 'default')
+                ->orWhere('company_id', $companyId);
+        })
+        ->count();
+
+        // Get sender profiles
+        $senderprofileCount = DB::table('senderprofile')
+        ->where(function ($query) use ($companyId) {
+            $query->where('company_id', 'default')
+                ->orWhere('company_id', $companyId);
+        })
+        ->count();
 
         // Prepare data to pass to view
         return [
@@ -107,6 +120,7 @@ class DashboardController extends Controller
             'phishing_emails' => $phishingEmailsCount,
             'phishing_websites' => $phishingWebsitesCount,
             'training_modules' => $trainingModulesCount,
+            'senderprofile' => $senderprofileCount,
         ];
     }
 
