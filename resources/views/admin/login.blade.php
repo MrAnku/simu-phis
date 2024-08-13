@@ -67,7 +67,7 @@
                                     <div class="input-group">
                                         <input type="password"
                                             class="form-control form-control-lg"
-                                            name="password" id="login-password" placeholder="password">
+                                            name="password" id="login-password" placeholder="Password">
                                         <button class="btn btn-light" type="button"
                                             onclick="createpassword('login-password',this)" id="button-addon2"><i
                                                 class="ri-eye-off-line align-middle"></i></button>
