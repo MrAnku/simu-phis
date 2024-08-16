@@ -23,9 +23,9 @@ class DashboardController extends Controller
             ->take(6)
             ->get();
 
-        $campaignsWithReport = CampaignReport::where('company_id', $companyId)->take(4)->get();   
+        $campaignsWithReport = CampaignReport::where('company_id', $companyId)->take(4)->get();
         $totalEmpCompromised = CampaignReport::where('company_id', $companyId)
-        ->sum('emp_compromised');
+            ->sum('emp_compromised');
 
         $package = $this->getPackage();
 
@@ -100,19 +100,30 @@ class DashboardController extends Controller
 
         // Get training modules
         $trainingModulesCount = DB::table('training_modules')
-        ->where(function ($query) use ($companyId) {
-            $query->where('company_id', 'default')
-                ->orWhere('company_id', $companyId);
-        })
-        ->count();
+            ->where(function ($query) use ($companyId) {
+                $query->where('company_id', 'default')
+                    ->orWhere('company_id', $companyId);
+            })
+            ->count();
 
         // Get sender profiles
         $senderprofileCount = DB::table('senderprofile')
-        ->where(function ($query) use ($companyId) {
-            $query->where('company_id', 'default')
-                ->orWhere('company_id', $companyId);
-        })
-        ->count();
+            ->where(function ($query) use ($companyId) {
+                $query->where('company_id', 'default')
+                    ->orWhere('company_id', $companyId);
+            })
+            ->count();
+
+
+        // Get WhatsApp Simulations
+        $waSimuCount = DB::table('whatsapp_campaigns')
+            ->where('company_id', $companyId)
+            ->count();
+
+        // Get Phishing Simulations
+        $phishSimuCount = DB::table('all_campaigns')
+            ->where('company_id', $companyId)
+            ->count();
 
         // Prepare data to pass to view
         return [
@@ -121,6 +132,9 @@ class DashboardController extends Controller
             'phishing_websites' => $phishingWebsitesCount,
             'training_modules' => $trainingModulesCount,
             'senderprofile' => $senderprofileCount,
+            'waSimuCount' => $waSimuCount,
+            'phishSimuCount' => $phishSimuCount,
+            'getLinechart2' => $this->getLineChartData2(),
         ];
     }
 
@@ -221,13 +235,14 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
-    public function getPackage(){
+    public function getPackage()
+    {
         $companyId = Auth::user()->company_id;
         $employees = Users::where('company_id', $companyId)->count();
 
         $allotedEmployees = (int)Auth::user()->employees;
 
-        $usedPercent = ($employees > 0) ? ($employees/$allotedEmployees) * 100 : 0;
+        $usedPercent = ($employees > 0) ? ($employees / $allotedEmployees) * 100 : 0;
 
         $package = [
             "alloted_emp" => $allotedEmployees,
@@ -236,5 +251,39 @@ class DashboardController extends Controller
         ];
 
         return $package;
+    }
+
+    public function getLineChartData2()
+    {
+        // Get the current date and the date 10 days ago
+        $endDate = Carbon::now();
+        $startDate = $endDate->copy()->subDays(10);
+
+        // Initialize an empty array to hold the results
+        $data = [];
+
+        // Loop through each day from start date to end date
+        for ($date = $startDate; $date <= $endDate; $date->addDay()) {
+            $formattedDate = $date->format('m/d/Y');
+
+            // Fetch data from all_campaigns by converting launch_time to date
+            $allCampaignsCount = DB::table('all_campaigns')
+                ->whereDate(DB::raw("STR_TO_DATE(launch_time, '%m/%d/%Y %h:%i %p')"), $date->format('Y-m-d'))
+                ->count();
+
+            // Fetch data from whatsapp_campaigns where created_at matches the current date
+            $whatsappCampaignsCount = DB::table('whatsapp_campaigns')
+                ->whereDate('created_at', $date->format('Y-m-d'))
+                ->count();
+
+            // Add the results to the data array
+            $data[] = [
+                'date' => $date->format('d M'),
+                'all_campaigns' => $allCampaignsCount,
+                'whatsapp_campaigns' => $whatsappCampaignsCount,
+            ];
+        }
+
+        return $data;
     }
 }

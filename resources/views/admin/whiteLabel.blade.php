@@ -211,7 +211,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.whitelabel.approve') }}',
+                            url: '/admin/approve-whitelabel',
                             data: {
                                 "rowId": id
                             },
@@ -242,7 +242,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.whitelabel.stop') }}',
+                            url: '/admin/stop-whitelabel',
                             data: {
                                 "rowId": id
                             },
@@ -257,24 +257,7 @@
                 })
 
 
-                // if (confirm("The whitelabeling for this partner will be stopped. Are you sure?")) {
-                //     $(btn).html("Please Wait...")
-                //     $.post({
-                //         url: 'whitelabel-req.php',
-                //         data: {
-                //             "stopWhitelabel": "1",
-                //             "rowId": id
-                //         },
-                //         success: function(response) {
-                //             // console.log("deleted successfully")
-                //             // alert(response);
-                //             window.location.href = window.location.href;
-
-                //         }
-                //     })
-                // } else {
-                //     return;
-                // }
+             
             }
 
             function rejectWL(btn, id) {
@@ -290,7 +273,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.whitelabel.reject') }}',
+                            url: '/admin/reject-whitelabel',
                             data: {
                                 "rowId": id
                             },
@@ -304,24 +287,7 @@
                     }
                 })
 
-                // if (confirm("Are you sure to reject this whitelabelling request?")) {
-                //     $(btn).html("Please Wait...")
-                //     $.post({
-                //         url: 'whitelabel-req.php',
-                //         data: {
-                //             "rejectWhitelabel": "1",
-                //             "rowId": id
-                //         },
-                //         success: function(response) {
-                //             // console.log("deleted successfully")
-                //             // alert(response);
-                //             window.location.href = window.location.href;
-
-                //         }
-                //     })
-                // } else {
-                //     return;
-                // }
+              
             }
         </script>
     @endpush

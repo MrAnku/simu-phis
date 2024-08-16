@@ -194,27 +194,31 @@
                             <div class="card custom-card overflow-hidden">
                                 <div class="card-body">
                                     <a href="{{ route('trainingmodule.index') }}">
-                                    <div class="d-flex align-items-top justify-content-between">
-                                        <div>
-                                            <span class="avatar avatar-md bg-teal">
-                                                <i class='bx bx-book-content fs-20'></i>
-                                            </span>
-                                        </div>
-                                        <div class="flex-fill ms-3">
-                                            <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                                <div>
-                                                    <h4 class="fw-semibold mt-1">{{ $data['training_modules'] }}</h4>
-                                                    <p class="mb-0 fs-11 op-7 text-muted fw-semibold">TRAINING MODULES</p>
-                                                </div>
+                                        <div class="d-flex align-items-top justify-content-between">
+                                            <div>
+                                                <span class="avatar avatar-md bg-teal">
+                                                    <i class='bx bx-book-content fs-20'></i>
+                                                </span>
                                             </div>
+                                            <div class="flex-fill ms-3">
+                                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                                    <div>
+                                                        <h4 class="fw-semibold mt-1">{{ $data['training_modules'] }}</h4>
+                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">TRAINING MODULES
+                                                        </p>
+                                                    </div>
+                                                </div>
 
+                                            </div>
                                         </div>
-                                    </div>
-                                </a>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+
+
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="card custom-card">
@@ -234,6 +238,70 @@
                                 </div>
                                 <div class="card-body">
                                     <canvas id="chartjs-doughnut" class="chartjs-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-9">
+                            <div class="card custom-card overflow-hidden">
+                                <div class="card-header justify-content-between">
+                                    <div class="card-title">Simulation Statics</div>
+
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="row border-bottom border-block-end-dashed">
+                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
+                                            <div
+                                                class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
+                                                <p class="fs-20 fw-semibold mb-0">{{ $data['waSimuCount'] + $data['phishSimuCount'] }}</p>
+                                                <p class="mb-0 text-muted">Total Simulation</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
+                                            <div
+                                                class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
+                                                <p class="fs-20 fw-semibold mb-0"><span
+                                                        class="basic-subscription">{{$data['waSimuCount']}}</span></p>
+                                                <p class="mb-0 text-muted">WhatsApp Simulation</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
+                                            <div class="p-3 text-sm-start text-center">
+                                                <p class="fs-20 fw-semibold mb-0"><span
+                                                        class="pro-subscription">{{$data['phishSimuCount']}}</span></p>
+                                                <p class="mb-0 text-muted">Phishing Simulation</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="subscriptionOverview" class="px-3 mt-sm-0 mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3">
+                            <div class="card custom-card">
+                                <div class="card-body p-1">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div id="analytics-views"></div>
+                                        <div class="p-2">
+                                            <p class="mb-1 text-muted">Payload Clicks</p>
+                                            <h5 class="fw-semibold mb-0" id="all-payload-clicks"></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card custom-card">
+                                <div class="card-body p-1">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div id="analytics-views-2"></div>
+                                        <div class="p-2">
+                                            <p class="mb-1 text-muted">Email Reported</p>
+                                            <h5 class="fw-semibold mb-0" id="all-email-reported"></h5>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -273,6 +341,9 @@
                                 </div>
                             </div>
 
+
+                        </div>
+                        <div class="col-lg-6">
                             <div class="card custom-card">
                                 <div class="card-header justify-content-between">
                                     <div class="card-title">
@@ -304,37 +375,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-6">
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="card custom-card">
-                                        <div class="card-body p-1">
-                                            <div class="d-flex align-items-center flex-wrap">
-                                                <div id="analytics-views"></div>
-                                                <div class="p-2">
-                                                    <p class="mb-1 text-muted">Payload Clicks</p>
-                                                    <h5 class="fw-semibold mb-0" id="all-payload-clicks"></h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="card custom-card">
-                                        <div class="card-body p-1">
-                                            <div class="d-flex align-items-center flex-wrap">
-                                                <div id="analytics-views-2"></div>
-                                                <div class="p-2">
-                                                    <p class="mb-1 text-muted">Email Reported</p>
-                                                    <h5 class="fw-semibold mb-0" id="all-email-reported"></h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+
+
 
                     <div class="row">
                         <div class="col-lg-12">
@@ -397,7 +440,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Get pie chart data
-                axios.get('{{ route('get.pie.data') }}')
+                axios.get('/get-pie-data')
                     .then(function(response) {
                         var pieData = response.data;
                         new Chart(document.getElementById('chartjs-doughnut'), {
@@ -432,7 +475,7 @@
                     });
 
                 // Get line chart data
-                axios.get('{{ route('get.line.chart.data') }}')
+                axios.get('/get-line-chart-data')
                     .then(function(response) {
                         console.log(response.data)
                         var lineChartData = response.data;
@@ -664,6 +707,200 @@
                     }
                 });
             });
+        </script>
+
+        <script>
+            /* Subscription Overview Chart */
+            var chartData = @json($data['getLinechart2']);
+
+            var options = {
+                series: [{
+                        name: "WhatsApp Simulation",
+                        data: chartData.map(item => item.whatsapp_campaigns)
+                    },
+                    {
+                        name: "Phishing Simulation",
+                        data: chartData.map(item => item.all_campaigns)
+                    }
+                ],
+                chart: {
+                    toolbar: {
+                        show: false
+                    },
+                    height: 285,
+                    type: 'line',
+                    zoom: {
+                        enabled: false
+                    },
+                    dropShadow: {
+                        enabled: true,
+                        enabledOnSeries: undefined,
+                        top: 5,
+                        left: 0,
+                        blur: 3,
+                        color: '#000',
+                        opacity: 0.15
+                    },
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: [2, 2],
+                    curve: ['smooth', 'smooth'],
+                    lineCap: 'butt',
+                    dashArray: [0, 0]
+                },
+                title: {
+                    text: undefined,
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                    horizontalAlign: 'center',
+                    fontWeight: 600,
+                    fontSize: '11px',
+                    tooltipHoverFormatter: function(val, opts) {
+                        return val + ' - ' + opts.w.globals.series[opts.seriesIndex][opts.dataPointIndex] + ''
+                    },
+                    labels: {
+                        colors: '#74767c',
+                    },
+                    markers: {
+                        width: 7,
+                        height: 7,
+                        strokeWidth: 0,
+                        radius: 12,
+                        offsetX: 0,
+                        offsetY: 0
+                    },
+                },
+                markers: {
+                    discrete: [{
+                            seriesIndex: 0,
+                            dataPointIndex: 5,
+                            fillColor: '#305cfc',
+                            strokeColor: '#fff',
+                            size: 4,
+                            shape: "circle"
+                        },
+                        {
+                            seriesIndex: 0,
+                            dataPointIndex: 11,
+                            fillColor: '#305cfc',
+                            strokeColor: '#fff',
+                            size: 4,
+                            shape: "circle"
+                        },
+                        {
+                            seriesIndex: 1,
+                            dataPointIndex: 10,
+                            fillColor: '#23b7e5',
+                            strokeColor: '#fff',
+                            size: 4,
+                            shape: "circle"
+                        }, {
+                            seriesIndex: 1,
+                            dataPointIndex: 4,
+                            fillColor: '#23b7e5',
+                            strokeColor: '#fff',
+                            size: 4,
+                            shape: "circle"
+                        }
+                    ],
+                    hover: {
+                        sizeOffset: 6
+                    }
+                },
+                yaxis: {
+                    title: {
+                        style: {
+                            color: '#adb5be',
+                            fontSize: '14px',
+                            fontFamily: 'poppins, sans-serif',
+                            fontWeight: 600,
+                            cssClass: 'apexcharts-yaxis-label',
+                        },
+                    },
+                    labels: {
+                        formatter: function(y) {
+                            return y.toFixed(0) + "";
+                        },
+                        show: true,
+                        style: {
+                            colors: "#8c9097",
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cssClass: 'apexcharts-xaxis-label',
+                        },
+                    }
+                },
+                xaxis: {
+                    type: 'day',
+                    categories: chartData.map(item => item.date),
+                    axisBorder: {
+                        show: true,
+                        color: 'rgba(119, 119, 142, 0.05)',
+                        offsetX: 0,
+                        offsetY: 0,
+                    },
+                    axisTicks: {
+                        show: true,
+                        borderType: 'solid',
+                        color: 'rgba(119, 119, 142, 0.05)',
+                        width: 6,
+                        offsetX: 0,
+                        offsetY: 0
+                    },
+                    labels: {
+                        rotate: -90,
+                        style: {
+                            colors: "#8c9097",
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cssClass: 'apexcharts-xaxis-label',
+                        },
+                    }
+                },
+                tooltip: {
+                    y: [{
+                            title: {
+                                formatter: function(val) {
+                                    return val
+                                }
+                            }
+                        },
+                        {
+                            title: {
+                                formatter: function(val) {
+                                    return val
+                                }
+                            }
+                        },
+                        {
+                            title: {
+                                formatter: function(val) {
+                                    return val;
+                                }
+                            }
+                        }
+                    ]
+                },
+                colors: ["rgb(132, 90, 223)", "#23b7e5"],
+            };
+            document.querySelector("#subscriptionOverview").innerHTML = " ";
+            var chart1 = new ApexCharts(document.querySelector("#subscriptionOverview"), options);
+            chart1.render();
+
+            function subOverview() {
+                chart1.updateOptions({
+                    colors: ["rgb(" + myVarVal + ")", "#23b7e5"],
+                })
+            }
+            /* Subscription Overview Chart */
         </script>
     @endpush
 
