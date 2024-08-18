@@ -49,7 +49,8 @@
 
                                     <p class="mb-0 fs-25 fw-semibold">{{ $package['total_emp'] }} of
                                         {{ $package['alloted_emp'] }} <span
-                                            class="text-muted fs-11">{{ $package['used_percent'] }}% of total used</span>
+                                            class="text-muted fs-11">{{ round($package['used_percent'], 2) }}% of total
+                                            used</span>
                                     </p>
                                     <span class="text-muted fs-12">Employees</span>
                                 </div>
@@ -69,8 +70,18 @@
                                     </div>
                                     <div class="text-end">
 
-                                        <a href="#"
-                                            class="btn btn-success btn-sm btn-wave waves-effect waves-light mt-3">Upgrade</a>
+                                        {{-- @if ($package['used_percent'] >= 80) --}}
+
+                                            @if ($data['upgrade_req'])
+                                                <button class="btn btn-warning btn-sm btn-wave waves-effect waves-light mt-3">Upgrade request is pending</button>
+                                            @else
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#upgradeModal"
+                                                    class="btn btn-success btn-sm btn-wave waves-effect waves-light mt-3">Upgrade</a>
+                                            @endif
+
+
+
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
 
@@ -255,7 +266,8 @@
                                         <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
                                             <div
                                                 class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
-                                                <p class="fs-20 fw-semibold mb-0">{{ $data['waSimuCount'] + $data['phishSimuCount'] }}</p>
+                                                <p class="fs-20 fw-semibold mb-0">
+                                                    {{ $data['waSimuCount'] + $data['phishSimuCount'] }}</p>
                                                 <p class="mb-0 text-muted">Total Simulation</p>
                                             </div>
                                         </div>
@@ -263,14 +275,14 @@
                                             <div
                                                 class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
                                                 <p class="fs-20 fw-semibold mb-0"><span
-                                                        class="basic-subscription">{{$data['waSimuCount']}}</span></p>
+                                                        class="basic-subscription">{{ $data['waSimuCount'] }}</span></p>
                                                 <p class="mb-0 text-muted">WhatsApp Simulation</p>
                                             </div>
                                         </div>
                                         <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
                                             <div class="p-3 text-sm-start text-center">
                                                 <p class="fs-20 fw-semibold mb-0"><span
-                                                        class="pro-subscription">{{$data['phishSimuCount']}}</span></p>
+                                                        class="pro-subscription">{{ $data['phishSimuCount'] }}</span></p>
                                                 <p class="mb-0 text-muted">Phishing Simulation</p>
                                             </div>
                                         </div>
@@ -414,7 +426,104 @@
 
 
         </div>
+
+
     </div>
+
+    {{-- -------------------modals ------------ --}}
+    <div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Request for Employees limit upgrade</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('reqNewLimit') }}" method="post">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Current Limit</label>
+                            <input type="text" name="old_limit" class="form-control"
+                                value="{{ $package['alloted_emp'] }}" disabled>
+                            <input type="hidden" name="usage" value="{{ $package['used_percent'] }}">
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">New Limit<sup class="text-danger">*</sup></label>
+                            <input type="number" name="new_limit" class="form-control" min="100" max="5000"
+                                placeholder="Enter new limit value ex. 1000">
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Additional Information</label>
+                            <textarea class="form-control" name="add_info" id="" rows="5"></textarea>
+
+                        </div>
+
+
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">
+                                Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{-- -------------------modals ------------ --}}
+
+    {{-- ------------------------------Toasts---------------------- --}}
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        @if (session('success'))
+            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-success text-fixed-white">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="toast-header bg-danger text-fixed-white">
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
+                    aria-atomic="true">
+                    <div class="toast-header bg-danger text-fixed-white">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        {{ $error }}
+                    </div>
+                </div>
+            @endforeach
+        @endif
+
+
+    </div>
+
+    {{-- ------------------------------Toasts---------------------- --}}
 
     @push('newcss')
         <style>

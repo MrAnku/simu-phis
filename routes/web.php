@@ -118,6 +118,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/whatsappreport-chart-data', [DashboardController::class, 'whatsappReport']);
     Route::get('/dash/get-payload-click-data', [DashboardController::class, 'getPayloadClickData']);
     Route::get('/dash/get-emailreported-data', [DashboardController::class, 'getEmailReportedData']);
+    Route::post('/dash/reqNewLimit', [DashboardController::class, 'reqNewLimit'])->name('reqNewLimit');
 
     //campaigns page routes------------------------------------------------------
 

@@ -125,6 +125,14 @@ class DashboardController extends Controller
             ->where('company_id', $companyId)
             ->count();
 
+
+        // Get upgrade Request
+        $upgrade_req = DB::table('upgrade_req')
+            ->where('company_id', $companyId)
+            ->where('status', 0)
+            ->latest()
+            ->first();
+
         // Prepare data to pass to view
         return [
             'active_campaigns' => $activeCampaignsCount,
@@ -135,6 +143,7 @@ class DashboardController extends Controller
             'waSimuCount' => $waSimuCount,
             'phishSimuCount' => $phishSimuCount,
             'getLinechart2' => $this->getLineChartData2(),
+            'upgrade_req' => $upgrade_req,
         ];
     }
 
@@ -285,5 +294,26 @@ class DashboardController extends Controller
         }
 
         return $data;
+    }
+
+    public function reqNewLimit(Request $request){
+
+        $request->validate([
+            'new_limit' => 'integer|min:100|max:5000',
+            'add_info' => 'nullable|max:1000'
+        ]);
+
+        DB::table('upgrade_req')->insert([
+            'old_limit' => Auth::user()->employees,
+            'new_limit' => $request->new_limit,
+            'usage_percent' => $request->usage,
+            'add_info' => $request->add_info,
+            'status' => 0,
+            'company_id' => Auth::user()->company_id,
+            'partner_id' => Auth::user()->partner_id,
+            'created_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Upgrade request submitted');
     }
 }
