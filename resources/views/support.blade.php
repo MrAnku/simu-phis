@@ -377,7 +377,7 @@
             $("#support_img").hide();
             
             $.post({
-                url: '{{route('support.loadConversation')}}',
+                url: '/support/load-conversations',
                 data: {
                     loadConv: '1',
                     tkt_id: id
@@ -397,7 +397,7 @@
             $("#replyInput").hide();
             $("#support_img").hide();
             $.post({
-                url: '{{route('support.loadConversation')}}',
+                url: '/support/load-conversations',
                 data: {
                     loadConv: '1',
                     tkt_id: id
@@ -416,7 +416,7 @@
 
             var msg = $("#replyInput input").val();
             $.post({
-                url: '{{route('support.submitReply')}}',
+                url: '/support/submit-reply',
                 data: {
                     submitReply: '1',
                     tkt_id: tkt_id,

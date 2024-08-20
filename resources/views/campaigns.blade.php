@@ -1490,7 +1490,7 @@
                 $("#vSub").val(subject);
 
                 $.post({
-                    url: '{{ route('campaigns.fetch.phish.data') }}',
+                    url: '/campaigns/fetch-phish-data',
                     data: {
                         fetchPhisData: 1,
                         website: website,
@@ -1519,7 +1519,7 @@
             function fetchCampaignDetails(campid) {
                 // console.log(campid)
                 $.post({
-                    url: '{{ route('campaign.fetchCampaignReport') }}',
+                    url: '/reporting/fetch-campaign-report',
                     data: {
                         campaignId: campid
                     },
@@ -1628,7 +1628,7 @@
 
                 function fetchCampReportByUsers() {
                     $.post({
-                        url: '{{ route('campaign.fetchCampReportByUsers') }}',
+                        url: '/fetch-camp-report-by-users',
                         data: {
                             fetchCampReportByUsers: '1',
                             campaignId: campid
@@ -1658,7 +1658,7 @@
 
                 function fetchCampTrainingDetails() {
                     $.post({
-                        url: '{{ route('campaign.fetchCampTrainingDetails') }}',
+                        url: '/fetch-camp-training-details',
                         data: {
                             fetchCampTrainingDetails: '1',
                             campaignId: campid
@@ -1674,7 +1674,7 @@
 
                 function fetchCampTrainingDetailsIndividual() {
                     $.post({
-                        url: '{{ route('campaign.fetchCampTrainingDetailsIndividual') }}',
+                        url: "/fetch-camp-training-details-individual",
                         data: {
                             fetchCampTrainingDetailsIndividual: '1',
                             campaignId: campid

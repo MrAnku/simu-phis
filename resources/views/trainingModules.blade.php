@@ -980,7 +980,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "{{route('trainingmodule.delete')}}",
+                            url: "/delete-training-module",
                             data: {
                                 deleteTraining: 1,
                                 trainingid: trainingid,

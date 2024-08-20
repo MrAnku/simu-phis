@@ -1082,7 +1082,7 @@
                 var clickedBtn = $(this);
                 clickedBtn.text("Please Wait...");
                 $.post({
-                    url: '{{ route('settings.update.profile') }}',
+                    url: '/settings/update-profile',
                     data: {
                         'updateProfile': 1,
                         'country': countryInput.value,
@@ -1116,7 +1116,7 @@
                 var clickedBtn = $(this);
                 clickedBtn.text("Please Wait...");
                 $.post({
-                    url: '{{ route('settings.update.password') }}',
+                    url: '/settings/update-password',
                     data: {
                         'updatePassword': 1,
                         'currentPassword': currentPassword.value,
@@ -1160,7 +1160,7 @@
 
                     // console.log("checked");
                     $.post({
-                        url: '{{ route('settings.update.mfa') }}',
+                        url: '/settings/update-mfa',
                         data: {
                             'updateMFA': 1,
                             'status': 1
@@ -1190,7 +1190,7 @@
                 } else {
                     // console.log("not checked");
                     $.post({
-                        url: '{{ route('settings.update.mfa') }}',
+                        url: '/settings/update-mfa',
                         data: {
                             'updateMFA': 1,
                             'status': 0
@@ -1219,7 +1219,7 @@
                 var clickedBtn = $(this);
                 clickedBtn.text("Please Wait...");
                 $.post({
-                    url: '{{ route('settings.update.lang') }}',
+                    url: '/settings/update-lang',
                     data: {
                         'updateLang': 1,
                         'default_phish_lang': default_phish_lang.value,
@@ -1261,7 +1261,7 @@
 
                     clickedBtn.text("Please Wait...");
                     $.post({
-                        url: '{{ route('settings.update.phish.edu') }}',
+                        url: '/settings/update-phish-edu',
                         data: {
                             'updatePhishingEdu': 1,
                             'redirect_url': redirect_url.value,
@@ -1308,7 +1308,7 @@
 
                     clickedBtn.text("Please Wait...");
                     $.post({
-                        url: '{{ route('settings.update.train.freq') }}',
+                        url: '/settings/update-train-freq',
                         data: {
                             'updateTrainFreq': 1,
                             'days': freqdays.value
@@ -1352,7 +1352,7 @@
 
                     // console.log("checked");
                     $.post({
-                        url: '{{ route('settings.update.reporting') }}',
+                        url: '/settings/update-reporting',
                         data: {
                             'updateReporting': 1,
                             'status': 1
@@ -1376,7 +1376,7 @@
                 } else {
                     // console.log("not checked");
                     $.post({
-                        url: '{{ route('settings.update.reporting') }}',
+                        url: '/settings/update-reporting',
                         data: {
                             'updateReporting': 1,
                             'status': 0
@@ -1412,7 +1412,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{route('settings.acc.deactivate')}}',
+                            url: '/settings/acc-dectivate',
                             data: {
                                 'accDeactivate': 1
                             },
@@ -1424,23 +1424,7 @@
                         })
                     }
                 })
-                // if (confirm(
-                //         "After deactivation your services will be on hold. You have to contact to your service provider to reactivate your account"
-                //     )) {
-                //     $.post({
-                //         url: 'settings.php',
-                //         data: {
-                //             'accDeactivate': 1
-                //         },
-                //         success: function(res) {
-                //             var resJson = JSON.parse(res);
-                //             // alert(resJson.msg);
-                //             window.location.href = "logout.php";
-                //         }
-                //     })
-                // } else {
-                //     return false;
-                // }
+               
             }
         </script>
     @endpush

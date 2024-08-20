@@ -622,7 +622,7 @@
                         console.error('Error fetching line chart data:', error);
                     });
 
-                axios.get('{{ route('get.total.assets') }}')
+                axios.get('/get-total-assets')
             });
         </script>
 

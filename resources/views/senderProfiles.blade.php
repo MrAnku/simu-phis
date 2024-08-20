@@ -295,7 +295,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{ route('senderprofile.delete') }}',
+                            url: '/delete-sender-profile',
                             data: {
                                 deleteSenderProfile: '1',
                                 senderProfileId: id

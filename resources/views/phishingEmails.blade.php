@@ -810,7 +810,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "{{ route('phishing.template.delete') }}",
+                            url: "/delete-email-template",
                             data: {
                                 tempid: tempid,
                                 filelocation: filelocation
@@ -849,7 +849,7 @@
             function editETemplate(id) {
                 editEtemp.value = id;
                 $.post({
-                    url: `{{ route('phishing.getTemplateById') }}`,
+                    url: `/phishing-email`,
                     data: {
                         'id': id
                     },

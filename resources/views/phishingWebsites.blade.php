@@ -333,7 +333,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{ route('phishing.website.delete') }}',
+                            url: '/delete-website',
                             data: {
                                 websiteid: webId,
                                 filename: filename
@@ -373,7 +373,7 @@
                     `<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>`
                 );
                 $.post({
-                    url: '{{ route('phishing.generate.website') }}',
+                    url: '/generate-phishing-website',
                     data: {
                         description: web_des.value,
                         company_name: com_name.value,

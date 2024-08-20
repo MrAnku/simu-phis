@@ -570,7 +570,7 @@
 
                 console.log(finalBody);
                 $.post({
-                    url: '{{ route('whatsapp.submitCampaign') }}',
+                    url: '/whatsapp-submit-campaign',
                     data: finalBody,
                     success: function(res) {
                         checkResponse(res)
@@ -611,7 +611,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{ route('whatsapp.deleteCampaign') }}',
+                            url: '/whatsapp-delete-campaign',
                             data: {
                                 campid: campid
                             },
@@ -626,7 +626,7 @@
 
             function fetchCampaignDetails(campid) {
                 $.post({
-                    url: '{{ route('whatsapp.fetchCamp') }}',
+                    url: '/whatsapp-fetch-campaign',
                     data: {
                         campid: campid
                     },
@@ -666,7 +666,7 @@
                 $("#temp_table").hide();
                 $("#temp_spinner").show();
                 $.get({
-                    url: '{{ route('whatsapp.templates') }}',
+                    url: '/whatsapp-templates',
                     success: function(res) {
 
                         var row = '';
