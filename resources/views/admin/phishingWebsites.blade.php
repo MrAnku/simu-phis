@@ -230,7 +230,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{ route('admin.phishing.website.delete') }}',
+                            url: 'admin/delete-website',
                             data: {
                                 websiteid: webId,
                                 filename: filename

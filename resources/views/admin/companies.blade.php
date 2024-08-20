@@ -150,7 +150,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.companies.approve') }}',
+                            url: '/admin/companies/approve',
                             data: {
                                 "companyId": id
                             },
@@ -180,7 +180,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.companies.reject') }}',
+                            url: '/admin/companies/reject',
                             data: {
                                 "companyId": id
                             },
@@ -210,7 +210,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.companies.delete') }}',
+                            url: '/admin/companies/delete',
                             data: {
                                 "companyId": id
                             },

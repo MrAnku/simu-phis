@@ -376,7 +376,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.approvePartner') }}',
+                            url: 'admin/approve-partner',
                             data: {
                                 "partnerId": id
                             },
@@ -406,7 +406,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.holdService') }}',
+                            url: 'admin/hold-service',
                             data: {
                                 "partnerId": id
                             },
@@ -436,7 +436,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.startService') }}',
+                            url: 'admin/start-service',
                             data: {
                                 "partnerId": id
                             },
@@ -466,7 +466,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.rejectApproval') }}',
+                            url: 'admin/reject-approval',
                             data: {
                                 "partnerId": id
                             },
@@ -497,7 +497,7 @@
                     if (result.isConfirmed) {
                         $(btn).html("Please Wait...")
                         $.post({
-                            url: '{{ route('admin.deletePartner') }}',
+                            url: 'admin/delete-partner',
                             data: {
                                 "partnerId": id
                             },
@@ -526,7 +526,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '{{ route('admin.deleteNotice') }}',
+                            url: 'admin/delete-notice',
                             data: {
                                 "noticeid": id
                             },

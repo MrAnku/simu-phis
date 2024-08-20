@@ -778,7 +778,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "{{ route('admin.phishing.template.delete') }}",
+                            url: "admin/delete-email-template",
                             data: {
                                 tempid: tempid,
                                 filelocation: filelocation
@@ -794,30 +794,12 @@
 
 
 
-                // if (confirm(
-                //         'Deleting this template will delete the campaigns associated with this email template. Are you sure?'
-                //     )) {
-                //     $.post({
-                //         url: 'phishingEmails.php?deleteTemplate=1',
-                //         data: {
-                //             tempid: tempid,
-                //             filelocation: filelocation
-                //         },
-                //         success: function(res) {
-                //             // console.log(res)
-                //             // window.location.reload();
-                //             window.location.href = window.location.href;
-                //         }
-                //     })
-                // } else {
-                //     return false;
-                // }
             }
 
             function editETemplate(id) {
                 editEtemp.value = id;
                 $.post({
-                    url: `{{ route('admin.phishing.getTemplateById') }}`,
+                    url: `admin/phishing-email`,
                     data: {
                         'id': id
                     },
