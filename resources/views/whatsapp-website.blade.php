@@ -217,12 +217,29 @@
                         },
                         success: function(res) {
                             // console.log(res);
+                            assignTraining(urlSegment);
                             window.location.href = '/c/alert/user'
                         }
                     })
                 }
             }
         })
+
+        function assignTraining(cid) {
+            $.post({
+                url: '/c/assign-training',
+                data: {
+                    assTraining: 1,
+                    cid: cid
+                },
+                success: function(res) {
+                     console.log(res);
+                    // assignTraining(urlSegment);
+                    // window.location.href = '/c/alert/user'
+                }
+            })
+            return;
+        }
     </script>
 </body>
 

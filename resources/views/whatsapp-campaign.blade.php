@@ -42,6 +42,8 @@
                                     <thead>
                                         <tr>
                                             <th>Campaign Name</th>
+                                            <th>Campaign Type</th>
+                                            <th>Training</th>
                                             <th>Template Name</th>
                                             <th>Employee Group</th>
                                             <th>Launch Date</th>
@@ -58,7 +60,9 @@
                                                         data-bs-target="#campaignReportModal">{{ $campaign->camp_name }}</a>
 
                                                 </td>
-                                                <td>{{ $campaign->template_name }}</td>
+                                                <td class="fst-italic">{{ $campaign->camp_type }}</td>
+                                                <td>{{ $campaign->trainingData->name ?? '--' }}</td>
+                                                <td><span class="badge bg-info">{{ $campaign->template_name }}</span></td>
                                                 <td>{{ $campaign->user_group_name ?? 'N/A' }}</td>
                                                 <td>{{ $campaign->created_at }}</td>
                                                 <td>
@@ -100,43 +104,50 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('whatsapp.newTemplate')}}" method="post">
+                    <form action="{{ route('whatsapp.newTemplate') }}" method="post">
                         @csrf
-                  
-                    <div class="mb-3">
-                        <label for="input-label" class="form-label">Template name<sup class="text-danger">*</sup></label>
-                        <input type="text" name="temp_name" class="form-control" id="temp_name"
-                            placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
 
-                    </div>
-                    <div class="mb-3">
-                        <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
-                        <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;" placeholder="Hi @{{var}} .....your content......@{{var}}....Please click the link below to get started @{{var}}" required></textarea>
+                        <div class="mb-3">
+                            <label for="input-label" class="form-label">Template name<sup
+                                    class="text-danger">*</sup></label>
+                            <input type="text" name="temp_name" class="form-control" id="temp_name"
+                                placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
 
-                        
-                    </div>
-                    <div class="mb-3">
-                        <ul>
-                            <li>
-                                <small>
-                                    Add <span class="text-secondary">@{{var}}</span> for variable. For example Hello <span class="text-secondary">@{{var}}</span> Thank you for choosing our services.
-                                </small>
-                            </li>
-                            <li>
-                                <small>
-                                    Please add minimum 3 and maximum 4 variables in which the <span class="text-secondary">first and last variable will be reserved</span> for Employee name and campaign url.
-                                </small>
-                            </li>
-                        </ul>
-                        
-                        
-                    </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
+                            <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;"
+                                placeholder="Hi @{{ var }} .....your content......@{{ var }}....Please click the link below to get started @{{ var }}"
+                                required></textarea>
 
-                    <div class="mb-3">
-                        <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
-                            onclick="submitCampaign();">Request Template</button>
-                    </div>
-                </form>
+
+                        </div>
+                        <div class="mb-3">
+                            <ul>
+                                <li>
+                                    <small>
+                                        Add <span class="text-secondary">@{{ var }}</span> for variable. For
+                                        example Hello <span class="text-secondary">@{{ var }}</span> Thank you
+                                        for choosing our services.
+                                    </small>
+                                </li>
+                                <li>
+                                    <small>
+                                        Please add minimum 3 and maximum 4 variables in which the <span
+                                            class="text-secondary">first and last variable will be reserved</span> for
+                                        Employee name and campaign url.
+                                    </small>
+                                </li>
+                            </ul>
+
+
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
+                                onclick="submitCampaign();">Request Template</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -159,7 +170,8 @@
 
                     </div>
                     <div class="mb-3">
-                        <label for="whatsapp-template" class="form-label">Template<sup class="text-danger">*</sup></label>
+                        <label for="whatsapp-template" class="form-label">Template<sup
+                                class="text-danger">*</sup></label>
                         <select class="form-select" aria-label="Default select example" name="whatsapp_template"
                             id="whatsapp_template" required>
                             <option value="">Choose Template</option>
@@ -219,6 +231,41 @@
                                 @endforelse
 
                             </select>
+                        </div>
+
+                    </div>
+                    <div class="mb-3">
+
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="input-label" class="form-label">Campaign Type<sup
+                                        class="text-danger">*</sup></label>
+                                <div class="d-flex">
+
+                                    {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                    <select class="form-select" aria-label="Default select example" id="campType">
+                                            <option value="Phishing">Phishing</option>
+                                            <option value="Phishing and Training">Phishing with Training</option>
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <label for="input-label" class="form-label">Select Training<sup
+                                        class="text-danger">*</sup></label>
+                                <div class="d-flex">
+
+                                    {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                    <select class="form-select" aria-label="Default select example" id="training" disabled>
+                                        @forelse ($trainings as $training)
+                                            <option value="{{ $training->id }}">{{ $training->name }}</option>
+                                        @empty
+                                            <option value="">No Trainings Available</option>
+                                        @endforelse
+
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -561,6 +608,8 @@
                 var finalBody = {
                     camp_name: camp_name.value,
                     user_group: usrGroup.value,
+                    campType: campType.value,
+                    training: training.value,
                     token: "0",
                     phone: "0",
                     template_name: $("#whatsapp_template").val(),
@@ -724,6 +773,23 @@
                 })
             }
         </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const campType = document.getElementById('campType');
+        const training = document.getElementById('training');
+
+        campType.addEventListener('change', function() {
+            if (campType.value === 'Phishing and Training') {
+                training.disabled = false;
+            } else {
+                training.disabled = true;
+               
+            }
+        });
+    });
+</script>
+
     @endpush
 
 @endsection

@@ -90,6 +90,7 @@ Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(function (
     //route for whatsapp campaign
     Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
     Route::post('/c/update-payload', [WhatsappCampaignController::class, 'updatePayload'])->name('whatsapp.update.payload');
+    Route::post('/c/assign-training', [WhatsappCampaignController::class, 'assignTraining'])->name('whatsapp.assign.training');
     Route::post('/c/update-emp-comp', [WhatsappCampaignController::class, 'updateEmpComp'])->name('whatsapp.update.emp.comp');
     Route::get('/c/alert/user', function () {
         return view('whatsapp-alert');
