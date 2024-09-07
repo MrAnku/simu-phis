@@ -110,6 +110,16 @@
                                         </a>
                                     </li>
 
+                                    <li class="slide__category"><span class="category-name">Tools</span></li>
+
+                                    <li class="slide {{ Request::is('brand-monitoring') ? 'active' : '' }}">
+                                        <a href="{{ route('brand.monitoring') }}"
+                                            class="side-menu__item {{ Request::is('brand-monitoring') ? 'active' : '' }}">
+                                            <i class="bx bx-line-chart side-menu__icon"></i>
+                                            <span class="side-menu__label">Brand Monitoring</span>
+                                        </a>
+                                    </li>
+
                                     <li class="slide__category"><span class="category-name">Help & Support</span></li>
 
                                     <li class="slide {{ Request::is('support') ? 'active' : '' }}">
@@ -118,13 +128,7 @@
                                             <span class="side-menu__label">Support Ticket</span>
                                         </a>
                                     </li>
-                                    {{-- <li class="slide {{ Request::is('brand-monitoring') ? 'active' : '' }}">
-                                        <a href="{{ route('brand.monitoring') }}"
-                                            class="side-menu__item {{ Request::is('brand-monitoring') ? 'active' : '' }}">
-                                            <i class="bx bx-line-chart side-menu__icon"></i>
-                                            <span class="side-menu__label">Brand Monitoring</span>
-                                        </a>
-                                    </li> --}}
+                                    
 
 
                                 </ul>

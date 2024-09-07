@@ -52,24 +52,23 @@ Route::domain('learn.simuphish.com')->group(function () {
 
 //-------------------miscellaneous routes------------------//
 
-Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function(){
+Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
 
-    Route::get('/', function(){
+    Route::get('/', function () {
         abort(404, 'Page not found');
     });
-
 });
 
 Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
 
-    Route::get('/', function(){
+    Route::get('/', function () {
         abort(404, 'Page not found');
     });
 
     Route::get('{dynamicvalue}', [ShowWebsiteController::class, 'index']);
 
     // Route::get('/{websitefile}?sessionid={anysessionid}&token={anytoken}&usrid={anyuser}', [ShowWebsiteController::class, 'index']);
-    
+
     Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
 
     //route for showing alert page
@@ -213,6 +212,14 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     //brand monitoring routes
     Route::get('/brand-monitoring', [BrandMonitoringController::class, 'index'])->name('brand.monitoring');
+
+    Route::get('/scans/{sid}/domains', [BrandMonitoringController::class, 'fetchDomains']);
+    Route::get('/scans/{sid}', [BrandMonitoringController::class, 'pollScan']);
+    Route::post('/scans', [BrandMonitoringController::class, 'createScan']);
+    Route::post('/scans/{sid}/stop', [BrandMonitoringController::class, 'stopScan']);
+    Route::get('/scans/{sid}/list', [BrandMonitoringController::class, 'getScanList']);
+    Route::get('/scans/{sid}/csv', [BrandMonitoringController::class, 'downloadCSV']);
+    Route::get('/scans/{sid}/json', [BrandMonitoringController::class, 'downloadJSON']);
 
 
     ///settings route------------------------------------------------------------------------------------

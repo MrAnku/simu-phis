@@ -300,6 +300,7 @@
                                     <th scope="col">Status</th>
                                     <th scope="col">Link Clicked</th>
                                     <th scope="col">Employee Compromised</th>
+                                    <th scope="col">Training Assigned</th>
                                     <th scope="col">Date</th>
                                 </tr>
                             </thead>
@@ -698,6 +699,9 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-${e.emp_compromised == 0 ? 'warning' : 'success'}-transparent">${e.emp_compromised == 0 ? 'No' : 'Yes'}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${e.training_assigned == 0 ? 'warning' : 'success'}-transparent">${e.training_assigned == 0 ? 'No' : 'Yes'}</span>
                                     </td>
                                     <td>${e.created_at}</td>
                                 </tr>
