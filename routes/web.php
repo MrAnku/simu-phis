@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\AicallController;
 use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
@@ -151,6 +152,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/employees/newGroup', [EmployeesController::class, 'newGroup'])->name('employee.newgroup');
     Route::get('/employees/viewUsers/{groupid}', [EmployeesController::class, 'viewUsers'])->name('employee.viewUsers');
     Route::post('/employees/deleteUser', [EmployeesController::class, 'deleteUser'])->name('employee.deleteUser');
+    Route::post('employees/update-whatsapp-number', [EmployeesController::class, 'updateWhatsapp'])->name('employee.updatewhatsapp');
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
     Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
@@ -165,6 +167,16 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
+
+    //Ai Calling routes ----------------------------------------------------------------------
+    Route::get('/ai-calling', [AicallController::class, 'index'])->name('ai.calling');
+    Route::post('/ai-calling/submit-req', [AicallController::class, 'submitReq'])->name('ai.calling.sub.req');
+    Route::post('/ai-calling/create-campaign', [AicallController::class, 'createCampaign'])->name('ai.call.create.campaign');
+    Route::get('/ai-calling/view-campaign/{id}', [AicallController::class, 'viewCampaign'])->name('ai.call.view.campaign');
+    Route::post('/ai-calling/delete-campaign', [AicallController::class, 'deleteCampaign'])->name('ai.call.delete.campaign');
+    Route::get('/ai-calling/get-agents', [AicallController::class, 'getAgents'])->name('ai.call.get.agents');
+    Route::get('/ai-calling/fetch-call-report/{callid}', [AicallController::class, 'fetchCallReport'])->name('ai.call.fetch.call.report');
+
 
     //phishing emails route---------------------------------------------------------------
 
@@ -245,6 +257,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
 
 // ---------------------company route---------------------//
+
+Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
 
 
 

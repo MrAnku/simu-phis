@@ -224,6 +224,7 @@ class EmployeesController extends Controller
     private function checkLimit($companyId)
     {
         $userCount = Users::where('company_id', $companyId)->count();
+        $userCount++;
         $noOfEmp = Auth::user()->employees; // Assuming no_of_emp is a column in the users table
 
         return $userCount <= (int)$noOfEmp;

@@ -69,6 +69,18 @@
                                         </a>
                                     </li>
 
+
+                                    <li class="slide {{ Request::is('ai-calling') ? 'active' : '' }}">
+                                        <a href="{{ route('ai.calling') }}"
+                                            class="side-menu__item {{ Request::is('ai-calling') ? 'active' : '' }}">
+                                            <i class="bx bx-phone-call side-menu__icon"></i>
+                                            <span class="side-menu__label">
+                                                AI Calling
+                                                <span class="badge bg-secondary-transparent ms-2">New</span>
+                                            </span>
+                                        </a>
+                                    </li>
+
                                     <li class="slide__category"><span class="category-name">Employees & Groups</span></li>
 
                                     <li class="slide {{ Request::is('employees') ? 'active' : '' }}">

@@ -778,7 +778,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "admin/delete-email-template",
+                            url: "/admin/delete-email-template",
                             data: {
                                 tempid: tempid,
                                 filelocation: filelocation
@@ -799,7 +799,7 @@
             function editETemplate(id) {
                 editEtemp.value = id;
                 $.post({
-                    url: `admin/phishing-email`,
+                    url: `/admin/phishing-email`,
                     data: {
                         'id': id
                     },

@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Phishing Websites | simUphish')
+@section('title', 'Sender Profiles | simUphish')
 
 @section('main-content')
 

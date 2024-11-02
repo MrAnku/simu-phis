@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            '/ai-calling/log-call-detail'
+        ]);
+
+       
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

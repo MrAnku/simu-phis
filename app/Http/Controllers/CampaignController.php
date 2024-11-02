@@ -136,7 +136,7 @@ class CampaignController extends Controller
             ->first();
 
         if ($phishingEmail) {
-            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template'], 400);
+            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template']);
         }
 
         $campId = generateRandom(); // Assuming you have a method to generate a random ID
