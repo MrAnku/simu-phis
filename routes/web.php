@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\TprmController;
+use App\Http\Controllers\AicallController;
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
@@ -17,20 +20,18 @@ use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\TrainingModuleController;
+use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\WhiteLabelController;
 use App\Http\Controllers\PhishingWebsitesController;
+use App\Http\Controllers\WhatsappCampaignController;
+use App\Http\Controllers\Learner\LearnerAuthController;
+use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
-use App\Http\Controllers\AicallController;
-use App\Http\Controllers\BrandMonitoringController;
-use App\Http\Controllers\Learner\LearnerAuthController;
-use App\Http\Controllers\Learner\LearnerDashController;
-use App\Http\Controllers\SupportController;
-use App\Http\Controllers\WhatsappCampaignController;
 
 //---------------learning portal routes------------//
 
@@ -77,15 +78,18 @@ Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(function (
 
     //route to check where to redirect
     Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
+    Route::post('/tcheck-where-to-redirect', [ShowWebsiteController::class, 'tcheckWhereToRedirect']);
 
     //route for assigning training
     Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
 
     //route for email compromise
     Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
+    Route::post('/temp-compromised', [ShowWebsiteController::class, 'thandleCompromisedEmail']);
 
     //route for updating payload
     Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
+    Route::post('/tupdate-payload', [ShowWebsiteController::class, 'tupdatePayloadClick']);
 
     //route for whatsapp campaign
     Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
@@ -167,6 +171,29 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
+
+    //---------------------TPRM routes----------------------//
+    Route::get('/tprm', [TprmController::class, 'index'])->name('campaign.tprm');
+   
+    Route::post('/submit-domains', [TprmController::class, 'submitdomains'])->name('submit-domains');
+    Route::get('/test', [TprmController::class, 'test'])->name('test');
+    Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify');
+    Route::post('/tprm/delete-domain', [TprmController::class, 'deleteDomain'])->name('domain.delete');
+   
+    //-------------------------------------TPRM routes for champaingns----------------------//
+    
+    Route::get('/tprmcampaigns', [TprmController::class, 'index'])->name('tprmcampaigns');
+    Route::post('/tprmcampaigns/create', [TprmController::class, 'createCampaign'])->name('tprmcampaigns.create');
+    Route::post('/tprmcampaigns/delete', [TprmController::class, 'deleteCampaign'])->name('tprmcampaigns.delete');
+    Route::post('/tprmcampaigns/relaunch', [TprmController::class, 'relaunchCampaign'])->name('tprmcampaigns.relaunch');
+    Route::post('/tprmcampaigns/fetch-phish-data', [TprmController::class, 'fetchPhishData'])->name('tprmcampaigns.fetch.phish.data');
+    Route::post('/tprmcampaigns/reschedule', [TprmController::class, 'rescheduleCampaign'])->name('tprmreschedule.campaign');
+    Route::post('/treporting/fetch-campaign-report', [ReportingController::class, 'tfetchCampaignReport'])->name('tprmcampaign.fetchCampaignReport');
+    Route::post('/tfetch-camp-report-by-users', [ReportingController::class, 'tfetchCampReportByUsers'])->name('tprmcampaign.fetchCampReportByUsers');
+    Route::get('/test-route', function () {return 'Test route reached!';});
+   Route::post('/tprmcampaigns/fetchEmail', [TprmController::class, 'fetchEmail'])->name('tprmcampaigns.fetchEmail');
+   Route::post('/tprmcampaigns/tprmnewGroup', [TprmController::class, 'tprmnewGroup'])->name('tprmcampaigns.tprmnewGroup');
+   Route::get('/tprmcampaigns/emails/{domain}', [TprmController::class, 'getEmailsByDomain'])->name('tprmcampaigns.getEmailsByDomain');
 
     //Ai Calling routes ----------------------------------------------------------------------
     Route::get('/ai-calling', [AicallController::class, 'index'])->name('ai.calling');

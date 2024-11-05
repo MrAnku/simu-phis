@@ -68,7 +68,16 @@
                                             <span class="side-menu__label">Reporting</span>
                                         </a>
                                     </li>
-
+                                    <li class="slide {{ Request::is('tprm') ? 'active' : '' }}">
+                                        <a href="{{ route('campaign.tprm') }}"
+                                          class="side-menu__item {{ Request::is('tprm') ? 'active' : '' }}">
+                                            <i class="bx bx-shape-circle side-menu__icon"></i>
+                                             <span class="side-menu__label">
+                                                TPRM
+                                                <span class="badge bg-secondary-transparent ms-2">New</span>
+                                             </span>
+                                         </a>
+                                </li>
 
                                     <li class="slide {{ Request::is('ai-calling') ? 'active' : '' }}">
                                         <a href="{{ route('ai.calling') }}"

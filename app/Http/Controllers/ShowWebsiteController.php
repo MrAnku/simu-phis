@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use \App\Models\TprmCampaignLive;
 
 class ShowWebsiteController extends Controller
 {
@@ -24,7 +25,67 @@ class ShowWebsiteController extends Controller
         $c = $queryParams['c'] ?? null;
         $p = $queryParams['p'] ?? null;
         $l = $queryParams['l'] ?? null;
+        $tprm = $queryParams['1'] ?? null;
+        
+        if ($tprm =='1') {
 
+         $visited = DB::table('tprm_websites_sessions')->where([
+            'user' => $dynamicvalue,
+            'session' => $c,
+            'website_id' => $p,
+            'website_name' => $l
+        ])->first();
+
+        if ($visited) {
+
+            if ($visited->expiry > now()) {
+
+                $website = PhishingWebsite::find($p);
+
+                if ($website) {
+                    $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
+
+                    if (File::exists($filePath)) {
+                        $content = File::get($filePath);
+                        return response($content)->header('Content-Type', 'text/html');
+                    } else {
+                        echo "file not found";
+                    }                   
+                }else{
+                    echo "file not found";
+                }
+            } else {
+
+                abort(404);
+            }
+        }else{
+            $website = PhishingWebsite::find($p);
+
+            if ($website) {
+                $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
+
+                if (File::exists($filePath)) {
+
+                    DB::table('tprm_websites_sessions')->insert([
+                        'user' => $dynamicvalue,
+                        'session' => $c,
+                        'website_id' => $p,
+                        'website_name' => $l,
+                        'expiry' => now()->addMinutes(10)
+                    ]);
+
+                    $content = File::get($filePath);
+                    return response($content)->header('Content-Type', 'text/html');
+                } else {
+                    echo "file not found";
+                }
+
+                
+            }else{
+                echo "file not found";
+            }
+        }
+        }
         //checking if this page is already visited and expiry
 
         $visited = DB::table('phish_websites_sessions')->where([
@@ -115,8 +176,34 @@ class ShowWebsiteController extends Controller
     public function checkWhereToRedirect(Request $request)
     {
         $campid = $request->input('campid');
+      
+        
 
         $campDetail = CampaignLive::find($campid);
+
+        if ($campDetail) {
+            $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
+
+            if ($companySetting) {
+                $arr = [
+                    'redirect' => $companySetting->phish_redirect,
+                    'redirect_url' => $companySetting->phish_redirect_url
+                ];
+
+                return response()->json($arr);
+            }
+        }
+
+        return response()->json(['error' => 'Campaign or Company Setting not found'], 404);
+    }
+
+    public function tcheckWhereToRedirect(Request $request)
+    {
+        $campid = $request->input('campid');
+      
+        
+
+        $campDetail = TprmCampaignLive::find($campid);
 
         if ($campDetail) {
             $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
@@ -430,6 +517,51 @@ class ShowWebsiteController extends Controller
         }
     }
 
+    public function thandleCompromisedEmail(Request $request)
+    {
+        if ($request->has('emailCompromised')) {
+            $campid = $request->input('campid');
+            $userid = $request->input('userid');
+
+            // Check if the campaign exists and user's email is compromised
+            $user = DB::table('tprm_campaign_live')
+                ->where('id', $campid)
+                ->where('emp_compromised', 0)
+                ->where('user_id', $userid)
+                ->first();
+
+            if ($user) {
+                $campId2 = $user->campaign_id;
+
+                // Update campaign_reports table
+                $reportsEmpComCount = DB::table('tprm_campaign_reports')
+                    ->where('campaign_id', $campId2)
+                    ->first();
+
+                if ($reportsEmpComCount) {
+                    $emp_compromised = (int)$reportsEmpComCount->emp_compromised + 1;
+
+                    DB::table('tprm_campaign_reports')
+                        ->where('campaign_id', $campId2)
+                        ->update(['emp_compromised' => $emp_compromised]);
+                }
+
+                // Update campaign_live table
+                $isUpdatedIndividual = DB::table('tprm_campaign_live')
+                    ->where('id', $campid)
+                    ->update(['emp_compromised' => 1]);
+
+                if ($isUpdatedIndividual) {
+                    return response()->json(['message' => 'Email compromised status updated successfully']);
+                } else {
+                    return response()->json(['error' => 'Failed to update email compromised status']);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid campaign or user email already compromised']);
+            }
+        }
+    }
+
     public function updatePayloadClick(Request $request)
     {
         if ($request->has('updatePayloadClick')) {
@@ -461,6 +593,51 @@ class ShowWebsiteController extends Controller
 
                 // Update campaign_live table
                 $isUpdatedIndividual = DB::table('campaign_live')
+                    ->where('id', $campid)
+                    ->update(['payload_clicked' => 1]);
+
+                if ($isUpdatedIndividual) {
+                    return response()->json(['message' => 'Payload click updated']);
+                } else {
+                    return response()->json(['error' => 'Failed to update payload click']);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid campaign or payload click already updated']);
+            }
+        }
+    }
+
+    public function tupdatePayloadClick(Request $request)
+    {
+        if ($request->has('updatePayloadClick')) {
+            $campid = $request->input('campid');
+            $userid = $request->input('userid');
+
+            // Check if the campaign exists and payload is not already clicked
+            $user = DB::table('tprm_campaign_live')
+                ->where('id', $campid)
+                ->where('payload_clicked', 0)
+                ->where('user_id', $userid)
+                ->first();
+
+            if ($user) {
+                $campId2 = $user->campaign_id;
+
+                // Update campaign_reports table
+                $reportsPayloadCount = DB::table('tprm_campaign_reports')
+                    ->where('campaign_id', $campId2)
+                    ->first();
+
+                if ($reportsPayloadCount) {
+                    $payloads_clicked = (int)$reportsPayloadCount->payloads_clicked + 1;
+
+                    DB::table('tprm_campaign_reports')
+                        ->where('campaign_id', $campId2)
+                        ->update(['payloads_clicked' => $payloads_clicked]);
+                }
+
+                // Update campaign_live table
+                $isUpdatedIndividual = DB::table('tprm_campaign_live')
                     ->where('id', $campid)
                     ->update(['payload_clicked' => 1]);
 

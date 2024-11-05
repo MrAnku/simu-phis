@@ -78,7 +78,7 @@
 
                                                     </td>
                                                     <td>
-                                                        {{ $campaign->trainingName->name ?? '' }}
+                                                        {{ $campaign->trainingName->name ?? 'Only Phishing' }}
 
 
                                                     </td>
@@ -773,7 +773,7 @@
                                     <th scope="row">${response.campaign_name}</th>
                                     <td>${response.emp_grp_name}</td>
                                     <td>${response.ai_agent_name}</td>
-                                    <td id="assigned_training_name">${response.training_name.name}</td>
+                                    <td id="assigned_training_name">${response.training_name?.name ?? '<em>Only Phishing</em>'}</td>
                                     <td>
                                         <span class="badge bg-outline-primary">${response.phone_no}</span>
                                     </td>
