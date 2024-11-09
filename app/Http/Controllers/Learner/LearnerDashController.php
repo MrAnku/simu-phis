@@ -7,6 +7,7 @@ use App\Models\TrainingModule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LearnerDashController extends Controller
 {
@@ -29,9 +30,14 @@ class LearnerDashController extends Controller
             ->where('completed', 1)
             ->get();
 
+        $totalCertificates = TrainingAssignedUser::where('user_email', $userEmail)
+            ->where('completed', 1)
+            ->where('personal_best', 100)
+            ->count();
+
         // return $assignedTrainingCount;
 
-        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount'));
+        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
     }
 
     public function startTraining($training_id, $training_lang)
@@ -132,5 +138,83 @@ class LearnerDashController extends Controller
         }
 
         return response()->json(['message' => 'Score updated']);
+    }
+
+    public function downloadCertificate(Request $request)
+    {
+        // Get the necessary input from the request
+        $trainingModule = $request->input('training_module');
+        $trainingId = $request->input('training_id');
+        $completionDate = $request->input('completion_date');
+        $username = $request->input('username');
+
+        // Check if the certificate ID already exists for this user and training module
+        $certificateId = $this->getCertificateId($trainingModule, $username, $trainingId);
+
+        // If the certificate ID doesn't exist, generate a new one
+        if (!$certificateId) {
+            $certificateId = $this->generateCertificateId();
+            $this->storeCertificateId($trainingModule, $username, $certificateId, $trainingId); // Store the new certificate ID in your database
+        }
+
+        // Generate the PDF from the view and include the certificate ID
+        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'username', 'certificateId'));
+
+        // Define the filename with certificate ID
+        $fileName = "{$trainingModule}_Certificate_{$certificateId}.pdf";
+
+        // Return the PDF download response
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Get the certificate ID from the database (if it exists).
+     */
+    private function getCertificateId($trainingModule, $username, $trainingId)
+    {
+        // Check the database for an existing certificate ID for this user and training module
+        $certificate = TrainingAssignedUser::where('training', $trainingId)
+            ->where('user_email', $username)
+            ->first();
+        \Log::debug($certificate);
+        return $certificate ? $certificate->certificate_id : null;
+    }
+
+    /**
+     * Generate a random unique certificate ID.
+     */
+    private function generateCertificateId()
+    {
+        // Generate a unique random ID. You can adjust the format as needed.
+        return strtoupper(uniqid('CERT-'));
+    }
+
+    /**
+     * Store the generated certificate ID in the database.
+     */
+    private function storeCertificateId($trainingModule, $username, $certificateId, $trainingId)
+    {
+        // Find the existing record based on training module and username
+        $assignedUser = TrainingAssignedUser::where('training', $trainingId)
+            ->where('user_email', $username)
+            ->first();
+
+        // Check if the record was found
+        if ($assignedUser) {
+            // Log the existing record and the certificate_id being updated
+            \Log::info('Updating certificate_id for: ' . $assignedUser->id);
+            \Log::info('New certificate_id: ' . $certificateId);
+
+            // Update only the certificate_id (no need to touch campaign_id)
+            $assignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+
+            // Log the result of the update
+            \Log::info('Updated certificate_id for user: ' . $username);
+        } else {
+            // Log if no record was found
+            \Log::info('No record found for ' . $username . ' with training ' . $trainingModule);
+        }
     }
 }

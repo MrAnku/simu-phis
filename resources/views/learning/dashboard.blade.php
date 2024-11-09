@@ -198,6 +198,37 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <div class="card card-sm">
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="bg-facebook text-white avatar">
+                                                        <!-- Facebook icon or any other icon -->
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="icon icon-tabler icon-tabler-certificate"
+                                                            width="24" height="24" viewBox="0 0 24 24"
+                                                            stroke-width="1.5" stroke="currentColor" fill="none"
+                                                            stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                                            <path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5" />
+                                                            <path
+                                                                d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73" />
+                                                            <path d="M6 9l12 0" />
+                                                            <path d="M6 12l3 0" />
+                                                            <path d="M6 15l2 0" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="font-weight-medium">No. of Certificates:
+                                                        {{ $totalCertificates }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-12">
@@ -282,6 +313,7 @@
                                                 <th>Training Module</th>
                                                 <th>Personal Best</th>
                                                 <th>Completion Date</th>
+                                                <th>Download Certificate</th>
                                             </tr>
                                         </thead>
                                         @forelse ($completedTrainingCount as $training)
@@ -293,6 +325,21 @@
                                                 </td>
                                                 <td class="text-success"><b>{{ $training->personal_best }}%</b></td>
                                                 <td class="text-secondary">{{ $training->completion_date }}
+                                                </td>
+                                                <td>
+                                                    <form action="/download-certificate" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="training_module"
+                                                            value="{{ $training->trainingData->name }}">
+                                                        <input type="hidden" name="training_id"
+                                                            value="{{ $training->training }}">
+                                                        <input type="hidden" name="completion_date"
+                                                            value="{{ $training->completion_date }}">
+                                                        <input type="hidden" name="username"
+                                                            value="{{ session('learner')->login_username }}">
+                                                        <button type="submit"
+                                                            class="btn btn-primary btn-sm">Download</button>
+                                                    </form>
                                                 </td>
 
                                             </tr>

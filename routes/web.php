@@ -48,6 +48,7 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+        Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
     });
 });
