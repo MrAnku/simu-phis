@@ -1341,7 +1341,7 @@
                             <tbody id="allDomains">
     @forelse ($allDomains as $domain)
     <tr>
-        <td>{{ $domain->domain }}</td>
+        <td onclick="openDomainModal('{{ $domain->domain }}')" style="cursor: pointer;">{{ $domain->domain }}</td>
         <td>
             @if ($domain->verified == 1)
                 <span class="badge bg-success">Verified</span>
