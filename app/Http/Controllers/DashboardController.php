@@ -247,7 +247,7 @@ class DashboardController extends Controller
     public function getPackage()
     {
         $companyId = Auth::user()->company_id;
-        $employees = Users::where('company_id', $companyId)->count();
+        $employees = (int)Auth::user()->usedemployees;
 
         $allotedEmployees = (int)Auth::user()->employees;
 

@@ -24,6 +24,7 @@ class Company extends Authenticatable
         'full_name',
         'email',
         'password',
+        'usedemployess'
     ];
 
     /**

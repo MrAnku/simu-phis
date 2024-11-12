@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Company;
 
 class EmployeesController extends Controller
 {
@@ -168,42 +169,59 @@ class EmployeesController extends Controller
     }
 
     public function addUser(Request $request)
-    {
-        $grpId = $request->input('groupid');
-        $usrName = $request->input('usrName');
-        $usrEmail = $request->input('usrEmail');
-        $usrCompany = $request->input('usrCompany');
-        $usrJobTitle = $request->input('usrJobTitle');
-        $usrWhatsapp = $request->input('usrWhatsapp');
-        $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
+{
+    $grpId = $request->input('groupid');
+    $usrName = $request->input('usrName');
+    $usrEmail = $request->input('usrEmail');
+    $usrCompany = $request->input('usrCompany');
+    $usrJobTitle = $request->input('usrJobTitle');
+    $usrWhatsapp = $request->input('usrWhatsapp');
+    $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
 
-        if ($this->domainVerified($usrEmail, $companyId)) {
-            if ($this->uniqueEmail($usrEmail)) {
-                if ($this->checkLimit($companyId)) {
-                    $user = new Users();
-                    $user->group_id = $grpId;
-                    $user->user_name = $usrName;
-                    $user->user_email = $usrEmail;
-                    $user->user_company = $usrCompany;
-                    $user->user_job_title = $usrJobTitle;
-                    $user->whatsapp = $usrWhatsapp;
-                    $user->company_id = $companyId;
+    // Retrieve the company record
+    $company = Company::where('company_id', $companyId)->first();
 
-                    if ($user->save()) {
-                        return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
-                    } else {
-                        return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
-                    }
+    if (!$company) {
+        return response()->json(['status' => 0, 'msg' => 'Company not found']);
+    }
+
+    // Check if usedemployees is greater than or equal to employees
+    if ($company->usedemployees >= $company->employees) {
+        return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+    }
+
+    if ($this->domainVerified($usrEmail, $companyId)) {
+        if ($this->uniqueEmail($usrEmail)) {
+            if ($this->checkLimit($companyId)) {
+                $user = new Users();
+                $user->group_id = $grpId;
+                $user->user_name = $usrName;
+                $user->user_email = $usrEmail;
+                $user->user_company = $usrCompany;
+                $user->user_job_title = $usrJobTitle;
+                $user->whatsapp = $usrWhatsapp;
+                $user->company_id = $companyId;
+
+                if ($user->save()) {
+                    // Increment the usedemployees column for the company
+                    $company->increment('usedemployees');
+
+                    return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
                 } else {
-                    return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
+                    return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
                 }
             } else {
-                return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
+                return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
             }
         } else {
-            return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
+            return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
         }
+    } else {
+        return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
     }
+}
+
+
 
     private function domainVerified($email, $companyId)
     {

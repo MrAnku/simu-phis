@@ -146,8 +146,8 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-     <!-- new Employee group modal -->
-     <div class="modal fade" id="newEmpGroupModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- new Employee group modal -->
+    <div class="modal fade" id="newEmpGroupModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -155,7 +155,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('employee.newgroup')}}" method="post">
+                    <form action="{{ route('employee.newgroup') }}" method="post">
                         @csrf
                         <div class="row align-items-end">
 
@@ -164,7 +164,8 @@
                                 <input type="text" class="form-control" name="usrGroupName">
                             </div>
                             <div class="col-lg-6">
-                                <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add Employee Group</button>
+                                <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
+                                    Employee Group</button>
                             </div>
                         </div>
                     </form>
@@ -225,8 +226,9 @@
         </div>
     </div>
 
-     <!-- new domain verification modal -->
-     <div class="modal" id="newDomainVerificationModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- new domain verification modal -->
+    <div class="modal" id="newDomainVerificationModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -236,17 +238,22 @@
                 <div class="modal-body">
                     <form action="" id="sendOtpForm" method="post">
 
-                        <p class="text-muted">Domain verification is performed through challenge-response authentication of the provided email address.(e.g. verifying support@mybusiness.com will enable mybusiness.com.)</p>
+                        <p class="text-muted">Domain verification is performed through challenge-response authentication of
+                            the provided email address.(e.g. verifying support@mybusiness.com will enable mybusiness.com.)
+                        </p>
                         <div>
-                            <label for="input-label" class="form-label">Email Address<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">Email Address<sup
+                                    class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="verificationEmail">
                         </div>
-                        <button type="submit" id="sendOtpBtn" class="btn btn-primary my-3 btn-wave waves-effect waves-light">Send Verification Email</button>
+                        <button type="submit" id="sendOtpBtn"
+                            class="btn btn-primary my-3 btn-wave waves-effect waves-light">Send Verification Email</button>
                         <button class="btn btn-primary my-3 btn-loader d-none" id="otpSpinner">
                             <span class="me-2">Please wait...</span>
                             <span class="loading"><i class="ri-loader-2-fill fs-16"></i></span>
                         </button>
-                        <p class="text-muted">Haven't received the verification code? Try generating another verification email.</p>
+                        <p class="text-muted">Haven't received the verification code? Try generating another verification
+                            email.</p>
                     </form>
 
                     <div id="enterOtpContainer" class="d-none">
@@ -256,7 +263,8 @@
                                     <label for="input-label" class="form-label">Enter OTP</label>
                                     <input type="text" class="form-control" name="emailOTP" placeholder="xxxxxx">
                                 </div>
-                                <button type="submit" id="otpSubmitBtn" class="btn btn-primary mx-3 btn-wave waves-effect waves-light">Submit</button>
+                                <button type="submit" id="otpSubmitBtn"
+                                    class="btn btn-primary mx-3 btn-wave waves-effect waves-light">Submit</button>
                                 <button class="btn btn-primary mx-3 btn-loader d-none" id="otpSubmitSpinner">
                                     <span class="me-2">Please wait...</span>
                                     <span class="loading"><i class="ri-loader-2-fill fs-16"></i></span>
@@ -271,8 +279,8 @@
         </div>
     </div>
 
-     <!-- view users modal -->
-     <div class="modal fade" id="viewUsers" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- view users modal -->
+    <div class="modal fade" id="viewUsers" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -302,8 +310,8 @@
         </div>
     </div>
 
-     <!-- add users modal -->
-     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <!-- add users modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -316,13 +324,16 @@
                         <div class="card-body p-0">
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page" href="#usingForm" aria-selected="true">Import Using Form</a>
+                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#usingForm" aria-selected="true">Import Using Form</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#usingCsv" aria-selected="true">Import Using CSV</a>
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#usingCsv" aria-selected="true">Import Using CSV</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#services-right" aria-selected="true">Import From Directory</a>
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#services-right" aria-selected="true">Import From Directory</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -331,12 +342,14 @@
                                         <div class="row">
 
                                             <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
-                                                <label for="input-label" class="form-label">Name<sup class="text-danger">*</sup></label>
+                                                <label for="input-label" class="form-label">Name<sup
+                                                        class="text-danger">*</sup></label>
                                                 <input type="text" class="form-control" name="usrName" required>
                                                 <input type="hidden" name="groupid" class="groupid">
                                             </div>
                                             <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
-                                                <label for="input-label" class="form-label">Email<sup class="text-danger">*</sup></label>
+                                                <label for="input-label" class="form-label">Email<sup
+                                                        class="text-danger">*</sup></label>
                                                 <input type="text" class="form-control" name="usrEmail">
                                             </div>
                                             <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
@@ -349,34 +362,42 @@
                                             </div>
                                             <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <label for="input-label" class="form-label">WhatsApp No.</label>
-                                                <input type="text" class="form-control" placeholder="919876543210" name="usrWhatsapp" id="usrWhatsapp">
+                                                <input type="text" class="form-control" placeholder="919876543210"
+                                                    name="usrWhatsapp" id="usrWhatsapp">
                                             </div>
                                             <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
                                                 <div class="text-start">
-                                                    <button type="submit" name="addUsr" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add Employee</button>
+                                                    <button type="submit" name="addUsr"
+                                                        class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
+                                                        Employee</button>
                                                 </div>
                                             </div>
-                                            
+
                                         </div>
                                     </form>
                                 </div>
                                 <div class="tab-pane text-muted" id="usingCsv" role="tabpanel">
-                                    <form action="{{route('employee.importCsv')}}" method="post" enctype="multipart/form-data">
+                                    <form action="{{ route('employee.importCsv') }}" method="post"
+                                        enctype="multipart/form-data">
                                         @csrf
                                         <div class="row align-items-center">
                                             <div class="col-lg-9">
                                                 <div class="mb-3">
-                                                    <label for="formFile" class="form-label">Select csv file to import</label>
-                                                    <input class="form-control" type="file" id="formFile" name="usrCsv" accept=".csv">
+                                                    <label for="formFile" class="form-label">Select csv file to
+                                                        import</label>
+                                                    <input class="form-control" type="file" id="formFile"
+                                                        name="usrCsv" accept=".csv">
                                                     <input type="hidden" name="groupid" class="groupid">
                                                 </div>
                                                 <div>
-                                                    <a href="./storage/uploads/example.csv" class="mt-2 text-primary">Download Sample</a>
+                                                    <a href="./storage/uploads/example.csv"
+                                                        class="mt-2 text-primary">Download Sample</a>
                                                 </div>
                                             </div>
                                             <div class="col-lg-3">
                                                 <div class="mb-3">
-                                                    <button type="submit" name="importCsv" id="importBtn" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Import</button>
+                                                    <button type="submit" name="importCsv" id="importBtn"
+                                                        class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Import</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -413,47 +434,44 @@
 
 
     @push('newcss')
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.bootstrap5.min.css">
-
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.bootstrap5.min.css">
     @endpush
 
     @push('newscripts')
+        <script src="assets/js/employees.js"></script>
 
-    <script src="assets/js/employees.js"></script>
+        <!-- Datatables Cdn -->
+        <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.6/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-     <!-- Datatables Cdn -->
-     <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-     <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-     <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-     <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-     <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.6/pdfmake.min.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-     <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script>
+            $('#allGroupsTable').DataTable({
+                language: {
+                    searchPlaceholder: 'Search...',
+                    sSearch: '',
+                },
+                "pageLength": 10,
+                // scrollX: true
+            });
 
-    <script>
-        $('#allGroupsTable').DataTable({
-            language: {
-                searchPlaceholder: 'Search...',
-                sSearch: '',
-            },
-            "pageLength": 10,
-            // scrollX: true
-        });
-
-        $('#domainVerificationTable').DataTable({
-            language: {
-                searchPlaceholder: 'Search...',
-                sSearch: '',
-            },
-            "pageLength": 10,
-            // scrollX: true
-        });
-    </script>
+            $('#domainVerificationTable').DataTable({
+                language: {
+                    searchPlaceholder: 'Search...',
+                    sSearch: '',
+                },
+                "pageLength": 10,
+                // scrollX: true
+            });
+        </script>
     @endpush
 
 @endsection
