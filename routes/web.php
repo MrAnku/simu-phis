@@ -407,7 +407,7 @@ Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('uploa
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
-Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
+Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport'])->middleware('cors');
 
 Route::get('/send-mail', function (MailController $controller) {
     $mailData = [

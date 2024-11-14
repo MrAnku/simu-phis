@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdminLoggedIn' => \App\Http\Middleware\AdminAuthenticate::class,
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
+            'cors' => \App\Http\Middleware\CorsMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
