@@ -19,7 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            '/ai-calling/log-call-detail'
+            '/ai-calling/log-call-detail',
+            '/outlook-phish-report'
         ]);
 
        
