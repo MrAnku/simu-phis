@@ -178,8 +178,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
    
     Route::post('/submit-domains', [TprmController::class, 'submitdomains'])->name('submit-domains');
     Route::get('/test', [TprmController::class, 'test'])->name('test');
-    Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify');
-    Route::post('/tprm/delete-domain', [TprmController::class, 'deleteDomain'])->name('domain.delete');
+    Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify.tprm');
+    Route::post('/tprm/delete-domain', [TprmController::class, 'deleteDomain'])->name('domain.delete.tprm');
    
     //-------------------------------------TPRM routes for champaingns----------------------//
     
@@ -407,7 +407,7 @@ Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('uploa
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
-Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport'])->middleware('cors');
+Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
 
 Route::get('/send-mail', function (MailController $controller) {
     $mailData = [

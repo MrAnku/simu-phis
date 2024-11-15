@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CorsMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,13 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdminLoggedIn' => \App\Http\Middleware\AdminAuthenticate::class,
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
-            'cors' => \App\Http\Middleware\CorsMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
             '/ai-calling/log-call-detail',
             '/outlook-phish-report'
         ]);
+
+        $middleware->append(CorsMiddleware::class);
 
        
     })

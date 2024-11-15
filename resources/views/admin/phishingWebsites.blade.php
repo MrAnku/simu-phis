@@ -55,7 +55,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
-                                                    <a href="http://{{Str::random(6)}}-{{Str::slug($phishingWebsite->name)}}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{Str::random(10)}}&p={{$phishingWebsite->id}}&l={{Str::slug($phishingWebsite->name)}}"
+                                                    <a href="http://{{Str::random(6)}}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{Str::random(10)}}&p={{$phishingWebsite->id}}&l={{Str::slug($phishingWebsite->name)}}"
                                                         target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
