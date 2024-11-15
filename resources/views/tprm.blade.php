@@ -1470,7 +1470,7 @@
 
     <!-- Modal for domain details -->
     <div class="modal fade" id="domainModal" tabindex="-1" aria-labelledby="domainModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header bg-primary text-white">
@@ -1493,7 +1493,7 @@
                     <hr>
 
                     <!-- Add email form -->
-                    <div class="mt-4">
+                    {{-- <div class="mt-4">
                         <label for="emailInput" class="form-label">Add Email Address</label>
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
@@ -1507,12 +1507,12 @@
                         <ul id="emailList" class="list-unstyled mt-3">
                             <!-- Added emails will appear here -->
                         </ul>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Modal Footer -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="submitDomainData()">Save Changes</button>
+                    {{-- <button type="button" class="btn btn-primary" onclick="submitDomainData()">Save Changes</button> --}}
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1737,7 +1737,7 @@
         function fetchEmail(domain) {
             // Fetch email for the given domain via AJAX
             $.ajax({
-                url: '{{ route('/tprmcampaigns/fetchEmail') }}',
+                url: '/tprmcampaigns/fetchEmail',
                 type: 'POST',
                 data: {
                     domain: domain,

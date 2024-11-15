@@ -1175,8 +1175,9 @@ class TprmController extends Controller
 
     public function getEmailsByDomain($domain)
     {
+        $companyId = auth()->user()->company_id;
         // Fetch emails from the database based on the domain
-        $emails = TprmUsers::where('user_email', 'like', '%' . $domain)->pluck('user_email');
+        $emails = TprmUsers::where('user_email', 'like', '%' . $domain)->where('company_id', $companyId)->pluck('user_email');
 
         return response()->json($emails); // Return emails as JSON response
     }
