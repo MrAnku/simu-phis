@@ -446,7 +446,7 @@ class ShowWebsiteController extends Controller
                 'company_email' => $company_email,
                 'learn_domain' => $isWhitelabled->learn_domain,
                 'company_name' => $isWhitelabled->company_name,
-                'logo' => url('/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo)
+                'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
             ];
         }
 
@@ -454,7 +454,7 @@ class ShowWebsiteController extends Controller
             'company_email' => env('MAIL_FROM_ADDRESS'),
             'learn_domain' => 'learn.simuphish.com',
             'company_name' => 'simUphish',
-            'logo' => url('/assets/images/simu-logo-dark.png')
+            'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
         ];
     }
 

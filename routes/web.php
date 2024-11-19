@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\WhatsAppController;
 
 //---------------learning portal routes------------//
 
@@ -333,6 +334,12 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('/admin/companies/delete', [CompanyController::class, 'deleteCompany'])->name('admin.companies.delete');
 
     //-------------------companies route ---------------------//
+
+
+    //-----------------whatsapp routes-------------------------//
+
+    Route::get('admin/whatsapp', [WhatsAppController::class, 'index'])->name('admin.whatsapp');
+    Route::post('admin/whatsapp/approve', [WhatsAppController::class, 'approveNumberChange'])->name('admin.whatsappnumber.change');
 
     //-----------------whitelabel requests route--------------//
     Route::get('admin/whitelabel-req', [WhiteLabelController::class, 'index'])->name('admin.whitelabel');

@@ -37,6 +37,13 @@
                     </a>
                 </li>
 
+                <li class="slide {{ Request::is('admin/whatsapp') ? 'active' : '' }}">
+                    <a href="{{route('admin.whatsapp')}}" class="side-menu__item {{ Request::is('admin/whatsapp') ? 'active' : '' }}">
+                        <i class="bx bxl-whatsapp side-menu__icon"></i>
+                        <span class="side-menu__label">WhatsApp</span>
+                    </a>
+                </li>
+
                 <li class="slide {{ Request::is('admin/companies') ? 'active' : '' }}">
                     <a href="{{route('admin.companies')}}" class="side-menu__item {{ Request::is('admin/companies') ? 'active' : '' }}">
                         <i class="bx bx-buildings side-menu__icon"></i>

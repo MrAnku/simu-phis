@@ -34,14 +34,14 @@ class ProcessWhatsappCampaign extends Command
         $user = DB::table('whatsapp_camp_users')->where('status', 'pending')->first();
 
         if ($user) {
-            $tokenAndUrl = $this->getTokenAndUrl($user->company_id);
+            $token = $this->getToken($user->company_id);
 
-            if ($tokenAndUrl !== null) {
-                $url = $tokenAndUrl->url . '/sendtemplatemessage';
+            if ($token !== null) {
+                $url = env("WHATSAPP_API_URL") . '/sendtemplatemessage';
 
                
                 $payload = [
-                    "token" => $tokenAndUrl->token,
+                    "token" => $token->token,
                     "phone" => $user->user_whatsapp,
                     "template_name" => $user->template_name,
                     "template_language" => $user->template_language,
@@ -97,13 +97,13 @@ class ProcessWhatsappCampaign extends Command
         }
     }
 
-    private function getTokenAndUrl($company_id)
+    private function getToken($company_id)
     {
         $company = Company::where('company_id', $company_id)->first();
-        $tokenUrl = DB::table('partner_whatsapp_api')->where('partner_id', $company->partner_id)->first();
+        $token = DB::table('partner_whatsapp_api')->where('partner_id', $company->partner_id)->first();
 
-        if ($tokenUrl) {
-            return $tokenUrl;
+        if ($token) {
+            return $token;
         } else {
             return null;
         }
