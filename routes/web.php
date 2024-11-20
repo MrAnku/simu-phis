@@ -56,14 +56,14 @@ Route::domain('learn.simuphish.com')->group(function () {
 
 //-------------------miscellaneous routes------------------//
 
-Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
+Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
     });
 });
 
-Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(function () {
+Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
