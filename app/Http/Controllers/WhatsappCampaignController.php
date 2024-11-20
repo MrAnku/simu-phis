@@ -41,7 +41,7 @@ class WhatsappCampaignController extends Controller
 
         $tokenAndUrl = $this->getTokenAndUrl($company_id);
         if ($tokenAndUrl !== null) {
-            $response = Http::withOptions(['verify' => false])->get($tokenAndUrl->url . '/getTemplates', [
+            $response = Http::withOptions(['verify' => false])->get(env("WHATSAPP_API_URL") . '/getTemplates', [
                 'token' => $tokenAndUrl->token
             ]);
 
