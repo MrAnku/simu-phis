@@ -1496,7 +1496,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 
-        <script src="assets/js/campaigns.js"></script>
+        <script src="{{ asset('js/campaigns.js') }}"></script>
 
         <script>
             function showMaterialDetails(btn, name, subject, website, senderProfile) {
