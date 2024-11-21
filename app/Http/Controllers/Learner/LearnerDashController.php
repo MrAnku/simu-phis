@@ -40,12 +40,12 @@ class LearnerDashController extends Controller
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
     }
 
-    public function startTraining($training_id, $training_lang)
+    public function startTraining($training_id, $training_lang, $id)
     {
 
         // $training_id = decrypt($training_id);
 
-        return view('learning.training', ['trainingid' => $training_id, 'training_lang'=>$training_lang]);
+        return view('learning.training', ['trainingid' => $training_id, 'training_lang'=>$training_lang, 'id'=>$id]);
     }
 
     public function loadTraining($training_id, $training_lang)
@@ -93,49 +93,25 @@ class LearnerDashController extends Controller
         // Validate the request
         $request->validate([
             'trainingScore' => 'required|integer',
-            'training' => 'required',
+            'id' => 'required',
         ]);
 
 
 
-        $trainingScore = $request->input('trainingScore');
+        $row_id = base64_decode($request->id);
 
-        // Assuming the session has 'training_assigned_user_id'
-        $user_email = session('learner')->login_username;
-        $user_id = session('learner')->user_id;
+        $rowData = TrainingAssignedUser::find($row_id);
+        if ($rowData && $request->trainingScore > $rowData->personal_best) {
+            // Update the column if the current value is greater
+            $rowData->personal_best = $request->trainingScore;
+            $rowData->save();
 
-        $training = decrypt($request->training);
-
-        // Fetch the current personal best score
-        $isScoreGreaterThanBefore = DB::table('training_assigned_users')
-            ->where('user_id', $user_id)
-            ->where('user_email', $user_email)
-            ->where('training', $training)
-            ->value('personal_best');
-
-        $previousScore = (int)$isScoreGreaterThanBefore;
-        $currentScore = (int)$trainingScore;
-
-        if ($currentScore > $previousScore) {
-            // Update the personal best score
-            DB::table('training_assigned_users')
-                ->where('user_id', $user_id)
-                ->where('user_email', $user_email)
-                ->where('training', $training)
-                ->update(['personal_best' => $currentScore]);
-
-            if ($currentScore == 100) {
-                // Update the training completion status
-                DB::table('training_assigned_users')
-                    ->where('user_id', $user_id)
-                    ->where('user_email', $user_email)
-                    ->where('training', $training)
-                    ->update([
-                        'completed' => 1,
-                        'completion_date' => now()->format('Y-m-d'),
-                    ]);
+            if($request->trainingScore == 100){
+                $rowData->completed = 1;
+                $rowData->completion_date = now()->format('Y-m-d');
             }
         }
+
 
         return response()->json(['message' => 'Score updated']);
     }
@@ -216,5 +192,9 @@ class LearnerDashController extends Controller
             // Log if no record was found
             \Log::info('No record found for ' . $username . ' with training ' . $trainingModule);
         }
+    }
+
+    public function startAiTraining($topic, $language, $id){
+        return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
     }
 }

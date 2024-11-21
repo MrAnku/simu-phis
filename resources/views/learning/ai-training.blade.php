@@ -111,7 +111,8 @@
                 <div class="container-xl">
                     <div id="preloader" style="text-align: center;">
 
-                        <img src="/dist/preloader.gif" alt="" srcset="">
+                        <img src="/images/file.gif" alt="" srcset="" width="200">
+                        <h3>AI is generating your questions...</h3>
                     </div>
                     <div class="row row-deck row-cards">
 
@@ -481,20 +482,15 @@
             makeMultiStep();
 
         }
-        //const urlParams = new URLSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(window.location.search);
         $.get({
-            url: '/loadTrainingContent/{{ $trainingid }}/{{$training_lang}}',
+            url: '/load-ai-training/{{ $topic }}/{{$language}}',
             success: function(res) {
-                //   console.log(res)
-                if (res.status === 1) {
-                    var json_quiz = JSON.parse(res.jsonData.json_quiz);
-                    // console.log(resJson);
-                    // // console.log(json_quiz);
-                    createPages(json_quiz);
-                    allQuestions = json_quiz;
+               
+                createPages(res);
+                    allQuestions = res;
                     $("#preloader").hide();
                     $("#nextButton").removeClass('d-none');
-                }
 
             }
         })

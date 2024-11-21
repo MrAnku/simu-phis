@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Admin\WhatsAppController;
+use App\Http\Controllers\AiTrainingController;
 
 //---------------learning portal routes------------//
 
@@ -44,15 +45,21 @@ Route::domain('learn.simuphish.com')->group(function () {
     Route::middleware('isLearnerLoggedIn')->group(function () {
 
         Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
-        Route::get('/training/{training_id}/{training_lang}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
+        Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
+
+        Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
 
         Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
+
+        Route::get('/load-ai-training/{topic}/{language}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
 
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
         Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
     });
 });
+
+
 
 //-------------------miscellaneous routes------------------//
 

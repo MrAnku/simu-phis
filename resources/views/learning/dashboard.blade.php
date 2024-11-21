@@ -8,7 +8,7 @@
     <title>
         Learning | simUphish
     </title>
-    <link rel="icon" href="{{asset('assets')}}/images/simu-icon.png" type="image/x-icon" />
+    <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -66,7 +66,7 @@
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
                                 <span class="d-none d-sm-inline">
-                                    <a href="{{route('learner.logout')}}" class="btn"> Log Out </a>
+                                    <a href="{{ route('learner.logout') }}" class="btn"> Log Out </a>
                                 </span>
                             </div>
                         </div>
@@ -265,12 +265,20 @@
                                         @forelse ($assignedTrainingCount as $training)
                                             <tr>
                                                 <td class="text-secondary">
-                                                    <a
-                                                        href="{{ route('learner.start.training', 
-                                                        [
-                                                        'training_id' => encrypt($training->trainingData->id),
-                                                        'training_lang' =>base64_encode($training->training_lang)
-                                                        ]) }}">
+                                                    <a href="@if ($training->training_type == 'static_training') {{ route('learner.start.training', [
+                                                            'training_id' => encrypt($training->training),
+                                                            'training_lang' => base64_encode($training->training_lang),
+                                                            'id' => base64_encode($training->id),
+                                                        ]) }}
+
+                                                        @else
+                                                            {{ route('learner.start.ai.training', [
+                                                                'topic' => $training->trainingData->name,
+                                                                'language' => $training->training_lang,
+                                                                'id' => base64_encode($training->id),
+                                                            ]) }}
+
+                                                            @endif">
                                                         {{ $training->trainingData->name }}
                                                     </a>
                                                 </td>
@@ -284,14 +292,15 @@
                                                     </td>
                                                 @else
                                                     <td class="text-success"><b>{{ $training->personal_best }}%</b>
-                                                    </td>
-                                                @endif
+                                                    </td> @endif
 
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center">No new training has been
-                                                    assigned!</td>
+                                                <td colspan="4"
+                                                        class="text-center">No new training has been
+                                                        assigned!
+                                                </td>
                                             </tr>
                                         @endforelse
 
@@ -378,9 +387,9 @@
 
     <!-- Tabler Core -->
     <script src="./dist/js/tabler.min.js?1685973381" defer></script>
-   
 
-   
+
+
 </body>
 
 </html>
