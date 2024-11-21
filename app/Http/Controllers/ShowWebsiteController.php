@@ -247,6 +247,7 @@ class ShowWebsiteController extends Controller
                     $campId2 = $user->campaign_id;
                     $userLoginEmail = $user->user_email;
                     $training_lang = $user->training_lang;
+                    $training_type = $user->training_type;
                     $userLoginPass = $this->generateRandom();
 
                     // Check if training is already assigned to the user
@@ -305,6 +306,7 @@ class ShowWebsiteController extends Controller
                                     'user_email' => $userLoginEmail,
                                     'training' => $userTrainingModule,
                                     'training_lang' => $training_lang,
+                                    'training_type' => $training_type,
                                     'assigned_date' => $current_date,
                                     'training_due_date' => $date_after_14_days,
                                     'company_id' => $company_id
@@ -365,6 +367,7 @@ class ShowWebsiteController extends Controller
                                     'user_email' => $userLoginEmail,
                                     'training' => $userTrainingModule,
                                     'training_lang' => $training_lang,
+                                    'training_type' => $training_type,
                                     'assigned_date' => $current_date,
                                     'training_due_date' => $date_after_14_days,
                                     'company_id' => $company_id

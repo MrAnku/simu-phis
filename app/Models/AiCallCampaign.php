@@ -19,6 +19,7 @@ class AiCallCampaign extends Model
         'emp_grp_name',
         'training',
         'training_lang',
+        'training_type',
         'ai_agent',
         'ai_agent_name',
         'phone_no',

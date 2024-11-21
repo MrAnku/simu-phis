@@ -415,56 +415,69 @@
                                             </div>
                                             <div id="training_grids">
                                                 <div class="d-flex justify-content-between pb-1">
-                                                    <div>
-                                                        <label for="input-label" class="form-label">Language</label>
+                                                    <div class="d-flex gap-2">
+                                                        <div>
+                                                            <label for="input-label" class="form-label">Language</label>
 
-                                                        <select class="form-select" name="training_lang"
-                                                            id="training_lang">
-                                                            <option value="sq">Albanian</option>
-                                                            <option value="ar">Arabic</option>
-                                                            <option value="az">Azerbaijani</option>
-                                                            <option value="bn">Bengali</option>
-                                                            <option value="bg">Bulgarian</option>
-                                                            <option value="ca">Catalan</option>
-                                                            <option value="zh">Chinese</option>
-                                                            <option value="zt">Chinese (traditional)</option>
-                                                            <option value="cs">Czech</option>
-                                                            <option value="da">Danish</option>
-                                                            <option value="nl">Dutch</option>
-                                                            <option value="en" selected="">English</option>
-                                                            <option value="eo">Esperanto</option>
-                                                            <option value="et">Estonian</option>
-                                                            <option value="fi">Finnish</option>
-                                                            <option value="fr">French</option>
-                                                            <option value="de">German</option>
-                                                            <option value="el">Greek</option>
-                                                            <option value="he">Hebrew</option>
-                                                            <option value="hi">Hindi</option>
-                                                            <option value="hu">Hungarian</option>
-                                                            <option value="id">Indonesian</option>
-                                                            <option value="ga">Irish</option>
-                                                            <option value="it">Italian</option>
-                                                            <option value="ja">Japanese</option>
-                                                            <option value="ko">Korean</option>
-                                                            <option value="lv">Latvian</option>
-                                                            <option value="lt">Lithuanian</option>
-                                                            <option value="ms">Malay</option>
-                                                            <option value="nb">Norwegian</option>
-                                                            <option value="fa">Persian</option>
-                                                            <option value="pl">Polish</option>
-                                                            <option value="pt">Portuguese</option>
-                                                            <option value="ro">Romanian</option>
-                                                            <option value="ru">Russian</option>
-                                                            <option value="sk">Slovak</option>
-                                                            <option value="sl">Slovenian</option>
-                                                            <option value="es">Spanish</option>
-                                                            <option value="sv">Swedish</option>
-                                                            <option value="tl">Tagalog</option>
-                                                            <option value="th">Thai</option>
-                                                            <option value="tr">Turkish</option>
-                                                            <option value="uk">Ukranian</option>
-                                                            <option value="ur">Urdu</option>
-                                                        </select>
+                                                            <select class="form-select" name="training_lang"
+                                                                id="training_lang">
+                                                                <option value="sq">Albanian</option>
+                                                                <option value="ar">Arabic</option>
+                                                                <option value="az">Azerbaijani</option>
+                                                                <option value="bn">Bengali</option>
+                                                                <option value="bg">Bulgarian</option>
+                                                                <option value="ca">Catalan</option>
+                                                                <option value="zh">Chinese</option>
+                                                                <option value="zt">Chinese (traditional)</option>
+                                                                <option value="cs">Czech</option>
+                                                                <option value="da">Danish</option>
+                                                                <option value="nl">Dutch</option>
+                                                                <option value="en" selected="">English</option>
+                                                                <option value="eo">Esperanto</option>
+                                                                <option value="et">Estonian</option>
+                                                                <option value="fi">Finnish</option>
+                                                                <option value="fr">French</option>
+                                                                <option value="de">German</option>
+                                                                <option value="el">Greek</option>
+                                                                <option value="he">Hebrew</option>
+                                                                <option value="hi">Hindi</option>
+                                                                <option value="hu">Hungarian</option>
+                                                                <option value="id">Indonesian</option>
+                                                                <option value="ga">Irish</option>
+                                                                <option value="it">Italian</option>
+                                                                <option value="ja">Japanese</option>
+                                                                <option value="ko">Korean</option>
+                                                                <option value="lv">Latvian</option>
+                                                                <option value="lt">Lithuanian</option>
+                                                                <option value="ms">Malay</option>
+                                                                <option value="nb">Norwegian</option>
+                                                                <option value="fa">Persian</option>
+                                                                <option value="pl">Polish</option>
+                                                                <option value="pt">Portuguese</option>
+                                                                <option value="ro">Romanian</option>
+                                                                <option value="ru">Russian</option>
+                                                                <option value="sk">Slovak</option>
+                                                                <option value="sl">Slovenian</option>
+                                                                <option value="es">Spanish</option>
+                                                                <option value="sv">Swedish</option>
+                                                                <option value="tl">Tagalog</option>
+                                                                <option value="th">Thai</option>
+                                                                <option value="tr">Turkish</option>
+                                                                <option value="uk">Ukranian</option>
+                                                                <option value="ur">Urdu</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label for="input-label" class="form-label">Training Type</label>
+
+                                                            <select class="form-select" name="training_type"
+                                                                id="training_type">
+                                                                
+                                                                <option value="static_training">Static Training</option>
+                                                                <option value="ai_training">AI Training</option>
+                                                            </select>
+                                                        </div>
+
                                                     </div>
 
                                                     <div>

@@ -107,11 +107,15 @@ class AicallController extends Controller
             'camp_name' => 'required|string|min:5|max:50',
             'emp_group' => 'required|string',
             'training_module' => 'nullable|integer',
+            'training_type' => 'string',
             'emp_group_name' => 'required|string',
             'ai_agent_name' => 'required|string',
             'ai_agent' => 'required|string',
             'ai_phone' => 'required|string'
-        ]);
+        ],
+    [
+        "camp_name.min" => "Campaign Name must be at least 5 Characters"
+    ]);
 
         // return "request validated";
 
@@ -132,6 +136,7 @@ class AicallController extends Controller
             'emp_grp_name' => $request->emp_group_name,
             'training' => $request->training_module ?? null,
             'training_lang' => $request->training_module ? $request->training_lang : null,
+            'training_type' => $request->training_type ? $request->training_type : 'static_training',
             'ai_agent' => $request->ai_agent,
             'ai_agent_name' => $request->ai_agent_name,
             'phone_no' => $request->ai_phone,
@@ -191,6 +196,7 @@ class AicallController extends Controller
                         'employee_email' => $user->user_email,
                         'training' => $campaign->training ?? null,
                         'training_lang' => $campaign->training_lang ?? null,
+                        'training_type' => $campaign->training_type ?? null,
                         'from_mobile' => $campaign->phone_no,
                         'to_mobile' => "+" . $user->whatsapp,
                         'agent_id' => $campaign->ai_agent,

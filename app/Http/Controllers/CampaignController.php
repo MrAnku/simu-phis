@@ -119,6 +119,7 @@ class CampaignController extends Controller
         $usersGroup = $request->input('users_group');
         $trainingMod = $request->input('training_mod');
         $trainingLang = $request->input('trainingLang');
+        $trainingType = $request->input('training_type');
         $emailLang = $request->input('email_lang');
         $phishMaterial = $request->input('phish_material');
         $launchTime = $request->input('launch_time');
@@ -161,6 +162,7 @@ class CampaignController extends Controller
                     'user_email' => $user->user_email,
                     'training_module' => $trainingMod,
                     'training_lang' => $trainingLang,
+                    'training_type' => $trainingType,
                     'launch_time' => $launchTimeFormatted,
                     'phishing_material' => $phishMaterial,
                     'email_lang' => $emailLang,
@@ -189,6 +191,7 @@ class CampaignController extends Controller
                 'users_group' => $usersGroup,
                 'training_module' => $trainingMod,
                 'training_lang' => $trainingLang,
+                'training_type' => $trainingType,
                 'phishing_material' => $phishMaterial,
                 'email_lang' => $emailLang,
                 'launch_time' => $launchTimeFormatted,
@@ -220,6 +223,7 @@ class CampaignController extends Controller
                 'users_group' => $usersGroup,
                 'training_module' => $trainingMod,
                 'training_lang' => $trainingLang,
+                'training_type' => $trainingType,
                 'phishing_material' => $phishMaterial,
                 'email_lang' => $emailLang,
                 'launch_time' => $launchTime,
@@ -258,6 +262,7 @@ class CampaignController extends Controller
                 'users_group' => $usersGroup,
                 'training_module' => $trainingMod,
                 'training_lang' => $trainingLang,
+                'training_type' => $trainingType,
                 'phishing_material' => $phishMaterial,
                 'email_lang' => $emailLang,
                 'launch_time' => $launchTime,

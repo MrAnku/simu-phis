@@ -142,6 +142,7 @@ class ProcessCampaigns extends Command
           'user_email' => $user->user_email,
           'training_module' => $campaign->training_module,
           'training_lang' => $campaign->training_lang,
+          'training_type' => $campaign->training_type,
           'launch_time' => $campaign->launch_time,
           'phishing_material' => $campaign->phishing_material,
           'email_lang' => $campaign->email_lang,
@@ -313,144 +314,144 @@ class ProcessCampaigns extends Command
 
   private function tsendCampaignEmails()
   {
-      $companies = DB::table('company')->get();
-      echo "Fetched " . count($companies) . " companies.\n";
-  
-      foreach ($companies as $company) {
-          $company_id = $company->company_id;
-          echo "Processing company ID: " . $company_id . "\n";
-  
-          $campaigns = TprmCampaignLive::where('sent', 0)
-              ->where('company_id', $company_id)
-              ->take(5)
-              ->get();
-  
-          echo "Found " . count($campaigns) . " campaigns to process.\n";
-  
-          foreach ($campaigns as $campaign) {
-              $email = $campaign->user_email;
-              $user_Name = $campaign->user_name;
-              $campaign_id = $campaign->campaign_id;
-              $usrId = $campaign->user_id;
-              $email_lang = $campaign->email_lang;
-              $phishingMaterialId = $campaign->phishing_material;
-              $training_module = $campaign->training_module;
-              $training_lang = $campaign->training_lang;
-  
-              echo "Processing campaign ID: " . $campaign_id . " for user: " . $user_Name . " (" . $email . ")\n";
-  
-              if ($phishingMaterialId) {
-                  echo "Phishing material ID: " . $phishingMaterialId . "\n";
-                  $phishingMaterial = DB::table('phishing_emails')->find($phishingMaterialId);
-  
-                  if ($phishingMaterial) {
-                      echo "Found phishing material for campaign.\n";
-                      $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
-                      $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
-  
-                      if ($senderProfile && $websiteColumns) {
-                          echo "Found sender profile and website columns.\n";
-  
-                          // Generate random parts
-                          $randomString1 = Str::random(6);
-                          $randomString2 = Str::random(10);
-                          $slugName = Str::slug($websiteColumns->name);
-  
-                          // Construct the base URL
-                          $baseUrl = "https://{$randomString1}.{$websiteColumns->domain}/{$randomString2}";
-  
-                          echo "Generated website URL: " . $baseUrl . "\n";
-  
-                          // Define query parameters
-                          $params = [
-                              'v' => 'r',
-                              'c' => Str::random(10),
-                              'p' => $websiteColumns->id,
-                              'l' => $slugName,
-                              'token' => $campaign->id,
-                              'usrid' => $usrId,
-                              'tprm' => '1',
-                          ];
-  
-                          // Build query string and final URL
-                          $queryString = http_build_query($params);
-                          $websiteFilePath = $baseUrl . '?' . $queryString;
-  
-                          echo "Final URL with query string: " . $websiteFilePath . "\n";
-  
-                          $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
-                          $mailBody = file_get_contents($mailBody);
-  
-                          // Perform replacements in mail body
-                          $mailBody = str_replace('{{website_url}}', $websiteFilePath, $mailBody);
-                          $mailBody = str_replace('{{user_name}}', $user_Name, $mailBody);
-                          $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/ttrackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
-  
-                          if ($email_lang !== 'en') {
-                              $templateBodyPath = public_path('translated_temp/translated_file.html');
-                              // Ensure the directory exists
-                              if (!File::exists(dirname($templateBodyPath))) {
-                                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
-                              }
-                              // Put the file in the public directory
-                              File::put($templateBodyPath, $mailBody);
-                              $mailBody = $this->changeEmailLang($templateBodyPath, $email_lang);
-                              echo "Email language translated to: " . $email_lang . "\n";
-                          }
-  
-                          $mailData = [
-                              'email' => $email,
-                              'from_name' => $senderProfile->from_name,
-                              'email_subject' => $phishingMaterial->email_subject,
-                              'mailBody' => $mailBody,
-                              'from_email' => $senderProfile->from_email,
-                              'sendMailHost' => $senderProfile->host,
-                              'sendMailUserName' => $senderProfile->username,
-                              'sendMailPassword' => $senderProfile->password,
-                          ];
-                          // echo "Email data: " . json_encode($mailData, JSON_PRETTY_PRINT) . "\n";
-  
-                          echo "Sending email to: " . $email . "\n";
-                          $mailSentRes = $this->sendMail($mailData);
-  
-                          // Update campaign as sent
-                          $campaign->update(['sent' => 1]);
-                          echo "Campaign marked as sent.\n";
-  
-                          $this->tupdateCampaignReports($campaign_id, 'emails_delivered');
-                      } else {
-                          echo "Sender profile or website columns not found.\n";
-                      }
-                  } else {
-                      echo "No phishing material found for the campaign.\n";
-                  }
+    $companies = DB::table('company')->get();
+    echo "Fetched " . count($companies) . " companies.\n";
+
+    foreach ($companies as $company) {
+      $company_id = $company->company_id;
+      echo "Processing company ID: " . $company_id . "\n";
+
+      $campaigns = TprmCampaignLive::where('sent', 0)
+        ->where('company_id', $company_id)
+        ->take(5)
+        ->get();
+
+      echo "Found " . count($campaigns) . " campaigns to process.\n";
+
+      foreach ($campaigns as $campaign) {
+        $email = $campaign->user_email;
+        $user_Name = $campaign->user_name;
+        $campaign_id = $campaign->campaign_id;
+        $usrId = $campaign->user_id;
+        $email_lang = $campaign->email_lang;
+        $phishingMaterialId = $campaign->phishing_material;
+        $training_module = $campaign->training_module;
+        $training_lang = $campaign->training_lang;
+
+        echo "Processing campaign ID: " . $campaign_id . " for user: " . $user_Name . " (" . $email . ")\n";
+
+        if ($phishingMaterialId) {
+          echo "Phishing material ID: " . $phishingMaterialId . "\n";
+          $phishingMaterial = DB::table('phishing_emails')->find($phishingMaterialId);
+
+          if ($phishingMaterial) {
+            echo "Found phishing material for campaign.\n";
+            $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
+
+            if ($senderProfile && $websiteColumns) {
+              echo "Found sender profile and website columns.\n";
+
+              // Generate random parts
+              $randomString1 = Str::random(6);
+              $randomString2 = Str::random(10);
+              $slugName = Str::slug($websiteColumns->name);
+
+              // Construct the base URL
+              $baseUrl = "https://{$randomString1}.{$websiteColumns->domain}/{$randomString2}";
+
+              echo "Generated website URL: " . $baseUrl . "\n";
+
+              // Define query parameters
+              $params = [
+                'v' => 'r',
+                'c' => Str::random(10),
+                'p' => $websiteColumns->id,
+                'l' => $slugName,
+                'token' => $campaign->id,
+                'usrid' => $usrId,
+                'tprm' => '1',
+              ];
+
+              // Build query string and final URL
+              $queryString = http_build_query($params);
+              $websiteFilePath = $baseUrl . '?' . $queryString;
+
+              echo "Final URL with query string: " . $websiteFilePath . "\n";
+
+              $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
+              $mailBody = file_get_contents($mailBody);
+
+              // Perform replacements in mail body
+              $mailBody = str_replace('{{website_url}}', $websiteFilePath, $mailBody);
+              $mailBody = str_replace('{{user_name}}', $user_Name, $mailBody);
+              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/ttrackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+
+              if ($email_lang !== 'en') {
+                $templateBodyPath = public_path('translated_temp/translated_file.html');
+                // Ensure the directory exists
+                if (!File::exists(dirname($templateBodyPath))) {
+                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
+                }
+                // Put the file in the public directory
+                File::put($templateBodyPath, $mailBody);
+                $mailBody = $this->changeEmailLang($templateBodyPath, $email_lang);
+                echo "Email language translated to: " . $email_lang . "\n";
               }
-  
-              if (!$phishingMaterialId) {
-                  echo "No phishing material ID, sending training instead.\n";
-                  $this->sendTraining($campaign);
-              }
+
+              $mailData = [
+                'email' => $email,
+                'from_name' => $senderProfile->from_name,
+                'email_subject' => $phishingMaterial->email_subject,
+                'mailBody' => $mailBody,
+                'from_email' => $senderProfile->from_email,
+                'sendMailHost' => $senderProfile->host,
+                'sendMailUserName' => $senderProfile->username,
+                'sendMailPassword' => $senderProfile->password,
+              ];
+              // echo "Email data: " . json_encode($mailData, JSON_PRETTY_PRINT) . "\n";
+
+              echo "Sending email to: " . $email . "\n";
+              $mailSentRes = $this->sendMail($mailData);
+
+              // Update campaign as sent
+              $campaign->update(['sent' => 1]);
+              echo "Campaign marked as sent.\n";
+
+              $this->tupdateCampaignReports($campaign_id, 'emails_delivered');
+            } else {
+              echo "Sender profile or website columns not found.\n";
+            }
+          } else {
+            echo "No phishing material found for the campaign.\n";
           }
-      }
-  }
-  
-  
-    private function tupdateCampaignReports($campaign_id, $field)
-    {
-      $report = TprmCampaignReport::where('campaign_id', $campaign_id)->first();
-  
-      if ($report) {
-        if (is_array($field)) {
-          foreach ($field as $f) {
-            $report->$f += 1;
-          }
-        } else {
-          $report->$field += 1;
         }
-  
-        $report->save();
+
+        if (!$phishingMaterialId) {
+          echo "No phishing material ID, sending training instead.\n";
+          $this->sendTraining($campaign);
+        }
       }
     }
+  }
+
+
+  private function tupdateCampaignReports($campaign_id, $field)
+  {
+    $report = TprmCampaignReport::where('campaign_id', $campaign_id)->first();
+
+    if ($report) {
+      if (is_array($field)) {
+        foreach ($field as $f) {
+          $report->$f += 1;
+        }
+      } else {
+        $report->$field += 1;
+      }
+
+      $report->save();
+    }
+  }
 
   private function sendTraining($campaign)
   {
@@ -511,6 +512,7 @@ class ProcessCampaigns extends Command
             'user_email' => $campaign->user_email,
             'training' => $campaign->training_module,
             'training_lang' => $campaign->training_lang,
+            'training_type' => $campaign->training_type,
             'assigned_date' => $current_date,
             'training_due_date' => $date_after_14_days,
             'company_id' => $campaign->company_id
@@ -572,6 +574,7 @@ class ProcessCampaigns extends Command
             'user_email' => $campaign->user_email,
             'training' => $campaign->training,
             'training_lang' => $campaign->training_lang,
+            'training_type' => $campaign->training_type,
             'assigned_date' => $current_date,
             'training_due_date' => $date_after_14_days,
             'company_id' => $campaign->company_id
@@ -668,8 +671,8 @@ class ProcessCampaigns extends Command
       $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
       // if ($isMailSent) {
-        // $campaign->update(['sent' => 1]);
-        // $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
+      // $campaign->update(['sent' => 1]);
+      // $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
       // }
     } else {
       // Check if user login already exists
@@ -692,6 +695,7 @@ class ProcessCampaigns extends Command
             'user_email' => $campaign->employee_email,
             'training' => $campaign->training,
             'training_lang' => $campaign->training_lang,
+            'training_type' => $campaign->training_type,
             'assigned_date' => $current_date,
             'training_due_date' => $date_after_14_days,
             'company_id' => $campaign->company_id
@@ -714,26 +718,6 @@ class ProcessCampaigns extends Command
           ];
 
           $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
-
-          // if ($isMailSent) {
-            
-
-            // Update campaign_reports table
-            // $reportsTrainingAssignCount = DB::table('campaign_reports')
-            //   ->where('campaign_id', $campaign->campaign_id)
-            //   ->first();
-
-            // if ($reportsTrainingAssignCount) {
-            //   $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
-
-            //   DB::table('campaign_reports')
-            //     ->where('campaign_id', $campaign->campaign_id)
-            //     ->update(['training_assigned' => $training_assigned]);
-            // }
-
-            // $campaign->update(['sent' => 1]);
-            // $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
-          // }
         } else {
           return response()->json(['error' => 'Failed to create user']);
         }
@@ -750,6 +734,7 @@ class ProcessCampaigns extends Command
             'user_email' => $campaign->employee_email,
             'training' => $campaign->training,
             'training_lang' => $campaign->training_lang,
+            'training_type' => $campaign->training_type,
             'assigned_date' => $current_date,
             'training_due_date' => $date_after_14_days,
             'company_id' => $campaign->company_id
@@ -781,29 +766,6 @@ class ProcessCampaigns extends Command
           ];
 
           $isMailSent = Mail::to($campaign->employee_email)->send(new TrainingAssignedEmail($mailData));
-
-          // if ($isMailSent) {
-          //   // Update campaign_live table
-          //   DB::table('campaign_live')
-          //     ->where('id', $campaign->id)
-          //     ->update(['training_assigned' => 1]);
-
-          //   // Update campaign_reports table
-          //   $reportsTrainingAssignCount = DB::table('campaign_reports')
-          //     ->where('campaign_id', $campaign->campaign_id)
-          //     ->first();
-
-          //   if ($reportsTrainingAssignCount) {
-          //     $training_assigned = (int)$reportsTrainingAssignCount->training_assigned + 1;
-
-          //     DB::table('campaign_reports')
-          //       ->where('campaign_id', $campaign->campaign_id)
-          //       ->update(['training_assigned' => $training_assigned]);
-          //   }
-
-          //   $campaign->update(['sent' => 1]);
-          //   $this->updateCampaignReports($campaign->campaign_id, 'emails_delivered');
-          // }
         } else {
           return response()->json(['error' => 'Failed to create user']);
         }
@@ -828,7 +790,7 @@ class ProcessCampaigns extends Command
         'company_email' => $company_email,
         'learn_domain' => $isWhitelabled->learn_domain,
         'company_name' => $isWhitelabled->company_name,
-        'logo' => url('/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo)
+        'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
       ];
     }
 
@@ -836,7 +798,7 @@ class ProcessCampaigns extends Command
       'company_email' => env('MAIL_FROM_ADDRESS'),
       'learn_domain' => 'learn.simuphish.com',
       'company_name' => 'simUphish',
-      'logo' => url('/assets/images/simu-logo-dark.png')
+      'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
     ];
   }
 
@@ -1167,64 +1129,60 @@ class ProcessCampaigns extends Command
 
     if ($logData) {
 
-      foreach($logData as $singleLog){
+      foreach ($logData as $singleLog) {
 
-      $logJson = json_decode($singleLog->log_json, true);
+        $logJson = json_decode($singleLog->log_json, true);
 
-      // Ensure call_id exists in the JSON
-      if (isset($logJson['call']['call_id'])) {
-        $callId = $logJson['call']['call_id'];
+        // Ensure call_id exists in the JSON
+        if (isset($logJson['call']['call_id'])) {
+          $callId = $logJson['call']['call_id'];
 
-        // Check if call_id exists in the other table (e.g., 'other_table_name')
-        $existingRow = DB::table('ai_call_camp_live')->where('call_id', $callId)->first();
+          // Check if call_id exists in the other table (e.g., 'other_table_name')
+          $existingRow = DB::table('ai_call_camp_live')->where('call_id', $callId)->first();
 
-        if ($existingRow) {
+          if ($existingRow) {
 
-          if ($logJson['args']['fell_for_simulation'] == true) {
+            if ($logJson['args']['fell_for_simulation'] == true) {
 
-            if($existingRow->training !== null){
+              if ($existingRow->training !== null) {
 
-              $this->sendTrainingAi($existingRow);
+                $this->sendTrainingAi($existingRow);
+              }
             }
 
+            // If exists, update the JSON column of the found row
+            $updatedJson = json_encode($logJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            DB::table('ai_call_camp_live')->where('id', $existingRow->id)->update([
+              // 'call_time' => $logJson['start_timestamp'] ?? null,
+              'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training !== null ? 1 : 0,
+              'status' => 'completed',
+              'call_end_response' => $updatedJson
+            ]);
+
+
+            DB::table('ai_call_all_logs')->where('id', $singleLog->id)->update([
+              'locally_handled' => 1
+            ]);
           }
-
-          // If exists, update the JSON column of the found row
-          $updatedJson = json_encode($logJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-          DB::table('ai_call_camp_live')->where('id', $existingRow->id)->update([
-            // 'call_time' => $logJson['start_timestamp'] ?? null,
-            'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training !== null ? 1 : 0,
-            'status' => 'completed',
-            'call_end_response' => $updatedJson
-          ]);
-
-
-          DB::table('ai_call_all_logs')->where('id', $singleLog->id)->update([
-            'locally_handled' => 1
-          ]);
         }
       }
-
-      }
-
-      
     }
   }
 
-  private function checkAllAiCallsHandled(){
+  private function checkAllAiCallsHandled()
+  {
     $campaigns = AiCallCampaign::where('status', 'pending')->get();
-    
-    if($campaigns->isNotEmpty()){
 
-      foreach($campaigns as $campaign){
+    if ($campaigns->isNotEmpty()) {
+
+      foreach ($campaigns as $campaign) {
         $liveCampaigns = AiCallCampLive::where(['campaign_id' => $campaign->campaign_id, 'status' => 'pending'])->get();
 
-        if($liveCampaigns->isEmpty()){
+        if ($liveCampaigns->isEmpty()) {
 
           AiCallCampaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
         }
-
       }
     }
   }

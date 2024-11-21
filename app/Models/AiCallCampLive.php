@@ -20,6 +20,7 @@ class AiCallCampLive extends Model
         'employee_email',
         'training',
         'training_lang',
+        'training_type',
         'from_mobile',
         'to_mobile',
         'agent_id',

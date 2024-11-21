@@ -269,9 +269,24 @@
                         </div>
 
                     </div>
+
+                    <div class="mb-3">
+                        <label for="input-label" class="form-label">Training Type<sup
+                                class="text-danger">*</sup></label>
+                        <div class="d-flex">
+
+                            {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                            <select class="form-select" aria-label="Default select example" id="training_type" disabled>
+                               <option value="static_training">Static Training</option>
+                               <option value="ai_training">AI Training</option>
+
+                            </select>
+                        </div>
+
+                    </div>
                     <div class="mb-3">
                         <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
-                            onclick="submitCampaign();">Add
+                            onclick="submitCampaign();">Create
                             Campaign</button>
                     </div>
 
@@ -611,6 +626,7 @@
                     user_group: usrGroup.value,
                     campType: campType.value,
                     training: training.value,
+                    trainingType: training_type.value,
                     token: "0",
                     phone: "0",
                     template_name: $("#whatsapp_template").val(),
@@ -782,12 +798,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         const campType = document.getElementById('campType');
         const training = document.getElementById('training');
+        const trainingType = document.getElementById('training_type');
 
         campType.addEventListener('change', function() {
             if (campType.value === 'Phishing and Training') {
                 training.disabled = false;
+                trainingType.disabled = false;
             } else {
                 training.disabled = true;
+                trainingType.disabled = true;
                
             }
         });

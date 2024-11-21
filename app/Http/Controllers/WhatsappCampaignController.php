@@ -82,6 +82,7 @@ class WhatsappCampaignController extends Controller
 
         if ($request->campType == "Phishing and Training") {
             $new_campaign->training = $request->training;
+            $new_campaign->training_type = $request->trainingType;
         }
         $new_campaign->company_id = $company_id;
         $new_campaign->created_at = now();
@@ -116,6 +117,7 @@ class WhatsappCampaignController extends Controller
                 'template_name' => $campaignData->template_name,
                 'template_language' => $campaignData->template_language,
                 'training' => $training,
+                'training_type' => $campaignData->trainingType,
                 'components' => json_encode($campaignData->components),
                 'status' => 'pending',
                 'created_at' => now(),
@@ -291,6 +293,7 @@ class WhatsappCampaignController extends Controller
                                     'user_email' => $campaign_user->user_email,
                                     'training' => $campaign_user->training,
                                     'training_lang' => 'en',
+                                    'training_type' => $campaign_user->training_type,
                                     'assigned_date' => $current_date,
                                     'training_due_date' => $date_after_14_days,
                                     'company_id' => $campaign_user->company_id
@@ -334,6 +337,7 @@ class WhatsappCampaignController extends Controller
                                     'user_email' => $campaign_user->user_email,
                                     'training' => $campaign_user->training,
                                     'training_lang' => 'en',
+                                    'training_type' => $campaign_user->training_type,
                                     'assigned_date' => $current_date,
                                     'training_due_date' => $date_after_14_days,
                                     'company_id' => $campaign_user->company_id
