@@ -34,6 +34,15 @@ use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
+use App\Http\Controllers\PublicInfoController;
+use App\Http\Controllers\ScrumPackageController;
+
+use App\Http\Middleware\CorsMiddleware;
+
+Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
+    return response()->json(['message' => 'This is public information.']);
+});
+
 
 //---------------learning portal routes------------//
 
@@ -174,12 +183,23 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::get('/reporting/get-chart-data', [ReportingController::class, 'getChartData'])->name('campaign.getChartData');
+    Route::get('/reporting/wget-chart-data', [ReportingController::class, 'wgetChartData'])->name('campaign.wgetChartData');
+    Route::get('/reporting/cget-chart-data', [ReportingController::class, 'cgetChartData'])->name('campaign.cgetChartData');
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
+    Route::post('/reporting/whatsappfetch-campaign-report', [ReportingController::class, 'whatsappfetchCampaignReport'])->name('campaign.whatsappfetchCampaignReport');
+    Route::post('/reporting/aicallingfetch-campaign-report', [ReportingController::class, 'aicallingfetchCampaignReport'])->name('campaign.aicallingfetchCampaignReport');
 
     Route::post('/fetch-camp-report-by-users', [ReportingController::class, 'fetchCampReportByUsers'])->name('campaign.fetchCampReportByUsers');
+    Route::post('/aicallingfetch-camp-report-by-users', [ReportingController::class, 'aicallingfetchCampReportByUsers'])->name('campaign.aicallingfetchCampReportByUsers');
+    Route::post('/whatsappfetch-camp-report-by-users', [ReportingController::class, 'whatsappfetchCampReportByUsers'])->name('campaign.whatsappfetchCampReportByUsers');
 
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
+    Route::post('/aicallingfetch-camp-training-details', [ReportingController::class, 'aicallingfetchCampTrainingDetails'])->name('campaign.aicallingfetchCampTrainingDetails');
+    Route::post('/whatsappfetch-camp-training-details', [ReportingController::class, 'whatsappfetchCampTrainingDetails'])->name('campaign.whatsappfetchCampTrainingDetails');
+   
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
+    Route::post('/aicallingfetch-camp-training-details-individual', [ReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual'])->name('campaign.aicallingfetchCampTrainingDetailsIndividual');
+    Route::post('/whatsappfetch-camp-training-details-individual', [ReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual'])->name('campaign.whatsappfetchCampTrainingDetailsIndividual');
 
     //---------------------TPRM routes----------------------//
     Route::get('/tprm', [TprmController::class, 'index'])->name('campaign.tprm');
@@ -251,6 +271,24 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
 
     Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
+    //scrum module routes-------------------------------------------------------------------------
+    // Route for uploading the package
+     Route::post('/upload-scrum', [ScrumPackageController::class, 'store'])->name('scrum.store');
+     // Route for displaying the extracted package content
+     // Route for displaying all SCORM packages
+     Route::get('/scrumpackages/{id}', [ScrumPackageController::class, 'showScrumPackage'])->name('scrumpackages.show');
+
+     
+
+     
+
+     
+     
+ 
+   
+     
+
+
 
     //support routes ------------------------------------------------------------------------------------
     Route::get('/support', [SupportController::class, 'index'])->name('company.support');
