@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WhatsAppCampaignUser;
-use App\Models\WhatsAppCampaign;
+use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 
@@ -33,13 +33,13 @@ class ReportingController extends Controller
         $training_assigned = $camps->sum('training_assigned');
 
         //whatsapp campaigns
-        $whatsapp_campaigns = WhatsAppCampaign::with('targetUsers')->where('company_id', $companyId)->get();
+        $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')->where('company_id', $companyId)->get();
 
         //ai calls
         $ai_calls = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
         $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
 
-        $wcamps = WhatsAppCampaign::where('company_id', $companyId)->get();
+        $wcamps = WhatsappCampaign::where('company_id', $companyId)->get();
         $ccamps = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
 
         $msg_delivered = WhatsAppCampaignUser::where('company_id', $companyId)->where('status', 'sent')->count();
@@ -222,7 +222,7 @@ class ReportingController extends Controller
     {
        $campaignId = $request->campaignId;
        $company_id = Auth::user()->company_id;
-       $camp_detail = WhatsAppCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
+       $camp_detail = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
        return response()->json($camp_detail);
     }
     public function aicallingfetchCampaignReport(Request $request)
@@ -650,11 +650,11 @@ class ReportingController extends Controller
         $reportRow = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->first();
 
         // Fetch user group data
-        $userGroup = WhatsAppCampaign::where('camp_id', $campId)->where('company_id', $companyId)->first();
+        $userGroup = WhatsappCampaign::where('camp_id', $campId)->where('company_id', $companyId)->first();
 
         if ($reportRow && $userGroup) {
             // Count the number of users in the group
-            $no_of_users = WhatsAppCampaign::where('user_group', $userGroup->users_group)->count();
+            $no_of_users = WhatsappCampaign::where('user_group', $userGroup->users_group)->count();
 
             // Determine training assigned and completed status
             $isAssigned = (int) $reportRow->training_assigned > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
