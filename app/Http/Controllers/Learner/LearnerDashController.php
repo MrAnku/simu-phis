@@ -109,6 +109,7 @@ class LearnerDashController extends Controller
             if($request->trainingScore == 100){
                 $rowData->completed = 1;
                 $rowData->completion_date = now()->format('Y-m-d');
+                $rowData->save();
             }
         }
 
