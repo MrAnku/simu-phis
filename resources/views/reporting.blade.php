@@ -12,7 +12,7 @@
 
             <!-- Start::app-content -->
             <div class="main-content app-content">
-                <div class="container-fluid mt-4">
+                <div class="container-fluid mt-2">
                     <div class="row my-3">
                         <div class="card custom-card">
                             <div class="card-body p-0 product-checkout">
@@ -266,7 +266,8 @@
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-primary-transparent">
-                                                                        <i class="bx bx-mail-send fs-4"></i>
+
+                                                                        <i class='bx bxl-whatsapp fs-4'></i>
                                                                     </span>
                                                                 </div>
                                                                 <div
@@ -290,7 +291,8 @@
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-secondary-transparent">
-                                                                        <i class="bx bx-mail-send fs-4"></i>
+
+                                                                        <i class='bx bxl-whatsapp fs-4'></i>
                                                                     </span>
                                                                 </div>
                                                                 <div
@@ -364,92 +366,55 @@
                                                                         <tr>
                                                                             <th>Sl</th>
                                                                             <th>Campaign Name</th>
-                                                                            <th>Status</th>
+                                                                            {{-- <th>Status</th> --}}
                                                                             <th>Created Date</th>
                                                                             <th>Link Clicked</th>
                                                                             <th>Compromised</th>
                                                                             <th>Training Assigned</th>
-                                                                            <th>Training Completed</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @forelse ($wcamps as $wcamp)
+                                                                        @forelse ($whatsapp_campaigns as $whatsapp_campaign)
                                                                             <tr>
                                                                                 <td>{{ $loop->iteration }}</td>
                                                                                 <td>
                                                                                     <a href="#" class="text-primary"
-                                                                                        onclick="whatsappfetchCampaignDetails(`{{ $wcamp->camp_id }}`)"
+                                                                                        onclick="whatsappfetchCampaignDetails(`{{ $whatsapp_campaign->camp_id }}`)"
                                                                                         data-bs-toggle="modal"
-                                                                                        data-bs-target="#whatsappcampaignReportModal">{{ $wcamp->camp_name }}</a>
+                                                                                        data-bs-target="#whatsappcampaignReportModal">{{ $whatsapp_campaign->camp_name }}</a>
                                                                                 </td>
-                                                                                <td>
-                                                                                    @if ($wcamp->status == 'sent' || $wcamp->status == 'completed')
-                                                                                        <span
-                                                                                            class="badge bg-success">{{ ucfirst($camp->status) }}</span>
-                                                                                    @else
-                                                                                        <span
-                                                                                            class="badge bg-warning">{{ ucfirst($camp->status) }}</span>
-                                                                                    @endif
+
+                                                                                <td>{{ \Carbon\Carbon::parse($whatsapp_campaign->created_at)->format('d-m-Y h:i A') }}
                                                                                 </td>
-                                                                                <td>{{ $wcamp->created_at }}</td>
                                                                                 <td>
                                                                                     <div class="checkboxesIcon">
-                                                                                        @if ($wcamp->link_clicked == 0)
-                                                                                            <span>{{ $wcamp->link_clicked }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
-                                                                                        @else
-                                                                                            <span>{{ $wcamp->link_clicked }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
-                                                                                        @endif
+
+                                                                                        <span>{{ $whatsapp_campaign->targetUsers->where('link_clicked', '1')->count() }}</span>
+                                                                                        <i
+                                                                                            class="bx bx-check-circle mx-2 fs-25 {{ $whatsapp_campaign->targetUsers->where('link_clicked', '1')->count() > 0 ? 'text-success' : 'text-danger' }}"></i>
+
 
                                                                                     </div>
 
                                                                                 </td>
                                                                                 <td>
                                                                                     <div class="checkboxesIcon">
-                                                                                        @if ($wcamp->emp_compromised == 0)
-                                                                                            <span>{{ $wcamp->emp_compromised }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
-                                                                                        @else
-                                                                                            <span>{{ $wcamp->emp_compromised }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
-                                                                                        @endif
+                                                                                        <span>{{ $whatsapp_campaign->targetUsers->where('emp_compromised', '1')->count() }}</span>
+                                                                                        <i
+                                                                                            class="bx bx-check-circle mx-2 fs-25 {{ $whatsapp_campaign->targetUsers->where('emp_compromised', '1')->count() > 0 ? 'text-success' : 'text-danger' }}"></i>
 
                                                                                     </div>
                                                                                 </td>
                                                                                 <td>
                                                                                     <div class="checkboxesIcon">
-                                                                                        @if ($wcamp->training_assigned == 0)
-                                                                                            <span>{{ $wcamp->training_assigned }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
-                                                                                        @else
-                                                                                            <span>{{ $wcamp->training_assigned }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
-                                                                                        @endif
+                                                                                        <span>{{ $whatsapp_campaign->targetUsers->where('training_assigned', '1')->count() }}</span>
+                                                                                        <i
+                                                                                            class="bx bx-check-circle mx-2 fs-25 {{ $whatsapp_campaign->targetUsers->where('training_assigned', '1')->count() > 0 ? 'text-success' : 'text-danger' }}"></i>
 
                                                                                     </div>
 
                                                                                 </td>
-                                                                                <td>
-                                                                                    <div class="checkboxesIcon">
-                                                                                        @if ($wcamp->training_completed == 0)
-                                                                                            <span>{{ $wcamp->training_completed }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
-                                                                                        @else
-                                                                                            <span>{{ $wcamp->training_completed }}</span>
-                                                                                            <i
-                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
-                                                                                        @endif
 
-                                                                                    </div>
-                                                                                </td>
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
@@ -473,23 +438,24 @@
                                         aria-labelledby="shipped-tab-pane" tabindex="0">
                                         <div class="p-4">
                                             <div class="row my-3">
-                                                <div class="col-xxl-4 col-xl-12">
+                                                <div class="col-xxl-3 col-xl-12">
                                                     <div class="card custom-card">
                                                         <div class="card-body">
                                                             <div class="row">
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-primary-transparent">
-                                                                        <i class="bx bx-mail-send fs-4"></i>
+                                                                        <i class='bx bx-phone-outgoing fs-4'></i>
+
                                                                     </span>
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">PhoneCall Delivered</div>
+                                                                    <div class="mb-2">Phone Calls Delivered</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ $call_delivered }} </span>
+                                                                            {{ $ai_calls_individual->where('status', 'waiting')->count() }} </span>
                                                                     </div>
 
                                                                 </div>
@@ -497,24 +463,28 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xxl-4 col-xl-12">
+                                                <div class="col-xxl-3 col-xl-12">
                                                     <div class="card custom-card">
                                                         <div class="card-body">
                                                             <div class="row">
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-secondary-transparent">
-                                                                        <i class="bx bx-mail-send fs-4"></i>
+                                                                        
+                                                                        <i class='bx bx-phone-call fs-4'></i>
                                                                     </span>
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Active &amp; Recurring Campaigns
+                                                                    <div class="mb-2">
+                                                                        Pending Calls
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
-                                                                        <span
-                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ count($ccamps) }} </span>
+                                                                        <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $ai_calls_individual->where('status', 'pending')->count() }}
+
+                                                                            
+                                                                        </span>
                                                                     </div>
 
                                                                 </div>
@@ -522,7 +492,34 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xxl-4 col-xl-12">
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-success-transparent">
+                                                                        
+                                                                        <i class='bx bxs-phone-call fs-4' ></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">
+                                                                        Call Answered
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+                                                                        <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $ai_calls_individual->where('call_end_response', '!=', null)->count() }}
+                                                                        </span>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xxl-3 col-xl-12">
                                                     <div class="card custom-card">
                                                         <div class="card-body">
                                                             <div class="row">
@@ -538,7 +535,7 @@
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ $ctraining_assigned }} </span>
+                                                                            {{ $ai_calls_individual->sum('training_assigned') }} </span>
                                                                     </div>
 
                                                                 </div>
@@ -548,7 +545,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="row">
+                                            {{-- <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="card custom-card">
                                                         <div class="card-header">
@@ -559,7 +556,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> --}}
 
                                             <div class="row">
                                                 <div class="col-xl-12">
@@ -582,7 +579,7 @@
                                                                             <th>Employee Group</th>
                                                                             <th>AI Agent</th>
                                                                             <th>Training </th>
-                                                                            <th>Training Completed</th>
+                                                                            <th>Training Assigned</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -618,12 +615,12 @@
                                                                                 </td>
                                                                                 <td>
                                                                                     <div class="checkboxesIcon">
-                                                                                        @if ($ccamp->training_completed == 0)
-                                                                                            <span>{{ $ccamp->training_completed }}</span>
+                                                                                        @if ($ccamp->individualCamps->where('training_assigned', '1')->count() == 0)
+                                                                                            <span>{{ $ccamp->individualCamps->where('training_assigned', '1')->count() }}</span>
                                                                                             <i
                                                                                                 class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
                                                                                         @else
-                                                                                            <span>{{ $ccamp->training_completed }}</span>
+                                                                                            <span>{{ $ccamp->individualCamps->where('training_assigned', '1')->count() }}</span>
                                                                                             <i
                                                                                                 class="bx bx-check-circle mx-2 fs-25 text-success"></i>
                                                                                         @endif
@@ -841,7 +838,7 @@
                                 <div class="tab-pane show active text-muted" id="whatsappphishing_campaign"
                                     role="tabpanel">
                                     <div class="table-responsive">
-                                        <table class="table text-nowrap table-striped">
+                                        <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Campaign Name</th>
@@ -871,7 +868,6 @@
                                                             <th>WhatsApp Number</th>
                                                             <th>Message Delivered</th>
                                                             <th>Link Clicked</th>
-                                                            <th>Payload Clicked</th>
                                                             <th>Employee Compromised</th>
                                                             <th>Training Assigned</th>
                                                         </tr>
@@ -950,12 +946,12 @@
 
                         <div class="card-body">
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
+                                <li class="nav-item" role="presentation" id="ai_phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#aicallingphishing_campaign" aria-selected="true">Phishing
                                         Campaign</a>
                                 </li>
-                                <li class="nav-item" role="presentation" id="training_tab">
+                                <li class="nav-item" role="presentation" id="ai_training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#aicallingtraining_campaign" aria-selected="false" tabindex="-1">Training
                                         Campaign</a>
@@ -965,12 +961,11 @@
                                 <div class="tab-pane show active text-muted" id="aicallingphishing_campaign"
                                     role="tabpanel">
                                     <div class="table-responsive">
-                                        <table class="table text-nowrap table-striped">
+                                        <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Campaign name</th>
                                                     <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
                                                     <th scope="col">Delivered At</th>
                                                     <th scope="col">Ai Agent</th>
                                                     <th scope="col">Ai Agent Name</th>
@@ -1014,12 +1009,11 @@
                                 </div>
                                 <div class="tab-pane text-muted" id="aicallingtraining_campaign" role="tabpanel">
                                     <div class="table-responsive">
-                                        <table class="table text-nowrap table-striped">
+                                        <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Campaign name</th>
                                                     <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
                                                     <th scope="col">Trainings Assigned</th>
                                                     <th scope="col">Trainings Completed</th>
                                                 </tr>
@@ -1713,36 +1707,36 @@
 
         <script>
             function whatsappfetchCampaignDetails(campid) {
-                console.log('Sending campaignId:', campid); // Log campaignId to confirm this is triggered
+                // console.log('Sending campaignId:', campid); // Log campaignId to confirm this is triggered
                 $.post({
                     url: '/reporting/whatsappfetch-campaign-report',
                     data: {
                         campaignId: campid
                     },
                     success: function(response) {
-                        console.log("Success callback triggered!"); // Confirm callback is executed
-                        console.log('Response:', response); // Log the full response to verify structure
+                        // console.log("Success callback triggered!"); // Confirm callback is executed
+                         console.log(response); // Log the full response to verify structure
 
-                        if (response && response.campaign_type) {
-                            if (response.campaign_type === "Phishing") {
+                        if (response && response.camp_type) {
+                            if (response.camp_type === "Phishing") {
                                 whatsappfetchCampReportByUsers(campid); // Call function with campaignId
-                                $("#training_tab").hide();
+                                $("#whatsapptraining_tab").hide();
                                 $("#phishing_tab").show();
                             }
-                            if (response.campaign_type === "Training") {
-                                fetchCampTrainingDetails(campid); // Call function with campaignId
-                                fetchCampTrainingDetailsIndividual(campid); // Call function with campaignId
+                            if (response.camp_type === "Training") {
+                                whatsappfetchCampTrainingDetails(campid);
+                                whatsappfetchCampTrainingDetailsIndividual(campid); // Call function with campaignId
                                 $("#phishing_tab").hide();
-                                $("#training_tab").show();
+                                $("#whatsapptraining_tab").show();
                                 $("#phishing_campaign").removeClass("active show");
-                                $("#training_tab a").addClass("active");
+                                $("#whatsapptraining_tab a").addClass("active");
                                 $("#training_campaign").addClass("active show");
                             }
-                            if (response.campaign_type === "Phishing and Training") {
+                            if (response.camp_type === "Phishing and Training") {
                                 whatsappfetchCampReportByUsers(campid);
                                 whatsappfetchCampTrainingDetails(campid);
                                 whatsappfetchCampTrainingDetailsIndividual(campid);
-                                $("#training_tab").show();
+                                $("#whatsapptraining_tab").show();
                                 $("#phishing_tab").show();
                                 $("#phishing_campaign").addClass("active show");
                             }
@@ -1750,25 +1744,22 @@
                             console.error('Unexpected response structure:', response);
                         }
 
-                        let isDelivered = response.emails_delivered > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-
-                        let status = '';
-                        if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
-                        } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
-                        } else {
-                            status = '<span class="badge bg-success">Running</span>';
-                        }
+                        
 
                         let rowHtml = `
                     <tr>
-                        <th scope="row">${response.campaign_name}</th>
-                        <td>${response.campaign_type}</td>
-                        <td>${response.template_name}</td>
-                        <td>${response.template_name}</td>
+                        <th scope="row">${response.camp_name}</th>
+                        <td>${response.camp_type}</td>
+                        <td>
+                            <span class="badge bg-primary-transparent">
+                                ${response.training_data?.name ?? "Only Phishing"}
+                            </span>                            
+                        </td>
+                        <td>
+                            <span class="badge bg-success-transparent">
+                                ${response.template_name}
+                            </span>
+                        </td>
                         <td>${response.user_group_name}</td>
                         <td>${response.created_at}</td>
                     </tr>
@@ -1866,19 +1857,19 @@
                         if (response.campaign_type === "Phishing") {
                             fetchCampReportByUsers()
 
-                            $("#training_tab").hide();
-                            $("#phishing_tab").show();
+                            $("#ai_training_tab").hide();
+                            $("#ai_phishing_tab").show();
                         }
                         if (response.campaign_type === "Training") {
                             fetchCampTrainingDetails()
                             fetchCampTrainingDetailsIndividual()
 
-                            $("#phishing_tab").hide();
-                            $("#training_tab").show();
-                            $("#phishing_campaign").removeClass("active show");
+                            $("#ai_phishing_tab").hide();
+                            $("#ai_training_tab").show();
+                            $("#ai_phishing_campaign").removeClass("active show");
 
-                            $("#training_tab a").addClass("active")
-                            $("#training_campaign").addClass("active show")
+                            $("#ai_training_tab a").addClass("active")
+                            $("#ai_training_campaign").addClass("active show")
                         }
                         if (response.campaign_type === "Phishing & Training") {
                             aicallingfetchCampReportByUsers()
@@ -1919,7 +1910,6 @@
             <tr>
                 <th scope="row">${response.campaign_name}</th>
                 <td>${status}</td>
-                <td>${response.no_of_users}</td>
                 <td>
                     
                       ${response.created_at}

@@ -29,18 +29,26 @@ class ReportingController extends Controller
         $companyId = Auth::user()->company_id;
 
         $camps = CampaignReport::where('company_id', $companyId)->get();
-        $wcamps = WhatsAppCampaignUser::where('company_id', $companyId)->get();
-        $ccamps = AiCallCampaign::where('company_id', $companyId)->get();
-
         $emails_delivered = $camps->sum('emails_delivered');
-        $msg_delivered = $wcamps->where('status', 'sent')->count();
+        $training_assigned = $camps->sum('training_assigned');
+
+        //whatsapp campaigns
+        $whatsapp_campaigns = WhatsAppCampaign::with('targetUsers')->where('company_id', $companyId)->get();
+
+        //ai calls
+        $ai_calls = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
+        $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
+
+        $wcamps = WhatsAppCampaign::where('company_id', $companyId)->get();
+        $ccamps = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
+
+        $msg_delivered = WhatsAppCampaignUser::where('company_id', $companyId)->where('status', 'sent')->count();
         $call_delivered = $ccamps->where('status', 'completed')->count();
 
-        $training_assigned = $camps->sum('training_assigned');
-        $wtraining_assigned = DB::table('whatsapp_camp_users')->sum('training_assigned');
+        $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
         $ctraining_assigned = $ccamps->sum('training_assigned');
 
-        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned'));
+        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual'));
     }
 
     public function getChartData()
@@ -212,54 +220,10 @@ class ReportingController extends Controller
 
     public function whatsappfetchCampaignReport(Request $request)
     {
-        // Validate the incoming request
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
-
-        // Retrieve campaignId and companyId
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
-
-        // Log incoming data
-        \Log::info('Fetching campaign report', ['campaignId' => $campId, 'companyId' => $companyId]);
-
-        // Fetch campaign report data
-        $reportRow = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->first();
-
-        // Fetch user group data
-        $userGroup = WhatsAppCampaign::where('camp_id', $campId)->where('company_id', $companyId)->first();
-
-        // Log query results
-        \Log::info('Fetched campaign report row:', ['reportRow' => $reportRow]);
-        \Log::info('Fetched user group:', ['userGroup' => $userGroup]);
-
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the user group
-            $no_of_users = WhatsAppCampaign::where('user_group', $userGroup->users_group)->count();
-
-            // Prepare response data
-            $response = [
-                'campaign_name' => $reportRow->camp_name,
-                'campaign_type' => $userGroup->camp_type,
-                // 'emails_delivered' => $reportRow->user_name,
-                'emails_viewed' => $reportRow->link_clicked,
-                // 'payloads_clicked' => $reportRow->camp_type,
-                'template_name' => $reportRow->template_name,
-                'user_group_name' => $userGroup->user_group_name,
-                'created_at' => $userGroup->created_at,
-                // 'email_reported' => $reportRow->user_name,
-                'status' => $reportRow->status,
-                'no_of_users' => $no_of_users,
-            ];
-            \Log::info('Response data:', ['response' => $response]);
-            return response()->json($response);
-        } else {
-            // Log the error if report or user group not found
-            \Log::error('Campaign report or user group not found', ['campaignId' => $campId, 'companyId' => $companyId]);
-
-            return response()->json(['error' => 'Campaign report or user group not found'], 404);
-        }
+       $campaignId = $request->campaignId;
+       $company_id = Auth::user()->company_id;
+       $camp_detail = WhatsAppCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
+       return response()->json($camp_detail);
     }
     public function aicallingfetchCampaignReport(Request $request)
     {
@@ -425,7 +389,7 @@ class ReportingController extends Controller
             foreach ($allUsers as $userReport) {
                 $isSent = $userReport->status == 'sent' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
                 $link_clicked = $userReport->link_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                $isPayloadClicked = $userReport->link_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+                
                 $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
                 $training_assigned = $userReport->training_assigned == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
@@ -443,9 +407,7 @@ class ReportingController extends Controller
                 <td>' .
                     $link_clicked .
                     '</td>
-                <td>' .
-                    $isPayloadClicked .
-                    '</td>
+                
                 <td>' .
                     $isEmailCompromised .
                     '</td>
@@ -483,11 +445,11 @@ class ReportingController extends Controller
 
         $responseHtml = '';
         foreach ($allUsers as $userReport) {
-            $isSent = $userReport->status == 'sent' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">waiting</span>';
+            $isSent = $userReport->status == 'completed' ? '<span class="badge bg-success-transparent">Completed</span>' : '<span class="badge bg-warning-transparent">'.$userReport->status.'</span>';
             $isViewed = $userReport->created_at;
             $isPayloadClicked = $userReport->employee_email;
             // $isEmailCompromised = $userReport->emp_compromised;
-            $isEmailReported = $userReport->training_assigned =='1' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
+            $isEmailReported = $userReport->training_assigned =='1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
             $responseHtml .=
                 '<tr>

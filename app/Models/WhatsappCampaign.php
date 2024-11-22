@@ -14,4 +14,9 @@ class WhatsappCampaign extends Model
     public function trainingData(){
         return $this->hasOne(TrainingModule::class, 'id', 'training');
     }
+    public function targetUsers(){
+        return $this->hasMany(WhatsAppCampaignUser::class, 'camp_id', 'camp_id');
+    }
+
+    
 }

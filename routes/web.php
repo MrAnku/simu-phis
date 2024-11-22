@@ -271,24 +271,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
 
     Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
-    //scrum module routes-------------------------------------------------------------------------
-    // Route for uploading the package
-     Route::post('/upload-scrum', [ScrumPackageController::class, 'store'])->name('scrum.store');
-     // Route for displaying the extracted package content
-     // Route for displaying all SCORM packages
-     Route::get('/scrumpackages/{id}', [ScrumPackageController::class, 'showScrumPackage'])->name('scrumpackages.show');
-
+    
+    
      
-
-     
-
-     
-     
- 
-   
-     
-
-
 
     //support routes ------------------------------------------------------------------------------------
     Route::get('/support', [SupportController::class, 'index'])->name('company.support');
