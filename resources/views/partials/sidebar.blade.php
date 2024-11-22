@@ -61,13 +61,7 @@
                                         </a>
                                     </li>
                                     
-                                    <li class="slide {{ Request::is('reporting') ? 'active' : '' }}">
-                                        <a href="{{ route('campaign.reporting') }}"
-                                            class="side-menu__item {{ Request::is('reporting') ? 'active' : '' }}">
-                                            <i class="bx bx-spreadsheet side-menu__icon"></i>
-                                            <span class="side-menu__label">Reporting</span>
-                                        </a>
-                                    </li>
+                                    
                                     <li class="slide {{ Request::is('tprm') ? 'active' : '' }}">
                                         <a href="{{ route('campaign.tprm') }}"
                                           class="side-menu__item {{ Request::is('tprm') ? 'active' : '' }}">
@@ -84,9 +78,17 @@
                                             class="side-menu__item {{ Request::is('ai-calling') ? 'active' : '' }}">
                                             <i class="bx bx-phone-call side-menu__icon"></i>
                                             <span class="side-menu__label">
-                                                AI Calling
+                                                AI Vishing
                                                 <span class="badge bg-secondary-transparent ms-2">New</span>
                                             </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="slide {{ Request::is('reporting') ? 'active' : '' }}">
+                                        <a href="{{ route('campaign.reporting') }}"
+                                            class="side-menu__item {{ Request::is('reporting') ? 'active' : '' }}">
+                                            <i class="bx bx-spreadsheet side-menu__icon"></i>
+                                            <span class="side-menu__label">Reporting</span>
                                         </a>
                                     </li>
 
