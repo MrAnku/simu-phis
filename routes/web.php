@@ -179,6 +179,10 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
+    Route::get('/employees/check-ad-config', [EmployeesController::class, 'checkAdConfig'])->name('employee.check.ad.config');
+
+    Route::post('/employees/save-ldap-config', [EmployeesController::class, 'saveLdapConfig'])->name('employee.save.ldap.config');
+
     //reporting routes-----------------------------------------------------------------
 
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');

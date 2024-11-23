@@ -169,57 +169,57 @@ class EmployeesController extends Controller
     }
 
     public function addUser(Request $request)
-{
-    $grpId = $request->input('groupid');
-    $usrName = $request->input('usrName');
-    $usrEmail = $request->input('usrEmail');
-    $usrCompany = $request->input('usrCompany');
-    $usrJobTitle = $request->input('usrJobTitle');
-    $usrWhatsapp = $request->input('usrWhatsapp');
-    $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
+    {
+        $grpId = $request->input('groupid');
+        $usrName = $request->input('usrName');
+        $usrEmail = $request->input('usrEmail');
+        $usrCompany = $request->input('usrCompany');
+        $usrJobTitle = $request->input('usrJobTitle');
+        $usrWhatsapp = $request->input('usrWhatsapp');
+        $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
 
-    // Retrieve the company record
-    $company = Company::where('company_id', $companyId)->first();
+        // Retrieve the company record
+        $company = Company::where('company_id', $companyId)->first();
 
-    if (!$company) {
-        return response()->json(['status' => 0, 'msg' => 'Company not found']);
-    }
+        if (!$company) {
+            return response()->json(['status' => 0, 'msg' => 'Company not found']);
+        }
 
-    // Check if usedemployees is greater than or equal to employees
-    if ($company->usedemployees >= $company->employees) {
-        return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
-    }
+        // Check if usedemployees is greater than or equal to employees
+        if ($company->usedemployees >= $company->employees) {
+            return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+        }
 
-    if ($this->domainVerified($usrEmail, $companyId)) {
-        if ($this->uniqueEmail($usrEmail)) {
-            if ($this->checkLimit($companyId)) {
-                $user = new Users();
-                $user->group_id = $grpId;
-                $user->user_name = $usrName;
-                $user->user_email = $usrEmail;
-                $user->user_company = $usrCompany;
-                $user->user_job_title = $usrJobTitle;
-                $user->whatsapp = $usrWhatsapp;
-                $user->company_id = $companyId;
+        if ($this->domainVerified($usrEmail, $companyId)) {
+            if ($this->uniqueEmail($usrEmail)) {
+                if ($this->checkLimit($companyId)) {
+                    $user = new Users();
+                    $user->group_id = $grpId;
+                    $user->user_name = $usrName;
+                    $user->user_email = $usrEmail;
+                    $user->user_company = $usrCompany;
+                    $user->user_job_title = $usrJobTitle;
+                    $user->whatsapp = $usrWhatsapp;
+                    $user->company_id = $companyId;
 
-                if ($user->save()) {
-                    // Increment the usedemployees column for the company
-                    $company->increment('usedemployees');
+                    if ($user->save()) {
+                        // Increment the usedemployees column for the company
+                        $company->increment('usedemployees');
 
-                    return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
+                        return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
+                    } else {
+                        return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
+                    }
                 } else {
-                    return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
+                    return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
                 }
             } else {
-                return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
+                return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
             }
         } else {
-            return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
+            return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
         }
-    } else {
-        return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
     }
-}
 
 
 
@@ -359,5 +359,53 @@ class EmployeesController extends Controller
         } else {
             return redirect()->back()->with('error', 'Error: Unable to open file.');
         }
+    }
+
+    public function checkAdConfig()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $ldap_config = DB::table('ldap_ad_config')
+        ->where('company_id', $companyId)
+        ->first();
+    
+        if ($ldap_config) {
+            return response()->json([
+                "status" => 1,
+                "msg" => "config exists",
+                "data" => $ldap_config
+            ]);
+        } else {
+            return response()->json([
+                "status" => 0,
+                "msg" => "config not exists"
+            ]);
+        }
+    }
+
+    public function saveLdapConfig(Request $request){
+
+        $companyId = Auth::user()->company_id;
+
+        $request->validate([
+            'ldap_host' => 'required|min:5|max:50',
+            'ldap_dn' => 'required|min:5|max:50',
+            'ldap_admin' => 'required|min:5|max:50',
+            'ldap_pass' => 'required|min:5|max:50',
+        ]);
+
+       DB::table('ldap_ad_config')
+        ->where('company_id', $companyId)
+        ->update([
+            "ldap_host" => $request->ldap_host,
+            "ldap_dn" => $request->ldap_dn,
+            "admin_username" => $request->ldap_admin,
+            "admin_password" => $request->ldap_pass,
+            "updated_at" => now()
+        ]);
+
+        return redirect()->back()->with('success', 'LDAP Config Updated');
+
+
     }
 }
