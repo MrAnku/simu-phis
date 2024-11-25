@@ -179,9 +179,13 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
 
-    Route::get('/employees/check-ad-config', [EmployeesController::class, 'checkAdConfig'])->name('employee.check.ad.config');
+    Route::get('/employees/check-ldap-ad-config', [EmployeesController::class, 'checkAdConfig'])->name('employee.check.ldap.ad.config');
 
     Route::post('/employees/save-ldap-config', [EmployeesController::class, 'saveLdapConfig'])->name('employee.save.ldap.config');
+
+    Route::post('/employees/add-ldap-config', [EmployeesController::class, 'addLdapConfig'])->name('employee.add.ldap.config');
+
+    Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
 
     //reporting routes-----------------------------------------------------------------
 

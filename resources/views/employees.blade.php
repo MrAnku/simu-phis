@@ -430,14 +430,26 @@
                                                 </label>
                                             </div>
                                         </div>
-                                       
+
                                         <div>
-                                            <button id="sync_ad_btn" class="btn btn-success label-btn rounded-pill">
-                                                <i class="ri-loop-left-line label-btn-icon me-2 rounded-pill"></i>
-                                                Sync Directory
-                                            </button>
+
+                                            <button type="button" id="sync_ad_btn"
+                                                class="btn btn-success rounded-pill btn-wave">Sync Directory</button>
                                         </div>
                                     </div>
+
+                                    <div id="syncRecords" class="d-none">
+                                        <div class="mt-3" id="syncUserForms">
+
+
+
+                                        </div>
+
+                                        {{-- <div class="text-end mt-4">
+                                            <button type="button" class="btn btn-secondary btn-wave">Save All</button>
+                                        </div> --}}
+                                    </div>
+
 
                                 </div>
                             </div>
@@ -545,7 +557,7 @@
                                                     <label for="ldap_pass" class="col-sm-2 col-form-label">Admin
                                                         Password</label>
                                                     <div class="col-sm-10">
-                                                        <input type="text" class="form-control" id="ldap_pass"
+                                                        <input type="password" class="form-control" id="ldap_pass"
                                                             name="ldap_pass">
                                                     </div>
                                                 </div>
@@ -557,13 +569,20 @@
                                             Edit
                                         </button>
 
-                                        <button id="save_ldap_config" type="submit" class="btn btn-success label-btn rounded-pill">
+                                        <button id="save_ldap_config" type="submit"
+                                            class="btn btn-success label-btn rounded-pill">
                                             <i class="ri-save-3-line label-btn-icon me-2 rounded-pill"></i>
                                             Save
                                         </button>
 
+                                        <button id="add_ldap_config" type="submit"
+                                            class="btn btn-success label-btn rounded-pill">
+                                            <i class="ri-save-3-line label-btn-icon me-2 rounded-pill"></i>
+                                            Add
+                                        </button>
 
-                                        
+
+
                                     </form>
                                 </div>
                             </div>
@@ -696,7 +715,9 @@
         <script>
             function checkHasConfig() {
 
-                $.get('/employees/check-ad-config', function(res) {
+                $.get('/employees/check-ldap-ad-config', function(res) {
+
+                    console.log(res)
 
                     if (res.status === 1) {
                         $("#ldap_host").val(res.data.ldap_host).attr('disabled', true)
@@ -705,6 +726,12 @@
                         $("#ldap_pass").val(res.data.admin_password).attr('disabled', true)
 
                         $("#save_ldap_config").hide();
+                        $("#edit_ldap_config").show();
+                        $("#add_ldap_config").hide();
+                    } else {
+                        $("#save_ldap_config").hide();
+                        $("#edit_ldap_config").hide();
+                        $("#add_ldap_config").show();
                     }
                 }).fail(function(error) {
                     console.log(error);
@@ -722,7 +749,224 @@
                 $("#ldap_pass").removeAttr('disabled');
             })
 
-            
+            $("#add_ldap_config").on('click', function(e) {
+                e.preventDefault();
+                this.innerText = 'Please Wait...';
+
+
+                var host = $("#ldap_host").val();
+                var dn = $("#ldap_dn").val();
+                var user = $("#ldap_admin").val();
+                var pass = $("#ldap_pass").val();
+
+                $.post({
+                    url: '/employees/add-ldap-config',
+                    data: {
+                        host,
+                        dn,
+                        user,
+                        pass
+                    },
+                    success: function(res) {
+
+                        if (res.status == 1) {
+                            alert(res.msg)
+                            window.location.href = window.location.href;
+                        } else {
+                            console.log(res)
+                            // alert(res.msg)
+                            alert(res.msg)
+                        }
+                    }
+                })
+
+
+
+            })
+
+            // $(".saveSyncUser").on('click', function(e){
+            //     // e.preventDefault();
+            //     var sibs = $(this).parent().siblings();
+            //     console.log(sibs);
+            // })
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email); // Returns true if valid, false otherwise
+            }
+
+            function saveSyncUser(btn) {
+                var spinner =
+                    '<div class="spinner-border spinner-border-sm me-4" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+                $(btn).html(spinner);
+
+                var sibs = $(btn).parent().siblings(); // Get siblings of the parent element
+                var values = {};
+
+                var error = false;
+
+                // Loop through each sibling element
+                sibs.each(function(index) {
+                    var input = $(this).find('input'); // Find the input inside the sibling
+                    if (input.length > 0) {
+                        var key = input.data('key');
+                        var value = input.val();
+                        if (key == 'usrWhatsapp') {
+                            value = Number.isInteger(value) ? value : null;
+                        }
+
+                        if (key == 'usrEmail') {
+                            if (!isValidEmail(value)) {
+                                Swal.fire(
+                                    "Please enter a valid email!",
+                                    '',
+                                    'error'
+                                )
+
+                                error = true;
+                            }
+
+                        }
+
+                        values[key] = value; // Store the input value in the object with a dynamic key
+                    }
+                });
+
+                if (error) {
+                    $(btn).html("Save");
+                    return;
+                }
+
+                var groupid = $(".groupid").first().val();
+
+                var userdata = {
+                    ...values,
+                    groupid: groupid
+                }
+
+                console.log(userdata)
+
+                $.post({
+                    url: '/employees/addUser',
+                    data: userdata,
+                    success: function(res) {
+                        if (res.status == 0) {
+                            // alert(resJson.msg);
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+
+                            $(btn).html("Save");
+                        } else {
+                            // var params = new URLSearchParams(formData);
+                            // var groupid = params.get('groupid');
+                            viewUsersByGroup(groupid);
+
+                            $(btn).html("Saved").removeClass("btn-primary").addClass("btn-success").attr('disabled',
+                                true);
+                        }
+
+                    }
+                })
+            }
+
+            $("#sync_ad_btn").on('click', function() {
+                var btn = this;
+                btn.innerText = "Please Wait...";
+                var provider = $("input[name='ad_provider']:checked").val();
+
+                if (provider == 'ldap') {
+                    $.get('/employees/sync-ldap-directory', function(res) {
+                        console.log(res)
+
+                        if (res.status === 1) {
+                            btn.innerText = 'Sync Directory';
+                            pushTableHead()
+                            res.data.forEach(element => {
+                                generateForm(element);
+                            });
+                            $("#syncRecords").removeClass('d-none');
+                        } else {
+                            btn.innerText = 'Sync Directory';
+                            alert(res.message);
+                        }
+                    }).fail(function(error) {
+                        console.log(error);
+                    });
+                } else {
+                    Swal.fire(
+                        "This provider is currently inactive in our system",
+                        '',
+                        'error'
+                    )
+                    btn.innerText = "Sync Directory";
+                }
+
+
+            })
+
+            function generateForm(element) {
+                var form = `<form action="" method="post">
+                                                <div class="table-responsive">
+                                                    <table class="table table-primary">
+    
+                                                        <tbody>
+                                                            <tr class="">
+                                                                <td scope="row">
+                                                                    <input type="text" data-key="usrName" class="form-control"
+                                                                        value="${element.username}">
+                                                                </td>
+                                                                <td><input type="text" data-key="usrEmail" class="form-control"
+                                                                        value="${element.email}"></td>
+                                                                <td><input type="text" data-key="usrCompany" class="form-control"
+                                                                        value="N/A"></td>
+                                                                <td><input type="text" data-key="usrJobTitle" class="form-control"
+                                                                        value="N/A"></td>
+                                                                <td><input type="text" data-key="usrWhatsapp" class="form-control"
+                                                                        value="N/A"></td>
+                                                                
+                                                                        <td>
+                                                                            <button type="button" onclick="saveSyncUser(this)" class="btn btn-primary btn-sm btn-wave">Save</button>
+                                                                        </td>
+                                                            </tr>
+                                                            
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+    
+                                            </form>`;
+                $("#syncUserForms").append(form);
+            }
+
+            function pushTableHead() {
+                var thead = `<table class="table table-primary">
+    
+                                                        <tbody>
+                                                            <tr class="">
+                                                                <td scope="row">
+                                                                    <input type="text" class="form-control"
+                                                                        value="Name" disabled>
+                                                                </td>
+                                                                <td><input type="text" class="form-control"
+                                                                        value="Email" disabled></td>
+                                                                <td><input type="text" class="form-control"
+                                                                        value="Company" disabled></td>
+                                                                <td><input type="text" class="form-control"
+                                                                        value="Job Title" disabled></td>
+                                                                <td><input type="text" class="form-control"
+                                                                        value="WhatsApp" disabled></td>
+                                                                
+                                                                        <td>
+                                                                            Action
+                                                                        </td>
+                                                            </tr>
+                                                            
+                                                        </tbody>
+                                                    </table>`;
+                $("#syncUserForms").html(thead);
+            }
         </script>
     @endpush
 

@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Users;
+use App\Models\Company;
 use App\Models\Campaign;
+use App\Models\UsersGroup;
 use App\Models\CampaignLive;
+use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\DomainVerified;
-use App\Models\TrainingAssignedUser;
-use App\Models\Users;
-use App\Models\UsersGroup;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\TrainingAssignedUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Models\Company;
+use Illuminate\Support\Facades\Validator;
 
 class EmployeesController extends Controller
 {
@@ -366,9 +367,9 @@ class EmployeesController extends Controller
         $companyId = Auth::user()->company_id;
 
         $ldap_config = DB::table('ldap_ad_config')
-        ->where('company_id', $companyId)
-        ->first();
-    
+            ->where('company_id', $companyId)
+            ->first();
+
         if ($ldap_config) {
             return response()->json([
                 "status" => 1,
@@ -383,7 +384,8 @@ class EmployeesController extends Controller
         }
     }
 
-    public function saveLdapConfig(Request $request){
+    public function saveLdapConfig(Request $request)
+    {
 
         $companyId = Auth::user()->company_id;
 
@@ -394,18 +396,141 @@ class EmployeesController extends Controller
             'ldap_pass' => 'required|min:5|max:50',
         ]);
 
-       DB::table('ldap_ad_config')
-        ->where('company_id', $companyId)
-        ->update([
-            "ldap_host" => $request->ldap_host,
-            "ldap_dn" => $request->ldap_dn,
-            "admin_username" => $request->ldap_admin,
-            "admin_password" => $request->ldap_pass,
-            "updated_at" => now()
-        ]);
+        DB::table('ldap_ad_config')
+            ->where('company_id', $companyId)
+            ->update([
+                "ldap_host" => $request->ldap_host,
+                "ldap_dn" => $request->ldap_dn,
+                "admin_username" => $request->ldap_admin,
+                "admin_password" => $request->ldap_pass,
+                "updated_at" => now()
+            ]);
 
         return redirect()->back()->with('success', 'LDAP Config Updated');
+    }
+
+    public function addLdapConfig(Request $request)
+    {
+
+        $companyId = Auth::user()->company_id;
 
 
+        $validator = Validator::make($request->all(), [
+            'host' => 'required|min:5|max:50',
+            'dn' => 'required|min:5|max:50',
+            'user' => 'required|min:5|max:50',
+            'pass' => 'required|min:5|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 0,
+                'msg' => $validator->errors(), // Validation errors
+            ]); // 422 Unprocessable Entity
+        }
+
+        DB::table('ldap_ad_config')
+            ->insert([
+                "ldap_host" => $request->host,
+                "ldap_dn" => $request->dn,
+                "admin_username" => $request->user,
+                "admin_password" => $request->pass,
+                "updated_at" => now(),
+                "created_at" => now(),
+                "company_id" => $companyId
+            ]);
+
+        return response()->json([
+            'status' => 1,
+            'msg' => "LDAP Config Saved"
+        ]);
+    }
+
+    public function syncLdap()
+    {
+
+        $companyId = Auth::user()->company_id;
+        // Retrieve LDAP/AD configuration from the database
+        $ldapConfig = DB::table('ldap_ad_config')->where('company_id', $companyId)->first();
+
+        if (!$ldapConfig) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'LDAP configuration not found in the database.',
+            ]);
+        }
+
+        // Extract LDAP configuration
+        $ldapHost = $ldapConfig->ldap_host; 
+        $ldapDn = $ldapConfig->ldap_dn; 
+        $adminUsername = $ldapConfig->admin_username; 
+        $adminPassword = $ldapConfig->admin_password; 
+
+        // Initialize LDAP connection
+        $ldapConn = ldap_connect($ldapHost);
+        ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, 0);
+
+        if (!$ldapConn) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Failed to connect to LDAP server.',
+            ]);
+        }
+
+        // Bind to the LDAP server with admin credentials
+        $ldapBind = @ldap_bind($ldapConn, "CN=$adminUsername,$ldapDn", $adminPassword);
+
+        if (!$ldapBind) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'LDAP bind failed. Check admin credentials.',
+            ]);
+        }
+
+        // Search for all users in the AD
+        $searchFilter = "(objectClass=user)";
+        $attributes = ["samaccountname", "givenName", "sn", "mail"];
+        $result = @ldap_search($ldapConn, $ldapDn, $searchFilter, $attributes);
+
+        if (!$result) {
+            ldap_unbind($ldapConn);
+            return response()->json([
+                'status' => 0,
+                'message' => 'LDAP search failed.',
+            ]);
+        }
+
+        // Get entries from the LDAP result
+        $entries = ldap_get_entries($ldapConn, $result);
+
+        if ($entries['count'] === 0) {
+            ldap_unbind($ldapConn);
+            return response()->json([
+                'status' => 0,
+                'message' => 'No users found in the LDAP directory.',
+            ]);
+        }
+
+        // Process and format user data
+        $users = [];
+        for ($i = 0; $i < $entries["count"]; $i++) {
+            $users[] = [
+                'username' => $entries[$i]["samaccountname"][0] ?? 'N/A',
+                'given_name' => $entries[$i]["givenname"][0] ?? 'N/A',
+                'surname' => $entries[$i]["sn"][0] ?? 'N/A',
+                'email' => $entries[$i]["mail"][0] ?? 'N/A',
+            ];
+        }
+
+        // Close the LDAP connection
+        ldap_unbind($ldapConn);
+
+        // Return the user data as JSON
+        return response()->json([
+            'status' => 1,
+            'message' => 'User sync completed successfully.',
+            'data' => $users,
+        ]);
     }
 }
