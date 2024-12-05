@@ -230,6 +230,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/test-route', function () {return 'Test route reached!';});
    Route::post('/tprmcampaigns/fetchEmail', [TprmController::class, 'fetchEmail'])->name('tprmcampaigns.fetchEmail');
    Route::post('/tprmcampaigns/tprmnewGroup', [TprmController::class, 'tprmnewGroup'])->name('tprmcampaigns.tprmnewGroup');
+   Route::post('/tprmcampaigns/emailtprmnewGroup', [TprmController::class, 'emailtprmnewGroup'])->name('tprmcampaigns.emailtprmnewGroup');
    Route::get('/tprmcampaigns/emails/{domain}', [TprmController::class, 'getEmailsByDomain'])->name('tprmcampaigns.getEmailsByDomain');
 
     //Ai Calling routes ----------------------------------------------------------------------

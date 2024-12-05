@@ -1168,6 +1168,106 @@ class TprmController extends Controller
         return $checkDomain;
     }
 
+    
+public function emailtprmnewGroup(Request $request)
+{
+    // Validate incoming request
+    \Log::info('Incoming request data:', $request->all());
+    $request->validate([
+        'domainName' => 'required|string',  // Ensure 'domainName' is passed correctly
+        'emails' => 'required|array',       // Ensure 'emails' is passed as an array
+    ]);
+
+    // Process the request if validation passes
+    $domainName = $request->input('domainName'); // Get the domainName from the request
+    $emails = $request->input('emails'); // Get the emails from the request
+    $companyId = auth()->user()->company_id;
+
+    \Log::info('Creating new group', [
+        'domainName' => $domainName,
+        'emails' => $emails,
+        'companyId' => $companyId,
+    ]);
+
+    // Check if the combination of domain name and company ID already exists
+    $existingGroup = TprmUsersGroup::where('group_name', $domainName)
+                                    ->where('company_id', $companyId)
+                                    ->first();
+
+    if ($existingGroup) {
+        \Log::info('Existing group found, adding emails', ['groupId' => $existingGroup->group_id]);
+
+        foreach ($emails as $usrEmail) {
+            if ($this->TprmdomainVerified($usrEmail, $companyId)) {
+                if ($this->TprmuniqueEmail($usrEmail)) {
+                    // Extract username from email (part before '@')
+                    $userName = explode('@', $usrEmail)[0];
+
+                    $user = new TprmUsers();
+                    $user->group_id = $existingGroup->group_id;
+                    $user->user_email = $usrEmail;
+                    $user->user_name = $userName;  // Set the username
+                    $user->company_id = $companyId;
+
+                    if ($user->save()) {
+                        \Log::info('User added successfully', ['email' => $usrEmail, 'user_name' => $userName]);
+                    } else {
+                        \Log::warning('Failed to add user', ['email' => $usrEmail]);
+                    }
+                } else {
+                    \Log::warning('Email already exists', ['email' => $usrEmail]);
+                }
+            } else {
+                \Log::warning('Domain not verified', ['email' => $usrEmail]);
+            }
+        }
+        return response()->json(['status' => 1, 'message' => 'Success']);
+
+    }
+
+    // Generate a new group ID
+    $grpId = generateRandom(6);
+
+    // Create a new group using the domain name
+    TprmUsersGroup::create([
+        'group_id' => $grpId,
+        'group_name' => $domainName,
+        'users' => null,
+        'company_id' => $companyId,
+    ]);
+
+    \Log::info('New group created', ['groupId' => $grpId, 'domainName' => $domainName]);
+
+    // If new group created, add emails to the tprm_users database
+    foreach ($emails as $usrEmail) {
+        if ($this->TprmdomainVerified($usrEmail, $companyId)) {
+            if ($this->TprmuniqueEmail($usrEmail)) {
+                // Extract username from email (part before '@')
+                $userName = explode('@', $usrEmail)[0];
+
+                $user = new TprmUsers();
+                $user->group_id = $grpId;
+                $user->user_email = $usrEmail;
+                $user->user_name = $userName;  // Set the username
+                $user->company_id = $companyId;
+
+                if ($user->save()) {
+                    \Log::info('User added successfully to new group', ['email' => $usrEmail, 'user_name' => $userName]);
+                } else {
+                    \Log::warning('Failed to add user to new group', ['email' => $usrEmail]);
+                }
+            } else {
+                \Log::warning('Email already exists in new group', ['email' => $usrEmail]);
+            }
+        } else {
+            \Log::warning('Domain not verified for new group', ['email' => $usrEmail]);
+        }
+    }
+
+    return response()->json(['status' => 1, 'message' => 'Success']);
+
+}
+
     private function TprmuniqueEmail($email)
     {
         return !TprmUsers::where('user_email', $email)->exists();

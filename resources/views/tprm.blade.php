@@ -1493,7 +1493,7 @@
                     <hr>
 
                     <!-- Add email form -->
-                    {{-- <div class="mt-4">
+                    <div class="mt-4">
                         <label for="emailInput" class="form-label">Add Email Address</label>
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
@@ -1507,12 +1507,12 @@
                         <ul id="emailList" class="list-unstyled mt-3">
                             <!-- Added emails will appear here -->
                         </ul>
-                    </div> --}}
+                    </div>
                 </div>
 
                 <!-- Modal Footer -->
                 <div class="modal-footer">
-                    {{-- <button type="button" class="btn btn-primary" onclick="submitDomainData()">Save Changes</button> --}}
+                    <button type="button" class="btn btn-primary" onclick="submitDomainData()">Save Changes</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1679,7 +1679,7 @@
             const selectedEmails = newlyAddedEmails;
 
             $.ajax({
-                url: '/tprmcampaigns/tprmnewGroup',
+                url: '/tprmcampaigns/emailtprmnewGroup',
                 type: 'POST',
                 data: {
                     emails: selectedEmails,
@@ -1687,6 +1687,7 @@
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
+                    console.log('Response:', response);
                     // Check if the response is HTML, indicating a redirect
                     if (typeof response === 'string' && response.includes('<html>')) {
                         // Assume success since controller redirected
