@@ -153,7 +153,7 @@ class LearnerDashController extends Controller
         $certificate = TrainingAssignedUser::where('training', $trainingId)
             ->where('user_email', $username)
             ->first();
-        \Log::debug($certificate);
+        // \Log::debug($certificate);
         return $certificate ? $certificate->certificate_id : null;
     }
 
@@ -179,8 +179,8 @@ class LearnerDashController extends Controller
         // Check if the record was found
         if ($assignedUser) {
             // Log the existing record and the certificate_id being updated
-            \Log::info('Updating certificate_id for: ' . $assignedUser->id);
-            \Log::info('New certificate_id: ' . $certificateId);
+            // \Log::info('Updating certificate_id for: ' . $assignedUser->id);
+            // \Log::info('New certificate_id: ' . $certificateId);
 
             // Update only the certificate_id (no need to touch campaign_id)
             $assignedUser->update([
@@ -188,14 +188,18 @@ class LearnerDashController extends Controller
             ]);
 
             // Log the result of the update
-            \Log::info('Updated certificate_id for user: ' . $username);
+            // \Log::info('Updated certificate_id for user: ' . $username);
         } else {
             // Log if no record was found
-            \Log::info('No record found for ' . $username . ' with training ' . $trainingModule);
+            // \Log::info('No record found for ' . $username . ' with training ' . $trainingModule);
         }
     }
 
     public function startAiTraining($topic, $language, $id){
         return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
+    }
+
+    public function testQuiz(){
+        return view('learning.testquiz');
     }
 }
