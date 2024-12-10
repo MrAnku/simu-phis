@@ -196,4 +196,8 @@ class LearnerDashController extends Controller
         log_action("AI training started", 'learner', 'learner');
         return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
     }
+
+    public function testQuiz(){
+        return view('learning.testquiz');
+    }
 }

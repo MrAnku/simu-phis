@@ -265,7 +265,7 @@
                                         @forelse ($assignedTrainingCount as $training)
                                             <tr>
                                                 <td class="text-secondary">
-                                                    <a href="@if ($training->training_type == 'static_training') {{ route('learner.start.training', [
+                                                    {{-- <a href="@if ($training->training_type == 'static_training') {{ route('learner.start.training', [
                                                             'training_id' => encrypt($training->training),
                                                             'training_lang' => $training->training_lang,
                                                             'id' => base64_encode($training->id),
@@ -280,7 +280,10 @@
 
                                                             @endif">
                                                         {{ $training->trainingData->name }}
-                                                    </a>
+                                                    </a> --}}
+                                                    <a href="{{route('learn.testquiz', [
+                                                        'id' => base64_encode($training->id)
+                                                    ])}}">{{ $training->trainingData->name }}</a>
                                                 </td>
                                                 <td class="text-secondary">
                                                     {{ $training->trainingData->estimated_time }} Minutes

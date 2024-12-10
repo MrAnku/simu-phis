@@ -64,6 +64,10 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
         Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
 
+        Route::get('/training-quiz/{id}', [LearnerDashController::class, 'testQuiz'])->name('learn.testquiz');
+
+
+
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
         Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
