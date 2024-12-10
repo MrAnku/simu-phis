@@ -269,7 +269,7 @@
         });
 
         function displayScoreSummary() {
-            const trainingScore = (correctAnswers / questions.length) * 100;
+            const trainingScore = Math.round((correctAnswers / questions.length) * 100);
 
             const path = window.location.pathname;
             const segments = path.split('/');
