@@ -143,7 +143,7 @@
 <body>
     <div class="video-container">
         <video id="videoPlayer" controls>
-            <source src="https://d3p8e1mvy30w84.cloudfront.net/videos/financial-institution-best-practices-EN-UK.mp4" type="video/mp4">
+            <source src="https://sparrow.host/videos/financial.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
