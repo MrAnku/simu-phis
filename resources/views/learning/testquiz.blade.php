@@ -168,7 +168,8 @@
     </div>
 
     <script>
-        const questions = [{
+        const questions = [
+            {
                 "time": 0,
                 "question": "Do you work at a financial institution, like a bank or insurance company?",
                 "options": ["Yes", "No"],
@@ -193,6 +194,26 @@
                     "To create new vulnerabilities"
                 ],
                 "answer": 1
+            },
+            {
+                "time": 32,
+                "question": "Which of the following is NOT a cybersecurity best practice?",
+                "options": [
+                    "Using weak passwords",
+                    "Classifying sensitive data",
+                    "Using multi-factor authentication"
+                ],
+                "answer": 0
+            },
+            {
+                "time": 48,
+                "question": "Why is it important to keep devices updated?",
+                "options": [
+                    "To reduce the risk of attacks",
+                    "To use more storage",
+                    "It is not important"
+                ],
+                "answer": 0
             }
         ];
 
