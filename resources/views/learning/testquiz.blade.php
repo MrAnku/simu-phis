@@ -164,54 +164,53 @@
         <h2>Quiz Results</h2>
         <p id="scoreSummary"></p>
         <button id="restartQuiz">Restart</button>
-        <a href="{{route('learner.dashboard')}}" class="btn">Dashboard</a>
+        <a href="{{ route('learner.dashboard') }}" class="btn">Dashboard</a>
     </div>
 
     <script>
-        const questions = [
-            {
+        const questions = [{
                 "time": 0,
-                "question": "Do you work at a financial institution, like a bank or insurance company?",
-                "options": ["Yes", "No"],
+                "question": "هل تعمل في مؤسسة مالية مثل بنك أو شركة تأمين؟",
+                "options": ["نعم", "لا"],
                 "answer": 0
             },
             {
                 "time": 6,
-                "question": "Why is cybersecurity important in financial institutions?",
+                "question": "لماذا الأمن السيبراني مهم في المؤسسات المالية؟",
                 "options": [
-                    "To protect sensitive information like accounts and personal data",
-                    "To save time",
-                    "It's not important"
+                    "لحماية المعلومات الحساسة مثل الحسابات والبيانات الشخصية",
+                    "لتوفير الوقت",
+                    "ليس مهمًا"
                 ],
                 "answer": 0
             },
             {
                 "time": 17,
-                "question": "What is the primary goal of cybersecurity?",
+                "question": "ما هو الهدف الأساسي للأمن السيبراني؟",
                 "options": [
-                    "To access customer data",
-                    "To stay vigilant and protect against vulnerabilities",
-                    "To create new vulnerabilities"
+                    "الوصول إلى بيانات العملاء",
+                    "البقاء يقظًا وحماية الأنظمة من الثغرات",
+                    "إنشاء ثغرات جديدة"
                 ],
                 "answer": 1
             },
             {
                 "time": 32,
-                "question": "Which of the following is NOT a cybersecurity best practice?",
+                "question": "أي من التالي ليس من أفضل ممارسات الأمن السيبراني؟",
                 "options": [
-                    "Using weak passwords",
-                    "Classifying sensitive data",
-                    "Using multi-factor authentication"
+                    "استخدام كلمات مرور ضعيفة",
+                    "تصنيف البيانات الحساسة",
+                    "استخدام المصادقة متعددة العوامل"
                 ],
                 "answer": 0
             },
             {
                 "time": 48,
-                "question": "Why is it important to keep devices updated?",
+                "question": "لماذا من المهم الحفاظ على تحديث الأجهزة؟",
                 "options": [
-                    "To reduce the risk of attacks",
-                    "To use more storage",
-                    "It is not important"
+                    "لتقليل خطر الهجمات",
+                    "لزيادة استخدام التخزين",
+                    "ليس مهمًا"
                 ],
                 "answer": 0
             }
