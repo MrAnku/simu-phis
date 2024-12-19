@@ -66,34 +66,34 @@
 
                                                 </td>
                                                 <!-- <td class="text-center">
-                                                        <div>
-                                                            
-                                                                @if ($campaign->launch_type == 'schLater')
+                                                                <div>
+                                                                    
+                                                                        @if ($campaign->launch_type == 'schLater')
     <small class="text-danger">
-                                                                    Not scheduled
-                                                                </small>
+                                                                            Not scheduled
+                                                                        </small>
 @else
     <small>
-                                                                    {{ $campaign->launch_type }}
-                                                                </small>
+                                                                            {{ $campaign->launch_type }}
+                                                                        </small>
     @endif
+                                                                        
+                                                                    
+                                                                </div>
                                                                 
-                                                            
-                                                        </div>
-                                                        
-                                                        {{ e($campaign->launch_time) }}
-                                                        
-                                                        <div>
-                                                            <small>
-                                                                @if ($campaign->email_freq == 'one')
+                                                                {{ e($campaign->launch_time) }}
+                                                                
+                                                                <div>
+                                                                    <small>
+                                                                        @if ($campaign->email_freq == 'one')
     Once
 @else
     {{ $campaign->email_freq }}
     @endif
-                                                                
-                                                            </small>
-                                                        </div>
-                                                    </td> -->
+                                                                        
+                                                                    </small>
+                                                                </div>
+                                                            </td> -->
                                                 <td>
 
                                                     <button
@@ -412,9 +412,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                        <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                    </div> -->
+                                                                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                            </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -1336,8 +1336,8 @@
                 </div>
                 <div class="modal-body">
                     <!-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                           Add Domain For Verification
-                         </button> -->
+                                   Add Domain For Verification
+                                 </button> -->
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1365,8 +1365,8 @@
                                                     Email</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                    <i class="bx bx-x fs-25"></i>
-                </span> -->
+                            <i class="bx bx-x fs-25"></i>
+                        </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1418,10 +1418,10 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if ($domain->verified == 1)
+                                            {{-- @if ($domain->verified == 1)
                                                 <button type="button" class="btn btn-outline-info btn-sm ms-2"
                                                     onclick="fetchEmail('{{ $domain->domain }}')">Fetch Email</button>
-                                            @endif
+                                            @endif --}}
                                             <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
                                                 <i class="bx bx-x fs-25"></i>
                                             </span>
@@ -1570,8 +1570,31 @@
                 });
         }
 
+        function emailLimitExceed() {
+            // Select the <ul> element by its ID
+            const ulElement = document.getElementById('emailList');
+
+            // Count the number of <li> elements inside the <ul>
+            const liCount = ulElement.querySelectorAll('li').length;
+
+            if (liCount >= 5) {
+                return true;
+            }
+
+            return false;
+        }
+
         // Function to add an email
         function addEmail() {
+
+            if (emailLimitExceed()) {
+                Swal.fire(
+                    'Limit Exceeded',
+                    'You can only add 5 emails',
+                    'error'
+                );
+                return;
+            }
             const emailInput = document.getElementById('emailInput');
             const email = emailInput.value.trim();
             const domain = document.getElementById('domainName').innerText.trim();
@@ -1877,7 +1900,7 @@
                         headers: {
                             "Content-Type": "application/json",
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content'), // Ensure this meta tag exists
+                                'content'), // Ensure this meta tag exists
                         },
                         body: JSON.stringify({
                             domains
@@ -1896,7 +1919,12 @@
 
                         // Show success or failure message based on backend response
                         if (data.status === 1) { // Change to check for status
-                            alert("Domains successfully requested for verification!");
+                            // alert("Domains successfully requested for verification!");
+                            Swal.fire(
+                                'Request Submitted',
+                                'Domains successfully requested for verification!',
+                                'success'
+                            );
                             domains = []; // Clear domains list after successful submission
                             updateDomainList();
                             // Optionally close the modal if needed
@@ -1949,7 +1977,7 @@
                             <label for="domainEmailInput" class="form-label">Domain<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" class="form-control" id="domainEmailInput"
-                                placeholder="Enter email address" />
+                                placeholder="i.e. domain.com" />
                         </div>
                         <button type="button" class="btn btn-secondary" onclick="addDomain()">Add Domain</button>
                     </form>
@@ -2960,7 +2988,7 @@
                 // Loop through each template card
                 $('.email_templates').each(function() {
                     var templateName = $(this).find('.fw-semibold').text()
-                .toLowerCase(); // Get the template name and convert it to lowercase
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
                     // If the template name contains the search value, show the card; otherwise, hide it
                     if (templateName.includes(searchValue)) {
@@ -2978,7 +3006,7 @@
                 // Loop through each template card
                 $('.t_modules').each(function() {
                     var templateName = $(this).find('.fw-semibold').text()
-                .toLowerCase(); // Get the template name and convert it to lowercase
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
                     // If the template name contains the search value, show the card; otherwise, hide it
                     if (templateName.includes(searchValue)) {
