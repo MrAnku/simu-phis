@@ -46,8 +46,11 @@ class SettingsController extends Controller
             ]);
 
         if ($isUpdated) {
-            return response()->json(['status' => 1, 'msg' => 'Profile Updated']);
+
+            log_action("Profile updated");
+            return response()->json(['status' => 1, 'msg' => 'Profile updated']);
         } else {
+            log_action("Failed to update profile");
             return response()->json(['status' => 0, 'msg' => 'Failed to update profile']);
         }
     }
@@ -80,6 +83,7 @@ class SettingsController extends Controller
         $user->password = Hash::make($request->newPassword);
         $user->save();
 
+        log_action("Password updated");
         return response()->json(['status' => 1, 'msg' => 'Password Updated']);
     }
 
@@ -138,8 +142,11 @@ class SettingsController extends Controller
             // return view('mfa.enable', ['QR_Image' => $QR_Image, 'secretKey' => $secretKey]);
             if ($isUpdated) {
 
+
                 return response()->json(['status' => 1, 'QR_Image' => $QR_Image, 'secretKey' => encrypt($secretKey)]);
             } else {
+
+
                 return response()->json(['status' => 0, 'msg' => 'Failed to enable MFA']);
             }
 
@@ -159,8 +166,13 @@ class SettingsController extends Controller
                 ->update(['mfa' => 0, 'mfa_secret' => '']);
 
             if ($isUpdated) {
+
+                log_action("Multi-Factor Authentication is disabled");
+
                 return response()->json(['status' => 1, 'msg' => 'Multi-Factor Authentication is disabled']);
             } else {
+
+                log_action("Failed to disable MFA");
                 return response()->json(['status' => 0, 'msg' => 'Failed to disable MFA']);
             }
         }
@@ -196,11 +208,12 @@ class SettingsController extends Controller
             $user_settings->mfa = 1;
             $user_settings->save();
 
+            log_action("Multi-Factor Authentication is enabled");
             return redirect()->route('settings.index')->with(['success' => 'Multi Factor Authentication is enabled']);
 
             // return response()->json(['status' => 1, 'msg' => 'Multi Factor Authentication is enabled']);
         } else {
-            // return response()->json(['status' => 0, 'msg' => 'Invalid TOTP code']);
+            log_action("Entered invalid TOTP code to enable MFA");
             return redirect()->route('settings.index')->with(['error' => 'Invalid TOTP code']);
         }
     }
@@ -223,8 +236,11 @@ class SettingsController extends Controller
             ]);
 
         if ($isUpdated) {
+            log_action("Default language changed to Phishing: {$default_phish_lang} , Training: {$default_train_lang} and Notification: {$default_notifi_lang}");
             return response()->json(['status' => 1, 'msg' => 'Language Updated']);
         } else {
+
+            log_action("Failed to update default language to Phishing: {$default_phish_lang} , Training: {$default_train_lang} and Notification: {$default_notifi_lang}");
             return response()->json(['status' => 0, 'msg' => 'Failed to update language']);
         }
     }
@@ -244,8 +260,10 @@ class SettingsController extends Controller
             ]);
 
         if ($isUpdated) {
+            log_action('Website to redirect after felling into simulation updated');
             return response()->json(['status' => 1, 'msg' => 'Phishing Education Settings Updated']);
         } else {
+            log_action('Failed to update website to redirect after felling into simulation');
             return response()->json(['status' => 0, 'msg' => 'Failed to update phishing education settings']);
         }
     }
@@ -261,8 +279,10 @@ class SettingsController extends Controller
             ->update(['training_assign_remind_freq_days' => $days]);
 
         if ($isUpdated) {
+            log_action('Training notification frequency updated');
             return response()->json(['status' => 1, 'msg' => 'Training notification frequency updated']);
         } else {
+            log_action('Failed to update training notification frequency');
             return response()->json(['status' => 0, 'msg' => 'Failed to update training notification frequency']);
         }
     }
@@ -273,26 +293,25 @@ class SettingsController extends Controller
 
         $company_id = Auth::user()->company_id; // Assuming company_id is stored in session or retrieved from Auth
 
-        if ($status == '1') {
-            $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
-                ->update(['phish_reporting' => 1]);
+        $isUpdated = DB::table('company_settings')
+            ->where('company_id', $company_id)
+            ->update(['phish_reporting' => (int)$status]);
 
-            if ($isUpdated) {
-                return response()->json(['status' => 1, 'msg' => 'Phish Reporting using Gmail, Outlook and Office365 is enabled!']);
-            } else {
-                return response()->json(['status' => 0, 'msg' => 'Failed to enable Phish Reporting', 'error' => DB::connection()->getPdo()->errorInfo()]);
-            }
+        if ($isUpdated) {
+            log_action('Phish Reporting using Gmail, Outlook and Office365 is ' . ($status == '1' ? "enabled" : "disabled") . '!');
+            return response()->json([
+                'status' => 1,
+                'msg' => 'Phish Reporting using Gmail, Outlook and Office365 is ' . ($status == '1' ? "enabled" : "disabled") . '!'
+            ]);
+            
         } else {
-            $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
-                ->update(['phish_reporting' => 0, 'mfa_secret' => '']);
-
-            if ($isUpdated) {
-                return response()->json(['status' => 1, 'msg' => 'Phish Reporting using Gmail, Outlook and Office365 is disabled!']);
-            } else {
-                return response()->json(['status' => 0, 'msg' => 'Failed to disable Phish Reporting', 'error' => DB::connection()->getPdo()->errorInfo()]);
-            }
+            log_action('Failed to ' . ($status == '1' ? "enable" : "disable") . ' Phish Reporting');
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Failed to ' . ($status == '1' ? "enable" : "disable") . ' Phish Reporting',
+                'error' => DB::connection()->getPdo()->errorInfo()
+            ]);
+            
         }
     }
 
@@ -305,8 +324,11 @@ class SettingsController extends Controller
             ->update(['service_status' => 0]);
 
         if ($isUpdated) {
+
+            log_action("Account has deactivated");
             return response()->json(['status' => 1, 'msg' => 'Your Account has been Deactivated']);
         } else {
+            log_action("Failed to deactivate account");
             return response()->json(['status' => 0, 'msg' => 'Failed to deactivate account']);
         }
     }

@@ -37,6 +37,9 @@ class AiTrainingController extends Controller
         ]);
 
         if ($response->failed()) {
+
+            log_action("Failed to generate AI Training on topic {$topic} in language {$language}", 'learner', 'learner');
+
             return [
                 'error' => 'Failed to generate a response from OpenAI.',
                 'status' => $response->status(),
@@ -52,6 +55,8 @@ class AiTrainingController extends Controller
         if (json_last_error() !== JSON_ERROR_NONE) {
             return ['error' => 'Failed to generate valid JSON. Please refine the prompt.'];
         }
+
+        log_action("AI Training generated on topic: {$topic} in language: {$language}", 'learner', 'learner');
 
         return response()->json($quiz);
     }

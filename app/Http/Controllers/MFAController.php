@@ -37,6 +37,8 @@ class MFAController extends Controller
         if ($valid) {
             Auth::login($user);
             session()->forget('mfa_user_id');
+
+            log_action("Logged in using MFA");
             return redirect()->route('dashboard')->with('success', 'Logged in successfully');
         }
 

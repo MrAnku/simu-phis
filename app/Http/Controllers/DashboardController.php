@@ -314,6 +314,8 @@ class DashboardController extends Controller
             'created_at' => now(),
         ]);
 
+        log_action("Employees limit upgrade request submitted");
+
         return redirect()->back()->with('success', 'Upgrade request submitted');
     }
 }

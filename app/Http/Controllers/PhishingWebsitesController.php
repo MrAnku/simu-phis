@@ -54,8 +54,8 @@ class PhishingWebsitesController extends Controller
                 Storage::disk('public')->delete($webfilepath);
             }
         });
-
-        return redirect()->back()->with('success', 'Website deleted successfully.');
+        log_action("Phishing website deleted successfully");
+        return redirect()->back()->with('success', 'Phishing website deleted successfully.');
     }
 
     public function addPhishingWebsite(Request $request)
@@ -96,7 +96,8 @@ class PhishingWebsitesController extends Controller
         $phishingWebsite->company_id = $company_id;
         $phishingWebsite->save();
 
-        return redirect()->back()->with('success', 'New website is added');
+        log_action("New phishing website is added");
+        return redirect()->back()->with('success', 'New phishing website is added');
     }
 
     public function generateWebsite(Request $request)
@@ -212,6 +213,7 @@ class PhishingWebsitesController extends Controller
         // Save the data in the database or perform other actions as needed
 
         // Return a response or redirect
+        log_action("AI generated phishing website added");
         return redirect()->back()->with('success', 'Website saved successfully.');
     }
 }

@@ -20,8 +20,13 @@ class MailController extends Controller
 
         try {
             Mail::to($mailData['email'])->send(new CampaignMail($mailData));
+
+            log_action("Email campaign mail sent", 'cronjob', 'cronjob');
+
             return response()->json(['success' => 'Great! Successfully sent your mail']);
         } catch (Exception $e) {
+
+            log_action("Something went wrong while sending email campaign", 'cronjob', 'cronjob');
             return response()->json(['error' => 'Sorry! Please try again later', 'message' => $e->getMessage()], 500);
         }
     }

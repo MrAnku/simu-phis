@@ -39,9 +39,11 @@ class SenderProfileController extends Controller
                 ->where('company_id', $companyId)
                 ->update(['senderProfile' => 0]);
 
+                log_action("Sender profile deleted successfully");
+
             return redirect()->back()->with('success', 'Sender profile deleted successfully');
         }
-
+        log_action("Failed to delete sender profile");
         return redirect()->back()->with('error', 'Failed to delete sender profile');
     }
 
@@ -56,26 +58,22 @@ class SenderProfileController extends Controller
             'smtp_password' => 'required|string|max:255',
         ]);
 
-        $profileName = $request->input('pName');
-        $fromName = $request->input('from_name');
-        $fromEmail = $request->input('from_email');
-        $smtpHost = $request->input('smtp_host');
-        $smtpUsername = $request->input('smtp_username');
-        $smtpPassword = $request->input('smtp_password');
-        $companyId = auth()->user()->company_id;
 
         $senderProfile = new SenderProfile();
-        $senderProfile->profile_name = $profileName;
-        $senderProfile->from_name = $fromName;
-        $senderProfile->from_email = $fromEmail;
-        $senderProfile->host = $smtpHost;
-        $senderProfile->username = $smtpUsername;
-        $senderProfile->password = $smtpPassword;
-        $senderProfile->company_id = $companyId;
+        $senderProfile->profile_name = $request->input('pName');
+        $senderProfile->from_name = $request->input('from_name');
+        $senderProfile->from_email = $request->input('from_email');
+        $senderProfile->host = $request->input('smtp_host');
+        $senderProfile->username = $request->input('smtp_username');
+        $senderProfile->password = $request->input('smtp_password');
+        $senderProfile->company_id = auth()->user()->company_id;
 
         if ($senderProfile->save()) {
-            return redirect()->back()->with('success', 'Sender Profile Added Successfully!');
+
+            log_action("Sender profile added successfully");
+            return redirect()->back()->with('success', 'Sender profile added successfully!');
         } else {
+            log_action("Failed to add sender profile");
             return redirect()->back()->with('error', 'Failed to add Sender Profile');
         }
     }
@@ -118,8 +116,10 @@ class SenderProfileController extends Controller
                 'password' => $request->input('smtp_password'),
             ]);
 
+            log_action("Sender profile updated successfully");
             return redirect()->back()->with('success', 'Sender Profile Updated Successfully!');
         } else {
+            log_action("Failed to update sender profile");
             return redirect()->back()->with('error', 'Failed to update Sender Profile');
         }
     }

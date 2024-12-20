@@ -60,8 +60,11 @@ class PhishingEmailsController extends Controller
         $isUpdated = $phishingEmail->save();
 
         if ($isUpdated) {
+
+            log_action("Email template updated successfully");
             return redirect()->back()->with('success', 'Email template updated successfully');
         } else {
+            log_action("Failed to update email template");
             return redirect()->back()->with('error', 'Failed to update email template');
         }
     }
@@ -101,9 +104,11 @@ class PhishingEmailsController extends Controller
         }
 
         if ($isDeleted) {
-            return redirect()->back()->with('success', 'Template deleted successfully');
+            log_action("Email Template deleted successfully");
+            return redirect()->back()->with('success', 'Email Template deleted successfully');
         } else {
-            return redirect()->back()->with('error', 'Failed to delete template');
+            log_action("Failed to delete email template");
+            return redirect()->back()->with('error', 'Failed to delete email template');
         }
     }
 
@@ -149,11 +154,15 @@ class PhishingEmailsController extends Controller
             ]);
 
             if ($isInserted) {
+
+                log_action("Email Template Added Successfully");
                 return redirect()->back()->with('success', 'Email Template Added Successfully!');
             } else {
+                log_action("Failed to add email template");
                 return redirect()->back()->with('error', 'Failed to add Email Template.');
             }
         } catch (\Exception $e) {
+            log_action("Failed to add email template");
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }

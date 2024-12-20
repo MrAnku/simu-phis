@@ -20,11 +20,16 @@ class BrandMonitoringController extends Controller
             $response = Http::get(env('BRAND_MONITORING_SERVER') . '/' . $sid . '/domains');
 
             if ($response->successful()) {
+
+                log_action('Domain scanning for brand monitoring');
                 return response()->json($response->json());
             }
 
+            log_action('Failed to fetch domains for branch monitoring');
             return response()->json(['error' => 'Failed to fetch domains'], $response->status());
         } catch (\Exception $e) {
+
+            log_action('An error occurred in domain scanning for brand monitoring');
             return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
         }
     }
@@ -52,11 +57,16 @@ class BrandMonitoringController extends Controller
             $response = Http::post(env('BRAND_MONITORING_SERVER'), $request->json()->all());
 
             if ($response->successful()) {
+
+                log_action('Scan started for brand monitoring');
                 return response()->json($response->json());
             }
 
+            log_action('Failed to create scan for brand monitoring');
             return response()->json(['error' => 'Failed to create scan'], $response->status());
         } catch (\Exception $e) {
+
+            log_action('An error occured while domain scanning for brand monitoring');
             return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
         }
     }
@@ -68,9 +78,12 @@ class BrandMonitoringController extends Controller
             $response = Http::post(env('BRAND_MONITORING_SERVER') . '/' . $sid . '/stop');
 
             if ($response->successful()) {
+
+                log_action('Domain scanning stopped for brand monitoring');
                 return response()->json(['message' => 'Scan stopped successfully']);
             }
 
+            log_action('Failed to stop scanning for brand monitoring');
             return response()->json(['error' => 'Failed to stop scan'], $response->status());
         } catch (\Exception $e) {
             return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);

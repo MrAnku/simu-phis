@@ -52,6 +52,7 @@ class AicallController extends Controller
             "created_at" => now()
         ]);
 
+        log_action('Request submitted for AI vishing simulation');
         return redirect()->back()->with('success', 'Your request has been submitted successfully.');
     }
 
@@ -147,6 +148,8 @@ class AicallController extends Controller
 
         $this->makeCampaignLive($campId);
 
+        log_action('Campaign for AI Vishing simulation created');
+
         return redirect()->back()->with('success', 'Campaign Created Successfully!');
     }
 
@@ -217,6 +220,8 @@ class AicallController extends Controller
         if ($camp) {
             $camp->delete();
             AiCallCampLive::where('campaign_id', $camp->campaign_id)->delete();
+
+            log_action('AI Vishing campaign deleted');
             return redirect()->back()->with('success', 'Campaign Deleted');
         }
     }
@@ -238,10 +243,15 @@ class AicallController extends Controller
                     // Return the response data
                     $res = $response->json();
                     $localReport->call_report = $res;
+
+                    log_action("AI Vishing Call report fetched for call id {$callid}");
+
                     $localReport->save();
                     return $res;
                 } else {
                     // Handle the error, e.g., log the error or throw an exception
+                    log_action("Error while fetching AI Vishing Call report for call id {$callid}");
+
                     return [
                         'error' => 'Unable to fetch call detail',
                         'status' => $response->status(),
@@ -268,6 +278,7 @@ class AicallController extends Controller
             Log::error('Failed to insert log data: ' . $e->getMessage());
         }
 
+        log_action("Post call received after call hangup from AI Vishing Provider", 'retell_ai', 'retell_ai');
 
         return response()->json(['status' => 1, 'msg' => 'msg logged']);
     }
