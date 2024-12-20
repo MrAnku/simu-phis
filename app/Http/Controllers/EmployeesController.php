@@ -83,6 +83,8 @@ class EmployeesController extends Controller
             $this->domainVerificationMail($verifyEmail, $genCode);
         }
 
+        log_action("Domain verification mail sent");
+
         return response()->json(['status' => 1, 'msg' => 'Verification email sent']);
     }
 
@@ -108,6 +110,8 @@ class EmployeesController extends Controller
             $verifiedDomain->verified = '1';
             $verifiedDomain->save();
 
+            log_action("Domain verified successfully");
+
             return response()->json(['status' => 1, 'msg' => 'Domain verified successfully']);
         } else {
             return response()->json(['status' => 0, 'msg' => 'Invalid Code']);
@@ -126,6 +130,8 @@ class EmployeesController extends Controller
             DomainVerified::where('domain', $domain)->delete();
         });
 
+        log_action("Domain {$domain} deleted from platform");
+
         return response()->json(['status' => 1, 'msg' => 'Domain and associated users deleted successfully']);
     }
 
@@ -141,6 +147,8 @@ class EmployeesController extends Controller
             'users' => null,
             'company_id' => $companyId,
         ]);
+
+        log_action("New employee group {$grpName} created");
 
         return redirect()->route('employees');
     }
@@ -162,9 +170,14 @@ class EmployeesController extends Controller
         $user = Users::find($request->user_id);
 
         if ($user) {
+
+            log_action("User {$user->user_email} deleted");
             $user->delete();
+
             return response()->json(['status' => 1, 'msg' => 'User deleted successfully'], 200);
         } else {
+
+            log_action("User not found to delete");
             return response()->json(['status' => 0, 'msg' => 'User not found'], 404);
         }
     }
@@ -188,6 +201,8 @@ class EmployeesController extends Controller
 
         // Check if usedemployees is greater than or equal to employees
         if ($company->usedemployees >= $company->employees) {
+
+            log_action("Employee limit has exceeded");
             return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
         }
 
@@ -207,11 +222,15 @@ class EmployeesController extends Controller
                         // Increment the usedemployees column for the company
                         $company->increment('usedemployees');
 
+                        log_action("Employee {$user->user_email} added");
+
                         return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
                     } else {
+                        log_action("Failed to add user");
                         return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
                     }
                 } else {
+                    log_action("Employee limit has exceeded");
                     return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
                 }
             } else {
@@ -295,10 +314,12 @@ class EmployeesController extends Controller
 
             DB::commit();
 
+            log_action("Employee group deleted");
             return response()->json(['status' => 1, 'msg' => 'Employee group deleted successfully']);
         } catch (\Exception $e) {
             DB::rollBack();
 
+            log_action("An error occurred while deleting the employee group");
             return response()->json(['status' => 0, 'msg' => 'An error occurred while deleting the employee group']);
         }
     }
@@ -356,8 +377,11 @@ class EmployeesController extends Controller
                 }
             }
             fclose($handle);
+
+            log_action("Employees added by csv file");
             return redirect()->back()->with('success', 'CSV file imported successfully!');
         } else {
+            log_action("Unable to open csv file");
             return redirect()->back()->with('error', 'Error: Unable to open file.');
         }
     }
@@ -406,6 +430,7 @@ class EmployeesController extends Controller
                 "updated_at" => now()
             ]);
 
+        log_action("LDAP config updated");
         return redirect()->back()->with('success', 'LDAP Config Updated');
     }
 
@@ -439,6 +464,8 @@ class EmployeesController extends Controller
                 "created_at" => now(),
                 "company_id" => $companyId
             ]);
+
+        log_action("LDAP config saved");
 
         return response()->json([
             'status' => 1,
@@ -525,6 +552,8 @@ class EmployeesController extends Controller
 
         // Close the LDAP connection
         ldap_unbind($ldapConn);
+
+        log_action("Users synchronized using LDAP");
 
         // Return the user data as JSON
         return response()->json([

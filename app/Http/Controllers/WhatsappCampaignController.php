@@ -174,8 +174,7 @@ class WhatsappCampaignController extends Controller
     public function showWebsite($campaign_id)
     {
 
-        // $camp_id = base64_decode($campaign_id);
-        log_action('WhatsApp phishing website visited', 'employee', $campaign_id);
+        log_action('WhatsApp phishing website visited', 'employee', 'employee');
 
         return view('whatsapp-website', compact('campaign_id'));
     }
@@ -189,8 +188,14 @@ class WhatsappCampaignController extends Controller
 
         if ($user) {
             DB::table('whatsapp_camp_users')->where('id', $cid)->update(['link_clicked' => 1]);
+
+            log_action('WhatsApp phishing payload clicked', 'employee', 'employee');
+
             return response()->json(['status' => 1, 'msg' => 'Payload updated']);
         } else {
+
+            log_action('Payload not updated because of invalid campaign id', 'employee', 'employee');
+
             return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
         }
     }
@@ -203,6 +208,9 @@ class WhatsappCampaignController extends Controller
 
         if ($user) {
             DB::table('whatsapp_camp_users')->where('id', $cid)->update(['emp_compromised' => 1]);
+
+            log_action('Employee compromised in WhatsApp campaign', 'employee', 'employee');
+
             return response()->json(['status' => 1, 'msg' => 'emp compromised updated']);
         } else {
             return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
@@ -278,6 +286,8 @@ class WhatsappCampaignController extends Controller
                             'logo' => $learnSiteAndLogo['logo']
                         ];
 
+                        log_action("WhatsApp simulation | Training {$campaign_user->training} already assigned to {$campaign_user->user_email}, Reminder Sent.", 'employee', 'employee');
+
                         Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
                     } else {
                         // Check if user login already exists
@@ -321,6 +331,8 @@ class WhatsappCampaignController extends Controller
                                     'logo' => $learnSiteAndLogo['logo']
                                 ];
 
+                                log_action("WhatsApp simulation | Training {$campaign_user->training} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
+
                                 Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
 
                                 // Update campaign_live table
@@ -328,6 +340,9 @@ class WhatsappCampaignController extends Controller
                                     ->where('id', $campaign_user->id)
                                     ->update(['training_assigned' => 1]);
                             } else {
+
+                                log_action("Failed to assign training", 'employee', 'employee');
+
                                 return response()->json(['error' => 'Failed to create user']);
                             }
                         } else {
@@ -374,6 +389,8 @@ class WhatsappCampaignController extends Controller
                                     'logo' => $learnSiteAndLogo['logo']
                                 ];
 
+                                log_action("WhatsApp simulation | Training {$campaign_user->training} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
+
                                 Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
 
                                 // Update campaign_live table
@@ -408,7 +425,7 @@ class WhatsappCampaignController extends Controller
                 'company_email' => $company_email,
                 'learn_domain' => $isWhitelabled->learn_domain,
                 'company_name' => $isWhitelabled->company_name,
-                'logo' => url('/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo)
+                'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
             ];
         }
 
@@ -416,7 +433,7 @@ class WhatsappCampaignController extends Controller
             'company_email' => env('MAIL_FROM_ADDRESS'),
             'learn_domain' => 'learn.simuphish.com',
             'company_name' => 'simUphish',
-            'logo' => url('/assets/images/simu-logo-dark.png')
+            'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
         ];
     }
 }

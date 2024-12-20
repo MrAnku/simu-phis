@@ -8,12 +8,15 @@ use Illuminate\View\Component;
 
 class NextButton extends Component
 {
+    public $label;
+    public $id;
     /**
      * Create a new component instance.
      */
-    public function __construct(public $label, public $id = '')
+    public function __construct($label, $id = "")
     {
-        //
+        $this->label = $label;
+        $this->id = $id;
     }
 
     /**
