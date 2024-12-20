@@ -13,7 +13,7 @@ class NextButton extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct($label, $id = "")
+    public function __construct($label = "", $id = "")
     {
         $this->label = $label;
         $this->id = $id;
