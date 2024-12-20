@@ -1,4 +1,4 @@
-@props(['id' => null])
+@props(['id' => null, 'label' => null])
 
 <button type="button" {{ $attributes->merge(['class' => 'btn btn-info label-btn label-end stickyBtn rounded-pill']) }} id="{{$id}}">
     {{$label}}
