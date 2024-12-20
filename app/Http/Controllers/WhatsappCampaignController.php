@@ -90,6 +90,8 @@ class WhatsappCampaignController extends Controller
 
         $this->createCampaignIndividual($camp_id, $request);
 
+        log_action('WhatsApp campaign created');
+
         return response()->json(['status' => 1, 'msg' => 'Campaign created successfully!']);
     }
 
@@ -140,8 +142,12 @@ class WhatsappCampaignController extends Controller
 
             $campaign->delete();
             DB::table('whatsapp_camp_users')->where('camp_id', $request->campid)->delete();
+
+            log_action('WhatsApp campaign deleted');
             return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
         } else {
+
+            log_action('Something went wrong while deleting WhatsApp campaign');
             return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
         }
     }
@@ -169,6 +175,7 @@ class WhatsappCampaignController extends Controller
     {
 
         // $camp_id = base64_decode($campaign_id);
+        log_action('WhatsApp phishing website visited', 'employee', $campaign_id);
 
         return view('whatsapp-website', compact('campaign_id'));
     }
@@ -220,6 +227,8 @@ class WhatsappCampaignController extends Controller
         $template->created_at = now();
         $template->save();
 
+        log_action('New WhatsApp templete requested');
+
         return redirect()->back()->with('success', 'New template request added successfully.');
     }
 
@@ -227,10 +236,7 @@ class WhatsappCampaignController extends Controller
     {
         $cid = base64_decode($request->cid);
 
-        // Check if the campaign is whitelabeled
-        // $getBranding = $this->checkWhitelabeled($campid);
-
-        // Check if the campaign exists for the given user
+       
         $campaign_user = DB::table('whatsapp_camp_users')
             ->where('id', $cid)
             ->first();

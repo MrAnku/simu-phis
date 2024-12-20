@@ -29,6 +29,8 @@ class AuthenticatedSessionController extends Controller
             $request->authenticate();
     
             $request->session()->regenerate();
+
+            log_action('Company logged in');
     
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (ValidationException $e) {
@@ -47,11 +49,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        log_action('Company logged out');
+        
         Auth::guard('company')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
 
         return redirect('/login');
     }

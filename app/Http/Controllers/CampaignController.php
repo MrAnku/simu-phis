@@ -79,6 +79,7 @@ class CampaignController extends Controller
         $phishingEmails = $this->fetchPhishingEmails();
         $trainingModules = $this->fetchTrainingModules();
 
+
         return view('campaigns', compact(
             'allCamps',
             'usersGroups',
@@ -88,6 +89,8 @@ class CampaignController extends Controller
             'all_sent',
             'mail_open'
         ));
+
+        
     }
 
     public function fetchUsersGroups()
@@ -205,6 +208,8 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
+            log_action('Email campaign created');
+
             return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
         }
 
@@ -249,7 +254,9 @@ class CampaignController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            return response()->json(['status' => 1, 'msg' => 'Campaign created scheduled!']);
+            log_action('Email campaign scheduled');
+
+            return response()->json(['status' => 1, 'msg' => 'Campaign created and scheduled!']);
         }
 
         if ($launchType == 'schLater') {
@@ -270,6 +277,8 @@ class CampaignController extends Controller
                 'status' => 'Not Scheduled',
                 'company_id' => $companyId,
             ]);
+
+            log_action('Email campaign created for schedule later');
 
             return response()->json(['status' => 1, 'msg' => 'Campaign scheduled successfully!']);
         }
@@ -310,26 +319,17 @@ class CampaignController extends Controller
     {
         $campid = $request->input('campid');
 
-        // try {
-        //     DB::beginTransaction();
+       
 
         $res1 = Campaign::where('campaign_id', $campid)->delete();
         $res2 = CampaignLive::where('campaign_id', $campid)->delete();
         $res3 = CampaignReport::where('campaign_id', $campid)->delete();
 
+        log_action('Email campaign deleted');
+
         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
 
-        //     if ($res1 && $res2 && $res3) {
-        //         DB::commit();
-        //         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
-        //     } else {
-        //         DB::rollBack();
-        //         return response()->json(['status' => 0, 'msg' => 'Error: Unable to delete campaign'], 500);
-        //     }
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
-        // }
+       
     }
 
     public function relaunchCampaign(Request $request)
@@ -386,6 +386,8 @@ class CampaignController extends Controller
                 'company_id' => $company_id,
             ]);
         }
+
+        log_action('Email campaign relaunched');
     }
 
     public function fetchPhishData(Request $request)
@@ -506,6 +508,8 @@ class CampaignController extends Controller
                 ]);
             }     
         }
+
+        log_action('Email campaign rescheduled');
 
         return redirect()->back()->with('success', 'Campaign rescheduled successfully');
 

@@ -2,6 +2,8 @@
 
 // app/Helpers/helpers.php
 
+use App\Models\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 if (!function_exists('isActiveRoute')) {
@@ -182,4 +184,19 @@ if (!function_exists('changeVideoLanguage')) {
 
         return $newUrl;
     }
+}
+
+if (!function_exists('log_action')) {
+    function log_action($details, $role = 'company', $role_id = null){
+
+        $role_id = $role_id ?? Auth::user()->company_id; 
+
+    Log::create([
+        'role' => $role,
+        'msg' => $details,
+        'role_id' => $role_id,
+        'ip_address' => request()->ip(),
+        'user_agent' => request()->userAgent(),
+    ]);
+}
 }
