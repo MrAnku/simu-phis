@@ -42,7 +42,7 @@ class LearnerDashController extends Controller
 
     public function startTraining($training_id, $training_lang, $id)
     {
-
+        log_action("Employee started static training", 'learner', 'learner');
         // $training_id = decrypt($training_id);
 
         return view('learning.training', ['trainingid' => $training_id, 'training_lang'=>$training_lang, 'id'=>$id]);
@@ -106,14 +106,18 @@ class LearnerDashController extends Controller
             $rowData->personal_best = $request->trainingScore;
             $rowData->save();
 
+            log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
+
             if($request->trainingScore == 100){
                 $rowData->completed = 1;
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
+
+                log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
             }
         }
 
-
+        
         return response()->json(['message' => 'Score updated']);
     }
 
@@ -140,6 +144,7 @@ class LearnerDashController extends Controller
         // Define the filename with certificate ID
         $fileName = "{$trainingModule}_Certificate_{$certificateId}.pdf";
 
+        log_action("Employee downloaded training certificate", 'learner', 'learner');
         // Return the PDF download response
         return $pdf->download($fileName);
     }
@@ -153,7 +158,6 @@ class LearnerDashController extends Controller
         $certificate = TrainingAssignedUser::where('training', $trainingId)
             ->where('user_email', $username)
             ->first();
-        \Log::debug($certificate);
         return $certificate ? $certificate->certificate_id : null;
     }
 
@@ -196,6 +200,7 @@ class LearnerDashController extends Controller
     }
 
     public function startAiTraining($topic, $language, $id){
+        log_action("AI training started", 'learner', 'learner');
         return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
     }
 }

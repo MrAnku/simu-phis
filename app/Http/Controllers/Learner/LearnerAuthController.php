@@ -27,6 +27,7 @@ class LearnerAuthController extends Controller
         if ($user) {
             if ($user->login_password == $password) {
                 Session::put('learner', $user);
+                log_action("Learner {$email} logged in", 'learner', 'learner');
                 return redirect()->route('learner.dashboard'); // Change this to your desired route
             } else {
                 return back()->withErrors(['password' => 'Invalid Password']);
@@ -39,6 +40,7 @@ class LearnerAuthController extends Controller
     {
         // Destroy the session
         $request->session()->forget('learner');
+        log_action("Learner logged out", 'learner', 'learner');
         return redirect()->route('learner.loginPage');
     }
 }
