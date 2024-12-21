@@ -117,51 +117,27 @@ class TprmController extends Controller
         return response()->json(['status' => 1, 'message' => 'Frontend is working correctly!']);
     }
 
-    //     public function submitdomains(Request $request)
-    // {
-    //     \Log::info('Received domains', ['domains' => $request->input('domains')]);
-
-    //     // Validate the incoming data
-    //     $domains = $request->input('domains');
-
-    //     if (!is_array($domains) || empty($domains)) {
-    //         \Log::warning('Invalid domains input', ['domains' => $domains]);
-    //         return response()->json(['status' => 0, 'msg' => 'Please provide one or more domains in an array format.']);
-    //     }
-
-    //     // Your existing domain processing logic here...
-
-    //     return response()->json(['status' => 1, 'results' => $results]);
-    // }
+   
     public function submitdomains(Request $request)
     {
-        \Log::info('submitdomains method called.'); // Initial log
 
-        // Log the incoming request data
-        \Log::info('Received request data.', ['request' => $request->all()]);
 
         // Retrieve domains from the request, assuming JSON format
         $domains = $request->input('domains');
 
         // Validate that the input is an array
         if (!is_array($domains) || empty($domains)) {
-            \Log::warning('Invalid domains input.', ['domains' => $domains]);
             return response()->json(['status' => 0, 'msg' => 'Please provide one or more domains in an array format.']);
         }
 
         // Get the company ID of the authenticated user
         $companyId = auth()->user()->company_id;
 
-        // Log the company ID
-        \Log::info('Company ID retrieved.', ['company_id' => $companyId]);
-
         // Retrieve the partner ID from the Company table using the correct primary key
         $partnerId = Company::where('company_id', $companyId)->value('partner_id');
-        \Log::info('Partner ID retrieved.', ['partner_id' => $partnerId]);
 
         // Check if partnerId is null
         if (!$partnerId) {
-            \Log::warning('Partner ID not found.', ['company_id' => $companyId]);
             return response()->json(['status' => 0, 'msg' => 'Partner ID not found for the specified company']);
         }
 
@@ -170,7 +146,6 @@ class TprmController extends Controller
 
         // Loop through each domain in the array
         foreach ($domains as $domain) {
-            \Log::info('Processing domain.', ['domain' => $domain]);
 
             // Check if the domain is already in the database for this company
             $verifiedDomain = TpmrVerifiedDomain::where('domain', $domain)
@@ -178,10 +153,7 @@ class TprmController extends Controller
                 ->first();
 
             if ($verifiedDomain) {
-                // Domain already exists in the database
-                \Log::info('Domain already exists, skipping.', [
-                    'domain' => $domain
-                ]);
+               
 
                 $results[] = [
                     'domain' => $domain,
@@ -194,11 +166,7 @@ class TprmController extends Controller
 
                 // Ensure partnerId is valid before attempting to store
                 if ($partnerId) {
-                    \Log::info('Partner ID is valid, creating new domain.', [
-                        'domain' => $domain,
-                        'temp_code' => $genCode,
-                        'partner_id' => $partnerId
-                    ]);
+                  
                     TpmrVerifiedDomain::create([
                         'domain' => $domain,
                         'temp_code' => $genCode,
@@ -207,18 +175,14 @@ class TprmController extends Controller
                         'partner_id' => $partnerId,
                     ]);
 
-                    \Log::info('New domain verification requested.', [
-                        'domain' => $domain,
-                        'temp_code' => $genCode
-                    ]);
-
+                   
                     $results[] = [
                         'domain' => $domain,
                         'status' => 1,
                         'msg' => 'New domain verification requested successfully.'
                     ];
                 } else {
-                    \Log::warning('Partner ID is null, cannot create new domain.', ['domain' => $domain]);
+                   
                     $results[] = [
                         'domain' => $domain,
                         'status' => 0,
@@ -228,7 +192,6 @@ class TprmController extends Controller
             }
         }
 
-        \Log::info('Domain verification process completed.', ['results' => $results]);
 
         return response()->json(['status' => 1, 'results' => $results]);
     }
@@ -270,13 +233,10 @@ class TprmController extends Controller
         DB::beginTransaction();
 
         try {
-            // Log the start of the delete operation
-            \Log::info('Starting domain deletion process', ['domain' => $domain]);
 
             // 1. Delete users associated with the domain
             $users = TprmUsers::where('user_email', 'LIKE', '%' . $domain)->get();
             foreach ($users as $user) {
-                \Log::info('Deleting user-related data', ['user_id' => $user->id]);
 
                 // Delete user-related data
                 DB::table('user_login')->where('user_id', $user->id)->delete();
@@ -284,7 +244,6 @@ class TprmController extends Controller
 
                 // Delete the user record itself
                 $user->delete();
-                \Log::info('User deleted', ['user_id' => $user->id]);
             }
 
             // 2. Delete user groups associated with the domain (use `group_name` instead of `domain`)
@@ -293,15 +252,13 @@ class TprmController extends Controller
                 $groupId = $group->group_id;
                 $companyId = Auth::user()->company_id;
 
-                \Log::info('Deleting user group and associated data', ['group_id' => $groupId, 'company_id' => $companyId]);
-
+               
                 // Delete all users in the group
                 TprmUsers::where('group_id', $groupId)->delete();
 
                 // Delete the group itself
                 $group->delete();
-                \Log::info('User group deleted', ['group_id' => $groupId]);
-
+               
                 // 3. Delete campaigns associated with this user group
                 $campaigns = TprmCampaign::where('users_group', $groupId)
                     ->where('company_id', $companyId)
@@ -310,8 +267,7 @@ class TprmController extends Controller
                 foreach ($campaigns as $campaign) {
                     $campaignId = $campaign->campaign_id;
 
-                    \Log::info('Deleting campaign and associated data', ['campaign_id' => $campaignId]);
-
+                    
                     // Delete campaign records from all associated tables
                     TprmCampaign::where('campaign_id', $campaignId)
                         ->where('company_id', $companyId)
@@ -323,28 +279,21 @@ class TprmController extends Controller
                         ->where('company_id', $companyId)
                         ->delete();
 
-                    \Log::info('Campaign deleted', ['campaign_id' => $campaignId]);
                 }
             }
 
             // 4. Finally, delete the domain itself
             TpmrVerifiedDomain::where('domain', $domain)->delete();
-            \Log::info('Domain deleted', ['domain' => $domain]);
 
             // Commit the transaction if all deletions are successful
             DB::commit();
-            \Log::info('Domain and associated data deleted successfully', ['domain' => $domain]);
 
             return response()->json(['status' => 1, 'msg' => 'Domain and associated data deleted successfully']);
         } catch (\Exception $e) {
             // Rollback the transaction if an error occurs
             DB::rollBack();
 
-            // Log the error
-            \Log::error('Error deleting domain and associated data', [
-                'domain' => $domain,
-                'error' => $e->getMessage()
-            ]);
+          
 
             return response()->json(['status' => 0, 'msg' => 'An error occurred: ' . $e->getMessage()], 500);
         }
@@ -392,67 +341,7 @@ class TprmController extends Controller
         }
     }
 
-    public function addUser(Request $request)
-    {
-        $grpId = $request->input('groupid');
-        $usrName = $request->input('usrName');
-        $usrEmail = $request->input('usrEmail');
-        $usrCompany = $request->input('usrCompany');
-        $usrJobTitle = $request->input('usrJobTitle');
-        $usrWhatsapp = $request->input('usrWhatsapp');
-        $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
-
-        if ($this->DomainVerified($usrEmail, $companyId)) {
-            if ($this->uniqueEmail($usrEmail)) {
-                if ($this->checkLimit($companyId)) {
-                    $user = new Users();
-                    $user->group_id = $grpId;
-                    $user->user_name = $usrName;
-                    $user->user_email = $usrEmail;
-                    $user->user_company = $usrCompany;
-                    $user->user_job_title = $usrJobTitle;
-                    $user->whatsapp = $usrWhatsapp;
-                    $user->company_id = $companyId;
-
-                    if ($user->save()) {
-                        return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
-                    } else {
-                        return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
-                    }
-                } else {
-                    return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
-                }
-            } else {
-                return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
-            }
-        } else {
-            return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
-        }
-    }
-
-    private function DomainVerified($email, $companyId)
-    {
-        $domain = explode("@", $email)[1];
-        $checkDomain = DomainVerified::where('domain', $domain)
-            ->where('verified', 1)
-            ->where('company_id', $companyId)
-            ->exists();
-
-        return $checkDomain;
-    }
-
-    private function uniqueEmail($email)
-    {
-        return !Users::where('user_email', $email)->exists();
-    }
-
-    private function checkLimit($companyId)
-    {
-        $userCount = Users::where('company_id', $companyId)->count();
-        $noOfEmp = Auth::user()->employees; // Assuming no_of_emp is a column in the users table
-
-        return $userCount <= (int)$noOfEmp;
-    }
+    
 
 
 
@@ -480,8 +369,7 @@ class TprmController extends Controller
 
     public function createCampaign(Request $request)
     {
-        \Log::info('createCampaign method called.'); // Initial log
-
+        
         $campaignType = $request->input('campaign_type');
         $campName = $request->input('camp_name');
         $usersGroup = $request->input('users_group');
@@ -496,8 +384,7 @@ class TprmController extends Controller
         $expAfter = $request->input('expire_after');
         $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
 
-        \Log::info('Inputs received.', compact('campaignType', 'campName', 'usersGroup', 'trainingMod', 'trainingLang', 'emailLang', 'phishMaterial', 'launchTime', 'launchType', 'timeZone', 'frequency', 'expAfter'));
-
+        
         $phishingEmail = PhishingEmail::where('id', $phishMaterial)
             ->where(function ($query) {
                 $query->where('senderProfile', '0')
@@ -506,25 +393,20 @@ class TprmController extends Controller
             ->first();
 
         if ($phishingEmail) {
-            \Log::warning('Invalid phishing email template selected.', ['phishMaterial' => $phishMaterial]);
             return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template'], 400);
         }
 
         $campId = generateRandom(); // Assuming you have a method to generate a random ID
-        \Log::info('Generated campaign ID: ' . $campId);
 
         if ($launchType == 'immediately') {
-            \Log::info('Launch type: Immediately');
 
             $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $launchTime);
             $currentDateTime = Carbon::now();
             $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
 
             $users = TprmUsers::where('group_id', $usersGroup)->get();
-            \Log::info('User group retrieved.', ['usersCount' => $users->count()]);
 
             if ($users->isEmpty()) {
-                \Log::warning('No users available in group.', ['usersGroup' => $usersGroup]);
                 return response()->json(['status' => 0, 'msg' => 'No employees available in this group'], 400);
             }
 
@@ -544,7 +426,6 @@ class TprmController extends Controller
                     'company_id' => $companyId,
                 ]);
             }
-            \Log::info('CampaignLive created for users.');
 
             TprmCampaignReport::create([
                 'campaign_id' => $campId,
@@ -577,12 +458,10 @@ class TprmController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            \Log::info('Campaign created and running.');
             return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
         }
 
         if ($launchType == 'scheduled') {
-            \Log::info('Launch type: Scheduled');
 
             $schedule_date = $request->input('schBetRange');
             $startTime = $request->input('schTimeStart');
@@ -590,7 +469,6 @@ class TprmController extends Controller
             $timeZone = $request->input('schTimeZone', 'Asia/Kolkata');
 
             $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime, $timeZone);
-            \Log::info('Generated random launch time.', ['launchTime' => $launchTime]);
 
             TprmCampaign::create([
                 'campaign_id' => $campId,
@@ -623,12 +501,10 @@ class TprmController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            \Log::info('Scheduled campaign created.');
             return response()->json(['status' => 1, 'msg' => 'Campaign created scheduled!']);
         }
 
         if ($launchType == 'schLater') {
-            \Log::info('Launch type: Scheduled for later');
 
             $launchTime = Carbon::createFromFormat("m/d/Y H:i", $launchTime)->format("m/d/Y g:i A");
 
@@ -647,11 +523,9 @@ class TprmController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            \Log::info('Campaign scheduled for later.');
             return response()->json(['status' => 1, 'msg' => 'Campaign scheduled successfully!']);
         }
 
-        \Log::error('Invalid launch type.');
         return response()->json(['status' => 0, 'msg' => 'Invalid launch type.'], 400);
     }
 
@@ -691,8 +565,6 @@ class TprmController extends Controller
     {
         $campid = $request->input('campid');
 
-        // Log the incoming request
-        \Log::info('Delete campaign request received', ['campaign_id' => $campid]);
 
         try {
             // Start transaction
@@ -701,38 +573,27 @@ class TprmController extends Controller
             // Check if campaign exists
             $campaign = TprmCampaign::where('campaign_id', $campid)->first();
             if (!$campaign) {
-                \Log::warning('Campaign not found', ['campaign_id' => $campid]);
                 return response()->json(['status' => 0, 'msg' => 'Campaign not found'], 404);
             }
 
-            // Proceed with deletion
-            \Log::info('Attempting to delete campaign', ['campaign_id' => $campid]);
 
             $res1 = TprmCampaign::where('campaign_id', $campid)->delete();
-            \Log::info('TprmCampaign deletion result', ['result' => $res1]);
 
             $res2 = TprmCampaignLive::where('campaign_id', $campid)->delete();
-            \Log::info('TprmCampaignLive deletion result', ['result' => $res2]);
 
             $res3 = TprmCampaignReport::where('campaign_id', $campid)->delete();
-            \Log::info('TprmCampaignReport deletion result', ['result' => $res3]);
 
             // Check if any records were deleted
             if ($res1 || $res2 || $res3) {
                 DB::commit();
-                \Log::info('Campaign deleted successfully', ['campaign_id' => $campid]);
                 return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
             } else {
                 DB::rollBack();
-                \Log::warning('No records deleted', ['campaign_id' => $campid]);
                 return response()->json(['status' => 0, 'msg' => 'No records deleted'], 400);
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error deleting campaign', [
-                'campaign_id' => $campid,
-                'error' => $e->getMessage()
-            ]);
+           
             return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
         }
     }
@@ -772,7 +633,7 @@ class TprmController extends Controller
 
         $campaign = TprmCampaign::where('campaign_id', $campid)->first();
 
-        $users = TprmUser::where('group_id', $campaign->users_group)->get();
+        $users = TprmUsers::where('group_id', $campaign->users_group)->get();
 
         if ($users->isEmpty()) {
         }
@@ -868,50 +729,6 @@ class TprmController extends Controller
             }
         }
 
-        if ($request->rschType == 'scheduled') {
-
-
-            $schedule_date = $request->rsc_launch_time;
-            $startTime = $request->startTime;
-            $endTime = $request->endTime;
-            $timeZone = $request->rschTimeZone;
-            $email_freq = $request->emailFreq;
-            $expire_after = $request->rexpire_after;
-
-            $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime);
-
-            $campaign = Campaign::where('id', $request->campid)->first();
-
-            $campaign->launch_time = $launchTime;
-            $campaign->launch_type = 'scheduled';
-            $campaign->email_freq = $email_freq;
-            $campaign->startTime = $startTime;
-            $campaign->endTime = $endTime;
-            $campaign->timeZone = $timeZone;
-            $campaign->expire_after = $expire_after;
-            $campaign->status = 'pending';
-            $campaign->save();
-
-            $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
-
-            if (!$isreportexist) {
-                CampaignReport::create([
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'campaign_type' => $campaign->campaign_type,
-                    'status' => 'pending',
-                    'email_lang' => $campaign->email_lang,
-                    'training_lang' => $campaign->training_lang,
-                    'scheduled_date' => $launchTime,
-                    'company_id' => $companyId,
-                ]);
-            } else {
-                CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
-                    'scheduled_date' => $launchTime,
-                    'status' => 'pending'
-                ]);
-            }
-        }
 
         return redirect()->back()->with('success', 'Campaign rescheduled successfully');
     }
@@ -1063,7 +880,6 @@ class TprmController extends Controller
     public function tprmnewGroup(Request $request)
     {
         // Validate incoming request
-        \Log::info('Incoming request data:', $request->all());
         $request->validate([
             'domainName' => 'required|string',  // Ensure 'domainName' is passed correctly
             'emails' => 'required|array',       // Ensure 'emails' is passed as an array
@@ -1074,11 +890,7 @@ class TprmController extends Controller
         $emails = $request->input('emails'); // Get the emails from the request
         $companyId = auth()->user()->company_id;
 
-        \Log::info('Creating new group', [
-            'domainName' => $domainName,
-            'emails' => $emails,
-            'companyId' => $companyId,
-        ]);
+       
 
         // Check if the combination of domain name and company ID already exists
         $existingGroup = TprmUsersGroup::where('group_name', $domainName)
@@ -1086,7 +898,6 @@ class TprmController extends Controller
             ->first();
 
         if ($existingGroup) {
-            \Log::info('Existing group found, adding emails', ['groupId' => $existingGroup->group_id]);
 
             foreach ($emails as $usrEmail) {
                 if ($this->TprmdomainVerified($usrEmail, $companyId)) {
@@ -1099,17 +910,12 @@ class TprmController extends Controller
                         $user->user_email = $usrEmail;
                         $user->user_name = $userName;  // Set the username
                         $user->company_id = $companyId;
+                        $user->save();
 
-                        if ($user->save()) {
-                            \Log::info('User added successfully', ['email' => $usrEmail, 'user_name' => $userName]);
-                        } else {
-                            \Log::warning('Failed to add user', ['email' => $usrEmail]);
-                        }
+                       
                     } else {
-                        \Log::warning('Email already exists', ['email' => $usrEmail]);
                     }
                 } else {
-                    \Log::warning('Domain not verified', ['email' => $usrEmail]);
                 }
             }
             return redirect()->route('tprmcampaigns')->with('success', 'Emails added to the existing group successfully.');
@@ -1126,7 +932,6 @@ class TprmController extends Controller
             'company_id' => $companyId,
         ]);
 
-        \Log::info('New group created', ['groupId' => $grpId, 'domainName' => $domainName]);
 
         // If new group created, add emails to the tprm_users database
         foreach ($emails as $usrEmail) {
@@ -1140,17 +945,12 @@ class TprmController extends Controller
                     $user->user_email = $usrEmail;
                     $user->user_name = $userName;  // Set the username
                     $user->company_id = $companyId;
+                    $user->save();
 
-                    if ($user->save()) {
-                        \Log::info('User added successfully to new group', ['email' => $usrEmail, 'user_name' => $userName]);
-                    } else {
-                        \Log::warning('Failed to add user to new group', ['email' => $usrEmail]);
-                    }
+                  
                 } else {
-                    \Log::warning('Email already exists in new group', ['email' => $usrEmail]);
                 }
             } else {
-                \Log::warning('Domain not verified for new group', ['email' => $usrEmail]);
             }
         }
 
@@ -1172,7 +972,6 @@ class TprmController extends Controller
 public function emailtprmnewGroup(Request $request)
 {
     // Validate incoming request
-    \Log::info('Incoming request data:', $request->all());
     $request->validate([
         'domainName' => 'required|string',  // Ensure 'domainName' is passed correctly
         'emails' => 'required|array',       // Ensure 'emails' is passed as an array
@@ -1183,19 +982,13 @@ public function emailtprmnewGroup(Request $request)
     $emails = $request->input('emails'); // Get the emails from the request
     $companyId = auth()->user()->company_id;
 
-    \Log::info('Creating new group', [
-        'domainName' => $domainName,
-        'emails' => $emails,
-        'companyId' => $companyId,
-    ]);
-
+   
     // Check if the combination of domain name and company ID already exists
     $existingGroup = TprmUsersGroup::where('group_name', $domainName)
                                     ->where('company_id', $companyId)
                                     ->first();
 
     if ($existingGroup) {
-        \Log::info('Existing group found, adding emails', ['groupId' => $existingGroup->group_id]);
 
         foreach ($emails as $usrEmail) {
             if ($this->TprmdomainVerified($usrEmail, $companyId)) {
@@ -1208,17 +1001,12 @@ public function emailtprmnewGroup(Request $request)
                     $user->user_email = $usrEmail;
                     $user->user_name = $userName;  // Set the username
                     $user->company_id = $companyId;
+                    $user->save();
 
-                    if ($user->save()) {
-                        \Log::info('User added successfully', ['email' => $usrEmail, 'user_name' => $userName]);
-                    } else {
-                        \Log::warning('Failed to add user', ['email' => $usrEmail]);
-                    }
+                  
                 } else {
-                    \Log::warning('Email already exists', ['email' => $usrEmail]);
                 }
             } else {
-                \Log::warning('Domain not verified', ['email' => $usrEmail]);
             }
         }
         return response()->json(['status' => 1, 'message' => 'Success']);
@@ -1236,7 +1024,6 @@ public function emailtprmnewGroup(Request $request)
         'company_id' => $companyId,
     ]);
 
-    \Log::info('New group created', ['groupId' => $grpId, 'domainName' => $domainName]);
 
     // If new group created, add emails to the tprm_users database
     foreach ($emails as $usrEmail) {
@@ -1250,17 +1037,12 @@ public function emailtprmnewGroup(Request $request)
                 $user->user_email = $usrEmail;
                 $user->user_name = $userName;  // Set the username
                 $user->company_id = $companyId;
+                $user->save();
 
-                if ($user->save()) {
-                    \Log::info('User added successfully to new group', ['email' => $usrEmail, 'user_name' => $userName]);
-                } else {
-                    \Log::warning('Failed to add user to new group', ['email' => $usrEmail]);
-                }
+                
             } else {
-                \Log::warning('Email already exists in new group', ['email' => $usrEmail]);
             }
         } else {
-            \Log::warning('Domain not verified for new group', ['email' => $usrEmail]);
         }
     }
 
