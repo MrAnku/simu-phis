@@ -57,6 +57,8 @@ class SupportController extends Controller
             'company_id' => $company_id,
         ]);
 
+        log_action("{$email} created support ticket");
+
         return redirect()->back()->with(['success' => 'Ticket created successfully']);
     }
 
@@ -96,6 +98,8 @@ class SupportController extends Controller
             'date' => $today,
             'company_id' => $company_id,
         ]);
+
+        log_action("Company replied in raised ticket");
 
         return response()->json(['message' => 'Reply submitted successfully']);
     }

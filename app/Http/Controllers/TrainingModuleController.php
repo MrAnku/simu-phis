@@ -58,8 +58,10 @@ class TrainingModuleController extends Controller
         ]);
 
         if ($trainingModule->save()) {
+            log_action("New training added {$moduleName}");
             return redirect()->back()->with('success', 'Training Added Successfully');
         } else {
+            log_action("Failed to add Training");
             return redirect()->back()->with('error', 'Failed to add Training');
         }
     }
@@ -128,8 +130,10 @@ class TrainingModuleController extends Controller
         }
 
         if ($isTrainingUpdated) {
+            log_action("Training module updated");
             return redirect()->back()->with('success', 'Training updated successfully');
         } else {
+            log_action("Failed to update Training");
             return redirect()->back()->with('error', 'Failed to update Training');
         }
     }
@@ -172,8 +176,10 @@ class TrainingModuleController extends Controller
         }
 
         if ($isDeletedFromTrainingModules) {
+            log_action("Training module deleted");
             return redirect()->back()->with('success', 'Training deleted successfully');
         } else {
+            log_action("Failed to delete training module");
             return redirect()->back()->with('error', 'Failed to delete Training');
         }
     }

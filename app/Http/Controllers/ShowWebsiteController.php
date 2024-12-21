@@ -166,6 +166,8 @@ class ShowWebsiteController extends Controller
 
         $filePath = public_path("assets/t/alertPage.html");
         $content = File::get($filePath);
+
+        log_action('Email phishing | Employee fell for simulation', 'employee', 'employee');
         return response($content)->header('Content-Type', 'text/html');
     }
 
@@ -280,6 +282,8 @@ class ShowWebsiteController extends Controller
                             'logo' => $learnSiteAndLogo['logo']
                         ];
 
+                        log_action("Email simulation | Training {$userTrainingModuleName->name} assigned to {$checkAssignedUserLoginEmail}.", 'employee', 'employee');
+
                         Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
                         // Generate mail body and send email
@@ -327,6 +331,8 @@ class ShowWebsiteController extends Controller
                                     'learning_site' => $learnSiteAndLogo['learn_domain'],
                                     'logo' => $learnSiteAndLogo['logo']
                                 ];
+
+                                log_action("Email simulation | Training {$userTrainingModuleName->name} assigned to {$checkAssignedUserLoginEmail}.", 'employee', 'employee');
 
                                 Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
@@ -395,6 +401,8 @@ class ShowWebsiteController extends Controller
                                     'learning_site' => $learnSiteAndLogo['learn_domain'],
                                     'logo' => $learnSiteAndLogo['logo']
                                 ];
+
+                                log_action("Email simulation | Training {$userTrainingModuleName->name} assigned to {$userLoginEmail}.", 'employee', 'employee');
 
                                 Mail::to($userLoginEmail)->send(new TrainingAssignedEmail($mailData));
 
@@ -506,8 +514,10 @@ class ShowWebsiteController extends Controller
                     ->update(['emp_compromised' => 1]);
 
                 if ($isUpdatedIndividual) {
+                    log_action('Employee compromised in Email campaign', 'employee', 'employee');
                     return response()->json(['message' => 'Email compromised status updated successfully']);
                 } else {
+                    
                     return response()->json(['error' => 'Failed to update email compromised status']);
                 }
             } else {
@@ -551,6 +561,9 @@ class ShowWebsiteController extends Controller
                     ->update(['emp_compromised' => 1]);
 
                 if ($isUpdatedIndividual) {
+
+                    log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
+
                     return response()->json(['message' => 'Email compromised status updated successfully']);
                 } else {
                     return response()->json(['error' => 'Failed to update email compromised status']);
@@ -596,11 +609,15 @@ class ShowWebsiteController extends Controller
                     ->update(['payload_clicked' => 1]);
 
                 if ($isUpdatedIndividual) {
+                    
+                    log_action("Phishing email payload clicked by {$user->user_email}", 'employee', 'employee');
+
                     return response()->json(['message' => 'Payload click updated']);
                 } else {
                     return response()->json(['error' => 'Failed to update payload click']);
                 }
             } else {
+                log_action('Email phishing | Invalid campaign or payload click already updated', 'employee', 'employee');
                 return response()->json(['error' => 'Invalid campaign or payload click already updated']);
             }
         }
@@ -641,11 +658,14 @@ class ShowWebsiteController extends Controller
                     ->update(['payload_clicked' => 1]);
 
                 if ($isUpdatedIndividual) {
-                    return response()->json(['message' => 'Payload click updated']);
+                    log_action("TPRM phishing payload clicked by {$user->user_email}", 'employee', 'employee');
+
+                    return response()->json(['message' => 'TPRM campaign payload click updated']);
                 } else {
                     return response()->json(['error' => 'Failed to update payload click']);
                 }
             } else {
+                log_action("TPRM phishing | Invalid campaign or payload click already updated", 'employee', 'employee');
                 return response()->json(['error' => 'Invalid campaign or payload click already updated']);
             }
         }

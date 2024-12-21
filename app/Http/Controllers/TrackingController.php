@@ -22,7 +22,7 @@ class TrackingController extends Controller
             if ($campaignLive) {
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
-
+                log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
                 $report = CampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
 
                 if ($report) {
@@ -47,7 +47,7 @@ class TrackingController extends Controller
             if ($campaignLive) {
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
-
+                log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
                 $report = TprmCampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
 
                 if ($report) {
@@ -86,6 +86,7 @@ class TrackingController extends Controller
                         $campaign->email_reported = 1; // Optional: Set initial value, if needed
                         $campaign->save();
 
+                        log_action("Email reported using outlook phish report button by {$campaign->user_email}", 'employee', 'employee');
                         TprmCampaignReport::where('campaign_id', $campaign->campaign_id)->increment('email_reported');
                     }
                 } else {

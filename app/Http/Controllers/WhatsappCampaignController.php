@@ -194,7 +194,7 @@ class WhatsappCampaignController extends Controller
             return response()->json(['status' => 1, 'msg' => 'Payload updated']);
         } else {
 
-            log_action('Payload not updated because of invalid campaign id', 'employee', 'employee');
+            log_action('WhatsApp phishing | Payload not updated because of invalid campaign id', 'employee', 'employee');
 
             return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
         }
@@ -341,7 +341,7 @@ class WhatsappCampaignController extends Controller
                                     ->update(['training_assigned' => 1]);
                             } else {
 
-                                log_action("Failed to assign training", 'employee', 'employee');
+                                log_action("WhatsApp simulation | Failed to assign training", 'employee', 'employee');
 
                                 return response()->json(['error' => 'Failed to create user']);
                             }
