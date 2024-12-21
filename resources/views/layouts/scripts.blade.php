@@ -8,7 +8,7 @@
  {{-- <script src="{{ asset('assets') }}/js/defaultmenu.min.js"></script> --}}
 
  <!-- Node Waves JS-->
- {{-- <script src="{{ asset('assets') }}/libs/node-waves/waves.min.js"></script> --}}
+ <script src="{{ asset('assets') }}/libs/node-waves/waves.min.js"></script>
 
  <!-- Sticky JS -->
  {{-- <script src="{{ asset('assets') }}/js/sticky.js"></script> --}}
@@ -18,7 +18,7 @@
  <script src="{{ asset('assets') }}/js/simplebar.js"></script> --}}
 
  <!-- Color Picker JS -->
- {{-- <script src="{{ asset('assets') }}/libs/@simonwep/pickr/pickr.es5.min.js"></script> --}}
+ <script src="{{ asset('assets') }}/libs/@simonwep/pickr/pickr.es5.min.js"></script>
 
 
  <script src="{{ asset('assets') }}/libs/sweetalert2/sweetalert2.min.js"></script>

@@ -117,7 +117,7 @@
                         <div class="mb-3">
                             <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
                             <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;"
-                                placeholder="Hi @{{ var }} .....your content......@{{ var }}....Please click the link below to get started @{{ var }}"
+                                placeholder="Hi @{{var}} .....your content......@{{var}}....Please click the link below to get started @{{var}}"
                                 required></textarea>
 
 
@@ -126,8 +126,8 @@
                             <ul>
                                 <li>
                                     <small>
-                                        Add <span class="text-secondary">@{{ var }}</span> for variable. For
-                                        example Hello <span class="text-secondary">@{{ var }}</span> Thank you
+                                        Add <span class="text-secondary">@{{var}}</span> for variable. For
+                                        example Hello <span class="text-secondary">@{{var}}</span> Thank you
                                         for choosing our services.
                                     </small>
                                 </li>
@@ -373,50 +373,7 @@
 
     {{-- ------------------------------Toasts---------------------- --}}
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        @if (session('success'))
-            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                    aria-atomic="true">
-                    <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ $error }}
-                    </div>
-                </div>
-            @endforeach
-        @endif
-
-
-    </div>
+   <x-toast />
 
     {{-- ------------------------------Toasts---------------------- --}}
 

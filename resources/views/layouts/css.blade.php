@@ -17,7 +17,7 @@
     <link href="{{asset('assets')}}/css/icons.css" rel="stylesheet">
 
     <!-- Node Waves Css -->
-    {{-- <link href="{{asset('assets')}}/libs/node-waves/waves.min.css" rel="stylesheet"> --}}
+    <link href="{{asset('assets')}}/libs/node-waves/waves.min.css" rel="stylesheet">
 
     <!-- Simplebar Css -->
     {{-- <link href="{{asset('assets')}}/libs/simplebar/simplebar.min.css" rel="stylesheet"> --}}
