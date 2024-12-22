@@ -32,10 +32,10 @@
 
 
  <!-- Chartjs Chart JS -->
- <script src="{{ asset('assets') }}/libs/chart.js/chart.min.js"></script>
+ 
 
  <!-- Imternal Chartjs JS -->
- <script src="{{ asset('assets') }}/js/chartjs-charts.js"></script>
+ {{-- <script src="{{ asset('assets') }}/js/chartjs-charts.js"></script> --}}
 
  <!-- CRM-Dashboard -->
  <script src="{{ asset('assets') }}/js/crm-dashboard.js"></script>

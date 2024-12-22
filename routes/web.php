@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
 use App\Http\Controllers\PublicInfoController;
@@ -433,7 +434,8 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::get('admin/training-preview-content/{trainingid}', [AdminTrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
 
-    //---------------------------training module route -----------------//
+    //---------------------------all logs route -----------------//
+    Route::get('admin/all-logs', [LogController::class, 'index'])->name('admin.all.logs');
 
 
     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
