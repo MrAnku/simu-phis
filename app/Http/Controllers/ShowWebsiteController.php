@@ -271,7 +271,7 @@ class ShowWebsiteController extends Controller
     {
         // Insert into training_assigned_users and user_login tables
         $current_date = now()->toDateString();
-        $date_after_14_days = now()->addDays(14)->toDateString();
+        $date_after_14_days = now()->addDays((int)$user->days_until_due)->toDateString();
 
         $res2 = DB::table('training_assigned_users')
             ->insert([
@@ -335,7 +335,7 @@ class ShowWebsiteController extends Controller
 
         // Insert into training_assigned_users table
         $current_date = now()->toDateString();
-        $date_after_14_days = now()->addDays(14)->toDateString();
+        $date_after_14_days = now()->addDays((int)$user->days_until_due)->toDateString();
         $res2 = DB::table('training_assigned_users')
             ->insert([
                 'campaign_id' => $user->campaign_id,

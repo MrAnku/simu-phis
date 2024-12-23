@@ -50,6 +50,13 @@
     </div>
     <div class="col-lg-4 mb-3">
         <div>
+            <label for="input-label" class="form-label">Days Until Due</label>
+            <input type="text" class="form-control" id="revDays_until_due"
+                disabled readonly>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div>
             <label for="input-label" class="form-label">Training Type</label>
             <input type="text" class="form-control" id="revTrainingType"
                 disabled readonly>

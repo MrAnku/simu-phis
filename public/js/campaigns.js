@@ -44,21 +44,7 @@ function relaunch_camp(campid) {
         }
     })
 
-    // if (confirm("Are you sure you want to Re-Launch this Campaign")) {
-    //     $.post({
-    //         url: 'campaigns.php?relaunch_camp=1',
-    //         data: {
-    //             campid: campid
-    //         },
-    //         success: function (response) {
-    //             // console.log(response);
-    //             // window.location.reload()
-    //             window.location.href = window.location.href;
-    //         }
-    //     })
-    // } else {
-    //     return false;
-    // }
+   
 }
 
 function reschedulecampid(id) {
@@ -91,18 +77,7 @@ function deletecampaign(campid) {
         }
     })
 
-    // if (confirm("Are you sure that you want to delete?")) {
-    //     $.get({
-    //         url: 'campaigns.php?deletecamp=1&campid=' + campid,
-    //         success: function (res) {
-    //             // alert(res);
-    //             // window.location.reload();
-    //             window.location.href = window.location.href;
-    //         }
-    //     })
-    // } else {
-    //     return;
-    // }
+  
 }
 
 //campaign type toggling
@@ -146,7 +121,7 @@ $(document).ready(function () {
 
     var current_fs, next_fs, previous_fs; //fieldsets
     var opacity;
-
+    var days_until_due = '';
     $(".next").click(function () {
 
         current_fs = $(this).parent();
@@ -167,6 +142,7 @@ $(document).ready(function () {
 
         if (current_fs.attr('id') === 'pm_step_form') {
             // Check if at least one radio button is checked
+            days_until_due = '';
             var radioChecked = false;
             current_fs.find('input[type="radio"][name="phish_material"]').each(function () {
                 if ($(this).is(':checked')) {
@@ -190,6 +166,16 @@ $(document).ready(function () {
                     return false; // Exit the loop early if any radio button is checked
                 }
             });
+
+             days_until_due = $('#days_until_due').val();
+            if (days_until_due == '') {
+                alert('Please enter days until due');
+                return false; // Stop further execution
+            }
+            if(days_until_due < 1){
+                alert('Days until due must be greater than 0');
+                return false; // Stop further execution
+            }
 
             if (!radioChecked) {
                 alert('Please select training module');
@@ -331,6 +317,7 @@ $(document).ready(function () {
             schTimeZone: schTimeZone.value,
             emailFreq: $("input[name='emailFreq']:checked").val(),
             expire_after: expire_after.value,
+            days_until_due: days_until_due,
 
             launch_time: launch_time()
 
@@ -351,6 +338,7 @@ $(document).ready(function () {
         revSchTimeZone.value = formData.schTimeZone ?? '--';
         revEmailFreq.value = $("input[name='emailFreq']:checked").data('val') ?? '--';
         revExpAfter.value = formData.expire_after ?? '--';
+        revDays_until_due.value = formData.days_until_due ?? '--';
 
         if (formData.campaign_type == 'Phishing') {
             $("#revTrainingLang").parent().parent().hide();
@@ -359,6 +347,7 @@ $(document).ready(function () {
 
             $("#revPhishmat").parent().parent().show();
             $("#revEmailLang").parent().parent().show();
+            $("#revDays_until_due").parent().parent().hide();
         }
 
         if (formData.campaign_type == 'Training') {
@@ -368,6 +357,7 @@ $(document).ready(function () {
             $("#revTrainingLang").parent().parent().show();
             $("#revTrainingMod").parent().parent().show();
             $("#revTrainingType").parent().parent().show();
+            $("#revDays_until_due").parent().parent().show();
         }
 
         if (formData.schType == 'immediately') {
@@ -397,29 +387,7 @@ $(document).ready(function () {
         dataToBeSaved = formData;
     }
 
-    // document.getElementById('createCampaign').addEventListener('click', function(e) {
-    //     e.preventDefault();
-
-    //     // Log your data to be saved
-    //     console.log(dataToBeSaved);
-
-    //     // Fetch the CSRF token from the meta tag
-    //     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    //     // Make the POST request with Axios
-    //     axios.post('/campaigns/create', dataToBeSaved, {
-    //         headers: {
-    //             'X-CSRF-TOKEN': token
-    //         }
-    //     })
-    //     .then(function (response) {
-    //         console.log(response.data);
-    //         window.location.href = window.location.href;
-    //     })
-    //     .catch(function (error) {
-    //         console.error('Error:', error.response.data);
-    //     });
-    // });
+  
 
     $('#createCampaign').click(function (e) {
         e.preventDefault();
@@ -448,9 +416,7 @@ function formatDate(date) {
     return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
 }
 
-// Example usage
-// var currentDate = new Date();
-// var formattedDate = formatDate(currentDate);
+
 
 //handling imediate and schedule btn
 $("#imediateLabelBtn").click(function () {

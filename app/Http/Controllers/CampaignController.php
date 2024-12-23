@@ -130,6 +130,7 @@ class CampaignController extends Controller
         $timeZone = $request->input('schTimeZone');
         $frequency = $request->input('emailFreq');
         $expAfter = $request->input('expire_after');
+        $days_until_due = $request->input('days_until_due') ?? null;
         $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
 
         $phishingEmail = PhishingEmail::where('id', $phishMaterial)
@@ -164,6 +165,7 @@ class CampaignController extends Controller
                     'user_name' => $user->user_name,
                     'user_email' => $user->user_email,
                     'training_module' => $trainingMod,
+                    'days_until_due' => $days_until_due,
                     'training_lang' => $trainingLang,
                     'training_type' => $trainingType,
                     'launch_time' => $launchTimeFormatted,
@@ -181,6 +183,7 @@ class CampaignController extends Controller
                 'status' => 'running',
                 'email_lang' => $emailLang,
                 'training_lang' => $trainingLang,
+                'days_until_due' => $days_until_due,
                 'scheduled_date' => $launchTimeFormatted,
                 'company_id' => $companyId,
             ]);
@@ -193,6 +196,7 @@ class CampaignController extends Controller
                 'campaign_type' => $campaignType,
                 'users_group' => $usersGroup,
                 'training_module' => $trainingMod,
+                'days_until_due' => $days_until_due,
                 'training_lang' => $trainingLang,
                 'training_type' => $trainingType,
                 'phishing_material' => $phishMaterial,

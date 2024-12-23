@@ -19,6 +19,7 @@ class CampaignLive extends Model
         'user_name',
         'user_email',
         'training_module',
+        'days_until_due',
         'training_lang',
         'training_type',
         'launch_time',
