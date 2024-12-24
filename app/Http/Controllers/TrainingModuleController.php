@@ -14,11 +14,18 @@ class TrainingModuleController extends Controller
     {
         $company_id = auth()->user()->company_id;
 
-        $trainingModules = TrainingModule::where('company_id', $company_id)
-            ->orWhere('company_id', 'default')
-            ->get();
-        return view('trainingModules', compact('trainingModules'));
+        $trainings = TrainingModule::where(function ($query) use ($company_id) {
+            $query->where('company_id', $company_id)
+                ->orWhere('company_id', 'default');
+        })->get();
+
+        // Separate the trainings based on the category
+        $interTrainings = $trainings->where('category', 'international');
+        $middleEastTrainings = $trainings->where('category', 'middle_east');
+
+        return view('trainingModules', compact('interTrainings', 'middleEastTrainings'));
     }
+
 
     public function addTraining(Request $request)
     {
@@ -26,6 +33,7 @@ class TrainingModuleController extends Controller
             'moduleName' => 'required|string|max:255',
             'mPassingScore' => 'required|numeric|min:0|max:100',
             'mCompTime' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
             'jsonData' => 'required|json',
             'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
             'mModuleLang' => 'nullable|string|max:5',
@@ -52,6 +60,7 @@ class TrainingModuleController extends Controller
             'estimated_time' => $mCompTime,
             'cover_image' => $mCoverFile,
             'passing_score' => $mPassingScore,
+            'category' => $request->input('category'),
             'json_quiz' => $jsonData,
             'module_language' => $mModuleLang,
             'company_id' => $companyId,
@@ -186,9 +195,9 @@ class TrainingModuleController extends Controller
 
     public function trainingPreview($trainingid)
     {
-       
+
         // Pass data to the view
-        return view('previewTraining', ['trainingid'=>$trainingid]);
+        return view('previewTraining', ['trainingid' => $trainingid]);
     }
 
     public function loadPreviewTrainingContent($trainingid)
@@ -198,7 +207,7 @@ class TrainingModuleController extends Controller
 
         // Validate the ID
         if ($id === false || !ctype_digit($id)) {
-            return response()->json(['status'=> 0, 'msg' => 'Invalid training module ID.']);
+            return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
         }
 
         // Fetch the training data
@@ -206,7 +215,7 @@ class TrainingModuleController extends Controller
 
         // Check if the training module exists
         if (!$trainingData) {
-            return response()->json(['status'=> 0, 'msg' => 'Training Module Not Found']);
+            return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
         }
 
         // Access the module_language attribute
@@ -227,6 +236,6 @@ class TrainingModuleController extends Controller
         }
 
         // Pass data to the view
-        return response()->json(['status'=> 1, 'jsonData' => $trainingData]);
+        return response()->json(['status' => 1, 'jsonData' => $trainingData]);
     }
 }
