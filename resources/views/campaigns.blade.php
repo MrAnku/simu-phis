@@ -119,12 +119,22 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $campaign->campaign_type }}</td>
-                                                <td>{!! $campaign->status_button !!}</td>
-                                                <td class="text-center">
-                                                    {{ $campaign->users_group_name }}
+                                                <td>
+                                                    @if ($campaign->status == 'completed')
+                                                        <span class="badge bg-success">Completed</span>
+                                                    @elseif ($campaign->status == 'pending')
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    @elseif ($campaign->status == 'Not Scheduled')
+                                                        <span class="badge bg-warning">Not Scheduled</span>
+                                                    @else
+                                                        <span class="badge bg-success">Running</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    {{ $campaign->usersGroup->group_name }}
 
                                                 </td>
-                                                <td class="text-center">
+                                                <td>
                                                     <div>
 
                                                         @if ($campaign->launch_type == 'schLater')
@@ -132,9 +142,10 @@
                                                                 Not scheduled
                                                             </small>
                                                         @else
-                                                            <small>
-                                                                {{ $campaign->launch_type }}
-                                                            </small>
+                                                            
+                                                                <span class="badge bg-info-transparent">{{ $campaign->launch_type }}</span>
+                                                                
+                                                            
                                                         @endif
 
 
@@ -143,7 +154,7 @@
                                                     {{ e($campaign->launch_time) }}
 
                                                     <div>
-                                                        <small>
+                                                        <small class="text-muted">
                                                             @if ($campaign->email_freq == 'one')
                                                                 Once
                                                             @else
@@ -154,13 +165,36 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    {!! $campaign->relaunch_btn ?? '' !!}
-                                                    {!! $campaign->reschedule_btn ?? '' !!}
+                                                    {{-- {!! $campaign->relaunch_btn ?? '' !!} --}}
+                                                    @if ($campaign->status == 'pending')
+                                                        {{-- reschedule button --}}
+                                                        <button
+                                                            class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
+                                                            data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule Campaign" onclick="reschedulecampid(`{{$campaign->id}}`)">
+                                                            <i class="ri-time-line"></i>
+                                                        </button>
+                                                    @elseif ($campaign->status == 'completed')
+                                                        {{-- relaunch button --}}
+                                                        <button
+                                                            class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave"
+                                                            onclick="relaunch_camp(`{{$campaign->campaign_id}}`)" title="Re-Launch">
+                                                            <i class="ri-loop-left-line"></i>
+                                                        </button>
+                                                    @elseif ($campaign->status == 'Not Scheduled')
+                                                        {{-- schedule button --}}
+                                                        <button
+                                                            class="btn btn-icon btn-success-transparent rounded-pill btn-wave">
+                                                            <i class="ri-notification-3-line"></i>
+                                                        </button>
+                                                    @endif
+                                                    
                                                     <button
-                                                        class="btn btn-icon btn-danger btn-wave waves-effect waves-light"
+                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
                                                         title="Delete"
-                                                        onclick="deletecampaign('{{ e($campaign->campaign_id) }}')"><i
-                                                            class="bx bx-trash"></i></button>
+                                                        onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                   
                                                 </td>
                                             </tr>
                                         @empty
@@ -182,7 +216,7 @@
         </div>
     </div>
 
-    {{----------------------------------------------Toasts---------------------- --}}
+    {{-- --------------------------------------------Toasts---------------------- --}}
 
     <x-toast />
 

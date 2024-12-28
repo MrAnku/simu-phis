@@ -38,7 +38,7 @@ function relaunch_camp(campid) {
                 success: function (res) {
 
                     // console.log(res)
-                    window.location.href = window.location.href;
+                   checkResponse(res);
                 }
             })
         }

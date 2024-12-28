@@ -37,4 +37,8 @@ class Campaign extends Model
     public function noOfUsers(){
         return $this->hasMany(Users::class, 'group_id', 'users_group');
     }
+
+    public function usersGroup(){
+        return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
+    }
 }

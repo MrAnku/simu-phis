@@ -26,56 +26,15 @@ class CampaignController extends Controller
     {
 
         $companyId = Auth::user()->company_id;
-        $allCamps = Campaign::where('company_id', $companyId)->get();
+        $allCamps = Campaign::with('usersGroup')->where('company_id', $companyId)->get();
 
         $lastCampaign = Campaign::orderBy('id', 'desc')->first();
-        if ($lastCampaign) {
-            $lastDeliveryDate = Carbon::parse($lastCampaign->delivery_date);
-            $currentDate = Carbon::now();
-            if ($currentDate->diffInDays($lastDeliveryDate) < 1) {
-                $daysSinceLastDelivery = 1;
-            } else {
-
-                $daysSinceLastDelivery = $currentDate->diffInDays($lastDeliveryDate);
-            }
-        } else {
-            // Handle the case where no campaign deliveries exist
-            $daysSinceLastDelivery = 0;
-        }
+        $daysSinceLastDelivery = $lastCampaign ? max(1, Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time))) : 0;
 
         $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();
         $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();
 
-        foreach ($allCamps as $campaign) {
-            switch ($campaign->status) {
-                case 'pending':
-                    $campaign->status_button = '<button type="button" class="btn btn-warning rounded-pill btn-wave waves-effect waves-light">Pending</button>';
-                    $campaign->reschedule_btn = '<button class="btn btn-icon btn-warning btn-wave waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule" onclick="reschedulecampid(\'' . e($campaign->id) . '\')"><i class="bx bx-time-five"></i></button>';
-                    break;
-
-                case 'running':
-                    $campaign->status_button = '<button type="button" class="btn btn-success rounded-pill btn-wave waves-effect waves-light">Running</button>';
-                    break;
-
-                case 'Not Scheduled':
-                    $campaign->status_button = '<button type="button" class="btn btn-warning rounded-pill btn-wave waves-effect waves-light">Not Scheduled</button>';
-                    $campaign->reschedule_btn = '<button class="btn btn-icon btn-warning btn-wave waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule" onclick="reschedulecampid(\'' . e($campaign->id) . '\')"><i class="bx bx-time-five"></i></button>';
-                    $campaign->launch_time = '--';
-                    $campaign->camp_name = e($campaign->campaign_name);
-                    break;
-
-                default:
-                    $campaign->status_button = '<button type="button" class="btn btn-success rounded-pill btn-wave waves-effect waves-light">Completed</button>';
-                    $campaign->relaunch_btn = '<button class="btn btn-icon btn-success btn-wave waves-effect waves-light" onclick="relaunch_camp(\'' . base64_encode($campaign->campaign_id) . '\')" title="Re-Launch"><i class="bx bx-sync"></i></button>';
-                    break;
-            }
-
-            $usersGroup = UsersGroup::where('group_id', $campaign->users_group)
-                ->where('company_id', $companyId)
-                ->first();
-
-            $campaign->users_group_name = $usersGroup ? e($usersGroup->group_name) : 'N/A';
-        }
+       
 
         // Fetch users groups and phishing emails, and pass to view
         $usersGroups = $this->fetchUsersGroups();
@@ -338,7 +297,7 @@ class CampaignController extends Controller
     public function relaunchCampaign(Request $request)
     {
 
-        $campid = base64_decode($request->campid);
+        $campid = $request->campid;
         $dateTime = Carbon::now();
         $formattedDateTime = $dateTime->format('m/d/Y g:i A');
 
@@ -371,6 +330,7 @@ class CampaignController extends Controller
         $users = User::where('group_id', $campaign->users_group)->get();
 
         if ($users->isEmpty()) {
+            return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
         }
 
         foreach ($users as $user) {
@@ -381,7 +341,7 @@ class CampaignController extends Controller
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
                 'training_module' => $campaign->training_module,
-                'training_lang' => $campaign->training_module,
+                'training_lang' => $campaign->training_lang,
                 'launch_time' => $formattedDateTime,
                 'phishing_material' => $campaign->phishing_material,
                 'email_lang' => $campaign->email_lang,
@@ -391,6 +351,8 @@ class CampaignController extends Controller
         }
 
         log_action('Email campaign relaunched');
+
+        return response()->json(['status' => 1, 'msg' => 'Campaign relaunched successfully']);
     }
 
     public function fetchPhishData(Request $request)
