@@ -92,6 +92,7 @@ class TrainingModuleController extends Controller
             'trainingModuleid' => 'required|integer|exists:training_modules,id',
             'moduleName' => 'required|string|max:255',
             'mPassingScore' => 'required|numeric',
+            'category' => 'nullable|string|max:255',
             'mModuleLang' => 'nullable|string|max:255',
             'mCompTime' => 'required|numeric',
             'updatedjsonData' => 'required|json',
@@ -123,6 +124,7 @@ class TrainingModuleController extends Controller
                     'estimated_time' => $mCompTime,
                     'cover_image' => $mCoverFile,
                     'passing_score' => $mPassingScore,
+                    'category' => $request->input('category'),
                     'json_quiz' => $jsonData,
                     'module_language' => $mModuleLang,
                 ]);
@@ -133,6 +135,7 @@ class TrainingModuleController extends Controller
                     'name' => $moduleName,
                     'estimated_time' => $mCompTime,
                     'passing_score' => $mPassingScore,
+                    'category' => $request->input('category'),
                     'json_quiz' => $jsonData,
                     'module_language' => $mModuleLang,
                 ]);

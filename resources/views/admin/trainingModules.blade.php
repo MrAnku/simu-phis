@@ -13,7 +13,18 @@
                     <button type="button" class="btn btn-primary mb-3" onclick="addNewTraining()" data-bs-toggle="modal"
                         data-bs-target="#newTrainingModuleModal">New Training Module</button>
                 </div>
+                <div
+                    style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        ">
+
+                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search training">
+                    <i class="bx bx-search fs-23"></i>
+                </div>
             </div>
+
 
 
             <div class="row">
@@ -25,56 +36,127 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#international" aria-selected="true">International</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#middle_east" aria-selected="false" tabindex="-1">Middle East</a>
+                                </li>
 
-                            <div class="row">
-                                @forelse ($trainingModules as $trainingModule)
-                                    <div class="col-lg-6">
-                                        <div class="card custom-card">
-                                            <div class="card-header">
-                                                <div class="d-flex align-items-center w-100">
+                            </ul>
 
-                                                    <div class="">
-                                                        <div class="fs-15 fw-semibold">{{ $trainingModule->name }}</div>
+                            <div class="tab-content">
+                                <div class="tab-pane show active text-muted" id="international" role="tabpanel">
+                                    <div class="row">
+                                        @forelse ($interTrainings as $trainingModule)
+                                            <div class="col-lg-6">
+                                                <div class="card custom-card">
+                                                    <div class="card-header">
+                                                        <div class="d-flex align-items-center w-100">
+
+                                                            <div class="">
+                                                                <div class="fs-15 fw-semibold">{{ $trainingModule->name }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body htmlPhishingGrid">
+                                                        <img class="trainingCoverImg"
+                                                            src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <div class="d-flex justify-content-center">
+                                                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                                                                target="_blank"
+                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+
+                                                            <button type="button"
+                                                                onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
+                                                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+
+                                                            <button type="button"
+                                                                onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
+                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editTrainingModuleModal">Edit</button>
+
+
+
+
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="card-body htmlPhishingGrid">
-                                                <img class="trainingCoverImg"
-                                                    src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                        @empty
+                                            <div class="col-lg-6">
+                                                No records found
                                             </div>
-                                            <div class="card-footer">
-                                                <div class="d-flex justify-content-center">
-                                                    <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
-                                                        target="_blank"
-                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
-
-                                                        <button type="button"
-                                                            onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
-
-                                                        <button type="button"
-                                                            onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
-                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#editTrainingModuleModal">Edit</button>
-                                                   
+                                        @endforelse
 
 
 
+
+                                    </div>
+                                </div>
+                                <div class="tab-pane text-muted" id="middle_east" role="tabpanel">
+                                    <div class="row">
+                                        @forelse ($middleEastTrainings as $trainingModule)
+                                            <div class="col-lg-6">
+                                                <div class="card custom-card">
+                                                    <div class="card-header">
+                                                        <div class="d-flex align-items-center w-100">
+
+                                                            <div class="">
+                                                                <div class="fs-15 fw-semibold">{{ $trainingModule->name }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body htmlPhishingGrid">
+                                                        <img class="trainingCoverImg"
+                                                            src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <div class="d-flex justify-content-center">
+                                                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                                                                target="_blank"
+                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+
+                                                            <button type="button"
+                                                                onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
+                                                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+
+                                                            <button type="button"
+                                                                onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
+                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editTrainingModuleModal">Edit</button>
+
+
+
+
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @empty
+                                            <div class="col-lg-6">
+                                                No records found
+                                            </div>
+                                        @endforelse
+
+
+
+
                                     </div>
-                                @empty
-                                    <div class="col-lg-6">
-                                        No records found
-                                    </div>
-                                @endforelse
-
-
-
-
+                                </div>
                             </div>
+
+
+
                         </div>
                     </div>
                 </div>
@@ -117,87 +199,14 @@
                                 </div>
                             </div>
                             <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module Language</span>
-                                    <select class="form-select" name="mModuleLang" id="inputGroupSelect01">
-                                        <option value="en">English</option>
-                                        <option value="af">Afrikaans</option>
-                                        <option value="sq">Albanian</option>
-                                        <option value="am">Amharic</option>
-                                        <option value="ar">Arabic</option>
-                                        <option value="hy">Armenian</option>
-                                        <option value="az">Azerbaijani</option>
-                                        <option value="bn">Bengali</option>
-                                        <option value="bs">Bosnian</option>
-                                        <option value="bg">Bulgarian</option>
-                                        <option value="ca">Catalan</option>
-                                        <option value="zh">Chinese (Simplified)</option>
-                                        <option value="zh-TW">Chinese (Traditional)</option>
-                                        <option value="hr">Croatian</option>
-                                        <option value="cs">Czech</option>
-                                        <option value="da">Danish</option>
-                                        <option value="fa-AF">Dari</option>
-                                        <option value="nl">Dutch</option>
-                                        <option value="et">Estonian</option>
-                                        <option value="fa">Farsi (Persian)</option>
-                                        <option value="tl">Filipino, Tagalog</option>
-                                        <option value="fi">Finnish</option>
-                                        <option value="fr">French</option>
-                                        <option value="fr-CA">French (Canada)</option>
-                                        <option value="ka">Georgian</option>
-                                        <option value="de">German</option>
-                                        <option value="el">Greek</option>
-                                        <option value="gu">Gujarati</option>
-                                        <option value="ht">Haitian Creole</option>
-                                        <option value="ha">Hausa</option>
-                                        <option value="he">Hebrew</option>
-                                        <option value="hi">Hindi</option>
-                                        <option value="hu">Hungarian</option>
-                                        <option value="is">Icelandic</option>
-                                        <option value="id">Indonesian</option>
-                                        <option value="ga">Irish</option>
-                                        <option value="it">Italian</option>
-                                        <option value="ja">Japanese</option>
-                                        <option value="kn">Kannada</option>
-                                        <option value="kk">Kazakh</option>
-                                        <option value="ko">Korean</option>
-                                        <option value="lv">Latvian</option>
-                                        <option value="lt">Lithuanian</option>
-                                        <option value="mk">Macedonian</option>
-                                        <option value="ms">Malay</option>
-                                        <option value="ml">Malayalam</option>
-                                        <option value="mt">Maltese</option>
-                                        <option value="mr">Marathi</option>
-                                        <option value="mn">Mongolian</option>
-                                        <option value="no">Norwegian (Bokmål)</option>
-                                        <option value="ps">Pashto</option>
-                                        <option value="pl">Polish</option>
-                                        <option value="pt">Portuguese (Brazil)</option>
-                                        <option value="pt-PT">Portuguese (Portugal)</option>
-                                        <option value="pa">Punjabi</option>
-                                        <option value="ro">Romanian</option>
-                                        <option value="ru">Russian</option>
-                                        <option value="sr">Serbian</option>
-                                        <option value="si">Sinhala</option>
-                                        <option value="sk">Slovak</option>
-                                        <option value="sl">Slovenian</option>
-                                        <option value="so">Somali</option>
-                                        <option value="es">Spanish</option>
-                                        <option value="es-MX">Spanish (Mexico)</option>
-                                        <option value="sw">Swahili</option>
-                                        <option value="sv">Swedish</option>
-                                        <option value="ta">Tamil</option>
-                                        <option value="te">Telugu</option>
-                                        <option value="th">Thai</option>
-                                        <option value="tr">Turkish</option>
-                                        <option value="uk">Ukrainian</option>
-                                        <option value="ur">Urdu</option>
-                                        <option value="uz">Uzbek</option>
-                                        <option value="vi">Vietnamese</option>
-                                        <option value="cy">Welsh</option>
-                                    </select>
-                                </div>
-                            </div>
+                              <div class="input-group mb-3">
+                                  <span class="input-group-text">Category</span>
+                                  <select class="form-select" name="category" id="category">
+                                      <option value="international">International</option>
+                                      <option value="middle_east">Middle East</option>
+                                  </select>
+                              </div>
+                          </div>
                         </div>
 
                         <div class="row">
@@ -284,87 +293,14 @@
                                 </div>
                             </div>
                             <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module Language</span>
-                                    <select class="form-select" name="mModuleLang" id="editLang">
-                                        <option value="en">English</option>
-                                        <option value="af">Afrikaans</option>
-                                        <option value="sq">Albanian</option>
-                                        <option value="am">Amharic</option>
-                                        <option value="ar">Arabic</option>
-                                        <option value="hy">Armenian</option>
-                                        <option value="az">Azerbaijani</option>
-                                        <option value="bn">Bengali</option>
-                                        <option value="bs">Bosnian</option>
-                                        <option value="bg">Bulgarian</option>
-                                        <option value="ca">Catalan</option>
-                                        <option value="zh">Chinese (Simplified)</option>
-                                        <option value="zh-TW">Chinese (Traditional)</option>
-                                        <option value="hr">Croatian</option>
-                                        <option value="cs">Czech</option>
-                                        <option value="da">Danish</option>
-                                        <option value="fa-AF">Dari</option>
-                                        <option value="nl">Dutch</option>
-                                        <option value="et">Estonian</option>
-                                        <option value="fa">Farsi (Persian)</option>
-                                        <option value="tl">Filipino, Tagalog</option>
-                                        <option value="fi">Finnish</option>
-                                        <option value="fr">French</option>
-                                        <option value="fr-CA">French (Canada)</option>
-                                        <option value="ka">Georgian</option>
-                                        <option value="de">German</option>
-                                        <option value="el">Greek</option>
-                                        <option value="gu">Gujarati</option>
-                                        <option value="ht">Haitian Creole</option>
-                                        <option value="ha">Hausa</option>
-                                        <option value="he">Hebrew</option>
-                                        <option value="hi">Hindi</option>
-                                        <option value="hu">Hungarian</option>
-                                        <option value="is">Icelandic</option>
-                                        <option value="id">Indonesian</option>
-                                        <option value="ga">Irish</option>
-                                        <option value="it">Italian</option>
-                                        <option value="ja">Japanese</option>
-                                        <option value="kn">Kannada</option>
-                                        <option value="kk">Kazakh</option>
-                                        <option value="ko">Korean</option>
-                                        <option value="lv">Latvian</option>
-                                        <option value="lt">Lithuanian</option>
-                                        <option value="mk">Macedonian</option>
-                                        <option value="ms">Malay</option>
-                                        <option value="ml">Malayalam</option>
-                                        <option value="mt">Maltese</option>
-                                        <option value="mr">Marathi</option>
-                                        <option value="mn">Mongolian</option>
-                                        <option value="no">Norwegian (Bokmål)</option>
-                                        <option value="ps">Pashto</option>
-                                        <option value="pl">Polish</option>
-                                        <option value="pt">Portuguese (Brazil)</option>
-                                        <option value="pt-PT">Portuguese (Portugal)</option>
-                                        <option value="pa">Punjabi</option>
-                                        <option value="ro">Romanian</option>
-                                        <option value="ru">Russian</option>
-                                        <option value="sr">Serbian</option>
-                                        <option value="si">Sinhala</option>
-                                        <option value="sk">Slovak</option>
-                                        <option value="sl">Slovenian</option>
-                                        <option value="so">Somali</option>
-                                        <option value="es">Spanish</option>
-                                        <option value="es-MX">Spanish (Mexico)</option>
-                                        <option value="sw">Swahili</option>
-                                        <option value="sv">Swedish</option>
-                                        <option value="ta">Tamil</option>
-                                        <option value="te">Telugu</option>
-                                        <option value="th">Thai</option>
-                                        <option value="tr">Turkish</option>
-                                        <option value="uk">Ukrainian</option>
-                                        <option value="ur">Urdu</option>
-                                        <option value="uz">Uzbek</option>
-                                        <option value="vi">Vietnamese</option>
-                                        <option value="cy">Welsh</option>
-                                    </select>
-                                </div>
-                            </div>
+                              <div class="input-group mb-3">
+                                  <span class="input-group-text">Category</span>
+                                  <select class="form-select" name="category" id="editCategory">
+                                      <option value="international">International</option>
+                                      <option value="middle_east">Middle East</option>
+                                  </select>
+                              </div>
+                          </div>
                         </div>
 
                         <div class="row">
@@ -373,7 +309,9 @@
                                     <label class="input-group-text" for="coverImageFile">Cover Image</label>
                                     <input type="file" class="form-control" name="mCoverFile"
                                         id="editCoverImageFile">
+                                       
                                 </div>
+                                <small>Only .jpeg, .jpg and .png files allowed</small>
                             </div>
                             <div class="col-lg-6">
                                 <div class="input-group mb-3">
@@ -1199,7 +1137,8 @@
                         // const resJson = JSON.parse(res);
                         editModuleName.value = resJson.name;
                         editmPassingScore.value = resJson.passing_score;
-                        editLang.value = resJson.module_language;
+                        editCategory.value = resJson.category;
+                        // editLang.value = resJson.module_language;
                         // editCoverImageFile.value = resJson.cover_image;
                         editMCompTime.value = resJson.estimated_time;
 
@@ -1221,6 +1160,23 @@
                     }
                 })
             }
+        </script>
+        <script>
+          $('#t_moduleSearch').on('input', function () {
+    var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+
+    // Loop through each template card
+    $('.t_modules').each(function () {
+        var templateName = $(this).find('.fw-semibold').text().toLowerCase(); // Get the template name and convert it to lowercase
+
+        // If the template name contains the search value, show the card; otherwise, hide it
+        if (templateName.includes(searchValue)) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+});
         </script>
     @endpush
 

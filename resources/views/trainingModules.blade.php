@@ -194,10 +194,14 @@
 
                         <div class="row">
                             <div class="col-lg-6">
-                                <div class="input-group mb-3">
+                              
+                                <div class="input-group">
                                     <label class="input-group-text" for="coverImageFile">Cover Image</label>
                                     <input type="file" class="form-control" name="mCoverFile" id="coverImageFile">
+                                    
                                 </div>
+                                <small class="text-muted mx-3">Only .jpeg, .jpg and .png files allowed</small>
+                                
                             </div>
                             <div class="col-lg-6">
                                 <div class="input-group mb-3">
@@ -290,11 +294,12 @@
 
                         <div class="row">
                             <div class="col-lg-6">
-                                <div class="input-group mb-3">
+                                <div class="input-group">
                                     <label class="input-group-text" for="coverImageFile">Cover Image</label>
                                     <input type="file" class="form-control" name="mCoverFile"
                                         id="editCoverImageFile">
                                 </div>
+                                <small class="text-muted mx-3">Only .jpeg, .jpg and .png files allowed</small>
                             </div>
                             <div class="col-lg-6">
                                 <div class="input-group mb-3">

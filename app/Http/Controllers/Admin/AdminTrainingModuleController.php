@@ -15,7 +15,9 @@ class AdminTrainingModuleController extends Controller
    {
 
        $trainingModules = TrainingModule::all();
-       return view('admin.trainingModules', compact('trainingModules'));
+       $interTrainings = $trainingModules->where('category', 'international');
+        $middleEastTrainings = $trainingModules->where('category', 'middle_east');
+       return view('admin.trainingModules', compact('interTrainings', 'middleEastTrainings'));
    }
 
    public function addTraining(Request $request)
@@ -24,6 +26,7 @@ class AdminTrainingModuleController extends Controller
            'moduleName' => 'required|string|max:255',
            'mPassingScore' => 'required|numeric|min:0|max:100',
            'mCompTime' => 'required|string|max:255',
+           'category' => 'nullable|string|max:255',
            'jsonData' => 'required|json',
            'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
            'mModuleLang' => 'nullable|string|max:5',
@@ -49,6 +52,7 @@ class AdminTrainingModuleController extends Controller
            'estimated_time' => $mCompTime,
            'cover_image' => $mCoverFile,
            'passing_score' => $mPassingScore,
+           'category' => $request->input('category'),
            'json_quiz' => $jsonData,
            'module_language' => $mModuleLang,
            'company_id' => 'default',
@@ -107,6 +111,7 @@ class AdminTrainingModuleController extends Controller
                    'estimated_time' => $mCompTime,
                    'cover_image' => $mCoverFile,
                    'passing_score' => $mPassingScore,
+                   'category' => $request->input('category'),
                    'json_quiz' => $jsonData,
                    'module_language' => $mModuleLang,
                ]);
@@ -116,6 +121,7 @@ class AdminTrainingModuleController extends Controller
                    'name' => $moduleName,
                    'estimated_time' => $mCompTime,
                    'passing_score' => $mPassingScore,
+                   'category' => $request->input('category'),
                    'json_quiz' => $jsonData,
                    'module_language' => $mModuleLang,
                ]);
