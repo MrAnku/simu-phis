@@ -3,6 +3,8 @@
 // app/Helpers/helpers.php
 
 use App\Models\Log;
+use App\Models\Company;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -198,5 +200,36 @@ if (!function_exists('log_action')) {
         'ip_address' => request()->ip(),
         'user_agent' => request()->userAgent(),
     ]);
+}
+}
+
+if (!function_exists('checkWhitelabeled')) {
+
+    function checkWhitelabeled($company_id){
+        $company = Company::with('partner')->where('company_id', $company_id)->first();
+
+        $partner_id = $company->partner->partner_id;
+        $company_email = $company->email;
+
+        $isWhitelabled = DB::table('white_labelled_partner')
+            ->where('partner_id', $partner_id)
+            ->where('approved_by_admin', 1)
+            ->first();
+
+        if ($isWhitelabled) {
+            return [
+                'company_email' => $company_email,
+                'learn_domain' => $isWhitelabled->learn_domain,
+                'company_name' => $isWhitelabled->company_name,
+                'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
+            ];
+        }
+
+        return [
+            'company_email' => env('MAIL_FROM_ADDRESS'),
+            'learn_domain' => 'learn.simuphish.com',
+            'company_name' => 'simUphish',
+            'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
+        ];
 }
 }

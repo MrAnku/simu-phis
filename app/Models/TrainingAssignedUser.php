@@ -16,6 +16,8 @@ class TrainingAssignedUser extends Model
         'training',
         'username',
         'completion_date',
+        'personal_best',
+        'completed',
         'certificate_id',
         // Add other columns that should be mass assignable
     ];

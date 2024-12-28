@@ -220,10 +220,10 @@ class ReportingController extends Controller
 
     public function whatsappfetchCampaignReport(Request $request)
     {
-       $campaignId = $request->campaignId;
-       $company_id = Auth::user()->company_id;
-       $camp_detail = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
-       return response()->json($camp_detail);
+        $campaignId = $request->campaignId;
+        $company_id = Auth::user()->company_id;
+        $camp_detail = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
+        return response()->json($camp_detail);
     }
     public function aicallingfetchCampaignReport(Request $request)
     {
@@ -252,7 +252,7 @@ class ReportingController extends Controller
                 'ai_agent' => $userGroup->ai_agent,
                 'ai_agent_name' => $userGroup->ai_agent_name,
                 'phone_no' => $userGroup->phone_no,
-                
+
                 'status' => $userGroup->status,
                 'no_of_users' => $no_of_users,
             ];
@@ -389,7 +389,7 @@ class ReportingController extends Controller
             foreach ($allUsers as $userReport) {
                 $isSent = $userReport->status == 'sent' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
                 $link_clicked = $userReport->link_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                
+
                 $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
                 $training_assigned = $userReport->training_assigned == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
@@ -445,11 +445,11 @@ class ReportingController extends Controller
 
         $responseHtml = '';
         foreach ($allUsers as $userReport) {
-            $isSent = $userReport->status == 'completed' ? '<span class="badge bg-success-transparent">Completed</span>' : '<span class="badge bg-warning-transparent">'.$userReport->status.'</span>';
+            $isSent = $userReport->status == 'completed' ? '<span class="badge bg-success-transparent">Completed</span>' : '<span class="badge bg-warning-transparent">' . $userReport->status . '</span>';
             $isViewed = $userReport->created_at;
             $isPayloadClicked = $userReport->employee_email;
             // $isEmailCompromised = $userReport->emp_compromised;
-            $isEmailReported = $userReport->training_assigned =='1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+            $isEmailReported = $userReport->training_assigned == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
             $responseHtml .=
                 '<tr>
@@ -805,7 +805,7 @@ class ReportingController extends Controller
             return response()->json([
                 'html' => '
                 <tr>
-                    <td colspan="6" class="text-center"> No records found</td>
+                    <td colspan="7" class="text-center"> No records found</td>
                 </tr>',
             ]);
         }
@@ -817,34 +817,55 @@ class ReportingController extends Controller
             $today = new \DateTime(date('Y-m-d'));
             $dueDate = new \DateTime($assignedUser->training_due_date);
 
-            if ($dueDate > $today) {
-                $status = "<span class='text-success'><strong>In training period</strong></span>";
-            } else {
-                $days_difference = $today->diff($dueDate)->days;
-                $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
+            if($assignedUser->completed == 1) {
+                $status = "<span class='text-success'><strong>Training Completed</strong></span>";
+                
+            } else{
+                if ($dueDate > $today) {
+                    $status = "<span class='text-success'><strong>In training period</strong></span>";
+                } else {
+                    $days_difference = $today->diff($dueDate)->days;
+                    $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
+                }
             }
 
+           
             $responseHtml .=
                 '
                 <tr>
-                    <td>' .
-                $assignedUser->user_email .
-                '</td>
-                    <td>' .
-                $trainingDetail->name .
-                '</td>
-                    <td>' .
-                $assignedUser->assigned_date .
-                '</td>
-                    <td>' .
-                $assignedUser->personal_best .
-                '%</td>
-                    <td>' .
-                $trainingDetail->passing_score .
-                '%</td>
-                    <td>' .
-                $status .
-                '</td>
+                    <td>' . $assignedUser->user_email . '</td>
+                    <td>' .$trainingDetail->name . '</td>
+                    <td>' .$assignedUser->assigned_date . '</td>
+                    <td>' .$assignedUser->personal_best . '%</td>
+                    <td>' .$trainingDetail->passing_score . '%</td>
+                    <td>' .$status . '</td>
+                    <td> 
+                        <button type="button" 
+                        onclick="resendTrainingAssignmentReminder(this, `' . $assignedUser->user_email . '`, `' .$trainingDetail->name . '`)" 
+                        class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" 
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top" 
+                        title="Would you like to send a training reminder to this employee? The reminder email will include all outstanding training assignments.">
+                            <i class="ri-mail-send-line"></i>
+                        </button>
+
+                        <button type="button" 
+                        class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave" 
+                        onclick="completeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`)"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top" 
+                        title="Would you like to auto-complete the assigned training for this employee? This will assign a passing score of 100% for this training module.">
+                        <i class="ri-checkbox-circle-line"></i>
+                        </button>
+
+                        <button type="button" 
+                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" 
+                        data-bs-toggle="tooltip"
+                        onclick="removeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`, `'.$trainingDetail->name.'`, `' . $assignedUser->user_email . '`)"
+    data-bs-placement="top" title="Should this employee not be assigned this training? Click here to remove it.">
+                            <i class="ri-delete-bin-line"></i>
+                        </button> 
+                    </td>
                 </tr>';
         }
 
@@ -974,8 +995,4 @@ class ReportingController extends Controller
 
         return response()->json(['html' => $responseHtml]);
     }
-
-
 }
-
-

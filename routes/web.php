@@ -152,6 +152,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/campaigns/relaunch', [CampaignController::class, 'relaunchCampaign'])->name('campaigns.relaunch');
     Route::post('/campaigns/fetch-phish-data', [CampaignController::class, 'fetchPhishData'])->name('campaigns.fetch.phish.data');
     Route::post('/campaigns/reschedule', [CampaignController::class, 'rescheduleCampaign'])->name('reschedule.campaign');
+    Route::post('/campaigns/send-training-reminder', [CampaignController::class, 'sendTrainingReminder'])->name('campaign.send.training.reminder');
+    Route::post('/campaigns/complete-training', [CampaignController::class, 'completeTraining'])->name('campaign.complete.training');
+    Route::post('/campaigns/remove-training', [CampaignController::class, 'removeTraining'])->name('campaign.remove.training');
 
 
     //whatsapp Campaign

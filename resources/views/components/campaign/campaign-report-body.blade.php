@@ -95,6 +95,7 @@
                                         <th>Score</th>
                                         <th>Passing Score</th>
                                         <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="trainingReportsIndividual">

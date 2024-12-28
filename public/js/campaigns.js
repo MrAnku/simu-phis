@@ -44,7 +44,7 @@ function relaunch_camp(campid) {
         }
     })
 
-   
+
 }
 
 function reschedulecampid(id) {
@@ -77,7 +77,7 @@ function deletecampaign(campid) {
         }
     })
 
-  
+
 }
 
 //campaign type toggling
@@ -167,12 +167,12 @@ $(document).ready(function () {
                 }
             });
 
-             days_until_due = $('#days_until_due').val();
+            days_until_due = $('#days_until_due').val();
             if (days_until_due == '') {
                 alert('Please enter days until due');
                 return false; // Stop further execution
             }
-            if(days_until_due < 1){
+            if (days_until_due < 1) {
                 alert('Days until due must be greater than 0');
                 return false; // Stop further execution
             }
@@ -375,9 +375,9 @@ $(document).ready(function () {
 
 
         }
-        if(formData.expire_after == ""){
+        if (formData.expire_after == "") {
             $("#revExpAfter").parent().parent().hide();
-        }else{
+        } else {
             $("#revExpAfter").parent().parent().show();
         }
 
@@ -387,12 +387,12 @@ $(document).ready(function () {
         dataToBeSaved = formData;
     }
 
-  
+
 
     $('#createCampaign').click(function (e) {
         e.preventDefault();
 
-         console.log(dataToBeSaved);
+        console.log(dataToBeSaved);
         $.post({
             url: '/campaigns/create',
             data: dataToBeSaved,
@@ -496,20 +496,20 @@ $('label[for="rfquaterly"]').click(function () {
 //             data[this.name] = this.value || '';
 //         }
 //     });
-    // Display the collected data in the console (for demonstration purposes)
-    // console.log(data);
+// Display the collected data in the console (for demonstration purposes)
+// console.log(data);
 
-    // $.post({
-    //     url: 'campaigns.php?reschduleCamp=1',
-    //     data: data,
-    //     success: function (response) {
-    //         //  console.log(response);
-    //         // window.location.reload()
-    //         window.location.href = window.location.href;
-    //     }
-    // })
+// $.post({
+//     url: 'campaigns.php?reschduleCamp=1',
+//     data: data,
+//     success: function (response) {
+//         //  console.log(response);
+//         // window.location.reload()
+//         window.location.href = window.location.href;
+//     }
+// })
 
-    // Further processing of data can be done here, e.g., sending it to the server via AJAX
+// Further processing of data can be done here, e.g., sending it to the server via AJAX
 // });
 
 
@@ -548,6 +548,110 @@ $('#t_moduleSearch').on('input', function () {
     });
 });
 
+function resendTrainingAssignmentReminder(btn, email, training) {
+
+    console.log(email, training);
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will send a training reminder to: " + email,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e6533c',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, send the reminder email'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var icon = $(btn).html();
+            $(btn).html(`<div class="spinner-border spinner-border-sm me-4" role="status">
+    <span class="visually-hidden">Loading...</span>
+</div>`);
+            $.post({
+                url: '/campaigns/send-training-reminder',
+                data: {
+                    email: email,
+                    training: training
+                },
+                success: function (res) {
+
+                    // console.log(res)
+                    checkResponse(res);
+                    $(btn).html(icon);
+                }
+            })
+
+            // console.log('sending reminder email');
+        }
+    })
+}
+
+function completeAssignedTraining(btn, encodedTrainingId){
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will mark the training as completed",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e6533c',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, mark as completed'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var icon = $(btn).html();
+            $(btn).html(`<div class="spinner-border spinner-border-sm me-4" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+            $.post({
+                url: '/campaigns/complete-training',
+                data: {
+                    encodedTrainingId: encodedTrainingId
+                },
+                success: function (res) {
+
+                    // console.log(res)
+                    checkResponse(res);
+                    $(btn).html(icon);
+                }
+            })
+
+            // console.log('sending reminder email');
+        }
+    })
+    
+
+}
+
+function removeAssignedTraining(btn, encodedTrainingId, trainingname, email){
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `This will remove the ${trainingname} training assigned to: ${email}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e6533c',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, remove assignment'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var icon = $(btn).html();
+            $(btn).html(`<div class="spinner-border spinner-border-sm me-4" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+            $.post({
+                url: '/campaigns/remove-training',
+                data: {
+                    encodedTrainingId: encodedTrainingId
+                },
+                success: function (res) {
+
+                    // console.log(res)
+                    checkResponse(res);
+                    $(btn).html(icon);
+                }
+            })
+
+            // console.log('sending reminder email');
+        }
+    })
+    
+
+}
 
 
 

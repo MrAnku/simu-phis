@@ -13,8 +13,11 @@ use App\Models\PhishingEmail;
 use App\Models\CampaignReport;
 use App\Models\TrainingModule;
 use Illuminate\Support\Facades\DB;
+use App\Mail\TrainingAssignedEmail;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CampaignController extends Controller
 {
@@ -89,8 +92,6 @@ class CampaignController extends Controller
             'all_sent',
             'mail_open'
         ));
-
-        
     }
 
     public function fetchUsersGroups()
@@ -323,7 +324,7 @@ class CampaignController extends Controller
     {
         $campid = $request->input('campid');
 
-       
+
 
         $res1 = Campaign::where('campaign_id', $campid)->delete();
         $res2 = CampaignLive::where('campaign_id', $campid)->delete();
@@ -332,8 +333,6 @@ class CampaignController extends Controller
         log_action('Email campaign deleted');
 
         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
-
-       
     }
 
     public function relaunchCampaign(Request $request)
@@ -430,7 +429,7 @@ class CampaignController extends Controller
 
     public function rescheduleCampaign(Request $request)
     {
-        
+
         $companyId = Auth::user()->company_id;
 
         $request->validate([
@@ -448,7 +447,7 @@ class CampaignController extends Controller
 
             $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
 
-            if(!$isreportexist){
+            if (!$isreportexist) {
                 CampaignReport::create([
                     'campaign_id' => $campaign->campaign_id,
                     'campaign_name' => $campaign->campaign_name,
@@ -459,18 +458,17 @@ class CampaignController extends Controller
                     'scheduled_date' => $launchTime,
                     'company_id' => $companyId,
                 ]);
-            }else{
+            } else {
                 CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
                     'scheduled_date' => $launchTime,
                     'status' => 'running'
                 ]);
-            }           
-           
+            }
         }
 
-        if($request->rschType == 'scheduled'){          
+        if ($request->rschType == 'scheduled') {
 
-            
+
             $schedule_date = $request->rsc_launch_time;
             $startTime = $request->startTime;
             $endTime = $request->endTime;
@@ -494,7 +492,7 @@ class CampaignController extends Controller
 
             $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
 
-            if(!$isreportexist){
+            if (!$isreportexist) {
                 CampaignReport::create([
                     'campaign_id' => $campaign->campaign_id,
                     'campaign_name' => $campaign->campaign_name,
@@ -505,19 +503,17 @@ class CampaignController extends Controller
                     'scheduled_date' => $launchTime,
                     'company_id' => $companyId,
                 ]);
-            }else{
+            } else {
                 CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
                     'scheduled_date' => $launchTime,
                     'status' => 'pending'
                 ]);
-            }     
+            }
         }
 
         log_action('Email campaign rescheduled');
 
         return redirect()->back()->with('success', 'Campaign rescheduled successfully');
-
-        
     }
 
     private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
@@ -560,10 +556,88 @@ class CampaignController extends Controller
                 'expire_after' => $expire_after
 
             ]);
-
-            
         }
 
         return $campaign;
+    }
+
+    public function sendTrainingReminder(Request $request)
+    {
+        // Fetch user credentials
+        $userCredentials = DB::table('user_login')
+            ->where('login_username', $request->email)
+            ->first();
+
+        if (!$userCredentials) {
+            return response()->json(['status' => 0, 'msg' => 'User credentials not found']);
+        }
+
+        $assignedTraining = TrainingAssignedUser::where('user_email', $request->email)
+            ->first();
+
+        if (!$assignedTraining) {
+            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+        }
+
+
+        $learnSiteAndLogo = checkWhitelabeled(auth()->user()->company_id);
+
+        $mailData = [
+            'user_name' => $assignedTraining->user_name,
+            'training_name' => $request->training,
+            'login_email' => $userCredentials->login_username,
+            'login_pass' => $userCredentials->login_password,
+            'company_name' => $learnSiteAndLogo['company_name'],
+            'company_email' => $learnSiteAndLogo['company_email'],
+            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'logo' => $learnSiteAndLogo['logo']
+        ];
+
+        
+
+        Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
+
+        log_action("Training reminder sent to {$request->email}");
+
+        return response()->json(['status' => 1, 'msg' => 'Training reminder sent successfully']);
+    }
+
+    public function completeTraining(Request $request){
+
+        $training_id = base64_decode($request->encodedTrainingId);
+
+        $trainingAssigned = TrainingAssignedUser::find($training_id);
+
+        if (!$trainingAssigned) {
+            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+        }
+
+        $trainingAssigned->update([
+            'completed' => 1,
+            'personal_best' => 100,
+            'completion_date' => now()
+        ]);
+
+        $reportUpdate = CampaignReport::where('campaign_id', $trainingAssigned->campaign_id)->increment('training_completed');
+
+        log_action("Training marked as completed to {$trainingAssigned->user_email}");
+
+        return response()->json(['status' => 1, 'msg' => 'Training completed successfully']);
+    }
+
+    public function removeTraining(Request $request){
+        $training_id = base64_decode($request->encodedTrainingId);
+
+        $trainingAssigned = TrainingAssignedUser::find($training_id);
+        if (!$trainingAssigned) {
+            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+        }
+        $trainingAssigned->delete();
+
+
+        log_action("Training removed from {$trainingAssigned->user_email}");
+
+        return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
+
     }
 }
