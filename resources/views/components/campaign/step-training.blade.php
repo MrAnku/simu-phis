@@ -12,7 +12,8 @@
                 <div>
                     <div class="input-group input-group-sm mb-3">
                         <span class="input-group-text">Days Until Due:</span>
-                        <input type="number" name="days_until_due" class="form-control" id="days_until_due" value="14">
+                        <input type="number" name="days_until_due" class="form-control" id="days_until_due"
+                            value="14">
                     </div>
                 </div>
             </div>
@@ -25,9 +26,17 @@
                     </select>
                 </div>
 
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text" for="training_assignment">Assignments:</label>
+                    <select class="form-select" id="training_assignment">
+                        <option value="random" selected>Intelligently assign one of the selected trainings.</option>
+                        <option value="all">Assign all of the selected trainings.</option>
+                    </select>
+                </div>
+
 
             </div>
-           
+
 
         </div>
 
@@ -60,7 +69,7 @@
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">
                             <div class="fs-semibold fs-14">
-                                <input type="radio" name="training_module" data-trainingName="{{ $module->name }}"
+                                <input type="checkbox" name="training_module" data-trainingName="{{ $module->name }}"
                                     value="{{ $module->id }}" class="btn-check" id="training{{ $module->id }}">
                                 <label class="btn btn-outline-primary mb-3" for="training{{ $module->id }}">Select
                                     this

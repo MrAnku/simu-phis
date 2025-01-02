@@ -10,8 +10,7 @@
         <div>
 
             <label for="templateSearch" class="form-label">Search</label>
-            <input type="text" class="form-control" id="templateSearch"
-                placeholder="Search template">
+            <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
 
         </div>
     </div>
@@ -32,10 +31,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body htmlPhishingGrid"
-                        style="background: white;">
-                        <iframe class="phishing-iframe"
-                            src="{{ $template }}"></iframe>
+                    <div class="card-body htmlPhishingGrid" style="background: white;">
+                        <iframe class="phishing-iframe" src="{{ $template }}"></iframe>
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">
@@ -47,13 +44,21 @@
                                 </button>
                             </div>
                             <div class="fs-semibold fs-14">
-                                <input type="radio" name="phish_material"
-                                    data-phishMatName="{{ $email->name }}"
-                                    value="{{ $email->id }}" class="btn-check"
-                                    id="pm{{ $email->id }}">
-                                <label class="btn btn-outline-primary mb-3"
-                                    for="pm{{ $email->id }}">Select this
-                                    attack</label>
+                                <input 
+                                    type="checkbox" 
+                                    name="phish_material" 
+                                    class="btn-check" 
+                                    data-phishMatName="{{ $email->name }}" 
+                                    id="pm{{ $email->id }}" 
+                                    value="{{ $email->id }}"
+                                >
+                                <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this attack</label>
+
+                                
+                                {{-- <input type="radio" name="phish_material" data-phishMatName="{{ $email->name }}"
+                                    value="{{ $email->id }}" class="btn-check" id="pm{{ $email->id }}">
+                                <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this
+                                    attack</label> --}}
                             </div>
                         </div>
                     </div>

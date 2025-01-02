@@ -80,6 +80,81 @@ function deletecampaign(campid) {
 
 }
 
+var phish_mat_checkboxes = document.querySelectorAll('input[name="phish_material"]');
+var selectedPhishingMaterial = [];
+
+phish_mat_checkboxes.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        var label = document.querySelector(`label[for="${checkbox.id}"]`);
+
+        if (checkbox.checked) {
+            // Add value to the checkedValues array
+            selectedPhishingMaterial.push(checkbox.value);
+
+            // Change the text inside the label
+            label.textContent = "Attack selected";
+
+            // Add the classes to the label
+            label.classList.add('bg-primary', 'text-white');
+        } else {
+            // Remove value from the checkedValues array
+            var index = selectedPhishingMaterial.indexOf(checkbox.value);
+            if (index > -1) {
+                selectedPhishingMaterial.splice(index, 1);
+            }
+
+            // Change the text back to the original
+            label.textContent = "Select this attack";
+
+            // Remove the classes from the label
+            label.classList.remove('bg-primary', 'text-white');
+
+            checkbox.blur();
+        }
+
+        // Log the updated checkedValues array
+        console.log(selectedPhishingMaterial);
+    });
+});
+
+var training_checkboxes = document.querySelectorAll('input[name="training_module"]');
+var selectedTrainings = [];
+
+training_checkboxes.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        var label = document.querySelector(`label[for="${checkbox.id}"]`);
+
+        if (checkbox.checked) {
+            // Add value to the checkedValues array
+            selectedTrainings.push(checkbox.value);
+
+            // Change the text inside the label
+            label.textContent = "Training selected";
+
+            // Add the classes to the label
+            label.classList.add('bg-primary', 'text-white');
+        } else {
+            // Remove value from the checkedValues array
+            var index = selectedTrainings.indexOf(checkbox.value);
+            if (index > -1) {
+                selectedTrainings.splice(index, 1);
+            }
+
+            // Change the text back to the original
+            label.textContent = "Select this training";
+
+            // Remove the classes from the label
+            label.classList.remove('bg-primary', 'text-white');
+
+            checkbox.blur();
+        }
+
+        // Log the updated checkedValues array
+        console.log(selectedTrainings);
+    });
+});
+
+
 //campaign type toggling
 $("#campaign_type").on('change', function () {
 
@@ -141,10 +216,10 @@ $(document).ready(function () {
         });
 
         if (current_fs.attr('id') === 'pm_step_form') {
-            // Check if at least one radio button is checked
+            // Check if at least one checkbox button is checked
             days_until_due = '';
             var radioChecked = false;
-            current_fs.find('input[type="radio"][name="phish_material"]').each(function () {
+            current_fs.find('input[type="checkbox"][name="phish_material"]').each(function () {
                 if ($(this).is(':checked')) {
                     radioChecked = true;
                     return false; // Exit the loop early if any radio button is checked
@@ -158,9 +233,9 @@ $(document).ready(function () {
         }
 
         if (current_fs.attr('id') === 'tm_step_form') {
-            // Check if at least one radio button is checked
+            // Check if at least one checkbox button is checked
             var radioChecked = false;
-            current_fs.find('input[type="radio"][name="training_module"]').each(function () {
+            current_fs.find('input[type="checkbox"][name="training_module"]').each(function () {
                 if ($(this).is(':checked')) {
                     radioChecked = true;
                     return false; // Exit the loop early if any radio button is checked
@@ -282,23 +357,26 @@ $(document).ready(function () {
         var trainingType = '';
         var phishing_email = '';
         var phishing_lang = '';
+        var training_assign = '';
 
         if (campaign_type.value == "Phishing") {
-            phishing_email = $("input[name='phish_material']:checked").val();
+            phishing_email = selectedPhishingMaterial;
             phishing_lang = email_lang.value;
         }
 
         if (campaign_type.value == "Training") {
-            training_module = $("input[name='training_module']:checked").val();
+            training_module = selectedTrainings
             trainingLang = training_lang.value;
             trainingType = training_type.value;
+            training_assign = training_assignment.value;
         }
         if (campaign_type.value == "Phishing & Training") {
-            phishing_email = $("input[name='phish_material']:checked").val();
+            phishing_email = selectedPhishingMaterial;
             phishing_lang = email_lang.value;
-            training_module = $("input[name='training_module']:checked").val();
+            training_module = selectedTrainings;
             trainingLang = training_lang.value;
             trainingType = training_type.value;
+            training_assign = training_assignment.value;
         }
         var formData = {
 
@@ -310,6 +388,7 @@ $(document).ready(function () {
             trainingLang: trainingLang,
             training_mod: training_module,
             training_type: trainingType,
+            training_assignment: training_assign,
             schType: $("input[name='schType']:checked").val(),
             schBetRange: schBetRange.value,
             schTimeStart: schTimeStart.value,
@@ -397,7 +476,7 @@ $(document).ready(function () {
             url: '/campaigns/create',
             data: dataToBeSaved,
             success: function (res) {
-                checkResponse(res);
+                 checkResponse(res);
                 // console.log(res);
             }
         })

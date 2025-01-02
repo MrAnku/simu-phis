@@ -166,11 +166,13 @@
                                                 </td>
                                                 <td>
                                                     {{-- {!! $campaign->relaunch_btn ?? '' !!} --}}
-                                                    @if ($campaign->status == 'pending')
+                                                    @if ($campaign->status == 'pending' || $campaign->status == 'Not Scheduled')
                                                         {{-- reschedule button --}}
                                                         <button
                                                             class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
-                                                            data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule Campaign" onclick="reschedulecampid(`{{$campaign->id}}`)">
+                                                            data-bs-toggle="modal" data-bs-target="#reschedulemodal" 
+                                                            title="{{$campaign->status == 'Not Scheduled' ? 'Schedule Campaign' : 'Re-Schedule Campaign'}}" 
+                                                            onclick="reschedulecampid(`{{$campaign->id}}`)">
                                                             <i class="ri-time-line"></i>
                                                         </button>
                                                     @elseif ($campaign->status == 'completed')
@@ -180,12 +182,7 @@
                                                             onclick="relaunch_camp(`{{$campaign->campaign_id}}`)" title="Re-Launch">
                                                             <i class="ri-loop-left-line"></i>
                                                         </button>
-                                                    @elseif ($campaign->status == 'Not Scheduled')
-                                                        {{-- schedule button --}}
-                                                        <button
-                                                            class="btn btn-icon btn-success-transparent rounded-pill btn-wave">
-                                                            <i class="ri-notification-3-line"></i>
-                                                        </button>
+                                                   
                                                     @endif
                                                     
                                                     <button

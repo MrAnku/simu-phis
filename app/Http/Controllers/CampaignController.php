@@ -18,6 +18,7 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class CampaignController extends Controller
 {
@@ -29,12 +30,12 @@ class CampaignController extends Controller
         $allCamps = Campaign::with('usersGroup')->where('company_id', $companyId)->get();
 
         $lastCampaign = Campaign::orderBy('id', 'desc')->first();
-        $daysSinceLastDelivery = $lastCampaign ? max(1, Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time))) : 0;
+        $daysSinceLastDelivery = $lastCampaign ? max(0, Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time), false)) : 0;
 
         $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();
         $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();
 
-       
+
 
         // Fetch users groups and phishing emails, and pass to view
         $usersGroups = $this->fetchUsersGroups();
@@ -77,176 +78,215 @@ class CampaignController extends Controller
 
     public function createCampaign(Request $request)
     {
-        $campaignType = $request->input('campaign_type');
-        $campName = $request->input('camp_name');
-        $usersGroup = $request->input('users_group');
-        $trainingMod = $request->input('training_mod');
-        $trainingLang = $request->input('trainingLang');
-        $trainingType = $request->input('training_type');
-        $emailLang = $request->input('email_lang');
-        $phishMaterial = $request->input('phish_material');
-        $launchTime = $request->input('launch_time');
-        $launchType = $request->input('schType');
-        $timeZone = $request->input('schTimeZone');
-        $frequency = $request->input('emailFreq');
-        $expAfter = $request->input('expire_after');
-        $days_until_due = $request->input('days_until_due') ?? null;
-        $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
+        try {
+            // Validate request input
+            $validated = $request->all();
 
-        $phishingEmail = PhishingEmail::where('id', $phishMaterial)
-            ->where(function ($query) {
-                $query->where('senderProfile', '0')
-                    ->orWhere('website', '0');
-            })
-            ->first();
+            // return print_r($validated['phish_material']);
 
-        if ($phishingEmail) {
-            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template']);
-        }
+            $companyId = auth()->user()->company_id;
 
-        $campId = generateRandom(); // Assuming you have a method to generate a random ID
+            if ($validated['campaign_type'] !== 'Training') {
+                // Check phishing email validity
+                $phishingEmail = PhishingEmail::where('id', $validated['phish_material'])
+                    ->where(function ($query) {
+                        $query->where('senderProfile', '0')
+                            ->orWhere('website', '0');
+                    })
+                    ->first();
 
-        if ($launchType == 'immediately') {
-            $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $launchTime);
-            $currentDateTime = Carbon::now();
-            $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
-
-            $users = User::where('group_id', $usersGroup)->get();
-
-            if ($users->isEmpty()) {
-                return response()->json(['status' => 0, 'msg' => 'No employees available in this group'], 400);
+                if ($phishingEmail) {
+                    return response()->json([
+                        'status' => 0,
+                        'msg' => 'Sender profile or Website is not associated with the selected phishing email template',
+                    ]);
+                }
             }
 
-            foreach ($users as $user) {
-                CampaignLive::create([
-                    'campaign_id' => $campId,
-                    'campaign_name' => $campName,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => $trainingMod,
-                    'days_until_due' => $days_until_due,
-                    'training_lang' => $trainingLang,
-                    'training_type' => $trainingType,
-                    'launch_time' => $launchTimeFormatted,
-                    'phishing_material' => $phishMaterial,
-                    'email_lang' => $emailLang,
-                    'sent' => '0',
-                    'company_id' => $companyId,
-                ]);
+
+
+            $campId = Str::random(6);
+            $launchType = $validated['schType'];
+
+            if ($launchType === 'immediately') {
+                return $this->handleImmediateLaunch($validated, $campId, $companyId);
             }
 
-            CampaignReport::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'status' => 'running',
-                'email_lang' => $emailLang,
-                'training_lang' => $trainingLang,
-                'days_until_due' => $days_until_due,
-                'scheduled_date' => $launchTimeFormatted,
-                'company_id' => $companyId,
+            if ($launchType === 'scheduled') {
+                return $this->handleScheduledLaunch($validated, $campId, $companyId);
+            }
+
+            if ($launchType === 'schLater') {
+                return $this->handleLaterLaunch($validated, $campId, $companyId);
+            }
+
+            return response()->json(['status' => 0, 'msg' => 'Invalid launch type']);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Validation error',
+                'errors' => $e->errors(),
             ]);
-
-
-
-            Campaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'users_group' => $usersGroup,
-                'training_module' => $trainingMod,
-                'days_until_due' => $days_until_due,
-                'training_lang' => $trainingLang,
-                'training_type' => $trainingType,
-                'phishing_material' => $phishMaterial,
-                'email_lang' => $emailLang,
-                'launch_time' => $launchTimeFormatted,
-                'launch_type' => $launchType,
-                'email_freq' => $frequency,
-                'startTime' => '00:00:00',
-                'endTime' => '00:00:00',
-                'timeZone' => $timeZone,
-                'expire_after' => $expAfter,
-                'status' => 'running',
-                'company_id' => $companyId,
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 0,
+                'msg' => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
-
-            log_action('Email campaign created');
-
-            return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
-        }
-
-        if ($launchType == 'scheduled') {
-            $schedule_date = $request->input('schBetRange');
-            $startTime = $request->input('schTimeStart');
-            $endTime = $request->input('schTimeEnd');
-            $timeZone = $request->input('schTimeZone', 'Asia/Kolkata');
-
-            $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime, $timeZone);
-
-            Campaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'users_group' => $usersGroup,
-                'training_module' => $trainingMod,
-                'training_lang' => $trainingLang,
-                'training_type' => $trainingType,
-                'phishing_material' => $phishMaterial,
-                'email_lang' => $emailLang,
-                'launch_time' => $launchTime,
-                'launch_type' => $launchType,
-                'email_freq' => $frequency,
-                'startTime' => $startTime,
-                'endTime' => $endTime,
-                'timeZone' => $timeZone,
-                'expire_after' => $expAfter,
-                'status' => 'pending',
-                'company_id' => $companyId,
-            ]);
-
-
-            CampaignReport::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'status' => 'pending',
-                'email_lang' => $emailLang,
-                'training_lang' => $trainingLang,
-                'scheduled_date' => $launchTime,
-                'company_id' => $companyId,
-            ]);
-
-            log_action('Email campaign scheduled');
-
-            return response()->json(['status' => 1, 'msg' => 'Campaign created and scheduled!']);
-        }
-
-        if ($launchType == 'schLater') {
-            $launchTime = Carbon::createFromFormat("m/d/Y H:i", $launchTime)->format("m/d/Y g:i A");
-
-            Campaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'users_group' => $usersGroup,
-                'training_module' => $trainingMod,
-                'training_lang' => $trainingLang,
-                'training_type' => $trainingType,
-                'phishing_material' => $phishMaterial,
-                'email_lang' => $emailLang,
-                'launch_time' => $launchTime,
-                'launch_type' => $launchType,
-                'status' => 'Not Scheduled',
-                'company_id' => $companyId,
-            ]);
-
-            log_action('Email campaign created for schedule later');
-
-            return response()->json(['status' => 1, 'msg' => 'Campaign scheduled successfully!']);
         }
     }
+
+    private function handleImmediateLaunch($data, $campId, $companyId)
+    {
+        $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
+        $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
+
+        $users = User::where('group_id', $data['users_group'])->get();
+
+        if ($users->isEmpty()) {
+            return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
+        }
+
+        foreach ($users as $user) {
+            CampaignLive::create([
+                'campaign_id' => $campId,
+                'campaign_name' => $data['camp_name'],
+                'user_id' => $user->id,
+                'user_name' => $user->user_name,
+                'user_email' => $user->user_email,
+                'training_module' => ($data['training_mod'] == '') ? null : $data['training_mod'][array_rand($data['training_mod'])],
+                'days_until_due' => $data['days_until_due'],
+                'training_lang' => $data['trainingLang'],
+                'training_type' => $data['training_type'],
+                'launch_time' => $launchTimeFormatted,
+                'phishing_material' => $data['phish_material'] == '' ? null : $data['phish_material'][array_rand($data['phish_material'])],
+                'email_lang' => $data['email_lang'],
+                'sent' => '0',
+                'company_id' => $companyId,
+            ]);
+        }
+
+        CampaignReport::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'campaign_type' => $data['campaign_type'],
+            'status' => 'running',
+            'email_lang' => $data['email_lang'],
+            'training_lang' => $data['trainingLang'],
+            'days_until_due' => $data['days_until_due'],
+            'scheduled_date' => $launchTimeFormatted,
+            'company_id' => $companyId,
+        ]);
+
+        Campaign::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'campaign_type' => $data['campaign_type'],
+            'users_group' => $data['users_group'],
+            'training_module' => $data['training_mod'] == '' ? null : json_encode($data['training_mod']),
+            'training_assignment' => $data['training_assignment'] ?? null,
+            'days_until_due' => $data['days_until_due'],
+            'training_lang' => $data['trainingLang'],
+            'training_type' => $data['training_type'],
+            'phishing_material' => $data['phish_material'] == '' ? null : json_encode($data['phish_material']),
+            'email_lang' => $data['email_lang'],
+            'launch_time' => $launchTimeFormatted,
+            'launch_type' => 'immediately',
+            'email_freq' => $data['emailFreq'],
+            'startTime' => '00:00:00',
+            'endTime' => '00:00:00',
+            'timeZone' => $data['schTimeZone'],
+            'expire_after' => $data['expire_after'],
+            'status' => 'running',
+            'company_id' => $companyId,
+        ]);
+
+        log_action('Email campaign created');
+
+        return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
+    }
+
+    private function handleScheduledLaunch($data, $campId, $companyId)
+    {
+        $launchTime = $this->generateRandomDate(
+            $data['schBetRange'],
+            $data['schTimeStart'],
+            $data['schTimeEnd'],
+            $data['schTimeZone']
+        );
+
+        Campaign::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'campaign_type' => $data['campaign_type'],
+            'users_group' => $data['users_group'],
+            'training_module' => $data['training_mod'] == '' ? null : json_encode($data['training_mod']),
+            'training_assignment' => $data['training_assignment'] ?? null,
+            'training_lang' => $data['trainingLang'],
+            'training_type' => $data['training_type'],
+            'days_until_due' => $data['days_until_due'],
+            'phishing_material' => $data['phish_material'] == '' ? null : json_encode($data['phish_material']),
+            'email_lang' => $data['email_lang'],
+            'launch_time' => $launchTime,
+            'launch_type' => 'scheduled',
+            'email_freq' => $data['emailFreq'],
+            'startTime' => $data['schTimeStart'],
+            'endTime' => $data['schTimeEnd'],
+            'timeZone' => $data['schTimeZone'],
+            'expire_after' => $data['expire_after'],
+            'status' => 'pending',
+            'company_id' => $companyId,
+        ]);
+
+        CampaignReport::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'campaign_type' => $data['campaign_type'],
+            'days_until_due' => $data['days_until_due'],
+            'status' => 'pending',
+            'email_lang' => $data['email_lang'],
+            'training_lang' => $data['trainingLang'],
+            'scheduled_date' => $launchTime,
+            'company_id' => $companyId,
+        ]);
+
+        log_action('Email campaign scheduled');
+
+        return response()->json(['status' => 1, 'msg' => 'Campaign created and scheduled!']);
+    }
+
+    private function handleLaterLaunch($data, $campId, $companyId)
+    {
+        $launchTime = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time'])->format("m/d/Y g:i A");
+
+        Campaign::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'campaign_type' => $data['campaign_type'],
+            'users_group' => $data['users_group'],
+            'training_module' => $data['training_mod'] == '' ? null : json_encode($data['training_mod']),
+            'training_assignment' => $data['training_assignment'] ?? null,
+            'training_lang' => $data['trainingLang'],
+            'training_type' => $data['training_type'],
+            'days_until_due' => $data['days_until_due'],
+            'phishing_material' => $data['phish_material'] == '' ? null : json_encode($data['phish_material']),
+            'email_lang' => $data['email_lang'],
+            'launch_time' => $launchTime,
+            'launch_type' => 'schLater',
+            'email_freq' => $data['emailFreq'],
+            'startTime' => $data['schTimeStart'],
+            'endTime' => $data['schTimeEnd'],
+            'timeZone' => $data['schTimeZone'],
+            'expire_after' => $data['expire_after'],
+            'status' => 'Not Scheduled',
+            'company_id' => $companyId,
+        ]);
+
+        log_action('Email campaign created for schedule later');
+
+        return response()->json(['status' => 1, 'msg' => 'Campaign saved successfully!']);
+    }
+
 
     public function generateRandomDate($dateS, $timeS, $timeE, $timeZone = 'Asia/Kolkata')
     {
@@ -334,17 +374,20 @@ class CampaignController extends Controller
         }
 
         foreach ($users as $user) {
+          
             CampaignLive::create([
                 'campaign_id' => $campaign->campaign_id,
                 'campaign_name' => $campaign->campaign_name,
                 'user_id' => $user->id,
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
-                'training_module' => $campaign->training_module,
-                'training_lang' => $campaign->training_lang,
+                'training_module' => ($campaign->training_module == null) ? null : json_decode($campaign->training_module, true)[array_rand(json_decode($campaign->training_module, true))],
+                'days_until_due' => $campaign->days_until_due ?? null,
+                'training_lang' => $campaign->training_lang ?? null,
+                'training_type' => $campaign->training_type ?? null,
                 'launch_time' => $formattedDateTime,
-                'phishing_material' => $campaign->phishing_material,
-                'email_lang' => $campaign->email_lang,
+                'phishing_material' => $campaign->phishing_material == null ? null : json_decode($campaign->phishing_material, true)[array_rand(json_decode($campaign->phishing_material, true))],
+                'email_lang' => $campaign->email_lang ?? null,
                 'sent' => '0',
                 'company_id' => $company_id,
             ]);
@@ -405,7 +448,13 @@ class CampaignController extends Controller
             $email_freq = $request->emailFreq;
             $expire_after = $request->rexpire_after;
 
-            $campaign = $this->makeCampaignLive($request->campid, $launchTime, $email_freq, $expire_after);
+            $isLive = $this->makeCampaignLive($request->campid, $launchTime, $email_freq, $expire_after);
+
+            if($isLive['status'] === 0) {
+                return redirect()->back()->with('error', $isLive['msg']);
+            }
+
+            $campaign = $isLive['campaign'];
 
             $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
 
@@ -417,6 +466,7 @@ class CampaignController extends Controller
                     'status' => 'running',
                     'email_lang' => $campaign->email_lang,
                     'training_lang' => $campaign->training_lang,
+                    'days_until_due' => $campaign->days_until_due,
                     'scheduled_date' => $launchTime,
                     'company_id' => $companyId,
                 ]);
@@ -462,6 +512,7 @@ class CampaignController extends Controller
                     'status' => 'pending',
                     'email_lang' => $campaign->email_lang,
                     'training_lang' => $campaign->training_lang,
+                    'days_until_due' => $campaign->days_until_due,
                     'scheduled_date' => $launchTime,
                     'company_id' => $companyId,
                 ]);
@@ -489,38 +540,40 @@ class CampaignController extends Controller
 
         // Check if users exist in the group
         if ($users->isEmpty()) {
-            return redirect()->back()->with('error', 'No employees available in this group GroupID:' . $campaign->users_group);
-        } else {
-            // Iterate through the users and create CampaignLive entries
-            foreach ($users as $user) {
-                CampaignLive::create([
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => $campaign->training_module,
-                    'training_lang' => $campaign->training_lang,
-                    'launch_time' => $campaign->launch_time,
-                    'phishing_material' => $campaign->phishing_material,
-                    'email_lang' => $campaign->email_lang,
-                    'sent' => '0',
-                    'company_id' => $campaign->company_id,
-                ]);
-            }
+            return ['status' => 0, 'msg' => 'No employees available in this group'];
+        }
 
-            // Update the campaign status to 'running'
-            $campaign->update([
-                'status' => 'running',
-                'launch_type' => 'immediately',
+         // Iterate through the users and create CampaignLive entries
+         foreach ($users as $user) {
+            CampaignLive::create([
+                'campaign_id' => $campaign->campaign_id,
+                'campaign_name' => $campaign->campaign_name,
+                'user_id' => $user->id,
+                'user_name' => $user->user_name,
+                'user_email' => $user->user_email,
+                'training_module' => $campaign->training_module !== null ? json_decode($campaign->training_module)[array_rand(json_decode($campaign->training_module))] : null,
+                'days_until_due' => $campaign->days_until_due ?? null,
+                'training_lang' => $campaign->training_lang ?? null,
+                'training_type' => $campaign->training_type ?? null,
                 'launch_time' => $launch_time,
-                'email_freq' => $email_freq,
-                'expire_after' => $expire_after
-
+                'phishing_material' => $campaign->phishing_material !== null ? json_decode($campaign->phishing_material)[array_rand(json_decode($campaign->phishing_material))] : null,
+                'email_lang' => $campaign->email_lang ?? null,
+                'sent' => '0',
+                'company_id' => $companyId,
             ]);
         }
 
-        return $campaign;
+        // Update the campaign status to 'running'
+        $campaign->update([
+            'status' => 'running',
+            'launch_type' => 'immediately',
+            'launch_time' => $launch_time,
+            'email_freq' => $email_freq,
+            'expire_after' => $expire_after
+
+        ]);
+
+        return ['status' => 1, 'campaign' => $campaign];
     }
 
     public function sendTrainingReminder(Request $request)
@@ -555,7 +608,7 @@ class CampaignController extends Controller
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        
+
 
         Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
 
@@ -564,7 +617,8 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'msg' => 'Training reminder sent successfully']);
     }
 
-    public function completeTraining(Request $request){
+    public function completeTraining(Request $request)
+    {
 
         $training_id = base64_decode($request->encodedTrainingId);
 
@@ -587,7 +641,8 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'msg' => 'Training completed successfully']);
     }
 
-    public function removeTraining(Request $request){
+    public function removeTraining(Request $request)
+    {
         $training_id = base64_decode($request->encodedTrainingId);
 
         $trainingAssigned = TrainingAssignedUser::find($training_id);
@@ -600,6 +655,5 @@ class CampaignController extends Controller
         log_action("Training removed from {$trainingAssigned->user_email}");
 
         return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
-
     }
 }
