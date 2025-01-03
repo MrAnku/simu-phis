@@ -3,7 +3,7 @@
     <div class="card-body">
         <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
             <li class="nav-item" role="presentation" id="phishing_tab">
-                <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
+                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                     href="#phishing_campaign" aria-selected="true">Phishing Campaign</a>
             </li>
             <li class="nav-item" role="presentation" id="training_tab">
@@ -13,7 +13,7 @@
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane show active text-muted" id="phishing_campaign" role="tabpanel">
+            <div class="tab-pane text-muted" id="phishing_campaign" role="tabpanel">
                 <div class="table-responsive">
                     <table class="table text-nowrap table-striped">
                         <thead>
@@ -70,6 +70,8 @@
                                 <th scope="col">Status</th>
                                 <th scope="col">Employees</th>
                                 <th scope="col">Trainings Assigned</th>
+                                <th scope="col">Trainings Type</th>
+                                <th scope="col">Trainings Language</th>
                                 <th scope="col">Trainings Completed</th>
                             </tr>
                         </thead>
@@ -89,6 +91,7 @@
                             <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                 <thead>
                                     <tr>
+                                        <th>Employee Name</th>
                                         <th>Email Address</th>
                                         <th>Training Module</th>
                                         <th>Date Assigned</th>

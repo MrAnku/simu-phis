@@ -149,6 +149,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns');
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
     Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
+    Route::post('/campaigns/fetch-campaign-detail', [CampaignController::class, 'fetchCampaignDetail'])->name('campaigns.detail');
+    Route::post('/campaigns/fetch-training-individual', [CampaignController::class, 'fetchTrainingIndividual'])->name('campaigns.fetch.training.individual');
     Route::post('/campaigns/relaunch', [CampaignController::class, 'relaunchCampaign'])->name('campaigns.relaunch');
     Route::post('/campaigns/fetch-phish-data', [CampaignController::class, 'fetchPhishData'])->name('campaigns.fetch.phish.data');
     Route::post('/campaigns/reschedule', [CampaignController::class, 'rescheduleCampaign'])->name('reschedule.campaign');

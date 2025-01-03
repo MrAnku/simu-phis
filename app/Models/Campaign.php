@@ -35,6 +35,20 @@ class Campaign extends Model
         'company_id'
     ];
 
+    public function campLive(){
+        return $this->hasMany(CampaignLive::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function campReport(){
+        return $this->hasOne(CampaignReport::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function trainingAssignedUsers(){
+        return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
+
+    
+
     public function noOfUsers(){
         return $this->hasMany(Users::class, 'group_id', 'users_group');
     }

@@ -29,7 +29,7 @@ class CampaignController extends Controller
         $companyId = Auth::user()->company_id;
         $allCamps = Campaign::with('usersGroup')->where('company_id', $companyId)->get();
 
-        $lastCampaign = Campaign::orderBy('id', 'desc')->first();
+        $lastCampaign = Campaign::where('company_id', $companyId)->orderBy('id', 'desc')->first();
         $daysSinceLastDelivery = $lastCampaign ? max(0, Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time), false)) : 0;
 
         $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();
@@ -655,5 +655,95 @@ class CampaignController extends Controller
         log_action("Training removed from {$trainingAssigned->user_email}");
 
         return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
+    }
+
+    public function fetchCampaignDetail(Request $request){
+
+        $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $request->campaignId)->first();
+
+        return response()->json($detail);
+    }
+
+    public function fetchTrainingIndividual(Request $request){
+        $request->validate([
+            'campaignId' => 'required|string',
+        ]);
+
+        $campId = $request->input('campaignId');
+        $companyId = Auth::user()->company_id;
+
+        // Fetch assigned training users
+        $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+
+        if ($assignedUsers->isEmpty()) {
+            return response()->json([
+                'html' => '
+                <tr>
+                    <td colspan="7" class="text-center"> No records found</td>
+                </tr>',
+            ]);
+        }
+
+        $responseHtml = '';
+        foreach ($assignedUsers as $assignedUser) {
+            $trainingDetail = TrainingModule::find($assignedUser->training);
+
+            $today = new \DateTime(date('Y-m-d'));
+            $dueDate = new \DateTime($assignedUser->training_due_date);
+
+            if($assignedUser->completed == 1) {
+                $status = "<span class='text-success'><strong>Training Completed</strong></span>";
+                
+            } else{
+                if ($dueDate > $today) {
+                    $status = "<span class='text-success'><strong>In training period</strong></span>";
+                } else {
+                    $days_difference = $today->diff($dueDate)->days;
+                    $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
+                }
+            }
+
+           
+            $responseHtml .=
+                '
+                <tr>
+                    <td>' . $assignedUser->user_name . '</td>
+                    <td>' . $assignedUser->user_email . '</td>
+                    <td><span class="badge rounded-pill bg-primary">' .$trainingDetail->name . '</span></td>
+                    <td>' .$assignedUser->assigned_date . '</td>
+                    <td>' .$assignedUser->personal_best . '%</td>
+                    <td>' .$trainingDetail->passing_score . '%</td>
+                    <td>' .$status . '</td>
+                    <td> 
+                        <button type="button" 
+                        onclick="resendTrainingAssignmentReminder(this, `' . $assignedUser->user_email . '`, `' .$trainingDetail->name . '`)" 
+                        class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" 
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top" 
+                        title="Would you like to send a training reminder to this employee? The reminder email will include all outstanding training assignments.">
+                            <i class="ri-mail-send-line"></i>
+                        </button>
+
+                        <button type="button" 
+                        class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave" 
+                        onclick="completeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`)"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top" 
+                        title="Would you like to auto-complete the assigned training for this employee? This will assign a passing score of 100% for this training module.">
+                        <i class="ri-checkbox-circle-line"></i>
+                        </button>
+
+                        <button type="button" 
+                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" 
+                        data-bs-toggle="tooltip"
+                        onclick="removeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`, `'.$trainingDetail->name.'`, `' . $assignedUser->user_email . '`)"
+    data-bs-placement="top" title="Should this employee not be assigned this training? Click here to remove it.">
+                            <i class="ri-delete-bin-line"></i>
+                        </button> 
+                    </td>
+                </tr>';
+        }
+
+        return response()->json(['html' => $responseHtml]);
     }
 }

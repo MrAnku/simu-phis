@@ -142,10 +142,8 @@
                                                                 Not scheduled
                                                             </small>
                                                         @else
-                                                            
-                                                                <span class="badge bg-info-transparent">{{ $campaign->launch_type }}</span>
-                                                                
-                                                            
+                                                            <span
+                                                                class="badge bg-info-transparent">{{ $campaign->launch_type }}</span>
                                                         @endif
 
 
@@ -170,28 +168,28 @@
                                                         {{-- reschedule button --}}
                                                         <button
                                                             class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
-                                                            data-bs-toggle="modal" data-bs-target="#reschedulemodal" 
-                                                            title="{{$campaign->status == 'Not Scheduled' ? 'Schedule Campaign' : 'Re-Schedule Campaign'}}" 
-                                                            onclick="reschedulecampid(`{{$campaign->id}}`)">
+                                                            data-bs-toggle="modal" data-bs-target="#reschedulemodal"
+                                                            title="{{ $campaign->status == 'Not Scheduled' ? 'Schedule Campaign' : 'Re-Schedule Campaign' }}"
+                                                            onclick="reschedulecampid(`{{ $campaign->id }}`)">
                                                             <i class="ri-time-line"></i>
                                                         </button>
                                                     @elseif ($campaign->status == 'completed')
                                                         {{-- relaunch button --}}
                                                         <button
                                                             class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave"
-                                                            onclick="relaunch_camp(`{{$campaign->campaign_id}}`)" title="Re-Launch">
+                                                            onclick="relaunch_camp(`{{ $campaign->campaign_id }}`)"
+                                                            title="Re-Launch">
                                                             <i class="ri-loop-left-line"></i>
                                                         </button>
-                                                   
                                                     @endif
-                                                    
+
                                                     <button
                                                         class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
                                                         title="Delete"
                                                         onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
-                                                   
+
                                                 </td>
                                             </tr>
                                         @empty
@@ -302,168 +300,102 @@
                 // console.log(phishName);
             }
 
-            function fetchCampaignDetails(campid) {
-                // console.log(campid)
-                $.post({
-                    url: '/reporting/fetch-campaign-report',
-                    data: {
-                        campaignId: campid
-                    },
-                    success: function(response) {
+            function showPhishingReportIndividual(res) {
+                if (res.camp_live.length > 0) {
+                    let mailPending = '<span class="badge bg-warning-transparent">Pending</span>';
+                    let mailSent = '<span class="badge bg-success-transparent">Success</span>';
+                    let yesBatch = '<span class="badge bg-success-transparent">Yes</span>';
+                    let noBatch = '<span class="badge bg-danger-transparent">No</span>';
 
-                        if (response.campaign_type === "Phishing") {
-                            fetchCampReportByUsers()
+                    let rowHtml = '';
+                    res.camp_live.forEach((camp) => {
+                        let isDelivered = camp.sent === "0" ? mailPending : mailSent;
+                        let isViewed = camp.mail_open === 0 ? noBatch : yesBatch;
+                        let isPayLoadClicked = camp.payload_clicked === 0 ? noBatch : yesBatch;
+                        let isEmpCompromised = camp.emp_compromised === 0 ? noBatch : yesBatch;
+                        let isEmailReported = camp.email_reported === 0 ? noBatch : yesBatch;
 
-                            $("#training_tab").hide();
-                            $("#phishing_tab").show();
-                        }
-                        if (response.campaign_type === "Training") {
-                            fetchCampTrainingDetails()
-                            fetchCampTrainingDetailsIndividual()
+                        rowHtml += `
+                            <tr>
+                                <td>${camp.user_name}</td>
+                                <td>${camp.user_email}</td>
+                                <td>${isDelivered}</td>
+                                <td>${isViewed}</td>
+                                <td>${isPayLoadClicked}</td>
+                                <td>${isEmpCompromised}</td>
+                                <td>${isEmailReported}</td>
+                            </tr>
+                        `;
+                    });
 
-                            $("#phishing_tab").hide();
-                            $("#training_tab").show();
-                            $("#phishing_campaign").removeClass("active show");
+                    $("#campReportsIndividual").html(rowHtml);
+                }
+            }
 
-                            $("#training_tab a").addClass("active")
-                            $("#training_campaign").addClass("active show")
-                        }
-                        if (response.campaign_type === "Phishing & Training") {
-                            fetchCampReportByUsers()
-                            fetchCampTrainingDetails()
-                            fetchCampTrainingDetailsIndividual()
+            function showPhishingReport(res) {
+                let greenCheck = '<i class="bx bx-check-circle text-success fs-25"></i>';
+                let redCheck = '<i class="bx bx-check-circle text-danger fs-25"></i>';
 
-                            $("#training_tab").show();
-                            $("#phishing_tab").show();
-                            $("#phishing_campaign").addClass("active show");
-                        }
-
-                        let isDelivered = response.emails_delivered > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-                        let isViewed = response.emails_viewed > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-                        let isPayLoadClicked = response.payloads_clicked > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-                        let isEmpCompromised = response.emp_compromised > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-                        let isEmailReported = response.email_reported > 0 ?
-                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
-                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
-
-                        let status = '';
-                        if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
-                        } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
-                        } else {
-                            status = '<span class="badge bg-success">Running</span>';
-                        }
-
-                        let rowHtml = `
-            <tr>
-                <th scope="row">${response.campaign_name}</th>
-                <td>${status}</td>
-                <td>${response.no_of_users}</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">${response.emails_delivered}</span>
-                        ${isDelivered}
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">${response.emails_viewed}</span>
-                        ${isViewed}
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">${response.payloads_clicked}</span>
-                        ${isPayLoadClicked}
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">${response.emp_compromised}</span>
-                        ${isEmpCompromised}
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">${response.email_reported}</span>
-                        ${isEmailReported}
-                    </div>
-                </td>
-            </tr>
-        `;
-
-                        $("#campReportStatus").html(rowHtml);
-
-                        // Example of showing/hiding a section based on a condition
-                        // if (response.emails_delivered > 0) {
-                        //     $("#someSection").show();
-                        // } else {
-                        //     $("#someSection").hide();
-                        // }
-                    }
-                });
-
-                function fetchCampReportByUsers() {
-                    $.post({
-                        url: '/fetch-camp-report-by-users',
-                        data: {
-                            fetchCampReportByUsers: '1',
-                            campaignId: campid
-                        },
-                        success: function(res) {
-                            //console.log(res)
-                            $("#campReportsIndividual").html(res.html)
-
-                            if (!$.fn.DataTable.isDataTable('#file-export')) {
-
-                                $('#file-export').DataTable({
-                                    dom: 'Bfrtip',
-                                    buttons: [
-                                        'copy', 'csv', 'excel', 'pdf', 'print'
-                                    ],
-                                    language: {
-                                        searchPlaceholder: 'Search...',
-                                        sSearch: '',
-                                    },
-                                });
-                            }
-
-
-                        }
-                    })
+                let status = '';
+                if (res.status === 'completed') {
+                    status = '<span class="badge bg-success">Completed</span>';
+                } else if (res.status === 'pending') {
+                    status = '<span class="badge bg-warning">Pending</span>';
+                } else {
+                    status = '<span class="badge bg-success">Running</span>';
                 }
 
-                function fetchCampTrainingDetails() {
+                let rowHtml = `
+                                <tr>
+                                    <th scope="row">${res.camp_report.campaign_name}</th>
+                                    <td>${status}</td>
+                                    <td>${res.camp_live.length}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${res.camp_report.emails_delivered}</span>
+                                            ${res.camp_report.emails_delivered > 0 ? greenCheck : redCheck}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${res.camp_report.emails_viewed}</span>
+                                            ${res.camp_report.emails_viewed > 0 ? greenCheck : redCheck}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${res.camp_report.payloads_clicked}</span>
+                                            ${res.camp_report.payloads_clicked > 0 ? greenCheck : redCheck}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${res.camp_report.emp_compromised}</span>
+                                            ${res.camp_report.emp_compromised > 0 ? greenCheck : redCheck}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${res.camp_report.email_reported}</span>
+                                            ${res.camp_report.email_reported > 0 ? greenCheck : redCheck}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+
+                $("#campReportStatus").html(rowHtml);
+
+                showPhishingReportIndividual(res);
+            }
+
+            function showTrainingReportIndividual(res) {
+
+                if (res.training_assigned_users.length > 0) {
                     $.post({
-                        url: '/fetch-camp-training-details',
-                        data: {
-                            fetchCampTrainingDetails: '1',
-                            campaignId: campid
-                        },
-                        success: function(res) {
-                            //console.log(res)
-                            $("#trainingReportStatus").html(res.html)
-
-
-                        }
-                    })
-                }
-
-                function fetchCampTrainingDetailsIndividual() {
-                    $.post({
-                        url: "/fetch-camp-training-details-individual",
+                        url: "/campaigns/fetch-training-individual",
                         data: {
                             fetchCampTrainingDetailsIndividual: '1',
-                            campaignId: campid
+                            campaignId: res.campaign_id
                         },
                         success: function(res) {
                             //console.log(res)
@@ -473,6 +405,92 @@
                         }
                     })
                 }
+
+            }
+
+            function showTrainingReport(res) {
+                let greenCheck = '<i class="bx bx-check-circle text-success fs-25"></i>';
+                let redCheck = '<i class="bx bx-check-circle text-danger fs-25"></i>';
+
+                let status = '';
+                if (res.status === 'completed') {
+                    status = '<span class="badge bg-success">Completed</span>';
+                } else if (res.status === 'pending') {
+                    status = '<span class="badge bg-warning">Pending</span>';
+                } else {
+                    status = '<span class="badge bg-success">Running</span>';
+                }
+
+                let rowHtml = `
+                                <tr>
+                                    <th scope="row">${res.campaign_name}</th>
+                                    <td>${status}</td>
+                                    <td>${res.camp_live.length}</td>
+                                    <td>${res.camp_report.training_assigned}</td>
+                                    <td>${res.training_type == 'static_training' ? 
+                                        '<span class="badge bg-info">Static Training</span>' : 
+                                        '<span class="badge bg-info">AI Training</span>'}</td>
+                                    <td>${res.camp_report.training_lang}</td>
+                                    <td>${res.camp_report.training_completed}</td>
+                                </tr>
+                            `;
+
+                $("#trainingReportStatus").html(rowHtml);
+
+                 showTrainingReportIndividual(res);
+            }
+
+            function fetchCampaignDetails(campid) {
+                // console.log(campid)
+                $("#training_tab").hide();
+                $("#training_tab a").removeClass('active');
+                $("#training_campaign").removeClass("active show");
+                $("#phishing_tab").hide();
+                $("#phishing_tab a").removeClass('active');
+                $("#phishing_campaign").removeClass("active show");
+
+                $.post({
+                    url: '/campaigns/fetch-campaign-detail',
+                    data: {
+                        campaignId: campid
+                    },
+                    success: function(response) {
+
+                        console.log(response);
+
+
+
+                        if (response.campaign_type === "Phishing") {
+                            $("#phishing_tab").show();
+                            $("#phishing_tab a").addClass('active');
+                            $("#phishing_campaign").addClass("active show");
+
+                            showPhishingReport(response);
+
+                        }
+                        if (response.campaign_type === "Training") {
+                            $("#training_tab").show();
+                            $("#training_tab a").addClass('active');
+                            $("#training_campaign").addClass("active show");
+
+                            showTrainingReport(response);
+                        }
+                        if (response.campaign_type === "Phishing & Training") {
+                            $("#phishing_tab").show();
+                            $("#phishing_tab a").addClass('active');
+                            $("#phishing_campaign").addClass("active show");
+                            $("#training_tab").show();
+
+                            showPhishingReport(response);
+                            showTrainingReport(response);
+                        }
+
+                        return;
+
+                    }
+                });
+
+
 
 
 
