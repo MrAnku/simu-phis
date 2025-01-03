@@ -124,6 +124,14 @@ class ProcessCampaigns extends Command
 
         if (!$campaign->phishing_material) {
 
+          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+          if ($all_camp->training_assignment == 'all') {
+
+            $trainings = json_decode($all_camp->training_module, true);
+            $this->sendTraining($campaign, $trainings);
+          }
+
           $this->sendTraining($campaign);
         }
 
@@ -216,8 +224,34 @@ class ProcessCampaigns extends Command
     return $websiteFilePath;
   }
 
-  private function sendTraining($campaign)
+  private function sendTraining($campaign, $trainings = null)
   {
+    if ($trainings !== null) {
+      foreach ($trainings as $training) {
+        // Check if training is already assigned to the user
+        $checkAssignedUser = DB::table('training_assigned_users')
+          ->where('user_id', $campaign->user_id)
+          ->where('training', $training)
+          ->first();
+
+        if ($checkAssignedUser) {
+          $this->sendCredentials($campaign);
+        } else {
+          // Check if user login already exists
+          $checkLoginExist = DB::table('user_login')
+            ->where('login_username', $campaign->user_email)
+            ->first();
+
+          if ($checkLoginExist) {
+            $this->assignAnotherTraining($checkLoginExist, $campaign, $training);
+          } else {
+            $this->assignNewTraining($campaign, $training);
+          }
+        }
+      }
+
+      return;
+    }
     // Check if training is already assigned to the user
     $checkAssignedUser = DB::table('training_assigned_users')
       ->where('user_id', $campaign->user_id)
@@ -240,7 +274,7 @@ class ProcessCampaigns extends Command
     }
   }
 
-  private function assignNewTraining($campaign)
+  private function assignNewTraining($campaign, $training = null)
   {
     // Insert into training_assigned_users and user_login tables
     $current_date = now()->toDateString();
@@ -252,7 +286,7 @@ class ProcessCampaigns extends Command
         'user_id' => $campaign->user_id,
         'user_name' => $campaign->user_name,
         'user_email' => $campaign->user_email,
-        'training' => $campaign->training_module,
+        'training' => $training ?? $campaign->training_module,
         'training_lang' => $campaign->training_lang,
         'training_type' => $campaign->training_type,
         'assigned_date' => $current_date,
@@ -276,7 +310,7 @@ class ProcessCampaigns extends Command
 
       $mailData = [
         'user_name' => $campaign->user_name,
-        'training_name' => $this->trainingModuleName($campaign->training_module),
+        'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
         'login_email' => $campaign->user_email,
         'login_pass' => $userLoginPass,
         'company_name' => $learnSiteAndLogo['company_name'],
@@ -308,7 +342,7 @@ class ProcessCampaigns extends Command
     }
   }
 
-  private function assignAnotherTraining($userLogin, $campaign)
+  private function assignAnotherTraining($userLogin, $campaign, $training = null)
   {
 
     // Insert into training_assigned_users table
@@ -320,7 +354,7 @@ class ProcessCampaigns extends Command
         'user_id' => $campaign->user_id,
         'user_name' => $campaign->user_name,
         'user_email' => $campaign->user_email,
-        'training' => $campaign->training_module,
+        'training' => $training ?? $campaign->training_module,
         'training_lang' => $campaign->training_lang,
         'training_type' => $campaign->training_type,
         'assigned_date' => $current_date,
@@ -335,7 +369,7 @@ class ProcessCampaigns extends Command
 
       $mailData = [
         'user_name' => $campaign->user_name,
-        'training_name' => $this->trainingModuleName($campaign->training_module),
+        'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
         'login_email' => $userLogin->login_username,
         'login_pass' => $userLogin->login_password,
         'company_name' => $learnSiteAndLogo['company_name'],

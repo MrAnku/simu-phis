@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\TrainingAssignedEmail;
+use App\Models\Campaign;
 use App\Models\Settings;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
@@ -229,28 +230,68 @@ class ShowWebsiteController extends Controller
 
             // Check if the campaign exists for the given user
             $user = CampaignLive::where('id', $campid)
-                ->where('user_id', $userid)
                 ->first();
 
             if (!$user) {
                 return response()->json(['error' => 'Invalid campaign or user']);
             }
 
-
-            if ($user->training_module == '') {
+            if ($user->training_module == null) {
 
                 return response()->json(['error' => 'No training module assigned']);
             }
 
+            //checking assignment
+            $campaign = Campaign::where('campaign_id', $user->campaign_id)->first();
+
+            if ($campaign->training_assignment == 'all') {
+                $trainings = json_decode($campaign->training_module, true);
+                return $this->assignAllTrainings($trainings, $user);
+            } else {
+                return $this->assignSingleTraining($user);
+            }
+        }
+    }
+
+    private function assignSingleTraining($user)
+    {
+
+        // Check if training is already assigned to the user
+        $checkAssignedUser = DB::table('training_assigned_users')
+            ->where('user_id', $user->user_id)
+            ->where('training', $user->training_module)
+            ->first();
+
+        if ($checkAssignedUser) {
+
+            return $this->sendCredentials($checkAssignedUser, $user);
+        } else {
+            // Check if user login already exists
+            $checkLoginExist = DB::table('user_login')
+                ->where('login_username', $user->user_email)
+                ->first();
+
+            if ($checkLoginExist) {
+
+                return $this->assignAnotherTraining($checkLoginExist, $user);
+            } else {
+                return $this->assignNewTraining($user);
+            }
+        }
+    }
+
+    private function assignAllTrainings($trainings, $user)
+    {
+        foreach ($trainings as $training) {
             // Check if training is already assigned to the user
             $checkAssignedUser = DB::table('training_assigned_users')
-                ->where('user_id', $userid)
-                ->where('training', $user->training_module)
+                ->where('user_id', $user->user_id)
+                ->where('training', $training)
                 ->first();
 
             if ($checkAssignedUser) {
 
-                return $this->sendCredentials($checkAssignedUser, $user);
+                $this->sendCredentials($checkAssignedUser, $user);
             } else {
                 // Check if user login already exists
                 $checkLoginExist = DB::table('user_login')
@@ -259,15 +300,16 @@ class ShowWebsiteController extends Controller
 
                 if ($checkLoginExist) {
 
-                    return $this->assignAnotherTraining($checkLoginExist, $user);
+                    $this->assignAnotherTraining($checkLoginExist, $user, $training);
                 } else {
-                    return $this->assignNewTraining($user);
+                    $this->assignNewTraining($user, $training);
                 }
             }
         }
+        return response()->json(['success' => 'All trainings assigned successfully']);
     }
 
-    private function assignNewTraining($user)
+    private function assignNewTraining($user, $training = null)
     {
         // Insert into training_assigned_users and user_login tables
         $current_date = now()->toDateString();
@@ -279,7 +321,7 @@ class ShowWebsiteController extends Controller
                 'user_id' => $user->user_id,
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
-                'training' => $user->training_module,
+                'training' => $training ?? $user->training_module,
                 'training_lang' => $user->training_lang,
                 'training_type' => $user->training_type,
                 'assigned_date' => $current_date,
@@ -301,7 +343,7 @@ class ShowWebsiteController extends Controller
 
             $mailData = [
                 'user_name' => $user->user_name,
-                'training_name' => $this->trainingName($user->training_module),
+                'training_name' => $this->trainingName($training ?? $user->training_module),
                 'login_email' => $user->user_email,
                 'login_pass' => $this->generateRandom(),
                 'company_name' => $learnSiteAndLogo['company_name'],
@@ -310,7 +352,7 @@ class ShowWebsiteController extends Controller
                 'logo' => $learnSiteAndLogo['logo']
             ];
 
-            log_action("Email simulation | Training {$this->trainingName($user->training_module)} assigned to {$user->user_email}.", 'employee', 'employee');
+            log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$user->user_email}.", 'employee', 'employee');
 
             Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData));
 
@@ -330,7 +372,7 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function assignAnotherTraining($checkLoginExist, $user)
+    private function assignAnotherTraining($checkLoginExist, $user, $training = null)
     {
 
         // Insert into training_assigned_users table
@@ -342,7 +384,7 @@ class ShowWebsiteController extends Controller
                 'user_id' => $user->user_id,
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
-                'training' => $user->training_module,
+                'training' => $training ?? $user->training_module,
                 'training_lang' => $user->training_lang,
                 'training_type' => $user->training_type,
                 'assigned_date' => $current_date,
@@ -357,7 +399,7 @@ class ShowWebsiteController extends Controller
 
             $mailData = [
                 'user_name' => $user->user_name,
-                'training_name' => $this->trainingName($user->training_module),
+                'training_name' => $this->trainingName($training ?? $user->training_module),
                 'login_email' => $checkLoginExist->login_username,
                 'login_pass' => $checkLoginExist->login_password,
                 'company_name' => $learnSiteAndLogo['company_name'],
@@ -366,13 +408,13 @@ class ShowWebsiteController extends Controller
                 'logo' => $learnSiteAndLogo['logo']
             ];
 
-            log_action("Email simulation | Training {$this->trainingName($user->training_module)} assigned to {$checkLoginExist->login_username}.", 'employee', 'employee');
+            log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$checkLoginExist->login_username}.", 'employee', 'employee');
 
             Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData));
 
 
             // Update campaign_live table
-           $user->training_assigned = 1;
+            $user->training_assigned = 1;
             $user->save();
 
             // Update campaign_reports table
@@ -410,13 +452,13 @@ class ShowWebsiteController extends Controller
 
         Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
 
-         // Update campaign_live table
-         $user->training_assigned = 1;
-         $user->save();
+        // Update campaign_live table
+        $user->training_assigned = 1;
+        $user->save();
 
-         // Update campaign_reports table
-         $updateReport = CampaignReport::where('campaign_id', $user->campaign_id)
-         ->increment('training_assigned');
+        // Update campaign_reports table
+        $updateReport = CampaignReport::where('campaign_id', $user->campaign_id)
+            ->increment('training_assigned');
 
         return response()->json(['success' => 'Credentials sent to the employee']);
     }
