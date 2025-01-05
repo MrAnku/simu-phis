@@ -189,23 +189,25 @@ if (!function_exists('changeVideoLanguage')) {
 }
 
 if (!function_exists('log_action')) {
-    function log_action($details, $role = 'company', $role_id = null){
+    function log_action($details, $role = 'company', $role_id = null)
+    {
 
-        $role_id = $role_id ?? Auth::user()->company_id; 
+        $role_id = $role_id ?? Auth::user()->company_id;
 
-    Log::create([
-        'role' => $role,
-        'msg' => $details,
-        'role_id' => $role_id,
-        'ip_address' => request()->ip(),
-        'user_agent' => request()->userAgent(),
-    ]);
-}
+        Log::create([
+            'role' => $role,
+            'msg' => $details,
+            'role_id' => $role_id,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
 }
 
 if (!function_exists('checkWhitelabeled')) {
 
-    function checkWhitelabeled($company_id){
+    function checkWhitelabeled($company_id)
+    {
         $company = Company::with('partner')->where('company_id', $company_id)->first();
 
         $partner_id = $company->partner->partner_id;
@@ -231,5 +233,60 @@ if (!function_exists('checkWhitelabeled')) {
             'company_name' => 'simUphish',
             'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
         ];
+    }
 }
+
+if (!function_exists('langName')) {
+
+    function langName($langCode){
+        $languages = [
+            "sq" => "Albanian",
+            "ar" => "Arabic",
+            "az" => "Azerbaijani",
+            "bn" => "Bengali",
+            "bg" => "Bulgarian",
+            "ca" => "Catalan",
+            "zh" => "Chinese",
+            "zt" => "Chinese (traditional)",
+            "cs" => "Czech",
+            "da" => "Danish",
+            "nl" => "Dutch",
+            "en" => "English",
+            "eo" => "Esperanto",
+            "et" => "Estonian",
+            "fi" => "Finnish",
+            "fr" => "French",
+            "de" => "German",
+            "el" => "Greek",
+            "he" => "Hebrew",
+            "hi" => "Hindi",
+            "hu" => "Hungarian",
+            "id" => "Indonesian",
+            "ga" => "Irish",
+            "it" => "Italian",
+            "ja" => "Japanese",
+            "ko" => "Korean",
+            "lv" => "Latvian",
+            "lt" => "Lithuanian",
+            "ms" => "Malay",
+            "nb" => "Norwegian",
+            "fa" => "Persian",
+            "pl" => "Polish",
+            "pt" => "Portuguese",
+            "ro" => "Romanian",
+            "ru" => "Russian",
+            "sk" => "Slovak",
+            "sl" => "Slovenian",
+            "es" => "Spanish",
+            "sv" => "Swedish",
+            "tl" => "Tagalog",
+            "th" => "Thai",
+            "tr" => "Turkish",
+            "uk" => "Ukrainian",
+            "ur" => "Urdu"
+        ];
+
+        return $languages[$langCode];
+    }
+    
 }

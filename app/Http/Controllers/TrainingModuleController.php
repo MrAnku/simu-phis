@@ -203,7 +203,7 @@ class TrainingModuleController extends Controller
         return view('previewTraining', ['trainingid' => $trainingid]);
     }
 
-    public function loadPreviewTrainingContent($trainingid)
+    public function loadPreviewTrainingContent($trainingid, $lang)
     {
         // Decode the ID
         $id = base64_decode($trainingid);
@@ -222,7 +222,7 @@ class TrainingModuleController extends Controller
         }
 
         // Access the module_language attribute
-        $moduleLanguage = $trainingData->module_language;
+        $moduleLanguage = $lang;
 
         // You can now use $moduleLanguage as needed
         if ($moduleLanguage !== 'en') {

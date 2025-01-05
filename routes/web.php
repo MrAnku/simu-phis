@@ -61,7 +61,8 @@ Route::domain('learn.simuphish.com')->group(function () {
 
         Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
-        Route::get('/load-ai-training/{topic}/{language}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
+        Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
+        Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
 
         Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
         Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
@@ -285,7 +286,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
 
-    Route::get('/training-preview-content/{trainingid}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
+    Route::get('/training-preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
     
     
      
@@ -437,7 +438,7 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::get('admin/training-preview/{trainingid}', [AdminTrainingModuleController::class, 'trainingPreview'])->name('admin.trainingmodule.preview');
 
-    Route::get('admin/training-preview-content/{trainingid}', [AdminTrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
+    Route::get('admin/training-preview-content/{trainingid}/{lang}', [AdminTrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
 
     //---------------------------all logs route -----------------//
     Route::get('admin/all-logs', [LogController::class, 'index'])->name('admin.all.logs');

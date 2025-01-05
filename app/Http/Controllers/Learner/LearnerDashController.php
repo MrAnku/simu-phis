@@ -52,7 +52,7 @@ class LearnerDashController extends Controller
     {
         // Decode the ID
         $id = decrypt($training_id);
-        $training_lang = base64_decode($training_lang);
+        $training_lang = $training_lang;
 
         // Validate the ID
         if ($id === false) {

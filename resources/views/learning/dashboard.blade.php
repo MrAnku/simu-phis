@@ -267,13 +267,13 @@
                                                 <td class="text-secondary">
                                                     <a href="@if ($training->training_type == 'static_training') {{ route('learner.start.training', [
                                                             'training_id' => encrypt($training->training),
-                                                            'training_lang' => base64_encode($training->training_lang),
+                                                            'training_lang' => $training->training_lang,
                                                             'id' => base64_encode($training->id),
                                                         ]) }}
 
                                                         @else
                                                             {{ route('learner.start.ai.training', [
-                                                                'topic' => $training->trainingData->name,
+                                                                'topic' => encrypt($training->trainingData->name),
                                                                 'language' => $training->training_lang,
                                                                 'id' => base64_encode($training->id),
                                                             ]) }}

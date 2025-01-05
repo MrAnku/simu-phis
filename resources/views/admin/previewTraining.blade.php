@@ -15,6 +15,8 @@
     <link href="/dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
     <link href="/dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
     <link href="/dist/css/demo.min.css?1685973381" rel="stylesheet" />
+
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         @import url("https://rsms.me/inter/inter.css");
 
@@ -74,8 +76,19 @@
                         <div class="col">
                             <!-- Page pre-title -->
 
-                            <h2 class="page-title">
-                                Training Module Preview </h2>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="page-title">
+                                    Training Module Preview </h2>
+                                <div class="mb-3">
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                            Language
+                                        </span>
+                                        <x-language-select id="trainingLang" />
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
                         <!-- Page title actions -->
 
@@ -85,9 +98,20 @@
             <!-- Page body -->
             <div class="page-body">
                 <div class="container-xl">
-                    <div id="preloader" style="text-align: center;">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div id="preloader" style="text-align: center;">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <a href="." class="navbar-brand navbar-brand-autodark"><img
+                                            src="./static/logo-small.svg" height="36" alt=""></a>
+                                </div>
+                                <div class="text-secondary mb-3">Loading Training Content...</div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar progress-bar-indeterminate"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <img src="/dist/preloader.gif" alt="" srcset="">
                     </div>
                     <div class="row row-deck row-cards">
 
@@ -99,11 +123,11 @@
 
                         </div>
                     </div>
-                    <div class="btns d-flex justify-content-center">
+                    <div class="btns d-flex justify-content-center" id="nextBtnContainer">
 
                         <button type="button" id="nextButton" class="btn btn-outline-primary my-3 active">Next</button>
-                        <a href="{{route('admin.trainingmodule.index')}}" id="dashboardBtn" class="btn btn-outline-primary my-3"
-                            style="display: none;">Dashboard</a>
+                        <a href="{{ route('admin.trainingmodule.index') }}" id="dashboardBtn"
+                            class="btn btn-outline-primary my-3" style="display: none;">Dashboard</a>
                     </div>
                 </div>
             </div>
@@ -115,6 +139,10 @@
     <script src="/dist/js/tabler.min.js?1685973381" defer></script>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"
         integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+
+    <script src="
+                        https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.all.min.js
+                        "></script>
 
 
 
@@ -330,25 +358,65 @@
         // const urlParams = new URLSearchParams(window.location.search);
         // const trainingId = urlParams.get('training');
 
+        function loadTrainingContent(lang = 'en') {
 
-        $.get({
-            url: '/admin/training-preview-content/{{ $trainingid }}',
-            success: function(res) {
-            //   console.log(res)
-            if(res.status === 1){
-                var json_quiz = JSON.parse(res.jsonData.json_quiz);
-                // console.log(resJson);
-                // // console.log(json_quiz);
-                createPages(json_quiz);
-                allQuestions = json_quiz;
-                $("#preloader").hide();
-            }
-                
-            }
-        })
+            $("#preloader").show();
+            $("#trainingQContainers").hide();
+            $("#nextBtnContainer").removeClass('d-flex').hide();
+
+            $.get({
+                url: '/admin/training-preview-content/{{ $trainingid }}/' + lang,
+                success: function(res) {
+                    //   console.log(res)
+                    if (res.status === 1) {
+                        var json_quiz = JSON.parse(res.jsonData.json_quiz);
+                        // console.log(resJson);
+                        // // console.log(json_quiz);
+                        createPages(json_quiz);
+                        allQuestions = json_quiz;
+                        $("#preloader").hide();
+                        $("#trainingQContainers").show();
+                        $("#nextBtnContainer").addClass('d-flex').show();
+                    }
+
+                }
+            })
+        }
+
+        loadTrainingContent();
     </script>
 
-    <script></script>
+    <script>
+        function confirmLanguage(lang, langCode) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: `This training will be changed to ${lang} language!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Change Language!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadTrainingContent(langCode);
+                }
+            });
+        }
+
+
+        $(document).ready(function() {
+            $('#trainingLang').change(function() {
+
+                const lang = $(this).val();
+                const optionText = $(this).find('option:selected').text();
+                confirmLanguage(optionText, lang);
+                console.log(lang);
+
+                //const trainingId = '{{ $trainingid }}';
+                //window.location.href = `/training-preview/${trainingId}?lang=${lang}`;
+            });
+        });
+    </script>
 </body>
 
 </html>
