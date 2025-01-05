@@ -403,12 +403,35 @@ $(document).ready(function () {
         };
 
         revCampName.value = formData.camp_name ?? '--';
-        revCampType.value = $("#campaign_type option:selected").text() ?? '--';
+        revCampType.value = $("#campaign_type option:selected").text().trim() ?? '--';
         revEmpGroup.value = $("#users_group option:selected").text().trim() ?? '--';
         revEmailLang.value = $("#email_lang option:selected").text() ?? '--';
-        revPhishmat.value = $("input[name='phish_material']:checked").data('phishmatname') ?? '--';
+        // revPhishmat.value = selectedPhishingMaterial.join(', ') ?? '--';
         revTrainingLang.value = $("#training_lang option:selected").text() ?? '--';
-        revTrainingMod.value = $("input[name='training_module']:checked").data('trainingname') ?? '--';
+
+        var selectedTrainingModNames = [];
+        var selectedPhishMatNames = [];
+
+        $('input[name="training_module"]:checked').each(function() {
+            var trainingModName = $(this).data('trainingname');
+            if (trainingModName) {
+            selectedTrainingModNames.push(trainingModName);
+            }
+        });
+
+        revTrainingMod.value = selectedTrainingModNames.join(', ') ?? '--';
+
+        
+
+        $('input[name="phish_material"]:checked').each(function() {
+            var phishMatName = $(this).data('phishmatname');
+            if (phishMatName) {
+                selectedPhishMatNames.push(phishMatName);
+            }
+        });
+
+        revPhishmat.value = selectedPhishMatNames.join(', ') ?? '--';
+
         revTrainingType.value = $("#training_type option:selected").text().trim() ?? '--';
         revCampDelivery.value = $("input[name='schType']:checked").data('val') ?? '--';
         revBtwDays.value = formData.schBetRange ?? '--';
