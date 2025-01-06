@@ -241,7 +241,7 @@
                 editimage_cors_hosts: ['picsum.photos'],
                 menubar: 'file edit view insert format tools table help',
                 toolbar: "undo redo | code preview | link image | blocks fontfamily fontsize | bold italic underline strikethrough | align numlist bullist | table | lineheight outdent indent| forecolor backcolor removeformat | ltr rtl",
-                
+
             });
 
             document.addEventListener('focusin', (e) => {
@@ -251,6 +251,31 @@
                 }
             });
 
+            function shortcodeValidation(){
+                const editorContent = tinymce.activeEditor.getContent();
+                const hasWebsiteUrl = editorContent.includes('@{{website_url}}');
+                const hasTrackerImg = editorContent.includes('@{{tracker_img}}');
+
+                return hasWebsiteUrl && hasTrackerImg;
+            }
+
+            function showAnotherModal(button) {
+
+                if(!shortcodeValidation()) {
+                    alert('Please add all the required shortcodes');
+                    return;
+                }
+                    // Hide the current modal
+                    $('#generatePhishMailModal').modal('hide');
+
+                    // Show the another modal
+                    $('#savePhishMailModal').modal('show');
+
+                    // When the another modal is closed, show the current modal again
+                    $('#savePhishMailModal').on('hidden.bs.modal', function() {
+                        $('#generatePhishMailModal').modal('show');
+                    });
+                }
 
 
 
@@ -284,6 +309,7 @@
                     tinymce.activeEditor.setContent(data.html);
                     btn.disabled = false;
                     btn.innerHTML = 'Generate Template';
+                    $('#aiTempContainer').show();
                 } else {
                     alert('Failed to generate template');
                 }

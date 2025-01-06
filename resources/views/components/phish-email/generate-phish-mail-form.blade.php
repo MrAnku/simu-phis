@@ -5,26 +5,20 @@
         <button class="btn btn-primary" onclick="generateTemplate(this)" type="button" id="button-addon2">Generate
             Template</button>
     </div>
+    
 
-    <div>
-        <textarea id="email-editor"></textarea>
+    <div id="aiTempContainer" style="display: none;">
+        <div>
+            <p class="text-muted">Please add the shortcodes <code>@{{user_name}}</code>(optional), <code>@{{website_url}}</code> i.e. href="@{{website_url}}" and <code>@{{tracker_img}}</code> anywhere</p>
+        </div>
+        <div>
+            <textarea id="email-editor"></textarea>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-primary" onclick="showAnotherModal(this)" type="button">Save template</button>
+
+            
+        </div>
     </div>
-    <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-primary" onclick="showAnotherModal(this)" type="button">Save template</button>
 
-        <script>
-            function showAnotherModal(button) {
-                // Hide the current modal
-                $('#generatePhishMailModal').modal('hide');
-
-                // Show the another modal
-                $('#savePhishMailModal').modal('show');
-
-                // When the another modal is closed, show the current modal again
-                $('#savePhishMailModal').on('hidden.bs.modal', function() {
-                    $('#generatePhishMailModal').modal('show');
-                });
-            }
-        </script>
-    </div>
 </div>
