@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\CampaignLive;
-use App\Models\PhishingEmail;
-use App\Models\PhishingWebsite;
-use App\Models\SenderProfile;
 use Illuminate\Http\Request;
+use App\Models\PhishingEmail;
+use App\Models\SenderProfile;
+use App\Models\PhishingWebsite;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class PhishingEmailsController extends Controller
 {
@@ -165,5 +166,95 @@ class PhishingEmailsController extends Controller
             log_action("Failed to add email template");
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
+    }
+
+    public function generateTemplate(Request $request)
+    {
+        try {
+            $prompt = "Generate a valid, professional HTML email template based on the following request. The output should only contain HTML code:\n\n{$request->prompt}";
+
+            $response = Http::withOptions(['verify' => false])->withHeaders([
+                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'You are an expert email template generator. Always provide valid HTML code.'],
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 1500,
+                'temperature' => 0.7,
+            ]);
+
+            if ($response->failed()) {
+
+                log_action("Failed to generate AI Email Template on topic of prompt: {$prompt}");
+
+                return response()->json([
+                    'status' => 0,
+                    'msg' => $response->body(),
+                ]);
+            }
+
+            $html = $response['choices'][0]['message']['content'];
+
+            log_action("Email template generated using AI on topic of prompt: {$prompt}");
+
+            return response()->json([
+                'status' => 1,
+                'html' => $html,
+            ]);
+        } catch (\Exception $e) {
+
+            log_action("Failed to generate email template");
+
+            return response()->json([
+                'status' => 0,
+                'msg' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function saveAIPhishTemplate(Request $request)
+    {
+        try {
+            $request->validate([
+            'html' => 'required|string',
+            'template_name' => 'required|string',
+            'template_subject' => 'required|string',
+            'difficulty' => 'required|string',
+            'template_website' => 'required|string',
+            'template_sender_profile' => 'required|numeric',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'msg' => $e->getMessage()]);
+        }
+
+        $company_id = auth()->user()->company_id;
+        $randomName = generateRandom(32);
+
+        $html = $request->input('html');
+        $filename = $randomName . '.html';
+        $targetDir = 'uploads/phishingMaterial/phishing_emails';
+
+        $path = storage_path('app/public/' . $targetDir . '/' . $filename);
+
+
+        if (!is_dir(storage_path('app/public/' . $targetDir))) {
+            mkdir(storage_path('app/public/' . $targetDir), 0777, true);
+        }
+
+        file_put_contents($path, $html);
+
+        PhishingEmail::create([
+            'name' => $request->template_name,
+            'email_subject' => $request->template_subject,
+            'difficulty' => $request->difficulty,
+            'mailBodyFilePath' => $targetDir . '/' . $filename,
+            'website' => $request->template_website,
+            'senderProfile' => $request->template_sender_profile,
+            'company_id' => $company_id,
+        ]);
+
+        return response()->json(['status' => 1, 'msg' => 'Template saved successfully']);
     }
 }

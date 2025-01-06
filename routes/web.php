@@ -255,6 +255,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
     Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
     Route::post('/add-email-template', [PhishingEmailsController::class, 'addEmailTemplate'])->name('addEmailTemplate');
+    Route::post('/generate-template', [PhishingEmailsController::class, 'generateTemplate']);
+    Route::post('/save-ai-phish-template', [PhishingEmailsController::class, 'saveAIPhishTemplate']);
     Route::post('/update-email-template', [PhishingEmailsController::class, 'updateTemplate'])->name('phishing.update');
     Route::post('/delete-email-template', [PhishingEmailsController::class, 'deleteTemplate'])->name('phishing.template.delete');
 
