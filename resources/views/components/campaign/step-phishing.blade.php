@@ -10,9 +10,9 @@
         <div>
 
             <label for="templateSearch" class="form-label">Search</label>
-            <div class="d-flex gap-2 align-items-center" id="phishEmailSearchSpinner">
+            <div class="d-flex gap-2 align-items-center">
                 <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
-                <div class="spinner-border spinner-border-sm me-4" role="status" style="display: none;">
+                <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
