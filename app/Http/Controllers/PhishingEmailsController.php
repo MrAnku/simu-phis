@@ -21,13 +21,35 @@ class PhishingEmailsController extends Controller
         $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
             ->where('company_id', $company_id)
             ->orWhere('company_id', 'default')
-            ->get();
+            ->paginate(10);
 
         $senderProfiles = SenderProfile::where('company_id', $company_id)->orWhere('company_id', 'default')
             ->get();
 
         $phishingWebsites = PhishingWebsite::where('company_id', $company_id)->orWhere('company_id', 'default')
             ->get();
+
+        return view('phishingEmails', compact('phishingEmails', 'senderProfiles', 'phishingWebsites'));
+    }
+
+    public function searchPhishingEmails(Request $request)
+    {
+        $company_id = auth()->user()->company_id;
+        $searchTerm = $request->query('search');
+
+        $senderProfiles = SenderProfile::where('company_id', $company_id)->orWhere('company_id', 'default')
+            ->get();
+
+        $phishingWebsites = PhishingWebsite::where('company_id', $company_id)->orWhere('company_id', 'default')
+            ->get();
+
+        $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+            ->where(function ($query) use ($company_id, $searchTerm) {
+                $query->where('company_id', $company_id)
+                    ->orWhere('company_id', 'default');
+            })
+            ->where('name', 'LIKE', '%' . $searchTerm . '%')
+            ->paginate(10);
 
         return view('phishingEmails', compact('phishingEmails', 'senderProfiles', 'phishingWebsites'));
     }
@@ -218,12 +240,12 @@ class PhishingEmailsController extends Controller
     {
         try {
             $request->validate([
-            'html' => 'required|string',
-            'template_name' => 'required|string',
-            'template_subject' => 'required|string',
-            'difficulty' => 'required|string',
-            'template_website' => 'required|string',
-            'template_sender_profile' => 'required|numeric',
+                'html' => 'required|string',
+                'template_name' => 'required|string',
+                'template_subject' => 'required|string',
+                'difficulty' => 'required|string',
+                'template_website' => 'required|string',
+                'template_sender_profile' => 'required|numeric',
             ]);
         } catch (\Exception $e) {
             return response()->json(['status' => 0, 'msg' => $e->getMessage()]);

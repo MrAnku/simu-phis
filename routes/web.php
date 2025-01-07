@@ -254,6 +254,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
     Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
+    Route::get('/search-email-template', [PhishingEmailsController::class, 'searchPhishingEmails'])->name('phishingEmails.search');
     Route::post('/add-email-template', [PhishingEmailsController::class, 'addEmailTemplate'])->name('addEmailTemplate');
     Route::post('/generate-template', [PhishingEmailsController::class, 'generateTemplate']);
     Route::post('/save-ai-phish-template', [PhishingEmailsController::class, 'saveAIPhishTemplate']);
@@ -265,8 +266,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
+    Route::get('/search-website', [PhishingWebsitesController::class, 'searchWebsite'])->name('phishingWebsites.search');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
-    Route::post('/generate-phishing-website', [PhishingWebsitesController::class, 'generateWebsite'])->name('phishing.generate.website');
     Route::post('/save-generate-phishing-website', [PhishingWebsitesController::class, 'saveGeneratedSite'])->name('phishing.website.saveGeneratedSite');
 
 

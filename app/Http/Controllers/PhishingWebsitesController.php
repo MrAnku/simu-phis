@@ -20,7 +20,7 @@ class PhishingWebsitesController extends Controller
 
         $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
             ->orWhere('company_id', 'default')
-            ->get();
+            ->paginate(10);
         return view('phishingWebsites', compact('phishingWebsites'));
     }
 
@@ -56,6 +56,21 @@ class PhishingWebsitesController extends Controller
         });
         log_action("Phishing website deleted successfully");
         return redirect()->back()->with('success', 'Phishing website deleted successfully.');
+    }
+
+    public function searchWebsite(Request $request)
+    {
+        $searchTerm = $request->input('search');
+        $company_id = auth()->user()->company_id;
+
+        $phishingWebsites = PhishingWebsite::where(function ($query) use ($searchTerm, $company_id) {
+            $query->where('company_id', $company_id)
+                ->orWhere('company_id', 'default');
+        })->where(function ($query) use ($searchTerm) {
+            $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+        })->paginate(10);
+
+        return view('phishingWebsites', compact('phishingWebsites'));
     }
 
     public function addPhishingWebsite(Request $request)

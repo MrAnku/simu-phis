@@ -48,18 +48,21 @@
                             <div class="card-title">
                                 Manage Phishing Emails
                             </div>
+                            <div>
+                                <div class="input-group mb-3">
 
-                            <div
-                                style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                        ">
-
-                                <input type="text" class="form-control" id="templateSearch"
-                                    placeholder="Search template">
-                                <i class='bx bx-search fs-23'></i>
+                                    <form method="GET" action="{{ route('phishingEmails.search') }}" class="d-flex gap-2">
+                                        <input type="text" class="form-control" name="search"
+                                            placeholder="Search Template..." aria-label="Example text with button addon"
+                                            aria-describedby="button-addon1">
+                                        <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" type="submit">
+                                            <i class="ri-search-line"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
+
+
                         </div>
                         <div class="card-body all-email-templates">
 
@@ -132,6 +135,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div>
+                {{ $phishingEmails->links() }}
             </div>
 
         </div>
@@ -251,31 +258,31 @@
                 }
             });
 
-            function shortcodeValidation(){
+            function shortcodeValidation() {
                 const editorContent = tinymce.activeEditor.getContent();
-                const hasWebsiteUrl = editorContent.includes('@{{website_url}}');
-                const hasTrackerImg = editorContent.includes('@{{tracker_img}}');
+                const hasWebsiteUrl = editorContent.includes('@{{ website_url }}');
+                const hasTrackerImg = editorContent.includes('@{{ tracker_img }}');
 
                 return hasWebsiteUrl && hasTrackerImg;
             }
 
             function showAnotherModal(button) {
 
-                if(!shortcodeValidation()) {
+                if (!shortcodeValidation()) {
                     alert('Please add all the required shortcodes');
                     return;
                 }
-                    // Hide the current modal
-                    $('#generatePhishMailModal').modal('hide');
+                // Hide the current modal
+                $('#generatePhishMailModal').modal('hide');
 
-                    // Show the another modal
-                    $('#savePhishMailModal').modal('show');
+                // Show the another modal
+                $('#savePhishMailModal').modal('show');
 
-                    // When the another modal is closed, show the current modal again
-                    $('#savePhishMailModal').on('hidden.bs.modal', function() {
-                        $('#generatePhishMailModal').modal('show');
-                    });
-                }
+                // When the another modal is closed, show the current modal again
+                $('#savePhishMailModal').on('hidden.bs.modal', function() {
+                    $('#generatePhishMailModal').modal('show');
+                });
+            }
 
 
 

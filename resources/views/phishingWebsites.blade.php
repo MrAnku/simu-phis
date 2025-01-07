@@ -31,15 +31,19 @@
                                 Manage Phishing Websites
                             </div>
 
-                            <div
-                                style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                        ">
+                            <div>
+                                <div class="input-group mb-3">
 
-                                <input type="text" class="form-control" id="templateSearch" placeholder="Search website">
-                                <i class='bx bx-search fs-23'></i>
+                                    <form method="GET" action="{{ route('phishingWebsites.search') }}" class="d-flex gap-2">
+                                        <input type="text" class="form-control" name="search"
+                                            placeholder="Search website..." aria-label="Example text with button addon"
+                                            aria-describedby="button-addon1">
+                                        <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
+                                            type="submit">
+                                            <i class="ri-search-line"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         <div class="card-body">
@@ -62,7 +66,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
-                                                    <a href="http://{{Str::random(6)}}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{Str::random(10)}}&p={{$phishingWebsite->id}}&l={{Str::slug($phishingWebsite->name)}}"
+                                                    <a href="http://{{ Str::random(6) }}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{ Str::random(10) }}&p={{ $phishingWebsite->id }}&l={{ Str::slug($phishingWebsite->name) }}"
                                                         target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
@@ -86,10 +90,14 @@
                                 @endforelse
 
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div>
+                {{ $phishingWebsites->links() }}
             </div>
 
         </div>
@@ -180,9 +188,8 @@
                     <div class="mb-3" id="iframe-container" style="display:none;">
                         <iframe id="generated-site-iframe" width="100%" height="600px"></iframe>
                         <div class="text-end">
-                            <button data-bs-toggle="modal" id="saveSite"
-                            data-bs-target="#saveGeneratedSiteModal"
-                            class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save</button>
+                            <button data-bs-toggle="modal" id="saveSite" data-bs-target="#saveGeneratedSiteModal"
+                                class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save</button>
                         </div>
                     </div>
 
@@ -203,11 +210,14 @@
                 </div>
                 <div class="modal-body">
 
-                    <form action="{{ route('phishing.website.saveGeneratedSite') }}" method="post" enctype="multipart/form-data">
+                    <form action="{{ route('phishing.website.saveGeneratedSite') }}" method="post"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website name<sup class="text-danger">*</sup></label>
-                            <input type="text" class="form-control" name="webName" placeholder="Template name" required>
+                            <label for="input-label" class="form-label">Website name<sup
+                                    class="text-danger">*</sup></label>
+                            <input type="text" class="form-control" name="webName" placeholder="Template name"
+                                required>
                             <input type="hidden" name="sitePagePath" id="sitePagePath">
                         </div>
                         <div class="mb-3">
@@ -234,7 +244,7 @@
         </div>
     </div>
 
-    
+
 
 
 
@@ -382,8 +392,8 @@
                     success: function(res) {
                         console.log(res)
                         $(btn).html(
-                    `Generate Website`
-                );
+                            `Generate Website`
+                        );
                         if (res.status === 1) {
                             $('#generated-site-iframe').attr('src', res.msg);
                             $('#sitePagePath').val(res.msg);
