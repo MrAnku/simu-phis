@@ -453,14 +453,6 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 //------------------------admin route----------------------//
 
-//---------------------test routes----------------------//
-
-Route::get('/upload', [TestUploadController::class, 'showUploadForm'])->name('upload.form');
-Route::post('/upload', [TestUploadController::class, 'uploadFile'])->name('upload.file');
-
-
-
-
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
