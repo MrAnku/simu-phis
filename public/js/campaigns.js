@@ -38,7 +38,7 @@ function relaunch_camp(campid) {
                 success: function (res) {
 
                     // console.log(res)
-                   checkResponse(res);
+                    checkResponse(res);
                 }
             })
         }
@@ -83,8 +83,8 @@ function deletecampaign(campid) {
 var phish_mat_checkboxes = document.querySelectorAll('input[name="phish_material"]');
 var selectedPhishingMaterial = [];
 
-phish_mat_checkboxes.forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
+phish_mat_checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
         var label = document.querySelector(`label[for="${checkbox.id}"]`);
 
         if (checkbox.checked) {
@@ -120,8 +120,8 @@ phish_mat_checkboxes.forEach(function(checkbox) {
 var training_checkboxes = document.querySelectorAll('input[name="training_module"]');
 var selectedTrainings = [];
 
-training_checkboxes.forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
+training_checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
         var label = document.querySelector(`label[for="${checkbox.id}"]`);
 
         if (checkbox.checked) {
@@ -412,18 +412,18 @@ $(document).ready(function () {
         var selectedTrainingModNames = [];
         var selectedPhishMatNames = [];
 
-        $('input[name="training_module"]:checked').each(function() {
+        $('input[name="training_module"]:checked').each(function () {
             var trainingModName = $(this).data('trainingname');
             if (trainingModName) {
-            selectedTrainingModNames.push(trainingModName);
+                selectedTrainingModNames.push(trainingModName);
             }
         });
 
         revTrainingMod.value = selectedTrainingModNames.join(', ') ?? '--';
 
-        
 
-        $('input[name="phish_material"]:checked').each(function() {
+
+        $('input[name="phish_material"]:checked').each(function () {
             var phishMatName = $(this).data('phishmatname');
             if (phishMatName) {
                 selectedPhishMatNames.push(phishMatName);
@@ -499,7 +499,7 @@ $(document).ready(function () {
             url: '/campaigns/create',
             data: dataToBeSaved,
             success: function (res) {
-                 checkResponse(res);
+                checkResponse(res);
                 // console.log(res);
             }
         })
@@ -620,18 +620,44 @@ $('label[for="rfquaterly"]').click(function () {
 $('#templateSearch').on('input', function () {
     var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
 
-    // Loop through each template card
-    $('.email_templates').each(function () {
-        var templateName = $(this).find('.fw-semibold').text().toLowerCase(); // Get the template name and convert it to lowercase
+    clearTimeout($.data(this, 'timer'));
+    if (searchValue.length > 2) {
+        var wait = setTimeout(function () {
+            // Call the search function here
+            searchPhishingMaterial(searchValue);
+        }, 3000);
+        $(this).data('timer', wait);
+    }else{
+        if(phishing_materials_before_search !== ''){
+            $('#phishingEmailsCampModal').html(phishing_materials_before_search)
+            phishing_materials_before_search = '';
+        }
+    }
+});
 
-        // If the template name contains the search value, show the card; otherwise, hide it
-        if (templateName.includes(searchValue)) {
-            $(this).show();
-        } else {
-            $(this).hide();
+let phishing_materials_before_search = ''
+
+function searchPhishingMaterial(searchValue) {
+$('#phishEmailSearchSpinner').show();
+    phishing_materials_before_search = $('#phishingEmailsCampModal').html();
+    // Loop through each template card
+    $.post({
+        url: '/campaigns/search-phishing-material',
+        data: { search: searchValue },
+        success: function (res) {
+            if (res.status === 1) {
+                // Clear existing results
+                $('#phishEmailSearchSpinner').hide();
+                $('#phishingEmailsCampModal').empty()
+                // Append new results
+                const htmlrows = prepareHtml(res.data);
+                $('#phishingEmailsCampModal').append(htmlrows);
+            } else {
+                Swal.fire(res.msg, '', 'error');
+            }
         }
     });
-});
+}
 
 // Event listener for input field change
 $('#t_moduleSearch').on('input', function () {
@@ -687,7 +713,7 @@ function resendTrainingAssignmentReminder(btn, email, training) {
     })
 }
 
-function completeAssignedTraining(btn, encodedTrainingId){
+function completeAssignedTraining(btn, encodedTrainingId) {
     Swal.fire({
         title: 'Are you sure?',
         text: "This will mark the training as completed",
@@ -717,11 +743,11 @@ function completeAssignedTraining(btn, encodedTrainingId){
             // console.log('sending reminder email');
         }
     })
-    
+
 
 }
 
-function removeAssignedTraining(btn, encodedTrainingId, trainingname, email){
+function removeAssignedTraining(btn, encodedTrainingId, trainingname, email) {
     Swal.fire({
         title: 'Are you sure?',
         text: `This will remove the ${trainingname} training assigned to: ${email}`,
@@ -751,11 +777,85 @@ function removeAssignedTraining(btn, encodedTrainingId, trainingname, email){
             // console.log('sending reminder email');
         }
     })
-    
+
 
 }
 
+let phishing_emails_page = 2;
+function loadMorePhishingEmails(btn) {
+    btn.disabled = true;
+    btn.innerText = 'Loading...'
+    $.post({
+        url: '/campaigns/show-more-phishing-emails',
+        data: {
+            page: phishing_emails_page
+        },
+        success: function (res) {
+            // console.log(res)
+            if (res.status !== 1) {
+                Swal.fire(
+                    res.msg,
+                    '',
+                    'error'
+                )
+                return;
+            }
+            const htmlrows = prepareHtml(res.data);
+            $('#phishingEmailsCampModal').append(htmlrows);
+            btn.disabled = false;
+            btn.innerText = 'Show More';
+            phishing_emails_page++;
+        }
+    })
+}
 
+function prepareHtml(data) {
+    let html = '';
+    data.forEach(email => {
+
+        html += `<div class="col-lg-6 email_templates">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="">
+                                <div class="fs-15 fw-semibold">${email.name}</div>
+                                    ${email.company_id == 'default' ? '(Default)' : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body htmlPhishingGrid" style="background: white;">
+                        <iframe class="phishing-iframe" src="/storage/${email.mailBodyFilePath}"></iframe>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-center">
+                            <div>
+                                <button type="button"
+                                    onclick="showMaterialDetails(this, '${email.name}', '${email.email_subject}', '${email.website}', '${email.senderProfile}')"
+                                    class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
+                                    View
+                                </button>
+                            </div>
+                            <div class="fs-semibold fs-14">
+                                <input 
+                                    type="checkbox" 
+                                    name="phish_material" 
+                                    class="btn-check" 
+                                    data-phishMatName="${email.name}" 
+                                    id="pm${email.id}" 
+                                    value="${email.id}"
+                                >
+                                <label class="btn btn-outline-primary mb-3" for="pm${email.id}">Select this attack</label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+    });
+
+    return html;
+}
 
 
 

@@ -10,12 +10,17 @@
         <div>
 
             <label for="templateSearch" class="form-label">Search</label>
-            <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
+            <div class="d-flex gap-2 align-items-center" id="phishEmailSearchSpinner">
+                <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
+                <div class="spinner-border spinner-border-sm me-4" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
 
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="phishingEmailsCampModal">
         @forelse ($phishingEmails as $email)
             @php
                 $isDefault = $email->company_id == 'default' ? '(Default)' : '';
@@ -55,10 +60,6 @@
                                 <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this attack</label>
 
                                 
-                                {{-- <input type="radio" name="phish_material" data-phishMatName="{{ $email->name }}"
-                                    value="{{ $email->id }}" class="btn-check" id="pm{{ $email->id }}">
-                                <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this
-                                    attack</label> --}}
                             </div>
                         </div>
                     </div>
@@ -68,5 +69,8 @@
             <p>No phishing emails available.</p>
         @endforelse
 
+    </div>
+    <div class="d-flex justify-content-center">
+        <button type="button" onclick="loadMorePhishingEmails(this)" class="btn btn-primary btn-sm btn-wave">Show More</button>
     </div>
 </div>

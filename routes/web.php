@@ -148,6 +148,10 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //campaigns page routes------------------------------------------------------
 
     Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns');
+
+    Route::post('/campaigns/show-more-phishing-emails', [CampaignController::class, 'showMorePhishingEmails'])->name('campaigns.showmore.phish.emails');
+    Route::post('/campaigns/search-phishing-material', [CampaignController::class, 'searchPhishingMaterial'])->name('campaigns.search.phish.emails');
+
     Route::post('/campaigns/create', [CampaignController::class, 'createCampaign'])->name('campaigns.create');
     Route::post('/campaigns/delete', [CampaignController::class, 'deleteCampaign'])->name('campaigns.delete');
     Route::post('/campaigns/fetch-campaign-detail', [CampaignController::class, 'fetchCampaignDetail'])->name('campaigns.detail');

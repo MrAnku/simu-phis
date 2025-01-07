@@ -38,9 +38,13 @@ class CampaignController extends Controller
 
 
         // Fetch users groups and phishing emails, and pass to view
-        $usersGroups = $this->fetchUsersGroups();
-        $phishingEmails = $this->fetchPhishingEmails();
-        $trainingModules = $this->fetchTrainingModules();
+        $usersGroups = UsersGroup::where('company_id', $companyId)->get();
+        $phishingEmails = PhishingEmail::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->limit(10)->get();
+        $trainingModules = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->limit(10)->get();
 
 
         return view('campaigns', compact(
@@ -54,27 +58,36 @@ class CampaignController extends Controller
         ));
     }
 
-    public function fetchUsersGroups()
+    public function showMorePhishingEmails(Request $request)
     {
+        $page = $request->input('page', 1);
         $companyId = Auth::user()->company_id;
-        return UsersGroup::where('company_id', $companyId)->get();
+
+        $phishingEmails = PhishingEmail::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->skip(($page - 1) * 10)
+            ->take(10)
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
 
-    public function fetchPhishingEmails()
+    public function searchPhishingMaterial(Request $request)
     {
+
+        $searchTerm = $request->input('search');
         $companyId = Auth::user()->company_id;
-        return PhishingEmail::where('company_id', $companyId)
+
+        $phishingEmails = PhishingEmail::where('company_id', $companyId)
             ->orWhere('company_id', 'default')
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%");
+            })
             ->get();
+
+        return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
 
-    public function fetchTrainingModules()
-    {
-        $companyId = Auth::user()->company_id;
-        return TrainingModule::where('company_id', $companyId)
-            ->orWhere('company_id', 'default')
-            ->get();
-    }
 
     public function createCampaign(Request $request)
     {
@@ -374,7 +387,7 @@ class CampaignController extends Controller
         }
 
         foreach ($users as $user) {
-          
+
             CampaignLive::create([
                 'campaign_id' => $campaign->campaign_id,
                 'campaign_name' => $campaign->campaign_name,
@@ -450,7 +463,7 @@ class CampaignController extends Controller
 
             $isLive = $this->makeCampaignLive($request->campid, $launchTime, $email_freq, $expire_after);
 
-            if($isLive['status'] === 0) {
+            if ($isLive['status'] === 0) {
                 return redirect()->back()->with('error', $isLive['msg']);
             }
 
@@ -543,8 +556,8 @@ class CampaignController extends Controller
             return ['status' => 0, 'msg' => 'No employees available in this group'];
         }
 
-         // Iterate through the users and create CampaignLive entries
-         foreach ($users as $user) {
+        // Iterate through the users and create CampaignLive entries
+        foreach ($users as $user) {
             CampaignLive::create([
                 'campaign_id' => $campaign->campaign_id,
                 'campaign_name' => $campaign->campaign_name,
@@ -657,14 +670,16 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
     }
 
-    public function fetchCampaignDetail(Request $request){
+    public function fetchCampaignDetail(Request $request)
+    {
 
         $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $request->campaignId)->first();
 
         return response()->json($detail);
     }
 
-    public function fetchTrainingIndividual(Request $request){
+    public function fetchTrainingIndividual(Request $request)
+    {
         $request->validate([
             'campaignId' => 'required|string',
         ]);
@@ -691,10 +706,9 @@ class CampaignController extends Controller
             $today = new \DateTime(date('Y-m-d'));
             $dueDate = new \DateTime($assignedUser->training_due_date);
 
-            if($assignedUser->completed == 1) {
+            if ($assignedUser->completed == 1) {
                 $status = "<span class='text-success'><strong>Training Completed</strong></span>";
-                
-            } else{
+            } else {
                 if ($dueDate > $today) {
                     $status = "<span class='text-success'><strong>In training period</strong></span>";
                 } else {
@@ -703,20 +717,20 @@ class CampaignController extends Controller
                 }
             }
 
-           
+
             $responseHtml .=
                 '
                 <tr>
                     <td>' . $assignedUser->user_name . '</td>
                     <td>' . $assignedUser->user_email . '</td>
-                    <td><span class="badge rounded-pill bg-primary">' .$trainingDetail->name . '</span></td>
-                    <td>' .$assignedUser->assigned_date . '</td>
-                    <td>' .$assignedUser->personal_best . '%</td>
-                    <td>' .$trainingDetail->passing_score . '%</td>
-                    <td>' .$status . '</td>
+                    <td><span class="badge rounded-pill bg-primary">' . $trainingDetail->name . '</span></td>
+                    <td>' . $assignedUser->assigned_date . '</td>
+                    <td>' . $assignedUser->personal_best . '%</td>
+                    <td>' . $trainingDetail->passing_score . '%</td>
+                    <td>' . $status . '</td>
                     <td> 
                         <button type="button" 
-                        onclick="resendTrainingAssignmentReminder(this, `' . $assignedUser->user_email . '`, `' .$trainingDetail->name . '`)" 
+                        onclick="resendTrainingAssignmentReminder(this, `' . $assignedUser->user_email . '`, `' . $trainingDetail->name . '`)" 
                         class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" 
                         data-bs-toggle="tooltip"
                         data-bs-placement="top" 
@@ -726,7 +740,7 @@ class CampaignController extends Controller
 
                         <button type="button" 
                         class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave" 
-                        onclick="completeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`)"
+                        onclick="completeAssignedTraining(this, `' . base64_encode($assignedUser->id) . '`)"
                         data-bs-toggle="tooltip"
                         data-bs-placement="top" 
                         title="Would you like to auto-complete the assigned training for this employee? This will assign a passing score of 100% for this training module.">
@@ -736,7 +750,7 @@ class CampaignController extends Controller
                         <button type="button" 
                         class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" 
                         data-bs-toggle="tooltip"
-                        onclick="removeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`, `'.$trainingDetail->name.'`, `' . $assignedUser->user_email . '`)"
+                        onclick="removeAssignedTraining(this, `' . base64_encode($assignedUser->id) . '`, `' . $trainingDetail->name . '`, `' . $assignedUser->user_email . '`)"
     data-bs-placement="top" title="Should this employee not be assigned this training? Click here to remove it.">
                             <i class="ri-delete-bin-line"></i>
                         </button> 
