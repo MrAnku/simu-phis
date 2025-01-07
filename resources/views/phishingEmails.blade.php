@@ -55,7 +55,8 @@
                                         <input type="text" class="form-control" name="search"
                                             placeholder="Search Template..." aria-label="Example text with button addon"
                                             aria-describedby="button-addon1">
-                                        <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" type="submit">
+                                        <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
+                                            type="submit">
                                             <i class="ri-search-line"></i>
                                         </button>
                                     </form>
@@ -260,8 +261,8 @@
 
             function shortcodeValidation() {
                 const editorContent = tinymce.activeEditor.getContent();
-                const hasWebsiteUrl = editorContent.includes('@{{ website_url }}');
-                const hasTrackerImg = editorContent.includes('@{{ tracker_img }}');
+                const hasWebsiteUrl = editorContent.includes('@{{website_url}}');
+                const hasTrackerImg = editorContent.includes('@{{tracker_img}}');
 
                 return hasWebsiteUrl && hasTrackerImg;
             }
