@@ -72,6 +72,30 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
 
+    public function showMoreTrainings(Request $request){
+
+        $page = $request->input('page', 1);
+        $companyId = Auth::user()->company_id;
+
+        if($request->category == 'all'){
+            $trainings = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->skip(($page - 1) * 10)
+            ->take(10)
+            ->get();
+
+            return response()->json(['status' => 1, 'data' => $trainings]);
+        }
+        $trainings = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->where('category', $request->category)
+            ->skip(($page - 1) * 10)
+            ->take(10)
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $trainings]);
+    }
+
     public function searchPhishingMaterial(Request $request)
     {
 
@@ -87,6 +111,43 @@ class CampaignController extends Controller
 
         return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
+
+    public function fetchTrainingByCategory(Request $request){
+        $companyId = Auth::user()->company_id;
+
+        if($request->category == 'all'){
+            $trainings = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->limit(10)
+            ->get();
+
+            return response()->json(['status' => 1, 'data' => $trainings]);
+        }
+
+        $trainings = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->where('category', $request->category)
+            ->limit(10)
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $trainings]);
+    }
+
+    public function searchTrainingModule(Request $request){
+        $searchTerm = $request->input('search');
+        $companyId = Auth::user()->company_id;
+
+        $trainings = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', "%{$searchTerm}%");
+            })
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $trainings]);
+    }
+
+    
 
 
     public function createCampaign(Request $request)

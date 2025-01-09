@@ -52,7 +52,8 @@
                                 <input 
                                     type="checkbox" 
                                     name="phish_material" 
-                                    class="btn-check" 
+                                    class="btn-check"
+                                    onclick="selectPhishingMaterial(this)" 
                                     data-phishMatName="{{ $email->name }}" 
                                     id="pm{{ $email->id }}" 
                                     value="{{ $email->id }}"

@@ -1,6 +1,6 @@
 <div class="form-card">
 
-    <div class="d-flex justify-content-between">
+    <div class="d-flex gap-2 justify-content-between">
         <div class="d-flex gap-2">
             <div>
                 <div class="input-group input-group-sm mb-3">
@@ -45,10 +45,19 @@
                 <span class="input-group-text">Search: </span>
                 <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search template">
             </div>
+
+            <div class="input-group input-group-sm mb-3">
+                <label class="input-group-text" for="training_cat">Category:</label>
+                <select class="form-select" id="training_cat">
+                    <option value="all" selected>All</option>
+                    <option value="international">International</option>
+                    <option value="middle_east">Middle East</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="trainingModulesCampModal">
         @forelse ($trainingModules as $module)
             @php
                 $coverImgPath = asset('storage/uploads/trainingModule/' . $module->cover_image);
@@ -69,7 +78,7 @@
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">
                             <div class="fs-semibold fs-14">
-                                <input type="checkbox" name="training_module" data-trainingName="{{ $module->name }}"
+                                <input type="checkbox" name="training_module" onclick="selectTrainingModule(this)" data-trainingName="{{ $module->name }}"
                                     value="{{ $module->id }}" class="btn-check" id="training{{ $module->id }}">
                                 <label class="btn btn-outline-primary mb-3" for="training{{ $module->id }}">Select
                                     this
@@ -83,5 +92,8 @@
             <p>No training modules available.</p>
         @endforelse
 
+    </div>
+    <div class="d-flex justify-content-center">
+        <button type="button" onclick="loadMoreTrainings(this)" class="btn btn-primary btn-sm btn-wave">Show More</button>
     </div>
 </div>
