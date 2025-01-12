@@ -143,7 +143,7 @@
 <body>
     <div class="video-container">
         <video id="videoPlayer" controls>
-            <source src="https://sparrow.host/videos/financial-AR.mp4" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -168,53 +168,28 @@
     </div>
 
     <script>
-        const questions = [{
-                "time": 0,
-                "question": "هل تعمل في مؤسسة مالية مثل بنك أو شركة تأمين؟",
-                "options": ["نعم", "لا"],
-                "answer": 0
-            },
-            {
-                "time": 6,
-                "question": "لماذا الأمن السيبراني مهم في المؤسسات المالية؟",
-                "options": [
-                    "لحماية المعلومات الحساسة مثل الحسابات والبيانات الشخصية",
-                    "لتوفير الوقت",
-                    "ليس مهمًا"
-                ],
-                "answer": 0
-            },
-            {
-                "time": 17,
-                "question": "ما هو الهدف الأساسي للأمن السيبراني؟",
-                "options": [
-                    "الوصول إلى بيانات العملاء",
-                    "البقاء يقظًا وحماية الأنظمة من الثغرات",
-                    "إنشاء ثغرات جديدة"
-                ],
-                "answer": 1
-            },
-            {
-                "time": 32,
-                "question": "أي من التالي ليس من أفضل ممارسات الأمن السيبراني؟",
-                "options": [
-                    "استخدام كلمات مرور ضعيفة",
-                    "تصنيف البيانات الحساسة",
-                    "استخدام المصادقة متعددة العوامل"
-                ],
-                "answer": 0
-            },
-            {
-                "time": 48,
-                "question": "لماذا من المهم الحفاظ على تحديث الأجهزة؟",
-                "options": [
-                    "لتقليل خطر الهجمات",
-                    "لزيادة استخدام التخزين",
-                    "ليس مهمًا"
-                ],
-                "answer": 0
-            }
-        ];
+        // async function loadQuestions() {
+        //     const response = await fetch('/load-gamified-training', {
+        //         method: 'GET',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //         }
+        //     });
+        //     const data = await response.json();
+        //     return data;
+        // }
+
+const quesString = @json($training->json_quiz);
+        const parsedQ = JSON.parse(quesString);
+        const responseVideo = parsedQ.videoUrl;
+        document.querySelector("#videoPlayer source").setAttribute("src", responseVideo);
+        document.getElementById("videoPlayer").load();
+        const questions = parsedQ.questions;
+
+        console.log(questions);
+        
+       
 
         const video = document.getElementById("videoPlayer");
         const quizBox = document.getElementById("quizBox");
@@ -315,7 +290,7 @@
                     },
                     body: JSON.stringify({
                         trainingScore: trainingScore,
-                        id: trainingid,
+                        id: "{{ $id }}",
                     }),
                 })
                 .then(response => response.json()) // Parse the JSON response

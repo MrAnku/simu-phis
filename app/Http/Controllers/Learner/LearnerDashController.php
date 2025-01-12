@@ -197,7 +197,14 @@ class LearnerDashController extends Controller
         return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
     }
 
-    public function testQuiz(){
-        return view('learning.testquiz');
+    public function startGamifiedTraining($training_id, $id){
+        log_action("Gamified training started", 'learner', 'learner');
+        $training_id = decrypt($training_id);
+        $training = TrainingModule::find($training_id);
+        if(!$training){
+            return redirect()->back()->with('error', 'Training module not found');
+        }
+        
+        return view('learning.gamified-training', compact('training', 'id'));
     }
 }

@@ -75,6 +75,48 @@ class TrainingModuleController extends Controller
         }
     }
 
+    public function addGamifiedTraining(Request $request){
+        $request->validate([
+            'module_name' => 'required|string|max:255',
+            'passing_score' => 'required|numeric|min:0|max:100',
+            'completion_time' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'gamifiedJsonData' => 'required|json',
+            'cover_file' => 'nullable|file|mimes:jpg,jpeg,png'
+        ]);
+
+        $companyId = auth()->user()->company_id;
+        
+        $cover_file = 'defaultTraining.jpg';
+
+        // Handling cover file
+        if ($request->hasFile('cover_file')) {
+            $file = $request->file('cover_file');
+            $cover_file = generateRandom(32) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/uploads/trainingModule', $cover_file);
+        }
+
+        $trainingModule = new TrainingModule([
+            'name' => $request->module_name,
+            'estimated_time' => $request->completion_time,
+            'cover_image' => $cover_file,
+            'passing_score' => $request->passing_score,
+            'category' => $request->category,
+            'training_type' => 'gamified',
+            'json_quiz' => $request->gamifiedJsonData,
+            'module_language' => 'en',
+            'company_id' => $companyId,
+        ]);
+
+        if ($trainingModule->save()) {
+            log_action("New gamified training added {$request->module_name}");
+            return redirect()->back()->with('success', 'Gamified training added successfully');
+        } else {
+            log_action("Failed to add Training");
+            return redirect()->back()->with('error', 'Failed to add gamified training');
+        }
+    }
+
     public function getTrainingById($id)
     {
         $trainingData = TrainingModule::find($id);

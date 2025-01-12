@@ -265,25 +265,34 @@
                                         @forelse ($assignedTrainingCount as $training)
                                             <tr>
                                                 <td class="text-secondary">
-                                                    {{-- <a href="@if ($training->training_type == 'static_training') {{ route('learner.start.training', [
-                                                            'training_id' => encrypt($training->training),
-                                                            'training_lang' => $training->training_lang,
-                                                            'id' => base64_encode($training->id),
-                                                        ]) }}
+                                                    <a
+                                                        href="
+                                                    @if ($training->training_type == 'static_training') 
+                                                    {{ route('learner.start.training', [
+                                                        'training_id' => encrypt($training->training),
+                                                        'training_lang' => $training->training_lang,
+                                                        'id' => base64_encode($training->id),
+                                                    ]) }}
 
-                                                        @else
+                                                    @elseif($training->training_type == 'ai_training')
                                                             {{ route('learner.start.ai.training', [
                                                                 'topic' => encrypt($training->trainingData->name),
                                                                 'language' => $training->training_lang,
                                                                 'id' => base64_encode($training->id),
                                                             ]) }}
-
-                                                            @endif">
+                                                    @else
+                                                            {{ route('learn.gamified.training', [
+                                                                'training_id' => encrypt($training->training),
+                                                                'id' => base64_encode($training->id),
+                                                            ]) }} 
+                                                            
+                                                    @endif">
                                                         {{ $training->trainingData->name }}
-                                                    </a> --}}
-                                                    <a href="{{route('learn.testquiz', [
-                                                        'id' => base64_encode($training->id)
-                                                    ])}}">{{ $training->trainingData->name }}</a>
+                                                    </a>
+                                                    {{-- <a
+                                                        href="{{ route('learn.testquiz', [
+                                                            'id' => base64_encode($training->id),
+                                                        ]) }}">{{ $training->trainingData->name }}</a> --}}
                                                 </td>
                                                 <td class="text-secondary">
                                                     {{ $training->trainingData->estimated_time }} Minutes
@@ -295,14 +304,14 @@
                                                     </td>
                                                 @else
                                                     <td class="text-success"><b>{{ $training->personal_best }}%</b>
-                                                    </td> @endif
+                                                    </td>
+                                                @endif
 
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4"
-                                                        class="text-center">No new training has been
-                                                        assigned!
+                                                <td colspan="4" class="text-center">No new training has been
+                                                    assigned!
                                                 </td>
                                             </tr>
                                         @endforelse

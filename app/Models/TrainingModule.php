@@ -18,6 +18,7 @@ class TrainingModule extends Model
         'cover_image', 
         'passing_score',
         'category', 
+        'training_type', 
         'json_quiz', 
         'module_language', 
         'company_id'

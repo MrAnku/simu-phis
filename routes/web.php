@@ -64,7 +64,7 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
         Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
 
-        Route::get('/training-quiz/{id}', [LearnerDashController::class, 'testQuiz'])->name('learn.testquiz');
+        Route::get('/gamified/training/{training_id}/{id}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
 
 
 
@@ -296,6 +296,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //training module routes-------------------------------------------------------------------------
     Route::get('/training-modules', [TrainingModuleController::class, 'index'])->name('trainingmodule.index');
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining'])->name('trainingmodule.add');
+    Route::post('/add-gamified-training', [TrainingModuleController::class, 'addGamifiedTraining'])->name('add.gamified_training');
     Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingById'])->name('trainingmodule.getTrainingById');
 
     Route::post('/update-training-module', [TrainingModuleController::class, 'updateTrainingModule'])->name('trainingmodule.update');

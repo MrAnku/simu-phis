@@ -12,6 +12,11 @@
                 <div>
                     <button type="button" class="btn btn-primary mb-3" onclick="addNewTraining()" data-bs-toggle="modal"
                         data-bs-target="#newTrainingModuleModal">New Training Module</button>
+                    <button class="btn btn-secondary label-btn mb-3 mx-2" data-bs-toggle="modal"
+                        data-bs-target="#newGamifiedTrainingModal">
+                        <i class="ri-settings-4-line label-btn-icon me-2"></i>
+                        New Gamified Training
+                    </button>
                 </div>
                 <div
                     style="
@@ -68,292 +73,27 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-    <!-- new training add -->
-    <div class="modal fade" id="newTrainingModuleModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add Training</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('trainingmodule.add') }}" id="newModuleForm" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module name</span>
-                                    <input type="text" class="form-control" name="moduleName"
-                                        placeholder="Enter a unique module name" aria-label="Enter a unique module name"
-                                        aria-describedby="basic-addon1" data-name="Module name" required>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Passing Score</span>
-                                    <input type="number" class="form-control" id="mPassingScore" name="mPassingScore"
-                                        min="0" max="100" placeholder="70" aria-label="70"
-                                        aria-describedby="basic-addon1" data-name="Passing Score" required>
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Category</span>
-                                    <select class="form-select" name="category" id="category">
-                                        <option value="international">International</option>
-                                        <option value="middle_east">Middle East</option>
-                                    </select>
-                                </div>
-                            </div>
-                            {{-- <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module Language</span>
-                                    <select class="form-select" name="mModuleLang" id="inputGroupSelect01">
-                                        <option value="en">English</option>
-                                        <option value="af">Afrikaans</option>
-                                        <option value="sq">Albanian</option>
-                                        <option value="am">Amharic</option>
-                                        <option value="ar">Arabic</option>
-                                        <option value="hy">Armenian</option>
-                                        <option value="az">Azerbaijani</option>
-                                        <option value="bn">Bengali</option>
-                                        <option value="bs">Bosnian</option>
-                                        <option value="bg">Bulgarian</option>
-                                        <option value="ca">Catalan</option>
-                                        <option value="zh">Chinese (Simplified)</option>
-                                        <option value="zh-TW">Chinese (Traditional)</option>
-                                        <option value="hr">Croatian</option>
-                                        <option value="cs">Czech</option>
-                                        <option value="da">Danish</option>
-                                        <option value="fa-AF">Dari</option>
-                                        <option value="nl">Dutch</option>
-                                        <option value="et">Estonian</option>
-                                        <option value="fa">Farsi (Persian)</option>
-                                        <option value="tl">Filipino, Tagalog</option>
-                                        <option value="fi">Finnish</option>
-                                        <option value="fr">French</option>
-                                        <option value="fr-CA">French (Canada)</option>
-                                        <option value="ka">Georgian</option>
-                                        <option value="de">German</option>
-                                        <option value="el">Greek</option>
-                                        <option value="gu">Gujarati</option>
-                                        <option value="ht">Haitian Creole</option>
-                                        <option value="ha">Hausa</option>
-                                        <option value="he">Hebrew</option>
-                                        <option value="hi">Hindi</option>
-                                        <option value="hu">Hungarian</option>
-                                        <option value="is">Icelandic</option>
-                                        <option value="id">Indonesian</option>
-                                        <option value="ga">Irish</option>
-                                        <option value="it">Italian</option>
-                                        <option value="ja">Japanese</option>
-                                        <option value="kn">Kannada</option>
-                                        <option value="kk">Kazakh</option>
-                                        <option value="ko">Korean</option>
-                                        <option value="lv">Latvian</option>
-                                        <option value="lt">Lithuanian</option>
-                                        <option value="mk">Macedonian</option>
-                                        <option value="ms">Malay</option>
-                                        <option value="ml">Malayalam</option>
-                                        <option value="mt">Maltese</option>
-                                        <option value="mr">Marathi</option>
-                                        <option value="mn">Mongolian</option>
-                                        <option value="no">Norwegian (Bokmål)</option>
-                                        <option value="ps">Pashto</option>
-                                        <option value="pl">Polish</option>
-                                        <option value="pt">Portuguese (Brazil)</option>
-                                        <option value="pt-PT">Portuguese (Portugal)</option>
-                                        <option value="pa">Punjabi</option>
-                                        <option value="ro">Romanian</option>
-                                        <option value="ru">Russian</option>
-                                        <option value="sr">Serbian</option>
-                                        <option value="si">Sinhala</option>
-                                        <option value="sk">Slovak</option>
-                                        <option value="sl">Slovenian</option>
-                                        <option value="so">Somali</option>
-                                        <option value="es">Spanish</option>
-                                        <option value="es-MX">Spanish (Mexico)</option>
-                                        <option value="sw">Swahili</option>
-                                        <option value="sv">Swedish</option>
-                                        <option value="ta">Tamil</option>
-                                        <option value="te">Telugu</option>
-                                        <option value="th">Thai</option>
-                                        <option value="tr">Turkish</option>
-                                        <option value="uk">Ukrainian</option>
-                                        <option value="ur">Urdu</option>
-                                        <option value="uz">Uzbek</option>
-                                        <option value="vi">Vietnamese</option>
-                                        <option value="cy">Welsh</option>
-                                    </select>
-                                </div>
-                            </div> --}}
-                        </div>
+    {{-- add new training  --}}
 
-                        <div class="row">
-                            <div class="col-lg-6">
-                              
-                                <div class="input-group">
-                                    <label class="input-group-text" for="coverImageFile">Cover Image</label>
-                                    <input type="file" class="form-control" name="mCoverFile" id="coverImageFile">
-                                    
-                                </div>
-                                <small class="text-muted mx-3">Only .jpeg, .jpg and .png files allowed</small>
-                                
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Completion Time(minutes)</span>
-                                    <input type="number" class="form-control" id="mCompTime" name="mCompTime"
-                                        placeholder="5" aria-label="Username" aria-describedby="basic-addon1"
-                                        data-name="Completion Time" required>
-                                </div>
-                            </div>
-
-                        </div>
-                        <input type="hidden" name="jsonData" id="jsonDataInput" value="">
-                        <input type="submit" id="addTrainingsubmitButton" value="Submit" class="d-none">
-
-                    </form>
-
-                    <hr>
-
-                    <div class="questionSection">
-                        <div class="my-2">
-                            <button type="button" class="btn btn-primary mx-1" onclick="createPageForm('forms')">
-                                Add Question
-                            </button>
-                            <button type="button" onclick="createStatementPageForm('forms')"
-                                class="btn btn-secondary mx-1">
-                                Add Statement
-                            </button>
-                        </div>
-
-                        <div id="forms"></div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="checkRequiredInputs()">
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-modal id="newTrainingModuleModal" size="modal-lg" heading="Add Training">
+        <x-training_module.new-training-form />
+    </x-modal>
 
 
-    <!-- edit training -->
-    <div class="modal fade" id="editTrainingModuleModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Edit Training</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('trainingmodule.update') }}" id="editModuleForm" method="post"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module name</span>
-                                    <input type="text" class="form-control" name="moduleName" id="editModuleName"
-                                        placeholder="Enter a unique module name" aria-label="Enter a unique module name"
-                                        aria-describedby="basic-addon1" data-name="Module name" required="">
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Passing Score</span>
-                                    <input type="number" class="form-control" id="editmPassingScore"
-                                        name="mPassingScore" min="0" max="100" placeholder="70"
-                                        aria-label="70" aria-describedby="basic-addon1" data-name="Passing Score"
-                                        required="">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Category</span>
-                                    <select class="form-select" name="category" id="editCategory">
-                                        <option value="international">International</option>
-                                        <option value="middle_east">Middle East</option>
-                                    </select>
-                                </div>
-                            </div>
+    {{-- edit training --}}
 
-                        </div>
-
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="input-group">
-                                    <label class="input-group-text" for="coverImageFile">Cover Image</label>
-                                    <input type="file" class="form-control" name="mCoverFile"
-                                        id="editCoverImageFile">
-                                </div>
-                                <small class="text-muted mx-3">Only .jpeg, .jpg and .png files allowed</small>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Completion Time(minutes)</span>
-                                    <input type="number" class="form-control" id="editMCompTime" name="mCompTime"
-                                        placeholder="5" aria-label="Username" aria-describedby="basic-addon1"
-                                        data-name="Completion Time" required="">
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="updatedjsonData" id="updatedJsonDataInput" value="">
-                        <input type="hidden" name="trainingModuleid" id="trainingModId" value="">
-                        <input type="submit" id="updateTrainingsubmitButton" value="Submit" class="d-none">
-
-                    </form>
-
-                    <hr>
-
-                    <div class="questionSection">
-                        <div class="my-2">
-                            <button type="button" class="btn btn-primary mx-1" onclick="createPageForm('editforms')">
-                                Add Question
-                            </button>
-                            <button type="button" onclick="createStatementPageForm('editforms')"
-                                class="btn btn-secondary mx-1">
-                                Add Statement
-                            </button>
-                        </div>
-
-                        <div id="editforms">
+    <x-modal id="editTrainingModuleModal" size="modal-lg" heading="Edit Training">
+        <x-training_module.edit-training-form />
+    </x-modal>
 
 
+    {{-- new gamified training --}}
+
+    <x-modal id="newGamifiedTrainingModal" size="modal-lg" heading="Add Gamified Training">
+        <x-training_module.new-gamified-training-form />
+    </x-modal>
 
 
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="checkEditRequiredInputs()">
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    {{-- -------------------Modals------------------------ --}}
 
 
     {{-- ------------------------------Toasts---------------------- --}}
@@ -387,45 +127,32 @@
 
     @push('newscripts')
         <script>
-            document.getElementById("mPassingScore").addEventListener("input", function() {
+            document.querySelectorAll(".mPassingScore").forEach(function(element) {
+              element.addEventListener("input", function() {
                 // Get the current value of the input field
                 var currentValue = parseInt(this.value);
 
                 // If the value is greater than 100, set it to 100
                 if (currentValue > 100) {
-                    this.value = 100;
+                  this.value = 100;
                 }
+              });
             });
 
-            document.getElementById("editmPassingScore").addEventListener("input", function() {
+
+            document.querySelectorAll(".mCompTime").forEach(function(element) {
+              element.addEventListener("input", function() {
                 // Get the current value of the input field
                 var currentValue = parseInt(this.value);
 
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 100) {
-                    this.value = 100;
-                }
-            });
-
-            document.getElementById("mCompTime").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
-
-                // If the value is greater than 100, set it to 100
+                // If the value is greater than 60, set it to 60
                 if (currentValue > 60) {
-                    this.value = 60;
+                  this.value = 60;
                 }
+              });
             });
 
-            document.getElementById("editMCompTime").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
-
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 60) {
-                    this.value = 60;
-                }
-            });
+           
 
             function checkRequiredInputs() {
                 const form = document.getElementById('newModuleForm');
@@ -1105,21 +832,180 @@
             }
         </script>
         <script>
-          $('#t_moduleSearch').on('input', function () {
-    var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+            $('#t_moduleSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
 
-    // Loop through each template card
-    $('.t_modules').each(function () {
-        var templateName = $(this).find('.fw-semibold').text().toLowerCase(); // Get the template name and convert it to lowercase
+                // Loop through each template card
+                $('.t_modules').each(function() {
+                    var templateName = $(this).find('.fw-semibold').text()
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
-        // If the template name contains the search value, show the card; otherwise, hide it
-        if (templateName.includes(searchValue)) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
-    });
-});
+                    // If the template name contains the search value, show the card; otherwise, hide it
+                    if (templateName.includes(searchValue)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            function fetchVideoUrl() {
+                const videourl = document.getElementById('gamified_training_video_url').value;
+                const urlPattern = /^(https?:\/\/)?(?!.*(youtube\.com|youtu\.?be)).*\.mp4$/;
+                if (!urlPattern.test(videourl)) {
+                    alert('Please enter a valid video URL.');
+                    return;
+                }
+                $("#game_training_video_preview source").attr("src", videourl);
+                $("#gameTrainingVideoPlayer")[0].load();
+                $("#game_training_video_preview").show();
+                $("#gamified_questions_container").show();
+                // Proceed with further processing if the URL is valid
+            }
+
+            function addMoreGamifiedTrainingQues(btn) {
+
+                const questionFields = $(btn).parent().parent().clone();
+                questionFields.find('input').val('');
+                $(btn).parent().parent().after(questionFields);
+                checkIfItsLastQuestion();
+            }
+
+            function deleteGamifiedTrainingQues(btn) {
+
+                $(btn).parent().parent().remove();
+                checkIfItsLastQuestion();
+            }
+
+            function checkIfItsLastQuestion() {
+                const deleteBtns = $('#gamified_questions_container .deleteQuesBtn');
+                if (deleteBtns.length == 1) {
+                    deleteBtns.hide();
+                } else {
+                    deleteBtns.show();
+                }
+            }
+
+            function saveGamifiedQues() {
+                let error = false;
+                const questions = [];
+                const questionContainers = $('#gamified_questions_container .gamified_training_question');
+                questionContainers.each(function() {
+                    const time = $(this).find('.time').val();
+                    const timeParts = time.split(':');
+                    const timeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                    const question = $(this).find('.question').val();
+                    const option1 = $(this).find('.option1').val();
+                    const option2 = $(this).find('.option2').val();
+                    const option3 = $(this).find('.option3').val();
+                    const option4 = $(this).find('.option4').val();
+                    const answer = parseInt($(this).find('.answer').val(), 10);
+                    if(question.trim() === '' || option1.trim() === '' || option2.trim() === '' || option3.trim() === '' || option4.trim() === '' || isNaN(timeInSeconds)) {
+                        error = true;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Please fill all the fields in the question.',
+                        });
+                        return;
+                    }
+                    questions.push({
+                        time: timeInSeconds,
+                        question,
+                        options: [option1, option2, option3, option4],
+                        answer
+                    });
+                });
+
+                if (error) {
+                  console.log('something went wrong!')
+                    return;
+                }
+                const videoUrl = document.getElementById('gamified_training_video_url').value;
+                if (!videoUrl) {
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please enter a valid video URL.',
+                    });
+                    return;
+                }
+                
+
+                const final_gamified_training = {
+                    videoUrl,
+                    questions
+                }
+                save_gamified_training_to_db(final_gamified_training);
+            }
+
+            function save_gamified_training_to_db(final_gamified_training) {
+                const requiredInputs = $('#gamified_training_form input.required');
+                let allFilled = true;
+                requiredInputs.each(function() {
+                    if (!$(this).val()) {
+                        allFilled = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Please fill ${$(this).data('name')}.`,
+                        });
+                        return;
+                    }
+
+
+                });
+                if (!allFilled) {
+                    return;
+                }
+
+                const hiddenInput = document.getElementById('gamifiedJsonData');
+                hiddenInput.value = JSON.stringify(final_gamified_training);
+
+                // Submit the form programmatically
+                const addGamifiedTrainingSubmitBtn = document.getElementById('addGamifiedTrainingSubmitBtn');
+                addGamifiedTrainingSubmitBtn.click(); // This will trigger form submission
+
+
+            }
+
+            
+
+            function isTimeValid(input) {
+                const videoDuration = document.getElementById('gameTrainingVideoPlayer').duration;
+
+                if (input.value) {
+                    const timePattern = /^([0-5]?[0-9]):([0-5][0-9])$/;
+                    if (!timePattern.test(input.value)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Please enter a valid time in MM:SS format.',
+                        });
+                        input.value = '';
+                        input.classList.add('is-invalid');
+                        return;
+                    }
+
+                    const timeParts = input.value.split(':');
+                    const inputTimeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+
+                    if (inputTimeInSeconds > videoDuration) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Input time cannot be greater than video duration.',
+                        });
+                        input.value = '';
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                }
+            }
         </script>
     @endpush
 
