@@ -859,6 +859,22 @@
         </script>
 
         <script>
+            $('#newGamifiedTrainingModal').on('hidden.bs.modal', function() {
+                // Pause the video
+                const video = $('#newGamifiedTrainingModal video').get(0); // Get the video element
+                if (video) {
+                    video.pause(); // Pause the video
+                }
+            });
+
+            $('#editGamifiedTrainingModuleModal').on('hidden.bs.modal', function() {
+                // Pause the video
+                const video = $('#editGamifiedTrainingModuleModal video').get(0); // Get the video element
+                if (video) {
+                    video.pause(); // Pause the video
+                }
+            });
+
             function fetchVideoUrl() {
                 const videourl = document.getElementById('gamified_training_video_url').value;
                 const urlPattern = /^(https?:\/\/)?(?!.*(youtube\.com|youtu\.?be)).*\.mp4$/;
