@@ -21,17 +21,22 @@ class WhatsappCampaignController extends Controller
 {
     public function index()
     {
-        $company_id = auth()->user()->company_id;
-        $tokenAndUrl = $this->getTokenAndUrl($company_id);
-        if ($tokenAndUrl !== null) {
-            $all_users = UsersGroup::where('company_id', $company_id)->get();
-            $templates = $this->getTemplates()['templates'];
-            $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
-            $trainings = TrainingModule::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')->get();
-            return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
-        } else {
-            return view('whatsapp-unavailable');
+        try {
+            $company_id = auth()->user()->company_id;
+            $tokenAndUrl = $this->getTokenAndUrl($company_id);
+            if ($tokenAndUrl !== null) {
+                $all_users = UsersGroup::where('company_id', $company_id)->get();
+                $templates = $this->getTemplates()['templates'];
+                $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
+                $trainings = TrainingModule::where('company_id', $company_id)
+                    ->orWhere('company_id', 'default')->get();
+                return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
+            } else {
+                return view('whatsapp-unavailable');
+            }
+        } catch (\Exception $err) {
+            //throw $th;
+            return redirect()->back()->with('error', 'Something went wrong!');
         }
     }
 
@@ -244,7 +249,7 @@ class WhatsappCampaignController extends Controller
     {
         $cid = base64_decode($request->cid);
 
-       
+
         $campaign_user = DB::table('whatsapp_camp_users')
             ->where('id', $cid)
             ->first();
