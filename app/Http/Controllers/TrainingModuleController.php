@@ -117,6 +117,62 @@ class TrainingModuleController extends Controller
         }
     }
 
+    public function updateGamifiedTraining(Request $request){
+        $request->validate([
+            'module_name' => 'required|string|max:255',
+            'passing_score' => 'required|numeric|min:0|max:100',
+            'completion_time' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'gamifiedJsonData' => 'required|json',
+            'gamifiedTrainingId' => 'required|numeric',
+            'cover_file' => 'nullable|file|mimes:jpg,jpeg,png'
+        ]);
+
+        $company_id = auth()->user()->company_id;
+
+        // handling cover file
+        if ($request->hasFile('cover_file')) {
+            $file = $request->file('cover_file');
+            $randomName = generateRandom(32);
+            $extension = $file->getClientOriginalExtension();
+            $cover_file = $randomName . '.' . $extension;
+            $file->storeAs('uploads/trainingModule', $cover_file, 'public');
+
+            $isTrainingUpdated = TrainingModule::where('id', $request->gamifiedTrainingId)
+                ->where('company_id', $company_id)
+                ->update([
+                    'name' => $request->module_name,
+                    'estimated_time' => $request->completion_time,
+                    'cover_image' => $cover_file,
+                    'passing_score' => $request->passing_score,
+                    'category' => $request->input('category'),
+                    'json_quiz' => $request->gamifiedJsonData,
+                    'module_language' => 'en',
+                ]);
+        } else {
+            $isTrainingUpdated = TrainingModule::where('id', $request->gamifiedTrainingId)
+                ->where('company_id', $company_id)
+                ->update([
+                    'name' => $request->input('module_name'),
+                    'estimated_time' => $request->input('completion_time'),
+                    'passing_score' => $request->input('passing_score'),
+                    'category' => $request->input('category'),
+                    'json_quiz' => $request->input('gamifiedJsonData'),
+                    'module_language' => 'en',
+                ]);
+        }
+
+        if ($isTrainingUpdated) {
+            log_action("Gamified training module updated");
+            return redirect()->back()->with('success', 'Gamified training updated successfully');
+        } else {
+            log_action("Failed to update Gamified Training");
+            return redirect()->back()->with('error', 'Failed to update Gamified Training');
+        }
+
+
+    }
+
     public function getTrainingById($id)
     {
         $trainingData = TrainingModule::find($id);

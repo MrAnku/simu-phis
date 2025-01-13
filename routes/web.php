@@ -297,6 +297,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/training-modules', [TrainingModuleController::class, 'index'])->name('trainingmodule.index');
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining'])->name('trainingmodule.add');
     Route::post('/add-gamified-training', [TrainingModuleController::class, 'addGamifiedTraining'])->name('add.gamified_training');
+    Route::post('/update-gamified-training', [TrainingModuleController::class, 'updateGamifiedTraining'])->name('update.gamified_training');
     Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingById'])->name('trainingmodule.getTrainingById');
 
     Route::post('/update-training-module', [TrainingModuleController::class, 'updateTrainingModule'])->name('trainingmodule.update');

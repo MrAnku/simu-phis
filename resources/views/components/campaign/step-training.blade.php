@@ -21,8 +21,9 @@
                 <div class="input-group input-group-sm mb-3">
                     <label class="input-group-text" for="training_type">Training Type:</label>
                     <select class="form-select" id="training_type">
-                        <option value="static_training">Static Training</option>
+                        <option value="static_training" selected>Static Training</option>
                         <option value="ai_training">AI Training</option>
+                        <option value="gamified">Gamified Training</option>
                     </select>
                 </div>
 

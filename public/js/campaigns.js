@@ -749,8 +749,8 @@ function loadMorePhishingEmails(btn) {
                 )
                 return;
             }
-            if(res.data.length === 0){
-               
+            if (res.data.length === 0) {
+
                 btn.disabled = true;
                 btn.innerText = 'No more phishing materials';
                 return;
@@ -765,7 +765,7 @@ function loadMorePhishingEmails(btn) {
 }
 
 let training_page = 2;
-function loadMoreTrainings(btn){
+function loadMoreTrainings(btn) {
     const category = $('#training_cat').val();
     btn.disabled = true;
     btn.innerText = 'Loading...'
@@ -785,8 +785,8 @@ function loadMoreTrainings(btn){
                 )
                 return;
             }
-            if(res.data.length === 0){
-               
+            if (res.data.length === 0) {
+
                 btn.disabled = true;
                 btn.innerText = 'No more training modules';
                 return;
@@ -926,11 +926,12 @@ function prepareTrainingHtml(data) {
     return html;
 }
 
-function fetchTrainingByCategory(cat){
+function fetchTrainingByCategory(cat, type = 'static_training') {
     $.post({
         url: '/campaigns/fetch-training-by-category',
         data: {
-            category: cat
+            category: cat,
+            type: type
         },
         success: function (res) {
             // console.log(res)
@@ -942,6 +943,10 @@ function fetchTrainingByCategory(cat){
                 )
                 return;
             }
+            if (res.data.length === 0) {
+                $('#trainingModulesCampModal').html('<div class="text-center py-3">No training modules found</div>');
+                return;
+            }
             const htmlrows = prepareTrainingHtml(res.data);
             $('#trainingModulesCampModal').html(htmlrows);
         }
@@ -951,7 +956,25 @@ function fetchTrainingByCategory(cat){
 $("#training_cat").on('change', function () {
 
     const cat = $(this).val();
-    fetchTrainingByCategory(cat);
+    const type = $('#training_type').val();
+    if(type == 'gamified'){
+        fetchTrainingByCategory(cat, type);
+    }else{
+        fetchTrainingByCategory(cat);
+    }
+    
+})
+
+$("#training_type").on('change', function () {
+
+    const type = $(this).val();
+    const category = $('#training_cat').val();
+    if (type == 'gamified'){
+        fetchTrainingByCategory(category, type);
+    }else{
+        fetchTrainingByCategory(category);
+    }
+    
 })
 
 

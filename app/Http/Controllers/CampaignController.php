@@ -118,15 +118,19 @@ class CampaignController extends Controller
         if($request->category == 'all'){
             $trainings = TrainingModule::where('company_id', $companyId)
             ->orWhere('company_id', 'default')
+            ->where('training_type', $request->type)
             ->limit(10)
             ->get();
 
             return response()->json(['status' => 1, 'data' => $trainings]);
         }
 
-        $trainings = TrainingModule::where('company_id', $companyId)
-            ->orWhere('company_id', 'default')
+        $trainings = TrainingModule::where(function ($query) use ($companyId) {
+                $query->where('company_id', $companyId)
+                      ->orWhere('company_id', 'default');
+            })
             ->where('category', $request->category)
+            ->where('training_type', $request->type)
             ->limit(10)
             ->get();
 

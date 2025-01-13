@@ -26,10 +26,11 @@
                                 class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
 
                             <button type="button"
-                                onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
+                                onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
                                 class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
                                 data-bs-toggle="modal"
-                                data-bs-target="#editTrainingModuleModal">Edit</button>
+                                data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                        
                         @endif
 
 
