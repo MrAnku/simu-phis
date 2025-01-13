@@ -296,6 +296,15 @@ class TrainingModuleController extends Controller
 
     public function trainingPreview($trainingid)
     {
+        $training = TrainingModule::find(base64_decode($trainingid));
+
+        if(!$training){
+            return redirect()->back()->with('error', 'Invalid Training Module');
+        }
+
+        if($training->training_type == 'gamified'){
+            return view('previewGamifiedTraining', compact('training'));
+        }
 
         // Pass data to the view
         return view('previewTraining', ['trainingid' => $trainingid]);
