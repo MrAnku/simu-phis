@@ -1,5 +1,5 @@
 <div id="gamified_training_form">
-    <form action="{{route('add.gamified_training')}}" method="post" enctype="multipart/form-data">
+    <form action="{{auth('company')->check() ? route('add.gamified_training') : route('admin.add.gamified_training') }}" method="post" enctype="multipart/form-data">
         @csrf
         <div class="row">
             <div class="col-lg-4">

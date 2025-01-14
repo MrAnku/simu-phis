@@ -16,11 +16,26 @@
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-center">
-                        <a href="{{ route('trainingmodule.preview', base64_encode($trainingModule->id)) }}"
-                            target="_blank"
-                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                        @if (auth('company')->check())
+                            <a href="{{ route('trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                                target="_blank"
+                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
-                        @if ($trainingModule->company_id !== 'default')
+                            @if ($trainingModule->company_id !== 'default')
+                                <button type="button"
+                                    onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
+                                    class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+
+                                <button type="button"
+                                    onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
+                                    class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                            @endif
+                        @else
+                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                                target="_blank"
+                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
                             <button type="button"
                                 onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
                                 class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
@@ -30,8 +45,8 @@
                                 class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
                                 data-bs-toggle="modal"
                                 data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
-                        
                         @endif
+
 
 
 

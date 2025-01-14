@@ -12,6 +12,11 @@
                 <div>
                     <button type="button" class="btn btn-primary mb-3" onclick="addNewTraining()" data-bs-toggle="modal"
                         data-bs-target="#newTrainingModuleModal">New Training Module</button>
+                    <button class="btn btn-secondary label-btn mb-3 mx-2" data-bs-toggle="modal"
+                        data-bs-target="#newGamifiedTrainingModal">
+                        <i class="ri-settings-4-line label-btn-icon me-2"></i>
+                        New Gamified Training
+                    </button>
                 </div>
                 <div
                     style="
@@ -50,113 +55,12 @@
 
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="international" role="tabpanel">
-                                    <div class="row">
-                                        @forelse ($interTrainings as $trainingModule)
-                                            <div class="col-lg-6">
-                                                <div class="card custom-card">
-                                                    <div class="card-header">
-                                                        <div class="d-flex align-items-center w-100">
-
-                                                            <div class="">
-                                                                <div class="fs-15 fw-semibold">{{ $trainingModule->name }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="card-body htmlPhishingGrid">
-                                                        <img class="trainingCoverImg"
-                                                            src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <div class="d-flex justify-content-center">
-                                                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
-                                                                target="_blank"
-                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
-
-                                                            <button type="button"
-                                                                onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
-
-                                                            <button type="button"
-                                                                onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
-                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#editTrainingModuleModal">Edit</button>
-
-
-
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <div class="col-lg-6">
-                                                No records found
-                                            </div>
-                                        @endforelse
-
-
-
-
-                                    </div>
+                                    <x-training_module.trainings :trainingModules="$interTrainings" />
                                 </div>
                                 <div class="tab-pane text-muted" id="middle_east" role="tabpanel">
-                                    <div class="row">
-                                        @forelse ($middleEastTrainings as $trainingModule)
-                                            <div class="col-lg-6">
-                                                <div class="card custom-card">
-                                                    <div class="card-header">
-                                                        <div class="d-flex align-items-center w-100">
-
-                                                            <div class="">
-                                                                <div class="fs-15 fw-semibold">{{ $trainingModule->name }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="card-body htmlPhishingGrid">
-                                                        <img class="trainingCoverImg"
-                                                            src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <div class="d-flex justify-content-center">
-                                                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
-                                                                target="_blank"
-                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
-
-                                                            <button type="button"
-                                                                onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
-
-                                                            <button type="button"
-                                                                onclick="editTrainingModule(`{{ $trainingModule->id }}`)"
-                                                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#editTrainingModuleModal">Edit</button>
-
-
-
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <div class="col-lg-6">
-                                                No records found
-                                            </div>
-                                        @endforelse
-
-
-
-
-                                    </div>
+                                    <x-training_module.trainings :trainingModules="$middleEastTrainings" />
                                 </div>
                             </div>
-
-
-
                         </div>
                     </div>
                 </div>
@@ -167,256 +71,40 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-    <!-- new training add -->
-    <div class="modal fade" id="newTrainingModuleModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add Training</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('admin.trainingmodule.add') }}" id="newModuleForm" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module name</span>
-                                    <input type="text" class="form-control" name="moduleName"
-                                        placeholder="Enter a unique module name" aria-label="Enter a unique module name"
-                                        aria-describedby="basic-addon1" data-name="Module name" required>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Passing Score</span>
-                                    <input type="number" class="form-control" id="mPassingScore" name="mPassingScore"
-                                        min="0" max="100" placeholder="70" aria-label="70"
-                                        aria-describedby="basic-addon1" data-name="Passing Score" required>
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                              <div class="input-group mb-3">
-                                  <span class="input-group-text">Category</span>
-                                  <select class="form-select" name="category" id="category">
-                                      <option value="international">International</option>
-                                      <option value="middle_east">Middle East</option>
-                                  </select>
-                              </div>
-                          </div>
-                        </div>
+    {{-- add new training  --}}
 
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <label class="input-group-text" for="coverImageFile">Cover Image</label>
-                                    <input type="file" class="form-control" name="mCoverFile" id="coverImageFile">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Completion Time(minutes)</span>
-                                    <input type="number" class="form-control" id="mCompTime" name="mCompTime"
-                                        placeholder="5" aria-label="Username" aria-describedby="basic-addon1"
-                                        data-name="Completion Time" required>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="jsonData" id="jsonDataInput" value="">
-                        <input type="submit" id="addTrainingsubmitButton" value="Submit" class="d-none">
-
-                    </form>
-
-                    <hr>
-
-                    <div class="questionSection">
-                        <div class="my-2">
-                            <button type="button" class="btn btn-primary mx-1" onclick="createPageForm('forms')">
-                                Add Question
-                            </button>
-                            <button type="button" onclick="createStatementPageForm('forms')"
-                                class="btn btn-secondary mx-1">
-                                Add Statement
-                            </button>
-                        </div>
-
-                        <div id="forms"></div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="checkRequiredInputs()">
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-modal id="newTrainingModuleModal" size="modal-lg" heading="Add Training">
+        <x-training_module.new-training-form />
+    </x-modal>
 
 
-    <!-- edit training -->
-    <div class="modal fade" id="editTrainingModuleModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Edit Training</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('admin.trainingmodule.update') }}" id="editModuleForm" method="post"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Module name</span>
-                                    <input type="text" class="form-control" name="moduleName" id="editModuleName"
-                                        placeholder="Enter a unique module name" aria-label="Enter a unique module name"
-                                        aria-describedby="basic-addon1" data-name="Module name" required="">
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Passing Score</span>
-                                    <input type="number" class="form-control" id="editmPassingScore"
-                                        name="mPassingScore" min="0" max="100" placeholder="70"
-                                        aria-label="70" aria-describedby="basic-addon1" data-name="Passing Score"
-                                        required="">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                              <div class="input-group mb-3">
-                                  <span class="input-group-text">Category</span>
-                                  <select class="form-select" name="category" id="editCategory">
-                                      <option value="international">International</option>
-                                      <option value="middle_east">Middle East</option>
-                                  </select>
-                              </div>
-                          </div>
-                        </div>
+    {{-- edit training --}}
 
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <label class="input-group-text" for="coverImageFile">Cover Image</label>
-                                    <input type="file" class="form-control" name="mCoverFile"
-                                        id="editCoverImageFile">
-                                       
-                                </div>
-                                <small>Only .jpeg, .jpg and .png files allowed</small>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Completion Time(minutes)</span>
-                                    <input type="number" class="form-control" id="editMCompTime" name="mCompTime"
-                                        placeholder="5" aria-label="Username" aria-describedby="basic-addon1"
-                                        data-name="Completion Time" required="">
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="updatedjsonData" id="updatedJsonDataInput" value="">
-                        <input type="hidden" name="trainingModuleid" id="trainingModId" value="">
-                        <input type="submit" id="updateTrainingsubmitButton" value="Submit" class="d-none">
-
-                    </form>
-
-                    <hr>
-
-                    <div class="questionSection">
-                        <div class="my-2">
-                            <button type="button" class="btn btn-primary mx-1" onclick="createPageForm('editforms')">
-                                Add Question
-                            </button>
-                            <button type="button" onclick="createStatementPageForm('editforms')"
-                                class="btn btn-secondary mx-1">
-                                Add Statement
-                            </button>
-                        </div>
-
-                        <div id="editforms">
+    <x-modal id="editTrainingModuleModal" size="modal-lg" heading="Edit Training">
+        <x-training_module.edit-training-form />
+    </x-modal>
 
 
+    {{-- new gamified training --}}
+
+    <x-modal id="newGamifiedTrainingModal" size="modal-lg" heading="Add Gamified Training">
+        <x-training_module.new-gamified-training-form />
+    </x-modal>
+
+    {{-- edit gamified training --}}
+
+    <x-modal id="editGamifiedTrainingModuleModal" size="modal-lg" heading="Edit Gamified Training">
+        <x-training_module.edit-gamified-training-form />
+    </x-modal>
 
 
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="checkEditRequiredInputs()">
-                        Submit
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    {{-- -------------------Modals------------------------ --}}
 
 
 
     {{-- ------------------------------Toasts---------------------- --}}
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        @if (session('success'))
-            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
+    <x-toast />
 
-        @if (session('error'))
-            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                    aria-atomic="true">
-                    <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ $error }}
-                    </div>
-                </div>
-            @endforeach
-        @endif
-
-
-    </div>
-
-    {{-- ------------------------------Toasts---------------------- --}}
 
     @push('newcss')
         <style>
@@ -444,45 +132,32 @@
 
     @push('newscripts')
         <script>
-            document.getElementById("mPassingScore").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
+            document.querySelectorAll(".mPassingScore").forEach(function(element) {
+                element.addEventListener("input", function() {
+                    // Get the current value of the input field
+                    var currentValue = parseInt(this.value);
 
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 100) {
-                    this.value = 100;
-                }
+                    // If the value is greater than 100, set it to 100
+                    if (currentValue > 100) {
+                        this.value = 100;
+                    }
+                });
             });
 
-            document.getElementById("editmPassingScore").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
 
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 100) {
-                    this.value = 100;
-                }
+            document.querySelectorAll(".mCompTime").forEach(function(element) {
+                element.addEventListener("input", function() {
+                    // Get the current value of the input field
+                    var currentValue = parseInt(this.value);
+
+                    // If the value is greater than 60, set it to 60
+                    if (currentValue > 60) {
+                        this.value = 60;
+                    }
+                });
             });
 
-            document.getElementById("mCompTime").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
 
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 60) {
-                    this.value = 60;
-                }
-            });
-
-            document.getElementById("editMCompTime").addEventListener("input", function() {
-                // Get the current value of the input field
-                var currentValue = parseInt(this.value);
-
-                // If the value is greater than 100, set it to 100
-                if (currentValue > 60) {
-                    this.value = 60;
-                }
-            });
 
             function checkRequiredInputs() {
                 const form = document.getElementById('newModuleForm');
@@ -527,7 +202,7 @@
                     });
 
                     if (atLeastOneFormFilled) {
-                        console.log(formDataArray);
+                        // console.log(formDataArray);
                         saveTrainingDataToDb(formDataArray);
                     } else {
                         alert("Please add atleast one training.");
@@ -580,7 +255,7 @@
                     });
 
                     if (atLeastOneFormFilled) {
-                        console.log(formDataArray);
+                        // console.log(formDataArray);
                         updateTrainingDataToDb(formDataArray);
                     } else {
                         alert("Please add atleast one training.");
@@ -632,30 +307,30 @@
                 let ansDesc = "";
                 for (let i = 0; i < 4; i++) {
                     const input = `<div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Option ${i + 1}:</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="option${i + 1}"
-                    placeholder="Enter as answer option"
-                  />
-                </div>`;
+                      <span class="input-group-text">Option ${i + 1}:</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="option${i + 1}"
+                        placeholder="Enter as answer option"
+                      />
+                    </div>`;
                     options += input;
                 }
                 // adding correct option dropdown
                 correctOptions = `<div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Correct Option</span>
-                  <select
-                    class="form-select"
-                    aria-label="Default select example"
-                    name="correctOption"
-                  >
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
-                    <option value="option4">Option 4</option>
-                  </select>
-                </div>`;
+                      <span class="input-group-text">Correct Option</span>
+                      <select
+                        class="form-select"
+                        aria-label="Default select example"
+                        name="correctOption"
+                      >
+                        <option value="option1">Option 1</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                        <option value="option4">Option 4</option>
+                      </select>
+                    </div>`;
 
                 optionContainer.innerHTML = options + correctOptions;
             }
@@ -667,16 +342,16 @@
                 optionContainer.innerHTML = ""; // Clear previous options
 
                 const trueFalseElements = `<div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Answer</span>
-                  <select
-                    class="form-select"
-                    aria-label="Default select example"
-                    name="correctOption"
-                  >
-                    <option value="true">True</option>
-                    <option value="false">False</option>
-                  </select>
-                </div>`;
+                      <span class="input-group-text">Answer</span>
+                      <select
+                        class="form-select"
+                        aria-label="Default select example"
+                        name="correctOption"
+                      >
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                    </div>`;
                 optionContainer.innerHTML = trueFalseElements;
             }
 
@@ -695,108 +370,108 @@
                 page++;
                 let pageNo = page;
                 const formContent = `
-              <div class="pageQuestion my-3">
-                <div class="d-flex justify-content-between my-2">
-                  <span class="badge rounded-pill text-bg-primary my-2"
-                    >Page <span class="noofpages">${pageNo}</span> - Question</span>
-                    <div>
-                <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
-                  Add Question
-                </button>
-                <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
-                  Add Statement
-                </button>
-              
-                  <button type="button" onclick="removePage('${pageNo}', 'forms')" class="btn btn-sm btn-danger">
-                    Remove
-                  </button>
-                  </div>
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Question</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="question"
-                    placeholder="Enter a question"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Question Type</span>
-                  <select
-                    class="form-select"
-                    aria-label="Default select example"
-                    name="qtype"
-                    id="questionType${pageNo}"
-                    onchange="changeQuestionType(this,'${pageNo}')"
-                  >
-                    <option value="multipleChoice">Multiple Choice</option>
-                    <option value="trueFalse">True/False</option>
-                  </select>
-                </div>
-                <div id="optionContainer${pageNo}">
-                  <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Option 1:</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="option1"
-                    placeholder="Enter as answer option"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Option 2:</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="option2"
-                    placeholder="Enter as answer option"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Option 3:</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="option3"
-                    placeholder="Enter as answer option"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Option 4:</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="option4"
-                    placeholder="Enter as answer option"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Correct Option</span>
-                  <select
-                    class="form-select"
-                    aria-label="Default select example"
-                    name="correctOption"
-                  >
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
-                    <option value="option4">Option 4</option>
-                  </select>
-                </div>
-
-                  </div>
-
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Answer Description</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="ansDesc"
-                    placeholder="Enter the content that is displayed under this navbar."
-                  />
-                </div>
-              </div>`;
+                  <div class="pageQuestion my-3">
+                    <div class="d-flex justify-content-between my-2">
+                      <span class="badge rounded-pill text-bg-primary my-2"
+                        >Page <span class="noofpages">${pageNo}</span> - Question</span>
+                        <div>
+                    <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
+                      Add Question
+                    </button>
+                    <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
+                      Add Statement
+                    </button>
+                  
+                      <button type="button" onclick="removePage('${pageNo}', 'forms')" class="btn btn-sm btn-danger">
+                        Remove
+                      </button>
+                      </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Question</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="question"
+                        placeholder="Enter a question"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Question Type</span>
+                      <select
+                        class="form-select"
+                        aria-label="Default select example"
+                        name="qtype"
+                        id="questionType${pageNo}"
+                        onchange="changeQuestionType(this,'${pageNo}')"
+                      >
+                        <option value="multipleChoice">Multiple Choice</option>
+                        <option value="trueFalse">True/False</option>
+                      </select>
+                    </div>
+                    <div id="optionContainer${pageNo}">
+                      <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Option 1:</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="option1"
+                        placeholder="Enter as answer option"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Option 2:</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="option2"
+                        placeholder="Enter as answer option"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Option 3:</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="option3"
+                        placeholder="Enter as answer option"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Option 4:</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="option4"
+                        placeholder="Enter as answer option"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Correct Option</span>
+                      <select
+                        class="form-select"
+                        aria-label="Default select example"
+                        name="correctOption"
+                      >
+                        <option value="option1">Option 1</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                        <option value="option4">Option 4</option>
+                      </select>
+                    </div>
+    
+                      </div>
+    
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Answer Description</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="ansDesc"
+                        placeholder="Enter the content that is displayed under this navbar."
+                      />
+                    </div>
+                  </div>`;
                 // Create a new div element
                 let form = document.createElement('form');
                 form.classList.add("p-2", "trainingForms", "my-3");
@@ -833,64 +508,64 @@
                 page++;
                 let pageNo = page;
                 const formContent = `
-            <div class"pageQuestion my-3">
-                <div class="d-flex justify-content-between my-2">
-                  <span class="badge rounded-pill text-bg-primary my-2"
-                    >Page <span class="noofpages">${pageNo}</span> - Statement</span>
-
-                    <div>
-                    <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
-                  Add Question
-                </button>
-                <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
-                  Add Statement
-                </button>
-
-                  <button type="button" onclick="removePage('${pageNo}', '${formType}')" class="btn btn-sm btn-danger">
-                    Remove
-                  </button>
-                  </div>
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Statement Title</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="sTitle"
-                    placeholder="Enter a statement title"
-                  />
-                  <input type="hidden" name="qtype" value="statement">
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Statement Content</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="sContent"
-                    placeholder="Enter a statement content"
-                  />
-                </div>
-                <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Additional Content</span>
-                  <select
-                    class="form-select"
-                    aria-label="Default select example"
-                    name="embeddedVideo"
-                  >
-                    <option value="embeddedVideo">Embedded Video URL</option>
-                  </select>
-                </div>
-                <div id="optionContainer">
-                  <div class="input-group input-group-sm mb-3">
-                  <span class="input-group-text">Embedded Video URL</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="videoUrl"
-                    placeholder="Enter the URL of an Embedded Video (Youtube)"
-                  />
-                </div>
-                </div>`;
+                <div class"pageQuestion my-3">
+                    <div class="d-flex justify-content-between my-2">
+                      <span class="badge rounded-pill text-bg-primary my-2"
+                        >Page <span class="noofpages">${pageNo}</span> - Statement</span>
+    
+                        <div>
+                        <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
+                      Add Question
+                    </button>
+                    <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
+                      Add Statement
+                    </button>
+    
+                      <button type="button" onclick="removePage('${pageNo}', '${formType}')" class="btn btn-sm btn-danger">
+                        Remove
+                      </button>
+                      </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Statement Title</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="sTitle"
+                        placeholder="Enter a statement title"
+                      />
+                      <input type="hidden" name="qtype" value="statement">
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Statement Content</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="sContent"
+                        placeholder="Enter a statement content"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Additional Content</span>
+                      <select
+                        class="form-select"
+                        aria-label="Default select example"
+                        name="embeddedVideo"
+                      >
+                        <option value="embeddedVideo">Embedded Video URL</option>
+                      </select>
+                    </div>
+                    <div id="optionContainer">
+                      <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text">Embedded Video URL</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="videoUrl"
+                        placeholder="Enter the URL of an Embedded Video (Youtube)"
+                      />
+                    </div>
+                    </div>`;
                 // Create a new div element
                 let form = document.createElement('form');
                 form.classList.add("p-2", "trainingForms", "my-3");
@@ -918,7 +593,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: "admin/delete-training-module",
+                            url: "/admin/delete-training-module",
                             data: {
                                 deleteTraining: 1,
                                 trainingid: trainingid,
@@ -963,184 +638,186 @@
                 function createMultipleChoicePageEditForm(obj, index) {
 
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
-                  <div class="pageQuestion my-3">
-                    <div class="d-flex justify-content-between my-2">
-                      <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
-                      <div>
-                <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                  Add Question
-                </button>
-                <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                  Add Statement
-                </button>
-                <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                        Remove
-                      </button>
-              </div>
-                      
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question</span>
-                      <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question Type</span>
-                      <select class="form-select" aria-label="Default select example" value="${obj.qtype}" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
-                        <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
-                        <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
-                      </select>
-                    </div>
-                    <div id="optionContainer${index}">
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Option 1:</span>
-                        <input type="text" class="form-control" name="option1" value="${obj.option1}" placeholder="Enter as answer option">
-                      </div>
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Option 2:</span>
-                        <input type="text" class="form-control" name="option2" value="${obj.option2}" placeholder="Enter as answer option">
-                      </div>
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Option 3:</span>
-                        <input type="text" class="form-control" name="option3" value="${obj.option3}" placeholder="Enter as answer option">
-                      </div>
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Option 4:</span>
-                        <input type="text" class="form-control" name="option4" value="${obj.option4}" placeholder="Enter as answer option">
-                      </div>
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Correct Option</span>
-                        <select class="form-select" aria-label="Default select example" name="correctOption">
-                          <option value="option1" ${obj.correctOption === 'option1' ? 'selected' : ''}>Option 1</option>
-                          <option value="option2" ${obj.correctOption === 'option2' ? 'selected' : ''}>Option 2</option>
-                          <option value="option3" ${obj.correctOption === 'option3' ? 'selected' : ''}>Option 3</option>
-                          <option value="option4" ${obj.correctOption === 'option4' ? 'selected' : ''}>Option 4</option>
-                        </select>
-                      </div>
-
-                    </div>
-
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Answer Description</span>
-                      <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
-                    </div>
+                      <div class="pageQuestion my-3">
+                        <div class="d-flex justify-content-between my-2">
+                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
+                          <div>
+                    <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
+                      Add Question
+                    </button>
+                    <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
+                      Add Statement
+                    </button>
+                    <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
+                            Remove
+                          </button>
                   </div>
-                </form>`;
+                          
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Question</span>
+                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Question Type</span>
+                          <select class="form-select" aria-label="Default select example" value="${obj.qtype}" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
+                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
+                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
+                          </select>
+                        </div>
+                        <div id="optionContainer${index}">
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Option 1:</span>
+                            <input type="text" class="form-control" name="option1" value="${obj.option1}" placeholder="Enter as answer option">
+                          </div>
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Option 2:</span>
+                            <input type="text" class="form-control" name="option2" value="${obj.option2}" placeholder="Enter as answer option">
+                          </div>
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Option 3:</span>
+                            <input type="text" class="form-control" name="option3" value="${obj.option3}" placeholder="Enter as answer option">
+                          </div>
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Option 4:</span>
+                            <input type="text" class="form-control" name="option4" value="${obj.option4}" placeholder="Enter as answer option">
+                          </div>
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Correct Option</span>
+                            <select class="form-select" aria-label="Default select example" name="correctOption">
+                              <option value="option1" ${obj.correctOption === 'option1' ? 'selected' : ''}>Option 1</option>
+                              <option value="option2" ${obj.correctOption === 'option2' ? 'selected' : ''}>Option 2</option>
+                              <option value="option3" ${obj.correctOption === 'option3' ? 'selected' : ''}>Option 3</option>
+                              <option value="option4" ${obj.correctOption === 'option4' ? 'selected' : ''}>Option 4</option>
+                            </select>
+                          </div>
+    
+                        </div>
+    
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Answer Description</span>
+                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
+                        </div>
+                      </div>
+                    </form>`;
                     let editForms = document.getElementById('editforms');
                     editForms.innerHTML += cont;
-                    console.log(obj.qtype);
+                    // console.log(obj.qtype);
                     sortNoOfPages('editforms');
                 }
 
                 function createStatementPageEditForm(obj, index) {
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
-                  <div class="pageQuestion my-3">
-                    <div class="d-flex justify-content-between my-2">
-                      <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Statement</span>
-                    <div>
-                      <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                  Add Question
-                </button>
-                <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                  Add Statement
-                </button>
-                      <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                        Remove
-                      </button>
+                      <div class="pageQuestion my-3">
+                        <div class="d-flex justify-content-between my-2">
+                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Statement</span>
+                        <div>
+                          <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
+                      Add Question
+                    </button>
+                    <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
+                      Add Statement
+                    </button>
+                          <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
+                            Remove
+                          </button>
+                          </div>
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Statement Title</span>
+                          <input type="text" class="form-control" name="sTitle" value="${obj.sTitle}" placeholder="Enter a statement title">
+                          <input type="hidden" name="qtype" value="statement">
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Statement Content</span>
+                          <input type="text" class="form-control" name="sContent" value="${obj.sContent}" placeholder="Enter a statement content">
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Additional Content</span>
+                          <select class="form-select" aria-label="Default select example" name="embeddedVideo">
+                            <option value="embeddedVideo">Embedded Video URL</option>
+                          </select>
+                        </div>
+                        <div id="optionContainer">
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Embedded Video URL</span>
+                            <input type="text" class="form-control" name="videoUrl" value="${obj.videoUrl}" placeholder="Enter the URL of an Embedded Video (Youtube)">
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Statement Title</span>
-                      <input type="text" class="form-control" name="sTitle" value="${obj.sTitle}" placeholder="Enter a statement title">
-                      <input type="hidden" name="qtype" value="statement">
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Statement Content</span>
-                      <input type="text" class="form-control" name="sContent" value="${obj.sContent}" placeholder="Enter a statement content">
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Additional Content</span>
-                      <select class="form-select" aria-label="Default select example" name="embeddedVideo">
-                        <option value="embeddedVideo">Embedded Video URL</option>
-                      </select>
-                    </div>
-                    <div id="optionContainer">
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Embedded Video URL</span>
-                        <input type="text" class="form-control" name="videoUrl" value="${obj.videoUrl}" placeholder="Enter the URL of an Embedded Video (Youtube)">
-                      </div>
-                    </div>
-                  </div>
-                </form>`;
+                    </form>`;
                     let editForms = document.getElementById('editforms');
                     editForms.innerHTML += cont;
-                    console.log(obj.qtype);
+                    // console.log(obj.qtype);
                     sortNoOfPages('editforms');
                 }
 
                 function createTrueFalsePageEditForm(obj, index) {
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
-                  <div class="pageQuestion my-3">
-                    <div class="d-flex justify-content-between my-2">
-                      <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
-                    <div>
-                      <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                  Add Question
-                </button>
-                <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                  Add Statement
-                </button>
-                      <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                        Remove
-                      </button>
+                      <div class="pageQuestion my-3">
+                        <div class="d-flex justify-content-between my-2">
+                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
+                        <div>
+                          <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
+                      Add Question
+                    </button>
+                    <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
+                      Add Statement
+                    </button>
+                          <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
+                            Remove
+                          </button>
+                          </div>
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Question</span>
+                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
+                        </div>
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Question Type</span>
+                          <select class="form-select" aria-label="Default select example" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
+                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
+                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
+                          </select>
+                        </div>
+                        <div id="optionContainer${index}">
+                          <div class="input-group input-group-sm mb-3">
+                            <span class="input-group-text">Answer</span>
+                            <select class="form-select" aria-label="Default select example" name="correctOption">
+                              <option value="true" ${obj.correctOption === 'true' ? 'selected' : ''}>True</option>
+                              <option value="false" ${obj.correctOption === 'false' ? 'selected' : ''}>False</option>
+                            </select>
+                          </div>
+                        </div>
+    
+                        <div class="input-group input-group-sm mb-3">
+                          <span class="input-group-text">Answer Description</span>
+                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
+                        </div>
                       </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question</span>
-                      <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question Type</span>
-                      <select class="form-select" aria-label="Default select example" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
-                        <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
-                        <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
-                      </select>
-                    </div>
-                    <div id="optionContainer${index}">
-                      <div class="input-group input-group-sm mb-3">
-                        <span class="input-group-text">Answer</span>
-                        <select class="form-select" aria-label="Default select example" name="correctOption">
-                          <option value="true" ${obj.correctOption === 'true' ? 'selected' : ''}>True</option>
-                          <option value="false" ${obj.correctOption === 'false' ? 'selected' : ''}>False</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Answer Description</span>
-                      <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
-                    </div>
-                  </div>
-                </form>`;
+                    </form>`;
                     let editForms = document.getElementById('editforms');
                     editForms.innerHTML += cont;
-                    console.log(obj.qtype);
+                    // console.log(obj.qtype);
                     sortNoOfPages('editforms');
                 }
 
 
                 $.get({
-                    url: `get-training-module/${id}`,
+                    url: `/admin/get-training-module/${id}`,
                     success: function(resJson) {
-                        console.log(resJson);
+                        // console.log(resJson);
 
                         document.getElementById('editforms').innerHTML = '';
                         // const resJson = JSON.parse(res);
                         editModuleName.value = resJson.name;
-                        editmPassingScore.value = resJson.passing_score;
+                        $('#editModuleForm input.mPassingScore').val(resJson.passing_score);
+                        // editmPassingScore.value = resJson.passing_score;
                         editCategory.value = resJson.category;
                         // editLang.value = resJson.module_language;
                         // editCoverImageFile.value = resJson.cover_image;
-                        editMCompTime.value = resJson.estimated_time;
+                        $('#editModuleForm input.mCompTime').val(resJson.estimated_time);
+                        // editMCompTime.value = resJson.estimated_time;
 
                         const quizes = JSON.parse(resJson.json_quiz);
                         // console.log(quizes);
@@ -1162,21 +839,368 @@
             }
         </script>
         <script>
-          $('#t_moduleSearch').on('input', function () {
-    var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+            $('#t_moduleSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
 
-    // Loop through each template card
-    $('.t_modules').each(function () {
-        var templateName = $(this).find('.fw-semibold').text().toLowerCase(); // Get the template name and convert it to lowercase
+                // Loop through each template card
+                $('.t_modules').each(function() {
+                    var templateName = $(this).find('.fw-semibold').text()
+                        .toLowerCase(); // Get the template name and convert it to lowercase
 
-        // If the template name contains the search value, show the card; otherwise, hide it
-        if (templateName.includes(searchValue)) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
-    });
-});
+                    // If the template name contains the search value, show the card; otherwise, hide it
+                    if (templateName.includes(searchValue)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            $('#newGamifiedTrainingModal').on('hidden.bs.modal', function() {
+                // Pause the video
+                const video = $('#newGamifiedTrainingModal video').get(0); // Get the video element
+                if (video) {
+                    video.pause(); // Pause the video
+                }
+            });
+
+            $('#editGamifiedTrainingModuleModal').on('hidden.bs.modal', function() {
+                // Pause the video
+                const video = $('#editGamifiedTrainingModuleModal video').get(0); // Get the video element
+                if (video) {
+                    video.pause(); // Pause the video
+                }
+            });
+
+            function fetchVideoUrl() {
+                const videourl = document.getElementById('gamified_training_video_url').value;
+                const urlPattern = /^(https?:\/\/)?(?!.*(youtube\.com|youtu\.?be)).*\.mp4$/;
+                if (!urlPattern.test(videourl)) {
+                    alert('Please enter a valid video URL.');
+                    return;
+                }
+                $("#game_training_video_preview source").attr("src", videourl);
+                $("#gameTrainingVideoPlayer")[0].load();
+                $("#game_training_video_preview").show();
+                $("#gamified_questions_container").show();
+                // Proceed with further processing if the URL is valid
+            }
+
+            function addMoreGamifiedTrainingQues(btn) {
+
+                const questionFields = $(btn).parent().parent().clone();
+                questionFields.find('input').val('');
+                $(btn).parent().parent().after(questionFields);
+
+                const container = $(btn).parent().parent().parent();
+                checkIfItsLastQuestion(container);
+            }
+
+            function deleteGamifiedTrainingQues(btn) {
+                const container = $(btn).parent().parent().parent();
+                $(btn).parent().parent().remove();
+                checkIfItsLastQuestion(container);
+            }
+
+            function checkIfItsLastQuestion(container) {
+                const deleteBtns = $(container).find('.deleteQuesBtn');
+                // console.log(deleteBtns.length);
+                if (deleteBtns.length == 1) {
+                    deleteBtns.hide();
+                } else {
+                    deleteBtns.show();
+                }
+            }
+
+            function saveGamifiedQues() {
+                let error = false;
+                const questions = [];
+                const questionContainers = $('#gamified_questions_container .gamified_training_question');
+                questionContainers.each(function() {
+                    const time = $(this).find('.time').val();
+                    const timeParts = time.split(':');
+                    const timeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                    const question = $(this).find('.question').val();
+                    const option1 = $(this).find('.option1').val();
+                    const option2 = $(this).find('.option2').val();
+                    const option3 = $(this).find('.option3').val();
+                    const option4 = $(this).find('.option4').val();
+                    const answer = parseInt($(this).find('.answer').val(), 10);
+                    if (question.trim() === '' || option1.trim() === '' || option2.trim() === '' || option3.trim() ===
+                        '' || option4.trim() === '' || isNaN(timeInSeconds)) {
+                        error = true;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Please fill all the fields in the question.',
+                        });
+                        return;
+                    }
+                    questions.push({
+                        time: timeInSeconds,
+                        question,
+                        options: [option1, option2, option3, option4],
+                        answer
+                    });
+                });
+
+                if (error) {
+                    console.log('something went wrong!')
+                    return;
+                }
+                const videoUrl = document.getElementById('gamified_training_video_url').value;
+                if (!videoUrl) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please enter a valid video URL.',
+                    });
+                    return;
+                }
+
+
+                const final_gamified_training = {
+                    videoUrl,
+                    questions
+                }
+                save_gamified_training_to_db(final_gamified_training);
+            }
+
+            function save_gamified_training_to_db(final_gamified_training) {
+                const requiredInputs = $('#gamified_training_form input.required');
+                let allFilled = true;
+                requiredInputs.each(function() {
+                    if (!$(this).val()) {
+                        allFilled = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Please fill ${$(this).data('name')}.`,
+                        });
+                        return;
+                    }
+
+
+                });
+                if (!allFilled) {
+                    return;
+                }
+
+                const hiddenInput = document.getElementById('gamifiedJsonData');
+                hiddenInput.value = JSON.stringify(final_gamified_training);
+
+                // Submit the form programmatically
+                const addGamifiedTrainingSubmitBtn = document.getElementById('addGamifiedTrainingSubmitBtn');
+                addGamifiedTrainingSubmitBtn.click(); // This will trigger form submission
+
+
+            }
+
+
+
+            function isTimeValid(input) {
+                const videoDuration = document.getElementById('gameTrainingVideoPlayer').duration;
+
+                if (input.value) {
+                    const timePattern = /^([0-5]?[0-9]):([0-5][0-9])$/;
+                    if (!timePattern.test(input.value)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Please enter a valid time in MM:SS format.',
+                        });
+                        input.value = '';
+                        input.classList.add('is-invalid');
+                        return;
+                    }
+
+                    const timeParts = input.value.split(':');
+                    const inputTimeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+
+                    if (inputTimeInSeconds > videoDuration) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Input time cannot be greater than video duration.',
+                        });
+                        input.value = '';
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                }
+            }
+
+            //////editing gamified training module/////
+
+            function editGamifiedTrainingModule(id) {
+
+                $.get({
+                    url: `/admin/get-training-module/${id}`,
+                    success: function(resJson) {
+
+                        $('#editGamified_training_form input[name="module_name"]').val(resJson.name);
+                        $('#editGamified_training_form input[name="passing_score"]').val(resJson.passing_score);
+                        $('#editGamified_training_form select[name="category"]').val(resJson.category);
+                        $('#editGamified_training_form input[name="completion_time"]').val(resJson.estimated_time);
+                        $('#gamifiedTrainingId').val(resJson.id);
+
+                        createGamifiedQuestions(resJson.json_quiz);
+
+                    }
+                })
+
+            }
+
+            function createGamifiedQuestions(ques) {
+                const questions = JSON.parse(ques);
+                const questionContainer = $('#edit_gamified_questions_container');
+                questionContainer.html('');
+                $('#edit_game_training_video_preview source').attr('src', questions.videoUrl);
+                $('#edit_gamified_training_video_url').val(questions.videoUrl);
+                $('#editGameTrainingVideoPlayer')[0].load();
+                $('#edit_game_training_video_preview').show();
+                $('#edit_gamified_questions_container').show();
+                questions.questions.forEach((question, index) => {
+                    const questionHtml = `
+                <div class="gamified_training_question border px-3 my-3">
+                  <div class="d-flex gap-2 justify-content-end my-3">
+                      <button type="button" class="btn btn-primary btn-sm btn-wave"
+                          onclick="addMoreGamifiedTrainingQues(this)">Add More</button>
+                      <button type="button" class="btn btn-danger deleteQuesBtn btn-sm btn-wave"
+                          onclick="deleteGamifiedTrainingQues(this)" style="display: none;">Delete</button>
+                  </div>
+
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Time</span>
+                    <input type="text" class="form-control time" value="${String(Math.floor(question.time / 60)).padStart(2, '0')}:${String(question.time % 60).padStart(2, '0')}" placeholder="Enter time in MM:SS format" onblur="isTimeValid(this)">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Question</span>
+                    <input type="text" class="form-control question" value="${question.question}" placeholder="Enter the question">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Option 1</span>
+                    <input type="text" class="form-control option1" value="${question.options[0]}" placeholder="Enter option 1">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Option 2</span>
+                    <input type="text" class="form-control option2" value="${question.options[1]}" placeholder="Enter option 2">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Option 3</span>
+                    <input type="text" class="form-control option3" value="${question.options[2]}" placeholder="Enter option 3">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Option 4</span>
+                    <input type="text" class="form-control option4" value="${question.options[3]}" placeholder="Enter option 4">
+                  </div>
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text">Answer</span>
+                    <select class="form-select answer" aria-label="Default select example">
+                      <option value="0" ${question.answer === 0 ? 'selected' : ''}>Option 1</option>
+                      <option value="1" ${question.answer === 1 ? 'selected' : ''}>Option 2</option>
+                      <option value="2" ${question.answer === 2 ? 'selected' : ''}>Option 3</option>
+                      <option value="3" ${question.answer === 3 ? 'selected' : ''}>Option 4</option>
+                    </select>
+                  </div>
+                  
+                </div>
+                `;
+                    questionContainer.append(questionHtml);
+                });
+
+            }
+
+            function update_gamified_training_to_db(final_gamified_training) {
+                const requiredInputs = $('#editGamified_training_form input.required');
+                let allFilled = true;
+                requiredInputs.each(function() {
+                        if (!$(this).val()) {
+                            allFilled = false;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: `Please fill ${$(this).data('name')}.`,
+                            });
+                            return;
+                        }
+
+                    }
+
+                );
+                if (!allFilled) {
+                    return;
+                }
+
+                const hiddenInput = document.getElementById('edit_gamifiedJsonData');
+                hiddenInput.value = JSON.stringify(final_gamified_training);
+
+                // Submit the form programmatically
+                const editGamifiedTrainingSubmitBtn = document.getElementById('editGamifiedTrainingSubmitBtn');
+                editGamifiedTrainingSubmitBtn.click(); // This will trigger form submission
+
+            }
+
+            function updateGamifiedQues() {
+                let error = false;
+                const questions = [];
+                const questionContainers = $('#edit_gamified_questions_container .gamified_training_question');
+                questionContainers.each(function() {
+                    const time = $(this).find('.time').val();
+                    const timeParts = time.split(':');
+                    const timeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                    const question = $(this).find('.question').val();
+                    const option1 = $(this).find('.option1').val();
+                    const option2 = $(this).find('.option2').val();
+                    const option3 = $(this).find('.option3').val();
+                    const option4 = $(this).find('.option4').val();
+                    const answer = parseInt($(this).find('.answer').val(), 10);
+                    if (question.trim() === '' || option1.trim() === '' || option2.trim() === '' || option3
+                        .trim() ===
+                        '' || option4.trim() === '' || isNaN(timeInSeconds)) {
+                        error = true;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Please fill all the fields in the question.',
+                        });
+                        return;
+                    }
+                    questions.push({
+                        time: timeInSeconds,
+                        question,
+                        options: [option1, option2, option3, option4],
+                        answer
+                    });
+                });
+
+                if (error) {
+                    console.log('something went wrong!')
+                    return;
+                }
+                const videoUrl = document.getElementById('edit_gamified_training_video_url').value;
+                if (!videoUrl) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please enter a valid video URL.',
+                    });
+                    return;
+                }
+
+                const final_gamified_training = {
+                    videoUrl,
+                    questions
+                }
+                console.log(final_gamified_training);
+                update_gamified_training_to_db(final_gamified_training);
+
+            }
         </script>
     @endpush
 

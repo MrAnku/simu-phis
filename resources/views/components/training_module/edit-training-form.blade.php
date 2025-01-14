@@ -1,4 +1,4 @@
-<form action="{{ route('trainingmodule.update') }}" id="editModuleForm" method="post"
+<form action="{{ auth('company')->check() ? route('trainingmodule.update') : route('admin.trainingmodule.update') }}" id="editModuleForm" method="post"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="row">

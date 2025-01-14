@@ -1,4 +1,4 @@
-<form action="{{ route('trainingmodule.add') }}" id="newModuleForm" method="POST"
+<form action="{{ auth('company')->check() ? route('trainingmodule.add') : route('admin.trainingmodule.add') }}" id="newModuleForm" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="row">

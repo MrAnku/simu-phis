@@ -449,6 +449,8 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::get('admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.trainingmodule.index');
     Route::post('admin/add-training-module', [AdminTrainingModuleController::class, 'addTraining'])->name('admin.trainingmodule.add');
+    Route::post('admin/add-gamified-training', [AdminTrainingModuleController::class, 'addGamifiedTraining'])->name('admin.add.gamified_training');
+    Route::post('admin/update-gamified-training', [AdminTrainingModuleController::class, 'updateGamifiedTraining'])->name('admin.update.gamified_training');
     Route::get('admin/get-training-module/{id}', [AdminTrainingModuleController::class, 'getTrainingById'])->name('admin.trainingmodule.getTrainingById');
 
     Route::post('admin/update-training-module', [AdminTrainingModuleController::class, 'updateTrainingModule'])->name('admin.trainingmodule.update');
