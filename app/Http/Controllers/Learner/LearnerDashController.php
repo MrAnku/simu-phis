@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Learner;
 
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Http;
 
 class LearnerDashController extends Controller
 {
@@ -45,7 +46,7 @@ class LearnerDashController extends Controller
         log_action("Employee started static training", 'learner', 'learner');
         // $training_id = decrypt($training_id);
 
-        return view('learning.training', ['trainingid' => $training_id, 'training_lang'=>$training_lang, 'id'=>$id]);
+        return view('learning.training', ['trainingid' => $training_id, 'training_lang' => $training_lang, 'id' => $id]);
     }
 
     public function loadTraining($training_id, $training_lang)
@@ -67,25 +68,86 @@ class LearnerDashController extends Controller
             return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
         }
 
-        // Access the module_language attribute
-        $moduleLanguage = $training_lang;
+        if ($trainingData->training_type == 'static_training') {
 
-        // You can now use $moduleLanguage as needed
-        if ($moduleLanguage !== 'en') {
+            // Access the module_language attribute
+            $moduleLanguage = $training_lang;
 
-            $jsonQuiz = json_decode($trainingData->json_quiz, true);
+            // You can now use $moduleLanguage as needed
+            if ($moduleLanguage !== 'en') {
 
-            $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
-            $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
-            // var_dump($translatedArray);
+                $jsonQuiz = json_decode($trainingData->json_quiz, true);
 
-            $trainingData->json_quiz = $translatedJson_quiz;
-            // var_dump($trainingData);
-            // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+                $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+                $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+                // var_dump($translatedArray);
+
+                $trainingData->json_quiz = $translatedJson_quiz;
+                // var_dump($trainingData);
+                // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+            }
+
+            // Pass data to the view
+            return response()->json(['status' => 1, 'jsonData' => $trainingData]);
         }
 
-        // Pass data to the view
-        return response()->json(['status' => 1, 'jsonData' => $trainingData]);
+        if ($trainingData->training_type == 'gamified') {
+            $moduleLanguage = $training_lang;
+
+            if ($moduleLanguage !== 'en') {
+                $quizInArray = json_decode($trainingData->json_quiz, true);
+                $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                return $this->translateJsonData($quizInArray, $moduleLanguage);
+            }
+
+            return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+        }
+    }
+
+    private function translateJsonData($json, $lang)
+    {
+        try {
+            $prompt = "Translate the following JSON data to ".langName($lang)." language. The output should only contain JSON data:\n\n" . json_encode($json);
+
+            $response = Http::withOptions(['verify' => false])->withHeaders([
+            'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+            ])->post('https://api.openai.com/v1/chat/completions', [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'max_tokens' => 1500,
+            'temperature' => 0.7,
+            ]);
+
+            if ($response->failed()) {
+
+            log_action("Failed to translate JSON data on topic of prompt: {$prompt}", 'learner', 'learner');
+
+            return response()->json([
+                'status' => 0,
+                'msg' => $response->body(),
+            ]);
+            }
+
+            $translatedJson = $response['choices'][0]['message']['content'];
+
+            log_action("JSON data translated using AI on topic of prompt: {$prompt}", 'learner', 'learner');
+
+            return response()->json([
+            'status' => 1,
+            'jsonData' => json_decode($translatedJson, true),
+            ]);
+        } catch (\Exception $e) {
+
+            log_action("Failed to translate JSON data", 'learner', 'learner');
+
+            return response()->json([
+            'status' => 0,
+            'msg' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function updateTrainingScore(Request $request)
@@ -108,7 +170,7 @@ class LearnerDashController extends Controller
 
             log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
 
-            if($request->trainingScore == 100){
+            if ($request->trainingScore == 100) {
                 $rowData->completed = 1;
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
@@ -117,7 +179,7 @@ class LearnerDashController extends Controller
             }
         }
 
-        
+
         return response()->json(['message' => 'Score updated']);
     }
 
@@ -182,29 +244,29 @@ class LearnerDashController extends Controller
 
         // Check if the record was found
         if ($assignedUser) {
-           
+
             // Update only the certificate_id (no need to touch campaign_id)
             $assignedUser->update([
                 'certificate_id' => $certificateId,
             ]);
-
-          
-        } 
+        }
     }
 
-    public function startAiTraining($topic, $language, $id){
+    public function startAiTraining($topic, $language, $id)
+    {
         log_action("AI training started", 'learner', 'learner');
-        return view('learning.ai-training', ['topic' => $topic, 'language'=>$language, 'id'=>$id]);
+        return view('learning.ai-training', ['topic' => $topic, 'language' => $language, 'id' => $id]);
     }
 
-    public function startGamifiedTraining($training_id, $id){
+    public function startGamifiedTraining($training_id, $id, $lang)
+    {
         log_action("Gamified training started", 'learner', 'learner');
         $training_id = decrypt($training_id);
         $training = TrainingModule::find($training_id);
-        if(!$training){
+        if (!$training) {
             return redirect()->back()->with('error', 'Training module not found');
         }
-        
-        return view('learning.gamified-training', compact('training', 'id'));
+
+        return view('learning.gamified-training', compact('training', 'id', 'lang'));
     }
 }

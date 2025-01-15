@@ -284,6 +284,7 @@
                                                             {{ route('learn.gamified.training', [
                                                                 'training_id' => encrypt($training->training),
                                                                 'id' => base64_encode($training->id),
+                                                                'lang' => $training->training_lang,
                                                             ]) }} 
                                                             
                                                     @endif">
