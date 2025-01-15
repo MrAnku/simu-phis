@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TrainingModule;
 use Illuminate\Http\Request;
+use App\Models\TrainingModule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class TrainingModuleController extends Controller
@@ -75,7 +76,8 @@ class TrainingModuleController extends Controller
         }
     }
 
-    public function addGamifiedTraining(Request $request){
+    public function addGamifiedTraining(Request $request)
+    {
         $request->validate([
             'module_name' => 'required|string|max:255',
             'passing_score' => 'required|numeric|min:0|max:100',
@@ -86,7 +88,7 @@ class TrainingModuleController extends Controller
         ]);
 
         $companyId = auth()->user()->company_id;
-        
+
         $cover_file = 'defaultTraining.jpg';
 
         // Handling cover file
@@ -117,7 +119,8 @@ class TrainingModuleController extends Controller
         }
     }
 
-    public function updateGamifiedTraining(Request $request){
+    public function updateGamifiedTraining(Request $request)
+    {
         $request->validate([
             'module_name' => 'required|string|max:255',
             'passing_score' => 'required|numeric|min:0|max:100',
@@ -169,8 +172,6 @@ class TrainingModuleController extends Controller
             log_action("Failed to update Gamified Training");
             return redirect()->back()->with('error', 'Failed to update Gamified Training');
         }
-
-
     }
 
     public function getTrainingById($id)
@@ -298,11 +299,11 @@ class TrainingModuleController extends Controller
     {
         $training = TrainingModule::find(base64_decode($trainingid));
 
-        if(!$training){
+        if (!$training) {
             return redirect()->back()->with('error', 'Invalid Training Module');
         }
 
-        if($training->training_type == 'gamified'){
+        if ($training->training_type == 'gamified') {
             return view('previewGamifiedTraining', compact('training'));
         }
 
@@ -328,24 +329,85 @@ class TrainingModuleController extends Controller
             return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
         }
 
-        // Access the module_language attribute
-        $moduleLanguage = $lang;
+        if ($trainingData->training_type == 'static_training') {
 
-        // You can now use $moduleLanguage as needed
-        if ($moduleLanguage !== 'en') {
+            // Access the module_language attribute
+            $moduleLanguage = $lang;
 
-            $jsonQuiz = json_decode($trainingData->json_quiz, true);
+            // You can now use $moduleLanguage as needed
+            if ($moduleLanguage !== 'en') {
 
-            $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
-            $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
-            // var_dump($translatedArray);
+                $jsonQuiz = json_decode($trainingData->json_quiz, true);
 
-            $trainingData->json_quiz = $translatedJson_quiz;
-            // var_dump($trainingData);
-            // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+                $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+                $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+                // var_dump($translatedArray);
+
+                $trainingData->json_quiz = $translatedJson_quiz;
+                // var_dump($trainingData);
+                // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+            }
+
+            // Pass data to the view
+            return response()->json(['status' => 1, 'jsonData' => $trainingData]);
         }
 
-        // Pass data to the view
-        return response()->json(['status' => 1, 'jsonData' => $trainingData]);
+        if ($trainingData->training_type == 'gamified') {
+            $moduleLanguage = $lang;
+
+            if ($moduleLanguage !== 'en') {
+                $quizInArray = json_decode($trainingData->json_quiz, true);
+                $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                return $this->translateJsonData($quizInArray, $moduleLanguage);
+            }
+
+            return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+        }
+    }
+
+    private function translateJsonData($json, $lang)
+    {
+        try {
+            $prompt = "Translate the following JSON data to ".langName($lang)." language. The output should only contain JSON data:\n\n" . json_encode($json);
+
+            $response = Http::withOptions(['verify' => false])->withHeaders([
+            'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+            ])->post('https://api.openai.com/v1/chat/completions', [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'max_tokens' => 1500,
+            'temperature' => 0.7,
+            ]);
+
+            if ($response->failed()) {
+
+            log_action("Failed to translate JSON data on topic of prompt: {$prompt}");
+
+            return response()->json([
+                'status' => 0,
+                'msg' => $response->body(),
+            ]);
+            }
+
+            $translatedJson = $response['choices'][0]['message']['content'];
+
+            log_action("JSON data translated using AI on topic of prompt: {$prompt}");
+
+            return response()->json([
+            'status' => 1,
+            'jsonData' => json_decode($translatedJson, true),
+            ]);
+        } catch (\Exception $e) {
+
+            log_action("Failed to translate JSON data");
+
+            return response()->json([
+            'status' => 0,
+            'msg' => $e->getMessage(),
+            ]);
+        }
     }
 }

@@ -147,7 +147,7 @@
             Your browser does not support the video tag.
         </video>
     </div>
-    <div class="quiz-container" id="quizBox">
+    <div class="quiz-container" id="quizBox" style="display: none;">
         <p class="question"></p>
         <div class="options"></div>
     </div>
