@@ -141,7 +141,61 @@
 </head>
 
 <body>
+
+    <div style="position: absolute; top: 10px; right: 10px; z-index: 1001;">
+        <select id="trainingLang"
+            style="padding: 5px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; background: #fff; cursor: pointer;">
+            <option value="sq">Albanian</option>
+            <option value="ar">Arabic</option>
+            <option value="az">Azerbaijani</option>
+            <option value="bn">Bengali</option>
+            <option value="bg">Bulgarian</option>
+            <option value="ca">Catalan</option>
+            <option value="zh">Chinese</option>
+            <option value="zt">Chinese (traditional)</option>
+            <option value="cs">Czech</option>
+            <option value="da">Danish</option>
+            <option value="nl">Dutch</option>
+            <option value="en" selected="">English</option>
+            <option value="eo">Esperanto</option>
+            <option value="et">Estonian</option>
+            <option value="fi">Finnish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="el">Greek</option>
+            <option value="he">Hebrew</option>
+            <option value="hi">Hindi</option>
+            <option value="hu">Hungarian</option>
+            <option value="id">Indonesian</option>
+            <option value="ga">Irish</option>
+            <option value="it">Italian</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="lv">Latvian</option>
+            <option value="lt">Lithuanian</option>
+            <option value="ms">Malay</option>
+            <option value="nb">Norwegian</option>
+            <option value="fa">Persian</option>
+            <option value="pl">Polish</option>
+            <option value="pt">Portuguese</option>
+            <option value="ro">Romanian</option>
+            <option value="ru">Russian</option>
+            <option value="sk">Slovak</option>
+            <option value="sl">Slovenian</option>
+            <option value="es">Spanish</option>
+            <option value="sv">Swedish</option>
+            <option value="tl">Tagalog</option>
+            <option value="th">Thai</option>
+            <option value="tr">Turkish</option>
+            <option value="uk">Ukranian</option>
+            <option value="ur">Urdu</option>
+        </select>
+    </div>
+
     <div class="video-container">
+        <div>
+            <img src="/assets/images/spinner.gif" id="preloader" style="display: none;">
+        </div>
         <video id="videoPlayer" controls>
             <source src="" type="video/mp4">
             Your browser does not support the video tag.
@@ -168,18 +222,16 @@
     </div>
 
     <script>
-        
-
-const quesString = @json($training->json_quiz);
+        const quesString = @json($training->json_quiz);
         const parsedQ = JSON.parse(quesString);
         const responseVideo = parsedQ.videoUrl;
         document.querySelector("#videoPlayer source").setAttribute("src", responseVideo);
         document.getElementById("videoPlayer").load();
-        const questions = parsedQ.questions;
+        let questions = parsedQ.questions;
 
         console.log(questions);
-        
-       
+
+
 
         const video = document.getElementById("videoPlayer");
         const quizBox = document.getElementById("quizBox");
@@ -280,8 +332,95 @@ const quesString = @json($training->json_quiz);
             totalAnswered = 0;
             scoreModal.style.display = "none";
             overlay.style.display = "none";
+            modal.style.display = "none";
+            quizBox.style.display = "none";
             video.currentTime = 0;
             video.play();
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        function loadTrainingContent(lang = 'en') {
+
+            isLoading(true);
+
+            $.get({
+                url: '/admin/training-preview-content/{{ base64_encode($training->id) }}/' + lang,
+                success: function(res) {
+                    console.log(res)
+                    if (res.status === 1) {
+                        if (lang == 'en') {
+                            res.jsonData = JSON.parse(res.jsonData);
+                        }
+                        isLoading(false);
+                        questions = res.jsonData.questions;
+                        video.src = res.jsonData.videoUrl;
+                        video.load();
+                        quizBox.style.display = "none";
+                        scoreModal.style.display = "none";
+                        overlay.style.display = "none";
+                        modal.style.display = "none";
+                       
+                    } else {
+                        Swal.fire({
+                            title: "Error!",
+                            text: res.msg,
+                            icon: "error",
+                            confirmButtonText: "OK"
+                        });
+                    }
+
+                }
+            })
+        }
+
+        function isLoading(status) {
+            if (status) {
+                $("#preloader").show();
+                quizBox.style.display = "none";
+                video.style.display = "none";
+                scoreModal.style.display = "none";
+                overlay.style.display = "none";
+                modal.style.display = "none";
+
+            } else {
+                $("#preloader").hide();
+                video.style.display = "block";
+            }
+        }
+
+        function confirmLanguage(lang, langCode) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: `This training will be changed to ${lang} language!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Change Language!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadTrainingContent(langCode);
+                }
+            });
+        }
+
+
+        $(document).ready(function() {
+            $('#trainingLang').change(function() {
+
+                const lang = $(this).val();
+                const optionText = $(this).find('option:selected').text();
+                confirmLanguage(optionText, lang);
+                console.log(lang);
+
+
+            });
         });
     </script>
 </body>

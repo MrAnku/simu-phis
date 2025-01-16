@@ -349,15 +349,14 @@
 
             isLoading(true);
 
-            // $("#preloader").show();
-            // $("#trainingQContainers").hide();
-            // $("#nextBtnContainer").removeClass('d-flex').hide();
-
             $.get({
                 url: '/training-preview-content/{{ base64_encode($training->id) }}/' + lang,
                 success: function(res) {
                     console.log(res)
                     if (res.status === 1) {
+                        if (lang == 'en') {
+                            res.jsonData = JSON.parse(res.jsonData);
+                        }
                         isLoading(false);
                         questions = res.jsonData.questions;
                         video.src = res.jsonData.videoUrl;
@@ -366,13 +365,7 @@
                         scoreModal.style.display = "none";
                         overlay.style.display = "none";
                         modal.style.display = "none";
-                        // console.log(resJson);
-                        // // console.log(json_quiz);
-                        // createPages(json_quiz);
-                        // allQuestions = json_quiz;
-                        // $("#preloader").hide();
-                        // $("#trainingQContainers").show();
-                        // $("#nextBtnContainer").addClass('d-flex').show();
+                     
                     } else {
                         Swal.fire({
                             title: "Error!",

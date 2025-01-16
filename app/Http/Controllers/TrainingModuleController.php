@@ -384,7 +384,6 @@ class TrainingModuleController extends Controller
 
             if ($response->failed()) {
 
-            log_action("Failed to translate JSON data on topic of prompt: {$prompt}");
 
             return response()->json([
                 'status' => 0,
@@ -394,7 +393,6 @@ class TrainingModuleController extends Controller
 
             $translatedJson = $response['choices'][0]['message']['content'];
 
-            log_action("JSON data translated using AI on topic of prompt: {$prompt}");
 
             return response()->json([
             'status' => 1,
@@ -402,7 +400,6 @@ class TrainingModuleController extends Controller
             ]);
         } catch (\Exception $e) {
 
-            log_action("Failed to translate JSON data");
 
             return response()->json([
             'status' => 0,

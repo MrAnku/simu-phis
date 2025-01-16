@@ -459,7 +459,7 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::get('admin/training-preview/{trainingid}', [AdminTrainingModuleController::class, 'trainingPreview'])->name('admin.trainingmodule.preview');
 
-    Route::get('admin/training-preview-content/{trainingid}/{lang}', [AdminTrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
+    Route::get('admin/training-preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
 
     //---------------------------all logs route -----------------//
     Route::get('admin/all-logs', [LogController::class, 'index'])->name('admin.all.logs');
