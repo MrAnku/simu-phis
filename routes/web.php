@@ -282,6 +282,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
     Route::get('/search-website', [PhishingWebsitesController::class, 'searchWebsite'])->name('phishingWebsites.search');
     Route::post('/add-phishing-website', [PhishingWebsitesController::class, 'addPhishingWebsite'])->name('phishing.website.add');
+    Route::post('/generate-phishing-website', [PhishingWebsitesController::class, 'generateWebsite'])->name('phishing.website.generateWebsite');
     Route::post('/save-generate-phishing-website', [PhishingWebsitesController::class, 'saveGeneratedSite'])->name('phishing.website.saveGeneratedSite');
 
 

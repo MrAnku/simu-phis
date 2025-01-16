@@ -261,8 +261,8 @@
 
             function shortcodeValidation() {
                 const editorContent = tinymce.activeEditor.getContent();
-                const hasWebsiteUrl = editorContent.includes('@{{website_url}}');
-                const hasTrackerImg = editorContent.includes('@{{tracker_img}}');
+                const hasWebsiteUrl = editorContent.includes('@{{ website_url }}');
+                const hasTrackerImg = editorContent.includes('@{{ tracker_img }}');
 
                 return hasWebsiteUrl && hasTrackerImg;
             }
@@ -318,6 +318,7 @@
                     btn.disabled = false;
                     btn.innerHTML = 'Generate Template';
                     $('#aiTempContainer').show();
+                    $('#temp-suggestions').hide();
                 } else {
                     alert('Failed to generate template');
                 }
@@ -359,6 +360,29 @@
                     });
                 }
             }
+
+            $('#generatePhishMailModal').on('shown.bs.modal', function() {
+                setTimeout(function() {
+                    $('#temp-suggestions').slideDown('slow');
+                }, 500);
+            });
+
+            $('#generatePhishMailModal').on('hidden.bs.modal', function() {
+                $('#temp-suggestions').hide();
+            });
+
+            $('#temp-suggestions button').on('click', function() {
+                const prompt = $(this).text().trim();
+                document.getElementById('prompt').value = prompt;
+            });
+
+            $('#prompt').on('input', function() {
+                if ($(this).val().trim() === '') {
+                    $('#temp-suggestions').show();
+                } else {
+                    $('#temp-suggestions').hide();
+                }
+            });
         </script>
 
         <script>
