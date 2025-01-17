@@ -41,17 +41,37 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#international" aria-selected="true">International</a>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#middle_east" aria-selected="false" tabindex="-1">Middle East</a>
-                                </li>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                                aria-current="page" href="#international"
+                                                aria-selected="true">International</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                                href="#middle_east" aria-selected="true">Middle East</a>
+                                        </li>
 
-                            </ul>
+                                    </ul>
+                                </div>
+                                <div>
+
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                            Training Type
+                                        </span>
+                                        <select class="form-select" id="training_type_select">
+                                            <option value="static_training"
+                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>Static/AI
+                                                Training</option>
+                                            <option value="gamified" {{ request('type') == 'gamified' ? 'selected' : '' }}>
+                                                Gamified Training</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="international" role="tabpanel">
@@ -1201,6 +1221,14 @@
                 update_gamified_training_to_db(final_gamified_training);
 
             }
+        </script>
+
+        <script>
+            $('#training_type_select').on('change', function() {
+                const selectedType = $(this).val();
+
+                window.location.href = `/admin/training-modules?type=${selectedType}`;
+            });
         </script>
     @endpush
 

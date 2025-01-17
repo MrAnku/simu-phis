@@ -11,10 +11,18 @@ use Illuminate\Support\Facades\Storage;
 class AdminTrainingModuleController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
 
-        $trainingModules = TrainingModule::all();
+        if ($request->has('type')) {
+            $selectedType = $request->input('type');
+            $trainingModules = TrainingModule::where('training_type', $selectedType)->get();
+        }else{
+
+            $trainingModules = TrainingModule::all();
+        }
+
+
         $interTrainings = $trainingModules->where('category', 'international');
         $middleEastTrainings = $trainingModules->where('category', 'middle_east');
         return view('admin.trainingModules', compact('interTrainings', 'middleEastTrainings'));

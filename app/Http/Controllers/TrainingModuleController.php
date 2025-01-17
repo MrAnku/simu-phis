@@ -11,14 +11,25 @@ use Illuminate\Support\Facades\Storage;
 class TrainingModuleController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
         $company_id = auth()->user()->company_id;
 
-        $trainings = TrainingModule::where(function ($query) use ($company_id) {
-            $query->where('company_id', $company_id)
-                ->orWhere('company_id', 'default');
-        })->get();
+        if ($request->has('type')) {
+            $selectedType = $request->input('type');
+            $trainings = TrainingModule::where('training_type', $selectedType)
+                ->where(function ($query) use ($company_id) {
+                    $query->where('company_id', $company_id)
+                        ->orWhere('company_id', 'default');
+                })->get();
+        }else{
+            $trainings = TrainingModule::where(function ($query) use ($company_id) {
+                $query->where('company_id', $company_id)
+                    ->orWhere('company_id', 'default');
+            })->get();
+        }
+
+       
 
         // Separate the trainings based on the category
         $interTrainings = $trainings->where('category', 'international');
@@ -183,6 +194,27 @@ class TrainingModuleController extends Controller
         } else {
             return response()->json(['error' => 'Training Module not found'], 404);
         }
+    }
+
+    public function getTrainingByType($type)
+    {
+        $company_id = auth()->user()->company_id;
+
+        $trainings = TrainingModule::where('training_type', $type)
+            ->where(function ($query) use ($company_id) {
+                $query->where('company_id', $company_id)
+                    ->orWhere('company_id', 'default');
+            })->get();
+
+        $internationalTrainings = $trainings->where('category', 'international');
+        $middleEastTrainings = $trainings->where('category', 'middle_east');
+
+        $res = [
+            'international' => $internationalTrainings,
+            'middle_east' => $middleEastTrainings
+        ];
+
+        return response()->json($res);
     }
 
     public function updateTrainingModule(Request $request)
@@ -368,42 +400,42 @@ class TrainingModuleController extends Controller
     private function translateJsonData($json, $lang)
     {
         try {
-            $prompt = "Translate the following JSON data to ".langName($lang)." language. The output should only contain JSON data:\n\n" . json_encode($json);
+            $prompt = "Translate the following JSON data to " . langName($lang) . " language. The output should only contain JSON data:\n\n" . json_encode($json);
 
             $response = Http::withOptions(['verify' => false])->withHeaders([
-            'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
             ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-3.5-turbo',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'max_tokens' => 1500,
-            'temperature' => 0.7,
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 1500,
+                'temperature' => 0.7,
             ]);
 
             if ($response->failed()) {
 
 
-            return response()->json([
-                'status' => 0,
-                'msg' => $response->body(),
-            ]);
+                return response()->json([
+                    'status' => 0,
+                    'msg' => $response->body(),
+                ]);
             }
 
             $translatedJson = $response['choices'][0]['message']['content'];
 
 
             return response()->json([
-            'status' => 1,
-            'jsonData' => json_decode($translatedJson, true),
+                'status' => 1,
+                'jsonData' => json_decode($translatedJson, true),
             ]);
         } catch (\Exception $e) {
 
 
             return response()->json([
-            'status' => 0,
-            'msg' => $e->getMessage(),
+                'status' => 0,
+                'msg' => $e->getMessage(),
             ]);
         }
     }
