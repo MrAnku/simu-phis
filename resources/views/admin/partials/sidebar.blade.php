@@ -44,6 +44,14 @@
                                         </a>
                                     </li>
 
+                                    <li class="slide {{ Request::is('admin/deal-registrations') ? 'active' : '' }}">
+                                        <a href="{{ route('admin.deal.reg') }}"
+                                            class="side-menu__item {{ Request::is('admin/deal-registrations') ? 'active' : '' }}">
+                                            <i class="bx bx-edit-alt side-menu__icon"></i>
+                                            <span class="side-menu__label">Deal Registrations</span>
+                                        </a>
+                                    </li>
+
                                     <li class="slide {{ Request::is('admin/partners') ? 'active' : '' }}">
                                         <a href="{{ route('admin.partners') }}"
                                             class="side-menu__item {{ Request::is('admin/partners') ? 'active' : '' }}">

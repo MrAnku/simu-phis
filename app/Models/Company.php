@@ -21,9 +21,18 @@ class Company extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-        'full_name',
         'email',
+        'full_name',
+        'company_name',
+        'company_id',
+        'partner_id',
+        'employees',
+        'storage_region',
+        'approved',
+        'service_status',
         'password',
+        'created_at',
+        'approve_date',
         'usedemployess'
     ];
 

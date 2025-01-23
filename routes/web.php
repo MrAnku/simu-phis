@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\DealRegController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
@@ -380,6 +381,9 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     //-----------------partners route ------------------------//
 
+    Route::get('admin/deal-registrations', [DealRegController::class, 'index'])->name('admin.deal.reg');
+    Route::post('admin/deal-registrations/approve', [DealRegController::class, 'approveDeal'])->name('admin.deal.approve');
+    Route::post('admin/deal-registrations/reject', [DealRegController::class, 'rejectDeal'])->name('admin.deal.reject');
     Route::get('admin/partners', [PartnerController::class, 'index'])->name('admin.partners');
     Route::post('admin/approve-partner', [PartnerController::class, 'approvePartner'])->name('admin.approvePartner');
     Route::post('admin/hold-service', [PartnerController::class, 'holdService'])->name('admin.holdService');
