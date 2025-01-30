@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Phishing Websites - Phishing awareness training program')
+@section('title', 'Support Ticket - Phishing awareness training program')
 
 @section('main-content')
 
@@ -102,7 +102,8 @@
                                 </li>
                                 @forelse ($closedTickets as $ticket)
                                     <li class="checkforactive active"
-                                        onclick="loadClosedConversation(`{{ $ticket->cp_tkt_no }}`)" style="background: #f9e9e9;">
+                                        onclick="loadClosedConversation(`{{ $ticket->cp_tkt_no }}`)"
+                                        style="background: #f9e9e9;">
                                         <a href="javascript:void(0);">
                                             <div class="d-flex align-items-top">
 
@@ -199,28 +200,33 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('support.createTicket')}}" method="post">
+                    <form action="{{ route('support.createTicket') }}" method="post">
                         @csrf
                         <div class="row">
                             <div class="col-xl-6">
                                 <label class="form-label text-default">Name<sup class="text-danger">*</sup></label>
-                                <input type="text" class="form-control form-control-lg" name="name" placeholder="Full name" required>
+                                <input type="text" class="form-control form-control-lg" name="name"
+                                    placeholder="Full name" required>
                             </div>
                             <div class="col-xl-6">
                                 <label class="form-label text-default">Email<sup class="text-danger">*</sup></label>
-                                <input type="email" class="form-control form-control-lg" name="email" placeholder="Enter your email" required>
+                                <input type="email" class="form-control form-control-lg" name="email"
+                                    placeholder="Enter your email" required>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-xl-6">
-                                <label for="company" class="form-label text-default">Subject<sup class="text-danger">*</sup></label>
+                                <label for="company" class="form-label text-default">Subject<sup
+                                        class="text-danger">*</sup></label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control form-control-lg" name="sub" id="company" placeholder="Subject" required>
+                                    <input type="text" class="form-control form-control-lg" name="sub"
+                                        id="company" placeholder="Subject" required>
 
                                 </div>
                             </div>
                             <div class="col-xl-6">
-                                <label for="input-label" class="form-label">Priority<sup class="text-danger">*</sup></label>
+                                <label for="input-label" class="form-label">Priority<sup
+                                        class="text-danger">*</sup></label>
                                 <select class="form-control" name="priority" required>
                                     <option value="High">High</option>
                                     <option value="Medium">Medium</option>
@@ -257,81 +263,38 @@
 
     {{-- ------------------------------Toasts---------------------- --}}
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        @if (session('success'))
-            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
+    <x-toast />
 
-        @if (session('error'))
-            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                    aria-atomic="true">
-                    <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ $error }}
-                    </div>
-                </div>
-            @endforeach
-        @endif
-
-
-    </div>
-
-    {{-- ------------------------------Toasts---------------------- --}}
 
 
     @push('newcss')
-    <style>
-        .selected {
-            background-color: #f0f0f0; /* Adjust the color to your preference */
-        }
-    </style>
+        <style>
+            .selected {
+                background-color: #f0f0f0;
+                /* Adjust the color to your preference */
+            }
+        </style>
     @endpush
 
     @push('newscripts')
-    <script>
-        $(document).ready(function () {
-            $('.checkforactive').on('click', function () {
-                // Remove 'selected' class from all chat items
-                $('.checkforactive').removeClass('selected');
-    
-                // Add 'selected' class to the clicked chat item
-                $(this).addClass('selected');
-            });
-        });
-    </script>
+        <script>
+            $(document).ready(function() {
+                $('.checkforactive').on('click', function() {
+                    // Remove 'selected' class from all chat items
+                    $('.checkforactive').removeClass('selected');
 
-    <script>
-        function createChatHtml(res) {
-            var chatHtml = '';
-            res.forEach((obj) => {
-                if (obj.person == 'partner') {
-                    chatHtml += `<li class="chat-item-start">
+                    // Add 'selected' class to the clicked chat item
+                    $(this).addClass('selected');
+                });
+            });
+        </script>
+
+        <script>
+            function createChatHtml(res) {
+                var chatHtml = '';
+                res.forEach((obj) => {
+                    if (obj.person == 'partner') {
+                        chatHtml += `<li class="chat-item-start">
                                                         <div class="chat-list-inner">
                                                             
                                                             <div class="ms-3">
@@ -346,10 +309,10 @@
                                                             </div>
                                                         </div>
                                                     </li>`;
-                }
+                    }
 
-                if (obj.person == 'company') {
-                    chatHtml += `<li class="chat-item-end">
+                    if (obj.person == 'company') {
+                        chatHtml += `<li class="chat-item-end">
                                                         <div class="chat-list-inner">
                                                             <div class="me-3">
                                                                 <span class="chatting-user-info">
@@ -364,76 +327,84 @@
 
                                                         </div>
                                                     </li>`;
-                }
+                    }
 
 
-            })
+                })
 
-            $("#tkt_conv").html(chatHtml);
-        }
+                $("#tkt_conv").html(chatHtml);
+            }
 
-        function loadConversation(id) {
-            $("#replyInput").show();
-            $("#support_img").hide();
-            
-            $.post({
-                url: '/support/load-conversations',
-                data: {
-                    loadConv: '1',
-                    tkt_id: id
-                },
-                success: function(res) {
-                    // var jsonRes = JSON.parse(res);
-                    // console.log(res)
-                    createChatHtml(res);
-                    $("#replyBtn").attr('onclick', `submitReply('${res[0].tkt_id}')`);
-                    // window.location.href = window.location.href;
-                }
-            })
-            // console.log(id)
-        }
+            function loadConversation(id) {
+                $("#replyInput").show();
+                $("#support_img").hide();
 
-        function loadClosedConversation(id) {
-            $("#replyInput").hide();
-            $("#support_img").hide();
-            $.post({
-                url: '/support/load-conversations',
-                data: {
-                    loadConv: '1',
-                    tkt_id: id
-                },
-                success: function(res) {
-                    // var jsonRes = JSON.parse(res);
-                    // console.log(jsonRes)
-                    createChatHtml(res);
-                    // window.location.href = window.location.href;
-                }
-            })
-            console.log(id)
-        }
+                $.post({
+                    url: '/support/load-conversations',
+                    data: {
+                        loadConv: '1',
+                        tkt_id: id
+                    },
+                    success: function(res) {
+                        // var jsonRes = JSON.parse(res);
+                        // console.log(res)
+                        createChatHtml(res);
+                        $("#replyBtn").attr('onclick', `submitReply('${res[0].tkt_id}')`);
+                        // window.location.href = window.location.href;
+                    }
+                })
+                // console.log(id)
+            }
 
-        function submitReply(tkt_id){
+            function loadClosedConversation(id) {
+                $("#replyInput").hide();
+                $("#support_img").hide();
+                $.post({
+                    url: '/support/load-conversations',
+                    data: {
+                        loadConv: '1',
+                        tkt_id: id
+                    },
+                    success: function(res) {
+                        // var jsonRes = JSON.parse(res);
+                        // console.log(jsonRes)
+                        createChatHtml(res);
+                        // window.location.href = window.location.href;
+                    }
+                })
+                console.log(id)
+            }
 
-            var msg = $("#replyInput input").val();
-            $.post({
-                url: '/support/submit-reply',
-                data: {
-                    submitReply: '1',
-                    tkt_id: tkt_id,
-                    msg: msg
-                },
-                success: function(res) {
-                    // var jsonRes = JSON.parse(res);
-                    // console.log(jsonRes)
-                    $("#replyInput input").val('');
-                    loadConversation(tkt_id);
-                    // window.location.href = window.location.href;
-                }
-            })
+            function submitReply(tkt_id) {
+
+                var msg = $("#replyInput input").val();
+                $.post({
+                    url: '/support/submit-reply',
+                    data: {
+                        submitReply: '1',
+                        tkt_id: tkt_id,
+                        msg: msg
+                    },
+                    success: function(res) {
+                        if(res.status == 0){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: res.msg,
+                            })
+                            return;
+                        }
+                        // var jsonRes = JSON.parse(res);
+                        // console.log(jsonRes)
+                        $("#replyInput input").val('');
+                        loadConversation(tkt_id);
+                        // window.location.href = window.location.href;
+                    }
+                })
 
 
-        }
-    </script>
+            }
+        </script>
     @endpush
 
 @endsection

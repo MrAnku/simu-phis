@@ -59,9 +59,9 @@
 
     <div id="aiTempContainer" style="display: none;">
         <div>
-            <p class="text-muted">Please add the shortcodes <code>@{{ user_name }}</code>(optional),
-                <code>@{{ website_url }}</code> i.e. href="@{{ website_url }}" and
-                <code>@{{ tracker_img }}</code> anywhere
+            <p class="text-muted">Please add the shortcodes <code>@{{user_name}}</code>(optional),
+                <code>@{{website_url}}</code> i.e. href="@{{website_url}}" and
+                <code>@{{tracker_img}}</code> anywhere
             </p>
         </div>
         <div>
