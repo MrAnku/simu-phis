@@ -120,6 +120,22 @@ class TprmController extends Controller
    
     public function submitdomains(Request $request)
     {
+        //xss check start
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (is_array($value)) {
+                array_walk_recursive($value, function ($item) {
+                    if (preg_match('/<[^>]*>|<\?php/', $item)) {
+                        return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                    }
+                });
+            } else {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                }
+            }
+        }
+        //xss check end
 
 
         // Retrieve domains from the request, assuming JSON format
@@ -369,6 +385,21 @@ class TprmController extends Controller
 
     public function createCampaign(Request $request)
     {
+
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
         
         $campaignType = $request->input('campaign_type');
         $campName = $request->input('camp_name');
@@ -393,7 +424,7 @@ class TprmController extends Controller
             ->first();
 
         if ($phishingEmail) {
-            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template'], 400);
+            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template']);
         }
 
         $campId = generateRandom(); // Assuming you have a method to generate a random ID
@@ -407,7 +438,7 @@ class TprmController extends Controller
             $users = TprmUsers::where('group_id', $usersGroup)->get();
 
             if ($users->isEmpty()) {
-                return response()->json(['status' => 0, 'msg' => 'No employees available in this group'], 400);
+                return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
             }
 
             foreach ($users as $user) {
@@ -461,72 +492,7 @@ class TprmController extends Controller
             return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
         }
 
-        if ($launchType == 'scheduled') {
-
-            $schedule_date = $request->input('schBetRange');
-            $startTime = $request->input('schTimeStart');
-            $endTime = $request->input('schTimeEnd');
-            $timeZone = $request->input('schTimeZone', 'Asia/Kolkata');
-
-            $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime, $timeZone);
-
-            TprmCampaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'users_group' => $usersGroup,
-                'training_module' => $trainingMod,
-                'training_lang' => $trainingLang,
-                'phishing_material' => $phishMaterial,
-                'email_lang' => $emailLang,
-                'launch_time' => $launchTime,
-                'launch_type' => $launchType,
-                'email_freq' => $frequency,
-                'startTime' => $startTime,
-                'endTime' => $endTime,
-                'timeZone' => $timeZone,
-                'expire_after' => $expAfter,
-                'status' => 'pending',
-                'company_id' => $companyId,
-            ]);
-
-            TprmCampaignReport::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'status' => 'pending',
-                'email_lang' => $emailLang,
-                'training_lang' => $trainingLang,
-                'scheduled_date' => $launchTime,
-                'company_id' => $companyId,
-            ]);
-
-            return response()->json(['status' => 1, 'msg' => 'Campaign created scheduled!']);
-        }
-
-        if ($launchType == 'schLater') {
-
-            $launchTime = Carbon::createFromFormat("m/d/Y H:i", $launchTime)->format("m/d/Y g:i A");
-
-            TprmCampaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => $campaignType,
-                'users_group' => $usersGroup,
-                'training_module' => $trainingMod,
-                'training_lang' => $trainingLang,
-                'phishing_material' => $phishMaterial,
-                'email_lang' => $emailLang,
-                'launch_time' => $launchTime,
-                'launch_type' => $launchType,
-                'status' => 'Not Scheduled',
-                'company_id' => $companyId,
-            ]);
-
-            return response()->json(['status' => 1, 'msg' => 'Campaign scheduled successfully!']);
-        }
-
-        return response()->json(['status' => 0, 'msg' => 'Invalid launch type.'], 400);
+        
     }
 
 

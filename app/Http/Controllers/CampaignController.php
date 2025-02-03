@@ -72,17 +72,18 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
 
-    public function showMoreTrainings(Request $request){
+    public function showMoreTrainings(Request $request)
+    {
 
         $page = $request->input('page', 1);
         $companyId = Auth::user()->company_id;
 
-        if($request->category == 'all'){
+        if ($request->category == 'all') {
             $trainings = TrainingModule::where('company_id', $companyId)
-            ->orWhere('company_id', 'default')
-            ->skip(($page - 1) * 10)
-            ->take(10)
-            ->get();
+                ->orWhere('company_id', 'default')
+                ->skip(($page - 1) * 10)
+                ->take(10)
+                ->get();
 
             return response()->json(['status' => 1, 'data' => $trainings]);
         }
@@ -112,23 +113,24 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'data' => $phishingEmails]);
     }
 
-    public function fetchTrainingByCategory(Request $request){
+    public function fetchTrainingByCategory(Request $request)
+    {
         $companyId = Auth::user()->company_id;
 
-        if($request->category == 'all'){
+        if ($request->category == 'all') {
             $trainings = TrainingModule::where('company_id', $companyId)
-            ->orWhere('company_id', 'default')
-            ->where('training_type', $request->type)
-            ->limit(10)
-            ->get();
+                ->orWhere('company_id', 'default')
+                ->where('training_type', $request->type)
+                ->limit(10)
+                ->get();
 
             return response()->json(['status' => 1, 'data' => $trainings]);
         }
 
         $trainings = TrainingModule::where(function ($query) use ($companyId) {
-                $query->where('company_id', $companyId)
-                      ->orWhere('company_id', 'default');
-            })
+            $query->where('company_id', $companyId)
+                ->orWhere('company_id', 'default');
+        })
             ->where('category', $request->category)
             ->where('training_type', $request->type)
             ->limit(10)
@@ -137,7 +139,8 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'data' => $trainings]);
     }
 
-    public function searchTrainingModule(Request $request){
+    public function searchTrainingModule(Request $request)
+    {
         $searchTerm = $request->input('search');
         $companyId = Auth::user()->company_id;
 
@@ -151,12 +154,30 @@ class CampaignController extends Controller
         return response()->json(['status' => 1, 'data' => $trainings]);
     }
 
-    
+
 
 
     public function createCampaign(Request $request)
     {
         try {
+
+            //xss check start
+            $input = $request->all();
+            foreach ($input as $key => $value) {
+                if (is_array($value)) {
+                    array_walk_recursive($value, function ($item) {
+                        if (preg_match('/<[^>]*>|<\?php/', $item)) {
+                            return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                        }
+                    });
+                } else {
+                    if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                        return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                    }
+                }
+            }
+            //xss check end
+
             // Validate request input
             $validated = $request->all();
 

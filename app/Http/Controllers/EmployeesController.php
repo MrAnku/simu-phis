@@ -39,6 +39,16 @@ class EmployeesController extends Controller
 
     public function sendDomainVerifyOtp(Request $request)
     {
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
 
         $verifyEmail = $request->verificationEmail;
 
@@ -98,6 +108,20 @@ class EmployeesController extends Controller
 
     public function verifyOtp(Request $request)
     {
+        //xss check start
+
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
 
         $verificationCode = $request->input('emailOTP');
         $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
@@ -137,6 +161,17 @@ class EmployeesController extends Controller
 
     public function newGroup(Request $request)
     {
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
         $grpName = $request->input('usrGroupName');
         $grpId = generateRandom(6);
         $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
@@ -184,6 +219,21 @@ class EmployeesController extends Controller
 
     public function addUser(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         $grpId = $request->input('groupid');
         $usrName = $request->input('usrName');
         $usrEmail = $request->input('usrEmail');
@@ -330,6 +380,15 @@ class EmployeesController extends Controller
         $file = $request->file('usrCsv');
         $companyId = Auth::user()->company_id;
 
+        // Validate that the selected file is a CSV file
+        $validator = Validator::make($request->all(), [
+            'usrCsv' => 'required|file|mimes:csv,txt',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid file type. Please upload a CSV file.');
+        }
+
         // Path to store the uploaded file
         $path = $file->storeAs('uploads', $file->getClientOriginalName());
 
@@ -347,29 +406,21 @@ class EmployeesController extends Controller
 
                 $name = $data[0];
                 $email = $data[1];
-                $company = $data[2];
-                $job_title = $data[3];
-                $whatsapp = $data[4];
+                $company = !empty($data[2]) ? $data[2] : null;
+                $job_title = !empty($data[3]) ? $data[3] : null;
+                $whatsapp = !empty($data[4]) ? $data[4] : null;
 
                 if ($this->domainVerified($email, $companyId)) {
                     if ($this->uniqueEmail($email)) {
                         if ($this->checkLimit($companyId)) {
-                            // Users::create([
-                            //     'group_id' => $grpId,
-                            //     'user_name' => $name,
-                            //     'user_email' => $email,
-                            //     'user_company' => $company,
-                            //     'user_job_title' => $job_title,
-                            //     'company_id' => $companyId,
-                            // ]);
-
+                           
                             $user = new Users();
                             $user->group_id = $grpId;
                             $user->user_name = $name;
                             $user->user_email = $email;
-                            $user->user_company = $company;
-                            $user->user_job_title = $job_title;
-                            $user->whatsapp = $whatsapp;
+                            $user->user_company = $company ?? null;
+                            $user->user_job_title = $job_title ?? null;
+                            $user->whatsapp = is_numeric($whatsapp) ? (int)$whatsapp : null;
                             $user->company_id = $companyId;
                             $user->save();
                         }

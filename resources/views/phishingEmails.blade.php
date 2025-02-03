@@ -261,8 +261,8 @@
 
             function shortcodeValidation() {
                 const editorContent = tinymce.activeEditor.getContent();
-                const hasWebsiteUrl = editorContent.includes('@{{ website_url }}');
-                const hasTrackerImg = editorContent.includes('@{{ tracker_img }}');
+                const hasWebsiteUrl = editorContent.includes('@{{website_url}}');
+                const hasTrackerImg = editorContent.includes('@{{tracker_img}}');
 
                 return hasWebsiteUrl && hasTrackerImg;
             }

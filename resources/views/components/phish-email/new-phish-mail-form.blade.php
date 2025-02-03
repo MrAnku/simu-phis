@@ -56,8 +56,8 @@
                 class="text-danger">*</sup></label>
         <input class="form-control" type="file" name="eMailFile" accept=".html" required>
         <div class="form-text my-3">
-            Don't forget to add the shortcodes <code>@{{ user_name }}</code>,
-            <code>@{{ tracker_img }}</code> and <code>@{{ website_url }}</code> in the Email
+            Don't forget to add the shortcodes <code>@{{user_name}}</code>,
+            <code>@{{tracker_img}}</code> and <code>@{{website_url}}</code> in the Email
             Template File.
             <br>
             Tutorial Video <a href="https://youtube.com">Watch Now</a>

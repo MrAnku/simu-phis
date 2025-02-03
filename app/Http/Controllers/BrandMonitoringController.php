@@ -53,6 +53,22 @@ class BrandMonitoringController extends Controller
     // Create a new scan
     public function createScan(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['error' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         try {
             $response = Http::post(env('BRAND_MONITORING_SERVER'), $request->json()->all());
 

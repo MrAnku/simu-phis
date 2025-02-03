@@ -144,8 +144,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
-                                onclick="submitCampaign();">Request Template</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Request Template</button>
                         </div>
                     </form>
                 </div>
@@ -612,7 +611,7 @@
                     })
                 } else {
                     Swal.fire(
-                        'Something went wrong...',
+                        res.msg,
                         '',
                         'error'
                     ).then(function() {

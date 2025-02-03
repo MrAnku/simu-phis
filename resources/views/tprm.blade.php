@@ -374,8 +374,6 @@
 
                                     </fieldset>
 
-
-
                                     <fieldset>
                                         <div class="form-card">
                                             <div class="d-flex">
@@ -705,13 +703,13 @@
                                                         readonly>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6 mb-3">
+                                            {{-- <div class="col-lg-6 mb-3">
                                                 <div>
                                                     <label for="input-label" class="form-label">Campaign Type</label>
                                                     <input type="text" class="form-control" id="revCampType" disabled
                                                         readonly>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                             <div class="col-lg-4 mb-3">
                                                 <div>
                                                     <label for="input-label" class="form-label">Employee Group</label>
@@ -786,7 +784,7 @@
                                                         disabled readonly>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-4 mb-3">
+                                            {{-- <div class="col-lg-4 mb-3">
                                                 <div>
                                                     <label for="input-label" class="form-label">Email Frequency</label>
                                                     <input type="text" class="form-control" id="revEmailFreq" disabled
@@ -799,7 +797,7 @@
                                                     <input type="text" class="form-control" id="revExpAfter" disabled
                                                         readonly>
                                                 </div>
-                                            </div>
+                                            </div> --}}
 
 
                                         </div>
@@ -1857,6 +1855,27 @@
             const domainInput = document.getElementById("domainEmailInput");
             const domain = domainInput.value.trim();
 
+            const invalidTagsPattern = /<[^>]*>/;
+            const invalidPhpPattern = /^<\?php/;
+            if (invalidPhpPattern.test(domain)) {
+                Swal.fire(
+                    'Oops!',
+                    'Invalid input detected.',
+                    'error'
+                );
+                return;
+            }
+
+            if (invalidTagsPattern.test(domain)) {
+                Swal.fire(
+                    'Oops!',
+                    'Invalid input detected.',
+                    'error'
+                );
+                return;
+            }
+           
+
             if (domain && !domains.includes(domain)) {
                 domains.push(domain);
                 updateDomainList();
@@ -2778,19 +2797,19 @@
                     };
 
                     revCampName.value = formData.camp_name ?? '--';
-                    revCampType.value = $("#campaign_type option:selected").text() ?? '--';
-                    revEmpGroup.value = $("#users_group option:selected").text() ?? '--';
+                    // revCampType.value = $("#campaign_type option:selected").text() ?? '--';
+                    revEmpGroup.value = $("#users_group option:selected").text().trim() ?? '--';
                     revEmailLang.value = $("#email_lang option:selected").text() ?? '--';
                     revPhishmat.value = $("input[name='phish_material']:checked").data('phishmatname') ?? '--';
-                    revTrainingLang.value = $("#training_lang option:selected").text() ?? '--';
+                    revTrainingLang.value = $("#training_lang option:selected").text().trim() ?? '--';
                     revTrainingMod.value = $("input[name='training_module']:checked").data('trainingname') ?? '--';
                     revCampDelivery.value = $("input[name='schType']:checked").data('val') ?? '--';
                     revBtwDays.value = formData.schBetRange ?? '--';
                     revSchTimeStart.value = formData.schTimeStart ?? '--';
                     revSchTimeEnd.value = formData.schTimeEnd ?? '--';
                     revSchTimeZone.value = formData.schTimeZone ?? '--';
-                    revEmailFreq.value = $("input[name='emailFreq']:checked").data('val') ?? '--';
-                    revExpAfter.value = formData.expire_after ?? '--';
+                    // revEmailFreq.value = $("input[name='emailFreq']:checked").data('val') ?? '--';
+                    // revExpAfter.value = formData.expire_after ?? '--';
 
                     if (formData.campaign_type == 'Phishing') {
                         $("#revTrainingLang").parent().parent().hide();

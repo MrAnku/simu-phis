@@ -72,6 +72,20 @@ class WhatsappCampaignController extends Controller
 
     public function submitCampaign(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
 
         $company_id = auth()->user()->company_id;
 
@@ -224,6 +238,20 @@ class WhatsappCampaignController extends Controller
 
     public function newTemplate(StoreWhatsAppTemplateRequest $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
 
         $company_id = auth()->user()->company_id;
         $partner_id = auth()->user()->partner_id;

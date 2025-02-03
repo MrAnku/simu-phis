@@ -102,6 +102,20 @@ class AicallController extends Controller
     public function createCampaign(Request $request)
     {
 
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
         
 
         $request->validate([

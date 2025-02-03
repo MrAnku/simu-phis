@@ -68,6 +68,21 @@ class PhishingEmailsController extends Controller
 
     public function updateTemplate(Request $request)
     {
+        //xss check start
+        
+        $input = $request->only('editEtemp', 'difficulty', 'updateESenderProfile', 'updateEAssoWebsite');
+        
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
 
         $data = $request->validate([
             'editEtemp' => 'required',
@@ -137,6 +152,23 @@ class PhishingEmailsController extends Controller
 
     public function addEmailTemplate(Request $request)
     {
+        //xss check start
+        
+        $input = $request->only('eTempName', 'eSubject');
+        
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
+
         $request->validate([
             'eMailFile' => 'required|file|mimes:html',
             'eTempName' => 'required|string|max:255',
@@ -238,6 +270,22 @@ class PhishingEmailsController extends Controller
 
     public function saveAIPhishTemplate(Request $request)
     {
+        //xss check start
+        
+        $input = $request->only('template_name', 'template_subject', 'difficulty', 'template_website', 'template_sender_profile');
+        
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         try {
             $request->validate([
                 'html' => 'required|string',

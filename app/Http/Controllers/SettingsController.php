@@ -28,6 +28,21 @@ class SettingsController extends Controller
 
     public function updateProfile(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         $request->validate([
             'country' => 'required|string|max:255',
             'timeZone' => 'required|string|max:255',
@@ -57,6 +72,20 @@ class SettingsController extends Controller
 
     public function updatePassword(UpdatePasswordRequest $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
 
         $validator = Validator::make($request->all(), [
             'currentPassword' => 'required|string',
@@ -221,6 +250,21 @@ class SettingsController extends Controller
 
     public function updateLang(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         $default_phish_lang = $request->input('default_phish_lang');
         $default_train_lang = $request->input('default_train_lang');
         $default_notifi_lang = $request->input('default_notifi_lang');
@@ -247,6 +291,21 @@ class SettingsController extends Controller
 
     public function updatePhishingEdu(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+
         $redirect_url = $request->input('redirect_url');
         $redirect_type = $request->input('redirect_type');
 
@@ -270,6 +329,21 @@ class SettingsController extends Controller
 
     public function updateTrainFreq(Request $request)
     {
+        //xss check start
+        
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        //xss check end
+        
         $days = $request->input('days');
 
         $company_id = Auth::user()->company_id; // Assuming company_id is stored in session or retrieved from Auth
