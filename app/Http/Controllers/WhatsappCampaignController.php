@@ -74,7 +74,7 @@ class WhatsappCampaignController extends Controller
     {
         //xss check start
         
-        $input = $request->all();
+        $input = $request->only('camp_name');
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
                 return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
