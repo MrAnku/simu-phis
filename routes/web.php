@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Admin\DealRegController;
+use App\Http\Controllers\Admin\EncycloController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
@@ -396,6 +397,16 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');
 
     //-----------------partners route ------------------------//
+
+    //----------------encyclopedia routes----------------------//
+    Route::get('admin/encyclopedia', [EncycloController::class, 'index'])->name('admin.encyclo');
+    Route::post('admin/encyclopedia/add', [EncycloController::class, 'store'])->name('admin.add-encyclo');
+    Route::get('admin/encyclopedia/{id}', [EncycloController::class, 'getEncyclo'])->name('admin-get-encyclo');
+
+    Route::post('admin/encyclopedia/update', [EncycloController::class, 'updateEncyclo'])->name('admin.update-encyclo');
+
+    Route::post('admin/encyclopedia/delete', [EncycloController::class, 'deleteData'])->name('admin.delete-encyclo');
+    //----------------encyclopedia routes----------------------//
 
     //-------------------companies route ---------------------//
     Route::get('admin/companies', [CompanyController::class, 'index'])->name('admin.companies');

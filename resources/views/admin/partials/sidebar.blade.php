@@ -52,6 +52,14 @@
                                         </a>
                                     </li>
 
+                                    <li class="slide {{ Request::is('admin/encyclopedia') ? 'active' : '' }}">
+                                        <a href="{{ route('admin.encyclo') }}"
+                                            class="side-menu__item {{ Request::is('admin/encyclopedia') ? 'active' : '' }}">
+                                            <i class="bx bx-book side-menu__icon"></i>
+                                            <span class="side-menu__label">Encyclopedia</span>
+                                        </a>
+                                    </li>
+
                                     <li class="slide {{ Request::is('admin/partners') ? 'active' : '' }}">
                                         <a href="{{ route('admin.partners') }}"
                                             class="side-menu__item {{ Request::is('admin/partners') ? 'active' : '' }}">
