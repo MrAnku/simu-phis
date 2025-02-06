@@ -57,6 +57,12 @@
             <p>We are thrilled to have you on board. Your account has been successfully created. Below are your login details:</p>
             <p><strong>Email:</strong> {{ $deal->email }}</p>
             <p><strong>Password:</strong> {{ $password }}</p>
+            <p>For security reasons, we recommend that you change your password after your first login. You can do this by following these steps:</p>
+            <ol>
+                <li>Log in to your account using the credentials provided above.</li>
+                <li>Navigate to the "Settings" section.</li>
+                <li>Select "Change Password" and follow the instructions.</li>
+            </ol>
             <p>Please keep this information safe and do not share it with anyone.</p>
             <p>To get started, click the button below to log in to your account:</p>
             <a href="{{ url('/login') }}" class="button">Log In</a>
