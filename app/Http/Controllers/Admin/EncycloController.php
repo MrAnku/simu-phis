@@ -21,7 +21,7 @@ class EncycloController extends Controller
               'title' => 'required',
               'content' => 'nullable',
               'featured' => '',
-              'file' => 'nullable|mimes:pdf,zip|max:5125',
+              'file' => 'nullable|mimes:pdf,zip,txt|max:5125',
          ]);
     
          if ($request->hasFile('file')) {
