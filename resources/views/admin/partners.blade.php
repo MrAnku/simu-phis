@@ -247,9 +247,9 @@
                                             @if ($notices->count() > 0)
                                                 @foreach ($notices as $notice)
                                                     <tr>
-                                                        <td>{{ $notice->partner->full_name }}</td>
-                                                        <td>{{ $notice->partner->email }}</td>
-                                                        <td>{{ $notice->notice_title }}</td>
+                                                        <td>{{ $notice->partner->full_name ?? '' }}</td>
+                                                        <td>{{ $notice->partner->email ?? ''}}</td>
+                                                        <td>{{ $notice->notice_title ?? '' }}</td>
                                                         <td>
                                                             <a tabindex="0" class="btn btn-outline-primary btn-sm"
                                                                 role="button" data-bs-toggle="popover"
