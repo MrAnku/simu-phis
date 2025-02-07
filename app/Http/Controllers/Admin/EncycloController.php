@@ -11,7 +11,7 @@ class EncycloController extends Controller
 {
    public function index()
    {
-        $data = Encyclopedia::all();
+        $data = Encyclopedia::orderBy('created_at', 'desc')->get();
 
        return view('admin.encyclo', compact('data'));
    }
