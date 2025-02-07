@@ -30,7 +30,7 @@ class CampaignController extends Controller
         $allCamps = Campaign::with('usersGroup')->where('company_id', $companyId)->get();
 
         $lastCampaign = Campaign::where('company_id', $companyId)->orderBy('id', 'desc')->first();
-        $daysSinceLastDelivery = $lastCampaign ? max(0, Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time), false)) : 0;
+        $daysSinceLastDelivery = $lastCampaign ? max(0, (int)Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time), false)) : 0;
 
         $all_sent = CampaignLive::where('sent', 1)->where('company_id', $companyId)->count();
         $mail_open = CampaignLive::where('mail_open', 1)->where('company_id', $companyId)->count();
