@@ -103,7 +103,7 @@ class AicallController extends Controller
     {
 
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -116,21 +116,23 @@ class AicallController extends Controller
         $request->merge($input);
 
         //xss check end
-        
 
-        $request->validate([
-            'camp_name' => 'required|string|min:5|max:50',
-            'emp_group' => 'required|string',
-            'training_module' => 'nullable|integer',
-            'training_type' => 'string',
-            'emp_group_name' => 'required|string',
-            'ai_agent_name' => 'required|string',
-            'ai_agent' => 'required|string',
-            'ai_phone' => 'required|string'
-        ],
-    [
-        "camp_name.min" => "Campaign Name must be at least 5 Characters"
-    ]);
+
+        $request->validate(
+            [
+                'camp_name' => 'required|string|min:5|max:50',
+                'emp_group' => 'required|string',
+                'training_module' => 'nullable|integer',
+                'training_type' => 'string',
+                'emp_group_name' => 'required|string',
+                'ai_agent_name' => 'required|string',
+                'ai_agent' => 'required|string',
+                'ai_phone' => 'required|string'
+            ],
+            [
+                "camp_name.min" => "Campaign Name must be at least 5 Characters"
+            ]
+        );
 
         // return "request validated";
 
