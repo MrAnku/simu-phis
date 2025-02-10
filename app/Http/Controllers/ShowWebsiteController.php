@@ -266,7 +266,7 @@ class ShowWebsiteController extends Controller
 
         if ($checkAssignedUser) {
 
-            return $this->sendCredentials($checkAssignedUser, $user);
+            return $this->sendTrainingReminder($checkAssignedUser, $user);
         } else {
             // Check if user login already exists
             $checkLoginExist = DB::table('user_login')
@@ -277,7 +277,7 @@ class ShowWebsiteController extends Controller
 
                 return $this->assignAnotherTraining($checkLoginExist, $user);
             } else {
-                return $this->assignNewTraining($user);
+                return $this->assignFirstTraining($user);
             }
         }
     }
@@ -293,7 +293,7 @@ class ShowWebsiteController extends Controller
 
             if ($checkAssignedUser) {
 
-                $this->sendCredentials($checkAssignedUser, $user);
+                $this->sendTrainingReminder($checkAssignedUser, $user);
             } else {
                 // Check if user login already exists
                 $checkLoginExist = DB::table('user_login')
@@ -304,14 +304,14 @@ class ShowWebsiteController extends Controller
 
                     $this->assignAnotherTraining($checkLoginExist, $user, $training);
                 } else {
-                    $this->assignNewTraining($user, $training);
+                    $this->assignFirstTraining($user, $training);
                 }
             }
         }
         return response()->json(['success' => 'All trainings assigned successfully']);
     }
 
-    private function assignNewTraining($user, $training = null)
+    private function assignFirstTraining($user, $training = null)
     {
 
         $training_assigned = DB::table('training_assigned_users')
@@ -426,7 +426,7 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function sendCredentials($assigned_user, $user)
+    private function sendTrainingReminder($assigned_user, $user)
     {
 
         // Fetch user credentials
