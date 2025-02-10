@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\EncycloController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
+use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\PublicInfoController;
 use App\Http\Controllers\ScrumPackageController;
 
@@ -49,10 +50,18 @@ Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
 
 //---------------learning portal routes------------//
 
+Route::get('/learner/create-password/{token}', [CreatePassController::class, 'createPasswordPage'])->name('learner.create.password');
+Route::post('/learner/create-password', [CreatePassController::class, 'storePassword'])->name('learner.store.password');
+
 Route::domain('learn.simuphish.com')->group(function () {
 
     Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
     Route::post('/login', [LearnerAuthController::class, 'login'])->name('learner.login');
+    Route::get('/forgot-password', [LearnerAuthController::class, 'forgotPass'])->name('learner.forgot.pass');
+    Route::post('/forgot-password', [LearnerAuthController::class, 'forgotPassStore'])->name('learner.forgot.store');
+
+    Route::get('/create-password/{token}', [LearnerAuthController::class, 'createPassPage'])->name('learner.create.pass');
+    Route::post('/create-password/store', [LearnerAuthController::class, 'storePassword'])->name('learner.store.pass');
 
     Route::middleware('isLearnerLoggedIn')->group(function () {
 

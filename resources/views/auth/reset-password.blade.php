@@ -11,7 +11,7 @@
     <title> simUphish - Reset Password </title>
 
     <!-- Favicon -->
-    <link rel="icon" href="assets/images/simu-icon.png" type="image/x-icon">
+    <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon">
 
 
     <!-- Main Theme Js -->
@@ -43,8 +43,8 @@
             <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-6 col-sm-8 col-12">
                 <div class="my-5 d-flex justify-content-center">
                     <a href="#">
-                        <img src="{{$companyLogoDark}}" alt="logo" class="desktop-logo">
-                        <img src="{{$companyLogoLight}}" alt="logo" class="desktop-dark">
+                        <img src="/{{$companyLogoDark}}" alt="logo" class="desktop-logo">
+                        <img src="/{{$companyLogoLight}}" alt="logo" class="desktop-dark">
                     </a>
                 </div>
                 <div class="card custom-card">

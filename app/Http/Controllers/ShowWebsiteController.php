@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\TrainingAssignedEmail;
+use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
-use App\Models\CampaignReport;
-use App\Models\Company;
-use App\Models\PhishingWebsite;
 use Illuminate\Http\Request;
+use App\Models\CampaignReport;
+use App\Models\PhishingWebsite;
+use \App\Models\TprmCampaignLive;
+use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
+use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
-use \App\Models\TprmCampaignLive;
+use App\Mail\AssignTrainingWithPassResetLink;
 
 class ShowWebsiteController extends Controller
 {
@@ -311,11 +313,8 @@ class ShowWebsiteController extends Controller
 
     private function assignNewTraining($user, $training = null)
     {
-        // Insert into training_assigned_users and user_login tables
-        $current_date = now()->toDateString();
-        $date_after_14_days = now()->addDays((int)$user->days_until_due)->toDateString();
 
-        $res2 = DB::table('training_assigned_users')
+        $training_assigned = DB::table('training_assigned_users')
             ->insert([
                 'campaign_id' => $user->campaign_id,
                 'user_id' => $user->user_id,
@@ -324,52 +323,52 @@ class ShowWebsiteController extends Controller
                 'training' => $training ?? $user->training_module,
                 'training_lang' => $user->training_lang,
                 'training_type' => $user->training_type,
-                'assigned_date' => $current_date,
-                'training_due_date' => $date_after_14_days,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays((int)$user->days_until_due)->toDateString(),
                 'company_id' => $user->company_id
             ]);
 
-        $res3 = DB::table('user_login')
-            ->insert([
-                'user_id' => $user->user_id,
-                'login_username' => $user->user_email,
-                'login_password' => $this->generateRandom()
-            ]);
-
-        if ($res2 && $res3) {
-            // echo "user created successfully";
-
-            $learnSiteAndLogo = $this->checkWhitelabeled($user->company_id);
-
-            $mailData = [
-                'user_name' => $user->user_name,
-                'training_name' => $this->trainingName($training ?? $user->training_module),
-                'login_email' => $user->user_email,
-                'login_pass' => $this->generateRandom(),
-                'company_name' => $learnSiteAndLogo['company_name'],
-                'company_email' => $learnSiteAndLogo['company_email'],
-                'learning_site' => $learnSiteAndLogo['learn_domain'],
-                'logo' => $learnSiteAndLogo['logo']
-            ];
-
-            log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$user->user_email}.", 'employee', 'employee');
-
-            Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData));
-
-
-            // Update campaign_live table
-            $user->training_assigned = 1;
-            $user->save();
-
-            // Update campaign_reports table
-            $updateReport = CampaignReport::where('campaign_id', $user->campaign_id)
-                ->increment('training_assigned');
-
-
-            return response()->json(['success' => 'New training assigned successfully']);
-        } else {
-            return response()->json(['error' => 'Failed to create user']);
+        if (!$training_assigned) {
+            return response()->json(['error' => 'Failed to assign training']);
         }
+
+        $learnSiteAndLogo = $this->checkWhitelabeled($user->company_id);
+        $token = encrypt($user->user_email);
+
+        $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
+        $mailData = [
+            'user_name' => $user->user_name,
+            'training_name' => $this->trainingName($training ?? $user->training_module),
+            'password_create_link' => $passwordGenLink,
+            'company_name' => $learnSiteAndLogo['company_name'],
+            'company_email' => $learnSiteAndLogo['company_email'],
+            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'logo' => $learnSiteAndLogo['logo']
+        ];
+        log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$user->user_email}.", 'employee', 'employee');
+
+        Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData));
+
+        NewLearnerPassword::create([
+            'email' => $user->user_email,
+            'token' => $token
+          ]);
+
+
+        // Update campaign_live table
+        $user->training_assigned = 1;
+        $user->save();
+
+        // Update campaign_reports table
+        $updateReport = CampaignReport::where('campaign_id', $user->campaign_id)
+            ->increment('training_assigned');
+
+
+        return response()->json(['success' => 'New training assigned successfully']);
+
+        
+
+       
     }
 
     private function assignAnotherTraining($checkLoginExist, $user, $training = null)

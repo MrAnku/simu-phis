@@ -54,7 +54,9 @@
             <div class="mb-2">
               <label class="form-label">
                 Password
-
+                <span class="form-label-description">
+                  <a href="{{route('learner.forgot.pass')}}">I forgot password</a>
+                </span>
               </label>
               <div class="input-group input-group-flat">
                 <input type="password" class="form-control" name="password" placeholder="Your password" autocomplete="off">

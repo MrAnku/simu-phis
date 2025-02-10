@@ -56,11 +56,10 @@
         <div class="content">
             <h1>Hi {{$mailData['user_name']}}, You were in attack</h1>
             <p>Training <strong>{{$mailData['training_name']}}</strong> is assigned to you. Kindly login to our Learning Portal to complete your training.</p>
-            {{-- <p><strong>Username:</strong> <a href="mailto:{{$mailData['login_email']}}">{{$mailData['login_email']}}</a></p>
-            <p><strong>Password:</strong> {{$mailData['login_pass']}}</p> --}}
+            <p>To create your password, please click the link below:</p>
         </div>
         <div class="footer">
-            <a href="{{$mailData['learning_site']}}" class="button">Start Training Now</a>
+            <a href="{{$mailData['password_create_link']}}" class="button">Start Training Now</a>
         </div>
     </div>
 </body>
