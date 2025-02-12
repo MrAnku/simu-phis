@@ -29,4 +29,16 @@ class CampaignLive extends Model
         'training_assigned',
         'company_id'
     ];
+
+    public function camp(){
+        return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function trainingAssigned(){
+        return $this->hasOne(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function training(){
+        return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
+    }
 }

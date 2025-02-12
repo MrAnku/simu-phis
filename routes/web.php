@@ -40,7 +40,7 @@ use App\Http\Controllers\AiTrainingController;
 use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\PublicInfoController;
 use App\Http\Controllers\ScrumPackageController;
-
+use App\Http\Controllers\SingleEmpController;
 use App\Http\Middleware\CorsMiddleware;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
@@ -197,6 +197,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //employees route-------------------------------------------------------------
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
+    Route::get('/employee/{base_encode_id}', [SingleEmpController::class, 'employeeDetail'])->name('employee.detail');
+
     Route::post('/employees/send-domain-verify-otp', [EmployeesController::class, 'sendDomainVerifyOtp'])->name('sendDomainVerificationOtp');
 
     Route::post('/employees/otp-verify', [EmployeesController::class, 'verifyOtp'])->name('domain.otpverify');

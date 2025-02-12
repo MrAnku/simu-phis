@@ -24,16 +24,16 @@ class CheckWhiteLabelDomain
             ->first();
 
         if ($companyBranding) {
-            $companyLogoDark = "storage/uploads/whitelabeled/" . $companyBranding->dark_logo;
-            $companyLogoLight = "storage/uploads/whitelabeled/" . $companyBranding->light_logo;
-            $companyFavicon = "storage/uploads/whitelabeled/" . $companyBranding->favicon;
+            $companyLogoDark = "/storage/uploads/whitelabeled/" . $companyBranding->dark_logo;
+            $companyLogoLight = "/storage/uploads/whitelabeled/" . $companyBranding->light_logo;
+            $companyFavicon = "/storage/uploads/whitelabeled/" . $companyBranding->favicon;
             $companyName = $companyBranding->company_name;
             $companyDomain = "https://" . $companyBranding->domain . "/";
             $companyLearnDomain = "https://" . $companyBranding->learn_domain . "/";
         } else {
-            $companyLogoLight = "assets/images/simu-logo.png";
-            $companyLogoDark = "assets/images/simu-logo-dark.png";
-            $companyFavicon = "assets/images/simu-icon.png";
+            $companyLogoLight = "/assets/images/simu-logo.png";
+            $companyLogoDark = "/assets/images/simu-logo-dark.png";
+            $companyFavicon = "/assets/images/simu-icon.png";
             $companyName = 'simUphish';
             $companyDomain = env('SIMUPHISH_URL');
             $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');

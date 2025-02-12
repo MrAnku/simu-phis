@@ -2,7 +2,7 @@
 
     <!-- Start::main-sidebar-header -->
     <div class="main-sidebar-header">
-        <a href="./" class="header-logo">
+        <a href="{{route('dashboard')}}" class="header-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="desktop-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="toggle-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="desktop-dark">

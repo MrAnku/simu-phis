@@ -199,7 +199,7 @@
     @endpush
 
     @push('newscripts')
-        <script src="assets/js/employees.js"></script>
+        <script src="/js/employees.js"></script>
 
         <!-- Datatables Cdn -->
         <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
