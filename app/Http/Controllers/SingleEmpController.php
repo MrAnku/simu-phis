@@ -18,6 +18,8 @@ class SingleEmpController extends Controller
             return redirect()->back()->with('error', 'Employee not found');
         }
 
+        // return $employee->campaigns?->sum('payload_clicked');
+
         return view('employee-detail', compact('employee'));
         
     }

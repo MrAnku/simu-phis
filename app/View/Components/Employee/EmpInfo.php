@@ -9,12 +9,18 @@ use Illuminate\View\Component;
 class EmpInfo extends Component
 {
     public $employee;
+    public $linkClicks;
+    public $totalCampaigns;
+    public $totalTrainings;
     /**
      * Create a new component instance.
      */
-    public function __construct($employee)
+    public function __construct($employee, $linkClicks = null, $totalCampaigns = null, $totalTrainings = null)
     {
         $this->employee = $employee;
+        $this->linkClicks = $linkClicks;
+        $this->totalCampaigns = $totalCampaigns;
+        $this->totalTrainings = $totalTrainings;
     }
 
     /**

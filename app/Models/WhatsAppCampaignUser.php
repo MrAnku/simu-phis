@@ -36,4 +36,12 @@ class WhatsAppCampaignUser extends Model
     // Optionally, if you don’t want to use `created_at` and `updated_at` timestamps,
     // you can disable them by setting the `$timestamps` property to false.
     public $timestamps = false;
+
+    public function trainingAsssigned(){
+        return $this->hasOne(TrainingAssignedUser::class, 'campaign_id', 'camp_id');
+    }
+
+    public function trainingData(){
+        return $this->belongsTo(TrainingModule::class, 'training', 'id');
+    }
 }

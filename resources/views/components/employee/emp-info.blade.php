@@ -90,11 +90,11 @@
                             <div class="flex-fill">
                                 <div class="d-flex mb-1 align-items-top justify-content-between">
                                     <h5 class="fw-semibold mb-0 lh-1">
-                                        {{ $employee->campaigns->sum('payload_clicked') }}
+                                        {{ $linkClicks }}
                                     </h5>
 
                                 </div>
-                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">AVERAGE CLICKS</p>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">LINK CLICKS</p>
                             </div>
                         </div>
                     </div>
@@ -113,7 +113,7 @@
                             <div class="flex-fill">
                                 <div class="d-flex mb-1 align-items-top justify-content-between">
                                     <h5 class="fw-semibold mb-0 lh-1">
-                                        {{ $employee->campaigns->count() }}
+                                        {{ $totalCampaigns }}
                                     </h5>
 
                                 </div>
@@ -135,7 +135,7 @@
                             <div class="flex-fill">
                                 <div class="d-flex mb-1 align-items-top justify-content-between">
                                     <h5 class="fw-semibold mb-0 lh-1">
-                                        {{ $employee->assignedTrainings->count() }}
+                                        {{ $totalTrainings }}
                                     </h5>
 
                                 </div>

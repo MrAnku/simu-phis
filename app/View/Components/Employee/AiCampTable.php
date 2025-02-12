@@ -6,15 +6,14 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class EmpSecurityScore extends Component
+class AiCampTable extends Component
 {
-    public $cid;
     /**
      * Create a new component instance.
      */
-    public function __construct($cid)
+    public function __construct()
     {
-        $this->cid = $cid;
+        //
     }
 
     /**
@@ -22,6 +21,6 @@ class EmpSecurityScore extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.employee.emp-security-score');
+        return view('components.employee.ai-camp-table');
     }
 }
