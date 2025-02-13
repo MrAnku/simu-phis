@@ -18,46 +18,90 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AssignTrainingWithPassResetLink;
 use App\Http\Requests\StoreWhatsAppTemplateRequest;
+use App\Models\CompanyWhatsappConfig;
 
 class WhatsappCampaignController extends Controller
 {
     public function index()
     {
-        try {
-            $company_id = auth()->user()->company_id;
-            $tokenAndUrl = $this->getTokenAndUrl($company_id);
-            if ($tokenAndUrl !== null) {
-                $all_users = UsersGroup::where('company_id', $company_id)->get();
-                $templates = $this->getTemplates()['templates'];
-                $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
-                $trainings = TrainingModule::where('company_id', $company_id)
-                    ->orWhere('company_id', 'default')->get();
-                return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
-            } else {
-                return view('whatsapp-unavailable');
-            }
-        } catch (\Exception $err) {
-            //throw $th;
-            return redirect()->back()->with('error', 'Something went wrong!');
+        $company_id = auth()->user()->company_id;
+        $config = CompanyWhatsappConfig::where('company_id', $company_id)->first();
+        if (!$config) {
+            return view('whatsapp-unavailable');
         }
+        $all_users = UsersGroup::where('company_id', $company_id)->get();
+        $templatesResponse = $this->getTemplates();
+        $templates = isset($templatesResponse['data']) ? $templatesResponse['data'] : [];
+        $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
+        $trainings = TrainingModule::where('company_id', $company_id)
+            ->orWhere('company_id', 'default')->get();
+        return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
+
+        // try {
+        //     $company_id = auth()->user()->company_id;
+        //     $tokenAndUrl = $this->getTokenAndUrl($company_id);
+        //     if ($tokenAndUrl !== null) {
+        //         $all_users = UsersGroup::where('company_id', $company_id)->get();
+        //         $templates = $this->getTemplates()['templates'];
+        //         $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
+        //         $trainings = TrainingModule::where('company_id', $company_id)
+        //             ->orWhere('company_id', 'default')->get();
+        //         return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
+        //     } else {
+        //         return view('whatsapp-unavailable');
+        //     }
+        // } catch (\Exception $err) {
+        //     //throw $th;
+        //     return redirect()->back()->with('error', 'Something went wrong!');
+        // }
+    }
+
+    public function saveConfig(Request $request){
+        $validated = $request->validate([
+            'from_phone_id' => 'required|numeric',
+            'access_token' => 'required',
+            'business_id' => 'required|numeric',
+        ]);
+
+        $company_id = auth()->user()->company_id;
+        $validated['company_id'] = $company_id;
+
+        CompanyWhatsappConfig::create($validated);
+
+        return redirect()->back()->with('success', 'Configuration saved successfully!');
+
     }
 
     public function getTemplates()
     {
         $company_id = auth()->user()->company_id;
 
-        $tokenAndUrl = $this->getTokenAndUrl($company_id);
-        if ($tokenAndUrl !== null) {
-            $response = Http::withOptions(['verify' => false])->get(env("WHATSAPP_API_URL") . '/getTemplates', [
-                'token' => $tokenAndUrl->token
-            ]);
+        $config = CompanyWhatsappConfig::where('company_id', $company_id)->first();
 
-            if ($response->successful()) {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $config->access_token
+            ])->get('https://graph.facebook.com/v22.0/'.$config->business_id.'/message_templates');
+
+            if($response->successful()){
                 return $response->json();
             }
-
-            return null;
+        } catch (\Throwable $th) {
+            //throw $th;
         }
+
+        // $tokenAndUrl = $this->getTokenAndUrl($company_id);
+        // if ($tokenAndUrl !== null) {
+        //     $response = Http::withOptions(['verify' => false])->get(env("WHATSAPP_API_URL") . '/getTemplates', [
+        //         'token' => $tokenAndUrl->token
+        //     ]);
+
+        //     if ($response->successful()) {
+        //         return $response->json();
+        //     }
+
+        //     return null;
+        // }
     }
 
     private function getTokenAndUrl($company_id)
@@ -379,7 +423,6 @@ class WhatsappCampaignController extends Controller
             ->update(['training_assigned' => 1]);
 
         return response()->json(['success' => 'First assigned successfully']);
-
     }
 
     private function assignAnotherTraining($campaign_user, $training, $user_have_login)
@@ -426,7 +469,7 @@ class WhatsappCampaignController extends Controller
                 ->where('id', $campaign_user->id)
                 ->update(['training_assigned' => 1]);
 
-                return response()->json(['success' => 'Another training has assigned successfully']);
+            return response()->json(['success' => 'Another training has assigned successfully']);
         } else {
 
             log_action("WhatsApp simulation | Failed to assign training", 'employee', 'employee');

@@ -68,4 +68,8 @@ class Company extends Authenticatable
         return $this->belongsTo(Partner::class, 'partner_id', 'partner_id');
     }
 
+    public function whatsappConfig(){
+        return $this->hasOne(CompanyWhatsappConfig::class, 'company_id', 'company_id');
+    }
+
 }

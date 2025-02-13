@@ -175,10 +175,14 @@
                             id="whatsapp_template" required>
                             <option value="">Choose Template</option>
                             @forelse ($templates as $template)
-                                <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
-                                    data-lang="{{ $template['language'] }}" data-msg="{{ $template['components'] }}">
+                                <option 
+                                value="{{ $template['name'] }}" 
+                                data-cat="{{ $template['category'] }}"
+                                data-lang="{{ $template['language'] }}" 
+                                data-msg="{{ json_encode($template['components']) }}">
                                     {{ $template['name'] }} -
-                                    {{ $template['status'] }}</option>
+                                    {{ $template['status'] }}
+                                </option>
                             @empty
                                 <option value="">No templates available</option>
                             @endforelse
@@ -472,7 +476,7 @@
                 var headerFound = false;
                 var footerFound = false;
                 var regex = /\{\{\d+\}\}/g;
-                console.log(msg)
+                // console.log(msg)
                 msg.forEach(e => {
                     if (e.type === 'HEADER' && e.format === 'TEXT') {
                         $("#msg-header").text(e.text);
@@ -587,10 +591,10 @@
                     phone: "0",
                     template_name: $("#whatsapp_template").val(),
                     template_language: $("#template_lang").val(),
-                    components: componentsArray
+                    components: valuesArray
                 }
 
-                console.log(finalBody);
+                // console.log(finalBody);
                 $.post({
                     url: '/whatsapp-submit-campaign',
                     data: finalBody,
@@ -693,7 +697,7 @@
                 $.get({
                     url: '/whatsapp-templates',
                     success: function(res) {
-
+                    //   console.log(res.data);
                         var row = '';
                         var header = '';
                         var body = '';
@@ -701,11 +705,11 @@
                         var components = '';
 
                         if (res) {
-                            res.templates.forEach((e) => {
+                            res.data.forEach((e) => {
                                 var headerfound = false;
                                 var footerfound = false;
-                                components = JSON.parse(e.components);
-                                components.forEach((e2) => {
+                                // components = JSON.parse(e.components);
+                                e.components.forEach((e2) => {
                                     if (e2.type === 'HEADER' && e2.format === 'TEXT') {
                                         header = e2.text
                                         headerfound = true;
@@ -744,7 +748,7 @@
                         }
 
 
-                        console.log(res);
+                        // console.log(res);
                     }
                 })
             }
