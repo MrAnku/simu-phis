@@ -77,7 +77,55 @@
 
     <div class="card-footer">
         <div class="row">
-            <div class="col-lg-4">
+            <div class="col-lg-4 ai_call_counts" style="display: none;">
+                <div class="card custom-card shadow">
+                    <div class="card-body">
+                        <div class="d-flex align-items-top">
+                            <div class="me-3">
+                                <span class="avatar avatar-md p-2 bg-primary">
+
+                                    <i class="ri-phone-line fs-20"></i>
+                                </span>
+                            </div>
+                            <div class="flex-fill">
+                                <div class="d-flex mb-1 align-items-top justify-content-between">
+                                    <h5 class="fw-semibold mb-0 lh-1">
+                                        {{$employee->aiCalls?->where('call_send_response', '!=', null)->count() ?? 0}}
+                                    </h5>
+
+                                </div>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">SENT CALLS</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 ai_call_counts" style="display: none;">
+                <div class="card custom-card shadow">
+                    <div class="card-body">
+                        <div class="d-flex align-items-top">
+                            <div class="me-3">
+                                <span class="avatar avatar-md p-2 bg-warning">
+
+                                    <i class="ri-phone-line fs-20"></i>
+                                </span>
+                            </div>
+                            <div class="flex-fill">
+                                <div class="d-flex mb-1 align-items-top justify-content-between">
+                                    <h5 class="fw-semibold mb-0 lh-1">
+                                        {{$employee->aiCalls?->where('call_end_response', '!=', null)->count() ?? 0}}
+                                    </h5>
+
+                                </div>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">RESPONDED CALLS</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="col-lg-4 link_clicks">
                 <div class="card custom-card shadow">
                     <div class="card-body">
                         <div class="d-flex align-items-top">

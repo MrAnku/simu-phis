@@ -8,12 +8,13 @@ use Illuminate\View\Component;
 
 class AiCampTable extends Component
 {
+    public $employee;
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct($employee)
     {
-        //
+        $this->employee = $employee;
     }
 
     /**

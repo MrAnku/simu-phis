@@ -8,7 +8,7 @@
         <div id="{{$cid}}"></div>
         <div class="row pt-4">
             <div class="col-xl-12 border-bottom pb-3 text-center d-flex justify-content-center align-items-center">
-                <span class="fw-semibold text-primary">Secured from clicking the malicious link</span>
+                <span class="fw-semibold text-primary">Secured from doing the malicious activity</span>
             </div>
             
         </div>

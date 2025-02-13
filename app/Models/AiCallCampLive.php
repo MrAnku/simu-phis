@@ -33,4 +33,16 @@ class AiCallCampLive extends Model
         'created_at',
         'company_id'
     ];
+
+    public function camp(){
+        return $this->belongsTo(AiCallCampaign::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function trainingAsssigned(){
+        return $this->belongsTo(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function trainingData(){
+        return $this->belongsTo(TrainingModule::class, 'training', 'id');
+    }
 }

@@ -38,7 +38,7 @@ class WhatsAppCampaignUser extends Model
     public $timestamps = false;
 
     public function trainingAsssigned(){
-        return $this->hasOne(TrainingAssignedUser::class, 'campaign_id', 'camp_id');
+        return $this->belongsTo(TrainingAssignedUser::class, 'campaign_id', 'camp_id');
     }
 
     public function trainingData(){
