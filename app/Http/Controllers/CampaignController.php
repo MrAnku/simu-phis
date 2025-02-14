@@ -18,6 +18,7 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
 class CampaignController extends Controller
@@ -755,14 +756,47 @@ class CampaignController extends Controller
 
         return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
     }
+public function fetchCampaignDetail(Request $request)
+{
+    // Fetch campaign details with related models
+    $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])
+        ->where('campaign_id', $request->campaignId)
+        ->first();
 
-    public function fetchCampaignDetail(Request $request)
-    {
-
-        $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $request->campaignId)->first();
-
-        return response()->json($detail);
+    // Check if campaign exists
+    if (!$detail) {
+        return response()->json(['error' => 'Campaign not found'], 404);
     }
+    // Extract campReport safely
+    $campReport = $detail->campReport ?? null;
+    // Initialize an array to store campaign details
+    $Arraydetails = [];
+    $ArrayTrainingDetails = [];
+
+    //training details
+    $ArrayTrainingDetails['training_assigned'] = $campReport->training_assigned ?? 0;
+    $ArrayTrainingDetails['training_completed'] = $campReport->training_completed ?? 0;
+  $ArrayTrainingDetails['total_training'] = is_countable($campReport) ? count($campReport) : 0;
+
+    // Assign values safely, ensuring no undefined property errors
+    $Arraydetails['emails_delivered'] = $campReport->emails_delivered ?? 0;
+
+    $Arraydetails['emails_viewed'] = $campReport->emails_viewed ?? 0;
+    $Arraydetails['email_reported'] = isset($campReport->email_reported) ? (int) $campReport->email_reported : 0;
+    $Arraydetails['emp_compromised'] = $campReport->emp_compromised ?? 0;
+
+
+
+    // Store data in session
+    Session::put('campaign_details', $Arraydetails);
+    Session::put('training_campaign_details', $ArrayTrainingDetails);
+
+Session::put('camp_id',$request->campaignId);
+    // Session::put('User_campaign_details',   $detail);
+    // Return response
+    return response()->json($detail);
+}
+
 
     public function fetchTrainingIndividual(Request $request)
     {
