@@ -16,9 +16,10 @@ use App\Models\WhatsappTempRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Models\CompanyWhatsappConfig;
+use App\Models\CompanyWhatsappTemplate;
 use App\Mail\AssignTrainingWithPassResetLink;
 use App\Http\Requests\StoreWhatsAppTemplateRequest;
-use App\Models\CompanyWhatsappConfig;
 
 class WhatsappCampaignController extends Controller
 {
@@ -30,8 +31,13 @@ class WhatsappCampaignController extends Controller
             return view('whatsapp-unavailable');
         }
         $all_users = UsersGroup::where('company_id', $company_id)->get();
-        $templatesResponse = $this->getTemplates();
-        $templates = isset($templatesResponse['data']) ? $templatesResponse['data'] : [];
+        $hasTemplates = CompanyWhatsappTemplate::where('company_id', $company_id)->first();
+        if (!$hasTemplates) {
+            $templates = [];
+        }else{
+            $templates = json_decode($hasTemplates->template, true)['data'];
+        }
+
         $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
         $trainings = TrainingModule::where('company_id', $company_id)
             ->orWhere('company_id', 'default')->get();
@@ -56,7 +62,8 @@ class WhatsappCampaignController extends Controller
         // }
     }
 
-    public function saveConfig(Request $request){
+    public function saveConfig(Request $request)
+    {
         $validated = $request->validate([
             'from_phone_id' => 'required|numeric',
             'access_token' => 'required',
@@ -69,39 +76,38 @@ class WhatsappCampaignController extends Controller
         CompanyWhatsappConfig::create($validated);
 
         return redirect()->back()->with('success', 'Configuration saved successfully!');
-
     }
 
-    public function getTemplates()
+    public function syncTemplates()
     {
         $company_id = auth()->user()->company_id;
-
         $config = CompanyWhatsappConfig::where('company_id', $company_id)->first();
 
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $config->access_token
-            ])->get('https://graph.facebook.com/v22.0/'.$config->business_id.'/message_templates');
+            ])->get('https://graph.facebook.com/v22.0/' . $config->business_id . '/message_templates');
 
-            if($response->successful()){
-                return $response->json();
+            if ($response->successful()) {
+                $responseData = $response->json();
+                if (isset($responseData['error'])) {
+                    return response()->json(['error' => $responseData['error']]);
+                }
+                CompanyWhatsappTemplate::where('company_id', $company_id)->delete();
+                CompanyWhatsappTemplate::create([
+                    'template' => json_encode($responseData),
+                    'company_id' => $company_id
+                ]);
+                return response()->json(['success' => 'Templates synced successfully']);
+            }else{
+                $responseData = $response->json();
+                if (isset($responseData['error'])) {
+                    return response()->json(['error' => $responseData['error']['message']]);
+                }
             }
         } catch (\Throwable $th) {
-            //throw $th;
+            return $response->json(['error' => 'Something went wrong']);
         }
-
-        // $tokenAndUrl = $this->getTokenAndUrl($company_id);
-        // if ($tokenAndUrl !== null) {
-        //     $response = Http::withOptions(['verify' => false])->get(env("WHATSAPP_API_URL") . '/getTemplates', [
-        //         'token' => $tokenAndUrl->token
-        //     ]);
-
-        //     if ($response->successful()) {
-        //         return $response->json();
-        //     }
-
-        //     return null;
-        // }
     }
 
     private function getTokenAndUrl($company_id)

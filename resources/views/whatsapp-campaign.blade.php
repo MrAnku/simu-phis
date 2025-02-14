@@ -14,12 +14,14 @@
                             data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-secondary mb-3" onclick="fetchTemplates()"
+                        <button type="button" class="btn btn-secondary mb-3" 
                             data-bs-toggle="modal" data-bs-target="#templatesModal">Available Templates</button>
                     </div>
                 </div>
 
                 <div>
+                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">Sync Templates</button>
+
                     <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
                         data-bs-target="#newtemplatesModal">Request New Template</button>
                 </div>
@@ -66,10 +68,10 @@
                                                 <td>{{ $campaign->user_group_name ?? 'N/A' }}</td>
                                                 <td>{{ $campaign->created_at }}</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                        onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
-                                                        Delete
+                                                    <button class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
+                                                        <i class="ri-delete-bin-line"></i>
                                                     </button>
+                                                    
 
                                                 </td>
                                             </tr>
@@ -342,12 +344,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status" id="temp_spinner">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-
+                    
 
                     <div class="table-responsive" id="temp_table">
                         <table class="table">
@@ -359,6 +356,34 @@
                                 </tr>
                             </thead>
                             <tbody id="temps">
+                                @forelse($templates as $template)
+                                <tr>
+                                    <td>{{ $template['name'] }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $template['status'] == 'APPROVED' ? 'success' : 'warning' }}-transparent">{{ $template['status'] }}</span>
+                                    </td>
+                                    <td>
+                                        @foreach ($template['components'] as $component)
+                                            @if ($component['type'] === 'HEADER' && $component['format'] === 'TEXT')
+                                                <strong>{{ $component['text'] }}</strong>
+                                                <br>
+                                                @elseif($component['type'] === 'BODY')
+                                                {{ $component['text'] }}
+                                                <br>
+                                                @elseif($component['type'] === 'FOOTER')
+                                                <strong>{{ $component['text'] }}</strong>
+                                                <br>
+
+                                            @endif
+                                            
+                                        @endforeach
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="text-center">No templates available</td>
+                                </tr>
+                                @endforelse
 
                             </tbody>
                         </table>
@@ -371,14 +396,13 @@
 
 
 
-    {{-- -------------------Modals------------------------ --}}
+    {{---------------------Modals--------------------------}}
 
 
-    {{-- ------------------------------Toasts---------------------- --}}
+    {{--------------------------------Toasts---------------------- --}}
 
    <x-toast />
 
-    {{-- ------------------------------Toasts---------------------- --}}
 
 
     @push('newcss')
@@ -691,64 +715,31 @@
                 })
             }
 
-            function fetchTemplates() {
-                $("#temp_table").hide();
-                $("#temp_spinner").show();
+           
+            function syncTemps(btn){
+                $(btn).html('Syncing...').attr('disabled', true);
                 $.get({
-                    url: '/whatsapp-templates',
+                    url: '/whatsapp-sync-templates',
                     success: function(res) {
-                    //   console.log(res.data);
-                        var row = '';
-                        var header = '';
-                        var body = '';
-                        var footer = '';
-                        var components = '';
-
-                        if (res) {
-                            res.data.forEach((e) => {
-                                var headerfound = false;
-                                var footerfound = false;
-                                // components = JSON.parse(e.components);
-                                e.components.forEach((e2) => {
-                                    if (e2.type === 'HEADER' && e2.format === 'TEXT') {
-                                        header = e2.text
-                                        headerfound = true;
-                                    }
-                                    if (e2.type === 'BODY') {
-                                        body = e2.text
-                                    }
-                                    if (e2.type === 'FOOTER') {
-                                        footer = e2.text
-                                        footerfound = true;
-                                    }
-                                })
-                                row += `
-                                <tr class="">
-                                    <td scope="row">${e.name}</td>
-                                    <td>
-                                        <span class="badge bg-${e.status == 'APPROVED' ? 'success' : 'warning'}-transparent">${e.status}</span>
-                                    </td>
-                                    <td>
-                                        <strong>${headerfound === true ? header : ''}</strong>
-                                        <br>
-                                        ${body}
-                                        <br>
-                                        <strong>${footerfound === true ? footer : ''}</strong>
-                                    </td>
-                                    
-                                </tr>
-                                `;
+                        if(res.success){
+                            Swal.fire(
+                                res.success,
+                                '',
+                                'success'
+                            ).then(function() {
+                                window.location.href = window.location.href
                             })
 
-                            $("#temps").html(row);
-
-                            $("#temp_spinner").hide();
-                            $("#temp_table").show();
-
+                        }else{
+                            console.log(res);
+                            Swal.fire(
+                                res.error,
+                                '',
+                                'error'
+                            ).then(function() {
+                                window.location.href = window.location.href
+                            })
                         }
-
-
-                        // console.log(res);
                     }
                 })
             }
