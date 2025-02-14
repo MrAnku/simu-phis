@@ -29,20 +29,19 @@ class TprmController extends Controller
     //
     public function index()
     {
-
         $companyId = Auth::user()->company_id;
-        $allCamps = TprmCampaign::where('company_id', $companyId)->get();
-
+        $allCamps = TprmCampaign::where('company_id', $companyId)->get(); 
         $lastCampaign = TprmCampaign::orderBy('id', 'desc')->first();
+// return $lastCampaign;
         if ($lastCampaign) {
             $lastDeliveryDate = Carbon::parse($lastCampaign->delivery_date);
-            $currentDate = Carbon::now();
+            $currentDate = Carbon::now();  //dobut
             if ($currentDate->diffInDays($lastDeliveryDate) < 1) {
                 $daysSinceLastDelivery = 1;
             } else {
 
                 $daysSinceLastDelivery = $currentDate->diffInDays($lastDeliveryDate);
-            }
+            } // dobut
         } else {
             // Handle the case where no campaign deliveries exist
             $daysSinceLastDelivery = 0;
@@ -79,11 +78,11 @@ class TprmController extends Controller
                 ->where('company_id', $companyId)
                 ->first();
 
-            $campaign->users_group_name = $usersGroup ? e($usersGroup->group_name) : 'N/A';
+            $campaign->users_group_name = $usersGroup ? e($usersGroup->group_name) : 'N/A'; //doubt
         }
 
         // Fetch users groups and phishing emails, and pass to view
-        $usersGroups = $this->fetchUsersGroups();
+        $usersGroups = $this->fetchUsersGroups(); //doubt
         $phishingEmails = $this->fetchPhishingEmails();
         $trainingModules = $this->fetchTrainingModules();
         $companyId = Auth::user()->company_id;

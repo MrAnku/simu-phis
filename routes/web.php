@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -514,6 +514,13 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 
 //------------------------admin route----------------------//
+
+
+
+
+
+// download route 
+Route::get('/download-pdf', [PdfController::class, 'downloadPdf'])->name('download-pdf');
 
 
 

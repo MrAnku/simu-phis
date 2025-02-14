@@ -355,6 +355,7 @@ class ReportingController extends Controller
             </tr>';
         }
 
+// return $responseHtml;
         return response()->json(['html' => $responseHtml]);
     }
 

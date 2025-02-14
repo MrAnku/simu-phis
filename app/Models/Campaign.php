@@ -43,6 +43,10 @@ class Campaign extends Model
         return $this->hasOne(CampaignReport::class, 'campaign_id', 'campaign_id');
     }
 
+
+
+
+
     public function trainingAssignedUsers(){
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
     }
