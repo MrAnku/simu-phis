@@ -188,6 +188,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //whatsapp Campaign
     Route::get('/whatsapp-campaign', [WhatsappCampaignController::class, 'index'])->name('whatsapp.campaign');
     Route::post('/whatsapp-campaign/save-config', [WhatsappCampaignController::class, 'saveConfig'])->name('whatsapp.saveconfig');
+    Route::post('/whatsapp-campaign/update-config', [WhatsappCampaignController::class, 'updateConfig'])->name('whatsapp.updateConfig');
     Route::get('/whatsapp-templates', [WhatsappCampaignController::class, 'getTemplates'])->name('whatsapp.templates');
     Route::get('/whatsapp-sync-templates', [WhatsappCampaignController::class, 'syncTemplates'])->name('whatsapp.syncTemplates');
     Route::post('/whatsapp-submit-campaign', [WhatsappCampaignController::class, 'submitCampaign'])->name('whatsapp.submitCampaign');

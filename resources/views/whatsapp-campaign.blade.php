@@ -24,6 +24,8 @@
 
                     <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
                         data-bs-target="#newtemplatesModal">Request New Template</button>
+                    <button class="btn btn-secondary-light btn-border-start ms-2 mb-3" data-bs-toggle="modal"
+                        data-bs-target="#updateConfigModal">Update Config</button>
                 </div>
 
 
@@ -388,6 +390,42 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- All templates modal -->
+    <div class="modal fade" id="updateConfigModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-modal="true"
+        role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">WhatsApp Templates</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <form action="{{route('whatsapp.updateConfig')}}" method="post">
+                        @csrf
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="from_phone_id" id="phone_id" value="{{$config->from_phone_id}}" placeholder="Phone Number ID">
+                            <label for="phone_id">From Phone Number ID</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="access_token" name="access_token" value="{{$config->access_token}}" placeholder="Access Token">
+                            <label for="access_token">Access Token</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="business_id" name="business_id" value="{{$config->business_id}}" placeholder="Business ID">
+                            <label for="business_id">Business ID</label>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn w-100 btn-primary btn-wave">Update</button>
+                        </div>
+                    </form>
+                    
                 </div>
             </div>
         </div>

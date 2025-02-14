@@ -41,25 +41,9 @@ class WhatsappCampaignController extends Controller
         $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
         $trainings = TrainingModule::where('company_id', $company_id)
             ->orWhere('company_id', 'default')->get();
-        return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
+        return view('whatsapp-campaign', compact('all_users', 'config', 'templates', 'campaigns', 'trainings'));
 
-        // try {
-        //     $company_id = auth()->user()->company_id;
-        //     $tokenAndUrl = $this->getTokenAndUrl($company_id);
-        //     if ($tokenAndUrl !== null) {
-        //         $all_users = UsersGroup::where('company_id', $company_id)->get();
-        //         $templates = $this->getTemplates()['templates'];
-        //         $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
-        //         $trainings = TrainingModule::where('company_id', $company_id)
-        //             ->orWhere('company_id', 'default')->get();
-        //         return view('whatsapp-campaign', compact('all_users', 'templates', 'campaigns', 'trainings'));
-        //     } else {
-        //         return view('whatsapp-unavailable');
-        //     }
-        // } catch (\Exception $err) {
-        //     //throw $th;
-        //     return redirect()->back()->with('error', 'Something went wrong!');
-        // }
+      
     }
 
     public function saveConfig(Request $request)
@@ -76,6 +60,25 @@ class WhatsappCampaignController extends Controller
         CompanyWhatsappConfig::create($validated);
 
         return redirect()->back()->with('success', 'Configuration saved successfully!');
+    }
+
+    public function updateConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'from_phone_id' => 'required|numeric',
+            'access_token' => 'required',
+            'business_id' => 'required|numeric',
+        ]);
+
+        $company_id = auth()->user()->company_id;
+
+        CompanyWhatsappTemplate::where('company_id', $company_id)->delete();
+
+        CompanyWhatsappConfig::where('company_id', $company_id)->update($validated);
+
+        return redirect()->back()->with('success', 'Configuration updated successfully!');
+
+
     }
 
     public function syncTemplates()
@@ -110,17 +113,6 @@ class WhatsappCampaignController extends Controller
         }
     }
 
-    private function getTokenAndUrl($company_id)
-    {
-        $company = Company::where('company_id', $company_id)->first();
-        $tokenUrl = DB::table('partner_whatsapp_api')->where('partner_id', $company->partner_id)->first();
-
-        if ($tokenUrl) {
-            return $tokenUrl;
-        } else {
-            return null;
-        }
-    }
 
     public function submitCampaign(Request $request)
     {
