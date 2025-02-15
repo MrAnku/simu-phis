@@ -708,7 +708,7 @@
                                                                             {{ $tprmemails_reported}}
                                                                         </span> 
 {{-- <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ $ai_calls_individual->where('call_end_response', '!=', null)->count() }}
+                                                                            {{ $ai  _calls_individual->where('call_end_response', '!=', null)->count() }}
                                                                         </span> --}}
 
                                                                     </div>
