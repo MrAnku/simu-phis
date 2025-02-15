@@ -37,7 +37,12 @@
                                             aria-controls="shipped-tab" aria-selected="false"><i
                                                 class="ri-robot-line me-2 align-middle"></i>AI Campaign Report</button>
                                     </li>
-
+  <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tprm-tab" data-bs-toggle="tab"
+                                            data-bs-target="#tprm-tab-pane" type="button" role="tab"
+                                            aria-controls="tprm-tab" aria-selected="false"><i
+                                                class="ri-robot-line me-2 align-middle"></i>TPRM Campaign Report</button>
+                                    </li>
 
                                 </ul>
                                 <div class="tab-content" id="myTabContent">
@@ -628,6 +633,176 @@
 
                                                                                     </div>
                                                                                 </td>
+                                                                            </tr>
+                                                                        @empty
+                                                                            <tr>
+                                                                                <td class="text-center" colspan="8">No
+                                                                                    records found</td>
+                                                                            </tr>
+                                                                        @endforelse
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+  <div class="tab-pane fade border-0 p-0" id="tprm-tab-pane" role="tabpanel"
+                                        aria-labelledby="tprm-tab-pane" tabindex="0">
+                                        <div class="p-4">
+                                            <div class="row my-3">
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-primary-transparent">
+                                                                        <i class="bx bx-shape-circle side-menu__icon"></i>
+
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">TPRM Phishing Emails Delivered</div>
+                                                                    <div class="text-muted mb-1 fs-12">
+
+                                                                        {{-- <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $ai_calls_individual->where('status', 'waiting')->count() }} </span> --}}
+
+ <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $tprmemails_delivered }} </span>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-success-transparent">
+                                                                        
+                                                                        <i class="bx bx-shape-circle side-menu__icon" ></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">
+                                                                        TPRM Email Report
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+                                                                        <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $tprmemails_reported}}
+                                                                        </span> 
+{{-- <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $ai_calls_individual->where('call_end_response', '!=', null)->count() }}
+                                                                        </span> --}}
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            
+                                            </div>
+
+                                            {{-- <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-header">
+                                                            <div class="card-title">Employees Interaction</div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="cdashed-chart"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> --}}
+
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-header">
+                                                            <div class="card-title">
+                                                                TPRM Campaign Reports
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="table-responsive">
+                                                                <table id="datatable-basic"
+                                                                    class="table table-bordered text-nowrap w-100">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Sl</th>
+                                                                            <th>Campaign Name</th>
+                                                                            <th>Status</th>
+                                                                            <th>Launch Time</th>
+                                                                            <th>Campaign Type</th>
+                                                                            <th>Email Lang</th>
+                                                                            <th>Training </th>
+                                                                            {{-- <th>Training Assigned</th> --}}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @forelse ($tprm_campaigns as $tccamps)
+                                                                            <tr>
+                                                                                <td>{{ $loop->iteration }}</td>
+                                                                                <td>
+                                                                                    <a href="#" class="text-primary"
+                                                                                        onclick="aicallingfetchCampaignDetails(`{{ $tccamps->campaign_id }}`)"
+                                                                                        data-bs-toggle="modal"
+                                                                                        data-bs-target="#AiCallingcampaignReportModal">{{ $tccamps->campaign_name }}</a>
+                                                                                </td>
+                                                                                <td>
+                                                                                    @if ($tccamps->status == 'running' || $tccamps->status == 'completed')
+                                                                                        <span
+                                                                                            class="badge bg-success">{{ ucfirst($tccamps->status) }}</span>
+                                                                                    @else
+                                                                                        <span
+                                                                                            class="badge bg-warning">{{ ucfirst($tccamps->status) }}</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td>{{ $tccamps->launch_time }}</td>
+                                                                                <td>
+                                                                                    {{ $tccamps->campaign_type }}
+                                                                                </td>
+                                                                                <td>
+
+                                                                                    {{ $tccamps->email_lang }}
+                                                                                </td>
+                                                                                <td>
+                                                                                    {{ $tccamps->tprm_report->campaign_name ?? 'Only Phishing' }}
+                                                                                    {{-- {{ $campaign->trainingName->name ?? 'Only Phishing' }} --}}
+                                                                                </td>
+                                                                                {{-- <td>
+                                                                                    <div class="checkboxesIcon">
+                                                                                        @if ($tccamps->tprm_report->where('training_assigned', '1')->count() == 0)
+                                                                                            <span>{{ $tccamps->tprm_report->where('training_assigned', '1')->count() }}</span>
+                                                                                            <i
+                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
+                                                                                        @else
+                                                                                            <span>{{ $tccamps->tprm_report->where('training_assigned', '1')->count() }}</span>
+                                                                                            <i
+                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
+                                                                                        @endif
+
+                                                                                    </div>
+                                                                                </td> --}}
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
@@ -1420,8 +1595,9 @@
 
             $.get({
                 url: '/reporting/wget-chart-data',
+// console.log("res", res)
                 success: function(res) {
-                    //console.log(res)
+                    console.log("res", res);
                     var chartData = res;
 
                     /* dashed chart */

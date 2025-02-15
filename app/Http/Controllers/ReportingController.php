@@ -29,13 +29,19 @@ class ReportingController extends Controller
         $companyId = Auth::user()->company_id;
 
         $camps = CampaignReport::where('company_id', $companyId)->get();
-        $emails_delivered = $camps->sum('emails_delivered');
-        $training_assigned = $camps->sum('training_assigned');
 
-        //whatsapp campaigns
-        $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')->where('company_id', $companyId)->get();
+        $emails_delivered = $camps->sum('emails_delivered'); 
+        $training_assigned = $camps->sum('training_assigned'); 
 
-        //ai calls
+        $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')->where('company_id', $companyId)->get(); 
+ $tprmcamps = TprmCampaignReport::where('company_id', $companyId)->get();
+// return  $tprmcamps;
+$tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $companyId)->get();
+      $tprmemails_delivered =  $tprmcamps->sum('emails_delivered');
+      $tprmemails_reported =  $tprmcamps->sum('email_reported');
+// return $tprmemails_delivered;
+// return $tprm_campaigns;
+
         $ai_calls = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
         $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
 
@@ -48,7 +54,7 @@ class ReportingController extends Controller
         $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
         $ctraining_assigned = $ccamps->sum('training_assigned');
 
-        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual'));
+        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual', 'tprm_campaigns', 'tprmemails_delivered', 'tprmemails_reported'));
     }
 
     public function getChartData()
@@ -132,6 +138,8 @@ class ReportingController extends Controller
                     $formattedData['email_reported'][$index] = (int) $item->email_reported;
                 }
             }
+
+// return $formattedData;
 
             return response()->json($formattedData);
         } catch (\Exception $e) {
