@@ -29,6 +29,8 @@
     <!-- Choices Css -->
     <link rel="stylesheet" href="{{asset('assets')}}/libs/choices.js/public/assets/styles/choices.min.css">
 
+    <script src="{{asset('assets')}}/libs/choices.js/public/assets/scripts/choices.min.js"></script>
+
 
     <link rel="stylesheet" href="{{asset('assets')}}/libs/jsvectormap/css/jsvectormap.min.css">
 

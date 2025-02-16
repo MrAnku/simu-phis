@@ -8,12 +8,13 @@ use Illuminate\View\Component;
 
 class SyncDirectory extends Component
 {
+    public bool $hasOutlookToken;
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct($hasOutlookToken)
     {
-        //
+        $this->hasOutlookToken = $hasOutlookToken;
     }
 
     /**

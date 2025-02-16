@@ -12,6 +12,7 @@ class Users extends Model
 
     protected $table = 'users';
     public $timestamps = false;
+    protected $fillable = ['group_id', 'user_name', 'user_email', 'user_company', 'user_job_title', 'whatsapp', 'company_id'];
 
     public function userGroup(): BelongsTo
     {

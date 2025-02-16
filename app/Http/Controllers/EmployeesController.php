@@ -10,6 +10,7 @@ use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\DomainVerified;
+use App\Models\OutlookAdToken;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,9 @@ class EmployeesController extends Controller
 
         $allDomains = DomainVerified::where('company_id', $companyId)->get();
 
-        return view('employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains'));
+        $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
+
+        return view('employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
 
     public function sendDomainVerifyOtp(Request $request)

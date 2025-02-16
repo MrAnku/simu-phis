@@ -129,6 +129,42 @@
                     </div> --}}
                 </div>
 
+                <div id="outlookContainer" style="display: none;">
+                    <div class="mt-3 px-4 gap-3 d-flex justify-content-center align-items-center">
+                        <select class="form-control" name="outlookGroups" id="outlookGroups" style="width: 300px;">
+                            
+                        </select>
+                        <button type="button"
+                            class="btn btn-secondary btn-sm rounded-pill btn-wave" onclick="fetchOutlookEmployees(this)">Sync Employees</button>
+                        
+                    </div>
+        
+                    <div class="mt-3" id="outlookEmps" style="display: none;">
+                        <table class="table table-bordered table-striped table-responsive">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Company</th>
+                                    <th>Job Title</th>
+                                    <th>WhatsApp</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                   
+                            </tbody>
+                        </table>
+
+                        <div class="mt-3 d-flex justify-content-center">
+                            <button type="button"
+                            class="btn btn-success btn-sm rounded-pill btn-wave" onclick="saveOutlookSyncedEmployees(this)">Save Employees</button>
+                        </div>
+                        
+        
+                    </div>
+                </div>
+
 
             </div>
         </div>

@@ -154,10 +154,10 @@
 
     <!-- verified domains modal -->
     <x-modal id="domainVerificationModal" heading="Domain Verification">
-        <x-employees.domain-verification :allDomains="$allDomains"/>
+        <x-employees.domain-verification :allDomains="$allDomains" />
     </x-modal>
 
-    
+
 
     <!-- new domain verification modal -->
     <x-modal id="newDomainVerificationModal" heading="Verify Domain">
@@ -167,13 +167,13 @@
 
     <!-- view employees modal -->
 
-    <x-modal id="viewUsers" size="modal-lg" heading="All Employees">
+    <x-modal id="viewUsers" size="modal-xl" heading="All Employees">
         <x-employees.view-users />
     </x-modal>
 
 
     <!-- add employees modal -->
-    <x-modal id="addUserModal" size="modal-lg" heading="Add Employee">
+    <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
         <x-employees.add-user />
     </x-modal>
 
@@ -181,10 +181,10 @@
     {{-- Directory sync Modal --}}
 
     <x-modal id="syncDirectoryModal" size="modal-lg" heading="Provider">
-        <x-employees.sync-directory />
+        <x-employees.sync-directory :hasOutlookToken="$hasOutlookAdToken" />
     </x-modal>
 
-    
+
 
     {{-- ------------------------------Toasts---------------------- --}}
 
@@ -394,7 +394,7 @@
 
             $("#sync_ad_btn").on('click', function() {
                 var btn = this;
-                btn.innerText = "Please Wait...";
+                $(btn).html("Syncing...").attr('disabled', true);
                 var provider = $("input[name='ad_provider']:checked").val();
 
                 if (provider == 'ldap') {
@@ -415,6 +415,9 @@
                     }).fail(function(error) {
                         console.log(error);
                     });
+                }else if(provider == 'outlook'){
+                    fetchOutlookGroups(btn);
+                    $("#outlookContainer").show();
                 } else {
                     Swal.fire(
                         "This provider is currently inactive in our system",
@@ -486,6 +489,139 @@
                                                         </tbody>
                                                     </table>`;
                 $("#syncUserForms").html(thead);
+            }
+        </script>
+        <script>
+            function initChoices(){
+                const multipleCancelButton = new Choices(
+                '#outlookGroups', {
+                    // allowHTML: true,
+                    removeItemButton: true,
+                }
+            );
+            }
+            
+
+            function fetchOutlookGroups(btn) {
+                // $(btn "span").html("Please Wait...").attr('disabled', true);
+                $.ajax({
+                    url: "/fetch-outlook-groups",
+                    type: "GET",
+                    success: function(res) {
+                        console.log(res);
+                        if(res.status == 0){
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                            return;
+                        }
+                        let options = "";
+                        $.each(res.groups, function(index, option) {
+                            options += `
+                            <option value="${option.id}">${option.displayName}</option>
+                            `;
+                        });
+                        $("#outlookGroups").html(options);
+                        // initChoices();
+                        $("#outlookContainer").show();
+                        $(btn).html("Sync Directory").attr('disabled', false);
+                    }
+                });
+
+            }
+
+            function fetchOutlookEmployees(btn) {
+                $(btn).html("Syncing...").attr('disabled', true);
+                const groupId = $("#outlookGroups").val();
+                $.ajax({
+                    url: "/fetch-outlook-emps/" + groupId,
+                    type: "GET",
+                    success: function(response) {
+                        if(response.status == 0){
+                            Swal.fire(
+                                response.msg,
+                                '',
+                                'error'
+                            )
+                            return;
+                        }
+                         console.log(response);
+                        $("#outlookEmps tbody").html('');
+                        let tableRows = "";
+                        $.each(response.employees, function(index, employee) {
+                            tableRows += `
+                            <tr>
+                                <td><input type="text" class="form-control name" value="${employee.displayName}"></td>
+                                <td><input type="email" class="form-control email" value="${employee.mail ?? employee.userPrincipalName}"></td>
+                                <td><input type="text" class="form-control company" value="${employee.company ?? ''}"></td>
+                                <td><input type="text" class="form-control job_title" value="${employee.jobTitle ?? ''}"></td>
+                                <td><input type="text" class="form-control whatsapp" value="${employee.whatsapp ?? ''}"></td>
+                                <td>
+                                    <span class="text-danger ms-1" onclick="deleteOutlookEmpRow(this)" role="button">
+                                                <i class="bx bx-trash fs-4"></i>
+                                            </span>
+                                </td>
+                            </tr>
+                        `;
+                        });
+                        $("#outlookEmps tbody").html(tableRows);
+                        $("#outlookEmps").show();
+                        $(btn).html("Sync Employees").attr('disabled', false);
+                    }
+                });
+            }
+
+            function deleteOutlookEmpRow(btn){
+                $(btn).closest('tr').remove();
+            }
+
+            function saveOutlookSyncedEmployees(btn){
+                $(btn).html("Saving...").attr('disabled', true);
+                const groupId = $(".groupid").val();
+                const employees = [];
+                $("#outlookEmps tbody tr").each(function(index, tr){
+                    const name = $(tr).find('.name').val();
+                    const email = $(tr).find('.email').val();
+                    const company = $(tr).find('.company').val();
+                    const jobTitle = $(tr).find('.job_title').val();
+                    const whatsapp = $(tr).find('.whatsapp').val();
+                    employees.push({
+                        name,
+                        email,
+                        company,
+                        jobTitle,
+                        whatsapp
+                    });
+                });
+                $.ajax({
+                    url: "/save-outlook-employees",
+                    type: "POST",
+                    data: {
+                        groupId,
+                        employees
+                    },
+                    success: function(response) {
+                        // console.log(response);
+                        // return;
+                        if(response.status == 0){
+                            Swal.fire(
+                                response.msg,
+                                '',
+                                'error'
+                            )
+                            $(btn).html("Save Employees").attr('disabled', false);
+                            return;
+                        }
+                        Swal.fire(
+                            response.msg,
+                            '',
+                            'success'
+                        )
+                        $(btn).html("Save Employees").attr('disabled', false);
+                    }
+                });
             }
         </script>
     @endpush

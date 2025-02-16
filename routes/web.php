@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\AiTrainingController;
 use App\Http\Controllers\Learner\CreatePassController;
+use App\Http\Controllers\OutlookAdController;
 use App\Http\Controllers\PublicInfoController;
 use App\Http\Controllers\ScrumPackageController;
 use App\Http\Controllers\SingleEmpController;
@@ -201,6 +202,15 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
     Route::get('/employee/{base_encode_id}', [SingleEmpController::class, 'employeeDetail'])->name('employee.detail');
+
+    Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
+
+    Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
+
+    Route::get('/fetch-outlook-groups', [OutlookAdController::class, 'fetchGroups'])->name('fetch.outlook.groups');
+    Route::get('/fetch-outlook-emps/{groupId}', [OutlookAdController::class, 'fetchEmps'])->name('fetch.outlook.emps');
+
+    Route::post('/save-outlook-employees', [OutlookAdController::class, 'saveOutlookEmps'])->name('save.outlook.emps');
 
     Route::post('/employees/send-domain-verify-otp', [EmployeesController::class, 'sendDomainVerifyOtp'])->name('sendDomainVerificationOtp');
 
