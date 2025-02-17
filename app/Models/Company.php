@@ -72,4 +72,8 @@ class Company extends Authenticatable
         return $this->hasOne(CompanyWhatsappConfig::class, 'company_id', 'company_id');
     }
 
+    public function users(){
+        return $this->hasMany(Users::class, 'company_id', 'company_id');
+    }
+
 }

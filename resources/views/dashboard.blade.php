@@ -404,13 +404,138 @@
                                         <table class="table text-nowrap table-striped text-center">
                                             <thead>
                                                 <tr>
+                                                    <th scope="col"></th>
                                                     <th scope="col">Employee Email</th>
                                                     <th scope="col">Name</th>
                                                     <th scope="col">Breached</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-
+                                                <tr>
+                                                    <td>
+                                                        <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" onclick="showInfo()">
+                                                            <i class='bx bx-right-arrow'></i>
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                </tr>
+                                                <div>
+                                                    <div class="card custom-card">
+                                                        <div class="card-header justify-content-between">
+                                                            <div class="card-title">Activities</div>
+                                                            <div class="dropdown">
+                                                                <a href="javascript:void(0);" class="p-2 fs-12 text-muted" data-bs-toggle="dropdown">
+                                                                    View All<i class="ri-arrow-down-s-line align-middle ms-1 d-inline-block"></i>
+                                                                </a>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li><a class="dropdown-item" href="javascript:void(0);">Download</a></li>
+                                                                    <li><a class="dropdown-item" href="javascript:void(0);">Import</a></li>
+                                                                    <li><a class="dropdown-item" href="javascript:void(0);">Export</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body mt-0 latest-timeline" id="latest-timeline" data-simplebar="init"><div class="simplebar-wrapper" style="margin: -20px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 20px;">
+                                                            <ul class="timeline-main mb-0 list-unstyled">
+                                                                <li>
+                                                                    <div class="featured_icon1 featured-danger"></div>
+                                                                </li>
+                                                                <li class="mt-0 activity">
+                                                                    <a href="javascript:void(0);" class="fs-12">
+                                                                        <p class="mb-0"><span class="fw-semibold">#Anita</span> <span class="ms-2 fs-12">Lorem ipsum dolor, sit amet consectetur adipisicing  .</span></p>
+                                                                    </a>
+                                                                    <small class="text-muted mt-0 mb-0 fs-10">12 mins ago.</small>
+                                                                </li>
+                                                                <li>
+                                                                    <div class="featured_icon1 featured-success"> </div>
+                                                                </li>
+                                                                <li class="mt-0 activity">
+                                                                    <a href="javascript:void(0);" class="fs-12">
+                                                                        <p class="mb-0"><span class="me-2 fs-12">New Product reveived.</span><span class="fw-semibold">#FX-321</span> </p>
+                                                                    </a>
+                                                                    <small class="text-muted mt-0 mb-0 fs-10">28 mins ago.</small>
+                                                                </li>
+                                                                <li>
+                                                                    <div class="featured_icon1 featured-danger"></div>
+                                                                </li>
+                                                                <li class="mt-0 activity">
+                                                                    <div class="fs-12">
+                                                                        <p class="mb-0">
+                                                                            <span class="fw-semibold text-primary">#Zlatan</span>
+                                                                            <span class="ms-2 fs-12">shared a page.
+                                                                                <a href="https://themeforest.net/user/spruko/portfolio" target="_blank" class="text-success underlined fs-11">https://themeforest.net/user/spruko/portfolio</a>
+                                                                            </span>
+                                                                        </p>
+                                                                    </div>
+                                                                    <small class="text-muted mt-0 mb-0 fs-10">37 mins ago.</small>
+                                                                </li>
+                                                                <li>
+                                                                    <div class="featured_icon1 featured-success"></div>
+                                                                </li>
+                                                                <li class="mt-0 activity">
+                                                                    <div class="fs-12">
+                                                                        <p class="mb-0"><span class="fw-semibold text-primary">#Hussain</span> <span class="ms-2 fs-12">shared a file. </span></p>
+                                                                        <small class="text-muted mt-0 mb-0 fs-10">1 day ago.</small>
+                                                                        <p class="p-1 border border-dotted wp-50 br-5 mb-0">
+                                                                            <a href="javascript:void(0);">
+                                                                                <span class="badge bg-success text-fixed-white me-2">PPT</span> <span class="fs-11">Project_discussion</span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </div>
+                                                                </li>
+                                                                <li>
+                                                                    <div class="featured_icon1 featured-danger"></div>
+                                                                </li>
+                                                                <li class="mt-0 activity">
+                                                                    <a href="javascript:void(0);" class="fs-12">
+                                                                        <p class="mb-0">
+                                                                            <span class="fw-semibold">#Emiley</span>
+                                                                            <span class="ms-2 fs-12">Lorem ipsum dolor, sit amet consectetur adipisicing ipsum dolor...</span>
+                                                                            <span class="fw-semibold ms-2">More</span>
+                                                                        </p>
+                                                                    </a>
+                                                                    <small class="text-muted mt-0 mb-0 fs-10">14 Mar 2022.</small>
+                                                                </li>
+                                                            </ul>
+                                                        </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 420px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 351px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></div>
+                                                    </div>
+                                                </div>
+                                                <tr>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                    <td>
+                                                        vivek
+                                                    </td>
+                                                </tr>
+                                                
                                             </tbody>
                                         </table>
                                     </div>
@@ -480,7 +605,6 @@
 
     <x-toast />
 
-    {{-- ------------------------------Toasts---------------------- --}}
 
     @push('newcss')
         <style>
