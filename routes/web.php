@@ -245,8 +245,10 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
     Route::post('/reporting/whatsappfetch-campaign-report', [ReportingController::class, 'whatsappfetchCampaignReport'])->name('campaign.whatsappfetchCampaignReport');
     Route::post('/reporting/aicallingfetch-campaign-report', [ReportingController::class, 'aicallingfetchCampaignReport'])->name('campaign.aicallingfetchCampaignReport');
+    Route::post('/reporting/tprmfetch-campaign-report', [ReportingController::class, 'tprmfetchCampaignReport'])->name('campaign.tprmfetchCampaignReport');
 
     Route::post('/fetch-camp-report-by-users', [ReportingController::class, 'fetchCampReportByUsers'])->name('campaign.fetchCampReportByUsers');
+    Route::post('/tprm-fetch-camp-report-by-users', [ReportingController::class, 'tprmfetchCampReportByUsers'])->name('campaign.tprmfetchCampReportByUsers');
     Route::post('/aicallingfetch-camp-report-by-users', [ReportingController::class, 'aicallingfetchCampReportByUsers'])->name('campaign.aicallingfetchCampReportByUsers');
     Route::post('/whatsappfetch-camp-report-by-users', [ReportingController::class, 'whatsappfetchCampReportByUsers'])->name('campaign.whatsappfetchCampReportByUsers');
 
