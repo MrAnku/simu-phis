@@ -35,10 +35,14 @@ class ReportingController extends Controller
 
         $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')->where('company_id', $companyId)->get(); 
  $tprmcamps = TprmCampaignReport::where('company_id', $companyId)->get();
+
 // return  $tprmcamps;
 $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $companyId)->get();
       $tprmemails_delivered =  $tprmcamps->sum('emails_delivered');
       $tprmemails_reported =  $tprmcamps->sum('email_reported');
+      $emp_compromised_reported =  $tprmcamps->sum('emp_compromised');
+      $payloads_clicked_reported =  $tprmcamps->sum('payloads_clicked');
+
 // return $tprmemails_delivered;
 // return $tprm_campaigns;
 
@@ -54,7 +58,7 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
         $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
         $ctraining_assigned = $ccamps->sum('training_assigned');
 
-        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual', 'tprm_campaigns', 'tprmemails_delivered', 'tprmemails_reported'));
+        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual', 'tprm_campaigns', 'tprmemails_delivered', 'tprmemails_reported', 'emp_compromised_reported', 'payloads_clicked_reported'));
     }
 
     public function getChartData()
@@ -226,12 +230,52 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
         }
     }
 
+
+
     public function whatsappfetchCampaignReport(Request $request)
     {
         $campaignId = $request->campaignId;
         $company_id = Auth::user()->company_id;
         $camp_detail = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
         return response()->json($camp_detail);
+    }
+ public function tprmfetchCampaignReport(Request $request)
+    {
+    
+        $request->validate([
+            'campaignId' => 'required|string',
+        ]);
+
+        $campId = $request->input('campaignId');
+        $companyId = Auth::user()->company_id;
+
+        // Fetch campaign report
+        $reportRow = TprmCampaignReport::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+ 
+        // Fetch user group ID
+        $userGroup = TprmCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+
+        if ($reportRow && $userGroup) {
+            // Count the number of users in the group
+            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+
+            // Prepare the response
+            $response = [
+                'campaign_name' => $reportRow->campaign_name,
+                'campaign_type' => $reportRow->campaign_type,
+                'emails_delivered' => $reportRow->emails_delivered,
+                'emails_viewed' => $reportRow->emails_viewed,
+                'payloads_clicked' => $reportRow->payloads_clicked,
+                'emp_compromised' => $reportRow->emp_compromised,
+                'email_reported' => $reportRow->email_reported,
+                'status' => $reportRow->status,
+                'no_of_users' => $no_of_users,
+            ];
+
+            return response()->json(  $response);
+        } else {
+            return response()->json(['error' => 'Campaign report or user group not found'], 404);
+        }
     }
     public function aicallingfetchCampaignReport(Request $request)
     {
@@ -319,6 +363,65 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
         $companyId = Auth::user()->company_id;
 
         $allUsers = CampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+
+        if ($allUsers->isEmpty()) {
+            return response()->json([
+                'html' => '
+                    <tr>
+                        <td colspan="7" class="text-center"> No records found</td>
+                    </tr>',
+            ]);
+        }
+
+        $responseHtml = '';
+        foreach ($allUsers as $userReport) {
+            $isSent = $userReport->sent == '1' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
+            $isViewed = $userReport->mail_open == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+            $isPayloadClicked = $userReport->payload_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+            $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+            $isEmailReported = $userReport->email_reported == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
+
+            $responseHtml .=
+                '<tr>
+                <td>' .
+                $userReport->user_name .
+                '</td>
+                <td>' .
+                $userReport->user_email .
+                '</td>
+                <td>' .
+                $isSent .
+                '</td>
+                <td>' .
+                $isViewed .
+                '</td>
+                <td>' .
+                $isPayloadClicked .
+                '</td>
+                <td>' .
+                $isEmailCompromised .
+                '</td>
+                <td>' .
+                $isEmailReported .
+                '</td>
+            </tr>';
+        }
+
+// return $responseHtml;
+        return response()->json(['html' => $responseHtml]);
+    }
+
+
+    public function tprmfetchCampReportByUsers(Request $request)
+    {
+        $request->validate([
+            'campaignId' => 'required|string',
+        ]);
+
+        $campId = $request->input('campaignId');
+        $companyId = Auth::user()->company_id;
+
+        $allUsers = TprmCampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
 
         if ($allUsers->isEmpty()) {
             return response()->json([
@@ -489,8 +592,7 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
 
     public function tfetchCampReportByUsers(Request $request)
     {
-        // Log when the function is invoked
-        \Log::info('Fetching campaign report by users', ['campaignId' => $request->input('campaignId')]);
+       
 
         $request->validate([
             'campaignId' => 'required|string',
@@ -499,18 +601,13 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
         $campId = $request->input('campaignId');
         $companyId = Auth::user()->company_id;
 
-        // Log the campaign ID and company ID for debugging
-        \Log::info('Campaign and Company IDs', ['campaignId' => $campId, 'companyId' => $companyId]);
+       
 
         $allUsers = TprmCampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
 
-        // Log the number of users retrieved
-        \Log::info('Number of users retrieved', ['count' => $allUsers->count()]);
-
+        
         if ($allUsers->isEmpty()) {
-            // Log a warning if no records are found
-            \Log::warning('No records found for campaign', ['campaignId' => $campId]);
-
+           
             return response()->json([
                 'html' => '
                 <tr>
@@ -527,17 +624,7 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
             $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
             $isEmailReported = $userReport->email_reported == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
-            // Log details of each user report for debugging purposes
-            \Log::info('User report details', [
-                'user_name' => $userReport->user_name,
-                'user_email' => $userReport->user_email,
-                'sent_status' => $userReport->sent,
-                'mail_open_status' => $userReport->mail_open,
-                'payload_clicked_status' => $userReport->payload_clicked,
-                'email_compromised_status' => $userReport->emp_compromised,
-                'email_reported_status' => $userReport->email_reported,
-            ]);
-
+        
             $responseHtml .=
                 '<tr>
             <td>' .
@@ -564,8 +651,7 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
         </tr>';
         }
 
-        // Log when the response is successfully generated
-        \Log::info('Response HTML generated successfully', ['responseHtmlLength' => strlen($responseHtml)]);
+       
 
         return response()->json(['html' => $responseHtml]);
     }
