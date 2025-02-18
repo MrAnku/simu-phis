@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BreachedEmail;
 use App\Models\Campaign;
 use App\Models\CampaignReport;
 use App\Models\Users;
@@ -29,8 +30,8 @@ class DashboardController extends Controller
 
         $package = $this->getPackage();
 
-
-        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package'));
+        $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
+        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails'));
     }
 
     public function getPieData()
