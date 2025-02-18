@@ -38,7 +38,7 @@ class ProcessWhatsappCampaign extends Command
         $companies = Company::where('service_status', 1)->get();
 
         foreach ($companies as $company) {
-            $campaigns = WhatsAppCampaignUser::where('status', 'pending')->take(5)->get();
+            $campaigns = WhatsAppCampaignUser::where('status', 'pending')->where('company_id', $company->company_id)->take(5)->get();
             if ($campaigns && $company->whatsappConfig) {
                 $whatsapp_cloud_api = new WhatsAppCloudApi([
                     'from_phone_number_id' => $company->whatsappConfig->from_phone_id,
