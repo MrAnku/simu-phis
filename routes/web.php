@@ -235,7 +235,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
 
     //reporting routes-----------------------------------------------------------------
-
+    
+    
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::get('/reporting/get-chart-data', [ReportingController::class, 'getChartData'])->name('campaign.getChartData');
     Route::get('/reporting/wget-chart-data', [ReportingController::class, 'wgetChartData'])->name('campaign.wgetChartData');
@@ -519,6 +520,8 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 // download route 
 Route::get('/download-pdf', [PdfController::class, 'downloadPdf'])->name('download-pdf');
+Route::get('/download-pdf-tprm', [PdfController::class, 'tprm_full_report'])->name('tprm-full-report-download-pdf');
+Route::get('/download-pdf-tprm-company-wise', [PdfController::class, 'tprm_campaigns_wise'])->name('tprm-company-wise-download-pdf');
 
 
 

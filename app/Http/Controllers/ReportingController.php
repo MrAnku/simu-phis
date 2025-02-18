@@ -20,6 +20,7 @@ use App\Models\WhatsAppCampaignUser;
 use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use Illuminate\Support\Facades\Session;
 
 class ReportingController extends Controller
 {
@@ -38,13 +39,28 @@ class ReportingController extends Controller
 
 // return  $tprmcamps;
 $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $companyId)->get();
+
+// return $tprm_campaigns;
+
       $tprmemails_delivered =  $tprmcamps->sum('emails_delivered');
       $tprmemails_reported =  $tprmcamps->sum('email_reported');
       $emp_compromised_reported =  $tprmcamps->sum('emp_compromised');
       $payloads_clicked_reported =  $tprmcamps->sum('payloads_clicked');
-
+Session::forget('campaign_details'); // Removes old session data
+   $Arraydetails = [];
+// Assign values safely, ensuring no undefined property errors
+    $Arraydetails[' Emails Delivered'] = $tprmemails_delivered ?? 0;
+    $Arraydetails['TPRM Email Report'] =    $tprmemails_reported ?? 0;
+    $Arraydetails['Emp Compromised'] = $emp_compromised_reported ?? 0;
+    $Arraydetails['Payload Clicked'] = $payloads_clicked_reported ?? 0;
 // return $tprmemails_delivered;
 // return $tprm_campaigns;
+
+Session::put('campaign_details', $Arraydetails); // Stores new data in session
+
+Session::forget('training_campaign_details'); // Clears the session data
+
+
 
         $ai_calls = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
         $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
@@ -271,6 +287,15 @@ $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $company
                 'status' => $reportRow->status,
                 'no_of_users' => $no_of_users,
             ];
+
+    $Arraydetails = [];
+    $Arraydetails['emails_delivered'] = $reportRow->emails_delivered ?? 10;
+    $Arraydetails['emails_viewed'] = $reportRow->emails_viewed ?? 10;
+    $Arraydetails['email_reported'] = $reportRow->email_reported ?? 10;
+    $Arraydetails['emp_compromised'] =  $reportRow->emp_compromised ?? 10;
+
+
+Session::put('campaign_details', $Arraydetails); // Stores new data in session
 
             return response()->json(  $response);
         } else {
