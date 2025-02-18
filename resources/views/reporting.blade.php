@@ -807,9 +807,18 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
+                                                        <div style="display: flex; justify-content: space-between;"
+                                                            class="card-header">
+
+
                                                             <div class="card-title">
                                                                 TPRM Campaign Reports
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ route('tprm-full-report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">View Full PDF </button>
+                                                                </a>
+
                                                             </div>
                                                         </div>
                                                         <div class="card-body">
@@ -1315,18 +1324,26 @@
                     <div class="card custom-card">
 
                         <div class="card-body">
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">Phishing
-                                        Campaign</a>
-                                </li>
-                                {{-- <li class="nav-item" role="presentation" id="training_tab">
+                            <div style="display: flex; justify-content: space-between;">
+                                <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation" id="phishing_tab">
+                                        <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                            aria-current="page" href="#phishing_campaign" aria-selected="true">Phishing
+                                            Campaign</a>
+                                    </li>
+                                    {{-- <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#training_campaign" aria-selected="false" tabindex="-1">Training
                                         Campaign</a>
                                 </li> --}}
-                            </ul>
+                                </ul>
+                                <div>
+                                    <a id="campaignPdfLink" href="{{ route('tprm-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">View Campaign Wise PDF</button>
+                                    </a>
+
+                                </div>
+                            </div>
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="phishing_campaign" role="tabpanel">
                                     <div class="table-responsive">
@@ -2187,6 +2204,9 @@
                         campaignId: campid
                     },
                     success: function(response) {
+                        // Update the href attribute of the <a> tag with the campaignId
+                        let pdfLink = document.getElementById('campaignPdfLink');
+                        pdfLink.href = `{{ route('tprm-company-wise-download-pdf') }}?campaignId=${campid}`;
                         // console.log("Success callback triggered!"); // Confirm callback is executed
                         console.log('tprm response', response); // Log the full response to verify structure
 

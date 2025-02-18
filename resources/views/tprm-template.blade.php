@@ -188,7 +188,7 @@
 
 <body>
 
-    <button id="downloadPdf">Download as PDF</button>
+    <button id="downloadPdf">Download as gh PDF</button>
 
 
     @php
@@ -264,13 +264,11 @@
 
 
 
-                    @php
-                        $campaign_details = session('campaign_details', []);
-                    @endphp
 
-                    {{-- @if (!empty($campaign_details))
+
+                    {{-- @if (!empty($Arraydetails))
                         <ul>
-                            @foreach ($campaign_details as $key => $value)
+                            @foreach ($Arraydetails as $key => $value)
                                 <li>{{ $key }}: {{ $value }}</li>
                             @endforeach
                         </ul>
@@ -278,7 +276,7 @@
                         <p style="color: #111c43">No campaign details available.</p>
                     @endif --}}
 
-                    @foreach ($campaign_details as $key => $value)
+                    @foreach ($Arraydetails as $key => $value)
                         <div
                             style="
         display: flex;
@@ -424,7 +422,7 @@
     <script>
         // let campaign_details = session('campaign_details', []);
         // console.log('campaign_details', campaign_details);
-        let ArrayData = {!! json_encode($campaign_details) !!};
+        let ArrayData = {!! json_encode($Arraydetails) !!};
         let ArrayData_2 = [{
                 "labels": "Emails Delivered"
             },
@@ -577,8 +575,8 @@
 `;
                 let yesBatch = `
   <span style="
-    color: white;
-    background: #ff3c3c;
+     color: #198754;
+    border: 1px solid #198754;
     font-size: 12px;
     padding: 3px 10px;
     border-radius: 5px;
@@ -610,7 +608,7 @@
 
                     rowHtml += `
                     <tr>
-                        <td>${camp.user_name}</td>
+                        <td>${camp.campaign_name}</td>
                         <td>${camp.user_email}</td>
                         <td>${isDelivered}</td>
                         <td>${isViewed}</td>

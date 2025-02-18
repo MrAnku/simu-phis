@@ -758,6 +758,8 @@ class CampaignController extends Controller
     }
 public function fetchCampaignDetail(Request $request)
 {
+
+// dd($request->campaignId);
     // Fetch campaign details with related models
     $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])
         ->where('campaign_id', $request->campaignId)
@@ -780,7 +782,6 @@ public function fetchCampaignDetail(Request $request)
 
     // Assign values safely, ensuring no undefined property errors
     $Arraydetails['emails_delivered'] = $campReport->emails_delivered ?? 0;
-
     $Arraydetails['emails_viewed'] = $campReport->emails_viewed ?? 0;
     $Arraydetails['email_reported'] = isset($campReport->email_reported) ? (int) $campReport->email_reported : 0;
     $Arraydetails['emp_compromised'] = $campReport->emp_compromised ?? 0;
@@ -791,6 +792,7 @@ public function fetchCampaignDetail(Request $request)
     Session::put('campaign_details', $Arraydetails);
     Session::put('training_campaign_details', $ArrayTrainingDetails);
 
+Session::forget('camp_id');
 Session::put('camp_id',$request->campaignId);
     // Session::put('User_campaign_details',   $detail);
     // Return response
