@@ -20,7 +20,7 @@
                                @forelse ($breachedEmails as $email)
                                    <x-dark-web.breached-card :employee="$email" :breachDetail="json_decode($email->data, true)" />
                                @empty
-                                   <p class="text-center text-muted">No emails has breached.</p>
+                                   <p class="text-center text-muted">No emails have breached.</p>
                                @endforelse
                                
 
