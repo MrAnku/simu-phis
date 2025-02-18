@@ -40,16 +40,13 @@ class EmailBreachCheck extends Command
     private function scanNewUsers()
     {
         //scan new employees
-        $employees = Users::take(7)->get();
+        $employees = Users::where('breach_scan_date', null)->take(7)->get();
         if($employees->isEmpty()){ 
             return;
         }
         foreach ($employees as $employee) {
 
-            // checking if the employee has already been scanned
-            if ($employee->breach_scan_date !== null) {
-                continue;
-            }
+            
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
@@ -80,16 +77,13 @@ class EmailBreachCheck extends Command
 
     private function scanOldUsers(){
         //scan old employees
-        $employees = Users::take(7)->get();
+        $employees = Users::where('breach_scan_date', '<', now()->subDays(10))->take(7)->get();
         if($employees->isEmpty()){ 
             return;
         }
         foreach ($employees as $employee) {
 
-            // checking if the employee scan date is more than 30 days ago
-            if ($employee->breach_scan_date !== null && $employee->breach_scan_date > now()->subDays(30)) {
-                continue;
-            }
+           
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
