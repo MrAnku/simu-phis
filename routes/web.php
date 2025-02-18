@@ -3,21 +3,32 @@
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\TprmController;
 use App\Http\Controllers\AicallController;
+use App\Http\Controllers\DarkWebMonitoring;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
+use App\Http\Controllers\OutlookAdController;
 use App\Http\Controllers\ReportingController;
+use App\Http\Controllers\SingleEmpController;
+use App\Http\Controllers\AiTrainingController;
+use App\Http\Controllers\PublicInfoController;
 use App\Http\Controllers\TestUploadController;
 use App\Http\Controllers\ShowWebsiteController;
+use App\Http\Controllers\ScrumPackageController;
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\DealRegController;
+use App\Http\Controllers\Admin\EncycloController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\SenderProfileController;
+use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\BrandMonitoringController;
@@ -25,6 +36,8 @@ use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\WhiteLabelController;
 use App\Http\Controllers\PhishingWebsitesController;
 use App\Http\Controllers\WhatsappCampaignController;
+use App\Http\Controllers\DarkWebMonitoringController;
+use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -32,17 +45,6 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
-use App\Http\Controllers\Admin\DealRegController;
-use App\Http\Controllers\Admin\EncycloController;
-use App\Http\Controllers\Admin\LogController;
-use App\Http\Controllers\Admin\WhatsAppController;
-use App\Http\Controllers\AiTrainingController;
-use App\Http\Controllers\Learner\CreatePassController;
-use App\Http\Controllers\OutlookAdController;
-use App\Http\Controllers\PublicInfoController;
-use App\Http\Controllers\ScrumPackageController;
-use App\Http\Controllers\SingleEmpController;
-use App\Http\Middleware\CorsMiddleware;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -354,8 +356,10 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/scans/{sid}/csv', [BrandMonitoringController::class, 'downloadCSV']);
     Route::get('/scans/{sid}/json', [BrandMonitoringController::class, 'downloadJSON']);
 
+    //dark web monitoring routes -----------------------------------------
+    Route::get('/dark-web-monitoring', [DarkWebMonitoringController::class, 'index'])->name('dark.web.monitoring');
 
-    ///settings route------------------------------------------------------------------------------------
+    ///settings route-----------------------------------------------------
 
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update-profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');

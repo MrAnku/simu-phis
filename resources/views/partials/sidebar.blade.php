@@ -176,8 +176,8 @@
                                         </a>
                                     </li>
                                    
-                                    <li class="slide has-sub {{ Request::is('brand-monitoring') ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('brand-monitoring') ? 'active' : '' }}">
+                                    <li class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Threat Monitoring</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -192,6 +192,14 @@
                                                     class="side-menu__item {{ Request::is('brand-monitoring') ? 'active' : '' }}">
                                                     <i class="bx bx-line-chart side-menu__icon"></i>
                                                     <span class="side-menu__label">Brand Monitoring</span>
+                                                </a>
+                                            </li>
+
+                                            <li class="slide {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
+                                                <a href="{{ route('dark.web.monitoring') }}"
+                                                    class="side-menu__item {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
+                                                    <i class="bx bx-globe side-menu__icon"></i>
+                                                    <span class="side-menu__label">Darkweb Monitoring</span>
                                                 </a>
                                             </li>
                                             

@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
+use App\Models\BreachedEmail;
 use App\Models\CampaignReport;
 use App\Models\DomainVerified;
 use App\Models\OutlookAdToken;
@@ -206,9 +207,10 @@ class EmployeesController extends Controller
     public function deleteUser(Request $request)
     {
         $user = Users::find($request->user_id);
+        $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
 
         if ($user) {
-
+            $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
             log_action("User {$user->user_email} deleted");
             $user->delete();
 
