@@ -6,6 +6,7 @@ use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\TprmCampaignLive;
+use App\Models\EmailCampActivity;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\Log;
 
@@ -22,6 +23,9 @@ class TrackingController extends Controller
             if ($campaignLive) {
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
+
+                EmailCampActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
+
                 log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
                 $report = CampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
 

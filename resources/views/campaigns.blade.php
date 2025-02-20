@@ -194,7 +194,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">No campaigns running</td>
+                                                <td colspan="8" class="text-center">No campaigns are running</td>
                                             </tr>
                                         @endforelse
 
@@ -300,13 +300,15 @@
                 // console.log(phishName);
             }
 
+            let campaignActivities = [];
+
             function showPhishingReportIndividual(res) {
                 if (res.camp_live.length > 0) {
                     let mailPending = '<span class="badge bg-warning-transparent">Pending</span>';
                     let mailSent = '<span class="badge bg-success-transparent">Success</span>';
                     let yesBatch = '<span class="badge bg-success-transparent">Yes</span>';
                     let noBatch = '<span class="badge bg-danger-transparent">No</span>';
-
+                    campaignActivities = res.campaign_activity;
                     let rowHtml = '';
                     res.camp_live.forEach((camp) => {
                         let isDelivered = camp.sent === "0" ? mailPending : mailSent;
@@ -316,7 +318,7 @@
                         let isEmailReported = camp.email_reported === 0 ? noBatch : yesBatch;
 
                         rowHtml += `
-                            <tr>
+                            <tr data-bs-toggle="collapse" onclick="fetchActivity(this, ${camp.id}, '${camp.user_email}')" role="button" data-bs-target="#collapseClient${camp.id}">
                                 <td>${camp.user_name}</td>
                                 <td>${camp.user_email}</td>
                                 <td>${isDelivered}</td>
@@ -325,11 +327,141 @@
                                 <td>${isEmpCompromised}</td>
                                 <td>${isEmailReported}</td>
                             </tr>
+                            <tr >
+                                <td colspan="7" class="hiddenRow py-0 px-3">
+                                    <div class="accordian-body collapse" id="collapseClient${camp.id}"> 
+                                        
+                                    </div> 
+                                </td>
+                            </tr>
                         `;
                     });
 
                     $("#campReportsIndividual").html(rowHtml);
+                    document.querySelectorAll("#campReportsIndividual pre code").forEach((block) => {
+                        Prism.highlightElement(block);
+                    });
                 }
+            }
+
+            function fetchActivity(row, camp_live_id, emp_email) {
+                const expanded = $(row).attr('aria-expanded');
+                if (expanded === 'false') {
+                    console.log('not expanded');
+                    return;
+                }
+
+                if (campaignActivities.length > 0) {
+                    const activity = campaignActivities.find(activity => activity.campaign_live_id === camp_live_id);
+
+                    if (activity) {
+                        let sentActivity = '';
+                        let viewedActivity = '';
+                        let clickedActivity = '';
+                        let compromisedActivity = '';
+                        if (activity.email_sent_at !== null) {
+                            sentActivity = `<li class="crm-recent-activity-content">
+                                                <div class="d-flex align-items-top">
+                                                                <div class="me-3">
+                                                                    <span class="avatar avatar-xs bg-secondary-transparent avatar-rounded">
+                                                                        <i class="bi bi-circle-fill fs-8"></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="crm-timeline-content">
+                                                                    <span class="fw-semibold">Email Delivered <i class='bx bx-check-circle fs-18 text-success ms-1'></i></span>
+                                                                    <span class="d-block fs-12 text-muted">The campaign email was sent to <span class="badge bg-primary-transparent">${emp_email}</span></span>
+                                                                </div>
+                                                                <div class="flex-fill text-end">
+                                                                    <span class="d-block text-muted fs-11 op-7">${activity.email_sent_at}</span>
+                                                                </div>
+                                                            </div>
+                                                        </li>`;
+                        }
+
+                        if (activity.email_viewed_at !== null) {
+                            viewedActivity = `<li class="crm-recent-activity-content">
+                                                            <div class="d-flex align-items-top">
+                                                                <div class="me-3">
+                                                                    <span class="avatar avatar-xs bg-secondary-transparent avatar-rounded">
+                                                                        <i class="bi bi-circle-fill fs-8"></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="crm-timeline-content">
+                                                                    <span class="fw-semibold">Email Viewed <i class='bx bx-check-circle fs-18 text-success ms-1'></i></span>
+                                                                    <span class="d-block fs-12 text-muted">The campaign email has successfully opened by <span class="badge bg-primary-transparent">${emp_email}</span></span>
+                                                                </div>
+                                                                <div class="flex-fill text-end">
+                                                                    <span class="d-block text-muted fs-11 op-7">${activity.email_viewed_at}</span>
+                                                                </div>
+                                                            </div>
+                                                        </li>`;
+                        }
+                        if (activity.payload_clicked_at !== null) {
+                            clickedActivity = `<li class="crm-recent-activity-content">
+                                                            <div class="d-flex align-items-top">
+                                                                <div class="me-3">
+                                                                    <span class="avatar avatar-xs bg-secondary-transparent avatar-rounded">
+                                                                        <i class="bi bi-circle-fill fs-8"></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="crm-timeline-content">
+                                                                    <span class="fw-semibold">Payload Clicked <i class='bx bx-check-circle fs-18 text-success ms-1'></i></span>
+                                                                    <span class="d-block fs-12 text-muted">The Payload has clicked by <span class="badge bg-primary-transparent">${emp_email}</span> and redirected to the phishing website</span>
+                                                                </div>
+                                                                <div class="flex-fill text-end">
+                                                                    <span class="d-block text-muted fs-11 op-7">${activity.payload_clicked_at}</span>
+                                                                </div>
+                                                            </div>
+                                                        </li>`;
+                        }
+                        if (activity.compromised_at !== null && activity.client_details !== null) {
+                            let client_details_table = generateClientDetailsTable(activity.client_details);
+                            compromisedActivity = `<li class="crm-recent-activity-content">
+                                                            <div class="d-flex align-items-top">
+                                                                <div class="me-3">
+                                                                    <span class="avatar avatar-xs bg-secondary-transparent avatar-rounded">
+                                                                        <i class="bi bi-circle-fill fs-8"></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="crm-timeline-content">
+                                                                    <span class="fw-semibold">Employee Compromised <i class='bx bx-check-circle fs-18 text-success ms-1'></i></span>
+                                                                    <span class="d-block fs-12 text-muted"><span class="badge bg-primary-transparent">${emp_email}</span> has tried to enter the confidential details</span>
+                                                                </div>
+                                                                <div class="flex-fill text-end">
+                                                                    <span class="d-block text-muted fs-11 op-7">${activity.compromised_at}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mt-4">
+                                                                ${client_details_table}
+                                                            </div>
+                                                        </li>`;
+                        }
+                        let activityHtml = `<div class="py-4">
+                                                    <ul class="list-unstyled mb-0 crm-recent-activity">
+                                                        ${sentActivity}
+                                                        ${viewedActivity}
+                                                        ${clickedActivity}
+                                                        ${compromisedActivity}
+                                                    </ul>
+                                                </div>`;
+
+                        $(row).next().find('.accordian-body').html(activityHtml);
+                        // Prism.highlightAll();
+                    }
+                }
+            }
+
+            function generateClientDetailsTable(clientDetails) {
+                let table = '<table class="table table-bordered table-striped">';
+                let tableHeader = '<thead><tr><th>Field</th><th>Value</th></tr></thead>';
+                let tableBody = '<tbody>';
+                let clientDetailsObj = JSON.parse(clientDetails);
+                for (const [key, value] of Object.entries(clientDetailsObj)) {
+                    tableBody += `<tr><td>${key}</td><td>${value}</td></tr>`;
+                }
+                tableBody += '</tbody>';
+                table += tableBody + '</table>';
+                return table;
             }
 
             function showPhishingReport(res) {
@@ -381,6 +513,7 @@
                                         </div>
                                     </td>
                                 </tr>
+                                
                             `;
 
                 $("#campReportStatus").html(rowHtml);
@@ -437,7 +570,7 @@
 
                 $("#trainingReportStatus").html(rowHtml);
 
-                 showTrainingReportIndividual(res);
+                showTrainingReportIndividual(res);
             }
 
             function fetchCampaignDetails(campid) {
@@ -510,6 +643,23 @@
                 // Your function here
                 $("#newCampModal").show();
             });
+        </script>
+
+        <script>
+            function parseJson() {
+                document.querySelectorAll(".jsonViewer").forEach(container => {
+                    const jsonData = container.getAttribute("data-json");
+
+                    try {
+                        const parsedJson = JSON.parse(jsonData);
+                        container.innerHTML =
+                            `<pre><code class="language-json">${JSON.stringify(parsedJson, null, 4)}</code></pre>`;
+                    } catch (error) {
+                        console.error("Invalid JSON:", error);
+                        container.innerHTML = "<p style='color: red;'>Invalid JSON</p>";
+                    }
+                });
+            }
         </script>
 
         <!-- Date & Time Picker JS -->

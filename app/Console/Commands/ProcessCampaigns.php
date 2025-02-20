@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\AssignTrainingWithPassResetLink;
 use Carbon\Carbon;
 use App\Models\Users;
 use App\Models\Company;
@@ -14,11 +13,14 @@ use App\Models\SenderProfile;
 use App\Models\CampaignReport;
 use App\Models\TrainingModule;
 use Illuminate\Console\Command;
+use App\Models\EmailCampActivity;
+use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
-use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\AssignTrainingWithPassResetLink;
+use Illuminate\Validation\Rules\Email;
 
 class ProcessCampaigns extends Command
 {
@@ -82,7 +84,7 @@ class ProcessCampaigns extends Command
     // Check if users exist in the group
     if (!$users->isEmpty()) {
       foreach ($users as $user) {
-        CampaignLive::create([
+        $camp_live = CampaignLive::create([
           'campaign_id' => $campaign->campaign_id,
           'campaign_name' => $campaign->campaign_name,
           'user_id' => $user->id,
@@ -97,6 +99,11 @@ class ProcessCampaigns extends Command
           'email_lang' => $campaign->email_lang ?? null,
           'sent' => '0',
           'company_id' => $campaign->company_id,
+        ]);
+        
+        EmailCampActivity::create([
+          'campaign_id' => $campaign->campaign_id,
+          'campaign_live_id' => $camp_live->id,
         ]);
       }
 
@@ -181,6 +188,9 @@ class ProcessCampaigns extends Command
               ];
 
               if ($this->sendMail($mailData)) {
+
+               $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
                 echo "Email sent to: " . $campaign->user_email . "\n";
               } else {
                 echo "Email not sent to: " . $campaign->user_email . "\n";
@@ -324,8 +334,6 @@ class ProcessCampaigns extends Command
       ]);
 
     echo "Training assigned and report updated \n";
-
-   
   }
 
   private function assignAnotherTraining($userLogin, $campaign, $training = null)

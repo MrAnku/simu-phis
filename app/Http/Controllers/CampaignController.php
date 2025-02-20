@@ -14,6 +14,7 @@ use App\Models\CampaignReport;
 use App\Models\TrainingModule;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\EmailCampActivity;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
@@ -247,7 +248,7 @@ class CampaignController extends Controller
         }
 
         foreach ($users as $user) {
-            CampaignLive::create([
+            $camp_live = CampaignLive::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $data['camp_name'],
                 'user_id' => $user->id,
@@ -263,6 +264,12 @@ class CampaignController extends Controller
                 'sent' => '0',
                 'company_id' => $companyId,
             ]);
+
+            EmailCampActivity::create([
+                'campaign_id' => $campId,
+                'campaign_live_id' => $camp_live->id,
+            ]);
+
         }
 
         CampaignReport::create([
@@ -427,7 +434,7 @@ class CampaignController extends Controller
         $res1 = Campaign::where('campaign_id', $campid)->delete();
         $res2 = CampaignLive::where('campaign_id', $campid)->delete();
         $res3 = CampaignReport::where('campaign_id', $campid)->delete();
-
+        EmailCampActivity::where('campaign_id', $campid)->delete();
         log_action('Email campaign deleted');
 
         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
@@ -759,7 +766,7 @@ class CampaignController extends Controller
     public function fetchCampaignDetail(Request $request)
     {
 
-        $detail = Campaign::with(['campLive', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $request->campaignId)->first();
+        $detail = Campaign::with(['campLive', 'campaignActivity', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $request->campaignId)->first();
 
         return response()->json($detail);
     }

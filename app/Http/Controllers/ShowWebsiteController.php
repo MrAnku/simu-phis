@@ -6,11 +6,13 @@ use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
 use Illuminate\Support\Str;
+use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\PhishingWebsite;
 use \App\Models\TprmCampaignLive;
+use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
@@ -352,7 +354,7 @@ class ShowWebsiteController extends Controller
         NewLearnerPassword::create([
             'email' => $user->user_email,
             'token' => $token
-          ]);
+        ]);
 
 
         // Update campaign_live table
@@ -365,10 +367,6 @@ class ShowWebsiteController extends Controller
 
 
         return response()->json(['success' => 'New training assigned successfully']);
-
-        
-
-       
     }
 
     private function assignAnotherTraining($checkLoginExist, $user, $training = null)
@@ -550,6 +548,28 @@ class ShowWebsiteController extends Controller
                     ->where('id', $campid)
                     ->update(['emp_compromised' => 1]);
 
+                
+
+                $agent = new Agent();
+
+                $clientData = [
+                    'platform' => $agent->platform(), // Extract OS
+                    'browser' => $agent->browser(), // Extract Browser
+                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
+                    'ip' => $request->ip(), // Client IP Address
+                    'source' => $request->header('User-Agent'), // Full User-Agent string
+                    'browserVersion' => $agent->version($agent->browser()),
+                    'device' => $agent->device(),
+                    'isMobile' => $agent->isMobile(),
+                    'isDesktop' => $agent->isDesktop(),
+
+                ];
+                EmailCampActivity::where('campaign_live_id', $campid)
+                ->update([
+                    'compromised_at' => now(),
+                    'client_details' => json_encode($clientData)
+                ]);
+
                 if ($isUpdatedIndividual) {
                     log_action('Employee compromised in Email campaign', 'employee', 'employee');
                     return response()->json(['message' => 'Email compromised status updated successfully']);
@@ -644,6 +664,8 @@ class ShowWebsiteController extends Controller
                 $isUpdatedIndividual = DB::table('campaign_live')
                     ->where('id', $campid)
                     ->update(['payload_clicked' => 1]);
+
+                EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 
                 if ($isUpdatedIndividual) {
 
