@@ -1,6 +1,10 @@
 <div class="card custom-card">
 
-    <div class="card-body">
+    <div   class="card-body">
+<div style="display: flex; justify-content: space-between">
+
+<div>
+
         <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
             <li class="nav-item" role="presentation" id="phishing_tab">
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
@@ -12,6 +16,14 @@
                     Campaign</a>
             </li>
         </ul>
+</div>
+<div>
+    <a href="{{ route('download-pdf') }}">
+        <button class="btn btn-primary">View PDF</button>
+    </a>
+</div>
+</div>
+
         <div class="tab-content">
             <div class="tab-pane text-muted" id="phishing_campaign" role="tabpanel">
                 <div class="table-responsive">

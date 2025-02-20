@@ -37,6 +37,12 @@
                                             aria-controls="shipped-tab" aria-selected="false"><i
                                                 class="ri-robot-line me-2 align-middle"></i>AI Campaign Report</button>
                                     </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tprm-tab" data-bs-toggle="tab"
+                                            data-bs-target="#tprm-tab-pane" type="button" role="tab"
+                                            aria-controls="tprm-tab" aria-selected="false"><i
+                                                class="bx bx-shape-circle side-menu__icon"></i>TPRM Campaign Report</button>
+                                    </li>
 
                                 </ul>
                                 <div class="tab-content" id="myTabContent">
@@ -138,9 +144,18 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
-                                                            <div class="card-title">
-                                                                Campaign Reports
+                                                        <div style="display: flex; justify-content: space-between;">
+                                                            <div class="card-header">
+                                                                <div class="card-title">
+                                                                    Campaign Reports
+                                                                </div>
+                                                            </div>
+
+                                                            <div><a target="blank"
+                                                                    href="{{ route('email_full_report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    </button>
+                                                                </a>
                                                             </div>
                                                         </div>
                                                         <div class="card-body">
@@ -353,10 +368,19 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
-                                                            <div class="card-title">
-                                                                WhatsApp Campaign Reports
+                                                        <div style="display: flex; justify-content: space-between;">
+                                                            <div class="card-header">
+                                                                <div class="card-title">
+                                                                    WhatsApp Campaign Reports
+                                                                </div>
                                                             </div>
+                                                            <div> <a target="blank"
+                                                                    href="{{ route('whatsapp_full_report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    </button>
+                                                                </a>
+                                                            </div>
+
                                                         </div>
                                                         <div class="card-body">
                                                             <div class="table-responsive">
@@ -455,7 +479,8 @@
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ $ai_calls_individual->where('status', 'waiting')->count() }} </span>
+                                                                            {{ $ai_calls_individual->where('status', 'waiting')->count() }}
+                                                                        </span>
                                                                     </div>
 
                                                                 </div>
@@ -470,7 +495,7 @@
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-secondary-transparent">
-                                                                        
+
                                                                         <i class='bx bx-phone-call fs-4'></i>
                                                                     </span>
                                                                 </div>
@@ -480,10 +505,11 @@
                                                                         Pending Calls
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
-                                                                        <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
                                                                             {{ $ai_calls_individual->where('status', 'pending')->count() }}
 
-                                                                            
+
                                                                         </span>
                                                                     </div>
 
@@ -499,8 +525,8 @@
                                                                 <div
                                                                     class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
                                                                     <span class="rounded p-3 bg-success-transparent">
-                                                                        
-                                                                        <i class='bx bxs-phone-call fs-4' ></i>
+
+                                                                        <i class='bx bxs-phone-call fs-4'></i>
                                                                     </span>
                                                                 </div>
                                                                 <div
@@ -509,7 +535,8 @@
                                                                         Call Answered
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
-                                                                        <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
                                                                             {{ $ai_calls_individual->where('call_end_response', '!=', null)->count() }}
                                                                         </span>
                                                                     </div>
@@ -535,7 +562,8 @@
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                                                            {{ $ai_calls_individual->sum('training_assigned') }} </span>
+                                                                            {{ $ai_calls_individual->sum('training_assigned') }}
+                                                                        </span>
                                                                     </div>
 
                                                                 </div>
@@ -646,6 +674,253 @@
                                         </div>
                                     </div>
 
+                                    <div class="tab-pane fade border-0 p-0" id="tprm-tab-pane" role="tabpanel"
+                                        aria-labelledby="tprm-tab-pane" tabindex="0">
+                                        <div class="p-4">
+                                            <div class="row my-3">
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-primary-transparent">
+                                                                        <i class='bx bx-mail-send fs-4'></i>
+
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">TPRM Phishing Emails Delivered
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+
+                                                                        {{-- <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $ai_calls_individual->where('status', 'waiting')->count() }} </span> --}}
+
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $tprmemails_delivered }} </span>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-success-transparent">
+
+                                                                        <i class='bx bxs-report fs-4'></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">
+                                                                        TPRM Email Report
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $tprmemails_reported }}
+                                                                        </span>
+
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- payload click --}}
+
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-secondary-transparent">
+
+                                                                        <i class='bx bxs-color fs-4'></i>
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">
+                                                                        Payload Clicked
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $payloads_clicked_reported }}
+                                                                        </span>
+
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- email compromised  --}}
+                                                <div class="col-xxl-3 col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-xxl-3 col-xl-2 col-lg-3 col-md-3 col-sm-4 col-4 d-flex align-items-center justify-content-center ecommerce-icon px-0">
+                                                                    <span class="rounded p-3 bg-warning-transparent">
+
+                                                                        <i class='bx bx-terminal fs-4'></i>
+
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
+                                                                    <div class="mb-2">
+                                                                        Emp Compromised
+                                                                    </div>
+                                                                    <div class="text-muted mb-1 fs-12">
+                                                                        <span
+                                                                            class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
+                                                                            {{ $emp_compromised_reported }}
+                                                                        </span>
+
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            {{-- <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="card custom-card">
+                                                        <div class="card-header">
+                                                            <div class="card-title">Employees Interaction</div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="cdashed-chart"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> --}}
+
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    <div class="card custom-card">
+                                                        <div style="display: flex; justify-content: space-between;"
+                                                            class="card-header">
+
+
+                                                            <div class="card-title">
+                                                                TPRM Campaign Reports
+                                                            </div>
+                                                            <div>
+                                                                <a target="blank"
+                                                                    href="{{ route('tprm-full-report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full
+                                                                        Report</button>
+                                                                </a>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="table-responsive">
+                                                                <table id="datatable-basic"
+                                                                    class="table table-bordered text-nowrap w-100">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Sl</th>
+                                                                            <th>Campaign Name</th>
+                                                                            <th>Status</th>
+                                                                            <th>Launch Time</th>
+                                                                            <th>Campaign Type</th>
+                                                                            <th>Email Lang</th>
+                                                                            <th>Training </th>
+                                                                            {{-- <th>Training Assigned</th> --}}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @forelse ($tprm_campaigns as $tccamps)
+                                                                            <tr>
+                                                                                <td>{{ $loop->iteration }}</td>
+                                                                                <td>
+                                                                                    <a href="#" class="text-primary"
+                                                                                        onclick="tprmfetchCampaignDetails(`{{ $tccamps->campaign_id }}`)"
+                                                                                        data-bs-toggle="modal"
+                                                                                        data-bs-target="#TPRMcampaignReportModal">{{ $tccamps->campaign_name }}</a>
+                                                                                </td>
+                                                                                <td>
+                                                                                    @if ($tccamps->status == 'running' || $tccamps->status == 'completed')
+                                                                                        <span
+                                                                                            class="badge bg-success">{{ ucfirst($tccamps->status) }}</span>
+                                                                                    @else
+                                                                                        <span
+                                                                                            class="badge bg-warning">{{ ucfirst($tccamps->status) }}</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td>{{ $tccamps->launch_time }}</td>
+                                                                                <td>
+                                                                                    {{ $tccamps->campaign_type }}
+                                                                                </td>
+                                                                                <td>
+
+                                                                                    {{ $tccamps->email_lang }}
+                                                                                </td>
+                                                                                <td>
+                                                                                    {{ $tccamps->tprm_report->campaign_name ?? 'Only Phishing' }}
+                                                                                    {{-- {{ $campaign->trainingName->name ?? 'Only Phishing' }} --}}
+                                                                                </td>
+                                                                                {{-- <td>
+                                                                                    <div class="checkboxesIcon">
+                                                                                        @if ($tccamps->tprm_report->where('training_assigned', '1')->count() == 0)
+                                                                                            <span>{{ $tccamps->tprm_report->where('training_assigned', '1')->count() }}</span>
+                                                                                            <i
+                                                                                                class="bx bx-check-circle mx-2 fs-25 text-danger"></i>
+                                                                                        @else
+                                                                                            <span>{{ $tccamps->tprm_report->where('training_assigned', '1')->count() }}</span>
+                                                                                            <i
+                                                                                                class="bx bx-check-circle mx-2 fs-25 text-success"></i>
+                                                                                        @endif
+
+                                                                                    </div>
+                                                                                </td> --}}
+                                                                            </tr>
+                                                                        @empty
+                                                                            <tr>
+                                                                                <td class="text-center" colspan="8">No
+                                                                                    records found</td>
+                                                                            </tr>
+                                                                        @endforelse
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -694,18 +969,27 @@
                     <div class="card custom-card">
 
                         <div class="card-body">
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">Phishing
-                                        Campaign</a>
-                                </li>
-                                <li class="nav-item" role="presentation" id="training_tab">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
-                                </li>
-                            </ul>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                        <li class="nav-item" role="presentation" id="phishing_tab">
+                                            <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                                aria-current="page" href="#phishing_campaign"
+                                                aria-selected="true">Phishing
+                                                Campaign</a>
+                                        </li>
+                                        <li class="nav-item" role="presentation" id="training_tab">
+                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                                href="#training_campaign" aria-selected="false" tabindex="-1">Training
+                                                Campaign</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div><a target="blank" id="emailcampaignPdfLink"
+                                        href="{{ route('email_campaigns_wise_report-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a></div>
+                            </div>
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="phishing_campaign" role="tabpanel">
                                     <div class="table-responsive">
@@ -821,17 +1105,25 @@
                     <div class="card custom-card">
                         <div class="card-body">
                             <!-- Tabs -->
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#whatsappphishing_campaign" aria-selected="true">Phishing Campaign</a>
-                                </li>
-                                <li class="nav-item" role="presentation" id="whatsapptraining_tab">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab"
-                                        href="#whatsapptraining_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
-                                </li>
-                            </ul>
+                            <div style="display: flex; justify-content: space-between;">
+                                <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation" id="phishing_tab">
+                                        <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                            aria-current="page" href="#whatsappphishing_campaign"
+                                            aria-selected="true">Phishing Campaign</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation" id="whatsapptraining_tab">
+                                        <a class="nav-link" data-bs-toggle="tab" role="tab"
+                                            href="#whatsapptraining_campaign" aria-selected="false"
+                                            tabindex="-1">Training
+                                            Campaign</a>
+                                    </li>
+                                </ul>
+                                <div><a target="black" id="whatsappcampaignPdfLink"
+                                        href="{{ route('whatsapp-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a></div>
+                            </div>
                             <!-- Tab Content -->
                             <div class="tab-content">
                                 <!-- Phishing Campaign Tab -->
@@ -1056,6 +1348,139 @@
                 </div>
             </div>
         </div>
+    </div> {{-- TPRM  Campaign Report Modal --}}
+    <div class="modal fade" id="TPRMcampaignReportModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title"> TPRM Campaign Report</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card custom-card">
+
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between;">
+                                <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation" id="phishing_tab">
+                                        <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                            aria-current="page" href="#phishing_campaign" aria-selected="true">Phishing
+                                            Campaign</a>
+                                    </li>
+                                    {{-- <li class="nav-item" role="presentation" id="training_tab">
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#training_campaign" aria-selected="false" tabindex="-1">Training
+                                        Campaign</a>
+                                </li> --}}
+                                </ul>
+                                <div>
+                                    <a target="blank" id="campaignPdfLink"
+                                        href="{{ route('tprm-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a>
+
+                                </div>
+                            </div>
+                            <div class="tab-content">
+                                <div class="tab-pane show active text-muted" id="phishing_campaign" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table text-nowrap table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Campaign name</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Employees</th>
+                                                    <th scope="col">Emails Delivered</th>
+                                                    <th scope="col">Emails Viewed</th>
+                                                    <th scope="col">Payloads Clicked</th>
+                                                    <th scope="col">Employees Compromised</th>
+                                                    <th scope="col">Emails Reported</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tprmcampReportStatus">
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="card custom-card">
+                                        <div class="card-header">
+                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table id="file-export" class="table table-bordered text-nowrap w-100">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Employee Name</th>
+                                                            <th>Email Address</th>
+                                                            <th>Email Delivery</th>
+                                                            <th>Email Viewed</th>
+                                                            <th>Payload Clicked</th>
+                                                            <th>Employee Compromised</th>
+                                                            <th>Email Reported</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tprmcampReportsIndividual">
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane text-muted" id="training_campaign" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table text-nowrap table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Campaign name</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Employees</th>
+                                                    <th scope="col">Trainings Assigned</th>
+                                                    <th scope="col">Trainings Completed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="trainingReportStatus">
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="card custom-card">
+                                        <div class="card-header">
+                                            <div class="card-title">Training Campaign Statistics</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table id="file-export2" class="table table-bordered text-nowrap w-100">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Email Address</th>
+                                                            <th>Training Module</th>
+                                                            <th>Date Assigned</th>
+                                                            <th>Score</th>
+                                                            <th>Passing Score</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="trainingReportsIndividual">
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- -------------------Modals------------------------ --}}
@@ -1100,7 +1525,12 @@
                         campaignId: campid
                     },
                     success: function(response) {
-
+                        console.log("email", response);
+                        let pdfLink = document.getElementById('emailcampaignPdfLink');
+                        pdfLink.href =
+                            `{{ route('email_campaigns_wise_report-download-pdf') }}?campaignId=${campid}`;
+                        // console.log("Success callback triggered!"); // Confirm callback is executed
+                        console.log('tprm response', response); // Log the full response to verify structure
                         if (response.campaign_type === "Phishing") {
                             fetchCampReportByUsers()
 
@@ -1236,6 +1666,9 @@
                         }
                     })
                 }
+
+
+
 
                 function fetchCampTrainingDetails() {
                     $.post({
@@ -1419,8 +1852,9 @@
 
             $.get({
                 url: '/reporting/wget-chart-data',
+                // console.log("res", res)
                 success: function(res) {
-                    //console.log(res)
+                    console.log("res", res);
                     var chartData = res;
 
                     /* dashed chart */
@@ -1714,8 +2148,10 @@
                         campaignId: campid
                     },
                     success: function(response) {
+                        let pdfLink = document.getElementById('whatsappcampaignPdfLink');
+                        pdfLink.href = `{{ route('whatsapp-company-wise-download-pdf') }}?campaignId=${campid}`;
                         // console.log("Success callback triggered!"); // Confirm callback is executed
-                         console.log(response); // Log the full response to verify structure
+                        console.log('tprm response', response); // Log the full response to verify structure
 
                         if (response && response.camp_type) {
                             if (response.camp_type === "Phishing") {
@@ -1744,7 +2180,7 @@
                             console.error('Unexpected response structure:', response);
                         }
 
-                        
+
 
                         let rowHtml = `
                     <tr>
@@ -1765,6 +2201,167 @@
                     </tr>
                 `;
                         $("#whatsappcampReportStatus").html(rowHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", status, error);
+                        console.error("Response Text:", xhr.responseText);
+                    }
+                });
+            }
+
+
+
+            function tprmfetchCampReportByUsers(campid) {
+                $.post({
+                    url: '/tprm-fetch-camp-report-by-users',
+                    data: {
+                        fetchCampReportByUsers: '1',
+                        campaignId: campid
+                    },
+                    success: function(res) {
+                        console.log('tprm', res);
+                        $("#tprmcampReportsIndividual").html(res.html)
+
+                        if (!$.fn.DataTable.isDataTable('#file-export')) {
+
+                            $('#file-export').DataTable({
+                                dom: 'Bfrtip',
+                                buttons: [
+                                    'copy', 'csv', 'excel', 'pdf', 'print'
+                                ],
+                                language: {
+                                    searchPlaceholder: 'Search...',
+                                    sSearch: '',
+                                },
+                            });
+                        }
+
+
+                    }
+                })
+            }
+
+            function tprmfetchCampaignDetails(campid) {
+                console.log('Sending campaignId:', campid);
+                $.post({
+                    url: '/reporting/tprmfetch-campaign-report',
+                    data: {
+                        campaignId: campid
+                    },
+                    success: function(response) {
+                        // Update the href attribute of the <a> tag with the campaignId
+                        let pdfLink = document.getElementById('campaignPdfLink');
+                        pdfLink.href = `{{ route('tprm-company-wise-download-pdf') }}?campaignId=${campid}`;
+                        // console.log("Success callback triggered!"); // Confirm callback is executed
+                        console.log('tprm response', response); // Log the full response to verify structure
+
+                        if (response && response.campaign_type) {
+                            if (response.campaign_type === "Phishing") {
+                                tprmfetchCampReportByUsers(campid); // Call function with campaignId
+                                // whatsappfetchCampReportByUsers(campid); // Call function with campaignId
+                                // $("#whatsapptraining_tab").hide();
+                                $("#phishing_tab").show();
+                            }
+                            // if (response.campaign_type === "Training") {
+                            //     whatsappfetchCampTrainingDetails(campid);
+                            //     whatsappfetchCampTrainingDetailsIndividual(campid); // Call function with campaignId
+                            //     $("#phishing_tab").hide();
+                            //     $("#whatsapptraining_tab").show();
+                            //     $("#phishing_campaign").removeClass("active show");
+                            //     $("#whatsapptraining_tab a").addClass("active");
+                            //     $("#training_campaign").addClass("active show");
+                            // }
+                            // if (response.campaign_type === "Phishing and Training") {
+                            //     whatsappfetchCampReportByUsers(campid);
+                            //     whatsappfetchCampTrainingDetails(campid);
+                            //     whatsappfetchCampTrainingDetailsIndividual(campid);
+                            //     $("#whatsapptraining_tab").show();
+                            //     $("#phishing_tab").show();
+                            //     $("#phishing_campaign").addClass("active show");
+                            // }
+                        } else {
+                            console.error('Unexpected response structure:', response);
+                        }
+
+                        let isDelivered = response.emails_delivered > 0 ?
+                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
+                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
+                        let isViewed = response.emails_viewed > 0 ?
+                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
+                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
+                        let isPayLoadClicked = response.payloads_clicked > 0 ?
+                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
+                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
+                        let isEmpCompromised = response.emp_compromised > 0 ?
+                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
+                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
+                        let isEmailReported = response.email_reported > 0 ?
+                            '<i class="bx bx-check-circle text-success fs-25"></i>' :
+                            '<i class="bx bx-check-circle text-danger fs-25"></i>';
+
+                        let status = '';
+                        if (response.status === 'completed') {
+                            status = '<span class="badge bg-success">Completed</span>';
+                        } else if (response.status === 'pending') {
+                            status = '<span class="badge bg-warning">Pending</span>';
+                        } else {
+                            status = '<span class="badge bg-success">Running</span>';
+                        }
+                        let rowHtml = `
+            <tr>
+                <th scope="row">${response.campaign_name}</th>
+                <td>${status}</td>
+                <td>${response.no_of_users}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="mx-1">${response.emails_delivered}</span>
+                        ${isDelivered}
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="mx-1">${response.emails_viewed}</span>
+                        ${isViewed}
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="mx-1">${response.payloads_clicked}</span>
+                        ${isPayLoadClicked}
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="mx-1">${response.emp_compromised}</span>
+                        ${isEmpCompromised}
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="mx-1">${response.email_reported}</span>
+                        ${isEmailReported}
+                    </div>
+                </td>
+            </tr>
+        `;
+
+
+
+
+                        //                         let rowHtml = `
+                //                     <tr>
+                //                         <th scope="row">${response.campaign_name}</th>
+                //                         <td>${response.status}</td>
+                // <td> 4  </td>
+                // <td> ${response.emails_delivered}  </td>
+                // <td> ${response.emails_viewed}  </td>
+                // <td> ${response.payloads_clicked}  </td>
+                // <td> ${response.emp_compromised}  </td>
+                // <td> ${response.email_reported}  </td>
+
+                //                     </tr>
+                //                 `;
+                        $("#tprmcampReportStatus").html(rowHtml);
                     },
                     error: function(xhr, status, error) {
                         console.error("Error:", status, error);

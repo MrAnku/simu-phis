@@ -35,4 +35,7 @@ class TprmCampaign extends Model
     public function noOfUsers(){
         return $this->hasMany(TprmUsers::class, 'group_id', 'users_group');
     }
+public function tprmReport(){
+ return $this->hasMany(TprmCampaignReport::class, 'campaign_id', 'campaign_id');
+}
 }

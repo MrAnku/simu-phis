@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -237,7 +237,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
 
     //reporting routes-----------------------------------------------------------------
-
+    
+    
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::get('/reporting/get-chart-data', [ReportingController::class, 'getChartData'])->name('campaign.getChartData');
     Route::get('/reporting/wget-chart-data', [ReportingController::class, 'wgetChartData'])->name('campaign.wgetChartData');
@@ -245,8 +246,10 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/reporting/fetch-campaign-report', [ReportingController::class, 'fetchCampaignReport'])->name('campaign.fetchCampaignReport');
     Route::post('/reporting/whatsappfetch-campaign-report', [ReportingController::class, 'whatsappfetchCampaignReport'])->name('campaign.whatsappfetchCampaignReport');
     Route::post('/reporting/aicallingfetch-campaign-report', [ReportingController::class, 'aicallingfetchCampaignReport'])->name('campaign.aicallingfetchCampaignReport');
+    Route::post('/reporting/tprmfetch-campaign-report', [ReportingController::class, 'tprmfetchCampaignReport'])->name('campaign.tprmfetchCampaignReport');
 
     Route::post('/fetch-camp-report-by-users', [ReportingController::class, 'fetchCampReportByUsers'])->name('campaign.fetchCampReportByUsers');
+    Route::post('/tprm-fetch-camp-report-by-users', [ReportingController::class, 'tprmfetchCampReportByUsers'])->name('campaign.tprmfetchCampReportByUsers');
     Route::post('/aicallingfetch-camp-report-by-users', [ReportingController::class, 'aicallingfetchCampReportByUsers'])->name('campaign.aicallingfetchCampReportByUsers');
     Route::post('/whatsappfetch-camp-report-by-users', [ReportingController::class, 'whatsappfetchCampReportByUsers'])->name('campaign.whatsappfetchCampReportByUsers');
 
@@ -514,6 +517,19 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
 
 //------------------------admin route----------------------//
+
+
+
+
+
+// download route 
+Route::get('/download-pdf', [PdfController::class, 'downloadPdf'])->name('download-pdf');
+Route::get('/download-pdf-tprm', [PdfController::class, 'tprm_full_report'])->name('tprm-full-report-download-pdf');
+Route::get('/download-pdf-tprm-company-wise', [PdfController::class, 'tprm_campaigns_wise'])->name('tprm-company-wise-download-pdf');
+Route::get('/download-pdf-whatsapp-full-report', [PdfController::class, 'whatsapp_full_report'])->name('whatsapp_full_report-download-pdf');
+Route::get('/download-pdf-email-full-report', [PdfController::class, 'email_full_report'])->name('email_full_report-download-pdf');
+Route::get('/download-pdf-email-campaign-wise-report', [PdfController::class, 'email_campaigns_wise'])->name('email_campaigns_wise_report-download-pdf');
+Route::get('/download-pdf-whatsapp-company-wise', [PdfController::class, 'whatsapp_campaigns_wise'])->name('whatsapp-company-wise-download-pdf');
 
 
 
