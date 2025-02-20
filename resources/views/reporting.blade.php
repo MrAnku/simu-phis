@@ -144,9 +144,18 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
-                                                            <div class="card-title">
-                                                                Campaign Reports
+                                                        <div style="display: flex; justify-content: space-between;">
+                                                            <div class="card-header">
+                                                                <div class="card-title">
+                                                                    Campaign Reports
+                                                                </div>
+                                                            </div>
+
+                                                            <div><a target="blank"
+                                                                    href="{{ route('email_full_report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    </button>
+                                                                </a>
                                                             </div>
                                                         </div>
                                                         <div class="card-body">
@@ -359,10 +368,19 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
-                                                            <div class="card-title">
-                                                                WhatsApp Campaign Reports
+                                                        <div style="display: flex; justify-content: space-between;">
+                                                            <div class="card-header">
+                                                                <div class="card-title">
+                                                                    WhatsApp Campaign Reports
+                                                                </div>
                                                             </div>
+                                                            <div> <a target="blank"
+                                                                    href="{{ route('whatsapp_full_report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    </button>
+                                                                </a>
+                                                            </div>
+
                                                         </div>
                                                         <div class="card-body">
                                                             <div class="table-responsive">
@@ -815,8 +833,10 @@
                                                                 TPRM Campaign Reports
                                                             </div>
                                                             <div>
-                                                                <a href="{{ route('tprm-full-report-download-pdf') }}">
-                                                                    <button class="btn btn-primary">View Full PDF </button>
+                                                                <a target="blank"
+                                                                    href="{{ route('tprm-full-report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full
+                                                                        Report</button>
                                                                 </a>
 
                                                             </div>
@@ -949,18 +969,27 @@
                     <div class="card custom-card">
 
                         <div class="card-body">
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">Phishing
-                                        Campaign</a>
-                                </li>
-                                <li class="nav-item" role="presentation" id="training_tab">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
-                                </li>
-                            </ul>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                        <li class="nav-item" role="presentation" id="phishing_tab">
+                                            <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                                aria-current="page" href="#phishing_campaign"
+                                                aria-selected="true">Phishing
+                                                Campaign</a>
+                                        </li>
+                                        <li class="nav-item" role="presentation" id="training_tab">
+                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                                href="#training_campaign" aria-selected="false" tabindex="-1">Training
+                                                Campaign</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div><a target="blank" id="emailcampaignPdfLink"
+                                        href="{{ route('email_campaigns_wise_report-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a></div>
+                            </div>
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="phishing_campaign" role="tabpanel">
                                     <div class="table-responsive">
@@ -1076,17 +1105,25 @@
                     <div class="card custom-card">
                         <div class="card-body">
                             <!-- Tabs -->
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#whatsappphishing_campaign" aria-selected="true">Phishing Campaign</a>
-                                </li>
-                                <li class="nav-item" role="presentation" id="whatsapptraining_tab">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab"
-                                        href="#whatsapptraining_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
-                                </li>
-                            </ul>
+                            <div style="display: flex; justify-content: space-between;">
+                                <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation" id="phishing_tab">
+                                        <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                            aria-current="page" href="#whatsappphishing_campaign"
+                                            aria-selected="true">Phishing Campaign</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation" id="whatsapptraining_tab">
+                                        <a class="nav-link" data-bs-toggle="tab" role="tab"
+                                            href="#whatsapptraining_campaign" aria-selected="false"
+                                            tabindex="-1">Training
+                                            Campaign</a>
+                                    </li>
+                                </ul>
+                                <div><a target="black" id="whatsappcampaignPdfLink"
+                                        href="{{ route('whatsapp-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a></div>
+                            </div>
                             <!-- Tab Content -->
                             <div class="tab-content">
                                 <!-- Phishing Campaign Tab -->
@@ -1338,8 +1375,9 @@
                                 </li> --}}
                                 </ul>
                                 <div>
-                                    <a id="campaignPdfLink" href="{{ route('tprm-company-wise-download-pdf') }}">
-                                        <button class="btn btn-primary">View Campaign Wise PDF</button>
+                                    <a target="blank" id="campaignPdfLink"
+                                        href="{{ route('tprm-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
                                     </a>
 
                                 </div>
@@ -1488,6 +1526,11 @@
                     },
                     success: function(response) {
                         console.log("email", response);
+                        let pdfLink = document.getElementById('emailcampaignPdfLink');
+                        pdfLink.href =
+                            `{{ route('email_campaigns_wise_report-download-pdf') }}?campaignId=${campid}`;
+                        // console.log("Success callback triggered!"); // Confirm callback is executed
+                        console.log('tprm response', response); // Log the full response to verify structure
                         if (response.campaign_type === "Phishing") {
                             fetchCampReportByUsers()
 
@@ -2105,8 +2148,10 @@
                         campaignId: campid
                     },
                     success: function(response) {
+                        let pdfLink = document.getElementById('whatsappcampaignPdfLink');
+                        pdfLink.href = `{{ route('whatsapp-company-wise-download-pdf') }}?campaignId=${campid}`;
                         // console.log("Success callback triggered!"); // Confirm callback is executed
-                        console.log(response); // Log the full response to verify structure
+                        console.log('tprm response', response); // Log the full response to verify structure
 
                         if (response && response.camp_type) {
                             if (response.camp_type === "Phishing") {

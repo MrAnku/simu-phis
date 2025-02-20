@@ -526,6 +526,10 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 Route::get('/download-pdf', [PdfController::class, 'downloadPdf'])->name('download-pdf');
 Route::get('/download-pdf-tprm', [PdfController::class, 'tprm_full_report'])->name('tprm-full-report-download-pdf');
 Route::get('/download-pdf-tprm-company-wise', [PdfController::class, 'tprm_campaigns_wise'])->name('tprm-company-wise-download-pdf');
+Route::get('/download-pdf-whatsapp-full-report', [PdfController::class, 'whatsapp_full_report'])->name('whatsapp_full_report-download-pdf');
+Route::get('/download-pdf-email-full-report', [PdfController::class, 'email_full_report'])->name('email_full_report-download-pdf');
+Route::get('/download-pdf-email-campaign-wise-report', [PdfController::class, 'email_campaigns_wise'])->name('email_campaigns_wise_report-download-pdf');
+Route::get('/download-pdf-whatsapp-company-wise', [PdfController::class, 'whatsapp_campaigns_wise'])->name('whatsapp-company-wise-download-pdf');
 
 
 

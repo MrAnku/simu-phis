@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML to PDF with Graph</title>
+    <title>TPRM Report</title>
 
+    <!-- Add favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/simu-icon.png') }}">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -41,7 +43,7 @@
             font-size: 35px;
             font-weight: 600;
             color: #ff7b4a;
-            margin-left: 20px;
+            margin-left: 5px;
             font-family: system-ui;
         }
 
@@ -49,7 +51,7 @@
             font-size: 35px;
             font-weight: 600;
             color: #00c3ff;
-            margin-left: 20px;
+            margin-left: 5px;
             font-family: system-ui;
         }
 
@@ -188,7 +190,7 @@
 
 <body>
 
-    <button id="downloadPdf">Download as gh PDF</button>
+    <button id="downloadPdf">Download as PDF</button>
 
 
     @php
@@ -220,7 +222,7 @@
             </div>
             <div>
                 <span class="reporting_2">Phishing</span>
-                <span class="of_2">Campaings Reports</span>
+                <span class="of_2">Campaign Report</span>
             </div>
         </div>
         <div class="blue-background">
@@ -233,11 +235,17 @@
             </div>
         </div>
 
-
-
         <div style="display: flex;">
             <div style="width: 40%">
-                <div id="chart" style="background: white; margin-top: 16px;"></div>
+                @if ($ArrayCount['array_count'] !== 0)
+                    <div id="chart" style="background: white; margin-top: 16px;"></div>
+                @else
+                    <div style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
+                        <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
+                            alt="">
+                        <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
+                    </div>
+                @endif
             </div>
             <div style="width: 40%; margin-left: auto;margin-right: 40px;">
                 <div class="blue-background">
@@ -245,7 +253,7 @@
                         <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
                     </div>
                     <div>
-                        <span class="details">Graph</span>
+                        <span class="details">Interaction</span>
                         <span class="user">Details</span>
                     </div>
                 </div>
@@ -260,22 +268,6 @@
                         </div>
                         {{-- <div class="total_user_count">100</div> --}}
                     </div>
-
-
-
-
-
-
-                    {{-- @if (!empty($Arraydetails))
-                        <ul>
-                            @foreach ($Arraydetails as $key => $value)
-                                <li>{{ $key }}: {{ $value }}</li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p style="color: #111c43">No campaign details available.</p>
-                    @endif --}}
-
                     @foreach ($Arraydetails as $key => $value)
                         <div
                             style="
@@ -385,13 +377,13 @@
             </div>
             <div>
                 <span class="reporting_2">Phishing</span>
-                <span class="of_2">Datatable</span>
+                <span class="of_2">Report</span>
             </div>
         </div>
 
 
         {{-- <table style="margin-top: 100px; background: #fff"  class="table table-bordered border-dark"> --}}
-        <table style="margin-top: 100px; background: #fff" class="table">
+        <table style="margin-top: 20px; background: #fff" class="table">
 
             <thead style=" background: linear-gradient(to right, #111c43, #2b47a9);" class="table-dark">
                 <tr>
@@ -423,30 +415,28 @@
         // let campaign_details = session('campaign_details', []);
         // console.log('campaign_details', campaign_details);
         let ArrayData = {!! json_encode($Arraydetails) !!};
-        let ArrayData_2 = [{
-                "labels": "Emails Delivered"
-            },
-            {
-                "labels": "Emails Viewed"
-            },
-            {
-                "labels": "Email Reported"
-            },
-            {
-                "labels": "Emp Compromised"
-            }
-        ];
+        // let ArrayData_2 = [{
+        //         "labels": "Emails Delivered"
+        //     },
+        //     {
+        //         "labels": "Emails Viewed"
+        //     },
+        //     {
+        //         "labels": "Email Reported"
+        //     },
+        //     {
+        //         "labels": "Emp Compromised"
+        //     }
+        // ];
+        let ArrayData_2 = {!! json_encode($ArrayData_labels) !!}; // Convert PHP array to JavaScript object1
+        console.log('ArrayData_2', ArrayData_2);
         var options = {
-
             series: Object.values(ArrayData), // Extract numerical values
-
             chart: {
                 width: 380,
                 type: 'polarArea'
             },
-
             labels: ArrayData_2.map(item => item.labels), // Extract labels
-
             fill: {
                 opacity: 1
             },
@@ -470,11 +460,10 @@
                     }
                 }
             },
+            colors: ["#4ea6ff", '#ff435b', '#fed843', '#ff7b4a', "#7ed8f6"], // Red, Yellow, Green
             theme: {
                 monochrome: {
-                    enabled: true,
-                    shadeTo: 'light',
-                    shadeIntensity: 0.6
+                    enabled: false // Disable monochrome mode to use custom colors
                 }
             }
         };
