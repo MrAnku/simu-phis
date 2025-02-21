@@ -530,6 +530,8 @@ Route::get('/download-pdf-whatsapp-full-report', [PdfController::class, 'whatsap
 Route::get('/download-pdf-email-full-report', [PdfController::class, 'email_full_report'])->name('email_full_report-download-pdf');
 Route::get('/download-pdf-email-campaign-wise-report', [PdfController::class, 'email_campaigns_wise'])->name('email_campaigns_wise_report-download-pdf');
 Route::get('/download-pdf-whatsapp-company-wise', [PdfController::class, 'whatsapp_campaigns_wise'])->name('whatsapp-company-wise-download-pdf');
+Route::get('/download-pdf-ai-company-wise', [PdfController::class, 'ai_campaigns_wise'])->name('ai-calling-company-wise-download-pdf');
+Route::get('/download-pdf-ai-full-report', [PdfController::class, 'ai_full_report'])->name('ai-full-report-download-pdf');
 
 
 

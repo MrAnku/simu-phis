@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiCallCampLive;
 use App\Models\Campaign;
 use App\Models\CampaignLive;
 use App\Models\CampaignReport;
@@ -76,7 +77,8 @@ $ArrayData_labels = [
     ["labels" => "Training Assigned"],
 ];
 $ArrayCount['array_count'] = $training_assigned + $payloads_clicked_reported + $emp_compromised_reported;
-return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount'));
+$label = "TPRM";
+return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label'));
 }
 
 public function tprm_campaigns_wise (Request $request)
@@ -86,11 +88,11 @@ public function tprm_campaigns_wise (Request $request)
 $companyId = Auth::user()->company_id;
  $camp_live = TprmCampaignLive::where('company_id', $companyId)->where('campaign_id',  $campId)->get();
 // return $camp_live;
- $tprmcamps = TprmCampaignLive::where('company_id', $companyId)->get();
+ $tprmcamps = TprmCampaignLive::where('company_id', $companyId)->where('campaign_id',  $campId)->get();
 
       $training_assigned =  $tprmcamps->sum('training_assigned');
       $emp_compromised_reported =  $tprmcamps->sum('emp_compromised');
-      $payloads_clicked_reported =  $tprmcamps->sum('payloads_clicked');
+      $payloads_clicked_reported =  $tprmcamps->sum('payload_clicked');
    $Arraydetails = [];
 $ArrayCount = [];
 // Assign values safely, ensuring no undefined property errors
@@ -103,7 +105,8 @@ $ArrayData_labels = [
     ["labels" => "Training Assigned"],
 ];
 $ArrayCount['array_count'] = $training_assigned + $payloads_clicked_reported + $emp_compromised_reported;
-return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount'));
+$label = 'TPRM';
+return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label'));
 
 
 
@@ -113,7 +116,7 @@ return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labe
 public function whatsapp_campaigns_wise (Request $request)
 {
  $campId = $request->query('campaignId');
-// return  $campId;
+$label = "Whatsapp";
     $companyId = Auth::user()->company_id;
 //  $reportRow = WhatsAppCampaignUser::where('campaign_id', $campId)->where('company_id', $companyId)->first();
 $TrainingreportRow = WhatsAppCampaignUser::where('camp_id', $campId)
@@ -143,14 +146,14 @@ $ArrayData_labels = [
     ["labels" => "Training Assigned"],
 ];
 
-return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount'));
+return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
 }
 
 public function whatsapp_full_report()
 {
 $companyId = Auth::user()->company_id;
 
-
+$label = "Whatsapp";
 $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
 $link_clicked = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('link_clicked');
 $emp_compromised = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('emp_compromised');
@@ -175,7 +178,7 @@ Training_Assigned"],
     $camp_live = WhatsAppCampaignUser::where('company_id', $companyId)->get();
 // return $camp_live;
 // return $camp_live;
-return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount'));
+return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
 }
 
 public function  email_full_report() 
@@ -199,8 +202,8 @@ $ArrayCount = [];
     ];
     $camp_live = CampaignLive::where('company_id', $companyId)->get();
 
-// return $camp_live;
-    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount'));
+$label='Email';
+    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
 }
 
 public function email_campaigns_wise (Request $request)
@@ -227,9 +230,70 @@ $ArrayCount['array_count'] = $training_assigned + $payload_clicked + $emp_compro
         ["labels" => "Training Assigned"],
     ];
     $camp_live = CampaignLive::where('company_id', $companyId)->get();
-
+$label='Email';
 // return $camp_live;
-    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount'));
+    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+}
+
+public function ai_campaigns_wise(Request $request) {
+ $campId = $request->query('campaignId');
+    $companyId = Auth::user()->company_id;
+    // $call_send_response = AiCallCampLive::where('company_id', $companyId)->get();
+$call_send_response_count = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->whereNotNull('call_send_response')->count(); // Count those rows
+
+$training_assigned = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)
+    ->sum('training_assigned');
+
+$call_end_response_count = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)
+    ->whereNotNull('call_end_response') // Select only rows where call_send_response is NOT NULL
+    ->count(); // Count those rows
+
+$Arraydetails = [];
+$ArrayCount = [];
+    $Arraydetails['Call Sent'] = $call_send_response_count ?? 0;
+    $Arraydetails['Call Responsed'] =   $call_end_response_count  ?? 0;
+    $Arraydetails['Traning Assigned'] = $training_assigned ?? 0;
+$ArrayCount['array_count'] = $call_send_response_count + $training_assigned + $call_end_response_count;
+    $ArrayData_labels = [
+        ["labels" => "Call Sent"],
+        ["labels" => "Call Responsed"],
+        ["labels" => "Traing Assigned"],
+    ];
+    $camp_live = AiCallCampLive::where('company_id', $companyId)->get();
+$label='AI';
+ return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+}
+
+
+
+public function ai_full_report() {
+    $companyId = Auth::user()->company_id;
+    // $call_send_response = AiCallCampLive::where('company_id', $companyId)->get();
+$call_send_response_count = AiCallCampLive::where('company_id', $companyId)
+    ->whereNotNull('call_send_response') // Select only rows where call_send_response is NULL
+    ->count(); // Count those rows
+
+$training_assigned = AiCallCampLive::where('company_id', $companyId)
+    ->sum('training_assigned');
+
+$call_end_response_count = AiCallCampLive::where('company_id', $companyId)
+    ->whereNotNull('call_end_response') // Select only rows where call_send_response is NOT NULL
+    ->count(); // Count those rows
+
+$Arraydetails = [];
+$ArrayCount = [];
+    $Arraydetails['Call Sent'] = $call_send_response_count ?? 0;
+    $Arraydetails['Call Responsed'] =   $call_end_response_count  ?? 0;
+    $Arraydetails['Training Assigned'] = $training_assigned ?? 0;
+$ArrayCount['array_count'] = $call_send_response_count + $training_assigned + $call_end_response_count;
+    $ArrayData_labels = [
+        ["labels" => "Call Sent"],
+        ["labels" => "Call Responsed"],
+        ["labels" => "Training Assigned"],
+    ];
+    $camp_live = AiCallCampLive::where('company_id', $companyId)->get();
+$label='AI';
+ return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
 }
 
 }

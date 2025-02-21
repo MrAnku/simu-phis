@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Report</title>
+    <title>AI Vishing Report</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -203,7 +203,7 @@
         <div class="flex-box">
             <div><img class="width-graph" src="{{ asset('images/graph.png') }}" alt=""></div>
             <div>
-                <span class="reporting">{{ $label }}</span> <span class="of">Phishing</span>
+                <span class="reporting">{{ $label }}</span> <span class="of">Vishing</span>
                 <span class="phising">Simulation</span>
             </div>
         </div>
@@ -601,20 +601,21 @@
                 let rowHtml = '';
                 campaignData.forEach((camp) => {
                     let isDelivered = camp.payload_clicked == "0" ? mailPending : mailSent;
-                    let isPayLoadClicked = camp.payload_clicked == 0 ? noBatch : yesBatch;
-                    let isTrainingAssigned = camp.training_assigned == 0 ? noBatch : yesBatch;
-                    let isEmpCompromised = camp.emp_compromised == 0 ? noBatch : yesBatch;
-                    let isEmailReported = camp.email_reported == 0 ? noBatch : yesBatch;
+                    let isSendResponse = camp.call_send_response == null ? noBatch : yesBatch;
+                    let isEndResponse = camp.call_end_response == null ? noBatch : yesBatch;
+                    let isSendReport = camp.call_report == null ? noBatch : yesBatch;
+                    let isTraining = camp.training_assigned == 0 ? noBatch : yesBatch;
 
                     rowHtml += `
                     <tr>
                         <td>${camp.campaign_name}</td>
-                        <td>${camp.user_email}</td>
+                        <td>${camp.employee_email}</td>
                     
-                        <td>${isPayLoadClicked}</td>
-                        <td>${isEmpCompromised }</td>
-                        <td>${isEmailReported}</td>
-                        <td>${isTrainingAssigned}</td>
+                        <td>${isSendResponse}</td>
+                        <td>${isEndResponse }</td>
+                        <td>${isSendReport}</td>
+                        <td>${isTraining}</td>
+                       
                     </tr>
                 `;
                 });

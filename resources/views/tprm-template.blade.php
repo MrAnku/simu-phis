@@ -32,7 +32,7 @@
         }
 
         .reporting {
-            font-size: 46px;
+            font-size: 36px;
             font-weight: 600;
             color: #595cff;
             margin-left: 20px;
@@ -204,8 +204,8 @@
         <div class="flex-box">
             <div><img class="width-graph" src="{{ asset('images/graph.png') }}" alt=""></div>
             <div>
-                <span class="reporting">Reporting</span> <span class="of">Of</span>
-                <span class="phising">Phishing</span>
+                <span class="reporting">{{ $label }}</span> <span class="of">Phishing</span>
+                <span class="phising">Simulation</span>
             </div>
         </div>
         <div class="flex-box-design">
@@ -221,8 +221,8 @@
                 <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
             </div>
             <div>
-                <span class="reporting_2">Phishing</span>
-                <span class="of_2">Campaign Report</span>
+                <span class="reporting_2">Campaign</span>
+                <span class="of_2">Report</span>
             </div>
         </div>
         <div class="blue-background">
@@ -376,7 +376,7 @@
                 <img class="image-presentation" src="http://127.0.0.1:8000/images/presentation.png" alt="">
             </div>
             <div>
-                <span class="reporting_2">Phishing</span>
+                <span class="reporting_2">Simulation</span>
                 <span class="of_2">Report</span>
             </div>
         </div>

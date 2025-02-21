@@ -589,11 +589,25 @@
                                             <div class="row">
                                                 <div class="col-xl-12">
                                                     <div class="card custom-card">
-                                                        <div class="card-header">
-                                                            <div class="card-title">
-                                                                Call Campaign Reports
+
+                                                        <div style="display: flex; justify-content: space-between;">
+                                                            <div class="card-header">
+                                                                <div class="card-title">
+                                                                    Call Campaign Reports
+                                                                </div>
                                                             </div>
+
+                                                            <div>
+                                                                <a target="blank"
+                                                                    href="{{ route('ai-full-report-download-pdf') }}">
+                                                                    <button class="btn btn-primary">Download Full
+                                                                        Report</button>
+                                                                </a>
+                                                            </div>
+
                                                         </div>
+
+
                                                         <div class="card-body">
                                                             <div class="table-responsive">
                                                                 <table id="datatable-basic"
@@ -1237,18 +1251,30 @@
                     <div class="card custom-card">
 
                         <div class="card-body">
-                            <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
-                                <li class="nav-item" role="presentation" id="ai_phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#aicallingphishing_campaign" aria-selected="true">Phishing
-                                        Campaign</a>
-                                </li>
-                                <li class="nav-item" role="presentation" id="ai_training_tab">
-                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#aicallingtraining_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
-                                </li>
-                            </ul>
+                            <div style="display: flex; justify-content: space-between;">
+
+                                <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation" id="ai_phishing_tab">
+                                        <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                            aria-current="page" href="#aicallingphishing_campaign"
+                                            aria-selected="true">Phishing
+                                            Campaign</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation" id="ai_training_tab">
+                                        <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                            href="#aicallingtraining_campaign" aria-selected="false"
+                                            tabindex="-1">Training
+                                            Campaign</a>
+                                    </li>
+                                </ul>
+
+                                <div>
+                                    <a target="blank" id="aicallingcampaignPdfLink"
+                                        href="{{ route('ai-calling-company-wise-download-pdf') }}">
+                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                    </a>
+                                </div>
+                            </div>
                             <div class="tab-content">
                                 <div class="tab-pane show active text-muted" id="aicallingphishing_campaign"
                                     role="tabpanel">
@@ -2450,7 +2476,10 @@
                         campaignId: campid
                     },
                     success: function(response) {
-
+                        let pdfLink = document.getElementById('aicallingcampaignPdfLink');
+                        pdfLink.href = `{{ route('ai-calling-company-wise-download-pdf') }}?campaignId=${campid}`;
+                        // console.log("Success callback triggered!"); // Confirm callback is executed
+                        console.log('tprm response', response); // Log the full response to verify structure
                         if (response.campaign_type === "Phishing") {
                             fetchCampReportByUsers()
 
