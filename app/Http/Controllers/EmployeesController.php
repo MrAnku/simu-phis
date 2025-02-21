@@ -241,12 +241,18 @@ class EmployeesController extends Controller
 
         //xss check end
 
-        $grpId = $request->input('groupid');
-        $usrName = $request->input('usrName');
-        $usrEmail = $request->input('usrEmail');
-        $usrCompany = $request->input('usrCompany');
-        $usrJobTitle = $request->input('usrJobTitle');
-        $usrWhatsapp = $request->input('usrWhatsapp');
+        $validator = Validator::make($request->all(), [
+            'groupid' => 'required',
+            'usrName' => 'required|string|max:255',
+            'usrEmail' => 'required|email|max:255',
+            'usrCompany' => 'nullable|string|max:255',
+            'usrJobTitle' => 'nullable|string|max:255',
+            'usrWhatsapp' => 'nullable|numeric|min:11|max:14',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 0, 'msg' => $validator->errors()->first()]);
+        }
         $companyId = Auth::user()->company_id;
 
         // Checking the limit of employees
@@ -256,29 +262,29 @@ class EmployeesController extends Controller
         }
 
         //checking if the domain is verified
-        if (!$this->domainVerified($usrEmail, $companyId)) {
+        if (!$this->domainVerified($request->usrEmail, $companyId)) {
             return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
         }
 
         //checking if the email is unique
-        $user = Users::where('user_email', $usrEmail)->exists();
+        $user = Users::where('user_email', $request->usrEmail)->exists();
         if ($user) {
             return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
         }
 
         Users::create(
             [
-                'group_id' => $grpId,
-                'user_name' => $usrName,
-                'user_email' => $usrEmail,
-                'user_company' => $usrCompany,
-                'user_job_title' => $usrJobTitle,
-                'whatsapp' => $usrWhatsapp,
+                'group_id' => $request->groupid,
+                'user_name' => $request->usrName,
+                'user_email' => $request->usrEmail,
+                'user_company' => !empty($request->usrCompany) ? $request->usrCompany : null,
+                'user_job_title' => !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
+                'whatsapp' => !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null,
                 'company_id' => $companyId,
             ]
         );
         Auth::user()->increment('usedemployees');
-        log_action("Employee {$usrEmail} added");
+        log_action("Employee {$request->usrEmail} added");
         return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
 
