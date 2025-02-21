@@ -247,7 +247,11 @@ class EmployeesController extends Controller
             'usrEmail' => 'required|email|max:255',
             'usrCompany' => 'nullable|string|max:255',
             'usrJobTitle' => 'nullable|string|max:255',
-            'usrWhatsapp' => 'nullable|numeric|min:11|max:14',
+            'usrWhatsapp' => 'nullable|digits_between:11,15',
+        ]);
+
+        $request->merge([
+            'usrWhatsapp' => preg_replace('/\D/', '', $request->usrWhatsapp)
         ]);
 
         if ($validator->fails()) {
@@ -394,9 +398,9 @@ class EmployeesController extends Controller
 
                 $name = $data[0];
                 $email = $data[1];
-                $company = !empty($data[2]) ? $data[2] : null;
-                $job_title = !empty($data[3]) ? $data[3] : null;
-                $whatsapp = !empty($data[4]) ? $data[4] : null;
+                $company = !empty($data[2]) ? preg_replace('/[^\w\s]/u', '', $data[2]) : null;
+                $job_title = !empty($data[3]) ? preg_replace('/[^\w\s]/u', '', $data[3]) : null;
+                $whatsapp = !empty($data[4]) ? preg_replace('/\D/', '', $data[4]) : null;
 
                 if (!$name || !$email) {
                     continue;
@@ -415,9 +419,9 @@ class EmployeesController extends Controller
                 $user->group_id = $grpId;
                 $user->user_name = $name;
                 $user->user_email = $email;
-                $user->user_company = $company ?? null;
-                $user->user_job_title = $job_title ?? null;
-                $user->whatsapp = is_numeric($whatsapp) ? (int)$whatsapp : null;
+                $user->user_company = $company;
+                $user->user_job_title = $job_title;
+                $user->whatsapp = $whatsapp;
                 $user->company_id = $companyId;
                 $user->save();
 
