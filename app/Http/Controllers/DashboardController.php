@@ -300,15 +300,15 @@ class DashboardController extends Controller
     public function reqNewLimit(Request $request){
 
         $request->validate([
-            'new_limit' => 'integer|min:10|max:5000',
-            'add_info' => 'nullable|max:1000'
+            'new_limit' => 'required|integer|min:10|max:5000',
+            'add_info' => 'nullable|string|max:1000'
         ]);
 
         DB::table('upgrade_req')->insert([
             'old_limit' => Auth::user()->employees,
             'new_limit' => $request->new_limit,
             'usage_percent' => $request->usage,
-            'add_info' => $request->add_info,
+            'add_info' => empty($request->add_info) ? null : $request->add_info,
             'status' => 0,
             'company_id' => Auth::user()->company_id,
             'partner_id' => Auth::user()->partner_id,
