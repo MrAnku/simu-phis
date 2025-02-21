@@ -480,7 +480,7 @@
 
                         <div class="mb-3">
                             <label for="input-label" class="form-label">New Limit<sup class="text-danger">*</sup></label>
-                            <input type="number" name="new_limit" class="form-control" min="100" max="5000"
+                            <input type="number" name="new_limit" class="form-control" min="10" max="5000"
                                 placeholder="Enter new limit value ex. 1000">
 
                         </div>

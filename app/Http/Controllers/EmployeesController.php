@@ -61,8 +61,11 @@ class EmployeesController extends Controller
         $notAllowedDomains = [
             'gmail.com',
             'yahoo.com',
+            'outlook.com',
+            'hotmail.com',
+            'aol.com',
+            'yandex.com',
             'icloud.com',
-            'zoho.com',
             'protonmail.com'
         ];
 
@@ -72,19 +75,19 @@ class EmployeesController extends Controller
 
         $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
         $verifiedDomain = DomainVerified::where('domain', $domain)
-            ->where('company_id', $companyId)
             ->first();
 
-        if ($verifiedDomain) {
-            if ($verifiedDomain->verified == '0') {
-                $genCode = generateRandom(6);
-                $verifiedDomain->temp_code = $genCode;
-                $verifiedDomain->save();
+        if ($verifiedDomain && $verifiedDomain->verified == '1') {
+            return response()->json(['status' => 0, 'msg' => 'Domain already verified or by some other company']);
+        }
 
-                $this->domainVerificationMail($verifyEmail, $genCode);
-            } else {
-                return response()->json(['status' => 0, 'msg' => 'Domain already verified']);
-            }
+        if ($verifiedDomain && $verifiedDomain->verified == '0') {
+            $genCode = generateRandom(6);
+            $verifiedDomain->temp_code = $genCode;
+            $verifiedDomain->company_id = $companyId;
+            $verifiedDomain->save();
+
+            $this->domainVerificationMail($verifyEmail, $genCode);
         } else {
             $genCode = generateRandom(6);
             DomainVerified::create([
@@ -98,7 +101,6 @@ class EmployeesController extends Controller
         }
 
         log_action("Domain verification mail sent");
-
         return response()->json(['status' => 1, 'msg' => 'Verification email sent']);
     }
 
@@ -225,7 +227,7 @@ class EmployeesController extends Controller
     public function addUser(Request $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -245,55 +247,39 @@ class EmployeesController extends Controller
         $usrCompany = $request->input('usrCompany');
         $usrJobTitle = $request->input('usrJobTitle');
         $usrWhatsapp = $request->input('usrWhatsapp');
-        $companyId = auth()->user()->company_id; // Assuming the authenticated user has a company_id attribute
+        $companyId = Auth::user()->company_id;
 
-        // Retrieve the company record
-        $company = Company::where('company_id', $companyId)->first();
-
-        if (!$company) {
-            return response()->json(['status' => 0, 'msg' => 'Company not found']);
-        }
-
-        // Check if usedemployees is greater than or equal to employees
-        if ($company->usedemployees >= $company->employees) {
-
+        // Checking the limit of employees
+        if (Auth::user()->usedemployees >= Auth::user()->employees) {
             log_action("Employee limit has exceeded");
             return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
         }
 
-        if ($this->domainVerified($usrEmail, $companyId)) {
-            if ($this->uniqueEmail($usrEmail)) {
-                if ($this->checkLimit($companyId)) {
-                    $user = new Users();
-                    $user->group_id = $grpId;
-                    $user->user_name = $usrName;
-                    $user->user_email = $usrEmail;
-                    $user->user_company = $usrCompany;
-                    $user->user_job_title = $usrJobTitle;
-                    $user->whatsapp = $usrWhatsapp;
-                    $user->company_id = $companyId;
-
-                    if ($user->save()) {
-                        // Increment the usedemployees column for the company
-                        $company->increment('usedemployees');
-
-                        log_action("Employee {$user->user_email} added");
-
-                        return response()->json(['status' => 1, 'msg' => 'Added Successfully']);
-                    } else {
-                        log_action("Failed to add user");
-                        return response()->json(['status' => 0, 'msg' => 'Failed to add user']);
-                    }
-                } else {
-                    log_action("Employee limit has exceeded");
-                    return response()->json(['status' => 0, 'msg' => 'Your limit has exceeded']);
-                }
-            } else {
-                return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
-            }
-        } else {
+        //checking if the domain is verified
+        if (!$this->domainVerified($usrEmail, $companyId)) {
             return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
         }
+
+        //checking if the email is unique
+        $user = Users::where('user_email', $usrEmail)->exists();
+        if ($user) {
+            return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
+        }
+
+        Users::create(
+            [
+                'group_id' => $grpId,
+                'user_name' => $usrName,
+                'user_email' => $usrEmail,
+                'user_company' => $usrCompany,
+                'user_job_title' => $usrJobTitle,
+                'whatsapp' => $usrWhatsapp,
+                'company_id' => $companyId,
+            ]
+        );
+        Auth::user()->increment('usedemployees');
+        log_action("Employee {$usrEmail} added");
+        return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
 
 
@@ -307,20 +293,6 @@ class EmployeesController extends Controller
             ->exists();
 
         return $checkDomain;
-    }
-
-    private function uniqueEmail($email)
-    {
-        return !Users::where('user_email', $email)->exists();
-    }
-
-    private function checkLimit($companyId)
-    {
-        $userCount = Users::where('company_id', $companyId)->count();
-        $userCount++;
-        $noOfEmp = Auth::user()->employees; // Assuming no_of_emp is a column in the users table
-
-        return $userCount <= (int)$noOfEmp;
     }
 
     public function deleteGroup(Request $request)
@@ -409,28 +381,41 @@ class EmployeesController extends Controller
                     continue;
                 }
 
+                // Checking the limit of employees
+                if (Auth::user()->usedemployees >= Auth::user()->employees) {
+                    break;
+                }
+
                 $name = $data[0];
                 $email = $data[1];
                 $company = !empty($data[2]) ? $data[2] : null;
                 $job_title = !empty($data[3]) ? $data[3] : null;
                 $whatsapp = !empty($data[4]) ? $data[4] : null;
 
-                if ($this->domainVerified($email, $companyId)) {
-                    if ($this->uniqueEmail($email)) {
-                        if ($this->checkLimit($companyId)) {
-                           
-                            $user = new Users();
-                            $user->group_id = $grpId;
-                            $user->user_name = $name;
-                            $user->user_email = $email;
-                            $user->user_company = $company ?? null;
-                            $user->user_job_title = $job_title ?? null;
-                            $user->whatsapp = is_numeric($whatsapp) ? (int)$whatsapp : null;
-                            $user->company_id = $companyId;
-                            $user->save();
-                        }
-                    }
+                if (!$name || !$email) {
+                    continue;
                 }
+
+                if (!$this->domainVerified($email, $companyId)) {
+                    continue;
+                }
+
+                $user = Users::where('user_email', $email)->exists();
+                if ($user) {
+                    continue;
+                }
+
+                $user = new Users();
+                $user->group_id = $grpId;
+                $user->user_name = $name;
+                $user->user_email = $email;
+                $user->user_company = $company ?? null;
+                $user->user_job_title = $job_title ?? null;
+                $user->whatsapp = is_numeric($whatsapp) ? (int)$whatsapp : null;
+                $user->company_id = $companyId;
+                $user->save();
+
+                Auth::user()->increment('usedemployees');
             }
             fclose($handle);
 
@@ -438,7 +423,7 @@ class EmployeesController extends Controller
             return redirect()->back()->with('success', 'CSV file imported successfully!');
         } else {
             log_action("Unable to open csv file");
-            return redirect()->back()->with('error', 'Error: Unable to open file.');
+            return redirect()->back()->with('error', 'Invalid file type. Please upload a CSV file.');
         }
     }
 
@@ -544,10 +529,10 @@ class EmployeesController extends Controller
         }
 
         // Extract LDAP configuration
-        $ldapHost = $ldapConfig->ldap_host; 
-        $ldapDn = $ldapConfig->ldap_dn; 
-        $adminUsername = $ldapConfig->admin_username; 
-        $adminPassword = $ldapConfig->admin_password; 
+        $ldapHost = $ldapConfig->ldap_host;
+        $ldapDn = $ldapConfig->ldap_dn;
+        $adminUsername = $ldapConfig->admin_username;
+        $adminPassword = $ldapConfig->admin_password;
 
         // Initialize LDAP connection
         $ldapConn = ldap_connect($ldapHost);
