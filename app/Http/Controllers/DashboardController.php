@@ -300,7 +300,7 @@ class DashboardController extends Controller
     public function reqNewLimit(Request $request){
 
         $request->validate([
-            'new_limit' => 'integer|min:100|max:5000',
+            'new_limit' => 'integer|min:10|max:5000',
             'add_info' => 'nullable|max:1000'
         ]);
 
