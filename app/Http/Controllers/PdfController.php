@@ -296,4 +296,55 @@ $label='AI';
  return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
 }
 
+public function domain_full_report($domain)
+{
+    // Fetch all users where the email contains the domain
+    $data = TprmCampaignLive::where('user_email', 'LIKE', "%@$domain")->get();
+    $Total_data = $data->count();
+
+    // Fetch count of employees who are compromised
+    $Total_emp_compromised = TprmCampaignLive::where('user_email', 'LIKE', "%@$domain")
+                                             ->where('emp_compromised', 1)
+                                             ->count(); 
+$Total_emp_compromised_not = TprmCampaignLive::where('user_email', 'LIKE', "%@$domain")
+                                             ->where('emp_compromised', 0)
+                                             ->count();
+
+ 
+
+    // Avoid division by zero
+    $percentage = ($Total_data > 0) ? ($Total_emp_compromised / $Total_data) * 100 : 0;
+
+    // Assign Grade based on percentage
+    $Grade = "";
+    if ($percentage >= 0 && $percentage <= 30) {
+        $Grade = "A";
+    } elseif ($percentage > 30 && $percentage <= 60) {
+        $Grade = "B";
+    } elseif ($percentage > 60 && $percentage <= 100) {
+        $Grade = "C";
+    }
+$Arraydetails = [];
+$ArrayCount = [];
+    $Arraydetails['Total Data'] = $Total_data ?? 0;
+    $Arraydetails['Emp Compromised'] =  $Total_emp_compromised ?? 0;
+    $Arraydetails['Emp Compromised Not'] =   $Total_emp_compromised_not  ?? 0;
+$ArrayCount['array_count'] =  $Total_data;
+    $ArrayData_labels = [
+        ["labels" => "Total Data"],
+        ["labels" => "Emp Compromised"],
+        ["labels" => "Emp Not Compromised "],
+    ];
+
+$label = "Grade";
+// return $Grade;
+
+    // Return view with data
+    return view('domaindownload-template', compact('Arraydetails','Total_data','Total_emp_compromised','Total_emp_compromised_not', 'data', 'ArrayData_labels', 'ArrayCount','label', 'Grade'));
+}
+
+
+
+
+
 }
