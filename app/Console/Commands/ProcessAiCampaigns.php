@@ -42,7 +42,7 @@ class ProcessAiCampaigns extends Command
 
     private function processAiCalls()
     {
-        $pendingCalls = AiCallCampLive::where('status', 'pending')->get();
+        $pendingCalls = AiCallCampLive::where('status', 'pending')->take(5)->get();
 
         $url = 'https://api.retellai.com/v2/create-phone-call';
 
