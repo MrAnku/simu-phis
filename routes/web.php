@@ -545,6 +545,7 @@ Route::get('/download-pdf-email-campaign-wise-report', [PdfController::class, 'e
 Route::get('/download-pdf-whatsapp-company-wise', [PdfController::class, 'whatsapp_campaigns_wise'])->name('whatsapp-company-wise-download-pdf');
 Route::get('/download-pdf-ai-company-wise', [PdfController::class, 'ai_campaigns_wise'])->name('ai-calling-company-wise-download-pdf');
 Route::get('/download-pdf-ai-full-report', [PdfController::class, 'ai_full_report'])->name('ai-full-report-download-pdf');
+Route::get('/download-pdf-domain-full-report/{domain}', [PdfController::class, 'domain_full_report'])->name('domain-full-report-download-pdf');
 
 
 

@@ -95,6 +95,8 @@ class TprmController extends Controller
         $notVerifiedDomains = TpmrVerifiedDomain::where('verified', 0)->where('company_id', $companyId)->get();
 
         $allDomains = TpmrVerifiedDomain::where('company_id', $companyId)->get();
+// return $allDomains;
+        // $allDomainsDownload = TpmrVerifiedDomain::where('company_id', $companyId)->get();
 
         return view('tprm', compact(
             'allCamps',

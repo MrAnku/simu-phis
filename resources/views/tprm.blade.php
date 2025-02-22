@@ -17,7 +17,12 @@
                         Show/Add Email
                     </button>
                 </div>
+
                 <div>
+                    <button type="button" class="btn btn-danger mb-3" data-bs-toggle="modal"
+                        data-bs-target="#domainDownloadModal">
+                        Download Scoring
+                    </button>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
                         data-bs-target="#domainVerificationModal">
                         Domain Verification
@@ -66,34 +71,34 @@
 
                                                 </td>
                                                 <!-- <td class="text-center">
-                                                                <div>
-                                                                    
-                                                                        @if ($campaign->launch_type == 'schLater')
+                                                                                                                                                <div>
+                                                                                                                                                    
+                                                                                                                                                        @if ($campaign->launch_type == 'schLater')
     <small class="text-danger">
-                                                                            Not scheduled
-                                                                        </small>
+                                                                                                                                                            Not scheduled
+                                                                                                                                                        </small>
 @else
     <small>
-                                                                            {{ $campaign->launch_type }}
-                                                                        </small>
+                                                                                                                                                            {{ $campaign->launch_type }}
+                                                                                                                                                        </small>
     @endif
-                                                                        
-                                                                    
-                                                                </div>
-                                                                
-                                                                {{ e($campaign->launch_time) }}
-                                                                
-                                                                <div>
-                                                                    <small>
-                                                                        @if ($campaign->email_freq == 'one')
+                                                                                                                                                        
+                                                                                                                                                    
+                                                                                                                                                </div>
+                                                                                                                                                
+                                                                                                                                                {{ e($campaign->launch_time) }}
+                                                                                                                                                
+                                                                                                                                                <div>
+                                                                                                                                                    <small>
+                                                                                                                                                        @if ($campaign->email_freq == 'one')
     Once
 @else
     {{ $campaign->email_freq }}
     @endif
-                                                                        
-                                                                    </small>
-                                                                </div>
-                                                            </td> -->
+                                                                                                                                                        
+                                                                                                                                                    </small>
+                                                                                                                                                </div>
+                                                                                                                                            </td> -->
                                                 <td>
 
                                                     <button
@@ -410,9 +415,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                            </div> -->
+                                                                                                                                                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                            </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -1334,8 +1339,8 @@
                 </div>
                 <div class="modal-body">
                     <!-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                                   Add Domain For Verification
-                                 </button> -->
+                                                                                                                   Add Domain For Verification
+                                                                                                                 </button> -->
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1363,8 +1368,8 @@
                                                     Email</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                            <i class="bx bx-x fs-25"></i>
-                        </span> -->
+                                                                                                            <i class="bx bx-x fs-25"></i>
+                                                                                                        </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1420,8 +1425,81 @@
                                                 <button type="button" class="btn btn-outline-info btn-sm ms-2"
                                                     onclick="fetchEmail('{{ $domain->domain }}')">Fetch Email</button>
                                             @endif --}}
-                                            <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                <i class="bx bx-x fs-25"></i>
+                                            {{-- <span role="button" onclick="downloadPDF(`{{ $domain->domain }}`)"> --}}
+                                            <span role="button">
+                                                <a href="{{ route('domain-full-report-download-pdf', ['domain' => $domain->domain]) }}"
+                                                    class="btn btn-outline-danger btn-sm">
+                                                    <i class="bx bx-x fs-25"></i>
+                                                </a>
+
+
+
+
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td class="text-center" colspan="5">No records found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <--Domain Download modal-->
+    <div class="modal fade" id="domainDownloadModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                {{-- <div class="modal-header">
+                    <h6 class="modal-title">Download Domain </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div> --}}
+                <div class="modal-body">
+                    {{-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2"
+                        data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
+                        Download Domain
+                    </button> --}}
+                    <div class="table-responsive">
+                        <table id="downloadVerifiedDomain" class="table table-bordered text-nowrap w-100">
+                            <thead>
+                                <tr>
+                                    <th>Domain Name</th>
+                                    {{-- <th>Status</th> --}}
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allDomains">
+                                @forelse ($allDomains as $domain)
+                                    <tr>
+                                        <td>{{ $domain->domain }}</td>
+                                        {{-- <td>
+                                            @if ($domain->verified == 1)
+                                                <span class="badge bg-success">Verified</span>
+                                            @else
+                                                <span class="badge bg-warning">Pending</span>
+                                            @endif
+                                        </td> --}}
+                                        <td>
+                                            {{-- @if ($domain->verified == 1)
+                                                <button type="button" class="btn btn-outline-info btn-sm ms-2"
+                                                    onclick="fetchEmail('{{ $domain->domain }}')">Fetch Email</button>
+                                            @endif --}}
+                                            <span role="button">
+                                                <a target="blank"
+                                                    href="{{ route('domain-full-report-download-pdf', ['domain' => $domain->domain]) }}">
+                                                    <i class="bi bi-arrow-down-circle fs-25"></i>
+                                                </a>
+
+
+
+
                                             </span>
                                         </td>
                                     </tr>
@@ -1874,7 +1952,7 @@
                 );
                 return;
             }
-           
+
 
             if (domain && !domains.includes(domain)) {
                 domains.push(domain);
