@@ -6,7 +6,17 @@
 
     <div class="main-content app-content">
         <div class="container-fluid">
+            <div class="d-flex gap-2 mt-3">
+                <div>
+                    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
+                        data-bs-target="#addNewAgentModal">Add New Agent</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
+                        data-bs-target="#allAgentsModal">All Agents</button>
+                </div>
 
+            </div>
 
             <div class="row">
                 <div class="col-xl-12">
@@ -18,7 +28,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="datatable-basic" class="table table-bordered text-nowrap w-100">
+                                <table class="table table-bordered text-nowrap w-100">
                                     <thead>
                                         <tr>
                                             <th>Sl</th>
@@ -62,25 +72,31 @@
                                                 </td>
                                                 <td>
                                                     <button data-bs-toggle="modal" data-bs-target="#viewPromptModal"
-                                                        onclick="viewPrompt(`{{ base64_encode($request->id) }}`)" class="btn btn-icon btn-primary-transparent rounded-pill btn-wave waves-effect waves-light">
+                                                        onclick="viewPrompt(`{{ base64_encode($request->id) }}`)"
+                                                        class="btn btn-icon btn-primary-transparent rounded-pill btn-wave waves-effect waves-light">
                                                         <i class="ri-eye-line"></i> </button>
-                                                    @if($request->status == '0')
-                                                    <button data-bs-toggle="modal" data-bs-target="#approveAgentModal"
-                                                        onclick="approveAgent(`{{ base64_encode($request->id) }}`)"
-                                                        class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave waves-effect waves-light">
-                                                        <i class="ri-pencil-line"></i> </button>
-                                                    @endif
-                                                    
+                                                    @if ($request->status == '0')
+                                                        <button data-bs-toggle="modal" data-bs-target="#approveAgentModal"
+                                                            onclick="approveAgent(`{{ base64_encode($request->id) }}`)"
+                                                            class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave waves-effect waves-light">
+                                                            <i class="ri-pencil-line"></i>
+                                                        </button>
 
-                                                    <button
-                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
-                                                        <i class="ri-delete-bin-line"></i> </button>
+                                                        <button
+                                                            onclick="deleteAgentRequest(`{{ base64_encode($request->id) }}`)"
+                                                            class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                    @endif
+
+
+
 
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center">No Data Found</td>
+                                                <td colspan="6" class="text-center">No Data Found</td>
                                             </tr>
                                         @endforelse
 
@@ -98,7 +114,7 @@
 
     {{-- --------------------------Modals------------------------ --}}
 
-    <x-modal id="viewPromptModal" heading="Requested Prompt">
+    <x-modal id="viewPromptModal" heading="Requested Agent">
         <div>
             <div class="mb-3">
                 <label for="agent-name" class="form-label fs-14 text-dark">Agent name</label>
@@ -123,15 +139,78 @@
             @csrf
             <div class="mb-3">
                 <label for="title" class="form-label">Agent Name</label>
-                <input type="text" class="form-control" id="agent_name" name="agent_name" placeholder="Enter agent name" required>
+                <input type="text" class="form-control" id="agent_name" name="agent_name" placeholder="Enter agent name"
+                    required>
                 <input type="hidden" name="request_id" id="request_id">
             </div>
             <div class="mb-3">
                 <label for="title" class="form-label">Agent Id</label>
                 <input type="text" class="form-control" name="agent_id" placeholder="Enter agent id" required>
             </div>
-            <button type="submit" class="btn btn-primary">Update</button>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+            
         </form>
+    </x-modal>
+
+    <x-modal id="addNewAgentModal" heading="Add New Agent">
+        <form action="{{ route('admin.aivishing.newagent') }}" method="POST">
+            @csrf
+            <div class="mb-3">
+                <label for="title" class="form-label">Agent Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="agent_name" name="agent_name" placeholder="Enter agent name"
+                    required>
+            </div>
+            <div class="mb-3">
+                <label for="title" class="form-label">Agent Id <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="agent_id" placeholder="Enter agent id" required>
+            </div>
+            <div class="mb-3">
+                <small class="text-muted">All companies can access this template by default</small>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+
+        </form>
+    </x-modal>
+
+    <x-modal id="allAgentsModal" size="modal-lg" heading="All Agents">
+        <div class="table-responsive">
+            <table class="table table-bordered text-nowrap w-100" id="allAgentsTable">
+                <thead>
+                    <tr>
+                        <th>Agent Name</th>
+                        <th>Agent Id</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($all_agents as $agent)
+                        <tr>
+                            <td>{{ $agent->agent_name }}</td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ $agent->agent_id }}
+                                </span>
+                            </td>
+                            <td>
+
+                                <button type="submit" onclick="deleteAgent(`{{ base64_encode($agent->agent_id) }}`)"
+                                    class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center">No Agents Found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </x-modal>
 
 
@@ -140,8 +219,27 @@
 
     <x-toast />
 
+    @push('newcss')
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.bootstrap5.min.css">
+    @endpush
+
 
     @push('newscripts')
+
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+        <script>
+            $('#allAgentsTable').DataTable({
+                language: {
+                    searchPlaceholder: 'Search...',
+                    sSearch: '',
+                },
+                "pageLength": 10,
+                // scrollX: true
+            });
+        </script>
         <script>
             function viewPrompt(id) {
                 // console.log(id);
@@ -165,18 +263,96 @@
                 })
             }
 
-            function approveAgent(id){
+            function approveAgent(id) {
                 $.get({
                     url: '/admin/ai-vishing/req-prompt/' + id,
                     success: function(data) {
                         // console.log(data);
                         $('#agent_name').val(data.agent_name);
                         $('#request_id').val(data.id);
-                        
+
+                    }
+                })
+            }
+
+            function deleteAgent(id) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "If any campaign is using this agent, it will be deleted too!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: '/admin/ai-vishing/delete-agent',
+                            type: 'POST',
+                            data: {
+                                agent_id: id
+                            },
+                            success: function(data) {
+                                if (data.success) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'Agent has been deleted.',
+                                        'success'
+                                    )
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Something went wrong.',
+                                        'error'
+                                    )
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+
+            function deleteAgentRequest(id) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to delete!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: "/admin/ai-vishing/delete-agent-request",
+                            data: {
+                                id: id
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'Agent has been deleted.',
+                                        'success'
+                                    )
+                                    location.reload();
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Something went wrong.',
+                                        'error'
+                                    )
+                                }
+                            }
+                        })
                     }
                 })
             }
         </script>
+    @endpush
 
 
     @endsection

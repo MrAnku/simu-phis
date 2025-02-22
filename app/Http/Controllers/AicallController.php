@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiAgentRequest;
+use App\Models\AiCallAgent;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\UsersGroup;
@@ -30,10 +31,8 @@ class AicallController extends Controller
         $empGroups = UsersGroup::where('company_id', $companyId)->get();
         $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
         $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->get();
-        $agents = $this->getAgents();
+        $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
         $phone_numbers = $this->getPhoneNumbers();
-
-
 
         // return $campaigns;
         return view("aicall", compact('company', 'agents', 'phone_numbers', 'empGroups', 'campaigns', 'trainings'));

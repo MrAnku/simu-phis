@@ -456,7 +456,10 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     Route::post('admin/ai-vishing/approve-agent', [AiVishingController::class, 'approveAgent'])->name('admin.aivishing.approveagent');
 
+    Route::post('admin/ai-vishing/delete-agent-request', [AiVishingController::class, 'deleteAgentRequest'])->name('admin.aivishing.delete.agent.request');
+
     Route::post('admin/ai-vishing/add-new-agent', [AiVishingController::class, 'newAgent'])->name('admin.aivishing.newagent');
+    Route::post('admin/ai-vishing/delete-agent', [AiVishingController::class, 'deleteAgent'])->name('admin.aivishing.deleteAgent');
 
     //-----------------whatsapp routes-------------------------//
 
