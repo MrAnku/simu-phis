@@ -636,7 +636,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="agent-prompt" class="form-label fs-14 text-dark">Enter prompt <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="Enter prompt example of how AI call interacts with the user"></textarea>
+                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="Enter the prompt/instruction for the AI agent to interact with or ask something from your employees."></textarea>
                             </div>
                             <div class="mb-3 d-flex justify-content-center">
                                 <div class="form-check form-check-md form-switch">
