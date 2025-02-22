@@ -15,7 +15,7 @@ class AiVishingController extends Controller
     public function index()
     {
 
-        $all_requests = AiAgentRequest::with('company')->get();
+        $all_requests = AiAgentRequest::with(['company', 'agent'])->get();
         $all_agents = AiCallAgent::all();
         return view('admin.ai_vishing', compact('all_requests', 'all_agents'));
     }
@@ -23,7 +23,7 @@ class AiVishingController extends Controller
     public function getPrompt($id)
     {
         $id = base64_decode($id);
-        $request = AiAgentRequest::with('company')->find($id);
+        $request = AiAgentRequest::with(['company', 'agent'])->find($id);
         return response()->json($request);
     }
 
@@ -44,6 +44,7 @@ class AiVishingController extends Controller
 
         AiCallAgent::create([
             'company_id' => $requested_agent->company_id,
+            'request_id' => $requested_agent->id,
             'agent_id' => $request->agent_id,
             'agent_name' => $request->agent_name
         ]);
@@ -61,6 +62,17 @@ class AiVishingController extends Controller
         if (!$requested_agent) {
             return response()->json(['error' => 'Agent Request Not Found']);
         }
+
+        if($requested_agent->status == 1){
+            $agent = AiCallAgent::where('request_id', $requested_agent->id)->first();
+            if($agent){
+                $agent_id = $agent->agent_id;
+                AiCallCampLive::where('agent_id', $agent_id)->delete();
+                AiCallCampaign::where('ai_agent', $agent_id)->delete();
+            }
+            $agent->delete();
+        }
+        
 
         if ($requested_agent->audio_file !== null) {
             $filePath = storage_path('app/public/deepfake_audio/' . $requested_agent->audio_file);
@@ -97,6 +109,10 @@ class AiVishingController extends Controller
         $agent = AiCallAgent::where('agent_id', $agent_id)->first();
         if (!$agent) {
             return response()->json(['error' => 'Agent Not Found']);
+        }
+
+        if($agent->request_id !== null){
+            AiAgentRequest::where('id', $agent->request_id)->delete();
         }
 
         AiCallCampLive::where('agent_id', $agent_id)->delete();

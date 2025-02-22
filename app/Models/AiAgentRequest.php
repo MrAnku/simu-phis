@@ -18,4 +18,9 @@ class AiAgentRequest extends Model
     {
         return $this->belongsTo(Company::class, 'company_id', 'company_id');
     }
+
+    public function agent()
+    {
+        return $this->hasOne(AiCallAgent::class, 'request_id', 'id');
+    }
 }

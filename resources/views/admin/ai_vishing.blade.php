@@ -75,19 +75,14 @@
                                                         onclick="viewPrompt(`{{ base64_encode($request->id) }}`)"
                                                         class="btn btn-icon btn-primary-transparent rounded-pill btn-wave waves-effect waves-light">
                                                         <i class="ri-eye-line"></i> </button>
-                                                    @if ($request->status == '0')
-                                                        <button data-bs-toggle="modal" data-bs-target="#approveAgentModal"
-                                                            onclick="approveAgent(`{{ base64_encode($request->id) }}`)"
-                                                            class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave waves-effect waves-light">
-                                                            <i class="ri-pencil-line"></i>
-                                                        </button>
-
+                                                    
+                                                        
                                                         <button
                                                             onclick="deleteAgentRequest(`{{ base64_encode($request->id) }}`)"
                                                             class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
                                                             <i class="ri-delete-bin-line"></i>
                                                         </button>
-                                                    @endif
+                                                    
 
 
 
@@ -132,26 +127,24 @@
 
             </div>
         </div>
-    </x-modal>
-
-    <x-modal id="approveAgentModal" heading="Approve Agent">
-        <form action="{{ route('admin.aivishing.approveagent') }}" method="POST">
-            @csrf
-            <div class="mb-3">
-                <label for="title" class="form-label">Agent Name</label>
-                <input type="text" class="form-control" id="agent_name" name="agent_name" placeholder="Enter agent name"
-                    required>
-                <input type="hidden" name="request_id" id="request_id">
-            </div>
-            <div class="mb-3">
-                <label for="title" class="form-label">Agent Id</label>
-                <input type="text" class="form-control" name="agent_id" placeholder="Enter agent id" required>
-            </div>
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary">Update</button>
-            </div>
-            
-        </form>
+        <div class="my-2">
+            <form action="{{ route('admin.aivishing.approveagent') }}" method="POST">
+                @csrf
+               
+                <div class="mb-3">
+                    <label for="title" class="form-label">Agent Id<span class="text-danger">*</span></label>
+                    <input type="hidden" id="agent_name" name="agent_name"
+                        required>
+                    <input type="hidden" id="request_id" name="request_id"
+                        required>
+                    <input type="text" class="form-control" name="agent_id" placeholder="Enter agent id" required>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+                
+            </form>
+        </div>
     </x-modal>
 
     <x-modal id="addNewAgentModal" heading="Add New Agent">
@@ -246,9 +239,15 @@
                 $.get({
                     url: '/admin/ai-vishing/req-prompt/' + id,
                     success: function(data) {
-                        // console.log(data);
+                         console.log(data);
                         $('#agent-name').val(data.agent_name);
                         $('#agent-prompt').val(data.prompt);
+                        $('#agent_name').val(data.agent_name);
+                        $('#request_id').val(data.id);
+                        if(data.status == 1){
+                            $('#viewPromptModal button[type="submit"]').hide();
+                            $('#viewPromptModal input[name="agent_id"]').val(data.agent.agent_id).prop('disabled', true);
+                        }
                         if (data.audio_file) {
                             // console.log("Audio file:", data.audio_file);
                             let audioElement = $('#deepfake-audio audio');
@@ -263,17 +262,6 @@
                 })
             }
 
-            function approveAgent(id) {
-                $.get({
-                    url: '/admin/ai-vishing/req-prompt/' + id,
-                    success: function(data) {
-                        // console.log(data);
-                        $('#agent_name').val(data.agent_name);
-                        $('#request_id').val(data.id);
-
-                    }
-                })
-            }
 
             function deleteAgent(id) {
                 Swal.fire({
