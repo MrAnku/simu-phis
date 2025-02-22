@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiAgentRequest;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\UsersGroup;
@@ -36,6 +37,48 @@ class AicallController extends Controller
 
         // return $campaigns;
         return view("aicall", compact('company', 'agents', 'phone_numbers', 'empGroups', 'campaigns', 'trainings'));
+    }
+
+    public function agentRequest(Request $request)
+    {
+
+        //xss check start
+        $input = $request->only('agent_name', 'agent_prompt');
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+        //xss check end
+
+        $request->validate([
+            'agent_name' => 'required|string',
+            'agent_prompt' => 'required|string',
+            'deepfake_audio' => 'nullable|file|mimes:mp3,wav,aac|max:2048',
+        ]);
+
+        $companyId = Auth::user()->company_id;
+
+        if ($request->hasFile('deepfake_audio')) {
+            $file = $request->file('deepfake_audio');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('deepfake_audio', $filename, 'public');
+        } else {
+            $filename = null;
+        }
+        AiAgentRequest::create([
+            'company_id' => $companyId,
+            'agent_name' => $request->agent_name,
+            'audio_file' => $filename,
+            'prompt' => $request->agent_prompt,
+            'status' => 0
+        ]);
+
+        return redirect()->back()->with('success', 'New agent request submitted successfully.');
     }
 
     public function submitReq(Request $request)

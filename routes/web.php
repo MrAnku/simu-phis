@@ -45,6 +45,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\AiVishingController;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -293,6 +294,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/ai-calling/delete-campaign', [AicallController::class, 'deleteCampaign'])->name('ai.call.delete.campaign');
     Route::get('/ai-calling/get-agents', [AicallController::class, 'getAgents'])->name('ai.call.get.agents');
     Route::get('/ai-calling/fetch-call-report/{callid}', [AicallController::class, 'fetchCallReport'])->name('ai.call.fetch.call.report');
+    Route::post('/ai-calling/agent-req', [AicallController::class, 'agentRequest'])->name('ai.calling.agent.req');
+
 
 
     //phishing emails route---------------------------------------------------------------
@@ -447,6 +450,13 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
 
     //-------------------companies route ---------------------//
 
+    //-------------------Ai vishing route ---------------------//
+    Route::get('admin/ai-vishing/new-agent-requests', [AiVishingController::class, 'index'])->name('admin.aivishing.newagentreqs');
+    Route::get('admin/ai-vishing/req-prompt/{id}', [AiVishingController::class, 'getPrompt'])->name('admin.aivishing.getprompt');
+
+    Route::post('admin/ai-vishing/approve-agent', [AiVishingController::class, 'approveAgent'])->name('admin.aivishing.approveagent');
+
+    Route::post('admin/ai-vishing/add-new-agent', [AiVishingController::class, 'newAgent'])->name('admin.aivishing.newagent');
 
     //-----------------whatsapp routes-------------------------//
 

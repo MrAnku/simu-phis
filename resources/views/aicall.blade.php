@@ -33,6 +33,10 @@
                         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
                             data-bs-target="#newCampaignCallModal">New Call Campaign</button>
                     </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
+                            data-bs-target="#newAiAgentModal">Request New Agent</button>
+                    </div>
 
                 </div>
                 <div class="row">
@@ -607,6 +611,58 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="newAiAgentModal" tabindex="-1" aria-labelledby="exampleModalScrollable2"
+        data-bs-keyboard="false" aria-hidden="true">
+        <!-- Scrollable modal -->
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">
+                        Request New AI Agent
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+               
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" action="{{ route('ai.calling.agent.req') }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="agent-name" class="form-label fs-14 text-dark">Enter agent name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="agent-name" name="agent_name" placeholder="Enter agent name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="agent-prompt" class="form-label fs-14 text-dark">Enter prompt <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="Enter prompt example of how AI call interacts with the user"></textarea>
+                            </div>
+                            <div class="mb-3 d-flex justify-content-center">
+                                <div class="form-check form-check-md form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        id="enable-deepfake">
+                                    <label class="form-check-label" for="enable-deepfake">Enable Deepfake (optional)</label>
+                                </div>
+                                <div>
+                                    <small class="text-muted"></small>
+                                </div>
+                            </div>
+                            <div class="mb-3" style="display: none;" id="deepfake-audio">
+                                <label for="formFileSm" class="form-label">Select your voice audio (.mp3|.aac|.wav)</label>
+                                <input class="form-control form-control-sm" id="formFileSm" name="deepfake_audio" type="file">
+                            </div>
+                            <div class="mb-3 text-end">
+                                <button type="submit" class="btn btn-primary btn-wave">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- campaign view modal --}}
 
     <div class="modal fade" id="viewCampaignModal" tabindex="-1" aria-labelledby="exampleModalScrollable2"
@@ -671,50 +727,7 @@
 
     {{-- ------------------------------Toasts---------------------- --}}
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        @if (session('success'))
-            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                    aria-atomic="true">
-                    <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ $error }}
-                    </div>
-                </div>
-            @endforeach
-        @endif
-
-
-    </div>
+    <x-toast />
 
     {{-- ------------------------------Toasts---------------------- --}}
 
@@ -1082,6 +1095,16 @@
                 const audioElement = document.getElementById('recording_audio');
                 audioElement.src = "";
             }
+        </script>
+
+        <script>
+            $("#enable-deepfake").change(function() {
+                if (this.checked) {
+                    $("#deepfake-audio").slideDown();
+                } else {
+                    $("#deepfake-audio").slideUp();
+                }
+            });
         </script>
     @endpush
 

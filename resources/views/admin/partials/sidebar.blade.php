@@ -83,6 +83,13 @@
                                             <span class="side-menu__label">Companies</span>
                                         </a>
                                     </li>
+                                    <li class="slide {{ Request::is('admin/ai-vishing/new-agent-requests') ? 'active' : '' }}">
+                                        <a href="{{ route('admin.aivishing.newagentreqs') }}"
+                                            class="side-menu__item {{ Request::is('admin/ai-vishing/new-agent-requests') ? 'active' : '' }}">
+                                            <i class="bx bx-phone-call side-menu__icon"></i>
+                                            <span class="side-menu__label">AI Agent Requests</span>
+                                        </a>
+                                    </li>
                                     <li class="slide {{ Request::is('admin/whitelabel-req') ? 'active' : '' }}">
                                         <a href="{{ route('admin.whitelabel') }}"
                                             class="side-menu__item {{ Request::is('admin/whitelabel-req') ? 'active' : '' }}">
