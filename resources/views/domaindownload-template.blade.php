@@ -17,7 +17,9 @@
 
     <style>
         body {
-            padding: 0px 350px;
+            /* padding: 0px 350px; */
+            margin-left: auto;
+            margin-right: auto;
             font-family: system-ui;
         }
 
@@ -57,10 +59,27 @@
             margin-bottom: 5px;
         }
 
+        .custom-text {
+            font-weight: 600;
+            color: #ff7b4a;
+            line-height: 18px;
+            padding: 0px !important;
+            margin-bottom: 5px;
+        }
+
+        .button_class {
+            width: 766px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
         .container_pdf_body {
             /* background: linear-gradient(to bottom, #bef7ff, #cbccff); */
             /* margin: auto; */
-            padding: 20px;
+            padding: 15px;
+            width: 766px;
+            margin-left: auto;
+            margin-right: auto;
             /* border: 2px solid #333; */
             /* background-color: #f9f9f9; */
         }
@@ -185,15 +204,16 @@
         .background-head {
             background: #252e4b;
             padding: 20px 40px;
+
         }
 
         .total_user_count_grade {
             font-size: 26px;
             font-weight: 600;
             color: #1c274c;
-            border: 2px solid #ff7b4a;
+            /* border: 2px solid #ff7b4a; */
             padding: 8px;
-            border-radius: 37px;
+            /* border-radius: 37px; */
             text-align: center;
         }
 
@@ -205,12 +225,43 @@
         #chart_2 {
             width: fit-content
         }
+
+        /* table  */
+        .custom-table {
+            width: 740px;
+            margin-top: 20px;
+            background: #fff;
+            border-collapse: collapse;
+            padding-left: 15px;
+        }
+
+        .custom-table thead {
+            background: #252e4b;
+            color: white;
+        }
+
+        .custom-table th,
+        .custom-table td {
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .custom-table th {
+            font-weight: bold;
+        }
+
+        .custom-table tbody tr:nth-child(even) {
+            background: #f2f2f2;
+            /* Optional: Adds alternating row colors */
+        }
     </style>
 </head>
 
 <body>
 
-    <button id="downloadPdf">Download as PDF</button>
+
 
 
     @php
@@ -220,6 +271,10 @@
     {{-- <div>{{ $training_campaign_details['training_assigned'] ?? 2 }}</div> --}}
 
 
+    <div class="button_class">
+
+        <button id="downloadPdf">Download as PDF</button>
+    </div>
     <div id="content" class="container_pdf_body">
         <div class="background-head">
 
@@ -239,26 +294,26 @@
 
 
 
+        <div style="width: 766px">
 
-        <div style="display: flex; ">
+            <div style="display: flex; ">
 
 
-            <div style="width: 60%; margin-left: auto;margin-right: 40px;">
-                <div class="blue-background">
+                <div style="width: 400px;margin-right: 10px;">
+                    <div class="blue-background">
 
-                    <div>
+                        <div>
 
-                        <span class="details">
-                            Interaction</span>
-                        <span class="user">Details</span>
+                            <span class="details">
+                                Interaction</span>
+                            <span class="user">Details</span>
+                        </div>
                     </div>
-                </div>
-                <div style="background: white; padding: 20px; overflow-wrap: anywhere;">
-                    <div class="container">
+                    <div style="background: white; padding: 20px; overflow-wrap: anywhere;">
 
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div style="padding: 0px 45px">
+                        <div style="display: flex">
+                            <div>
+                                <div style="width: 137px;">
                                     <div class="total_user_count_grade">
 
 
@@ -266,14 +321,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div>
                                 <div>
-                                    <p
-                                        style="font-weight: 600;color: #ff7b4a;     font-weight: 600;
-    color: #ff7b4a;
-    line-height: 18px;
-    padding: 0px !important;
-    margin-bottom: 5px;">
+                                    <p class="custom-text">
                                         {{ $info_title }}</p>
                                     <span>
                                         <p style="color: #535a71; font-size: 12px;">{{ $info_deatails }}</p>
@@ -284,78 +334,97 @@
                             </div>
                         </div>
 
-                        <div class="row mt-2">
-                            <div class="col-sm-6">
-                                <div
-                                    style="padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
 
-                                    <div style="display:flex;">
-                                        <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
-                                                alt=""></div>
-                                        <div style="margin-left: 8px;">
+                        <div class="col-sm-6">
+                            <div
+                                style="padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
 
-                                            Total Employee
-                                        </div>
+                                <div style="display:flex;">
+                                    <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
+                                            alt="">
                                     </div>
-                                    <div>{{ $Total_data }}</div>
+                                    <div style="margin-left: 8px;">
 
-
-
-                                </div>
-                            </div>
-                            <div class="col-sm-12">
-                                <div style=" padding: 5px 0px; font-weight: 600; display: flex;">
-
-                                    <div style="display:flex;">
-                                        <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
-                                                alt=""></div>
-                                        <div style="margin-left: 8px;">
-
-                                            Emp Compromised
-                                        </div>
+                                        Total Employee
                                     </div>
-                                    <div style="margin-left: 28px;">{{ $Total_emp_compromised }}</div>
-
-
-
                                 </div>
-                            </div>
-                            <div class="col-sm-8 ">
-                                <div
-                                    style=" padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
-
-                                    <div style="display:flex;">
-                                        <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
-                                                alt=""></div>
-                                        <div style="margin-left: 8px;">
-
-                                            Emp Not Compromised
-                                        </div>
-                                    </div>
-                                    <div>{{ $Total_emp_compromised_not }}</div>
+                                <div>{{ $Total_data }}</div>
 
 
 
-                                </div>
                             </div>
                         </div>
+                        <div class="col-sm-12">
+                            <div style=" padding: 5px 0px; font-weight: 600; display: flex;">
+
+                                <div style="display:flex;">
+                                    <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
+                                            alt="">
+                                    </div>
+                                    <div style="margin-left: 8px;">
+
+                                        Emp Compromised
+                                    </div>
+                                </div>
+                                <div style="margin-left: 28px;">{{ $Total_emp_compromised }}</div>
+
+
+
+                            </div>
+                        </div>
+                        <div class="col-sm-8 ">
+                            <div
+                                style=" padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
+
+                                <div style="display:flex;">
+                                    <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
+                                            alt="">
+                                    </div>
+                                    <div style="margin-left: 8px;">
+
+                                        Emp Not Compromised
+                                    </div>
+                                </div>
+                                <div>{{ $Total_emp_compromised_not }}</div>
+
+
+
+                            </div>
+                        </div>
+
+
+
                     </div>
+                </div>
+                <div style="width: 200px">
+                    @if ($ArrayCount['array_count'] !== 0)
+                        <div id="chart" style="background: white; margin-top: 16px;"></div>
+                    @else
+                        <div
+                            style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
+                            <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
+                                alt="">
+                            <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
+                        </div>
+                    @endif
 
                 </div>
             </div>
-            <div style="width: 40%">
-                @if ($ArrayCount['array_count'] !== 0)
-                    <div id="chart" style="background: white; margin-top: 16px;"></div>
-                @else
-                    <div style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
-                        <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
-                            alt="">
-                        <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
-                    </div>
-                @endif
-
-            </div>
         </div>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Campaign Name</th>
+                    <th>Email Address</th>
+                    <th>Link Clicked</th>
+                    <th>Emp Compromised</th>
+                    <th>Training Assigned</th>
+                </tr>
+            </thead>
+            <tbody id="ReportsIndividual">
+                <!-- Table rows will be inserted here -->
+            </tbody>
+        </table>
         {{-- next  --}}
         <div id="yourDivId">
             <div class="flex-box_2">
@@ -424,6 +493,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
 
@@ -439,25 +509,8 @@
 
 
         {{-- <table style="margin-top: 100px; background: #fff"  class="table table-bordered border-dark"> --}}
-        <table style="margin-top: 20px; background: #fff" class="table">
 
-            <thead style=" background: #252e4b;" class="table-dark">
-                <tr>
-                    <th style="font-size: 12px" scope="col">Campaign Name</th>
-                    <th style="font-size: 12px" scope="col">Email Address
-
-                    </th>
-                    <th style="font-size: 12px" scope="col">Link Clicked</th>
-                    <th style="font-size: 12px" scope="col">Emp Compromised</th>
-                    <th style="font-size: 12px" scope="col">Training Assigned</th>
-
-                </tr>
-            </thead>
-            <tbody id="ReportsIndividual">
-
-            </tbody>
-        </table>
-
+        {{-- fsvm, --}}
 
 
 
