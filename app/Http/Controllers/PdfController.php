@@ -317,12 +317,20 @@ $Total_emp_compromised_not = TprmCampaignLive::where('user_email', 'LIKE', "%@$d
 
     // Assign Grade based on percentage
     $Grade = "";
+$info_title= "";
+$info_deatails="";
     if ($percentage >= 0 && $percentage <= 30) {
         $Grade = "A";
+$info_title= "Excellent security awareness!";
+$info_deatails="The domain has demonstrated strong phishing detection capabilities. Keep maintaining best practices to stay secure.";
     } elseif ($percentage > 30 && $percentage <= 60) {
         $Grade = "B";
+$info_title= "Moderate security awareness.";
+$info_deatails="Some phishing attempts were detected, but there is room for improvement. Strengthening internal security measures is advisable.";
     } elseif ($percentage > 60 && $percentage <= 100) {
         $Grade = "C";
+$info_title= "Low security awareness";
+$info_deatails="Phishing attempts were largely successful, indicating a high risk. Immediate action is recommended to improve security measures and policies.";
     }
 $Arraydetails = [];
 $ArrayCount = [];
@@ -331,16 +339,16 @@ $ArrayCount = [];
     $Arraydetails['Emp Compromised Not'] =   $Total_emp_compromised_not  ?? 0;
 $ArrayCount['array_count'] =  $Total_data;
     $ArrayData_labels = [
-        ["labels" => "Total Data"],
+        ["labels" => "Total Employee"],
         ["labels" => "Emp Compromised"],
         ["labels" => "Emp Not Compromised "],
     ];
 
 $label = "Grade";
-// return $Grade;
 
+// return $Grade;
     // Return view with data
-    return view('domaindownload-template', compact('Arraydetails','Total_data','Total_emp_compromised','Total_emp_compromised_not', 'data', 'ArrayData_labels', 'ArrayCount','label', 'Grade'));
+    return view('domaindownload-template', compact('Arraydetails','Total_data','Total_emp_compromised','Total_emp_compromised_not', 'data', 'ArrayData_labels', 'ArrayCount','label', 'Grade','info_title','info_deatails'));
 }
 
 

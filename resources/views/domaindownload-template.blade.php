@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whatsapp Report</title>
+    <title>TPRM Scoring Report</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -192,7 +192,7 @@
             font-weight: 600;
             color: #1c274c;
             border: 2px solid #ff7b4a;
-            padding: 16px 13px;
+            padding: 8px;
             border-radius: 37px;
             text-align: center;
         }
@@ -259,14 +259,27 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div style="padding: 0px 45px">
+                                    <div class="total_user_count_grade">
 
-                                    <div class="total_user_count_grade">{{ $Grade }}</div>
+
+                                        <div class="total_user_count_grade">{{ $Grade }}</div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <div style="font-weight: 600;color: #ff7b4a;">Lorem ipsum dolor sit amet ,
-                                    <span style="color: #535a71">consectetur adipisicing
-                                        elit. Quo, sint!</span>
+                                <div>
+                                    <p
+                                        style="font-weight: 600;color: #ff7b4a;     font-weight: 600;
+    color: #ff7b4a;
+    line-height: 18px;
+    padding: 0px !important;
+    margin-bottom: 5px;">
+                                        {{ $info_title }}</p>
+                                    <span>
+                                        <p style="color: #535a71; font-size: 12px;">{{ $info_deatails }}</p>
+
+
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +287,7 @@
                         <div class="row mt-2">
                             <div class="col-sm-6">
                                 <div
-                                    style="padding: 8px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
+                                    style="padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
 
                                     <div style="display:flex;">
                                         <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
@@ -290,26 +303,26 @@
 
                                 </div>
                             </div>
-                            <div class="col-sm-6">
-                                <div
-                                    style=" padding: 8px 0px; font-weight: 600; display: flex; justify-content: space-between;">
+                            <div class="col-sm-12">
+                                <div style=" padding: 5px 0px; font-weight: 600; display: flex;">
 
                                     <div style="display:flex;">
                                         <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
                                                 alt=""></div>
                                         <div style="margin-left: 8px;">
 
-                                            Emp Comp
+                                            Emp Compromised
                                         </div>
                                     </div>
-                                    <div>{{ $Total_emp_compromised }}</div>
+                                    <div style="margin-left: 28px;">{{ $Total_emp_compromised }}</div>
 
 
 
                                 </div>
                             </div>
-                            <div class="col-sm-8 mt-3">
-                                <div style=" font-weight: 600; display: flex; justify-content: space-between;">
+                            <div class="col-sm-8 ">
+                                <div
+                                    style=" padding: 5px 0px;  font-weight: 600; display: flex; justify-content: space-between;">
 
                                     <div style="display:flex;">
                                         <div><img style="width: 20px" src="{{ asset('images/checkmark.png') }}"
@@ -618,8 +631,8 @@
 `;
                 let noBatch = `
   <span style="
-        color: #ff3c3c;
-    border: 1px solid #ff3c3c;
+        color: #ff7b4a;
+    border: 1px solid #ff7b4a;
   
     font-size: 12px;
     padding: 3px 10px;
