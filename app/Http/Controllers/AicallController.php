@@ -42,7 +42,7 @@ class AicallController extends Controller
     {
 
         //xss check start
-        $input = $request->only('agent_name', 'agent_prompt');
+        $input = $request->only('agent_name', 'agent_prompt', 'language');
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
                 return redirect()->back()->with('error', 'Invalid input detected.');
@@ -57,6 +57,7 @@ class AicallController extends Controller
         $request->validate([
             'agent_name' => 'required|string',
             'agent_prompt' => 'required|string',
+            'language' => 'required|string',
             'deepfake_audio' => 'nullable|file|mimes:mp3,wav,aac|max:2048',
         ]);
 
@@ -72,6 +73,7 @@ class AicallController extends Controller
         AiAgentRequest::create([
             'company_id' => $companyId,
             'agent_name' => $request->agent_name,
+            'language' => $request->language,
             'audio_file' => $filename,
             'prompt' => $request->agent_prompt,
             'status' => 0

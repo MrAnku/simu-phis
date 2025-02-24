@@ -34,6 +34,7 @@
                                             <th>Sl</th>
                                             <th>Company</th>
                                             <th>Requested Agent Name</th>
+                                            <th>Language</th>
                                             <th>Deepfake</th>
                                             <th>Status</th>
                                             <th>Action</th>
@@ -55,7 +56,9 @@
                                                     </div>
 
                                                 </td>
+                                                
                                                 <td>{{ $request->agent_name }}</td>
+                                                <td>{{ $request->language ?? '' }}</td>
                                                 <td>
                                                     @if ($request->audio_file == null)
                                                         <span class="badge bg-danger-transparent">No</span>
@@ -113,7 +116,11 @@
         <div>
             <div class="mb-3">
                 <label for="agent-name" class="form-label fs-14 text-dark">Agent name</label>
-                <input type="text" class="form-control" id="agent-name" placeholder="Enter agent name" disabled>
+                <input type="text" class="form-control" id="agent-name" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="agent-lang" class="form-label fs-14 text-dark">Language</label>
+                <input type="text" class="form-control" id="agent-lang" disabled>
             </div>
             <div class="mb-3">
                 <label for="agent-prompt" class="form-label fs-14 text-dark">Prompt</label>
@@ -241,6 +248,7 @@
                     success: function(data) {
                          console.log(data);
                         $('#agent-name').val(data.agent_name);
+                        $('#agent-lang').val(data.language);
                         $('#agent-prompt').val(data.prompt);
                         $('#agent_name').val(data.agent_name);
                         $('#request_id').val(data.id);

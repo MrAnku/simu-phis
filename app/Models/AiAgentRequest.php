@@ -9,6 +9,7 @@ class AiAgentRequest extends Model
     protected $fillable = [
         'agent_name',
         'prompt',
+        'language',
         'audio_file',
         'status',
         'company_id',

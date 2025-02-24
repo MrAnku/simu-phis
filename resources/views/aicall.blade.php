@@ -635,8 +635,35 @@
                                 <input type="text" class="form-control" id="agent-name" name="agent_name" placeholder="Enter agent name">
                             </div>
                             <div class="mb-3">
+                                <label for="agent-name" class="form-label fs-14 text-dark">Language <span class="text-danger">*</span></label>
+                                <select name="language" id="language" class="form-select">
+                                    <option value="English (UK)">English (UK)</option>
+                                    <option value="Multilingual (English and Spanish)">Multilingual (English and Spanish)</option>
+                                    <option value="Spanish (Latin America)">Spanish (Latin America)</option>
+                                    <option value="Spanish (Spain)">Spanish (Spain)</option>
+                                    <option value="English (India)">English (India)</option>
+                                    <option value="French">French</option>
+                                    <option value="Chinese">Chinese</option>
+                                    <option value="German">German</option>
+                                    <option value="Hindi">Hindi</option>
+                                    <option value="Japanese">Japanese</option>
+                                    <option value="Portuguese (Portugal)">Portuguese (Portugal)</option>
+                                    <option value="Portuguese (Brazil)">Portuguese (Brazil)</option>
+                                    <option value="Russian">Russian</option>
+                                    <option value="Italian">Italian</option>
+                                    <option value="Korean">Korean</option>
+                                    <option value="Dutch">Dutch</option>
+                                    <option value="Polish">Polish</option>
+                                    <option value="Turkish">Turkish</option>
+                                    <option value="Vietnamese">Vietnamese</option>
+                                    <option value="Romanian">Romanian</option>
+                                    
+                                </select>
+                            </div>
+                            <div class="mb-3">
                                 <label for="agent-prompt" class="form-label fs-14 text-dark">Enter prompt <span class="text-danger">*</span></label>
                                 <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="Enter the prompt/instruction for the AI agent to interact with or ask something from your employees."></textarea>
+                                <small class="text-muted mt-2">Kindly type your prompt in english.</small>
                             </div>
                             <div class="mb-3 d-flex justify-content-center">
                                 <div class="form-check form-check-md form-switch">
