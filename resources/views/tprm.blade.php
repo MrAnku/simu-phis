@@ -74,34 +74,34 @@
 
                                                 </td>
                                                 <!-- <td class="text-center">
-                                                                                                                                                            <div>
-                                                                                                                                                                
-                                                                                                                                                                    @if ($campaign->launch_type == 'schLater')
+                                                                                                                                                                    <div>
+                                                                                                                                                                        
+                                                                                                                                                                            @if ($campaign->launch_type == 'schLater')
     <small class="text-danger">
-                                                                                                                                                                        Not scheduled
-                                                                                                                                                                    </small>
+                                                                                                                                                                                Not scheduled
+                                                                                                                                                                            </small>
 @else
     <small>
-                                                                                                                                                                        {{ $campaign->launch_type }}
-                                                                                                                                                                    </small>
+                                                                                                                                                                                {{ $campaign->launch_type }}
+                                                                                                                                                                            </small>
     @endif
+                                                                                                                                                                            
+                                                                                                                                                                        
+                                                                                                                                                                    </div>
                                                                                                                                                                     
-                                                                                                                                                                
-                                                                                                                                                            </div>
-                                                                                                                                                            
-                                                                                                                                                            {{ e($campaign->launch_time) }}
-                                                                                                                                                            
-                                                                                                                                                            <div>
-                                                                                                                                                                <small>
-                                                                                                                                                                    @if ($campaign->email_freq == 'one')
+                                                                                                                                                                    {{ e($campaign->launch_time) }}
+                                                                                                                                                                    
+                                                                                                                                                                    <div>
+                                                                                                                                                                        <small>
+                                                                                                                                                                            @if ($campaign->email_freq == 'one')
     Once
 @else
     {{ $campaign->email_freq }}
     @endif
-                                                                                                                                                                    
-                                                                                                                                                                </small>
-                                                                                                                                                            </div>
-                                                                                                                                                        </td> -->
+                                                                                                                                                                            
+                                                                                                                                                                        </small>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </td> -->
                                                 <td>
 
                                                     <button
@@ -418,9 +418,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                                                                                                            <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                                                                                                            <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                                                                                                                        </div> -->
+                                                                                                                                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                                                </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -1342,8 +1342,8 @@
                 </div>
                 <div class="modal-body">
                     <!-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                                                                                                                               Add Domain For Verification
-                                                                                                                             </button> -->
+                                                                                                                                       Add Domain For Verification
+                                                                                                                                     </button> -->
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1371,8 +1371,8 @@
                                                     Email</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                                                                                        <i class="bx bx-x fs-25"></i>
-                                                                                                                    </span> -->
+                                                                                                                                <i class="bx bx-x fs-25"></i>
+                                                                                                                            </span> -->
                                         </td>
                                     </tr>
                                 @empty
