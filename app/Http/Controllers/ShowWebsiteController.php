@@ -31,66 +31,6 @@ class ShowWebsiteController extends Controller
         $c = $queryParams['c'] ?? null;
         $p = $queryParams['p'] ?? null;
         $l = $queryParams['l'] ?? null;
-        $tprm = $queryParams['1'] ?? null;
-
-        if ($tprm == '1') {
-
-            $visited = DB::table('tprm_websites_sessions')->where([
-                'user' => $dynamicvalue,
-                'session' => $c,
-                'website_id' => $p,
-                'website_name' => $l
-            ])->first();
-
-            if ($visited) {
-
-                if ($visited->expiry > now()) {
-
-                    $website = PhishingWebsite::find($p);
-
-                    if ($website) {
-                        $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
-
-                        if (File::exists($filePath)) {
-                            $content = File::get($filePath);
-                            return response($content)->header('Content-Type', 'text/html');
-                        } else {
-                            echo "file not found";
-                        }
-                    } else {
-                        echo "file not found";
-                    }
-                } else {
-
-                    abort(404);
-                }
-            } else {
-                $website = PhishingWebsite::find($p);
-
-                if ($website) {
-                    $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
-
-                    if (File::exists($filePath)) {
-
-                        DB::table('tprm_websites_sessions')->insert([
-                            'user' => $dynamicvalue,
-                            'session' => $c,
-                            'website_id' => $p,
-                            'website_name' => $l,
-                            'expiry' => now()->addMinutes(10)
-                        ]);
-
-                        $content = File::get($filePath);
-                        return response($content)->header('Content-Type', 'text/html');
-                    } else {
-                        echo "file not found";
-                    }
-                } else {
-                    echo "file not found";
-                }
-            }
-        }
-        //checking if this page is already visited and expiry
 
         $visited = DB::table('phish_websites_sessions')->where([
             'user' => $dynamicvalue,
@@ -118,7 +58,6 @@ class ShowWebsiteController extends Controller
                     echo "file not found";
                 }
             } else {
-
                 abort(404);
             }
         } else {
@@ -155,13 +94,7 @@ class ShowWebsiteController extends Controller
         $content = File::get($filePath);
 
         // Replace the placeholder with JavaScript code that sets up AJAX headers
-        $content = str_replace('//{csrf}//', "
-        \$.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': '" . csrf_token() . "'
-            }
-        });
-    ", $content);
+        $content = str_replace('//{csrf}//', "$.ajaxSetup({headers: {'X-CSRF-TOKEN':'" . csrf_token() . "'}});", $content);
 
         // Return the modified JavaScript content with the correct Content-Type header
         return response($content)->header('Content-Type', 'application/javascript');
@@ -204,9 +137,6 @@ class ShowWebsiteController extends Controller
     public function tcheckWhereToRedirect(Request $request)
     {
         $campid = $request->input('campid');
-
-
-
         $campDetail = TprmCampaignLive::find($campid);
 
         if ($campDetail) {

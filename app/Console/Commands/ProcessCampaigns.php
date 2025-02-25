@@ -364,8 +364,8 @@ class ProcessCampaigns extends Command
       $mailData = [
         'user_name' => $campaign->user_name,
         'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
-        'login_email' => $userLogin->login_username,
-        'login_pass' => $userLogin->login_password,
+        // 'login_email' => $userLogin->login_username,
+        // 'login_pass' => $userLogin->login_password,
         'company_name' => $learnSiteAndLogo['company_name'],
         'company_email' => $learnSiteAndLogo['company_email'],
         'learning_site' => $learnSiteAndLogo['learn_domain'],
@@ -409,8 +409,8 @@ class ProcessCampaigns extends Command
     $mailData = [
       'user_name' => $campaign->user_name,
       'training_name' => $this->trainingModuleName($campaign->training_module),
-      'login_email' => $userCredentials->login_username,
-      'login_pass' => $userCredentials->login_password,
+      // 'login_email' => $userCredentials->login_username,
+      // 'login_pass' => $userCredentials->login_password,
       'company_name' => $learnSiteAndLogo['company_name'],
       'company_email' => $learnSiteAndLogo['company_email'],
       'learning_site' => $learnSiteAndLogo['learn_domain'],

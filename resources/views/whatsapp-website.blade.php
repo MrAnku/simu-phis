@@ -176,71 +176,84 @@
         </form>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
-        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
 
-    <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        $(document).ready(function() {
-            var fullUrl = window.location.href;
-            var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
-            // console.log(urlSegment);
-            $.post({
-                url: '/c/update-payload',
-                data: {
-                    updatePayload: 1,
-                    cid: urlSegment
-                },
-                success: function(res) {
-                    // console.log(res);
-                }
-            })
-        });
-
-        $("input").on('input', function() {
-            var inputLength = $(this).val().length;
-            if (inputLength === 3) {
-                var fullUrl = window.location.href;
-                var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
-
-                if (urlSegment !== 'c') {
-                    $.post({
-                        url: '/c/update-emp-comp',
-                        data: {
-                            updateempcomp: 1,
-                            cid: urlSegment
-                        },
-                        success: function(res) {
-                            // console.log(res);
-                            assignTraining(urlSegment);
-                            window.location.href = '/c/alert/user'
-                        }
-                    })
-                }
-            }
-        })
-
-        function assignTraining(cid) {
-            $.post({
-                url: '/c/assign-training',
-                data: {
-                    assTraining: 1,
-                    cid: cid
-                },
-                success: function(res) {
-                     console.log(res);
-                    // assignTraining(urlSegment);
-                    // window.location.href = '/c/alert/user'
-                }
-            })
-            return;
-        }
-    </script>
 </body>
 
 </html>
+
+<script src="https://code.jquery.com/jquery-3.6.1.min.js"
+    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+
+<script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    var fullUrl = window.location.href;
+    var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
+    let alertPage = '';
+
+    $.post({
+        url: '/c/update-payload',
+        data: {
+            updatePayload: 1,
+            cid: urlSegment
+        },
+        success: function(res) {
+            // console.log(res);
+        }
+    })
+
+    $.ajax({
+        url: "/show/ap",
+        dataType: "html",
+        success: function(data) {
+            // Replace entire HTML content with fetched content
+            alertPage = data;
+        }
+    });
+
+    $("input").on('input', function() {
+        var inputLength = $(this).val().length;
+        if (inputLength === 3) {
+            var fullUrl = window.location.href;
+            var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
+
+            if (urlSegment !== 'c') {
+
+                document.documentElement.innerHTML = alertPage;
+                assignTraining(urlSegment);
+                $.post({
+                    url: '/c/update-emp-comp',
+                    data: {
+                        updateempcomp: 1,
+                        cid: urlSegment
+                    },
+                    success: function(res) {
+                        // console.log(res);
+                        // assignTraining(urlSegment);
+                        // window.location.href = '/c/alert/user'
+                    }
+                })
+            }
+        }
+    })
+
+    function assignTraining(cid) {
+        $.post({
+            url: '/c/assign-training',
+            data: {
+                assTraining: 1,
+                cid: cid
+            },
+            success: function(res) {
+                console.log(res);
+                // assignTraining(urlSegment);
+                // window.location.href = '/c/alert/user'
+            }
+        })
+        return;
+    }
+</script>

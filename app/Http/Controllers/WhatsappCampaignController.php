@@ -490,8 +490,8 @@ class WhatsappCampaignController extends Controller
         $mailData = [
             'user_name' => $campaign_user->user_name,
             'training_name' => $training->name,
-            'login_email' => $userCredentials->login_username,
-            'login_pass' => $userCredentials->login_password,
+            // 'login_email' => $userCredentials->login_username,
+            // 'login_pass' => $userCredentials->login_password,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
             'learning_site' => $learnSiteAndLogo['learn_domain'],
