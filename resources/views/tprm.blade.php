@@ -1424,20 +1424,8 @@
                                             @endif
                                         </td>
                                         <td>
-                                            {{-- @if ($domain->verified == 1)
-                                                <button type="button" class="btn btn-outline-info btn-sm ms-2"
-                                                    onclick="fetchEmail('{{ $domain->domain }}')">Fetch Email</button>
-                                            @endif --}}
-                                            {{-- <span role="button" onclick="downloadPDF(`{{ $domain->domain }}`)"> --}}
-                                            <span role="button">
-                                                <a href="{{ route('domain-full-report-download-pdf', ['domain' => $domain->domain]) }}"
-                                                    class="btn btn-outline-danger btn-sm">
+                                            <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
                                                     <i class="bx bx-x fs-25"></i>
-                                                </a>
-
-
-
-
                                             </span>
                                         </td>
                                     </tr>
@@ -2240,7 +2228,7 @@
 
     @push('newscripts')
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="assets/js/tprmdomain.js"></script>
+        <script src="/js/tprmdomain.js"></script>
         <!-- <script src="assets/js/tprmcampaigns.js"></script> -->
 
         <!-- Datatables Cdn -->
