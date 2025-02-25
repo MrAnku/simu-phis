@@ -17,7 +17,7 @@
 
     <style>
         body {
-            padding: 0px 350px;
+            /* padding: 0px 350px; */
 
             font-family: system-ui;
 
@@ -26,14 +26,15 @@
         .table-dark {
             --bs-table-color: #fff;
             --bs-table-bg: #1c2e6d !important;
-            --bs-table-bg: linear-gradient(to right, #111c43, #2b47a9) !important;
+            --bs-table-bg: #012a4a !important;
 
         }
 
         .reporting {
             font-size: 36px;
             font-weight: 600;
-            color: #595cff;
+            /* color: #61a5c2; */
+            color: #71d5ff;
             margin-left: 20px;
             font-family: system-ui;
         }
@@ -41,7 +42,7 @@
         .of {
             font-size: 35px;
             font-weight: 600;
-            color: #ff7b4a;
+            color: #61a5c2;
             margin-left: 5px;
             font-family: system-ui;
         }
@@ -49,7 +50,8 @@
         .phising {
             font-size: 35px;
             font-weight: 600;
-            color: #00c3ff;
+            /* color: #00c3ff; */
+            color: #61a5c2;
             margin-left: 5px;
             font-family: system-ui;
         }
@@ -59,12 +61,35 @@
             margin-bottom: 5px;
         }
 
+        .note_design_flex {
+            display: flex;
+            margin-top: 18px;
+            padding: 10px;
+            border: 1px solid #61a5c2;
+            border-style: dashed;
+            /* box-shadow: 0 0 5px #61a5c2; */
+        }
+
+        .note_lorem {
+            margin-left: 12px
+        }
+
         .container_pdf_body {
-            background: linear-gradient(to bottom, #bef7ff, #cbccff);
+
             /* margin: auto; */
             padding: 20px;
+            width: 766px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 15px;
             /* border: 2px solid #333; */
             /* background-color: #f9f9f9; */
+        }
+
+        .button_class {
+            width: 766px;
+            margin-right: auto;
+            margin-left: auto;
         }
 
         h2 {
@@ -105,7 +130,8 @@
         }
 
         .blue-background {
-            background: linear-gradient(to right, #111c43, #2b47a9);
+            /* background: linear-gradient(to right, #111c43, #2b47a9); */
+            background: #012a4a;
             padding: 10px 20px;
             display: flex;
             margin-top: 15px;
@@ -122,7 +148,7 @@
         .user {
             font-size: 15px;
             font-weight: 600;
-            color: #ff7b4a;
+            color: #71d5ff;
             margin-left: 2px;
             font-family: system-ui;
         }
@@ -132,9 +158,18 @@
         }
 
         .flex-box {
-            display: flex;
-            /* justify-content: center; */
+            /* display: flex;
+            justify-content: center; */
             align-items: center;
+            background: #012a4a;
+            padding: 20px;
+            text-align: center
+        }
+
+        .note {
+            font-weight: 600;
+            /* color: #61a5c2; */
+            color: #012a4a;
         }
 
         .width-graph {
@@ -145,7 +180,7 @@
             display: flex;
             /* justify-content: center; */
             align-items: center;
-            margin: 20px 0px;
+            margin: 5px 0px;
         }
 
         .reporting_2 {
@@ -184,12 +219,45 @@
         #chart_2 {
             width: fit-content
         }
+
+        /* table  */
+        .custom-table {
+            width: 100%;
+            margin-top: 20px;
+            background: #fff;
+            border-collapse: collapse;
+        }
+
+        .custom-table thead {
+            background: #252e4b;
+            color: white;
+        }
+
+        .custom-table th,
+        .custom-table td {
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .custom-table th {
+            font-weight: bold;
+        }
+
+        .custom-table tbody tr:nth-child(even) {
+            background: #f2f2f2;
+            /* Optional: Adds alternating row colors */
+        }
     </style>
 </head>
 
 <body>
 
-    <button id="downloadPdf">Download as PDF</button>
+    <div class="button_class">
+
+        <button id="downloadPdf">Download as PDF</button>
+    </div>
 
 
     @php
@@ -201,38 +269,25 @@
 
     <div id="content" class="container_pdf_body">
         <div class="flex-box">
-            <div><img class="width-graph" src="{{ asset('images/graph.png') }}" alt=""></div>
-            <div>
-                <span class="reporting">{{ $label }}</span> <span class="of">Phishing</span>
-                <span class="phising">Simulation</span>
+            {{-- <div><img class="width-graph" src="{{ asset('images/graph.png') }}" alt=""></div> --}}
+            <div class="reporting" style="text-align: center;">
+                {{ $label }} Phishing Simulation
             </div>
+            <div
+                style="color: white; font-weight:600; margin-left: 10px;text-align: center; text-transform: capitalize;">
+                {{ $title }}</div>
         </div>
-        <div class="flex-box-design">
-            <div class="padding-border-design-0"></div>
 
-            <div class="padding-border-design"></div>
-        </div>
 
         <!-- Chart Container -->
 
         <div class="flex-box_2">
-            <div>
+            {{-- <div>
                 <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
-            </div>
-            <div>
-                <span class="reporting_2">Campaign</span>
-                <span class="of_2">Report</span>
-            </div>
+            </div> --}}
+
         </div>
-        <div class="blue-background">
-            <div>
-                <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
-            </div>
-            <div>
-                <span class="details">Graph</span>
-                <span class="user">Details</span>
-            </div>
-        </div>
+
 
         <div style="display: flex;">
             <div style="width: 40%">
@@ -248,15 +303,15 @@
             </div>
             <div style="width: 40%; margin-left: auto;margin-right: 40px;">
                 <div class="blue-background">
-                    <div>
+                    {{-- <div>
                         <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
-                    </div>
+                    </div> --}}
                     <div>
                         <span class="details">Interaction</span>
                         <span class="user">Details</span>
                     </div>
                 </div>
-                <div style="background: white; padding: 20px; margin-top: 15px;">
+                <div style="background: white; padding: 5px; margin-top: 15px;">
 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex">
@@ -283,11 +338,12 @@
                             style="
         display: flex;
         justify-content: space-between;
-        margin-top: 20px;
+        margin-top: 10px;
     ">
-                            <div style="display: flex">
-                                <img style="width: 20px" src="{{ asset('images/graph_2.png') }}" alt="">
-                                <div style="margin-left: 20px" class="total_user">
+                            <div style="display: flex; align-items: center;">
+                                <img style="width: 20px;height: 15px;" src="{{ asset('images/folder.png') }}"
+                                    alt="">
+                                <div style="margin-left: 20px; " class="total_user">
                                     {{ ucfirst(str_replace('_', ' ', $key)) }}
                                     <!-- Converts "email_reported" to "Email Reported" -->
                                 </div>
@@ -296,7 +352,10 @@
                         </div>
                     @endforeach
 
-
+                    {{-- <div class="note_design_flex">
+                        <div class="note">Note: </div>
+                        <div class="note_lorem"> Lorem ipsum dolor sit, amet consectetur adipisicing</div>
+                    </div> --}}
 
 
                 </div>
@@ -381,37 +440,26 @@
         </div>
 
 
-        <div class="flex-box_2">
-            <div>
-                <img class="image-presentation" src="http://127.0.0.1:8000/images/presentation.png" alt="">
-            </div>
-            <div>
-                <span class="reporting_2">Simulation</span>
-                <span class="of_2">Report</span>
-            </div>
-        </div>
+
 
 
         {{-- <table style="margin-top: 100px; background: #fff"  class="table table-bordered border-dark"> --}}
-        <table style="margin-top: 20px; background: #fff" class="table">
-
-            <thead style=" background: linear-gradient(to right, #111c43, #2b47a9);" class="table-dark">
+        <table class="custom-table">
+            <thead>
                 <tr>
-                    <th style="font-size: 12px" scope="col">Campaign Name</th>
-                    <th style="font-size: 12px" scope="col">Email Address
-
-                    </th>
-                    <th style="font-size: 12px" scope="col">Payload Clicked</th>
-                    <th style="font-size: 12px" scope="col">Emp Compromised</th>
-                    <th style="font-size: 12px" scope="col">Email Reported</th>
-                    <th style="font-size: 12px" scope="col">Training Assigned</th>
-
+                    <th>Campaign Name</th>
+                    <th>Email Address</th>
+                    <th>Payload Clicked</th>
+                    <th>Emp Compromised</th>
+                    <th>Email Reported</th>
+                    <th>Training Assigned</th>
                 </tr>
             </thead>
             <tbody id="ReportsIndividual">
-
+                <!-- Table rows will be inserted here -->
             </tbody>
         </table>
+
 
 
 
@@ -470,7 +518,7 @@
                     }
                 }
             },
-            colors: ["#4ea6ff", '#ff435b', '#fed843', '#ff7b4a', "#7ed8f6"], // Red, Yellow, Green
+            colors: ["#012a4a", '#014f86', '#71d5ff'], // Red, Yellow, Green
             theme: {
                 monochrome: {
                     enabled: false // Disable monochrome mode to use custom colors

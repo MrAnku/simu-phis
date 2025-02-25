@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPRM Report</title>
+    <title>Try Report</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -180,7 +180,7 @@
             display: flex;
             /* justify-content: center; */
             align-items: center;
-            margin: 5px 0px;
+            margin: 20px 0px;
         }
 
         .reporting_2 {
@@ -273,10 +273,8 @@
             <div class="reporting" style="text-align: center;">
                 {{ $label }} Phishing Simulation
             </div>
-            <div
-                style="color: white; font-weight:600; margin-left: 10px;text-align: center; text-transform: capitalize;
-">
-                {{ $title }}</div>
+            <div style="color: white; font-weight:600; margin-left: 10px;text-align: center">Email Report &amp;
+                Analytics According to Data</div>
         </div>
 
 
@@ -296,8 +294,8 @@
                     <div id="chart" style="background: white; margin-top: 16px;"></div>
                 @else
                     <div style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
-                        <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
-                            alt="">
+                        {{-- <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
+                            alt=""> --}}
                         <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
                     </div>
                 @endif
@@ -353,10 +351,10 @@
                         </div>
                     @endforeach
 
-                    {{-- <div class="note_design_flex">
+                    <div class="note_design_flex">
                         <div class="note">Note: </div>
                         <div class="note_lorem"> Lorem ipsum dolor sit, amet consectetur adipisicing</div>
-                    </div> --}}
+                    </div>
 
 
                 </div>
@@ -444,27 +442,16 @@
 
 
 
+        {{-- <table style="margin-top: 100px; background: #fff"  class="table table-bordered border-dark"> --}}
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>Employee Name</th>
-
-                    <th> Email <div>Address
-                        </div>
-                    </th>
-
-                    <th>Email Delivery</th>
-
-
-                    <th>Email Viewed</th>
-
-
+                    <th>Campaign Name</th>
+                    <th>Email Address</th>
                     <th>Payload Clicked</th>
-                    <th>Employee Compromised</th>
+                    <th>Emp Compromised</th>
                     <th>Email Reported</th>
-
-
-
+                    <th>Training Assigned</th>
                 </tr>
             </thead>
             <tbody id="ReportsIndividual">
@@ -660,9 +647,9 @@
 `;
                 let rowHtml = '';
                 campaignData.forEach((camp) => {
-                    let isDelivered = camp.sent == "0" ? mailPending : mailSent;
-                    let isViewed = camp.mail_open == 0 ? noBatch : yesBatch;
+                    let isDelivered = camp.payload_clicked == "0" ? mailPending : mailSent;
                     let isPayLoadClicked = camp.payload_clicked == 0 ? noBatch : yesBatch;
+                    let isTrainingAssigned = camp.training_assigned == 0 ? noBatch : yesBatch;
                     let isEmpCompromised = camp.emp_compromised == 0 ? noBatch : yesBatch;
                     let isEmailReported = camp.email_reported == 0 ? noBatch : yesBatch;
 
@@ -670,11 +657,11 @@
                     <tr>
                         <td>${camp.campaign_name}</td>
                         <td>${camp.user_email}</td>
-                        <td>${isDelivered}</td>
-                        <td>${isViewed}</td>
+                    
                         <td>${isPayLoadClicked}</td>
-                        <td>${isEmpCompromised}</td>
+                        <td>${isEmpCompromised }</td>
                         <td>${isEmailReported}</td>
+                        <td>${isTrainingAssigned}</td>
                     </tr>
                 `;
                 });

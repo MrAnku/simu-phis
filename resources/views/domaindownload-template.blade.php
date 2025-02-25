@@ -313,7 +313,7 @@
 
                         <div style="display: flex">
                             <div>
-                                <div style="width: 137px;">
+                                <div style="width: 145px;">
                                     <div class="total_user_count_grade">
 
 
