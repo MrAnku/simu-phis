@@ -447,7 +447,7 @@
             <thead>
                 <tr>
                     <th>Campaign Name</th>
-                    <th>Email Address</th>
+                    <th>Mobile Number</th>
                     <th>Link Clicked</th>
 
                     <th>Emp Compromised</th>
@@ -658,7 +658,7 @@
                     rowHtml += `
                     <tr>
                         <td>${camp.camp_name}</td>
-                        <td>${camp.user_email}</td>
+                        <td>${camp.user_whatsapp}</td>
                         <td>${isLinkClicked}</td>
                         <td>${isEmpCompromised}</td>
                         <td>${isTrainingAssigned}</td>

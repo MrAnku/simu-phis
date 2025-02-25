@@ -448,13 +448,13 @@
                 <tr>
                     <th>Campaign Name</th>
 
-                    <th>Email Address</th>
-                    <th>Payload Clicked</th>
+                    <th>Mobile Number</th>
+                    <th>Call Sent</th>
 
 
-                    <th>Emp Compromised</th>
+                    <th>Call Responded</th>
 
-                    <th>Email Reported</th>
+
 
                     <th>Training Assigned</th>
 
@@ -657,17 +657,15 @@
                     let isDelivered = camp.payload_clicked == "0" ? mailPending : mailSent;
                     let isSendResponse = camp.call_send_response == null ? noBatch : yesBatch;
                     let isEndResponse = camp.call_end_response == null ? noBatch : yesBatch;
-                    let isSendReport = camp.call_report == null ? noBatch : yesBatch;
                     let isTraining = camp.training_assigned == 0 ? noBatch : yesBatch;
 
                     rowHtml += `
                     <tr>
                         <td>${camp.campaign_name}</td>
-                        <td>${camp.employee_email}</td>
-                    
+                        <td>${camp.to_mobile}</td>
                         <td>${isSendResponse}</td>
                         <td>${isEndResponse }</td>
-                        <td>${isSendReport}</td>
+                        
                         <td>${isTraining}</td>
                        
                     </tr>

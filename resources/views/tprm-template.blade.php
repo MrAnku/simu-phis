@@ -611,8 +611,9 @@
             if (campaignData.length > 0) {
                 let mailPending = `
   <span style="
-    color: white;
-    background: #ffc107;
+    
+ color: #ffc107;
+ border: 1px solid #ffc107;
     font-size: 12px;
     padding: 3px 10px;
     border-radius: 5px;

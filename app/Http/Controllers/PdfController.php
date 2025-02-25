@@ -141,7 +141,7 @@ $title = "Campaign Report of WhatsApp Phishing Simulation - " . $company_name->c
 
 
 // return $reportRow;
-    $camp_live = WhatsAppCampaignUser::where('company_id', $companyId)->get();
+    $camp_live = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->get();
 //  return $reportRow->training_assigned;
 $ArrayCount = [];
  $Arraydetails = [];
@@ -222,9 +222,12 @@ $title = "Full Report of Email Phishing Simulation";
 public function email_campaigns_wise (Request $request)
 {
  $campId = $request->query('campaignId');
+// return  $campId;
   $companyId = Auth::user()->company_id;
+
  $company_name = CampaignLive::where('campaign_id', $campId)
     ->where('company_id', $companyId)->first();
+// return $company_name;
 $title = "Campaign Report of Email Phishing Simulation - " . $company_name->campaign_name;
 // return $company_name->campaign_name;
     $payload_clicked = CampaignLive::where('campaign_id', $campId)
@@ -245,7 +248,8 @@ $ArrayCount['array_count'] = $training_assigned + $payload_clicked + $emp_compro
         ["labels" => "Emp Compromised"],
         ["labels" => "Training Assigned"],
     ];
-    $camp_live = CampaignLive::where('company_id', $companyId)->get();
+    $camp_live = CampaignLive::where('campaign_id', $campId)
+    ->where('company_id', $companyId)->get();
 $label='Email';
 // $campaign_name = "RBS";
 
@@ -260,6 +264,7 @@ public function ai_campaigns_wise(Request $request) {
 $call_send_response_count = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->whereNotNull('call_send_response')->count(); // Count those rows
 
 $company_name = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->first();
+
 $title = "Campaign Report of AI Vishing Simulation - " . $company_name->campaign_name;
 
 $training_assigned = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)
@@ -280,7 +285,7 @@ $ArrayCount['array_count'] = $call_send_response_count + $training_assigned + $c
         ["labels" => "Call Responsed"],
         ["labels" => "Traing Assigned"],
     ];
-    $camp_live = AiCallCampLive::where('company_id', $companyId)->get();
+    $camp_live = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->get();
 $label='AI';
 // return $Arraydetails;
  return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
