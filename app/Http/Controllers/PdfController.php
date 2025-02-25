@@ -60,6 +60,8 @@ public function tprm_full_report()
 // return $camp_live;
  $tprmcamps = TprmCampaignLive::where('company_id', $companyId)->get();
 
+$title = "Full Report of TPRM Simulation ";
+
       $training_assigned =  $tprmcamps->sum('training_assigned');
       $emp_compromised_reported =  $tprmcamps->sum('emp_compromised');
       $payloads_clicked_reported =  $tprmcamps->sum('payload_clicked');
@@ -78,7 +80,7 @@ $ArrayData_labels = [
 ];
 $ArrayCount['array_count'] = $training_assigned + $payloads_clicked_reported + $emp_compromised_reported;
 $label = "TPRM";
-return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label'));
+return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label','title'));
 }
 
 public function tprm_campaigns_wise (Request $request)
@@ -86,6 +88,9 @@ public function tprm_campaigns_wise (Request $request)
  $campId = $request->query('campaignId'); // or 
        
 $companyId = Auth::user()->company_id;
+ $company_name = TprmCampaignLive::where('campaign_id', $campId)
+    ->where('company_id', $companyId)->first();
+$title = "Campaign Report of TPRM Simulation - " . $company_name->campaign_name;
  $camp_live = TprmCampaignLive::where('company_id', $companyId)->where('campaign_id',  $campId)->get();
 // return $camp_live;
  $tprmcamps = TprmCampaignLive::where('company_id', $companyId)->where('campaign_id',  $campId)->get();
@@ -106,9 +111,7 @@ $ArrayData_labels = [
 ];
 $ArrayCount['array_count'] = $training_assigned + $payloads_clicked_reported + $emp_compromised_reported;
 $label = 'TPRM';
-return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label'));
-
-
+return view('tprm-template', compact('Arraydetails', 'camp_live','ArrayData_labels','ArrayCount','label','title'));
 
 }
 
@@ -122,6 +125,14 @@ $label = "Whatsapp";
 $TrainingreportRow = WhatsAppCampaignUser::where('camp_id', $campId)
     ->where('company_id', $companyId)
     ->sum('training_assigned');
+
+$company_name = WhatsAppCampaignUser::where('camp_id', $campId)
+    ->where('company_id', $companyId)
+    ->first();
+
+// return $company_name;
+
+$title = "Campaign Report of WhatsApp Phishing Simulation - " . $company_name->camp_name;
 
 // return $TrainingreportRow;
 
@@ -146,7 +157,7 @@ $ArrayData_labels = [
     ["labels" => "Training Assigned"],
 ];
 
-return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
 }
 
 public function whatsapp_full_report()
@@ -155,6 +166,7 @@ $companyId = Auth::user()->company_id;
 
 $label = "Whatsapp";
 $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
+$title = "Full Report of WhatsApp Phishing Simulation";
 $link_clicked = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('link_clicked');
 $emp_compromised = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('emp_compromised');
 // return $link_clicked;
@@ -178,7 +190,7 @@ Training_Assigned"],
     $camp_live = WhatsAppCampaignUser::where('company_id', $companyId)->get();
 // return $camp_live;
 // return $camp_live;
-return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+return view('whatsapp-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
 }
 
 public function  email_full_report() 
@@ -203,14 +215,18 @@ $ArrayCount = [];
     $camp_live = CampaignLive::where('company_id', $companyId)->get();
 
 $label='Email';
-    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+$title = "Full Report of Email Phishing Simulation";
+    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
 }
 
 public function email_campaigns_wise (Request $request)
 {
  $campId = $request->query('campaignId');
   $companyId = Auth::user()->company_id;
-
+ $company_name = CampaignLive::where('campaign_id', $campId)
+    ->where('company_id', $companyId)->first();
+$title = "Campaign Report of Email Phishing Simulation - " . $company_name->campaign_name;
+// return $company_name->campaign_name;
     $payload_clicked = CampaignLive::where('campaign_id', $campId)
     ->where('company_id', $companyId)->sum('payload_clicked');
 // return $emails_delivered;
@@ -231,15 +247,20 @@ $ArrayCount['array_count'] = $training_assigned + $payload_clicked + $emp_compro
     ];
     $camp_live = CampaignLive::where('company_id', $companyId)->get();
 $label='Email';
-// return $camp_live;
-    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+// $campaign_name = "RBS";
+
+    return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label', 'title'));
 }
 
 public function ai_campaigns_wise(Request $request) {
  $campId = $request->query('campaignId');
     $companyId = Auth::user()->company_id;
     // $call_send_response = AiCallCampLive::where('company_id', $companyId)->get();
+
 $call_send_response_count = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->whereNotNull('call_send_response')->count(); // Count those rows
+
+$company_name = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)->first();
+$title = "Campaign Report of AI Vishing Simulation - " . $company_name->campaign_name;
 
 $training_assigned = AiCallCampLive::where('company_id', $companyId)->where('campaign_id', $campId)
     ->sum('training_assigned');
@@ -261,7 +282,8 @@ $ArrayCount['array_count'] = $call_send_response_count + $training_assigned + $c
     ];
     $camp_live = AiCallCampLive::where('company_id', $companyId)->get();
 $label='AI';
- return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+// return $Arraydetails;
+ return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
 }
 
 
@@ -272,7 +294,7 @@ public function ai_full_report() {
 $call_send_response_count = AiCallCampLive::where('company_id', $companyId)
     ->whereNotNull('call_send_response') // Select only rows where call_send_response is NULL
     ->count(); // Count those rows
-
+$title = "Full Report of AI Vishing Simulation ";
 $training_assigned = AiCallCampLive::where('company_id', $companyId)
     ->sum('training_assigned');
 
@@ -293,7 +315,7 @@ $ArrayCount['array_count'] = $call_send_response_count + $training_assigned + $c
     ];
     $camp_live = AiCallCampLive::where('company_id', $companyId)->get();
 $label='AI';
- return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label'));
+ return view('ai-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label', 'title'));
 }
 
 public function domain_full_report($domain)
