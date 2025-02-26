@@ -30,7 +30,7 @@ class AicallController extends Controller
 
         $empGroups = UsersGroup::where('company_id', $companyId)->get();
         $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
-        $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->get();
+        $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->paginate(10);
         $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
         $phone_numbers = $this->getPhoneNumbers();
 

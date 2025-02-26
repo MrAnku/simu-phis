@@ -30,7 +30,8 @@ class TprmController extends Controller
     public function index()
     {
         $companyId = Auth::user()->company_id;
-        $allCamps = TprmCampaign::where('company_id', $companyId)->get(); 
+        $allCamps = TprmCampaign::where('company_id', $companyId)->orderBy('id', 'desc')
+        ->paginate(10); 
         $lastCampaign = TprmCampaign::orderBy('id', 'desc')->first();
 // return $lastCampaign;
         if ($lastCampaign) {

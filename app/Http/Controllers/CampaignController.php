@@ -29,7 +29,10 @@ class CampaignController extends Controller
     {
 
         $companyId = Auth::user()->company_id;
-        $allCamps = Campaign::with('usersGroup')->where('company_id', $companyId)->get();
+        $allCamps = Campaign::with('usersGroup')
+            ->where('company_id', $companyId)
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         $lastCampaign = Campaign::where('company_id', $companyId)->orderBy('id', 'desc')->first();
         $daysSinceLastDelivery = $lastCampaign ? max(0, (int)Carbon::now()->diffInDays(Carbon::parse($lastCampaign->launch_time), false)) : 0;

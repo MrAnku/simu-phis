@@ -20,7 +20,7 @@
 
                 <div>
                     @if (!$allCamps->isEmpty())
-                        <button type="button" class="btn btn-danger mb-3" data-bs-toggle="modal"
+                        <button type="button" class="btn btn-danger mb-3 me-2" data-bs-toggle="modal"
                             data-bs-target="#domainDownloadModal">
                             Download Scoring
                         </button>
@@ -49,7 +49,7 @@
                                             <th>#</th>
                                             <th>Campaign Name</th>
                                             <th>Domain</th>
-                                            <th>Phishing Material</th>
+                                            <th>Campaign Type</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -68,59 +68,32 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $campaign->users_group_name }}</td>
-                                                <!-- <td>{!! $campaign->status_button !!}</td> -->
-                                                <td class="text-center">
-                                                    {{ $campaign->campaign_type }}
-
-                                                </td>
-                                                <!-- <td class="text-center">
-                                                                                                                                                                    <div>
-                                                                                                                                                                        
-                                                                                                                                                                            @if ($campaign->launch_type == 'schLater')
-    <small class="text-danger">
-                                                                                                                                                                                Not scheduled
-                                                                                                                                                                            </small>
-@else
-    <small>
-                                                                                                                                                                                {{ $campaign->launch_type }}
-                                                                                                                                                                            </small>
-    @endif
-                                                                                                                                                                            
-                                                                                                                                                                        
-                                                                                                                                                                    </div>
-                                                                                                                                                                    
-                                                                                                                                                                    {{ e($campaign->launch_time) }}
-                                                                                                                                                                    
-                                                                                                                                                                    <div>
-                                                                                                                                                                        <small>
-                                                                                                                                                                            @if ($campaign->email_freq == 'one')
-    Once
-@else
-    {{ $campaign->email_freq }}
-    @endif
-                                                                                                                                                                            
-                                                                                                                                                                        </small>
-                                                                                                                                                                    </div>
-                                                                                                                                                                </td> -->
+                                                
                                                 <td>
+                                                    <span class="badge bg-secondary-transparent">{{ $campaign->campaign_type }}</span>
+                                                    
+                                                </td>
+                                                
+                                                <td>
+                                                    <button class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" title="Delete"
+                                                    onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
 
-                                                    <button
-                                                        class="btn btn-icon btn-danger btn-wave waves-effect waves-light"
-                                                        title="Delete"
-                                                        onclick="deletecampaign('{{ e($campaign->campaign_id) }}')"><i
-                                                            class="bx bx-trash"></i></button>
+                                                    
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">No campaigns running</td>
+                                                <td colspan="5" class="text-center">No Campaigns</td>
                                             </tr>
                                         @endforelse
-
-
-
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <div class="mt-4">
+                                {{ $allCamps->links() }}
                             </div>
                         </div>
                     </div>
@@ -133,52 +106,8 @@
 
     {{-- ------------------------------Toasts---------------------- --}}
 
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        @if (session('success'))
-            <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-            </div>
-        @endif
+    <x-toast />
 
-        @if (session('error'))
-            <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
-                    aria-atomic="true">
-                    <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ $error }}
-                    </div>
-                </div>
-            @endforeach
-        @endif
-
-
-    </div>
-
-    {{-- ------------------------------Toasts---------------------- --}}
 
 
     {{-- --------------------- modals ---------------------- --}}
@@ -1066,271 +995,6 @@
         </div>
     </div>
 
-    <!-- re-schedule campaign modal -->
-    <div class="modal fade" id="reschedulemodal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Re-Schedule Campaign
-                    </h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('reschedule.campaign') }}" method="post" id="rescheduleForm">
-                        @csrf
-                        <p class="text-center">Schedule Type</p>
-                        <div class="form-card">
-                            <div class="d-flex justify-content-center">
-                                <div class="checkb mx-1">
-
-                                    <input type="radio" class="btn-check" name="rschType" data-val="Imediately"
-                                        value="immediately" id="rimediateBtn" checked>
-                                    <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        data-bs-original-title="Campaign will begin delivering emails within 1-3 minutes of submission."
-                                        id="rimediateLabelBtn" for="rimediateBtn">Deliver Immediately </label>
-                                </div>
-                                <div class="checkb mx-1">
-
-                                    <input type="radio" class="btn-check" name="rschType" data-val="Setup Schedule"
-                                        value="scheduled" id="rScheduleBtn">
-                                    <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        data-bs-original-title="Campaign will deliver emails using a defined schedule over a period of hours and days (e.g. 9am-5pm Monday-Friday)."
-                                        id="rscheduleLabelBtn" for="rScheduleBtn">Setup Schedule</label>
-                                </div>
-
-
-
-                            </div>
-                            <div id="rdvSchedule2" class="d-none">
-                                <label class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>Note:</b>We
-                                    will capture employee interactions as long as a campaign remains active (isn't updated
-                                    or deleted). </label>
-                                <div class="row mb-3">
-                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule Date<i
-                                            class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            data-bs-original-title="Select schedule date for started shooting this campaign"></i>
-                                    </label>
-                                    <div class="col-sm-8">
-                                        <div class="form-group">
-                                            <div class="input-group">
-
-                                                <input type="text" class="form-control flatpickr-input active"
-                                                    name="rsc_launch_time" id="rschBetRange" placeholder="YYYY-MM-DD"
-                                                    required readonly="readonly">
-                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule (Between Times) <i
-                                            class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            data-bs-original-title="We recommend scheduling campaigns between business hours to get the most ineraction (e.g. 9am - 5pm)"></i></label>
-                                    <div class="col-sm-8">
-                                        <div class="form-group d-flex">
-                                            <input type="time" id="rschTimeStart" name="startTime"
-                                                class="form-control" value="09:00" step="60">
-                                            <label class="col-md-1 m-t-15" style="text-align:center"> To </label>
-                                            <input type="time" id="rschTimeEnd" name="endTime" class="form-control"
-                                                value="17:00" step="60">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule (Time Zone) <i
-                                            class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            data-bs-original-title="Select the timezone that best aligns with your business hours."></i></label>
-                                    <div class="col-sm-8">
-                                        <div class="form-group d-flex">
-                                            <select class="select2 form-control custom-select select2-hidden-accessible"
-                                                style="width: 100%" id="rschTimeZone" name="rschTimeZone">
-                                                <option value="Australia/Canberra" data-select2-id="390">(GMT+10:00)
-                                                    Canberra, Melbourne, Sydney</option>
-                                                <option value="Etc/GMT+12">(GMT-12:00) International Date Line West
-                                                </option>
-                                                <option value="Pacific/Midway">(GMT-11:00) Midway Island, Samoa</option>
-                                                <option value="Pacific/Honolulu">(GMT-10:00) Hawaii</option>
-                                                <option value="US/Alaska">(GMT-09:00) Alaska</option>
-                                                <option value="America/Los_Angeles">(GMT-08:00) Pacific Time (US &amp;
-                                                    Canada)</option>
-                                                <option value="America/Tijuana">(GMT-08:00) Tijuana, Baja California
-                                                </option>
-                                                <option value="US/Arizona">(GMT-07:00) Arizona</option>
-                                                <option value="America/Chihuahua">(GMT-07:00) Chihuahua, La Paz, Mazatlan
-                                                </option>
-                                                <option value="US/Mountain">(GMT-07:00) Mountain Time (US &amp; Canada)
-                                                </option>
-                                                <option value="America/Managua">(GMT-06:00) Central America</option>
-                                                <option value="US/Central">(GMT-06:00) Central Time (US &amp; Canada)
-                                                </option>
-                                                <option value="America/Mexico_City">(GMT-06:00) Guadalajara, Mexico City,
-                                                    Monterrey</option>
-                                                <option value="Canada/Saskatchewan">(GMT-06:00) Saskatchewan</option>
-                                                <option value="America/Bogota">(GMT-05:00) Bogota, Lima, Quito, Rio Branco
-                                                </option>
-                                                <option value="US/Eastern">(GMT-05:00) Eastern Time (US &amp; Canada)
-                                                </option>
-                                                <option value="US/East-Indiana">(GMT-05:00) Indiana (East)</option>
-                                                <option value="Canada/Atlantic">(GMT-04:00) Atlantic Time (Canada)</option>
-                                                <option value="America/Caracas">(GMT-04:00) Caracas, La Paz</option>
-                                                <option value="America/Manaus">(GMT-04:00) Manaus</option>
-                                                <option value="America/Santiago">(GMT-04:00) Santiago</option>
-                                                <option value="Canada/Newfoundland">(GMT-03:30) Newfoundland</option>
-                                                <option value="America/Sao_Paulo">(GMT-03:00) Brasilia</option>
-                                                <option value="America/Argentina/Buenos_Aires">(GMT-03:00) Buenos Aires,
-                                                    Georgetown</option>
-                                                <option value="America/Godthab">(GMT-03:00) Greenland</option>
-                                                <option value="America/Montevideo">(GMT-03:00) Montevideo</option>
-                                                <option value="America/Noronha">(GMT-02:00) Mid-Atlantic</option>
-                                                <option value="Atlantic/Cape_Verde">(GMT-01:00) Cape Verde Is.</option>
-                                                <option value="Atlantic/Azores">(GMT-01:00) Azores</option>
-                                                <option value="Africa/Casablanca">(GMT+00:00) Casablanca, Monrovia,
-                                                    Reykjavik</option>
-                                                <option value="Etc/Greenwich" data-select2-id="418">(GMT+00:00) Greenwich
-                                                    Mean Time : Dublin, Edinburgh, Lisbon, London</option>
-                                                <option value="Europe/Amsterdam">(GMT+01:00) Amsterdam, Berlin, Bern, Rome,
-                                                    Stockholm, Vienna</option>
-                                                <option value="Europe/Belgrade">(GMT+01:00) Belgrade, Bratislava, Budapest,
-                                                    Ljubljana, Prague</option>
-                                                <option value="Europe/Brussels">(GMT+01:00) Brussels, Copenhagen, Madrid,
-                                                    Paris</option>
-                                                <option value="Europe/Sarajevo">(GMT+01:00) Sarajevo, Skopje, Warsaw,
-                                                    Zagreb</option>
-                                                <option value="Africa/Lagos">(GMT+01:00) West Central Africa</option>
-                                                <option value="Asia/Amman">(GMT+02:00) Amman</option>
-                                                <option value="Europe/Athens">(GMT+02:00) Athens, Bucharest, Istanbul
-                                                </option>
-                                                <option value="Asia/Beirut">(GMT+02:00) Beirut</option>
-                                                <option value="Africa/Cairo">(GMT+02:00) Cairo</option>
-                                                <option value="Africa/Harare">(GMT+02:00) Harare, Pretoria</option>
-                                                <option value="Europe/Helsinki">(GMT+02:00) Helsinki, Kyiv, Riga, Sofia,
-                                                    Tallinn, Vilnius</option>
-                                                <option value="Asia/Jerusalem">(GMT+02:00) Jerusalem</option>
-                                                <option value="Europe/Minsk">(GMT+02:00) Minsk</option>
-                                                <option value="Africa/Windhoek">(GMT+02:00) Windhoek</option>
-                                                <option value="Asia/Kuwait">(GMT+03:00) Kuwait, Riyadh, Baghdad</option>
-                                                <option value="Europe/Moscow">(GMT+03:00) Moscow, St. Petersburg, Volgograd
-                                                </option>
-                                                <option value="Africa/Nairobi">(GMT+03:00) Nairobi</option>
-                                                <option value="Asia/Tbilisi">(GMT+03:00) Tbilisi</option>
-                                                <option value="Asia/Tehran">(GMT+03:30) Tehran</option>
-                                                <option value="Asia/Muscat">(GMT+04:00) Abu Dhabi, Muscat</option>
-                                                <option value="Asia/Baku">(GMT+04:00) Baku</option>
-                                                <option value="Asia/Yerevan">(GMT+04:00) Yerevan</option>
-                                                <option value="Asia/Kabul">(GMT+04:30) Kabul</option>
-                                                <option value="Asia/Yekaterinburg">(GMT+05:00) Yekaterinburg</option>
-                                                <option value="Asia/Karachi">(GMT+05:00) Islamabad, Karachi, Tashkent
-                                                </option>
-                                                <option value="Asia/Calcutta">(GMT+05:30) Chennai, Kolkata, Mumbai, New
-                                                    Delhi</option>
-                                                <option value="Asia/Calcutta">(GMT+05:30) Sri Jayawardenapura</option>
-                                                <option value="Asia/Katmandu">(GMT+05:45) Kathmandu</option>
-                                                <option value="Asia/Almaty">(GMT+06:00) Almaty, Novosibirsk</option>
-                                                <option value="Asia/Dhaka">(GMT+06:00) Astana, Dhaka</option>
-                                                <option value="Asia/Rangoon">(GMT+06:30) Yangon (Rangoon)</option>
-                                                <option value="Asia/Bangkok">(GMT+07:00) Bangkok, Hanoi, Jakarta</option>
-                                                <option value="Asia/Krasnoyarsk">(GMT+07:00) Krasnoyarsk</option>
-                                                <option value="Asia/Hong_Kong">(GMT+08:00) Beijing, Chongqing, Hong Kong,
-                                                    Urumqi</option>
-                                                <option value="Asia/Kuala_Lumpur">(GMT+08:00) Kuala Lumpur, Singapore
-                                                </option>
-                                                <option value="Asia/Irkutsk">(GMT+08:00) Irkutsk, Ulaan Bataar</option>
-                                                <option value="Australia/Perth">(GMT+08:00) Perth</option>
-                                                <option value="Asia/Taipei">(GMT+08:00) Taipei</option>
-                                                <option value="Asia/Tokyo">(GMT+09:00) Osaka, Sapporo, Tokyo</option>
-                                                <option value="Asia/Seoul">(GMT+09:00) Seoul</option>
-                                                <option value="Asia/Yakutsk">(GMT+09:00) Yakutsk</option>
-                                                <option value="Australia/Adelaide">(GMT+09:30) Adelaide</option>
-                                                <option value="Australia/Darwin">(GMT+09:30) Darwin</option>
-                                                <option value="Australia/Brisbane">(GMT+10:00) Brisbane</option>
-                                                <option value="Australia/Canberra">(GMT+10:00) Canberra, Melbourne, Sydney
-                                                </option>
-                                                <option value="Australia/Hobart">(GMT+10:00) Hobart</option>
-                                                <option value="Pacific/Guam">(GMT+10:00) Guam, Port Moresby</option>
-                                                <option value="Asia/Vladivostok">(GMT+10:00) Vladivostok</option>
-                                                <option value="Asia/Magadan">(GMT+11:00) Magadan, Solomon Is., New
-                                                    Caledonia</option>
-                                                <option value="Pacific/Auckland">(GMT+12:00) Auckland, Wellington</option>
-                                                <option value="Pacific/Fiji">(GMT+12:00) Fiji, Kamchatka, Marshall Is.
-                                                </option>
-                                                <option value="Pacific/Tongatapu">(GMT+13:00) Nuku'alofa</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                            <hr style="margin: 4px;">
-                            <div id="remail_frequency">
-
-                                <p class="text-center">Email Frequency</p>
-                                <div class="d-flex justify-content-center">
-
-                                    <div class="checkb mx-1">
-
-                                        <input type="radio" class="btn-check" name="emailFreq" data-val="One-off"
-                                            value="one" id="rfoneoff" checked>
-                                        <label class="btn btn-outline-dark mb-3" for="rfoneoff">One-off</label>
-                                    </div>
-                                    <div class="checkb mx-1">
-
-                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Monthly"
-                                            value="monthly" id="rfmonthly">
-                                        <label class="btn btn-outline-dark mb-3" for="rfmonthly">Monthly</label>
-                                    </div>
-
-                                    <div class="checkb mx-1">
-
-                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Weekly"
-                                            value="weekly" id="rfweekly">
-                                        <label class="btn btn-outline-dark mb-3" for="rfweekly">Weekly</label>
-                                    </div>
-                                    <div class="checkb mx-1">
-
-                                        <input type="radio" class="btn-check" name="emailFreq" data-val="Quaterly"
-                                            value="quaterly" id="rfquaterly">
-                                        <label class="btn btn-outline-dark mb-3" for="rfquaterly">Quaterly</label>
-                                    </div>
-                                    <div id="rexp_after" class="d-none">
-                                        <div class="input-group">
-                                            <div class="input-group-text text-muted"> Expire After</div>
-                                            <input type="text" class="form-control flatpickr-input active"
-                                                name="rexpire_after" id="rexpire_after" placeholder="Choose date"
-                                                readonly="readonly">
-                                            <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-
-                                </div>
-                            </div>
-
-                            <div class="text-center">
-                                <input type="hidden" name="campid" id="recampid">
-                                <button type="submit" id="rescheduleBtn"
-                                    class="btn btn-primary btn-wave waves-effect waves-light">Re-schedule</button>
-                            </div>
-
-
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- <--Domain view/add modal-->
     <div class="modal fade" id="newdomainVerificationModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-hidden="true">
@@ -1341,9 +1005,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                                                                                                                                       Add Domain For Verification
-                                                                                                                                     </button> -->
+                    
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1448,15 +1110,9 @@
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                {{-- <div class="modal-header">
-                    <h6 class="modal-title">Download Domain </h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div> --}}
+               
                 <div class="modal-body">
-                    {{-- <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2"
-                        data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                        Download Domain
-                    </button> --}}
+                    
                     <div class="table-responsive">
                         <table id="downloadVerifiedDomain" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1507,32 +1163,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Fetch Email Modal -->
-    <div class="modal fade" id="fetchEmailModal" tabindex="-1" aria-labelledby="fetchEmailModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fetchEmailModalLabel">Email for Domain</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Domain:</strong> <span id="modalDomain"></span></p>
-                    <div>
-                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"> Select All
-                    </div>
-                    <div id="modalEmail"></div> <!-- Container for multiple emails -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" onclick="saveEmail()">Save Email</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal emaildatabydomainparticualrecord -->
 
 
     <!-- Modal for domain details -->
@@ -2036,14 +1666,7 @@
     </script>
 
 
-    </div>
-    </div>
-    </div>
-    </div>
-
-    <!-- new domain verification modal -->
-    <!-- Modal Structure for Multiple Domain Verification -->
-    <!-- Modal Structure for Multiple Domain Verification -->
+    
     <div class="modal" id="newDomainVerificationModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -2241,18 +1864,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-        <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-        <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.6/pdfmake.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-
-
 
         <script>
             $('#allGroupsTable').DataTable({
@@ -2576,21 +2187,7 @@
                     }
                 })
 
-                // if (confirm("Are you sure you want to Re-Launch this Campaign")) {
-                //     $.post({
-                //         url: 'campaigns.php?relaunch_camp=1',
-                //         data: {
-                //             campid: campid
-                //         },
-                //         success: function (response) {
-                //             // console.log(response);
-                //             // window.location.reload()
-                //             window.location.href = window.location.href;
-                //         }
-                //     })
-                // } else {
-                //     return false;
-                // }
+               
             }
 
             function reschedulecampid(id) {
@@ -2623,18 +2220,7 @@
                     }
                 })
 
-                // if (confirm("Are you sure that you want to delete?")) {
-                //     $.get({
-                //         url: 'campaigns.php?deletecamp=1&campid=' + campid,
-                //         success: function (res) {
-                //             // alert(res);
-                //             // window.location.reload();
-                //             window.location.href = window.location.href;
-                //         }
-                //     })
-                // } else {
-                //     return;
-                // }
+               
             }
 
             //campaign type toggling
@@ -2918,29 +2504,6 @@
                     dataToBeSaved = formData;
                 }
 
-                // document.getElementById('createCampaign').addEventListener('click', function(e) {
-                //     e.preventDefault();
-
-                //     // Log your data to be saved
-                //     console.log(dataToBeSaved);
-
-                //     // Fetch the CSRF token from the meta tag
-                //     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-                //     // Make the POST request with Axios
-                //     axios.post('/campaigns/create', dataToBeSaved, {
-                //         headers: {
-                //             'X-CSRF-TOKEN': token
-                //         }
-                //     })
-                //     .then(function (response) {
-                //         console.log(response.data);
-                //         window.location.href = window.location.href;
-                //     })
-                //     .catch(function (error) {
-                //         console.error('Error:', error.response.data);
-                //     });
-                // });
 
                 $('#createCampaign').click(function(e) {
                     e.preventDefault();
@@ -3037,37 +2600,7 @@
                 $("#rexp_after").removeClass("d-none");
             })
 
-            // $('#rescheduleBtn').on('click', function (e) {
-            //     e.preventDefault()
-            //     var formData = $('#rescheduleForm').serializeArray();
-            //     var data = {};
-            //     $.each(formData, function () {
-            //         if (data[this.name]) {
-            //             if (!data[this.name].push) {
-            //                 data[this.name] = [data[this.name]];
-            //             }
-            //             data[this.name].push(this.value || '');
-            //         } else {
-            //             data[this.name] = this.value || '';
-            //         }
-            //     });
-            // Display the collected data in the console (for demonstration purposes)
-            // console.log(data);
-
-            // $.post({
-            //     url: 'campaigns.php?reschduleCamp=1',
-            //     data: data,
-            //     success: function (response) {
-            //         //  console.log(response);
-            //         // window.location.reload()
-            //         window.location.href = window.location.href;
-            //     }
-            // })
-
-            // Further processing of data can be done here, e.g., sending it to the server via AJAX
-            // });
-
-
+           
 
             // Event listener for input field change
             $('#templateSearch').on('input', function() {

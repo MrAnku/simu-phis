@@ -38,7 +38,8 @@ class WhatsappCampaignController extends Controller
             $templates = json_decode($hasTemplates->template, true)['data'];
         }
 
-        $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->get();
+        $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->orderBy('id', 'desc')
+        ->paginate(10);
         $trainings = TrainingModule::where('company_id', $company_id)
             ->orWhere('company_id', 'default')->get();
         return view('whatsapp-campaign', compact('all_users', 'config', 'templates', 'campaigns', 'trainings'));
