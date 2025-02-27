@@ -65,10 +65,20 @@
 
                                                 </td>
                                                 <td class="fst-italic">{{ $campaign->camp_type }}</td>
-                                                <td>{{ $campaign->trainingData->name ?? '--' }}</td>
+                                                <td>
+                                                    @if($campaign->trainingData?->name !== null)
+                                                    {{ $campaign->trainingData->name }}
+                                                    @else
+                                                    <span class="text-muted"><small>Simulated without training</small></span>
+                                                    @endif
+                                                    
+                                                </td>
                                                 <td><span class="badge bg-info">{{ $campaign->template_name }}</span></td>
                                                 <td>{{ $campaign->user_group_name ?? 'N/A' }}</td>
-                                                <td>{{ $campaign->created_at }}</td>
+                                                <td>
+                                                    {{ \Carbon\Carbon::parse($campaign->created_at)->format('d-M-Y') }}
+
+                                                </td>
                                                 <td>
                                                     <button class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
                                                         <i class="ri-delete-bin-line"></i>

@@ -9,120 +9,14 @@
 
             <div class="row">
                 <div class="col-lg-4">
-                    <div class="card custom-card projects-tracking-card overflow-hidden text-center">
-                        <div class="card-body">
-                            <img src="../assets/images/media/media-86.svg" alt="" class="mb-1">
-                            <div>
-                                <span class="fs-15 fw-semibold d-block mt-4">Hi, {{ Auth::user()->full_name }}</span>
-                                <span class="d-block fs-11 text-muted mt-2">{{ Auth::user()->company_name }}</span>
-                                <a href="{{ route('campaigns') }}"
-                                    class="btn btn-primary btn-sm btn-wave waves-effect waves-light mt-3">Start
-                                    Simulation</a>
-                            </div>
-                            <span class="shape-1 text-primary"><i class="ti ti-circle fs-20 fw-bold"></i></span>
-                            <span class="shape-2 text-secondary"><i class="ti ti-triangle fs-20 fw-bold"></i></span>
-                            <span class="shape-3 text-warning"><i class="ti ti-square fs-20 fw-bold"></i></span>
-                            <span class="shape-4 text-info"><i class="ti ti-square-rotated fs-20 fw-bold"></i></span>
-                            <span class="shape-5 text-success"><i class="ti ti-pentagon fs-20 fw-bold"></i></span>
-                            <span class="shape-6 text-danger"><i class="ti ti-star fs-20 fw-bold"></i></span>
-                            <span class="shape-7 text-pink"><i class="ti ti-hexagon fs-20 fw-bold"></i></span>
-                            <span class="shape-8 text-teal"><i class="ti ti-octagon fs-20 fw-bold"></i></span>
-                            <span class="shape-9 text-primary"><i class="ti ti-circle fs-20 fw-bold"></i></span>
-                            <span class="shape-10 text-secondary"><i class="ti ti-triangle fs-20 fw-bold"></i></span>
-                            <span class="shape-11 text-warning"><i class="ti ti-square fs-20 fw-bold"></i></span>
-                            <span class="shape-12 text-info"><i class="ti ti-square-rotated fs-20 fw-bold"></i></span>
-                            <span class="shape-13 text-success"><i class="ti ti-pentagon fs-20 fw-bold"></i></span>
-                            <span class="shape-14 text-danger"><i class="ti ti-star fs-20 fw-bold"></i></span>
-                            <span class="shape-15 text-pink"><i class="ti ti-hexagon fs-20 fw-bold"></i></span>
-                            <span class="shape-16 text-teal"><i class="ti ti-octagon fs-20 fw-bold"></i></span>
-                        </div>
-                    </div>
 
-                    <div class="card custom-card">
-                        <div class="card-header">
-                            <div class="card-title">Package</div>
-                        </div>
-                        <div class="card-body">
+                    <x-dashboard.hi-card />
 
-                            <div class="d-flex align-items-center justify-content-between mb-0">
-                                <div>
+                    <x-dashboard.package-card :package="$package" :upgrade="$data" />
 
-                                    <p class="mb-0 fs-25 fw-semibold">{{ $package['total_emp'] }} of
-                                        {{ $package['alloted_emp'] }} <span
-                                            class="text-muted fs-11">{{ round($package['used_percent'], 2) }}% of total
-                                            used</span>
-                                    </p>
-                                    <span class="text-muted fs-12">Employees</span>
-                                </div>
-                                <div>
-                                    <span class="avatar bg-warning">
-                                        <i class="ri-team-line fs-18"></i>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center my-2">
-                                <div class="flex-fill">
-                                    <div class="progress progress-xs">
-                                        <div class="progress-bar bg-indigo" role="progressbar"
-                                            style="width: {{ $package['used_percent'] }}%"
-                                            aria-valuenow="{{ $package['used_percent'] }}" aria-valuemin="0"
-                                            aria-valuemax="100"></div>
-                                    </div>
-                                    <div class="text-end">
+                    <x-dashboard.attack-vector />
 
-                                        {{-- @if ($package['used_percent'] >= 80) --}}
-
-                                        @if ($data['upgrade_req'])
-                                            <button
-                                                class="btn btn-warning btn-sm btn-wave waves-effect waves-light mt-3">Upgrade
-                                                request is pending</button>
-                                        @else
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#upgradeModal"
-                                                class="btn btn-success btn-sm btn-wave waves-effect waves-light mt-3">Upgrade</a>
-                                        @endif
-
-
-
-                                        {{-- @endif --}}
-                                    </div>
-                                </div>
-
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card custom-card">
-                        <div class="card-header">
-                            <div class="card-title">Active Attack Vector</div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-lg-3">
-                                    <a aria-label="anchor" href="{{ route('campaigns') }}"
-                                        class="btn btn-danger-light border-0 px-4 py-3 lh-1 rounded"> <i
-                                            class="bi bi-envelope-open fs-22"></i> </a>
-                                    <p class="mb-0 fs-12 text-muted text-truncate text-center">Phishing</p>
-                                </div>
-                                <div class="col-lg-3">
-                                    <a aria-label="anchor" href="{{ route('whatsapp.campaign') }}"
-                                        class="btn btn-success-light border-0 px-4 py-3 lh-1 rounded"> <i
-                                            class="bi bi-whatsapp fs-22"></i> </a>
-                                    <p class="mb-0 fs-12 text-muted text-truncate text-center">WhatsApp</p>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card custom-card">
-                        <div class="card-header">
-                            <div class="card-title">WhatsApp Campaign Report</div>
-                        </div>
-                        <div class="card-body">
-                            <div id="bar-group"></div>
-                        </div>
-                    </div>
+                    <x-dashboard.wa-camp-report />
                 </div>
 
                 <div class="col-lg-8">
@@ -258,40 +152,7 @@
 
                     <div class="row">
                         <div class="col-lg-9">
-                            <div class="card custom-card overflow-hidden">
-                                <div class="card-header justify-content-between">
-                                    <div class="card-title">Simulation Statics</div>
-
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="row border-bottom border-block-end-dashed">
-                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
-                                            <div
-                                                class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
-                                                <p class="fs-20 fw-semibold mb-0">
-                                                    {{ $data['waSimuCount'] + $data['phishSimuCount'] }}</p>
-                                                <p class="mb-0 text-muted">Total Simulation</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
-                                            <div
-                                                class="p-3 border-sm-end border-inline-end-dashed text-sm-start text-center">
-                                                <p class="fs-20 fw-semibold mb-0"><span
-                                                        class="basic-subscription">{{ $data['waSimuCount'] }}</span></p>
-                                                <p class="mb-0 text-muted">WhatsApp Simulation</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-4 col-sm-4 col-12">
-                                            <div class="p-3 text-sm-start text-center">
-                                                <p class="fs-20 fw-semibold mb-0"><span
-                                                        class="pro-subscription">{{ $data['phishSimuCount'] }}</span></p>
-                                                <p class="mb-0 text-muted">Phishing Simulation</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="subscriptionOverview" class="px-3 mt-sm-0 mt-3"></div>
-                                </div>
-                            </div>
+                            <x-dashboard.sim-statics :sdata="$data" />
                         </div>
 
                         <div class="col-lg-3">
@@ -323,185 +184,31 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <div class="card custom-card">
-                                <div class="card-header  justify-content-between">
-                                    <div class="card-title">
-                                        Recent Campaigns
-                                    </div>
-
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-unstyled crm-top-deals mb-0">
-                                        @forelse ($recentSixCampaigns as $camp)
-                                            <li>
-                                                <div class="d-flex align-items-top flex-wrap">
-                                                    <div class="me-2">
-                                                        <span class="avatar avatar-sm avatar-rounded">
-                                                            <img src="https://cdn-icons-png.freepik.com/512/3122/3122573.png"
-                                                                alt="">
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-fill">
-                                                        <p class="fw-semibold mb-0">{{ $camp->campaign_name }}</p>
-                                                        <span class="text-muted fs-12">{{ $camp->campaign_type }}</span>
-                                                    </div>
-                                                    <div class="fw-semibold fs-15">{{ $camp->status }}</div>
-                                                </div>
-                                            </li>
-                                        @empty
-                                        @endforelse
-
-                                    </ul>
-                                </div>
-                            </div>
-
-
+                            <x-dashboard.recent-campaigns :recentSixCampaigns="$recentSixCampaigns" />
                         </div>
                         <div class="col-lg-6">
-                            <div class="card custom-card">
-                                <div class="card-header justify-content-between">
-                                    <div class="card-title">
-                                        Employee compromised
-                                    </div>
-
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <h4 class="fw-bold mb-0">{{ $totalEmpCompromised ?? 0 }}</h4>
-                                        <div class="ms-2">
-
-                                            <span class="text-muted ms-1">Employees compromised</span>
-                                        </div>
-                                    </div>
-
-                                    <ul class="list-unstyled mb-0 pt-2 crm-deals-status">
-                                        @forelse ($campaignsWithReport as $r)
-                                            <li class="primary">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div>{{ $r->campaign_name }}</div>
-                                                    <div class="fs-12 text-muted">{{ $r->emp_compromised }}</div>
-                                                </div>
-                                            </li>
-                                        @empty
-                                        @endforelse
-
-                                    </ul>
-                                </div>
-                            </div>
+                            <x-dashboard.emp-compromised :campaignsWithReport="$campaignsWithReport"
+                                :totalEmpCompromised="$totalEmpCompromised" />
                         </div>
                     </div>
-
-
-
-
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card custom-card">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    Dark Web Activity (5 Most Recent Breaches)
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table text-nowrap text-center">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Employee Email</th>
-                                                <th scope="col">Name</th>
-                                                <th scope="col">Breached</th>
-                                                <th scope="col">Website</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse($breachedEmails as $email)
-
-                                                @php
-                                                    $breachDescs = json_decode($email->data, true);
-                                                @endphp
-                                                <tr>
-                                                    <td>{{ $email->email }}</td>
-                                                    <td>{{ $email->userData->user_name}}</td>
-                                                    <td>
-                                                        <span class="badge bg-danger">Yes</span>
-                                                    </td>
-                                                    <td class="d-flex gap-2 flex-wrap justify-content-center">
-                                                        @forelse($breachDescs as $desc)
-                                                            <span
-                                                                class="badge bg-danger-transparent">{{ $desc['Name'] ?? '' }}</span>
-                                                        @empty
-                                                        @endforelse
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No data found</td>
-                                                </tr>
-                                            @endforelse
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                        <x-dashboard.breached-emails :breachedEmails="$breachedEmails" />
                     </div>
                 </div>
-
             </div>
-
-
-
-
         </div>
 
 
     </div>
 
     {{-- -------------------modals ------------ --}}
-    <div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Request for Employees limit upgrade</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('reqNewLimit') }}" method="post">
-                        @csrf
+    <x-modal id="upgradeModal" heading="Request for employees limit upgrade">
+        <x-dashboard.upgrade-form :package="$package" />
+    </x-modal>
 
-                        <div class="mb-3">
-                            <label for="input-label" class="form-label">Current Limit</label>
-                            <input type="text" name="old_limit" class="form-control"
-                                value="{{ $package['alloted_emp'] }}" disabled>
-                            <input type="hidden" name="usage" value="{{ $package['used_percent'] }}">
-
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="input-label" class="form-label">New Limit<sup class="text-danger">*</sup></label>
-                            <input type="number" name="new_limit" class="form-control" min="10" max="5000"
-                                placeholder="Enter new limit value ex. 1000">
-
-                        </div>
-                        <div class="mb-3">
-                            <label for="input-label" class="form-label">Additional Information</label>
-                            <textarea class="form-control" name="add_info" id="" rows="5"></textarea>
-
-                        </div>
-
-
-
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">
-                                Submit Request
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     {{-- -------------------modals ------------ --}}
 
     {{-- ------------------------------Toasts---------------------- --}}
