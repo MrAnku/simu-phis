@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BreachedEmail;
 use App\Models\Campaign;
 use App\Models\CampaignReport;
+use App\Models\EmailCampActivity;
 use App\Models\Users;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,9 +30,38 @@ class DashboardController extends Controller
             ->sum('emp_compromised');
 
         $package = $this->getPackage();
-
+        $usageCounts = $this->osBrowserUsage();
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
-        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails'));
+        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts'));
+    }
+
+    public function osBrowserUsage()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $macUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->platform', 'OS X')
+            ->where('company_id', $companyId)
+            ->count();
+
+        $windowsUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->platform', 'Windows')
+            ->where('company_id', $companyId)
+            ->count();
+
+        $androidUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->platform', 'Android')
+            ->where('company_id', $companyId)
+            ->count();
+
+
+        $usage = [
+            'windows' => $windowsUsers,
+            'mac' => $macUsers,
+            'android' => $androidUsers,
+        ];
+        
+        return $usage;
     }
 
     public function getPieData()
@@ -297,7 +327,8 @@ class DashboardController extends Controller
         return $data;
     }
 
-    public function reqNewLimit(Request $request){
+    public function reqNewLimit(Request $request)
+    {
 
         $request->validate([
             'new_limit' => 'required|integer|min:10|max:5000',

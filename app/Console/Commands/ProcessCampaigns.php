@@ -104,6 +104,7 @@ class ProcessCampaigns extends Command
         EmailCampActivity::create([
           'campaign_id' => $campaign->campaign_id,
           'campaign_live_id' => $camp_live->id,
+          'company_id' => $campaign->company_id,
         ]);
       }
 

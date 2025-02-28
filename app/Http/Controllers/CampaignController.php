@@ -272,6 +272,7 @@ class CampaignController extends Controller
             EmailCampActivity::create([
                 'campaign_id' => $campId,
                 'campaign_live_id' => $camp_live->id,
+                'company_id' => $companyId,
             ]);
         }
 

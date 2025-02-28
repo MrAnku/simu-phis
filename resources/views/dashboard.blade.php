@@ -6,16 +6,11 @@
 
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
-
             <div class="row">
                 <div class="col-lg-4">
-
                     <x-dashboard.hi-card />
-
                     <x-dashboard.package-card :package="$package" :upgrade="$data" />
-
                     <x-dashboard.attack-vector />
-
                     <x-dashboard.wa-camp-report />
                 </div>
 
@@ -124,8 +119,6 @@
                         </div>
                     </div>
 
-
-
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="card custom-card">
@@ -187,8 +180,14 @@
                             <x-dashboard.recent-campaigns :recentSixCampaigns="$recentSixCampaigns" />
                         </div>
                         <div class="col-lg-6">
-                            <x-dashboard.emp-compromised :campaignsWithReport="$campaignsWithReport"
-                                :totalEmpCompromised="$totalEmpCompromised" />
+                            <x-dashboard.emp-compromised :campaignsWithReport="$campaignsWithReport" :totalEmpCompromised="$totalEmpCompromised" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <x-dashboard.os-usage :usageCounts="$usageCounts" />
+                        </div>
+                        <div class="col-lg-6">
                         </div>
                     </div>
                 </div>
@@ -208,7 +207,7 @@
         <x-dashboard.upgrade-form :package="$package" />
     </x-modal>
 
-    
+
     {{-- -------------------modals ------------ --}}
 
     {{-- ------------------------------Toasts---------------------- --}}
@@ -226,6 +225,10 @@
                 position: relative;
                 margin-block-end: 1.5rem;
                 width: 100%;
+            }
+
+            .simplebar-content li {
+                margin-bottom: 6px;
             }
         </style>
     @endpush
