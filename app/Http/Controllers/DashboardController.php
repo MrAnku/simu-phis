@@ -39,6 +39,7 @@ class DashboardController extends Controller
     {
         $companyId = Auth::user()->company_id;
 
+        //os usage counts
         $macUsers = EmailCampActivity::whereNotNull('client_details')
             ->whereJsonContains('client_details->platform', 'OS X')
             ->where('company_id', $companyId)
@@ -54,11 +55,36 @@ class DashboardController extends Controller
             ->where('company_id', $companyId)
             ->count();
 
+        //browser usage counts
+            $chromeUsers = EmailCampActivity::whereNotNull('client_details')
+                ->whereJsonContains('client_details->browser', 'Chrome')
+                ->where('company_id', $companyId)
+                ->count();
+
+            $firefoxUsers = EmailCampActivity::whereNotNull('client_details')
+                ->whereJsonContains('client_details->browser', 'Firefox')
+                ->where('company_id', $companyId)
+                ->count();
+
+            $edgeUsers = EmailCampActivity::whereNotNull('client_details')
+                ->whereJsonContains('client_details->browser', 'Edge')
+                ->where('company_id', $companyId)
+                ->count();
+
+           
+
 
         $usage = [
-            'windows' => $windowsUsers,
-            'mac' => $macUsers,
-            'android' => $androidUsers,
+            'os' => [
+                'windows' => $windowsUsers,
+                'mac' => $macUsers,
+                'android' => $androidUsers,
+            ],
+            'browser' => [
+                'chrome' => $chromeUsers,
+                'firefox' => $firefoxUsers,
+                'edge' => $edgeUsers,
+            ]
         ];
         
         return $usage;

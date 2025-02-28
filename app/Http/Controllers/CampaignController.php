@@ -47,9 +47,12 @@ class CampaignController extends Controller
         $phishingEmails = PhishingEmail::where('company_id', $companyId)
             ->orWhere('company_id', 'default')
             ->limit(10)->get();
-        $trainingModules = TrainingModule::where('company_id', $companyId)
-            ->orWhere('company_id', 'default')
-            ->limit(10)->get();
+        $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
+            $query->where('company_id', $companyId)
+                ->orWhere('company_id', 'default');
+        })->where('training_type', 'static_training')
+            ->limit(10)
+            ->get();
 
 
         return view('campaigns', compact(

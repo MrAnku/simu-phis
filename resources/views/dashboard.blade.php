@@ -185,9 +185,10 @@
                     </div>
                     <div class="row">
                         <div class="col-lg-6">
-                            <x-dashboard.os-usage :usageCounts="$usageCounts" />
+                            <x-dashboard.os-usage :usageCounts="$usageCounts['os']" />
                         </div>
                         <div class="col-lg-6">
+                            <x-dashboard.browser-usage :usageCounts="$usageCounts['browser']" />
                         </div>
                     </div>
                 </div>
