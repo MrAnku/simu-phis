@@ -1,8 +1,8 @@
 <?php
-use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\TprmController;
@@ -10,6 +10,7 @@ use App\Http\Controllers\AicallController;
 use App\Http\Controllers\DarkWebMonitoring;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\QuishingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\Admin\LogController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\PhishingEmailsController;
 use App\Http\Controllers\TrainingModuleController;
+use App\Http\Controllers\Admin\AiVishingController;
 use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\WhiteLabelController;
@@ -45,7 +47,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
-use App\Http\Controllers\Admin\AiVishingController;
+use App\Http\Controllers\QuishingEmailController;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -201,7 +203,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::post('/whatsapp-new-template', [WhatsappCampaignController::class, 'newTemplate'])->name('whatsapp.newTemplate');
 
-    //employees route-------------------------------------------------------------
+    //employees route----------------------------------------------
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
     Route::get('/employee/{base_encode_id}', [SingleEmpController::class, 'employeeDetail'])->name('employee.detail');
@@ -237,7 +239,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
 
-    //reporting routes-----------------------------------------------------------------
+    //reporting routes----------------------------------------
     
     
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
@@ -270,7 +272,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify.tprm');
     Route::post('/tprm/delete-domain', [TprmController::class, 'deleteDomain'])->name('domain.delete.tprm');
    
-    //-------------------------------------TPRM routes for champaingns----------------------//
+    //-----------------TPRM routes for champaingns-------------//
     
     Route::get('/tprmcampaigns', [TprmController::class, 'index'])->name('tprmcampaigns');
     Route::post('/tprmcampaigns/create', [TprmController::class, 'createCampaign'])->name('tprmcampaigns.create');
@@ -286,6 +288,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
    Route::post('/tprmcampaigns/emailtprmnewGroup', [TprmController::class, 'emailtprmnewGroup'])->name('tprmcampaigns.emailtprmnewGroup');
    Route::get('/tprmcampaigns/emails/{domain}', [TprmController::class, 'getEmailsByDomain'])->name('tprmcampaigns.getEmailsByDomain');
 
+   //Quishing routes ---------------------------------------------
+    Route::get('/quishing', [QuishingController::class, 'index'])->name('quishing.index');
+
     //Ai Calling routes ----------------------------------------------------------------------
     Route::get('/ai-calling', [AicallController::class, 'index'])->name('ai.calling');
     Route::post('/ai-calling/submit-req', [AicallController::class, 'submitReq'])->name('ai.calling.sub.req');
@@ -298,7 +303,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
 
 
-    //phishing emails route---------------------------------------------------------------
+    //phishing emails route--------------------------------------------
 
     Route::get('/phishing-emails', [PhishingEmailsController::class, 'index'])->name('phishing.emails');
     Route::post('/phishing-email', [PhishingEmailsController::class, 'getTemplateById'])->name('phishing.getTemplateById');
@@ -309,8 +314,12 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/update-email-template', [PhishingEmailsController::class, 'updateTemplate'])->name('phishing.update');
     Route::post('/delete-email-template', [PhishingEmailsController::class, 'deleteTemplate'])->name('phishing.template.delete');
 
+    //quishing emails routes---------------------------------
+    Route::get('/quishing-emails', [QuishingEmailController::class, 'index'])->name('quishing.emails');
+    Route::post('/quishing-emails/add-temp', [QuishingEmailController::class, 'addTemplate'])->name('quishing.emails.add');
 
-    //phishing websites routes-------------------------------------------------------------
+
+    //phishing websites routes-----------------------------------------
 
     Route::get('/phishing-websites', [PhishingWebsitesController::class, 'index'])->name('phishing.websites');
     Route::post('/delete-website', [PhishingWebsitesController::class, 'deleteWebsite'])->name('phishing.website.delete');
