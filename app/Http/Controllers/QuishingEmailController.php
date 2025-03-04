@@ -55,8 +55,8 @@ class QuishingEmailController extends Controller
         //-----xss check end-----------------------------
 
         $request->validate([
-            'template_name' => 'required',
-            'template_subject' => 'required',
+            'template_name' => 'required|min:5|max:255',
+            'template_subject' => 'required|min:5|max:255',
             'difficulty' => 'required',
             'associated_website' => 'required|exists:phishing_websites,id',
             'sender_profile' => 'required|exists:senderprofile,id',

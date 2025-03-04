@@ -19,7 +19,7 @@
                     </button> --}}
                 </div>
 
-                <div class="row">
+                {{-- <div class="row">
                     <div class="col-auto">
                         <label for="" class="col-form-label">Filter</label>
                     </div>
@@ -36,7 +36,7 @@
                         <a href="#" id="clearFilter" style="display: none;">Clear Filter</a>
                     </div>
 
-                </div>
+                </div> --}}
 
             </div>
 
