@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\SenderProfile;
 use App\Models\PhishingWebsite;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -16,7 +17,7 @@ class PhishingEmailsController extends Controller
     //
     public function index()
     {
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
             ->where('company_id', $company_id)
@@ -34,7 +35,7 @@ class PhishingEmailsController extends Controller
 
     public function searchPhishingEmails(Request $request)
     {
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
         $searchTerm = $request->query('search');
 
         $senderProfiles = SenderProfile::where('company_id', $company_id)->orWhere('company_id', 'default')
@@ -115,7 +116,7 @@ class PhishingEmailsController extends Controller
             'filelocation' => 'required|string'
         ]);
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         $tempid = $request->input('tempid');
         $filelocation = $request->input('filelocation');
@@ -178,7 +179,7 @@ class PhishingEmailsController extends Controller
             'eSenderProfile' => 'required|string|max:255',
         ]);
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         $eTempName = $request->input('eTempName');
         $eSubject = $request->input('eSubject');
@@ -299,7 +300,7 @@ class PhishingEmailsController extends Controller
             return response()->json(['status' => 0, 'msg' => $e->getMessage()]);
         }
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
         $randomName = generateRandom(32);
 
         $html = $request->input('html');

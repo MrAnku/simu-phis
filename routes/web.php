@@ -317,6 +317,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //quishing emails routes---------------------------------
     Route::get('/quishing-emails', [QuishingEmailController::class, 'index'])->name('quishing.emails');
     Route::post('/quishing-emails/add-temp', [QuishingEmailController::class, 'addTemplate'])->name('quishing.emails.add');
+    Route::post('/quishing-emails/delete-temp', [QuishingEmailController::class, 'deleteTemplate'])->name('quishing.emails.delete');
+    Route::post('/quishing-emails/update-temp', [QuishingEmailController::class, 'updateTemplate'])->name('quishing.emails.update');
 
 
     //phishing websites routes-----------------------------------------

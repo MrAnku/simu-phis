@@ -15,4 +15,9 @@ class QshTemplate extends Model
         'sender_profile',
         'company_id',
     ];
+
+    public function senderProfile()
+    {
+        return $this->belongsTo(SenderProfile::class, 'sender_profile');
+    }
 }

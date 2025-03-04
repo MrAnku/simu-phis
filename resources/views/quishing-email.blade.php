@@ -79,7 +79,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="card-body htmlPhishingGrid" id="mailBody{{ $pemail->id }}">
+                                            <div class="card-body htmlPhishingGrid" id="qmailBody{{ $pemail->id }}">
 
                                                 @if ($pemail->difficulty == 'easy')
                                                     <span class="badge bg-outline-success difficulty">Easy</span>
@@ -102,21 +102,21 @@
                                                 <div class="d-flex justify-content-center">
                                                     <button type="button"
                                                         onclick="viewInTemplate(
-                                                        `{{ $pemail->sender_p->profile_name ?? 'N/A' }}`,
-                                                        `{{ $pemail->sender_p->from_email ?? 'N/A' }}`,
-                                                        `{{ $pemail->email_subject }}`,`mailBody{{ $pemail->id }}`
+                                                        `{{ $pemail->senderProfile->profile_name ?? 'N/A' }}`,
+                                                        `{{ $pemail->senderProfile->from_email ?? 'N/A' }}`,
+                                                        `{{ $pemail->email_subject }}`,`qmailBody{{ $pemail->id }}`
                                                         )"
                                                         data-bs-toggle="modal" data-bs-target="#viewPhishingmailModal"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</button>
 
                                                     @if ($pemail->company_id !== 'default')
                                                         <button type="button"
-                                                            onclick="editETemplate(`{{ $pemail->id }}`)"
+                                                            onclick="editETemplate(`{{ base64_encode($pemail->id) }}`, `{{ $pemail->website }}`, `{{ $pemail->difficulty }}`, `{{ $pemail->sender_profile }}`)"
                                                             data-bs-toggle="modal" data-bs-target="#editEtemplateModal"
                                                             class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">Edit</button>
 
                                                         <button type="button"
-                                                            onclick="deleteETemplate(`{{ $pemail->id }}`, `{{ $pemail->mailBodyFilePath }}`)"
+                                                            onclick="deleteETemplate(`{{ base64_encode($pemail->id) }}`)"
                                                             class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
                                                     @endif
 
@@ -152,20 +152,20 @@
 
     {{-- view mailbody modal  --}}
     <x-modal id="viewPhishingmailModal" size="modal-xl" heading="Email Preview">
-        hello
+        <x-quish-email.view-template />
     </x-modal>
 
 
     <!-- new phishing email template modal -->
-    <x-modal id="newPhishingmailModal" heading="Add Email Template">
+    <x-modal id="newPhishingmailModal" heading="Add Quishing Template">
         <x-quish-email.new-temp-form :senderProfiles="$senderProfiles" :phishingWebsites="$phishingWebsites" />
     </x-modal>
 
 
 
     <!-- edit phishing email template modal -->
-    <x-modal id="editEtemplateModal" heading="Edit Email Template">
-        hello
+    <x-modal id="editEtemplateModal" heading="Edit Quishing Template">
+        <x-quish-email.edit-template :senderProfiles="$senderProfiles" :phishingWebsites="$phishingWebsites" />
     </x-modal>
 
     {{-- generate phishing email with ai modal --}}
@@ -174,9 +174,9 @@
     </x-modal>
 
     {{-- save generate phishing email template modal --}}
-    <x-modal id="savePhishMailModal" heading="Save Generated Email Template">
+    {{-- <x-modal id="savePhishMailModal" heading="Save Generated Email Template">
         hello
-    </x-modal>
+    </x-modal> --}}
 
 
 
@@ -198,6 +198,61 @@
     @endpush
 
     @push('newscripts')
+        <script>
+            function viewInTemplate(from_name, from_email, email_subject, mail_body) {
+                $("#displayMailBodyContent").html($(`#${mail_body}`).html());
+                $("#displayMailSubject").html(email_subject);
+                $("#displayFromName").html(from_name);
+                $("#displayFromEmail").html(from_email);
+            }
+
+            function deleteETemplate(id) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "If this template is used in any campaign, it will be removed from the campaign as well.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: '/quishing-emails/delete-temp',
+                            data: {
+                                id: id,
+                            },
+                            success: function(res) {
+                                if (res.success) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'Template has been deleted.',
+                                        'success'
+                                    )
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        res.error,
+                                        'error'
+                                    )
+                                }
+                            }
+                        })
+                    }
+                });
+            }
+
+            function editETemplate(id, website, diff, sp) {
+
+                $("#editEtemp").val(id);
+                $("#updateEAssoWebsite").val(website);
+                $("#difficulty").val(diff);
+                $("#updateESenderProfile").val(sp);
+            }
+        </script>
     @endpush
 
 @endsection
