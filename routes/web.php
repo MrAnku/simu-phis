@@ -290,6 +290,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
    //Quishing routes ---------------------------------------------
     Route::get('/quishing', [QuishingController::class, 'index'])->name('quishing.index');
+    Route::post('/quishing/show-more-quishing-emails', [QuishingController::class, 'showMoreTemps'])->name('quishing.show.more.temps');
+    Route::post('/quishing/search-quishing-material', [QuishingController::class, 'searchTemplate'])->name('quishing.temp.search');
+
 
     //Ai Calling routes ----------------------------------------------------------------------
     Route::get('/ai-calling', [AicallController::class, 'index'])->name('ai.calling');

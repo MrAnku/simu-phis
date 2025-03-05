@@ -105,7 +105,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       
+
 
 
                                     </tbody>
@@ -130,8 +130,8 @@
     {{-- --------------------------------------- modals ---------------------- --}}
 
     <!-- new campaign modal -->
-    <x-modal id="newCampModal" size="modal-xl" heading="Add New Campaign">
-       hello
+    <x-modal id="newCampModal" size="modal-xl" heading="New Quishing Campaign">
+        <x-quish-camp.new-camp :quishingEmails="$quishingEmails" :trainingModules="$trainingModules" />
     </x-modal>
 
     <!-- campaign report modal -->
@@ -147,18 +147,540 @@
 
     <!-- re-schedule campaign modal -->
     <x-modal id="reschedulemodal" size="modal-lg" heading="Re-Schedule Campaign">
-       hello4
+        hello4
     </x-modal>
 
 
 
 
     @push('newcss')
-        
     @endpush
 
     @push('newscripts')
-       
+        <script>
+            let campType = 'quishing';
+
+            function showNext(current_page) {
+                if (current_page == 'stepOne') {
+                    if ($('#camp_name').val() == '' || $('#campaign_type').val() == '' || $('#users_group').val() == '') {
+                        alert('All fields are required');
+                        return;
+                    }
+                    if (campType == 'quishing-training' || campType == 'quishing') {
+                        $('#quish-mat').attr('disabled', false);
+                        $('#quish-mat').click();
+                    }
+                    if (campType == 'training') {
+                        $('#training-mod').attr('disabled', false);
+                        $('#training-mod').click();
+                    }
+
+                }
+                if (current_page == 'stepTwo') {
+                    if ($('input[name="quish_material"]:checked').length === 0) {
+                        alert('Please select at least one quishing material');
+                        return;
+                    }
+                    if (campType == 'quishing-training') {
+                        $('#training-mod').attr('disabled', false);
+                        $('#training-mod').click();
+                    }
+                    if (campType == 'quishing') {
+                        reviewForm();
+                        $('#review-sub-tab').attr('disabled', false);
+                        $('#review-sub-tab').click();
+                    }
+                }
+
+                if (current_page == 'stepThree') {
+                    if ($('input[name="training_module"]:checked').length === 0) {
+                        alert('Please select at least one training module');
+                        return;
+                    }
+                    reviewForm();
+                    $('#review-sub-tab').attr('disabled', false);
+                    $('#review-sub-tab').click();
+                }
+            }
+
+            function showPrevious(current_page) {
+                if (current_page == 'stepTwo') {
+                    $('#camp-name').click();
+                }
+                if (current_page == 'stepThree') {
+                    if (campType == 'quishing-training') {
+                        $('#quish-mat').attr('disabled', false);
+                        $('#quish-mat').click();
+                    }
+                    if (campType == 'training') {
+                        $('#camp-name').click();
+                    }
+                }
+                if (current_page == 'stepFour') {
+                    if (campType == 'training' || campType == 'quishing-training') {
+                        $('#training-mod').attr('disabled', false);
+                        $('#training-mod').click();
+                    }
+                    if (campType == 'quishing') {
+                        $('#quish-mat').attr('disabled', false);
+                        $('#quish-mat').click();
+                    }
+                }
+            }
+
+            function reviewForm() {
+                let phishingMaterials = $('input[name="quish_material"]:checked').map(function() {
+                    return $(this).data('name');
+                }).get().join(', ');
+
+                let trainingModules = $('input[name="training_module"]:checked').map(function() {
+                    return $(this).data('name');
+                }).get().join(', ');
+
+                let reviewData = {
+                    "Campaign Name": $('#camp_name').val(),
+                    "Campaign Type": $('#campaign_type option:selected').text().trim(),
+                    "Employee Group": $('#users_group option:selected').text().trim(),
+                    "Quishing Materials": phishingMaterials,
+                    "Quishing Language": $('#quishing_lang option:selected').text().trim(),
+                    "Training Modules": trainingModules,
+                    "Training Language": $('#training_lang option:selected').text().trim(),
+                    "Days Until Due": $('#days_until_due').val(),
+                    "Training Type": $('#training_type option:selected').text().trim(),
+                    "Training Assignment": $('#training_assignment option:selected').text().trim(),
+                    "Training Category": $('#training_cat option:selected').text().trim(),
+                }
+                console.log(reviewData);
+
+                let html = '';
+                if (campType == 'quishing-training') {
+                    for (const [key, value] of Object.entries(reviewData)) {
+                        html += `<div class="mb-3 col-lg-4">
+                                <label for="input-label" class="form-label">${key}</label>
+                                <input type="text" class="form-control" value="${value}" disabled="true" readonly="">
+                            </div>`;
+                    }
+
+                    $('#reviewForm').html(html);
+                    return;
+                }
+
+                for (const [key, value] of Object.entries(reviewData).slice(0, -6)) {
+                    html += `<div class="mb-3 col-lg-4">
+                            <label for="input-label" class="form-label">${key}</label>
+                            <input type="text" class="form-control" value="${value}" disabled="true" readonly="">
+                        </div>`;
+                }
+                $('#reviewForm').html(html);
+
+
+            }
+
+            $("#campaign_type").change(function() {
+                $('#training-mod').attr('disabled', true);
+                $('#quish-mat').attr('disabled', true);
+                $('#review-sub-tab').attr('disabled', true);
+
+                if ($(this).val() == 'quishing') {
+                    $('#quish-mat').parent().show();
+                    $('#training-mod').parent().hide();
+                    campType = 'quishing';
+                }
+                if ($(this).val() == 'training') {
+                    $('#training-mod').parent().show();
+                    $('#quish-mat').parent().hide();
+                    campType = 'training';
+                }
+                if ($(this).val() == 'quishing-training') {
+                    $('#training-mod').parent().show();
+                    $('#quish-mat').parent().show();
+                    campType = 'quishing-training';
+                }
+
+            });
+        </script>
+        <script>
+            let selectedPhishingMaterial = [];
+
+            function selectPhishingMaterial(checkbox) {
+                var label = document.querySelector(`label[for="${checkbox.id}"]`);
+
+                if (checkbox.checked) {
+                    // Add value to the checkedValues array
+                    selectedPhishingMaterial.push(checkbox.value);
+
+                    // Change the text inside the label
+                    label.textContent = "Attack selected";
+
+                    // Add the classes to the label
+                    label.classList.add('bg-primary', 'text-white');
+                } else {
+                    // Remove value from the checkedValues array
+                    selectedPhishingMaterial = selectedPhishingMaterial.filter(value => value !== checkbox.value);
+
+                    // Change the text back to the original
+                    label.textContent = "Select this attack";
+
+                    // Remove the classes from the label
+                    label.classList.remove('bg-primary', 'text-white');
+
+                    checkbox.blur();
+                }
+
+                // Log the updated checkedValues array
+                console.log(selectedPhishingMaterial);
+            }
+
+        </script>
+        <script>
+            var selectedTrainings = [];
+
+            function selectTrainingModule(checkbox) {
+                var label = document.querySelector(`label[for="${checkbox.id}"]`);
+
+                if (checkbox.checked) {
+                    // Add value to the checkedValues array
+                    selectedTrainings.push(checkbox.value);
+
+                    // Change the text inside the label
+                    label.textContent = "Training selected";
+
+                    // Add the classes to the label
+                    label.classList.add('bg-primary', 'text-white');
+                } else {
+                    // Remove value from the checkedValues array
+                    selectedTrainings = selectedTrainings.filter(value => value !== checkbox.value);
+
+                    // Change the text back to the original
+                    label.textContent = "Select this training";
+
+                    // Remove the classes from the label
+                    label.classList.remove('bg-primary', 'text-white');
+
+                    checkbox.blur();
+                }
+
+                // Log the updated checkedValues array
+                console.log(selectedTrainings);
+            }
+        </script>
+        <script>
+            function submitQForm() {
+                const campaignData = {
+                    campaign_name: $('#camp_name').val(),
+                    campaign_type: $('#campaign_type').val(),
+                    employee_group: $('#users_group').val(),
+                    quishing_materials: selectedPhishingMaterial,
+                    quishing_language: $('#quishing_lang').val(),
+                    training_modules: selectedTrainings,
+                    training_language: $('#training_lang').val(),
+                    days_until_due: $('#days_until_due').val(),
+                    training_type: $('#training_type').val(),
+                    training_assignment: $('#training_assignment').val(),
+                    training_category: $('#training_cat').val(),
+                }
+
+            }
+        </script>
+        <script>
+            function prepareTrainingHtml(data) {
+                let html = '';
+                data.forEach(training => {
+                    html += `<div class="col-lg-6 t_modules">
+                <div class="card custom-card border">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="">
+                                <div class="fs-15 fw-semibold">${training.name}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body htmlPhishingGrid">
+                        <img class="trainingCoverImg" src="/storage/uploads/trainingModule/${training.cover_image}" style="width: 100%;"/>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-center">
+                            <div class="fs-semibold fs-14">
+                                <input type="checkbox" name="training_module" onclick="selectTrainingModule(this)" data-trainingName="${training.name}"
+                                    value="${training.id}" class="btn-check" id="training${training.id}">
+                                <label class="btn btn-outline-primary mb-3" for="training${training.id}">Select
+                                    this
+                                    training</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+                });
+
+                return html;
+            }
+
+            function fetchTrainingByCategory(cat, type = 'static_training') {
+                $.post({
+                    url: '/campaigns/fetch-training-by-category',
+                    data: {
+                        category: cat,
+                        type: type
+                    },
+                    success: function(res) {
+                        // console.log(res)
+                        if (res.status !== 1) {
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                            return;
+                        }
+                        if (res.data.length === 0) {
+                            $('#trainingModulesCampModal').html(
+                                '<div class="text-center py-3">No training modules found</div>');
+                            return;
+                        }
+                        const htmlrows = prepareTrainingHtml(res.data);
+                        $('#trainingModulesCampModal').html(htmlrows);
+                    }
+                })
+            }
+
+            $("#training_cat").on('change', function() {
+
+                const cat = $(this).val();
+                const type = $('#training_type').val();
+                if (type == 'gamified') {
+                    fetchTrainingByCategory(cat, type);
+                } else {
+                    fetchTrainingByCategory(cat);
+                }
+
+            })
+
+            $("#training_type").on('change', function() {
+
+                const type = $(this).val();
+                const category = $('#training_cat').val();
+                if (type == 'gamified') {
+                    fetchTrainingByCategory(category, type);
+                } else {
+                    fetchTrainingByCategory(category);
+                }
+
+            })
+            let training_page = 2;
+
+            function loadMoreTrainings(btn) {
+                const category = $('#training_cat').val();
+                btn.disabled = true;
+                btn.innerText = 'Loading...'
+                $.post({
+                    url: '/campaigns/show-more-trainings',
+                    data: {
+                        page: training_page,
+                        category: category
+                    },
+                    success: function(res) {
+                        // console.log(res)
+                        if (res.status !== 1) {
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                            return;
+                        }
+                        if (res.data.length === 0) {
+
+                            btn.disabled = true;
+                            btn.innerText = 'No more training modules';
+                            return;
+                        }
+                        const htmlrows = prepareTrainingHtml(res.data);
+                        $('#trainingModulesCampModal').append(htmlrows);
+                        btn.disabled = false;
+                        btn.innerText = 'Show More';
+                        training_page++;
+                    }
+                })
+            }
+
+
+            $('#t_moduleSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+
+                clearTimeout($.data(this, 'timer'));
+                if (searchValue.length > 2) {
+                    var wait = setTimeout(function() {
+                        // Call the search function here
+                        searchTrainingModule(searchValue);
+                    }, 2000);
+                    $(this).data('timer', wait);
+                } else {
+                    if (searchedTrainingOnce) {
+                        fetchTrainingByCategory('all');
+                        searchedTrainingOnce = false;
+                    }
+                }
+            });
+
+            let searchedTrainingOnce = false;
+
+            function searchTrainingModule(searchValue) {
+                $('#trainingSearchSpinner').show();
+                searchedTrainingOnce = true;
+                // Loop through each template card
+                $.post({
+                    url: '/campaigns/search-training-module',
+                    data: {
+                        search: searchValue
+                    },
+                    success: function(res) {
+                        if (res.status === 1) {
+                            // Clear existing results
+                            $('#trainingSearchSpinner').hide();
+                            $('#trainingModulesCampModal').empty()
+                            // Append new results
+                            const htmlrows = prepareTrainingHtml(res.data);
+                            $('#trainingModulesCampModal').append(htmlrows);
+                        } else {
+                            Swal.fire(res.msg, '', 'error');
+                        }
+                    }
+                });
+            }
+
+
+            // Event listener for input field change
+            $('#templateSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+
+                clearTimeout($.data(this, 'timer'));
+                if (searchValue.length > 2) {
+                    var wait = setTimeout(function() {
+                        // Call the search function here
+                        searchPhishingMaterial(searchValue);
+                    }, 2000);
+                    $(this).data('timer', wait);
+                } else {
+                    if (phishing_materials_before_search !== '') {
+                        $('#phishingEmailsCampModal').html(phishing_materials_before_search)
+                        phishing_materials_before_search = '';
+                    }
+                }
+            });
+
+            let phishing_materials_before_search = ''
+
+            function searchPhishingMaterial(searchValue) {
+                $('#phishEmailSearchSpinner').show();
+                phishing_materials_before_search = $('#phishingEmailsCampModal').html();
+                // Loop through each template card
+                $.post({
+                    url: '/quishing/search-quishing-material',
+                    data: {
+                        search: searchValue
+                    },
+                    success: function(res) {
+                        if (res.status === 1) {
+                            // Clear existing results
+                            $('#phishEmailSearchSpinner').hide();
+                            $('#phishingEmailsCampModal').empty()
+                            // Append new results
+                            const htmlrows = prepareHtml(res.data);
+                            $('#phishingEmailsCampModal').append(htmlrows);
+                        } else {
+                            Swal.fire(res.msg, '', 'error');
+                        }
+                    }
+                });
+            }
+
+            function prepareHtml(data) {
+                let html = '';
+                data.forEach(email => {
+
+                    html += `<div class="col-lg-6 email_templates border my-2">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="">
+                                <div class="fs-15 fw-semibold">${email.name}</div>
+                                    ${email.company_id == 'default' ? '(Default)' : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body htmlPhishingGrid" style="background: white;">
+                        <iframe class="phishing-iframe" src="/${email.file.replace("public", "storage")}" style="width: 100%;
+                                height: 300px;
+                            "></iframe>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-center">
+                            <div>
+                                <button type="button"
+                                    onclick="showMaterialDetails(this, '${email.name}', '${email.email_subject}', '${email.website}', '${email.sender_profile}')"
+                                    class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
+                                    View
+                                </button>
+                            </div>
+                            <div class="fs-semibold fs-14">
+                                <input 
+                                    type="checkbox" 
+                                    name="quish_material" 
+                                    class="btn-check"
+                                    onclick="selectPhishingMaterial(this)" 
+                                    data-name="${email.name}" 
+                                    id="pm${email.id}" 
+                                    value="${email.id}"
+                                >
+                                <label class="btn btn-outline-primary mb-3" for="pm${email.id}">Select this attack</label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+                });
+
+                return html;
+            }
+
+            let phishing_emails_page = 2;
+
+            function loadMoreQuishingEmails(btn) {
+                btn.disabled = true;
+                btn.innerText = 'Loading...'
+                $.post({
+                    url: '/quishing/show-more-quishing-emails',
+                    data: {
+                        page: phishing_emails_page
+                    },
+                    success: function(res) {
+                        // console.log(res)
+                        if (res.status !== 1) {
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                            return;
+                        }
+                        if (res.data.length === 0) {
+
+                            btn.disabled = true;
+                            btn.innerText = 'No more phishing materials';
+                            return;
+                        }
+                        const htmlrows = prepareHtml(res.data);
+                        $('#phishingEmailsCampModal').append(htmlrows);
+                        btn.disabled = false;
+                        btn.innerText = 'Show More';
+                        phishing_emails_page++;
+                    }
+                })
+            }
+        </script>
     @endpush
 
 @endsection
