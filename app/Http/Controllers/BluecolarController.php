@@ -39,7 +39,8 @@ class BluecolarController extends Controller
             ->where('company_id', $companyId)
             ->get()
             ->count();
-        $totalCompromisedEmployees = WhatsAppCampaignUser::where("emp_compromised", 1)
+        $totalCompromisedEmployees = WhatsAppCampaignUser::where("employee_type", "Bluecollar")
+            ->where("emp_compromised", 1)
             ->where('company_id', $companyId)
             ->get()
             ->count();
