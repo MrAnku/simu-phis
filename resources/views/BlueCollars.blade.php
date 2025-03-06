@@ -16,7 +16,7 @@
                                 <div class="flex-fill">
                                     <span class="fw-semibold text-muted d-block mb-2">Across all employee groups
                                         (Total)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $totalEmps }} Employees</h5>
+                                    <h5 class="fw-semibold mb-2">{{ $totalEmployees }} Employees</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -34,10 +34,10 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">5
+                                    <span class="fw-semibold text-muted d-block mb-2">
                                         Employees
                                         (In Running Campaign.)</span>
-                                    <h5 class="fw-semibold mb-2">5 Active Employees
+                                    <h5 class="fw-semibold mb-2">{{ $totalActiveEmployees }} Active Employees
                                     </h5>
 
                                 </div>
@@ -57,7 +57,7 @@
 
                                 <div class="flex-fill">
                                     <span class="fw-semibold text-muted d-block mb-2">Employees In Attack</span>
-                                    <h5 class="fw-semibold mb-2"> Compromised </h5>
+                                    <h5 class="fw-semibold mb-2">{{ $totalCompromisedEmployees }} Compromised </h5>
 
                                 </div>
                                 <div class="me-3">

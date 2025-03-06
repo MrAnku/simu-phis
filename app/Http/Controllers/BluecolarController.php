@@ -28,21 +28,36 @@ class BluecolarController extends Controller
 {
     public function BlueCollarIndex()
     {
-
         $companyId = Auth::user()->company_id;
 
         $groups = BlueCollarGroup::withCount('bluecollarusers')
             ->where('company_id', $companyId)
             ->get();
 
-
+        $totalEmployees = BlueCollarEmployee::where('company_id', $companyId)->get()->count();
+        $totalActiveEmployees = WhatsAppCampaignUser::where("employee_type", "Bluecollar")
+            ->where('company_id', $companyId)
+            ->get()
+            ->count();
+        $totalCompromisedEmployees = WhatsAppCampaignUser::where("emp_compromised", 1)
+            ->where('company_id', $companyId)
+            ->get()
+            ->count();
 
         $totalEmps = $groups->sum('bluecollarusers_count');
 
         $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
 
-        return view('BlueCollars', compact('groups', 'totalEmps', 'hasOutlookAdToken'));
+        return view('BlueCollars', compact(
+            'groups',
+            'totalEmps',
+            'totalEmployees',
+            'totalActiveEmployees',
+            'totalCompromisedEmployees',
+            'hasOutlookAdToken'
+        ));
     }
+
 
     public function fetchGroup(Request $request)
     {
