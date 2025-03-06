@@ -105,8 +105,41 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-
-
+                                        @forelse($campaigns as $camp)
+                                            <tr>
+                                                <th>{{ $loop->iteration }}</th>
+                                                <th>{{ $camp->campaign_name }}</th>
+                                                <th>
+                                                    @if ($camp->campaign_type == 'quishing')
+                                                    <span class="badge bg-secondary-transparent">Only Quishing</span>
+                                                    @else
+                                                    <span class="badge bg-secondary-transparent">Quishing & Training</span>
+                                                        
+                                                    @endif
+                                                </th>
+                                                <th>
+                                                    @if ($camp->status == 'pending')
+                                                    <span class="badge bg-warning-transparent">Pending</span>
+                                                    @elseif($camp->status == 'running')
+                                                    <span class="badge bg-success-transparent">Running</span>
+                                                    @else
+                                                    <span class="badge bg-success-transparent">Completed</span>  
+                                                    @endif
+                                                    
+                                                <th>{{ $camp->userGroupData->group_name }}</th>
+                                                <th>{{ $camp->created_at->format('d/m/Y h:i A') }}</th>
+                                                <th>
+                                                    <button onclick="deleteCampaign('{{base64_encode($camp->campaign_id)}}')" title="Delete Campaign" class="btn btn-icon btn-danger-transparent rounded-pill btn-wave">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </th>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">No quishing campaign found
+                                                </td>
+                                            </tr>
+                                        @endforelse
 
                                     </tbody>
                                 </table>
@@ -158,6 +191,12 @@
 
     @push('newscripts')
         <script>
+            document.getElementById('days_until_due').addEventListener('input', function() {
+                if (this.value > 30) {
+                    this.value = 30;
+                    alert('The number of days until due cannot exceed 30.');
+                }
+            });
             let campType = 'quishing';
 
             function showNext(current_page) {
@@ -330,7 +369,6 @@
                 // Log the updated checkedValues array
                 console.log(selectedPhishingMaterial);
             }
-
         </script>
         <script>
             var selectedTrainings = [];
@@ -379,6 +417,29 @@
                     training_assignment: $('#training_assignment').val(),
                     training_category: $('#training_cat').val(),
                 }
+
+                $.post({
+                    url: '/quishing/create-campaign',
+                    data: campaignData,
+                    success: function(res) {
+                        if (res.status === 1) {
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'success'
+                            ).then(() => {
+                                $('#newCampModal').modal('hide');
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                        }
+                    }
+                })
 
             }
         </script>
@@ -677,6 +738,44 @@
                         btn.disabled = false;
                         btn.innerText = 'Show More';
                         phishing_emails_page++;
+                    }
+                })
+            }
+
+            function deleteCampaign(id){
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to delete this campaign!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post({
+                            url: '/quishing/delete-campaign',
+                            data: {
+                                campid: id
+                            },
+                            success: function(res) {
+                                if (res.status === 1) {
+                                    Swal.fire(
+                                        res.msg,
+                                        '',
+                                        'success'
+                                    ).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        res.msg,
+                                        '',
+                                        'error'
+                                    )
+                                }
+                            }
+                        })
                     }
                 })
             }

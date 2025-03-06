@@ -53,13 +53,13 @@
                         </div>
                         <div class="card-footer">
                             <div class="d-flex justify-content-center">
-                                <div>
+                                {{-- <div>
                                     <button type="button"
                                         onclick="showMaterialDetails(this, '{{ $email->name }}', '{{ $email->subject }}', '{{ $email->website }}', '{{ $email->sender_profile }}')"
                                         class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
                                         View
                                     </button>
-                                </div>
+                                </div> --}}
                                 <div class="fs-semibold fs-14">
                                     <input type="checkbox" 
                                     name="quish_material"    
