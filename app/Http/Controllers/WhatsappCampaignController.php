@@ -20,6 +20,9 @@ use App\Models\CompanyWhatsappConfig;
 use App\Models\CompanyWhatsappTemplate;
 use App\Mail\AssignTrainingWithPassResetLink;
 use App\Http\Requests\StoreWhatsAppTemplateRequest;
+use App\Models\BlueCollarEmployee;
+use App\Models\BlueCollarGroup;
+use App\Models\BlueCollarTrainingUser;
 
 class WhatsappCampaignController extends Controller
 {
@@ -34,17 +37,15 @@ class WhatsappCampaignController extends Controller
         $hasTemplates = CompanyWhatsappTemplate::where('company_id', $company_id)->first();
         if (!$hasTemplates) {
             $templates = [];
-        }else{
+        } else {
             $templates = json_decode($hasTemplates->template, true)['data'];
         }
 
         $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->orderBy('id', 'desc')
-        ->paginate(10);
+            ->paginate(10);
         $trainings = TrainingModule::where('company_id', $company_id)
             ->orWhere('company_id', 'default')->get();
         return view('whatsapp-campaign', compact('all_users', 'config', 'templates', 'campaigns', 'trainings'));
-
-      
     }
 
     public function saveConfig(Request $request)
@@ -78,8 +79,6 @@ class WhatsappCampaignController extends Controller
         CompanyWhatsappConfig::where('company_id', $company_id)->update($validated);
 
         return redirect()->back()->with('success', 'Configuration updated successfully!');
-
-
     }
 
     public function syncTemplates()
@@ -103,7 +102,7 @@ class WhatsappCampaignController extends Controller
                     'company_id' => $company_id
                 ]);
                 return response()->json(['success' => 'Templates synced successfully']);
-            }else{
+            } else {
                 $responseData = $response->json();
                 if (isset($responseData['error'])) {
                     return response()->json(['error' => $responseData['error']['message']]);
@@ -141,8 +140,14 @@ class WhatsappCampaignController extends Controller
         $new_campaign->camp_name = $request->camp_name;
         $new_campaign->template_name = $request->template_name;
         $new_campaign->user_group = $request->user_group;
-        $new_campaign->user_group_name = $this->userGroupName($request->user_group);
+        if ($request->empType == "Normal") {
+
+            $new_campaign->user_group_name = $this->userGroupName($request->user_group);
+        } else {
+            $new_campaign->user_group_name = $this->BlueCollarGroupName($request->user_group);
+        }
         $new_campaign->camp_type = $request->campType;
+        $new_campaign->employee_type = $request->empType;
 
         if ($request->campType == "Phishing and Training") {
             $new_campaign->training = $request->training;
@@ -161,37 +166,44 @@ class WhatsappCampaignController extends Controller
 
     public function createCampaignIndividual($camp_id, $campaignData)
     {
+        $users = [];
 
-        $users = Users::where('group_id', $campaignData->user_group)->get();
-        $company_id = Auth::user()->company_id;
-
-        if ($campaignData->campType == "Phishing and Training") {
-            $training = $campaignData->training;
+        if ($campaignData->empType == "Normal") {
+            $users = Users::where('group_id', $campaignData->user_group)->get();
         } else {
-            $training = null;
+            $users = BlueCollarEmployee::where('group_id', $campaignData->user_group)->get();
         }
 
+        $company_id = Auth::user()->company_id;
+
+        $training = ($campaignData->campType == "Phishing and Training") ? $campaignData->training : null;
+
         foreach ($users as $user) {
+
+            if ($user->whatsapp == null) {
+                continue;
+            }
             DB::table('whatsapp_camp_users')->insert([
                 'camp_id' => $camp_id,
                 'camp_name' => $campaignData->camp_name,
                 'user_group' => $campaignData->user_group,
                 'user_name' => $user->user_name,
                 'user_id' => $user->id,
-                'user_email' => $user->user_email,
+                'user_email' => $user->user_email ?? null,
+                'employee_type' => $campaignData->empType,
                 'user_whatsapp' => $user->whatsapp,
                 'template_name' => $campaignData->template_name,
                 'template_language' => $campaignData->template_language,
                 'training' => $training,
-                'training_type' => $campaignData->trainingType,
-                'components' => json_encode($campaignData->components),
+                'training_type' => $campaignData->trainingType ?? null,
+                'components' => json_encode($campaignData->components ?? []),
                 'status' => 'pending',
                 'created_at' => now(),
-                'company_id' => $company_id
-
+                'company_id' => $company_id,
             ]);
         }
     }
+
 
     public function deleteCampaign(Request $request)
     {
@@ -226,6 +238,16 @@ class WhatsappCampaignController extends Controller
         }
     }
 
+    private function BlueCollarGroupName($groupid)
+    {
+        $userGroup = BlueCollarGroup::where('group_id', $groupid)->first();
+        if ($userGroup) {
+            return $userGroup->group_name;
+        } else {
+            return null;
+        }
+    }
+
     public function fetchCampaign(Request $request)
     {
         $company_id = auth()->user()->company_id;
@@ -242,6 +264,30 @@ class WhatsappCampaignController extends Controller
 
         return view('whatsapp-website', compact('campaign_id'));
     }
+    public function startTrainingWebsitee($assigntraining_id)
+    {
+
+        $decoded_id = base64_decode($assigntraining_id);
+
+        if (!$decoded_id || !is_numeric($decoded_id)) {
+            return back()->with('error', 'Invalid User ID');
+        }
+
+        // $User = DB::table('blue_collar_training_users')->where('id', $decoded_id)->first();
+        $User = BlueCollarTrainingUser::with('trainingModule')->find($decoded_id);
+        // return $User;
+        $training_module_name = $User->trainingModule->name;
+        // dd($User->trainingModule->name);
+
+        if ($User) {
+            return view('start-training', compact('training_module_name'));
+        } else {
+            return back()->with('error', 'Invalid User');
+        }
+    }
+
+
+
 
     public function updatePayload(Request $request)
     {
@@ -333,8 +379,6 @@ class WhatsappCampaignController extends Controller
         if ($campaign_user->training == null) {
             return response()->json(['error' => 'No training assigned']);
         }
-
-        //training exists or not
         $training =  DB::table('training_modules')
             ->where('id', $campaign_user->training)
             ->first();
@@ -343,6 +387,25 @@ class WhatsappCampaignController extends Controller
             return response()->json(['error' => 'Training not found']);
         }
 
+        if ($campaign_user->employee_type == "Bluecollar") {
+            $already_have_this_training = DB::table('blue_collar_training_users')
+                ->where('user_id', $campaign_user->user_id)
+                ->where('training', $campaign_user->training)
+                ->first();
+
+            if (!$training) {
+                return response()->json(['error' => 'Training not found']);
+            }
+            if ($already_have_this_training) {
+                // return "Send Remainder";
+                return $this->whatsappSendTrainingReminder($campaign_user, $training, $already_have_this_training);
+            } else {
+                // return "Assign Training";
+                return $this->whatsappAssignFirstTraining($campaign_user, $training);
+            }
+        }
+
+        //training exists or not
 
         // Check if training is already assigned to the user
         $already_have_this_training = DB::table('training_assigned_users')
@@ -372,6 +435,7 @@ class WhatsappCampaignController extends Controller
             }
         }
     }
+
 
     private function assignFirstTraining($campaign_user, $training)
     {
@@ -422,6 +486,78 @@ class WhatsappCampaignController extends Controller
             ->update(['training_assigned' => 1]);
 
         return response()->json(['success' => 'First assigned successfully']);
+    }
+    private function whatsappAssignFirstTraining($campaign_user, $training)
+    {
+        $training_assigned = DB::table('blue_collar_training_users')
+            ->insertGetId([
+                'campaign_id' => $campaign_user->camp_id,
+                'user_id' => $campaign_user->user_id,
+                'user_name' => $campaign_user->user_name,
+                'user_whatsapp' => $campaign_user->user_whatsapp,
+                'training' => $campaign_user->training,
+                'training_lang' => 'en',
+                'training_type' => $campaign_user->training_type,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays(14)->toDateString(),
+                'company_id' => $campaign_user->company_id
+            ]);
+
+
+
+        if (!$training_assigned) {
+            return response()->json(['error' => 'Failed to assign training']);
+        }
+
+        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
+        $token = encrypt($campaign_user->user_email);
+        $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
+
+        DB::table('whatsapp_camp_users')
+            ->where('id', $campaign_user->id)
+            ->update(['training_assigned' => 1]);
+
+        // WhatsApp Notification
+        $access_token = "EAAeHyugovWQBO4UNW4Hq7ERYRw9AGF4tgQRmG9xN0K56OkMBCjHkv2jKqrdHl6ZCtFBh7NhFflvhLIigw8G0mTKujiy3FRQTMCo8veibn1OWDAHaliPm9zHTS1RQ599PMhZA8bivHPZCNlXe3FnLkNtAyq19GkCIZBfVyG2wYFBJHsN2i4ZByk9ZC05tGdY7lP9wZDZD";
+        $phone_number_id = "338729722654932";
+        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
+
+        $whatsapp_data = [
+            "messaging_product" => "whatsapp",
+            "to" => "919122668359",
+            "type" => "template",
+            "template" => [
+                "name" => "training_message",
+                "language" => ["code" => "en"],
+                "components" => [
+                    [
+                        "type" => "body",
+                        "parameters" => [
+                            ["type" => "text", "text" => $campaign_user->user_name],
+                            ["type" => "text", "text" => $training->name],
+                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($training_assigned),]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $whatsapp_response = Http::withHeaders([
+            "Authorization" => "Bearer {$access_token}",
+            "Content-Type" => "application/json"
+        ])->withOptions([
+            'verify' => false
+        ])->post($whatsapp_url, $whatsapp_data);
+
+        log_action("WhatsApp API Response: " . $whatsapp_response->body(), 'employee', 'employee');
+
+        if ($whatsapp_response->successful()) {
+            log_action("WhatsApp Training Assigned | Training {$training->name} assigned to 919122668359.", 'employee', 'employee');
+        } else {
+            log_action("WhatsApp message failed | Status: " . $whatsapp_response->status(), 'employee', 'employee');
+        }
+
+        return response()->json(['success' => 'Training assigned and WhatsApp notification sent']);
     }
 
     private function assignAnotherTraining($campaign_user, $training, $user_have_login)
@@ -479,8 +615,6 @@ class WhatsappCampaignController extends Controller
 
     private function sendTrainingReminder($campaign_user, $training)
     {
-
-
         // Fetch user credentials
         $userCredentials = DB::table('user_login')
             ->where('login_username', $campaign_user->user_email)
@@ -504,6 +638,72 @@ class WhatsappCampaignController extends Controller
         Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
 
         return response()->json(['success' => 'Training reminder has sent']);
+    }
+
+
+    private function whatsappSendTrainingReminder($campaign_user, $training, $already_have_this_training)
+    {
+        // return $already_have_this_training->id;
+        // Fetch user credentials
+        $userCredentials = DB::table('user_login')
+            ->where('login_username', $campaign_user->user_email)
+            ->first();
+
+        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
+        // return $learnSiteAndLogo;
+        log_action("WhatsApp simulation | Training {$training->name} already assigned to {$campaign_user->user_email}, Reminder Sent.", 'employee', 'employee');
+
+        // WhatsApp API Configuration
+        $access_token = "EAAeHyugovWQBO4UNW4Hq7ERYRw9AGF4tgQRmG9xN0K56OkMBCjHkv2jKqrdHl6ZCtFBh7NhFflvhLIigw8G0mTKujiy3FRQTMCo8veibn1OWDAHaliPm9zHTS1RQ599PMhZA8bivHPZCNlXe3FnLkNtAyq19GkCIZBfVyG2wYFBJHsN2i4ZByk9ZC05tGdY7lP9wZDZD";
+        $phone_number_id = "338729722654932";
+        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
+
+
+        // WhatsApp Message Data
+        // return $already_have_this_training->id;
+        $whatsapp_data = [
+            "messaging_product" => "whatsapp",
+            "to" => $campaign_user->user_whatsapp, // Replace with actual user phone number
+            "type" => "template",
+            "template" => [
+                "name" => "training_message",
+                "language" => ["code" => "en"],
+                "components" => [
+                    [
+                        "type" => "body",
+                        "parameters" => [
+                            ["type" => "text", "text" => $campaign_user->user_name],
+                            ["type" => "text", "text" => $training->name],
+                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($already_have_this_training->id)],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // Send WhatsApp message
+
+        $whatsapp_response = Http::withHeaders([
+            "Authorization" => "Bearer {$access_token}",
+            "Content-Type" => "application/json"
+        ])->withOptions([
+            'verify' => false
+        ])->post($whatsapp_url, $whatsapp_data);
+
+        // return $whatsapp_data;
+        // Log response
+        log_action("WhatsApp API Response: " . $whatsapp_response->body(), 'employee', 'employee');
+
+        if ($whatsapp_response->successful()) {
+            log_action("WhatsApp Reminder Sent | Training {$training->name} assigned to 919122668359.", 'employee', 'employee');
+            return response()->json(['success' => 'Training reminder sent via WhatsApp']);
+        } else {
+            return response()->json([
+                'error' => 'Failed to send WhatsApp message',
+                'status' => $whatsapp_response->status(),
+                'response' => $whatsapp_response->body()
+            ], 500);
+        }
     }
 
     // Function to check if the campaign is whitelabeled

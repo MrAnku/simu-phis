@@ -93,8 +93,8 @@
                             <!-- Page pre-title -->
 
                             <div class="d-flex justify-content-between align-items-center">
-                                <h2 class="page-title">
-                                    Learner Dashboard: {{ session('learner')->login_username }} </h2>
+                                {{-- <h2 class="page-title">
+                                    Learner Dashboard: {{ session('learner')->login_username }} </h2> --}}
                                 <div>
                                     <div class="input-group">
                                         <span class="input-group-text">
@@ -110,13 +110,13 @@
                         </div>
                         <!-- Page title actions -->
                         <div class="col-auto ms-auto d-print-none">
-                            <div class="btn-list">
+                            {{-- <div class="btn-list">
                                 <span class="d-none d-sm-inline">
                                     <a href="{{ route('learner.dashboard') }}"
                                         class="btn btn-outline-primary my-3 active">Back</a>
                                     <a href="{{ route('learner.logout') }}" class="btn"> Log Out </a>
                                 </span>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -151,8 +151,10 @@
                     <div class="btns d-flex justify-content-center" id="nextBtnContainer">
 
                         <button type="button" id="nextButton" class="btn btn-outline-primary my-3 active">Next</button>
-                        <a href="{{ route('learner.dashboard') }}" id="dashboardBtn"
-                            class="btn btn-outline-primary my-3" style="display: none;">Dashboard</a>
+                        {{-- <a href="{{ route('learner.dashboard') }}" id="dashboardBtn"
+                            class="btn btn-outline-primary my-3" style="display: none;">Dashboard</a>      --}}
+                        <a id="dashboardBtn" class="btn btn-outline-primary my-3" style="display: none;"
+                            onclick="navigateToDashboard(event)">Back</a>
                     </div>
                 </div>
             </div>
@@ -231,7 +233,17 @@
         });
     </script>
 
+    <script>
+        function navigateToDashboard(event) {
+            event.preventDefault(); // Prevent the default page refresh
 
+            // Fetch the URL from the href attribute
+            const url = event.target.href;
+
+            // Navigate to the new page using JavaScript
+            window.location.href = url;
+        }
+    </script>
 
     <script>
         let allQuestions = [];
@@ -326,15 +338,14 @@
         }
 
         function updateScoreInDb(percent) {
-            console.log("updateScoreInDb", updateScoreInDb);
             $.post({
-                url: '/update-training-score',
+                url: '/update-bluecollar-training-score',
                 data: {
                     trainingScore: percent,
                     id: '{{ $id }}'
                 },
                 success: function(res) {
-                    console.log("update scrore", res)
+                    // console.log(res)
                 }
             })
         }

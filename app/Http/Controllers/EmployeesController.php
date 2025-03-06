@@ -40,6 +40,24 @@ class EmployeesController extends Controller
 
         return view('employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
+ public function BlueCOllarIndex()
+    {
+
+        $companyId = Auth::user()->company_id;
+        $groups = UsersGroup::withCount('users')
+            ->where('company_id', $companyId)
+            ->get();
+
+        $totalEmps = $groups->sum('users_count');
+        $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
+        $notVerifiedDomains = DomainVerified::where('verified', 0)->where('company_id', $companyId)->get();
+
+        $allDomains = DomainVerified::where('company_id', $companyId)->get();
+
+        $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
+
+        return view('BlueCollars', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
+    }
 
     public function sendDomainVerifyOtp(Request $request)
     {
@@ -193,6 +211,34 @@ class EmployeesController extends Controller
 
         return redirect()->route('employees');
     }
+  public function blueCollarNewGroup(Request $request)
+    {
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return redirect()->back()->with('error', 'Invalid input detected.');
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+
+        $grpName = $request->input('usrGroupName');
+        $grpId = generateRandom(6);
+        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+
+        UsersGroup::create([
+            'group_id' => $grpId,
+            'group_name' => $grpName,
+            'users' => null,
+            'company_id' => $companyId,
+        ]);
+
+        log_action("New employee group {$grpName} created");
+
+        return redirect()->route('employees');
+    }
 
     public function viewUsers($groupid)
     {
@@ -291,6 +337,7 @@ class EmployeesController extends Controller
         log_action("Employee {$request->usrEmail} added");
         return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
+
 
 
 

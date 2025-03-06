@@ -71,18 +71,46 @@ class ProcessWhatsappCampaign extends Command
                     }
 
                     try {
-                        $res = $whatsapp_cloud_api->sendTemplate($campaign->user_whatsapp, $campaign->template_name, $campaign->template_language, $components);
+                        // $res = $whatsapp_cloud_api->sendTemplate($campaign->user_whatsapp, $campaign->template_name, $campaign->template_language, $components);
                         // print_r($res);
-                        $campaign->status = 'sent';
-                        $campaign->save();
-                        echo "WhatsApp message sent to ".$campaign->user_name."\n";
-                    } catch (\Netflie\WhatsAppCloudApi\Response\ResponseException $th) {
+                        $response = Http::withToken($company->whatsappConfig->access_token) // Set Bearer Token
+                            ->withoutVerifying() // Disable SSL verification
+                            ->post(
+                                'https://graph.facebook.com/v22.0/' . $company->whatsappConfig->from_phone_id . '/messages',
+                                [
+                                    "messaging_product" => "whatsapp",
+                                    "to" => $campaign->user_whatsapp,
+                                    "type" => "template",
+                                    "template" => [
+                                        "name" => $campaign->template_name,
+                                        "language" => [
+                                            "code" => $campaign->template_language
+                                        ],
+                                        "components" => [
+                                            [
+                                                "type" => "body",
+                                                "parameters" => $component_body
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            );
+
+                        // Get the response
+                        $data = $response->json();
+
+                        if ($response->successful()) {
+                            $campaign->status = 'sent';
+                            $campaign->save();
+                            echo "WhatsApp message sent to " . $campaign->user_name . "\n";
+                        } else {
+                            echo json_encode($response->body());
+                        }
+                    } catch (\Exception $th) {
                         echo $th->getMessage();
                     }
                 }
             }
         }
-
     }
-
 }

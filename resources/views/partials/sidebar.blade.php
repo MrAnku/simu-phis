@@ -2,7 +2,7 @@
 
     <!-- Start::main-sidebar-header -->
     <div class="main-sidebar-header">
-        <a href="{{route('dashboard')}}" class="header-logo">
+        <a href="{{ route('dashboard') }}" class="header-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="desktop-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="toggle-logo">
             <img src="{{ $companyLogoLight }}" alt="logo" class="desktop-dark">
@@ -36,7 +36,7 @@
                                 </div>
                                 <ul class="main-menu active" style="margin-left: 0px; margin-right: 0px;">
 
-                                   
+
                                     <li class="slide {{ isActiveRoute('dashboard') }}">
                                         <a href="{{ url('/') }}"
                                             class="side-menu__item {{ isActiveRoute('dashboard') }}">
@@ -44,17 +44,43 @@
                                             <span class="side-menu__label">Dashboard</span>
                                         </a>
                                     </li>
-
-                                    <li class="slide {{ Request::is('employees') ? 'active' : '' }}">
-                                        <a href="{{ route('employees') }}"
-                                            class="side-menu__item {{ Request::is('employees') ? 'active' : '' }}">
+                                    {{-- Employee dffd --}}
+                                    <li
+                                        class="slide has-sub {{ Request::is('employees') || Request::is('blue-collar-employees') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);"
+                                            class="side-menu__item {{ Request::is('employees') || Request::is('blue-collar-employees') ? 'active' : '' }}">
                                             <i class="bx bx-group side-menu__icon"></i>
                                             <span class="side-menu__label">Employees</span>
+                                            <i class="fe fe-chevron-right side-menu__angle"></i>
                                         </a>
+                                        <ul class="slide-menu child1">
+                                            <li class="slide side-menu__label1">
+                                                <a href="javascript:void(0)">Employees</a>
+                                            </li>
+                                            <li class="slide {{ Request::is('employees') ? 'active' : '' }}">
+                                                <a href="{{ route('employees') }}"
+                                                    class="side-menu__item {{ Request::is('employees') ? 'active' : '' }}">
+                                                    <i class="bx bx-user side-menu__icon"></i>
+                                                    {{-- <i class='bx bx-user'></i> --}}
+                                                    <span class="side-menu__label">Employees</span>
+                                                </a>
+                                            </li>
+                                            <li
+                                                class="slide {{ Request::is('blue-collar-employees') ? 'active' : '' }}">
+                                                <a href="{{ route('bluecollar.employees') }}"
+                                                    class="side-menu__item {{ Request::is('blue-collar-employees') ? 'active' : '' }}">
+                                                    <i class="bx bx-phone-call side-menu__icon"></i>
+                                                    <span class="side-menu__label">BlueCollars</span>
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </li>
 
-                                    <li class="slide has-sub {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'active' : '' }}">
+
+                                    <li
+                                        class="slide has-sub {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);"
+                                            class="side-menu__item {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Campaigns</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -78,12 +104,17 @@
                                                     <span class="side-menu__label">WA Campaigns</span>
                                                 </a>
                                             </li>
+
+
+
                                         </ul>
                                     </li>
 
 
-                                    <li class="slide has-sub {{ Request::is('ai-calling') || Request::is('tprm') || Request::is('quishing') ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('ai-calling') || Request::is('tprm') ? 'active' : '' }}">
+                                    <li
+                                        class="slide has-sub {{ Request::is('ai-calling') || Request::is('tprm') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);"
+                                            class="side-menu__item {{ Request::is('ai-calling') || Request::is('tprm') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Advanced Simulation</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -93,7 +124,7 @@
                                                 <a href="javascript:void(0)">Advanced Simulation</a>
                                             </li>
 
-                                           
+
                                             <li class="slide {{ Request::is('ai-calling') ? 'active' : '' }}">
                                                 <a href="{{ route('ai.calling') }}"
                                                     class="side-menu__item {{ Request::is('ai-calling') ? 'active' : '' }}">
@@ -122,7 +153,7 @@
                                                     <i class="bx bx-shape-circle side-menu__icon"></i>
                                                     <span class="side-menu__label">
                                                         TPRM
-                                                        
+
                                                     </span>
                                                 </a>
                                             </li>
@@ -140,48 +171,57 @@
                                     </li>
 
 
-                                    <li class="slide has-sub {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'active' : '' }}">
-                                            <i class="bx bx-mail-send side-menu__icon"></i>
-                                            <span class="side-menu__label">Phishing Material</span>
-                                            <i class="fe fe-chevron-right side-menu__angle"></i>
-                                        </a>
-                                        <ul class="slide-menu child1">
-                                            <li class="slide side-menu__label1">
-                                                <a href="javascript:void(0)">Phishing Material</a>
-                                            </li>
+                                    <li
+                                        class="slide has-sub {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);"
+                                            class="side-menu__item {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'active' : '' }}">
 
-                                            <li class="slide {{ Request::is('phishing-emails') ? 'active' : '' }}">
-                                                <a href="{{ route('phishing.emails') }}"
-                                                    class="side-menu__item {{ Request::is('phishing-emails') ? 'active' : '' }}">
-                                                    <i class="bx bx-envelope side-menu__icon"></i>
-                                                    <span class="side-menu__label">Phishing Emails</span>
-                                                </a>
-                                            </li>
-                                            <li class="slide {{ Request::is('quishing-emails') ? 'active' : '' }}">
-                                                <a href="{{ route('quishing.emails') }}"
-                                                    class="side-menu__item {{ Request::is('quishing-emails') ? 'active' : '' }}">
-                                                    <i class="bx bx-qr side-menu__icon"></i>
-                                                    <span class="side-menu__label">Quishing Emails</span>
-                                                </a>
-                                            </li>
-                                            <li class="slide {{ Request::is('phishing-websites') ? 'active' : '' }}">
-                                                <a href="{{ route('phishing.websites') }}"
-                                                    class="side-menu__item {{ Request::is('phishing-websites') ? 'active' : '' }}">
-                                                    <i class="bx bx-globe side-menu__icon"></i>
-                                                    <span class="side-menu__label">Phishing Websites</span>
-                                                </a>
-                                            </li>
-                                            <li class="slide {{ Request::is('sender-profiles') ? 'active' : '' }}">
-                                                <a href="{{ route('senderprofile.index') }}"
-                                                    class="side-menu__item {{ Request::is('sender-profiles') ? 'active' : '' }}">
-                                                    <i class="bx bx-mail-send side-menu__icon"></i>
-                                                    <span class="side-menu__label">Sender Profiles</span>
-        
-                                                </a>
-                                            </li>
-                                            
-                                        </ul>
+                                            <a href="javascript:void(0);"
+                                                class="side-menu__item {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('sender-profiles') ? 'active' : '' }}">
+                                                <i class="bx bx-mail-send side-menu__icon"></i>
+                                                <span class="side-menu__label">Phishing Material</span>
+                                                <i class="fe fe-chevron-right side-menu__angle"></i>
+                                            </a>
+                                            <ul class="slide-menu child1">
+                                                <li class="slide side-menu__label1">
+                                                    <a href="javascript:void(0)">Phishing Material</a>
+                                                </li>
+
+                                                <li
+                                                    class="slide {{ Request::is('phishing-emails') ? 'active' : '' }}">
+                                                    <a href="{{ route('phishing.emails') }}"
+                                                        class="side-menu__item {{ Request::is('phishing-emails') ? 'active' : '' }}">
+                                                        <i class="bx bx-envelope side-menu__icon"></i>
+                                                        <span class="side-menu__label">Phishing Emails</span>
+                                                    </a>
+                                                </li>
+                                                <li
+                                                    class="slide {{ Request::is('quishing-emails') ? 'active' : '' }}">
+                                                    <a href="{{ route('quishing.emails') }}"
+                                                        class="side-menu__item {{ Request::is('quishing-emails') ? 'active' : '' }}">
+                                                        <i class="bx bx-qr side-menu__icon"></i>
+                                                        <span class="side-menu__label">Quishing Emails</span>
+                                                    </a>
+                                                </li>
+                                                <li
+                                                    class="slide {{ Request::is('phishing-websites') ? 'active' : '' }}">
+                                                    <a href="{{ route('phishing.websites') }}"
+                                                        class="side-menu__item {{ Request::is('phishing-websites') ? 'active' : '' }}">
+                                                        <i class="bx bx-globe side-menu__icon"></i>
+                                                        <span class="side-menu__label">Phishing Websites</span>
+                                                    </a>
+                                                </li>
+                                                <li
+                                                    class="slide {{ Request::is('sender-profiles') ? 'active' : '' }}">
+                                                    <a href="{{ route('senderprofile.index') }}"
+                                                        class="side-menu__item {{ Request::is('sender-profiles') ? 'active' : '' }}">
+                                                        <i class="bx bx-mail-send side-menu__icon"></i>
+                                                        <span class="side-menu__label">Sender Profiles</span>
+
+                                                    </a>
+                                                </li>
+
+                                            </ul>
                                     </li>
                                     <li class="slide {{ Request::is('training-modules') ? 'active' : '' }}">
                                         <a href="{{ route('trainingmodule.index') }}"
@@ -190,9 +230,11 @@
                                             <span class="side-menu__label">Training Modules</span>
                                         </a>
                                     </li>
-                                   
-                                    <li class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'open' : '' }}">
-                                        <a href="javascript:void(0);" class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'active' : '' }}">
+
+                                    <li
+                                        class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'open' : '' }}">
+                                        <a href="javascript:void(0);"
+                                            class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Threat Monitoring</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -210,20 +252,21 @@
                                                 </a>
                                             </li>
 
-                                            <li class="slide {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
+                                            <li
+                                                class="slide {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
                                                 <a href="{{ route('dark.web.monitoring') }}"
                                                     class="side-menu__item {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
                                                     <i class="bx bx-globe side-menu__icon"></i>
                                                     <span class="side-menu__label">Darkweb Monitoring</span>
                                                 </a>
                                             </li>
-                                            
+
                                         </ul>
                                     </li>
 
-                                    
 
-                                   
+
+
                                     <li class="slide {{ Request::is('support') ? 'active' : '' }}">
                                         <a href="{{ route('company.support') }}"
                                             class="side-menu__item {{ Request::is('support') ? 'active' : '' }}">

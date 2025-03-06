@@ -53,6 +53,59 @@ function viewUsersByGroup(groupid) {
     });
 }
 
+function viewBlueUsersByGroup(groupid) {
+    $.get({
+        url: "/employees/viewBlueCollarUsers/" + groupid,
+        success: function (res) {
+            if (res.status == 1) {
+                console.log("res", res);
+                $(".addedBlueCollarUsers").empty();
+                var userRows = "";
+                $.each(res.data, function (index, value) {
+                    userRows += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                        <a href="/employee/${btoa(
+                            value.id
+                        )}" class="text-primary" target="_blank">${
+                        value.user_name
+                    }</a>
+                        </td>
+                        
+                        <td>${value.user_company ?? "--"}</td>
+                        <td>${value.user_job_title ?? "--"}</td>
+                        <td>${value.whatsapp ?? "--"}</td>
+                        <td><span class="text-danger ms-1" onclick="deleteBlueUser('${
+                            value.id
+                        }', '${
+                        value.group_id
+                    }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
+                        </tr>`;
+                });
+                $(".addedBlueCollarUsers").html(userRows);
+                $(".groupid").val(groupid);
+                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
+                    $("#allUsersByGroupTable").DataTable({
+                        language: {
+                            searchPlaceholder: "Search...",
+                            sSearch: "",
+                        },
+                        pageLength: 10,
+                        // scrollX: true
+                    });
+                }
+            } else {
+                var emptyRow =
+                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                $(".addedBlueCollarUsers").html(emptyRow);
+
+                $(".groupid").val(groupid);
+            }
+        },
+    });
+}
+
 //validating whatsapp field
 $("#usrWhatsapp").on("input", function () {
     var usrWhatsapp = $(this).val();
@@ -87,6 +140,32 @@ $("#adduserForm").submit(function (e) {
                     var params = new URLSearchParams(formData);
                     var groupid = params.get("groupid");
                     viewUsersByGroup(groupid);
+                }
+            },
+        });
+        // console.log(formData);
+        $(this).trigger("reset");
+        $("#usrWhatsapp").removeClass("is-valid");
+    }
+});
+$("#addbluecollaruserForm").submit(function (e) {
+    e.preventDefault();
+
+    if (!$("#usrWhatsapp").hasClass("is-invalid")) {
+        var formData = $(this).serialize();
+
+        // console.log(formData.usrWhatsapp);
+        $.post({
+            url: "/employees/addBlueCollarUser",
+            data: formData,
+            success: function (res) {
+                if (res.status == 0) {
+                    // alert(resJson.msg);
+                    Swal.fire(res.msg, "", "error");
+                } else {
+                    var params = new URLSearchParams(formData);
+                    var groupid = params.get("groupid");
+                    viewBlueUsersByGroup(groupid);
                 }
             },
         });
@@ -133,6 +212,44 @@ function deleteGroup(grpId) {
     });
 }
 
+//deleting employee group
+function deleteBlueCollarGroup(grpId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#e6533c",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Delete",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post({
+                url: "/employees/deleteBlueGroup",
+                data: {
+                    // "deleteEmpGroup": "1",
+                    group_id: grpId,
+                },
+                success: function (response) {
+                    console.log("response", response);
+                    // console.log("deleted successfully")
+                    // alert(response);
+                    // window.location.reload()
+                    if (response.status == 1) {
+                        Swal.fire(response.msg, "", "success").then(() => {
+                            window.location.href = window.location.href;
+                        });
+                    } else {
+                        Swal.fire(response.msg, "", "error").then(() => {
+                            window.location.href = window.location.href;
+                        });
+                    }
+                },
+            });
+        }
+    });
+}
+
 function deleteUser(usrId, grpId) {
     Swal.fire({
         title: "Are you sure?",
@@ -152,6 +269,31 @@ function deleteUser(usrId, grpId) {
                 success: function (response) {
                     // addedUsers(grpId)
                     viewUsersByGroup(grpId);
+                },
+            });
+        }
+    });
+}
+function deleteBlueUser(usrId, grpId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#e6533c",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Delete",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post({
+                url: "/employees/deleteBlueUser",
+                data: {
+                    user_id: usrId,
+                },
+                success: function (response) {
+                    // addedUsers(grpId)
+                    viewBlueUsersByGroup(grpId);
+                    // viewUsersByGroup(grpId);
                 },
             });
         }

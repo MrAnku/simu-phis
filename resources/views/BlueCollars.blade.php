@@ -34,9 +34,11 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">{{ $verifiedDomains->count() }} Used
-                                        (500 Domains Max.)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $verifiedDomains->count() }} Domains Verified</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">5
+                                        Employees
+                                        (In Running Campaign.)</span>
+                                    <h5 class="fw-semibold mb-2">5 Active Employees
+                                    </h5>
 
                                 </div>
                                 <div class="me-3">
@@ -54,8 +56,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">Verification of ownership</span>
-                                    <h5 class="fw-semibold mb-2">{{ $notVerifiedDomains->count() }} Domains Pending</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">Employees In Attack</span>
+                                    <h5 class="fw-semibold mb-2"> Compromised </h5>
 
                                 </div>
                                 <div class="me-3">
@@ -72,14 +74,9 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newEmpGroupModal">New Employee Group</button>
+                        data-bs-target="#newBlueEmpGroupModal">New Employee Group</button>
                 </div>
-                <div>
-                    <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#domainVerificationModal">Domain Verification</button>
-                    <button type="button" class="btn btn-dark mb-3" onclick="checkHasConfig()" data-bs-toggle="modal"
-                        data-bs-target="#syncDirectoryModal">Directory Sync</button>
-                </div>
+
             </div>
 
             <div class="row">
@@ -108,22 +105,23 @@
                                                 <td>{{ $loop->iteration }}</td> <!-- Serial number -->
                                                 <td>
                                                     <a href="#" class="text-primary"
-                                                        onclick="viewUsersByGroup('{{ $group->group_id }}')"
-                                                        data-bs-target="#viewUsers" data-bs-toggle="modal">
+                                                        onclick="viewBlueUsersByGroup('{{ $group->group_id }}')"
+                                                        data-bs-target="#viewBluecollarUsers" data-bs-toggle="modal">
                                                         {{ $group->group_name }}
                                                     </a>
                                                 </td>
-                                                {{-- <td>{{ $group }}</td> --}}
-                                                <td>{{ $group->users_count }}</td>
+                                                <td>{{ $group->bluecollarusers_count }}</td>
                                                 <td><span class="badge bg-info">{{ $group->group_id }}</span></td>
                                                 <td>
                                                     <span class="text-secondary mx-1"
-                                                        onclick="viewUsersByGroup('{{ $group->group_id }}')" role="button"
-                                                        data-bs-target="#addUserModal" data-bs-toggle="modal">
+                                                        onclick="viewBlueUsersByGroup('{{ $group->group_id }}')"
+                                                        role="button" data-bs-target="#addBlueCollarUserModal"
+                                                        data-bs-toggle="modal">
                                                         <i class="bx bx-plus fs-4"></i>
                                                     </span>
                                                     <span class="text-danger ms-1"
-                                                        onclick="deleteGroup('{{ $group->group_id }}')" role="button">
+                                                        onclick="deleteBlueCollarGroup('{{ $group->group_id }}')"
+                                                        role="button">
                                                         <i class="bx bx-trash fs-4"></i>
                                                     </span>
                                                 </td>
@@ -152,11 +150,14 @@
         <x-employees.new-group-form />
     </x-modal>
 
+    <x-modal id="newBlueEmpGroupModal" heading="Add Employee Group">
+        <x-employees.blue-new-group-form />
+    </x-modal>
 
     <!-- verified domains modal -->
-    <x-modal id="domainVerificationModal" heading="Domain Verification">
+    {{-- <x-modal id="domainVerificationModal" heading="Domain Verification">
         <x-employees.domain-verification :allDomains="$allDomains" />
-    </x-modal>
+    </x-modal> --}}
 
 
 
@@ -168,15 +169,22 @@
 
     <!-- view employees modal -->
 
-    <x-modal id="viewUsers" size="modal-xl" heading="All Employees">
+    {{-- <x-modal id="viewUsers" size="modal-xl" heading="All Employees">
         <x-employees.view-users />
+    </x-modal> --}}
+    <x-modal id="viewBluecollarUsers" size="modal-xl" heading="All Bluecollar Employees">
+        <x-employees.view-bluecollar-users />
     </x-modal>
 
 
     <!-- add employees modal -->
-    <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
+    {{-- <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
         <x-employees.add-user />
+    </x-modal> --}}
+    <x-modal id="addBlueCollarUserModal" size="modal-xl" heading="Add Bluecollar Employee">
+        <x-employees.bluecollar-add-user />
     </x-modal>
+
 
 
     {{-- Directory sync Modal --}}

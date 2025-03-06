@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\QuishingEmailController;
+use App\Http\Controllers\BluecolarController;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -91,7 +93,22 @@ Route::domain('learn.simuphish.com')->group(function () {
     });
 });
 
+// bluecollar traininglearning portal 
+Route::get('/bluecollartraining/{training_id}/{training_lang}/{id}', [BluecolarController::class, 'bluecollarStartTraining'])->name('learner.start.bluecollartraining');
 
+Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
+
+Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
+
+Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
+Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
+
+Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
+
+Route::post('/update-bluecollar-training-score', [BluecolarController::class, 'bluecollarUpdateTrainingScore'])->name('learner.bluecollarupdate.score');
+Route::post('/download-certificate', [BluecolarController::class, 'bluecollarDownloadCertificate'])->name('learner.download.cert');
+// Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
+//bluecollar traininglearning portal end
 
 //-------------------miscellaneous routes------------------//
 
@@ -134,6 +151,7 @@ Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('bloc
 
     //route for whatsapp campaign
     Route::get('/c/{campaign_id}', [WhatsappCampaignController::class, 'showWebsite']);
+
     Route::post('/c/update-payload', [WhatsappCampaignController::class, 'updatePayload'])->name('whatsapp.update.payload');
     Route::post('/c/assign-training', [WhatsappCampaignController::class, 'assignTraining'])->name('whatsapp.assign.training');
     Route::post('/c/update-emp-comp', [WhatsappCampaignController::class, 'updateEmpComp'])->name('whatsapp.update.emp.comp');
@@ -141,6 +159,11 @@ Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('bloc
         return view('whatsapp-alert');
     })->name('whatsapp.phish.alert');
 });
+Route::get('/start-training/{assigntraining_id}', [WhatsappCampaignController::class, 'startTrainingWebsitee']);
+Route::post('/training/store', [BluecolarController::class, 'storeBlueCollarUser'])->name('training.store');
+Route::get('/bluecollar-dashboard', function () {
+    return view('bluecollar-dashboard');
+})->name('bluecollar.dashboard'); // Name the route (optional)
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -200,12 +223,16 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/whatsapp-submit-campaign', [WhatsappCampaignController::class, 'submitCampaign'])->name('whatsapp.submitCampaign');
     Route::post('/whatsapp-delete-campaign', [WhatsappCampaignController::class, 'deleteCampaign'])->name('whatsapp.deleteCampaign');
     Route::post('/whatsapp-fetch-campaign', [WhatsappCampaignController::class, 'fetchCampaign'])->name('whatsapp.fetchCamp');
+    Route::post('/whatsapp-fetch-groups', [BluecolarController::class, 'fetchGroup'])->name('whatsapp.fetchGroup');
 
     Route::post('/whatsapp-new-template', [WhatsappCampaignController::class, 'newTemplate'])->name('whatsapp.newTemplate');
 
     //employees route----------------------------------------------
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
+    Route::get('/blue-collar-employees', [BluecolarController::class, 'BlueCollarIndex'])->name('bluecollar.employees');
+    Route::get('/normalemployees', [EmployeesController::class, 'index'])->name('normal.employees');
+    // Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
     Route::get('/employee/{base_encode_id}', [SingleEmpController::class, 'employeeDetail'])->name('employee.detail');
 
     Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
@@ -224,12 +251,17 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
 
     Route::post('/employees/newGroup', [EmployeesController::class, 'newGroup'])->name('employee.newgroup');
+    Route::post('/employees/blueCollarnewGroup', [BluecolarController::class, 'blueCollarNewGroup'])->name('bluecollar.employee.newgroup');
     Route::get('/employees/viewUsers/{groupid}', [EmployeesController::class, 'viewUsers'])->name('employee.viewUsers');
+    Route::get('/employees/viewBlueCollarUsers/{groupid}', [BluecolarController::class, 'viewBlueCollarUsers'])->name('employee.viewBlueCollarUsers');
     Route::post('/employees/deleteUser', [EmployeesController::class, 'deleteUser'])->name('employee.deleteUser');
+    Route::post('/employees/deleteBlueUser', [BluecolarController::class, 'deleteBlueUser'])->name('employee.deleteUser');
     Route::post('employees/update-whatsapp-number', [EmployeesController::class, 'updateWhatsapp'])->name('employee.updatewhatsapp');
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
+    Route::post('/employees/addBlueCollarUser', [BluecolarController::class, 'addBlueCollarUser'])->name('employee.addUser');
     Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
+    Route::post('/employees/deleteBlueGroup', [BluecolarController::class, 'deleteBlueGroup'])->name('employee.deleteBlueGroup');
 
     Route::get('/employees/check-ldap-ad-config', [EmployeesController::class, 'checkAdConfig'])->name('employee.check.ldap.ad.config');
 
@@ -240,8 +272,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
 
     //reporting routes----------------------------------------
-    
-    
+
     Route::get('/reporting', [ReportingController::class, 'index'])->name('campaign.reporting');
     Route::get('/reporting/get-chart-data', [ReportingController::class, 'getChartData'])->name('campaign.getChartData');
     Route::get('/reporting/wget-chart-data', [ReportingController::class, 'wgetChartData'])->name('campaign.wgetChartData');
@@ -259,21 +290,21 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/fetch-camp-training-details', [ReportingController::class, 'fetchCampTrainingDetails'])->name('campaign.fetchCampTrainingDetails');
     Route::post('/aicallingfetch-camp-training-details', [ReportingController::class, 'aicallingfetchCampTrainingDetails'])->name('campaign.aicallingfetchCampTrainingDetails');
     Route::post('/whatsappfetch-camp-training-details', [ReportingController::class, 'whatsappfetchCampTrainingDetails'])->name('campaign.whatsappfetchCampTrainingDetails');
-   
+
     Route::post('/fetch-camp-training-details-individual', [ReportingController::class, 'fetchCampTrainingDetailsIndividual'])->name('campaign.fetchCampTrainingDetailsIndividual');
     Route::post('/aicallingfetch-camp-training-details-individual', [ReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual'])->name('campaign.aicallingfetchCampTrainingDetailsIndividual');
     Route::post('/whatsappfetch-camp-training-details-individual', [ReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual'])->name('campaign.whatsappfetchCampTrainingDetailsIndividual');
 
     //---------------------TPRM routes----------------------//
     Route::get('/tprm', [TprmController::class, 'index'])->name('campaign.tprm');
-   
+
     Route::post('/submit-domains', [TprmController::class, 'submitdomains'])->name('submit-domains');
     Route::get('/test', [TprmController::class, 'test'])->name('test');
     Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify.tprm');
     Route::post('/tprm/delete-domain', [TprmController::class, 'deleteDomain'])->name('domain.delete.tprm');
-   
+
     //-----------------TPRM routes for champaingns-------------//
-    
+
     Route::get('/tprmcampaigns', [TprmController::class, 'index'])->name('tprmcampaigns');
     Route::post('/tprmcampaigns/create', [TprmController::class, 'createCampaign'])->name('tprmcampaigns.create');
     Route::post('/tprmcampaigns/delete', [TprmController::class, 'deleteCampaign'])->name('tprmcampaigns.delete');
@@ -282,13 +313,15 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/tprmcampaigns/reschedule', [TprmController::class, 'rescheduleCampaign'])->name('tprmreschedule.campaign');
     Route::post('/treporting/fetch-campaign-report', [ReportingController::class, 'tfetchCampaignReport'])->name('tprmcampaign.fetchCampaignReport');
     Route::post('/tfetch-camp-report-by-users', [ReportingController::class, 'tfetchCampReportByUsers'])->name('tprmcampaign.fetchCampReportByUsers');
-    Route::get('/test-route', function () {return 'Test route reached!';});
-   Route::post('/tprmcampaigns/fetchEmail', [TprmController::class, 'fetchEmail'])->name('tprmcampaigns.fetchEmail');
-   Route::post('/tprmcampaigns/tprmnewGroup', [TprmController::class, 'tprmnewGroup'])->name('tprmcampaigns.tprmnewGroup');
-   Route::post('/tprmcampaigns/emailtprmnewGroup', [TprmController::class, 'emailtprmnewGroup'])->name('tprmcampaigns.emailtprmnewGroup');
-   Route::get('/tprmcampaigns/emails/{domain}', [TprmController::class, 'getEmailsByDomain'])->name('tprmcampaigns.getEmailsByDomain');
+    Route::get('/test-route', function () {
+        return 'Test route reached!';
+    });
+    Route::post('/tprmcampaigns/fetchEmail', [TprmController::class, 'fetchEmail'])->name('tprmcampaigns.fetchEmail');
+    Route::post('/tprmcampaigns/tprmnewGroup', [TprmController::class, 'tprmnewGroup'])->name('tprmcampaigns.tprmnewGroup');
+    Route::post('/tprmcampaigns/emailtprmnewGroup', [TprmController::class, 'emailtprmnewGroup'])->name('tprmcampaigns.emailtprmnewGroup');
+    Route::get('/tprmcampaigns/emails/{domain}', [TprmController::class, 'getEmailsByDomain'])->name('tprmcampaigns.getEmailsByDomain');
 
-   //Quishing routes ---------------------------------------------
+    //Quishing routes ---------------------------------------------
     Route::get('/quishing', [QuishingController::class, 'index'])->name('quishing.index');
     Route::post('/quishing/show-more-quishing-emails', [QuishingController::class, 'showMoreTemps'])->name('quishing.show.more.temps');
     Route::post('/quishing/search-quishing-material', [QuishingController::class, 'searchTemplate'])->name('quishing.temp.search');
@@ -358,9 +391,9 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/training-preview/{trainingid}', [TrainingModuleController::class, 'trainingPreview'])->name('trainingmodule.preview');
 
     Route::get('/training-preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('trainingmodule.preview.content');
-    
-    
-     
+
+
+
 
     //support routes ------------------------------------------------------------------------------------
     Route::get('/support', [SupportController::class, 'index'])->name('company.support');

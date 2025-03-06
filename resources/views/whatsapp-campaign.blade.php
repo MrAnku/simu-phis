@@ -14,13 +14,14 @@
                             data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-secondary mb-3" 
-                            data-bs-toggle="modal" data-bs-target="#templatesModal">Available Templates</button>
+                        <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
+                            data-bs-target="#templatesModal">Available Templates</button>
                     </div>
                 </div>
 
                 <div>
-                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">Sync Templates</button>
+                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">Sync
+                        Templates</button>
 
                     <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
                         data-bs-target="#newtemplatesModal">Request New Template</button>
@@ -66,12 +67,13 @@
                                                 </td>
                                                 <td class="fst-italic">{{ $campaign->camp_type }}</td>
                                                 <td>
-                                                    @if($campaign->trainingData?->name !== null)
-                                                    {{ $campaign->trainingData->name }}
+                                                    @if ($campaign->trainingData?->name !== null)
+                                                        {{ $campaign->trainingData->name }}
                                                     @else
-                                                    <span class="text-muted"><small>Simulated without training</small></span>
+                                                        <span class="text-muted"><small>Simulated without
+                                                                training</small></span>
                                                     @endif
-                                                    
+
                                                 </td>
                                                 <td><span class="badge bg-info">{{ $campaign->template_name }}</span></td>
                                                 <td>{{ $campaign->user_group_name ?? 'N/A' }}</td>
@@ -80,16 +82,18 @@
 
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
+                                                    <button
+                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
+                                                        onclick="deleteCamp(`{{ $campaign->camp_id }}`)">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
-                                                    
+
 
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center">No records found</td>
+                                                <td colspan="7" class="text-center">No records found</td>
                                             </tr>
                                         @endforelse
 
@@ -133,7 +137,7 @@
                         <div class="mb-3">
                             <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
                             <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;"
-                                placeholder="Hi @{{var}} .....your content......@{{var}}....Please click the link below to get started @{{var}}"
+                                placeholder="Hi @{{ var }} .....your content......@{{ var }}....Please click the link below to get started @{{ var }}"
                                 required></textarea>
 
 
@@ -142,8 +146,8 @@
                             <ul>
                                 <li>
                                     <small>
-                                        Add <span class="text-secondary">@{{var}}</span> for variable. For
-                                        example Hello <span class="text-secondary">@{{var}}</span> Thank you
+                                        Add <span class="text-secondary">@{{ var }}</span> for variable. For
+                                        example Hello <span class="text-secondary">@{{ var }}</span> Thank you
                                         for choosing our services.
                                     </small>
                                 </li>
@@ -160,7 +164,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Request Template</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Request
+                                Template</button>
                         </div>
                     </form>
                 </div>
@@ -191,11 +196,9 @@
                             id="whatsapp_template" required>
                             <option value="">Choose Template</option>
                             @forelse ($templates as $template)
-                                <option 
-                                value="{{ $template['name'] }}" 
-                                data-cat="{{ $template['category'] }}"
-                                data-lang="{{ $template['language'] }}" 
-                                data-msg="{{ json_encode($template['components']) }}">
+                                <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
+                                    data-lang="{{ $template['language'] }}"
+                                    data-msg="{{ json_encode($template['components']) }}">
                                     {{ $template['name'] }} -
                                     {{ $template['status'] }}
                                 </option>
@@ -236,12 +239,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3">
+                    {{-- <div class="mb-3">
                         <label for="input-label" class="form-label">Employee Group<sup
                                 class="text-danger">*</sup></label>
                         <div class="d-flex">
-
-                            {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                             <select class="form-select" aria-label="Default select example" id="usrGroup">
                                 @forelse ($all_users as $user)
                                     <option value="{{ $user->group_id }}">{{ $user->group_name }}</option>
@@ -252,7 +253,7 @@
                             </select>
                         </div>
 
-                    </div>
+                    </div> --}}
                     <div class="mb-3">
 
                         <div class="row">
@@ -263,19 +264,42 @@
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                     <select class="form-select" aria-label="Default select example" id="campType">
-                                            <option value="Phishing">Phishing</option>
-                                            <option value="Phishing and Training">Phishing with Training</option>
-
+                                        <option value="Phishing">Phishing</option>
+                                        <option value="Phishing and Training">Phishing with Training</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-6">
+                                <label for="input-label" class="form-label">Employee Type<sup
+                                        class="text-danger">*</sup></label>
+                                <div class="d-flex">
+
+                                    {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                    <select id="groupType" class="form-select" aria-label="Default select example">
+                                        <option value="Normal" selected>Normal Employee</option>
+                                        <option value="Bluecollar">Bluecollar Employee</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3 col-lg-6">
+                                <label for="input-label" class="form-label">Groups<sup
+                                        class="text-danger">*</sup></label>
+                                <div class="d-flex">
+
+                                    {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                    <select id="fetchGroup" class="form-select" disabled>
+                                        <option value="">Select a group</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3 col-lg-6">
                                 <label for="input-label" class="form-label">Select Training<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
-                                    <select class="form-select" aria-label="Default select example" id="training" disabled>
+                                    <select class="form-select" aria-label="Default select example" id="training"
+                                        disabled>
                                         @forelse ($trainings as $training)
                                             <option value="{{ $training->id }}">{{ $training->name }}</option>
                                         @empty
@@ -285,21 +309,23 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
 
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="input-label" class="form-label">Training Type<sup
-                                class="text-danger">*</sup></label>
-                        <div class="d-flex">
+                            <div class="mb-3 mt-3 col-lg-6">
+                                <label for="input-label" class="form-label">Training Type<sup
+                                        class="text-danger">*</sup></label>
+                                <div class="d-flex">
 
-                            {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
-                            <select class="form-select" aria-label="Default select example" id="training_type" disabled>
-                               <option value="static_training">Static Training</option>
-                               <option value="ai_training">AI Training</option>
+                                    {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
+                                    <select class="form-select" aria-label="Default select example" id="training_type"
+                                        disabled>
+                                        <option value="static_training">Static Training</option>
+                                        <option value="ai_training">AI Training</option>
 
-                            </select>
+                                    </select>
+                                </div>
+
+                            </div>
                         </div>
 
                     </div>
@@ -358,7 +384,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    
+
 
                     <div class="table-responsive" id="temp_table">
                         <table class="table">
@@ -371,32 +397,31 @@
                             </thead>
                             <tbody id="temps">
                                 @forelse($templates as $template)
-                                <tr>
-                                    <td>{{ $template['name'] }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $template['status'] == 'APPROVED' ? 'success' : 'warning' }}-transparent">{{ $template['status'] }}</span>
-                                    </td>
-                                    <td>
-                                        @foreach ($template['components'] as $component)
-                                            @if ($component['type'] === 'HEADER' && $component['format'] === 'TEXT')
-                                                <strong>{{ $component['text'] }}</strong>
-                                                <br>
+                                    <tr>
+                                        <td>{{ $template['name'] }}</td>
+                                        <td>
+                                            <span
+                                                class="badge bg-{{ $template['status'] == 'APPROVED' ? 'success' : 'warning' }}-transparent">{{ $template['status'] }}</span>
+                                        </td>
+                                        <td>
+                                            @foreach ($template['components'] as $component)
+                                                @if ($component['type'] === 'HEADER' && $component['format'] === 'TEXT')
+                                                    <strong>{{ $component['text'] }}</strong>
+                                                    <br>
                                                 @elseif($component['type'] === 'BODY')
-                                                {{ $component['text'] }}
-                                                <br>
+                                                    {{ $component['text'] }}
+                                                    <br>
                                                 @elseif($component['type'] === 'FOOTER')
-                                                <strong>{{ $component['text'] }}</strong>
-                                                <br>
-
-                                            @endif
-                                            
-                                        @endforeach
-                                    </td>
-                                </tr>
+                                                    <strong>{{ $component['text'] }}</strong>
+                                                    <br>
+                                                @endif
+                                            @endforeach
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="3" class="text-center">No templates available</td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-center">No templates available</td>
+                                    </tr>
                                 @endforelse
 
                             </tbody>
@@ -409,8 +434,8 @@
 
 
     <!-- All templates modal -->
-    <div class="modal fade" id="updateConfigModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-modal="true"
-        role="dialog">
+    <div class="modal fade" id="updateConfigModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-modal="true" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -418,26 +443,29 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    
-                    <form action="{{route('whatsapp.updateConfig')}}" method="post">
+
+                    <form action="{{ route('whatsapp.updateConfig') }}" method="post">
                         @csrf
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" name="from_phone_id" id="phone_id" value="{{$config->from_phone_id}}" placeholder="Phone Number ID">
+                            <input type="text" class="form-control" name="from_phone_id" id="phone_id"
+                                value="{{ $config->from_phone_id }}" placeholder="Phone Number ID">
                             <label for="phone_id">From Phone Number ID</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="access_token" name="access_token" value="{{$config->access_token}}" placeholder="Access Token">
+                            <input type="text" class="form-control" id="access_token" name="access_token"
+                                value="{{ $config->access_token }}" placeholder="Access Token">
                             <label for="access_token">Access Token</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="business_id" name="business_id" value="{{$config->business_id}}" placeholder="Business ID">
+                            <input type="text" class="form-control" id="business_id" name="business_id"
+                                value="{{ $config->business_id }}" placeholder="Business ID">
                             <label for="business_id">Business ID</label>
                         </div>
                         <div>
                             <button type="submit" class="btn w-100 btn-primary btn-wave">Update</button>
                         </div>
                     </form>
-                    
+
                 </div>
             </div>
         </div>
@@ -446,12 +474,12 @@
 
 
 
-    {{---------------------Modals--------------------------}}
+    {{-- -------------------Modals------------------------ --}}
 
 
-    {{--------------------------------Toasts---------------------- --}}
+    {{-- ------------------------------Toasts---------------------- --}}
 
-   <x-toast />
+    <x-toast />
 
 
 
@@ -537,6 +565,41 @@
                 // Update the text content of the #msg-body element
                 $("#msg-body").text(replacemsg);
 
+            }
+
+
+            $(document).ready(function() {
+                // Call fetchGroups on page load with "Normal" as the default value
+                fetchGroups("Normal");
+
+                // Listen for changes in the campType dropdown
+                $("#groupType").on("change", function() {
+                    fetchGroups($(this).val());
+                });
+            });
+
+            function fetchGroups(value) {
+                console.log("Fetching groups for:", value);
+
+                $.post("/whatsapp-fetch-groups", {
+                    data: value
+                }, function(res) {
+                    let $groupDropdown = $("#fetchGroup");
+                    $groupDropdown.empty(); // Clear previous options
+
+                    if (res.length > 0) {
+                        res.forEach(group => {
+                            $groupDropdown.append(
+                                `<option value="${group.group_id}">${group.group_name}</option>`);
+                        });
+                        $groupDropdown.prop("disabled", false);
+                    } else {
+                        $groupDropdown.append(`<option value="">No Groups Available</option>`);
+                        $groupDropdown.prop("disabled", true);
+                    }
+                }).fail(function() {
+                    alert("Error fetching groups. Please try again.");
+                });
             }
             $('#whatsapp_template').change(function() {
 
@@ -654,11 +717,12 @@
 
 
 
-
+                // console.log("user_group", groupType.value);
                 var finalBody = {
                     camp_name: camp_name.value,
-                    user_group: usrGroup.value,
+                    user_group: fetchGroup.value,
                     campType: campType.value,
+                    empType: groupType.value,
                     training: training.value,
                     trainingType: training_type.value,
                     token: "0",
@@ -667,12 +731,14 @@
                     template_language: $("#template_lang").val(),
                     components: valuesArray
                 }
+                console.log("final", finalBody);
 
                 // console.log(finalBody);
                 $.post({
                     url: '/whatsapp-submit-campaign',
                     data: finalBody,
                     success: function(res) {
+                        console.log("check", res);
                         checkResponse(res)
                     }
                 })
@@ -765,13 +831,13 @@
                 })
             }
 
-           
-            function syncTemps(btn){
+
+            function syncTemps(btn) {
                 $(btn).html('Syncing...').attr('disabled', true);
                 $.get({
                     url: '/whatsapp-sync-templates',
                     success: function(res) {
-                        if(res.success){
+                        if (res.success) {
                             Swal.fire(
                                 res.success,
                                 '',
@@ -780,7 +846,7 @@
                                 window.location.href = window.location.href
                             })
 
-                        }else{
+                        } else {
                             console.log(res);
                             Swal.fire(
                                 res.error,
@@ -795,25 +861,24 @@
             }
         </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const campType = document.getElementById('campType');
-        const training = document.getElementById('training');
-        const trainingType = document.getElementById('training_type');
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const campType = document.getElementById('campType');
+                const training = document.getElementById('training');
+                const trainingType = document.getElementById('training_type');
 
-        campType.addEventListener('change', function() {
-            if (campType.value === 'Phishing and Training') {
-                training.disabled = false;
-                trainingType.disabled = false;
-            } else {
-                training.disabled = true;
-                trainingType.disabled = true;
-               
-            }
-        });
-    });
-</script>
+                campType.addEventListener('change', function() {
+                    if (campType.value === 'Phishing and Training') {
+                        training.disabled = false;
+                        trainingType.disabled = false;
+                    } else {
+                        training.disabled = true;
+                        trainingType.disabled = true;
 
+                    }
+                });
+            });
+        </script>
     @endpush
 
 @endsection

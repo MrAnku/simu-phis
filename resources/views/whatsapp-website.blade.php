@@ -214,6 +214,11 @@
             alertPage = data;
         }
     });
+    // remove 
+    // var fullUrl = window.location.href;
+    // var urlSegment = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
+    // assignTraining(urlSegment);
+    // remove 
 
     $("input").on('input', function() {
         var inputLength = $(this).val().length;

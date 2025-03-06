@@ -63,8 +63,11 @@
                                             Training Type
                                         </span>
                                         <select class="form-select" id="training_type_select">
-                                            <option value="static_training" {{ request('type') == 'static_training' ? 'selected' : '' }}>Static/AI Training</option>
-                                            <option value="gamified" {{ request('type') == 'gamified' ? 'selected' : '' }}>Gamified Training</option>
+                                            <option value="static_training"
+                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>Static/AI
+                                                Training</option>
+                                            <option value="gamified" {{ request('type') == 'gamified' ? 'selected' : '' }}>
+                                                Gamified Training</option>
                                         </select>
                                     </div>
                                 </div>
@@ -302,7 +305,7 @@
                 // Set the value of the hidden input field
                 const hiddenInput = document.getElementById('jsonDataInput');
                 hiddenInput.value = JSON.stringify(jsonTrainingData);
-
+                console.log("jsonTrainingData", jsonTrainingData);
                 // Submit the form programmatically
                 const addTrainingsubmitButton = document.getElementById('addTrainingsubmitButton');
                 addTrainingsubmitButton.click(); // This will trigger form submission
@@ -1211,11 +1214,9 @@
         <script>
             $('#training_type_select').on('change', function() {
                 const selectedType = $(this).val();
-                
+
                 window.location.href = `/training-modules?type=${selectedType}`;
             });
-
-           
         </script>
     @endpush
 

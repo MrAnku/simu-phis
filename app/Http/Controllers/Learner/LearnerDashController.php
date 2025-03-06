@@ -21,10 +21,12 @@ class LearnerDashController extends Controller
             ->where('user_email', $userEmail)
             ->avg('personal_best');
 
+
         $assignedTrainingCount = TrainingAssignedUser::with('trainingData')
             ->where('user_email', $userEmail)
             ->where('completed', 0)
             ->get();
+        // return $assignedTrainingCount;
 
         $completedTrainingCount = TrainingAssignedUser::with('trainingData')
             ->where('user_email', $userEmail)
@@ -107,28 +109,28 @@ class LearnerDashController extends Controller
     private function translateJsonData($json, $lang)
     {
         try {
-            $prompt = "Translate the following JSON data to ".langName($lang)." language. The output should only contain JSON data:\n\n" . json_encode($json);
+            $prompt = "Translate the following JSON data to " . langName($lang) . " language. The output should only contain JSON data:\n\n" . json_encode($json);
 
             $response = Http::withOptions(['verify' => false])->withHeaders([
-            'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
             ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-3.5-turbo',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'max_tokens' => 1500,
-            'temperature' => 0.7,
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 1500,
+                'temperature' => 0.7,
             ]);
 
             if ($response->failed()) {
 
-            log_action("Failed to translate JSON data on topic of prompt: {$prompt}", 'learner', 'learner');
+                log_action("Failed to translate JSON data on topic of prompt: {$prompt}", 'learner', 'learner');
 
-            return response()->json([
-                'status' => 0,
-                'msg' => $response->body(),
-            ]);
+                return response()->json([
+                    'status' => 0,
+                    'msg' => $response->body(),
+                ]);
             }
 
             $translatedJson = $response['choices'][0]['message']['content'];
@@ -136,16 +138,16 @@ class LearnerDashController extends Controller
             log_action("JSON data translated using AI on topic of prompt: {$prompt}", 'learner', 'learner');
 
             return response()->json([
-            'status' => 1,
-            'jsonData' => json_decode($translatedJson, true),
+                'status' => 1,
+                'jsonData' => json_decode($translatedJson, true),
             ]);
         } catch (\Exception $e) {
 
             log_action("Failed to translate JSON data", 'learner', 'learner');
 
             return response()->json([
-            'status' => 0,
-            'msg' => $e->getMessage(),
+                'status' => 0,
+                'msg' => $e->getMessage(),
             ]);
         }
     }
