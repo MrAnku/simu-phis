@@ -10,6 +10,7 @@ use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
 use App\Models\QuishingLiveCamp;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 
 class QuishingController extends Controller
@@ -132,5 +133,18 @@ class QuishingController extends Controller
         QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 
         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully.']);
+    }
+
+    public function fetchCampDetail(Request $request){
+        $campaign_id = $request->campid;
+        $campaign = QuishingCamp::with('campLive')->where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->first();
+        if (!$campaign) {
+            return response()->json(['status' => 0, 'msg' => 'Campaign not found.']);
+        }
+        $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
+        ->where('company_id', Auth::user()->company_id)
+        ->get();
+        $campaign->trainingAssigned = $trainingAssigned;
+        return response()->json(['status' => 1, 'data' => $campaign]);
     }
 }

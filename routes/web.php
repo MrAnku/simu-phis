@@ -328,6 +328,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
     Route::post('/quishing/create-campaign', [QuishingController::class, 'createCampaign'])->name('quishing.create.camp');
     Route::post('/quishing/delete-campaign', [QuishingController::class, 'deleteCampaign'])->name('quishing.delete.camp');
+    Route::post('/quishing/fetch-campaign-details', [QuishingController::class, 'fetchCampDetail'])->name('quishing.fetch.camp');
 
 
     //Ai Calling routes ----------------------------------------------------------------------

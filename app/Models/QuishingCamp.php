@@ -26,4 +26,7 @@ class QuishingCamp extends Model
     {
         return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
     }
+    public function campLive(){
+        return $this->hasMany(QuishingLiveCamp::class, 'campaign_id', 'campaign_id');
+    }
 }

@@ -108,28 +108,38 @@
                                         @forelse($campaigns as $camp)
                                             <tr>
                                                 <th>{{ $loop->iteration }}</th>
-                                                <th>{{ $camp->campaign_name }}</th>
+                                                <th>
+                                                    <a href="#" class="text-primary"
+                                                        onclick="fetchCampaignDetails('{{ $camp->campaign_id }}', {{ $camp->campaign_type == 'quishing' ? 'true' : 'false' }})"
+                                                        data-bs-toggle="modal" data-bs-target="#campaignReportModal">
+                                                        {{ $camp->campaign_name }}
+                                                    </a>
+
+                                                </th>
                                                 <th>
                                                     @if ($camp->campaign_type == 'quishing')
-                                                    <span class="badge bg-secondary-transparent">Only Quishing</span>
+                                                        <span class="badge bg-secondary-transparent">Only Quishing</span>
                                                     @else
-                                                    <span class="badge bg-secondary-transparent">Quishing & Training</span>
-                                                        
+                                                        <span class="badge bg-secondary-transparent">Quishing &
+                                                            Training</span>
                                                     @endif
                                                 </th>
                                                 <th>
                                                     @if ($camp->status == 'pending')
-                                                    <span class="badge bg-warning-transparent">Pending</span>
+                                                        <span class="badge bg-warning-transparent">Pending</span>
                                                     @elseif($camp->status == 'running')
-                                                    <span class="badge bg-success-transparent">Running</span>
+                                                        <span class="badge bg-success-transparent">Running</span>
                                                     @else
-                                                    <span class="badge bg-success-transparent">Completed</span>  
+                                                        <span class="badge bg-success-transparent">Completed</span>
                                                     @endif
-                                                    
+
                                                 <th>{{ $camp->userGroupData->group_name }}</th>
                                                 <th>{{ $camp->created_at->format('d/m/Y h:i A') }}</th>
                                                 <th>
-                                                    <button onclick="deleteCampaign('{{base64_encode($camp->campaign_id)}}')" title="Delete Campaign" class="btn btn-icon btn-danger-transparent rounded-pill btn-wave">
+                                                    <button
+                                                        onclick="deleteCampaign('{{ base64_encode($camp->campaign_id) }}')"
+                                                        title="Delete Campaign"
+                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
                                                 </th>
@@ -169,7 +179,7 @@
 
     <!-- campaign report modal -->
     <x-modal id="campaignReportModal" size="modal-fullscreen" heading="Campaign Report">
-        hello2
+        <x-quish-camp.campaign-report-modal />
     </x-modal>
 
     <!-- view material modal -->
@@ -742,7 +752,7 @@
                 })
             }
 
-            function deleteCampaign(id){
+            function deleteCampaign(id) {
                 Swal.fire({
                     title: 'Are you sure?',
                     text: "You want to delete this campaign!",
@@ -778,6 +788,222 @@
                         })
                     }
                 })
+            }
+        </script>
+        <script>
+            $('#campaignReportModal').on('shown.bs.modal', function() {
+                $(this).find('.nav-item .nav-link').removeClass('active'); // Remove active class from all tabs
+                $(this).find('.nav-item:first-child .nav-link').addClass(
+                'active'); // Set the first tab as active
+                $(this).find('.tab-pane').removeClass('show active'); // Remove active state from tab content
+                $(this).find('.tab-pane:first-child').addClass('show active'); // Set first tab content as active
+            });
+
+            //reporting script
+            function fetchCampaignDetails(campId, isQuishing) {
+                if (isQuishing) {
+                    $(".quishing-training-detail").hide();
+                    
+                }else{
+                    $(".quishing-training-detail").show();
+                }
+                
+                $.post({
+                    url: '/quishing/fetch-campaign-details',
+                    data: {
+                        campid: campId
+                    },
+                    success: function (res){
+                        console.log(res);
+                        if(res.data){
+                            renderData(res.data);
+                            renderLiveData(res.data.camp_live);
+                            if(res.data.campaign_type == 'quishing-training'){
+                                renderTrainingData(res.data)
+                                renderTrainingDataLive(res.data)
+                            }
+                        }else{
+                            Swal.fire(
+                                res.msg,
+                                '',
+                                'error'
+                            )
+                        }
+                    }
+                })
+
+
+            }
+
+            function renderData(data){
+                
+                const campaignDetail = `<tr>
+                                    <td>${data.campaign_name}</td>
+                                    <td>
+                                        <span class="badge bg-secondary-transparent">${data.status.charAt(0).toUpperCase() + data.status.slice(1)}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.sent === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.sent === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.mail_open === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.mail_open === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.qr_scanned === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.qr_scanned === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.compromised === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.compromised === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+
+                                       
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.email_reported === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.email_reported === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+                                    </td>
+                                </tr>`;
+
+                $('#qcampdetail').html('');
+                $('#qcampdetail').html(campaignDetail);
+            }
+
+            function renderLiveData(users){
+                let usersData = '';
+                users.forEach(user => {
+                    usersData += `<tr>
+                                    <td>
+                                        ${user.user_name}
+                                    </td>
+                                    <td>${user.user_email}</td>
+                                    <td>
+                                        <span class="badge bg-${user.sent == '1' ? 'success' : 'warning'}-transparent">${user.sent == '1' ? 'Sent' : 'Pending'}</span>
+                                        
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${user.mail_open == '1' ? 'success' : 'danger'}-transparent">${user.mail_open == '1' ? 'Yes' : 'No'}</span>
+                                        
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${user.qr_scanned == '1' ? 'success' : 'danger'}-transparent">${user.qr_scanned == '1' ? 'Yes' : 'No'}</span>
+                                    </td>
+                                    <td>
+
+                                        <span class="badge bg-${user.compromised == '1' ? 'success' : 'danger'}-transparent">${user.compromised == '1' ? 'Yes' : 'No'}</span>
+                                    
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-${user.email_reported == '1' ? 'success' : 'danger'}-transparent">${user.email_reported == '1' ? 'Yes' : 'No'}</span>
+
+                                        
+                                    </td>
+                                </tr>`;
+
+                    
+                });
+
+                $('#qcampdetailLive').html('');
+                    $('#qcampdetailLive').html(usersData);
+            }
+
+            function renderTrainingData(data){
+                const campaignDetail = `<tr>
+                                    <td>${data.campaign_name}</td>
+                                    <td>
+                                        <span class="badge bg-secondary-transparent">${data.status.charAt(0).toUpperCase() + data.status.slice(1)}</span>
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.camp_live.filter(item => item.training_assigned === "1").length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.training_assigned === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                        </div>
+
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary-transparent">${data.training_type == 'static_training' ? 'Static Training' : (data.training_type == 'gamified' ? 'Gamified Training' : 'AI Training')}</span>
+                                        
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary-transparent">${data.training_lang}</span>
+                                        
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="mx-1">${data.trainingData ? data.trainingData.filter(item => item.completed === "1").length : 0}</span>
+                                            <i class="bx bx-check-circle text-${data.trainingData ? 'success' : 'danger'} fs-25"></i>
+                                        </div>
+
+                                       
+                                    </td>
+                                    
+                                </tr>`;
+
+                $('#qcampTrainingData').html('');
+                $('#qcampTrainingData').html(campaignDetail);
+
+            }
+            function renderTrainingDataLive(data){
+                if(data.trainingAssigned.length === 0){
+                    $('#qcampTrainingDataLive').html('<tr><td colspan="7" class="text-center text-muted">No training assigned</td></tr>');
+                    return;
+                }
+                let trainingData = '';
+                data.trainingAssigned.forEach(user => {
+                    trainingData += `<tr>
+                                    <td>${user.user_name}</td>
+                                    <td>${user.user_email}</td>
+                                    <td>
+                                        <span class="badge bg-primary">${user.training_data.name}</span>
+                                        
+                                    </td>
+                                    <td>${user.assigned_date}</td>
+                                    <td>${user.personal_best}%</td>
+                                    <td>${user.training_data.passing_score}%</td>
+                                    <td>
+                                        ${new Date(user.training_due_date) > new Date() ? '<span class="badge bg-success-transparent">In Training Period</span>' : '<span class="badge bg-danger-transparent">Overdue</span>'}
+                                    </td>
+                                </tr>`;
+                });
+                $('#qcampTrainingDataLive').html('');
+                $('#qcampTrainingDataLive').html(trainingData);
             }
         </script>
     @endpush
