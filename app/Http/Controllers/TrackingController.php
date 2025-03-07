@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
+use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\Log;
 
@@ -103,6 +104,30 @@ class TrackingController extends Controller
                     }
                 }
             }
+        }
+    }
+
+    public function trackquishing(Request $request)
+    {
+        $file = $request->filename;
+        $employeeid = $request->query('eid');
+        $path = storage_path('app/qrcodes/' . $file);
+
+        if (file_exists($path)) {
+            if ($employeeid) {
+                     
+                $quishingLive = QuishingLiveCamp::where('id', $employeeid)
+                ->where('mail_open', '0')
+                ->first();
+                if ($quishingLive) {
+                    $quishingLive->mail_open = '1';
+                    $quishingLive->save();
+                }
+            }
+
+            return response()->file($path);
+        } else {
+            return abort(404);
         }
     }
 }

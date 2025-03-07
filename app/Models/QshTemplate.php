@@ -18,6 +18,9 @@ class QshTemplate extends Model
 
     public function senderProfile()
     {
-        return $this->belongsTo(SenderProfile::class, 'sender_profile');
+        return $this->belongsTo(SenderProfile::class, 'sender_profile', 'id');
+    }
+    public function website(){
+        return $this->belongsTo(PhishingWebsite::class, 'website', 'id');
     }
 }

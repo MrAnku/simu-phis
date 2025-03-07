@@ -18,10 +18,22 @@ class QuishingLiveCamp extends Model
         'training_type',
         'quishing_material',
         'quishing_lang',
+        'sent',
+        'mail_open',
+        'qr_scanned',
+        'compromised',
+        'email_reported',
+        'training_assigned',
         'company_id',
     ];
 
     public function trainingData(){
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
+
+    public function templateData(){
+        return $this->belongsTo(QshTemplate::class, 'quishing_material', 'id');
+    }
+
+    
 }

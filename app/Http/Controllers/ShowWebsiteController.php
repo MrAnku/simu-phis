@@ -19,6 +19,8 @@ use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Models\QuishingCamp;
+use App\Models\QuishingLiveCamp;
 
 class ShowWebsiteController extends Controller
 {
@@ -113,7 +115,22 @@ class ShowWebsiteController extends Controller
     public function checkWhereToRedirect(Request $request)
     {
         $campid = $request->input('campid');
+        $qsh = $request->input('qsh');
+        if ($qsh == 1) {
+            $campDetail = QuishingLiveCamp::find($campid);
+            if ($campDetail) {
+                $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
 
+                if ($companySetting) {
+                    $arr = [
+                        'redirect' => $companySetting->phish_redirect,
+                        'redirect_url' => $companySetting->phish_redirect_url
+                    ];
+
+                    return response()->json($arr);
+                }
+            }
+        }
 
 
         $campDetail = CampaignLive::find($campid);
@@ -160,11 +177,31 @@ class ShowWebsiteController extends Controller
         if ($request->has('assignTraining')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+            $qsh = $request->input('qsh');
+            if ($qsh == 1) {
+                $user = QuishingLiveCamp::where('id', $campid)->first();
+                if (!$user) {
+                    return response()->json(['error' => 'Invalid campaign or user']);
+                }
+                if ($user->training_module == null) {
+                    return response()->json(['error' => 'No training module assigned']);
+                }
+
+                //checking assignment
+                $campaign = QuishingCamp::where('campaign_id', $user->campaign_id)->first();
+
+                if ($campaign->training_assignment == 'all') {
+                    $trainings = json_decode($campaign->training_module, true);
+                    return $this->assignAllTrainings($trainings, $user);
+                } else {
+                    return $this->assignSingleTraining($user);
+                }
+                return;
+            }
 
 
             // Check if the campaign exists for the given user
-            $user = CampaignLive::where('id', $campid)
-                ->first();
+            $user = CampaignLive::where('id', $campid)->first();
 
             if (!$user) {
                 return response()->json(['error' => 'Invalid campaign or user']);
@@ -449,6 +486,17 @@ class ShowWebsiteController extends Controller
         if ($request->has('emailCompromised')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+            $qsh = $request->input('qsh');
+
+            if($qsh == 1){
+                $campaign = QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->first();
+                if($campaign){
+                    $campaign->update(['compromised' => '1']);
+                    
+                }
+
+                return;
+            }
 
             // Check if the campaign exists and user's email is compromised
             $user = DB::table('campaign_live')
@@ -478,7 +526,7 @@ class ShowWebsiteController extends Controller
                     ->where('id', $campid)
                     ->update(['emp_compromised' => 1]);
 
-                
+
 
                 $agent = new Agent();
 
@@ -495,10 +543,10 @@ class ShowWebsiteController extends Controller
 
                 ];
                 EmailCampActivity::where('campaign_live_id', $campid)
-                ->update([
-                    'compromised_at' => now(),
-                    'client_details' => json_encode($clientData)
-                ]);
+                    ->update([
+                        'compromised_at' => now(),
+                        'client_details' => json_encode($clientData)
+                    ]);
 
                 if ($isUpdatedIndividual) {
                     log_action('Employee compromised in Email campaign', 'employee', 'employee');
@@ -566,49 +614,63 @@ class ShowWebsiteController extends Controller
         if ($request->has('updatePayloadClick')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+            $qsh = $request->input('qsh');
 
-            // Check if the campaign exists and payload is not already clicked
-            $user = DB::table('campaign_live')
-                ->where('id', $campid)
-                ->where('payload_clicked', 0)
-                ->where('user_id', $userid)
-                ->first();
+            if ($qsh == 1) {
+                QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
+                return;
+            }
 
-            if ($user) {
-                $campId2 = $user->campaign_id;
+            $campaign = CampaignLive::where('id', $campid)->where('payload_clicked', 0)->first();
 
-                // Update campaign_reports table
-                $reportsPayloadCount = DB::table('campaign_reports')
-                    ->where('campaign_id', $campId2)
-                    ->first();
+            if ($campaign) {
+                $campaign->update(['payload_clicked' => 1]);
 
-                if ($reportsPayloadCount) {
-                    $payloads_clicked = (int)$reportsPayloadCount->payloads_clicked + 1;
-
-                    DB::table('campaign_reports')
-                        ->where('campaign_id', $campId2)
-                        ->update(['payloads_clicked' => $payloads_clicked]);
-                }
-
-                // Update campaign_live table
-                $isUpdatedIndividual = DB::table('campaign_live')
-                    ->where('id', $campid)
-                    ->update(['payload_clicked' => 1]);
+                CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('payloads_clicked');
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 
-                if ($isUpdatedIndividual) {
-
-                    log_action("Phishing email payload clicked by {$user->user_email}", 'employee', 'employee');
-
-                    return response()->json(['message' => 'Payload click updated']);
-                } else {
-                    return response()->json(['error' => 'Failed to update payload click']);
-                }
-            } else {
-                log_action('Email phishing | Invalid campaign or payload click already updated', 'employee', 'employee');
-                return response()->json(['error' => 'Invalid campaign or payload click already updated']);
+                log_action("Phishing email payload clicked by {$campaign->user_email}", 'employee', 'employee');
             }
+
+
+
+
+            // if ($user) {
+            //     $campId2 = $user->campaign_id;
+
+            //     // Update campaign_reports table
+            //     $reportsPayloadCount = DB::table('campaign_reports')
+            //         ->where('campaign_id', $campId2)
+            //         ->first();
+
+            //     if ($reportsPayloadCount) {
+            //         $payloads_clicked = (int)$reportsPayloadCount->payloads_clicked + 1;
+
+            //         DB::table('campaign_reports')
+            //             ->where('campaign_id', $campId2)
+            //             ->update(['payloads_clicked' => $payloads_clicked]);
+            //     }
+
+            //     // Update campaign_live table
+            //     $isUpdatedIndividual = DB::table('campaign_live')
+            //         ->where('id', $campid)
+            //         ->update(['payload_clicked' => 1]);
+
+            //     EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
+
+            //     if ($isUpdatedIndividual) {
+
+
+
+            //         return response()->json(['message' => 'Payload click updated']);
+            //     } else {
+            //         return response()->json(['error' => 'Failed to update payload click']);
+            //     }
+            // } else {
+
+            //     return response()->json(['error' => 'Invalid campaign or payload click already updated']);
+            // }
         }
     }
 

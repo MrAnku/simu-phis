@@ -601,6 +601,7 @@ Route::get('/download-pdf-domain-full-report/{domain}', [PdfController::class, '
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
+Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
 Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
 
 Route::get('/send-mail', function (MailController $controller) {

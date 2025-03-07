@@ -76,4 +76,8 @@ class Company extends Authenticatable
         return $this->hasMany(Users::class, 'company_id', 'company_id');
     }
 
+    public function quishingLiveCamps(){
+        return $this->hasMany(QuishingLiveCamp::class, 'company_id', 'company_id');
+    }
+
 }
