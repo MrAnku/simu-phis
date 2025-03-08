@@ -22,7 +22,7 @@
                                     <div class="mb-2">Total Templates</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            34
+                                            {{$quishingEmails->count()}}
                                         </span>
                                     </div>
 
@@ -45,7 +45,7 @@
                                     <div class="mb-2">Total Sent Emails</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            23 Delivered
+                                            {{$campLive->where('sent', '1')->count()}} Delivered
                                         </span>
                                     </div>
 
@@ -68,7 +68,7 @@
                                     <div class="mb-2">Mail Opened</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            33 Opened
+                                            {{$campLive->where('mail_open', '1')->count()}} Opened
                                         </span>
                                     </div>
 

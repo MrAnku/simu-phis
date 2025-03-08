@@ -31,7 +31,10 @@ class QuishingController extends Controller
 
         $campaigns = QuishingCamp::with('userGroupData')->where('company_id', $company_id)->get();
 
-        return view('quishing', compact('quishingEmails', 'trainingModules', 'campaigns'));
+        $campLive = QuishingLiveCamp::where('company_id', $company_id)
+        ->get();
+
+        return view('quishing', compact('quishingEmails', 'trainingModules', 'campaigns', 'campLive'));
     }
 
     public function showMoreTemps(Request $request)
