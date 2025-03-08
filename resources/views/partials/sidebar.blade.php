@@ -78,9 +78,9 @@
 
 
                                     <li
-                                        class="slide has-sub {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('campaigns') || Request::is('whatsapp-campaign') || Request::is('quishing') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('campaigns') || Request::is('whatsapp-campaign') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('campaigns') || Request::is('whatsapp-campaign') || Request::is('quishing') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Campaigns</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -95,6 +95,16 @@
                                                     class="side-menu__item {{ Request::is('campaigns') ? 'active' : '' }}">
                                                     <i class="bx bx-envelope side-menu__icon"></i>
                                                     <span class="side-menu__label">Email Phishing</span>
+                                                </a>
+                                            </li>
+                                            <li class="slide {{ Request::is('quishing') ? 'active' : '' }}">
+                                                <a href="{{ route('quishing.index') }}"
+                                                    class="side-menu__item {{ Request::is('quishing') ? 'active' : '' }}">
+                                                    <i class="bx bx-qr side-menu__icon"></i>
+                                                    <span class="side-menu__label">
+                                                        Quishing
+                                                        <span class="badge bg-secondary-transparent ms-2">New</span>
+                                                    </span>
                                                 </a>
                                             </li>
                                             <li class="slide {{ Request::is('whatsapp-campaign') ? 'active' : '' }}">
@@ -112,9 +122,9 @@
 
 
                                     <li
-                                        class="slide has-sub {{ Request::is('ai-calling') || Request::is('tprm') || Request::is('quishing') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('ai-calling') || Request::is('tprm') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('ai-calling') || Request::is('tprm') || Request::is('quishing') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('ai-calling') || Request::is('tprm') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">Advanced Simulation</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -136,16 +146,7 @@
                                                 </a>
                                             </li>
 
-                                            <li class="slide {{ Request::is('quishing') ? 'active' : '' }}">
-                                                <a href="{{ route('quishing.index') }}"
-                                                    class="side-menu__item {{ Request::is('quishing') ? 'active' : '' }}">
-                                                    <i class="bx bx-qr side-menu__icon"></i>
-                                                    <span class="side-menu__label">
-                                                        Quishing
-                                                        <span class="badge bg-secondary-transparent ms-2">New</span>
-                                                    </span>
-                                                </a>
-                                            </li>
+                                            
 
                                             <li class="slide {{ Request::is('tprm') ? 'active' : '' }}">
                                                 <a href="{{ route('campaign.tprm') }}"
