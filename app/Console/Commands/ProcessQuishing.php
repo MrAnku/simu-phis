@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Company;
 use App\Mail\CampaignMail;
 use App\Mail\QuishingMail;
+use App\Models\QuishingCamp;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use Endroid\QrCode\Color\Color;
@@ -74,6 +75,8 @@ class ProcessQuishing extends Command
                 
             }
         }
+
+        $this->checkCompletedCampaigns();
     }
 
     private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)
@@ -241,5 +244,20 @@ class ProcessQuishing extends Command
         $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
 
         return $translatedMailBody;
+    }
+
+    private function checkCompletedCampaigns(){
+        $campaigns = QuishingCamp::where('status', 'running')->get();
+        if(!$campaigns){
+            return;
+        }
+        foreach ($campaigns as $campaign) {
+            $campaignLive = $campaign->campLive()->where('sent', '0')->count();
+            if($campaignLive == 0){
+                $campaign->status = 'completed';
+                $campaign->save();
+            }
+            
+        }
     }
 }
