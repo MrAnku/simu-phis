@@ -41,8 +41,15 @@ class ProcessQuishing extends Command
     {
         //get all pending quishing campaigns
         $companies = Company::where('service_status', 1)->get();
+
+        if(!$companies){
+            return;
+        }
         foreach ($companies as $company) {
             $quishingCampaigns = $company->quishingLiveCamps()->where('sent', '0')->get();
+            if(!$quishingCampaigns){
+                continue;
+            }
             foreach ($quishingCampaigns as $campaign) {
                 //get website url
                 $quishingTemplate = $campaign->templateData()->first();
