@@ -282,7 +282,7 @@
                 // Get line chart data
                 axios.get('/get-line-chart-data')
                     .then(function(response) {
-                        // console.log(response.data)
+                         console.log(response.data)
                         var lineChartData = response.data;
                         var labels = lineChartData.map(function(data) {
                             return data.month;
@@ -307,7 +307,7 @@
                                     y: {
                                         type: 'linear',
                                         min: 0,
-                                        max: 10
+                                        max: Math.max(...lineChartData.map(item => item.no_of_camps)) < 10 ? 10 : Math.max(...lineChartData.map(item => item.no_of_camps)),
                                     }
                                 }
                             }
