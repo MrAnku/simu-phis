@@ -19,7 +19,7 @@ class AdminTrainingModuleController extends Controller
             $trainingModules = TrainingModule::where('training_type', $selectedType)->get();
         }else{
 
-            $trainingModules = TrainingModule::all();
+            $trainingModules = TrainingModule::where('training_type', 'static_training')->get();
         }
 
 
