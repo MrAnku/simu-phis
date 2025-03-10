@@ -18,9 +18,10 @@ use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\AssignTrainingWithPassResetLink;
 use Illuminate\Validation\Rules\Email;
+use App\Mail\AssignTrainingWithPassResetLink;
 
 class ProcessCampaigns extends Command
 {
@@ -100,7 +101,7 @@ class ProcessCampaigns extends Command
           'sent' => '0',
           'company_id' => $campaign->company_id,
         ]);
-        
+
         EmailCampActivity::create([
           'campaign_id' => $campaign->campaign_id,
           'campaign_live_id' => $camp_live->id,
@@ -190,7 +191,7 @@ class ProcessCampaigns extends Command
 
               if ($this->sendMail($mailData)) {
 
-               $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
                 echo "Email sent to: " . $campaign->user_email . "\n";
               } else {
@@ -573,48 +574,78 @@ class ProcessCampaigns extends Command
     }
   }
 
-  private function changeEmailLang($tempBodyFile, $email_lang)
+  // private function changeEmailLang($tempBodyFile, $email_lang)
+  // {
+  //   $apiKey = env('OPENAI_API_KEY');
+  //   $apiEndpoint = "https://api.openai.com/v1/engines/davinci-codex/completions";
+
+  //   $fileContent = file_get_contents($tempBodyFile);
+
+  //   $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
+
+  //   $requestBody = [
+  //     "prompt" => $prompt,
+  //     "max_tokens" => 1000,
+  //     "temperature" => 0.7,
+  //   ];
+
+  //   $headers = [
+  //     "Content-Type: application/json",
+  //     "Authorization: Bearer {$apiKey}",
+  //   ];
+
+  //   $curl = curl_init();
+
+  //   curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
+  //   curl_setopt($curl, CURLOPT_POST, true);
+  //   curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($requestBody));
+  //   curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  //   curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+  //   $response = curl_exec($curl);
+
+  //   if (curl_errno($curl)) {
+  //     return null;
+  //   }
+
+  //   curl_close($curl);
+
+  //   $responseData = json_decode($response, true);
+
+  //   $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
+
+  //   return $translatedMailBody;
+  // }
+
+  public function changeEmailLang($tempBodyFile, $email_lang)
   {
-    // API endpoint
-    $apiEndpoint = "http://65.21.191.199/translate_file";
+    $apiKey = env('OPENAI_API_KEY');
+    $apiEndpoint = "https://api.openai.com/v1/completions";
+    // $file = public_path($tempBodyFile);
+    $fileContent = file_get_contents($tempBodyFile);
 
-    // Create a CURLFile object with the public path
-    $file = new \CURLFile($tempBodyFile);
+    // return response($fileContent, 200)->header('Content-Type', 'text/html');
 
-    // Request body
+    $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
+
     $requestBody = [
-      "source" => "en",
-      "target" => $email_lang,
-      "file" => $file
+      'model' => 'gpt-3.5-turbo-instruct',
+      'prompt' => $prompt,
+      'max_tokens' => 1500,
+      'temperature' => 0.7,
     ];
 
-    // Initialize cURL session
-    $curl = curl_init();
+    $response = Http::withHeaders([
+      'Content-Type' => 'application/json',
+      'Authorization' => 'Bearer ' . $apiKey,
+    ])->post($apiEndpoint, $requestBody);
 
-    // Set cURL options
-    curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
-    curl_setopt($curl, CURLOPT_POST, true);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody); // Use CURLOPT_POSTFIELDS directly
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-    // Execute cURL request
-    $response = curl_exec($curl);
-
-    // Check for errors
-    if (curl_errno($curl)) {
-      // echo 'cURL error: ' . curl_error($curl);
-      // exit;
-      return null; // or handle error as needed
+    if ($response->failed()) {
+      echo 'Failed to fetch translation' . json_encode($response->body());
+      return $fileContent;
     }
-
-    // Close cURL session
-    curl_close($curl);
-
-    // Decode the JSON response
-    $responseData = json_decode($response, true);
-
-    // Retrieve the translated mail body content
-    $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
+    $responseData = $response->json();
+    $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
 
     return $translatedMailBody;
   }

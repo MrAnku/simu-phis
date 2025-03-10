@@ -6,6 +6,7 @@ use App\Models\Log;
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 if (!function_exists('isActiveRoute')) {
@@ -65,6 +66,66 @@ if (!function_exists('generateRandomDate')) {
         $formattedDate = $finalRandomDateTime->format('m/d/Y g:i A');
 
         return $formattedDate;
+    }
+}
+
+if (!function_exists('translateQuizUsingAi')) {
+    function translateQuizUsingAi($quiz, $targetLang)
+    {
+        $apiKey = env('OPENAI_API_KEY');
+        $apiEndpoint = "https://api.openai.com/v1/chat/completions";
+        // $file = public_path($tempBodyFile);
+        // $fileContent = file_get_contents($tempBodyFile);
+        // return response($fileContent, 200)->header('Content-Type', 'text/html');
+
+        $quizJson = json_encode($quiz, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        $prompt = "Translate this quiz into '{$targetLang}' language. 
+                Translate **only** the values of the objects, **not** the keys.
+                Keep the values of 'qtype', 'correctOption', and 'videoUrl' **unchanged**.
+                Do **not** include explanations, comments, or anything else—return **only** a valid JSON.
+
+                Return a **valid JSON object** without any additional text or formatting.
+
+                Here is the quiz JSON:\n\n{$quizJson}";
+
+        $requestBody = [
+            "model" => "gpt-4o-mini",
+            "messages" => [["role" => "user", "content" => $prompt]],
+            "temperature" => 0.7
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $apiKey,
+        ])->post($apiEndpoint, $requestBody);
+
+        if ($response->failed()) {
+            // return 'Failed to fetch translation' . json_encode($response->body());
+             return $quiz;
+        }
+        $responseData = $response->json();
+        $translatedJsonQuiz = $responseData['choices'][0]['message']['content'] ?? null;
+
+        return trim($translatedJsonQuiz);
+    }
+}
+if (!function_exists('changeTranslatedQuizVideoUrl')) {
+    function changeTranslatedQuizVideoUrl($quizArray, $targetLang){
+        $newArray = [];
+        foreach ($quizArray as $quizObject) {
+            foreach ($quizObject as $key => $value) {
+                if ($key == 'videoUrl') {
+                    if (isYouTubeLink($value)) {
+                        $quizObject[$key] = $value;
+                    } else {
+                        $quizObject[$key] = changeVideoLanguage($value, $targetLang);
+                    }
+                }
+            }
+            array_push($newArray, $quizObject);
+        }
+        return $newArray;
     }
 }
 
@@ -238,7 +299,8 @@ if (!function_exists('checkWhitelabeled')) {
 
 if (!function_exists('langName')) {
 
-    function langName($langCode){
+    function langName($langCode)
+    {
         $languages = [
             "sq" => "Albanian",
             "ar" => "Arabic",
@@ -288,5 +350,4 @@ if (!function_exists('langName')) {
 
         return $languages[$langCode];
     }
-    
 }

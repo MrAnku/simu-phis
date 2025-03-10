@@ -36,6 +36,7 @@
     <option value="ru">Russian</option>
     <option value="sk">Slovak</option>
     <option value="sl">Slovenian</option>
+    <option value="sr">Serbian</option>
     <option value="es">Spanish</option>
     <option value="sv">Swedish</option>
     <option value="tl">Tagalog</option>

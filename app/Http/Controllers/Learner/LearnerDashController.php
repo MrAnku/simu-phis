@@ -80,11 +80,15 @@ class LearnerDashController extends Controller
 
                 $jsonQuiz = json_decode($trainingData->json_quiz, true);
 
-                $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
-                $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
-                // var_dump($translatedArray);
+                // $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+                // $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
 
-                $trainingData->json_quiz = $translatedJson_quiz;
+                $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+
+                $translatedJson_quiz = json_decode($translatedJson_quiz, true);
+                $translatedJson_quiz = changeTranslatedQuizVideoUrl($translatedJson_quiz, $moduleLanguage);
+
+                $trainingData->json_quiz = json_encode($translatedJson_quiz, JSON_UNESCAPED_UNICODE);
                 // var_dump($trainingData);
                 // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
             }

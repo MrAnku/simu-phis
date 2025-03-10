@@ -50,10 +50,13 @@ use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\BluecolarController;
+use App\Http\Controllers\TestController;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
 });
+
+// Route::get('/translate', [TestController::class, 'translate']);
 
 
 //---------------learning portal routes------------//
