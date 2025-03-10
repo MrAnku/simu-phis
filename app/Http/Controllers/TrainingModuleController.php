@@ -26,7 +26,7 @@ class TrainingModuleController extends Controller
             $trainings = TrainingModule::where(function ($query) use ($company_id) {
                 $query->where('company_id', $company_id)
                     ->orWhere('company_id', 'default');
-            })->get();
+            })->where('training_type', 'static_training')->get();
         }
 
        
@@ -371,11 +371,18 @@ class TrainingModuleController extends Controller
 
                 $jsonQuiz = json_decode($trainingData->json_quiz, true);
 
-                $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
-                $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+                // $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+                // $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
                 // var_dump($translatedArray);
 
-                $trainingData->json_quiz = $translatedJson_quiz;
+                // $trainingData->json_quiz = $translatedJson_quiz;
+
+                $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+
+                $translatedJson_quiz = json_decode($translatedJson_quiz, true);
+                $translatedJson_quiz = changeTranslatedQuizVideoUrl($translatedJson_quiz, $moduleLanguage);
+
+                $trainingData->json_quiz = json_encode($translatedJson_quiz, JSON_UNESCAPED_UNICODE);
                 // var_dump($trainingData);
                 // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
             }

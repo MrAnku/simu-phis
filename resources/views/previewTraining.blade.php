@@ -367,7 +367,7 @@
                 success: function(res) {
                     //   console.log(res)
                     if (res.status === 1) {
-                        var json_quiz = JSON.parse(res.jsonData.json_quiz);
+                        var json_quiz = JSON.parse(res.jsonData.json_quiz.replace(/\n/g, ''));
                         // console.log(resJson);
                         // // console.log(json_quiz);
                         createPages(json_quiz);
