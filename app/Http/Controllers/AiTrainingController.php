@@ -82,9 +82,15 @@ class AiTrainingController extends Controller
 
         if ($request->lang !== 'en') {
 
-            $translatedArray = translateArrayValues($request->quiz, $request->lang);
-            $translatedQuizJson = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
-            return response()->json(['status' => 1, 'quiz' => $translatedQuizJson]);
+            // $translatedArray = translateArrayValues($request->quiz, $request->lang);
+            // $translatedQuizJson = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+
+            //translation using ai
+            $quiz = json_encode($request->quiz, JSON_UNESCAPED_UNICODE);
+            $quiz = translateQuizUsingAi($quiz, $request->lang);
+            // $translatedQuizJson = json_encode($quiz, JSON_UNESCAPED_UNICODE);
+
+            return response()->json(['status' => 1, 'quiz' => $quiz]);
         }
 
         return response()->json(['status' => 0, 'msg' => 'Unable to translate in english']);

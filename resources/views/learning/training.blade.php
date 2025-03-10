@@ -77,7 +77,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                    <a href=".">
+                    <a href="{{ route('learner.dashboard') }}">
                         <img src="/assets/images/simu-logo-dark.png" alt="" class="navbar-brand-image"
                             style="width: 181px; height: auto;" />
                     </a>
