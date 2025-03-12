@@ -908,7 +908,7 @@ Session::put('campaign_details', $Arraydetails); // Stores new data in session
             ]);
         }
     }
-
+    
     public function fetchCampTrainingDetailsIndividual(Request $request)
     {
         $request->validate([
@@ -959,33 +959,6 @@ Session::put('campaign_details', $Arraydetails); // Stores new data in session
                     <td>' .$assignedUser->personal_best . '%</td>
                     <td>' .$trainingDetail->passing_score . '%</td>
                     <td>' .$status . '</td>
-                    <td> 
-                        <button type="button" 
-                        onclick="resendTrainingAssignmentReminder(this, `' . $assignedUser->user_email . '`, `' .$trainingDetail->name . '`)" 
-                        class="btn btn-icon btn-primary-transparent rounded-pill btn-wave" 
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top" 
-                        title="Would you like to send a training reminder to this employee? The reminder email will include all outstanding training assignments.">
-                            <i class="ri-mail-send-line"></i>
-                        </button>
-
-                        <button type="button" 
-                        class="btn btn-icon btn-secondary-transparent rounded-pill btn-wave" 
-                        onclick="completeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`)"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top" 
-                        title="Would you like to auto-complete the assigned training for this employee? This will assign a passing score of 100% for this training module.">
-                        <i class="ri-checkbox-circle-line"></i>
-                        </button>
-
-                        <button type="button" 
-                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" 
-                        data-bs-toggle="tooltip"
-                        onclick="removeAssignedTraining(this, `'.base64_encode($assignedUser->id).'`, `'.$trainingDetail->name.'`, `' . $assignedUser->user_email . '`)"
-    data-bs-placement="top" title="Should this employee not be assigned this training? Click here to remove it.">
-                            <i class="ri-delete-bin-line"></i>
-                        </button> 
-                    </td>
                 </tr>';
         }
 

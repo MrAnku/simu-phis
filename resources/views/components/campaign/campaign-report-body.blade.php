@@ -18,9 +18,9 @@
         </ul>
 </div>
 <div>
-    <a href="{{ route('download-pdf') }}">
+    {{-- <a href="{{ route('download-pdf') }}">
         <button class="btn btn-primary">View PDF</button>
-    </a>
+    </a> --}}
 </div>
 </div>
 
