@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Email;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Models\CompanySettings;
+use App\Models\TrainingAssignedUser;
 
 class ProcessCampaigns extends Command
 {
@@ -46,9 +48,10 @@ class ProcessCampaigns extends Command
 
   public function handle()
   {
-    $this->processScheduledCampaigns();
-    $this->sendCampaignLiveEmails();
-    $this->updateRunningCampaigns();
+    // $this->processScheduledCampaigns();
+    // $this->sendCampaignLiveEmails();
+    // $this->updateRunningCampaigns();
+    $this->sendReminderMail();
   }
 
   private function processScheduledCampaigns()
@@ -648,5 +651,68 @@ class ProcessCampaigns extends Command
     $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
 
     return $translatedMailBody;
+  }
+
+  private function sendReminderMail()
+  {
+    $companies = Company::all();
+
+    foreach ($companies as $company) {
+
+
+      $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
+
+
+      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)->get();
+
+      if (!$trainingAssignedUsers) {
+        continue;
+      }
+      $currentDate = Carbon::now();
+      foreach ($trainingAssignedUsers as $assignedUser) {
+      
+        if ($assignedUser->last_reminder_date == null && $assignedUser->personal_best == 0) {
+
+          $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
+         
+          if ($reminderDate->isBefore($currentDate)) {
+            echo "Reminder will send";
+            $this->freqTrainingReminder($assignedUser);
+
+            // Update the last reminder date and save it
+            $assignedUser->last_reminder_date = $currentDate;
+            $assignedUser->save();
+          }
+        } else {
+          if ($assignedUser->personal_best == 0) {
+            $lastReminderDate = Carbon::parse($assignedUser->last_reminder_date);
+            $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
+            if ($nextReminderDate->isBefore($currentDate)) {
+
+              $this->freqTrainingReminder($assignedUser);
+              $assignedUser->last_reminder_date = $currentDate;
+              $assignedUser->save();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private function freqTrainingReminder($assignedUser){
+    $learnSiteAndLogo = $this->checkWhitelabeled($assignedUser->company_id);
+
+    $mailData = [
+      'user_name' => $assignedUser->user_name,
+      'training_name' => $assignedUser->trainingData->name,
+      // 'login_email' => $userCredentials->login_username,
+      // 'login_pass' => $userCredentials->login_password,
+      'company_name' => $learnSiteAndLogo['company_name'],
+      'company_email' => $learnSiteAndLogo['company_email'],
+      'learning_site' => $learnSiteAndLogo['learn_domain'],
+      'logo' => $learnSiteAndLogo['logo']
+    ];
+
+    $isMailSent = Mail::to($assignedUser->user_email)->send(new TrainingAssignedEmail($mailData));
   }
 }
