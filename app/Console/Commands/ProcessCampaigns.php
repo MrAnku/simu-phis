@@ -48,9 +48,9 @@ class ProcessCampaigns extends Command
 
   public function handle()
   {
-    // $this->processScheduledCampaigns();
-    // $this->sendCampaignLiveEmails();
-    // $this->updateRunningCampaigns();
+    $this->processScheduledCampaigns();
+    $this->sendCampaignLiveEmails();
+    $this->updateRunningCampaigns();
     $this->sendReminderMail();
   }
 
