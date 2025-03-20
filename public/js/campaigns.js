@@ -906,7 +906,7 @@ function prepareTrainingHtml(data) {
                         </div>
                     </div>
                     <div class="card-body htmlPhishingGrid">
-                        <img class="trainingCoverImg" src="/storage/uploads/trainingModule/${training.cover_image}" />
+                        <img class="trainingCoverImg" src="${training.cover_image ? '/storage/uploads/trainingModule/' + training.cover_image : '/storage/uploads/trainingGame/default.jpg'}" />
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">
@@ -957,24 +957,29 @@ $("#training_cat").on('change', function () {
 
     const cat = $(this).val();
     const type = $('#training_type').val();
-    if(type == 'gamified'){
+    if (type == 'gamified') {
         fetchTrainingByCategory(cat, type);
-    }else{
+    } else {
         fetchTrainingByCategory(cat);
     }
-    
+
 })
 
 $("#training_type").on('change', function () {
 
     const type = $(this).val();
     const category = $('#training_cat').val();
-    if (type == 'gamified'){
+    if (type == 'gamified') {
+        $("#training_cat_container").show();
         fetchTrainingByCategory(category, type);
-    }else{
+    } else if (type == 'games') {
+        $("#training_cat_container").hide();
+        fetchTrainingByCategory(null, type);
+    } else {
+        $("#training_cat_container").show();
         fetchTrainingByCategory(category);
     }
-    
+
 })
 
 

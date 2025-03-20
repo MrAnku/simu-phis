@@ -24,6 +24,7 @@
                         <option value="static_training" selected>Static Training</option>
                         <option value="ai_training">AI Training</option>
                         <option value="gamified">Gamified Training</option>
+                        <option value="games">Games</option>
                     </select>
                 </div>
 
@@ -47,7 +48,7 @@
                 <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search template">
             </div>
 
-            <div class="input-group input-group-sm mb-3">
+            <div class="input-group input-group-sm mb-3" id="training_cat_container">
                 <label class="input-group-text" for="training_cat">Category:</label>
                 <select class="form-select" id="training_cat">
                     <option value="all" selected>All</option>

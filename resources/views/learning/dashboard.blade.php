@@ -280,6 +280,10 @@
                                                                 'language' => $training->training_lang,
                                                                 'id' => base64_encode($training->id),
                                                             ]) }}
+                                                    @elseif($training->training_type == 'games')
+                                                            {{ route('learner.start.game.training', [
+                                                                'slug' =>$training->trainingGame->slug,
+                                                            ]) }}
                                                     @else
                                                             {{ route('learn.gamified.training', [
                                                                 'training_id' => encrypt($training->training),
@@ -288,13 +292,14 @@
                                                             ]) }} 
                                                             
                                                     @endif">
-                                                        {{ $training->trainingData->name }}
+                                                        {{ $training->training_type == 'games' ? $training->trainingGame->name : $training->trainingData->name }}
                                                     </a>
                                                     {{-- <a
                                                         href="{{ route('learn.testquiz', [
                                                             'id' => base64_encode($training->id),
                                                         ]) }}">{{ $training->trainingData->name }}</a> --}}
                                                 </td>
+                                            @if($training->training_type != 'games')
                                                 <td class="text-secondary">
                                                     {{ $training->trainingData->estimated_time }} Minutes
                                                 </td>
@@ -307,6 +312,7 @@
                                                     <td class="text-success"><b>{{ $training->personal_best }}%</b>
                                                     </td>
                                                 @endif
+                                            @endif
 
                                             </tr>
                                         @empty

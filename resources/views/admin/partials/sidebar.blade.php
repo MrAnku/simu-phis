@@ -83,6 +83,13 @@
                                             <span class="side-menu__label">Companies</span>
                                         </a>
                                     </li>
+                                    <li class="slide {{ Request::is('admin/training-game') ? 'active' : '' }}">
+                                        <a href="{{ route('admin.training.game') }}"
+                                            class="side-menu__item {{ Request::is('admin/training-game') ? 'active' : '' }}">
+                                            <i class="ri-dice-5-line side-menu__icon"></i>
+                                            <span class="side-menu__label mt-2">Games</span>
+                                        </a>
+                                    </li>
                                     <li class="slide {{ Request::is('admin/ai-vishing/new-agent-requests') ? 'active' : '' }}">
                                         <a href="{{ route('admin.aivishing.newagentreqs') }}"
                                             class="side-menu__item {{ Request::is('admin/ai-vishing/new-agent-requests') ? 'active' : '' }}">

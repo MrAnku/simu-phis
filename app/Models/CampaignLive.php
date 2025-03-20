@@ -45,4 +45,8 @@ class CampaignLive extends Model
     public function training(){
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
+
+    public function game(){
+        return $this->belongsTo(TrainingGame::class, 'training_module', 'id');
+    }
 }

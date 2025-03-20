@@ -26,4 +26,8 @@ class TrainingAssignedUser extends Model
     public function trainingData(){
         return $this->hasOne(TrainingModule::class, 'id', 'training');
     }
+
+    public function trainingGame(){
+        return $this->hasOne(TrainingGame::class, 'id', 'training');
+    }
 }

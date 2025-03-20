@@ -315,7 +315,8 @@ class ProcessCampaigns extends Command
 
     $mailData = [
       'user_name' => $campaign->user_name,
-      'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
+      // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
+      'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
       'password_create_link' => $passwordGenLink,
       'company_name' => $learnSiteAndLogo['company_name'],
       'company_email' => $learnSiteAndLogo['company_email'],
@@ -368,7 +369,8 @@ class ProcessCampaigns extends Command
 
       $mailData = [
         'user_name' => $campaign->user_name,
-        'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
+        // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
+        'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
         // 'login_email' => $userLogin->login_username,
         // 'login_pass' => $userLogin->login_password,
         'company_name' => $learnSiteAndLogo['company_name'],
@@ -413,7 +415,8 @@ class ProcessCampaigns extends Command
 
     $mailData = [
       'user_name' => $campaign->user_name,
-      'training_name' => $this->trainingModuleName($campaign->training_module),
+      // 'training_name' => $this->trainingModuleName($campaign->training_module),
+      'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
       // 'login_email' => $userCredentials->login_username,
       // 'login_pass' => $userCredentials->login_password,
       'company_name' => $learnSiteAndLogo['company_name'],

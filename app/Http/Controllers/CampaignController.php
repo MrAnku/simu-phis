@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\EmailCampActivity;
 use App\Models\TrainingAssignedUser;
+use App\Models\TrainingGame;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -129,6 +130,14 @@ class CampaignController extends Controller
             $trainings = TrainingModule::where('company_id', $companyId)
                 ->orWhere('company_id', 'default')
                 ->where('training_type', $request->type)
+                ->limit(10)
+                ->get();
+
+            return response()->json(['status' => 1, 'data' => $trainings]);
+        }
+        else if($request->category == null){
+            $trainings = TrainingGame::where('company_id', $companyId)
+                ->orWhere('company_id', 'default')
                 ->limit(10)
                 ->get();
 

@@ -48,6 +48,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\BluecolarController;
 use App\Http\Controllers\TestController;
@@ -81,6 +82,11 @@ Route::domain('learn.simuphish.com')->group(function () {
 
         Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
 
+
+        Route::get('/game-training/{slug}', [LearnerDashController::class, 'startGameTraining'])->name('learner.start.game.training');
+
+
+
         Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
         Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
@@ -95,6 +101,11 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
     });
 });
+
+//  ========================== Game Training Routes ===================================
+Route::post('game-score', [AdminTrainingGameController::class, 'gameScore'])
+    ->name('gamescore')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 // bluecollar traininglearning portal 
 Route::get('/bluecollartraining/{training_id}/{training_lang}/{id}', [BluecolarController::class, 'bluecollarStartTraining'])->name('learner.start.bluecollartraining');
@@ -503,6 +514,12 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('/admin/companies/delete', [CompanyController::class, 'deleteCompany'])->name('admin.companies.delete');
 
     //-------------------companies route ---------------------//
+
+    //-------------------Training Game-----------------------//
+    Route::get('admin/training-game', [AdminTrainingGameController::class, 'index'])->name('admin.training.game');
+    Route::post('admin/training-game/add', [AdminTrainingGameController::class, 'store'])->name('admin.addTrainingGame');
+    Route::post('admin/training-game/delete', [AdminTrainingGameController::class, 'deleteData'])->name('admin.deleteTrainingGame');
+    //-------------------Training Game-----------------------//
 
     //-------------------Ai vishing route ---------------------//
     Route::get('admin/ai-vishing/new-agent-requests', [AiVishingController::class, 'index'])->name('admin.aivishing.newagentreqs');
