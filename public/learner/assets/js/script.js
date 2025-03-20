@@ -107,7 +107,7 @@ function showScore() {
     `;
     $("#showScoreModal .modal-body").html(scoreHtml);
     $("#showScoreModal").modal("show");
-
+    move();
     
     if (scorecard.scoreInPercent > 0) {
         updateScoreInDb(scorecard.scoreInPercent);
@@ -165,7 +165,6 @@ function nextPrev(n) {
 
         var selectedValue = checkedRadio.value;
         console.log('Selected value:', selectedValue);
-        move();
     }
     const iframeInsidePage = x[currentTab].querySelector('iframe');
     if (iframeInsidePage !== null) {
@@ -254,40 +253,33 @@ function fixStepIndicator(n) {
 }
 
 function move() {
-    // var elem = document.getElementById("myBar");
-    // var width = parseInt(elem.innerHTML);
-    // var aim = width + 25;
-    // var id = setInterval(frame, 25);
-
-    // function frame() {
-    //     if (width >= aim) {
-    //         clearInterval(id);
-    //     } else if (width >= 100) {
-    //         width = 0;
-    //         aim = 25;
-    //         elem.style.width = width + '%';
-    //         elem.innerHTML = width * 1 + '%';
-    //     } else {
-    //         width++;
-    //         elem.style.width = width + '%';
-    //         elem.innerHTML = width * 1 + '%';
-    //     }
-    // }
-    if (currentTab === 0) {
-        var dividedPercentage = Math.floor(100 / allQuestions.length - 1);
+    // console.log(currentTab);
+    // console.log(allQuestions.length);
+    // console.log("move function called");
+    if (currentTab === 1) {
+        var dividedPercentage = Math.floor(100 / allQuestions.length);
         var elem = document.getElementById("myBar");
-        elem.style.width = dividedPercentage + '%';
-        elem.innerHTML = dividedPercentage + '%';
+        // console.log(dividedPercentage);
+        elem.style.width = '';
+        elem.style.width = `${dividedPercentage}%`;
+        elem.innerHTML = `${dividedPercentage}%`;
+        elem.setAttribute("aria-valuenow", dividedPercentage);
     } else {
-        var dividedPercentage = Math.floor(100 / allQuestions.length - 1);
+        var dividedPercentage = Math.floor(100 / allQuestions.length);
         var elem = document.getElementById("myBar");
-        var currentWidth = parseInt(elem.style.width);
+    
+        // Get current width safely (default to 20 if empty)
+        var currentWidth = parseInt(elem.style.width) || 20;
         var newWidth = currentWidth + dividedPercentage;
-        if (newWidth > 100) {
+    
+        // Ensure newWidth doesn't exceed 100%
+        if (newWidth > 100 || currentTab + 1 === allQuestions.length) {
             newWidth = 100;
         }
-        elem.style.width = newWidth + '%';
-        elem.innerHTML = newWidth + '%';
+    
+        elem.style.width = `${newWidth}%`;
+        elem.innerHTML = `${newWidth}%`;
+        elem.setAttribute("aria-valuenow", newWidth);
     }
 
 }
