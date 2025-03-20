@@ -48,7 +48,9 @@ class LearnerDashController extends Controller
         log_action("Employee started static training", 'learner', 'learner');
         // $training_id = decrypt($training_id);
 
-        return view('learning.training', ['trainingid' => $training_id, 'training_lang' => $training_lang, 'id' => $id]);
+        return view('learning.training2', ['trainingid' => $training_id, 'training_lang' => $training_lang, 'id' => $id]);
+
+        // return view('learning.training', ['trainingid' => $training_id, 'training_lang' => $training_lang, 'id' => $id]);
     }
 
     public function loadTraining($training_id, $training_lang)
