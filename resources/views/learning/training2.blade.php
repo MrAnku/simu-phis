@@ -4,6 +4,15 @@
     <div class="container">
         <div class="row">
 
+            <div id="preloader" class="text-center">
+                <img src="{{ asset('learner/assets/images/preloader.svg') }}" alt="preloader" width="200">
+                <div class="d-flex justify-content-center align-items-center">
+                    <h1 class="bg-white rounded-pill px-4 py-4" style="font-size: 21px; width: fit-content;">Training content
+                        is loading...</h1>
+                </div>
+
+            </div>
+
             <div id="trainingQContainers">
 
             </div>
@@ -13,7 +22,7 @@
                 {{-- <button type="button" class="f_btn prev_btn text-white rounded-pill text-uppercase" id="prevBtn"
                         onclick="nextPrev(-1)"><span><i class="fas fa-arrow-left"></i></span> Last Question</button> --}}
                 <button type="button" class="f_btn nextBtn text-white rounded-pill text-uppercase" id="nextBtn"
-                    onclick="nextPrev(1)" style="font-size: 15px;">Next Question</button>
+                    onclick="nextPrev(1)" style="font-size: 15px; display: none;">Next Question</button>
             </div>
 
         </div>
@@ -69,6 +78,7 @@
     </div>
 
     @push('newcss')
+        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.min.css" rel="stylesheet">
         <style>
             .multisteps_form_panel .label {
                 font-size: 1.5rem;
@@ -119,17 +129,15 @@
     @endpush
 
     @push('newjs')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.all.min.js"></script>
         <script>
             function loadTrainingContent(lang = '{{ $training_lang }}') {
-
-                // $("#preloader").show();
-                // $("#trainingQContainers").hide();
-                // $("#nextBtnContainer").removeClass('d-flex').hide();
+                doBeforeLoadingContent();
 
                 $.get({
                     url: '/loadTrainingContent/{{ $trainingid }}/' + lang,
                     success: function(res) {
-                        //console.log(res)
+                        console.log(res)
                         if (res.status === 1) {
                             var json_quiz = JSON.parse(res.jsonData.json_quiz.replace(/\n/g, ''));
                             // console.log(resJson);
@@ -139,9 +147,7 @@
                             showTab(0);
 
                             startCountdown(parseInt(res.jsonData.estimated_time));
-                            // $("#preloader").hide();
-                            // $("#trainingQContainers").show();
-                            // $("#nextBtnContainer").addClass('d-flex').show();
+                            doAfterLoadingContent();
                         }
 
                     }
@@ -150,6 +156,23 @@
 
             loadTrainingContent();
             $('#trainingLang').val('{{ $training_lang }}');
+
+            function doBeforeLoadingContent() {
+                $("#preloader").show();
+                $("#nextBtn").hide();
+                $("#trainingQContainers").hide();
+                stopCountdown();
+                var elem = document.getElementById("myBar");
+                elem.style.width = `20%`;
+                elem.innerHTML = `0%`;
+                elem.setAttribute("aria-valuenow", "20");
+            }
+
+            function doAfterLoadingContent() {
+                $("#preloader").hide();
+                $("#nextBtn").show();
+                $("#trainingQContainers").show();
+            }
 
             function createPages(jsonData) {
                 let trainingQContainers = document.getElementById("trainingQContainers");
@@ -316,16 +339,25 @@
             function startCountdown(minutes) {
                 let totalTime = minutes * 60;
                 let countdownText = document.getElementById("countdown");
-                let interval = setInterval(() => {
+                countDownInterval = setInterval(() => {
                     let minutesLeft = Math.floor(totalTime / 60);
                     let secondsLeft = totalTime % 60;
                     countdownText.innerHTML = `${minutesLeft}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`;
 
                     if (totalTime <= 0) {
-                        clearInterval(interval);
+                        clearInterval(countDownInterval);
                     }
                     totalTime--;
                 }, 1000);
+            }
+
+            function stopCountdown() {
+                if (countDownInterval) {
+                    clearInterval(countDownInterval);
+                    $("#countdown").html("--");
+                    console.log("Countdown stopped");
+                }
+
             }
 
             function updateScoreInDb(percent) {
@@ -345,6 +377,37 @@
 
             $('#showScoreModal').on('hidden.bs.modal', function() {
                 window.location.href = '{{ route('learner.dashboard') }}';
+            });
+        </script>
+        <script>
+            function confirmLanguage(lang, langCode) {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: `This training will be changed to ${lang} language!`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, Change Language!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        loadTrainingContent(langCode);
+                    }
+                });
+            }
+
+
+            $(document).ready(function() {
+                $('#trainingLang').change(function() {
+
+                    const lang = $(this).val();
+                    const optionText = $(this).find('option:selected').text();
+                    confirmLanguage(optionText, lang);
+                    console.log(lang);
+
+                    //const trainingId = '{{ $trainingid }}';
+                    //window.location.href = `/training-preview/${trainingId}?lang=${lang}`;
+                });
             });
         </script>
     @endpush

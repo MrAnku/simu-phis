@@ -33,7 +33,20 @@
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <div>
+                        
+                    </div>
                     <div class="d-flex align-items-center justify-content-end pe-5">
+                        <div class="me-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    Language
+                                </span>
+                                <x-language-select id="trainingLang" />
+                            </div>
+
+                        </div>
+
                         <div class="progress rounded-pill">
                             <div id="myBar" class="progress-bar rounded-pill" role="progressbar" style="width: 20%;"
                                 aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">0%</div>
