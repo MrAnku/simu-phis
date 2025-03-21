@@ -28,6 +28,7 @@ let wrongAnswered = 0;
 var currentTab = 0; // Current tab is set to be the first tab (0)
 // showTab(currentTab); // Display the current tab
 let countDownInterval = null;
+let completedVideos = [];
 
 
 function showTab(n) {
@@ -121,9 +122,29 @@ function nextPrev(n) {
         var selectedValue = checkedRadio.value;
         console.log('Selected value:', selectedValue);
     }
-    const iframeInsidePage = x[currentTab].querySelector('iframe');
+
+    const iframeInsidePage = x[currentTab].querySelector("video");
+
     if (iframeInsidePage !== null) {
-        iframeInsidePage.src = '';
+         console.log("Current Tab:", currentTab);
+         const exists = completedVideos.some(video => video.videoIndex === currentTab);
+         if(!exists){
+            alert("Please watch the complete video to proceed");
+            return false;
+         }
+
+        // Stop video playback
+        iframeInsidePage.pause();
+        iframeInsidePage.currentTime = 0; // Reset to beginning
+
+        // Remove the source to fully stop loading
+        const source = iframeInsidePage.querySelector("source");
+        if (source) {
+            source.src = "";
+        }
+
+        // Reload the video to apply the changes
+        iframeInsidePage.load();
     }
 
     x[currentTab].style.display = "none";

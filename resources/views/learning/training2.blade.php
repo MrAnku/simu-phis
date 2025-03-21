@@ -166,6 +166,11 @@
                 elem.style.width = `20%`;
                 elem.innerHTML = `0%`;
                 elem.setAttribute("aria-valuenow", "20");
+                allQuestions = [];
+                correctAnswered = 0;
+                wrongAnswered = 0;
+                currentTab = 0;
+                completedVideos = [];
             }
 
             function doAfterLoadingContent() {
@@ -197,7 +202,7 @@
                     $(this).addClass("active"); // Add active class to the clicked one
                 });
 
-
+                addVideoEventListeners();
             }
 
             function convertToEmbedURL(watchURL) {
@@ -318,6 +323,78 @@
 
             }
 
+            function addVideoEventListeners() {
+                let videos = document.querySelectorAll(".video-iframe"); // Assuming .video-iframe is a <video> tag
+                console.log("videos:", videos);
+
+                if (videos.length === 0) {
+                    return;
+                }
+
+                // Replace video elements to remove old event listeners
+                videos.forEach((video, index) => {
+                    const newVideo = video.cloneNode(true);
+                    video.replaceWith(newVideo);
+                });
+
+                // Re-select the videos after replacing them
+                videos = document.querySelectorAll(".video-iframe");
+
+                videos.forEach((video, index) => {
+                    console.log(`Adding event listeners to video ${index}`);
+
+                    // Hide the seek bar using CSS (ensures user cannot see the timeline)
+                    video.setAttribute("controls", ""); // Enable controls but hide seek bar
+                    video.style.cssText = `
+            position: relative;
+            width: 100%;
+            height: auto;
+        `;
+
+                    // Prevent seeking
+                    video.addEventListener("timeupdate", function() {
+                        if (video.currentTime > (video.lastTime || 0) + 1) {
+                            video.currentTime = video.lastTime || 0; // Prevent skipping
+                        }
+                        video.lastTime = video.currentTime;
+                    });
+
+                    // Disable spacebar & arrow key seeking
+                    function preventSeek(e) {
+                        if (["ArrowRight", "ArrowLeft", "Space"].includes(e.code)) {
+                            e.preventDefault();
+                        }
+                    }
+                    window.removeEventListener("keydown", preventSeek);
+                    window.addEventListener("keydown", preventSeek);
+
+                    // Notify parent when video ends
+                    video.addEventListener("ended", function() {
+                        // window.parent.postMessage({
+                        //     videoIndex: index,
+                        //     status: "completed"
+                        // }, "*");
+                            completedVideos.push({
+                                videoIndex: index,
+                                status: "completed"
+                            });
+                            console.log(completedVideos);
+                    });
+                });
+
+                // // Message event listener to track video completion
+                // function handleMsgListener(event) {
+                //     // if (event.data.status === "completed") {
+                //     //     document.getElementById("nextButton").disabled = false;
+                //     // }
+                //     console.log("video completed:", event.data);
+                // }
+
+                // // Remove previous message listener before adding a new one
+                // window.removeEventListener("message", handleMsgListener);
+                // window.addEventListener("message", handleMsgListener);
+            }
+
             function createStatementPage(obj) {
                 return `
                 <div class="col-lg-7">
@@ -329,7 +406,11 @@
                                 
                             </div>
                             <div class="form_items" style="margin: 0px;">
-                                <iframe class="video-iframe w-100" style="height: 350px;" src="${convertToEmbedURL(obj.videoUrl)}" frameborder="0" allowfullscreen></iframe>
+                                <video class="video-iframe w-100" style="height: 350px;" controls oncontextmenu="return false" disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback">
+                                    <source src="${convertToEmbedURL(obj.videoUrl)}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                                
                             </div>
 
                         </div>
