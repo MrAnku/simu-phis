@@ -896,6 +896,13 @@ function searchTrainingModule(searchValue) {
 function prepareTrainingHtml(data) {
     let html = '';
     data.forEach(training => {
+        const notGameTraining = training.training_type && training.training_type != 'games';
+
+        // Set the image path based on whether it's a game training or not
+        const imagePath = notGameTraining
+            ? `/storage/uploads/trainingModule/${training.cover_image}`
+            : `/storage/uploads/trainingGame/${training.cover_image ? training.cover_image : 'default.jpg'}`;
+
         html += `<div class="col-lg-6 t_modules">
                 <div class="card custom-card">
                     <div class="card-header">
@@ -906,7 +913,7 @@ function prepareTrainingHtml(data) {
                         </div>
                     </div>
                     <div class="card-body htmlPhishingGrid">
-                        <img class="trainingCoverImg" src="${training.cover_image ? '/storage/uploads/trainingModule/' + training.cover_image : '/storage/uploads/trainingGame/default.jpg'}" />
+                        <img class="trainingCoverImg" src="${imagePath}" />
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">

@@ -278,8 +278,4 @@ class LearnerDashController extends Controller
 
         return view('learning.gamified-training', compact('training', 'id', 'lang'));
     }
-
-    public function startGameTraining($slug){
-        return $slug;
-    }
 }

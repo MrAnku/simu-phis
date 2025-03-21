@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\TrainingAssignedUser;
 use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,16 @@ class AdminTrainingGameController extends Controller
    }
 
     public function gameScore(Request $request){
-        return $request;
+        $assignedUserId = base64_decode($request->assignedUserId);
+        $assignedUser = TrainingAssignedUser::where('id', $assignedUserId)->first();
+        if($assignedUser->personal_best < $request->score){
+            $assignedUser->personal_best = $request->score;
+        }
+        $assignedUser->game_time = $request->timeConsumed;
+        $assignedUser->save();
+        return response()->json(['status' => true, 'data' => [
+            'score' => $assignedUser->personal_best,
+            'timeConsumed' => $assignedUser->game_time
+        ]]);
     }
 }

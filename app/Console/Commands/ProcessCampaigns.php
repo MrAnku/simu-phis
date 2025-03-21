@@ -707,7 +707,7 @@ class ProcessCampaigns extends Command
 
     $mailData = [
       'user_name' => $assignedUser->user_name,
-      'training_name' => $assignedUser->trainingData->name,
+      'training_name' => $assignedUser->training_type == 'games' ? $assignedUser->trainingGame->name : $assignedUser->trainingData->name,
       // 'login_email' => $userCredentials->login_username,
       // 'login_pass' => $userCredentials->login_password,
       'company_name' => $learnSiteAndLogo['company_name'],

@@ -81,12 +81,6 @@ Route::domain('learn.simuphish.com')->group(function () {
         Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
 
         Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
-
-
-        Route::get('/game-training/{slug}', [LearnerDashController::class, 'startGameTraining'])->name('learner.start.game.training');
-
-
-
         Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
         Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');

@@ -249,7 +249,7 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Assigned Training</h3>
+                                    <h3 class="card-title">Assigned Trainings</h3>
                                 </div>
                                 <div class="card-table table-responsive">
                                     <table class="table table-vcenter">
@@ -264,11 +264,11 @@
 
                                         @forelse ($assignedTrainingCount as $training)
                                             <tr>
-                                                <td class="text-secondary">
-                                                    <a
-                                                        href="
-                                                    @if ($training->training_type == 'static_training') 
-                                                    {{ route('learner.start.training', [
+                                                @if ($training->training_type != 'games')
+                                                    <td class="text-secondary">
+                                                        <a
+                                                            href="
+                                                    @if ($training->training_type == 'static_training') {{ route('learner.start.training', [
                                                         'training_id' => encrypt($training->training),
                                                         'training_lang' => $training->training_lang,
                                                         'id' => base64_encode($training->id),
@@ -280,39 +280,33 @@
                                                                 'language' => $training->training_lang,
                                                                 'id' => base64_encode($training->id),
                                                             ]) }}
-                                                    @elseif($training->training_type == 'games')
-                                                            {{ route('learner.start.game.training', [
-                                                                'slug' =>$training->trainingGame->slug,
-                                                            ]) }}
                                                     @else
                                                             {{ route('learn.gamified.training', [
                                                                 'training_id' => encrypt($training->training),
                                                                 'id' => base64_encode($training->id),
                                                                 'lang' => $training->training_lang,
-                                                            ]) }} 
-                                                            
-                                                    @endif">
-                                                        {{ $training->training_type == 'games' ? $training->trainingGame->name : $training->trainingData->name }}
-                                                    </a>
-                                                    {{-- <a
+                                                            ]) }} @endif">
+                                                            {{ $training->trainingData->name }}
+                                                        </a>
+                                                        {{-- <a
                                                         href="{{ route('learn.testquiz', [
                                                             'id' => base64_encode($training->id),
                                                         ]) }}">{{ $training->trainingData->name }}</a> --}}
-                                                </td>
-                                            @if($training->training_type != 'games')
-                                                <td class="text-secondary">
-                                                    {{ $training->trainingData->estimated_time }} Minutes
-                                                </td>
-                                                <td class="text-secondary">>=
-                                                    {{ $training->trainingData->passing_score }}</td>
-                                                @if ($training->personal_best < 30)
-                                                    <td class="text-danger"><b>{{ $training->personal_best }}%</b>
                                                     </td>
-                                                @else
-                                                    <td class="text-success"><b>{{ $training->personal_best }}%</b>
+                                                    <td class="text-secondary">
+                                                        {{ $training->trainingData->estimated_time }} Minutes
                                                     </td>
+                                                    <td class="text-secondary">>=
+                                                        {{ $training->trainingData->passing_score }}</td>
+                                                    @if ($training->personal_best < 30)
+                                                        <td class="text-danger"><b>{{ $training->personal_best }}%</b>
+                                                        </td>
+                                                    @else
+                                                        <td class="text-success">
+                                                            <b>{{ $training->personal_best }}%</b>
+                                                        </td>
+                                                    @endif
                                                 @endif
-                                            @endif
 
                                             </tr>
                                         @empty
@@ -325,6 +319,55 @@
 
 
 
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Assigned Games</h3>
+                                </div>
+                                <div class="card-table table-responsive">
+                                    <table class="table table-vcenter">
+                                        <thead>
+                                            <tr>
+                                                <th>Game Name</th>
+                                                <th>Time Spent on Game Play</th>
+                                                <th>Score</th>
+                                            </tr>
+                                        </thead>
+
+                                        @forelse ($assignedTrainingCount as $training)
+                                            <tr>
+                                                @if ($training->training_type == 'games')
+                                                <td class="text-secondary">
+                                                    <a href="http://localhost/{{ $training->trainingGame->slug }}/?id={{ base64_encode($training->id) }}" target="_blank">
+                                                        {{ $training->trainingGame->name }}
+                                                    </a>
+                                                </td>
+                                                <td class="text-secondary">
+                                                    {{ sprintf('%02d:%02d', floor($training->game_time / 60), $training->game_time % 60) }}
+                                                </td>
+                                                    
+                                                    @if ($training->personal_best < 30)
+                                                        <td class="text-danger"><b>{{ $training->personal_best }}%</b>
+                                                        </td>
+                                                    @else
+                                                        <td class="text-success">
+                                                            <b>{{ $training->personal_best }}%</b>
+                                                        </td>
+                                                    @endif
+                                                @endif
+
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">No new game has been
+                                                    assigned!
+                                                </td>
+                                            </tr>
+                                        @endforelse
                                     </table>
                                 </div>
                             </div>
