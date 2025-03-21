@@ -6,23 +6,7 @@
 // ==================================================
 $(function () {
     "use strict";
-    // ========== Form-select-option ========== //
-    // $(".step_1").on('click', function () {
-    //     $(".step_1").removeClass("active");
-    //     $(this).addClass("active");
-    // });
-    // $(".step_2").on('click', function () {
-    //     $(".step_2").removeClass("active");
-    //     $(this).addClass("active");
-    // });
-    // $(".step_3").on('click', function () {
-    //     $(".step_3").removeClass("active");
-    //     $(this).addClass("active");
-    // });
-    // $(".step_4").on('click', function () {
-    //     $(".step_4").removeClass("active");
-    //     $(this).addClass("active");
-    // });
+
 
     // ================== CountDown function ================
     $('.countdown_timer').each(function () {
@@ -35,32 +19,9 @@ $(function () {
             });
         });
     });
-    // =====================Progress Increment====================
-    // $(document).on('click', '#nextBtn', function () {
-    //     var $progressbar = $('.count_progress');
-    //     for (var i = 1; i < 4; i++) {
-    //         var className = 'clip-' + i;
-    //         if ($progressbar.hasClass(className)) {
-    //             $progressbar.removeClass(className).addClass('clip-' + (i + 1));
-    //             break;
-    //         }
-    //     }
-    // });
-    // =====================Progress Decrement====================
-    // $(document).on('click', '#prevBtn', function () {
-    //     var $progressbar = $('.count_progress');
-    //     for (var i = 1; i < 4; i++) {
-    //         var className = 'clip-' + i;
-    //         if ($progressbar.hasClass(className)) {
-    //             $progressbar.removeClass(className).addClass('clip-' + (i + 1));
-    //             break;
-    //         }
-    //     }
-    // });
-
-
 
 });
+
 let allQuestions = [];
 let correctAnswered = 0;
 let wrongAnswered = 0;
@@ -69,19 +30,14 @@ var currentTab = 0; // Current tab is set to be the first tab (0)
 
 
 function showTab(n) {
-    // This function will display the specified tab of the form ...
+
     var x = document.querySelectorAll("#trainingQContainers .multisteps_form_panel");
-    // console.log(x);
+
     x[n].style.display = "block";
-    // ... and fix the Previous/Next buttons:
-    // if (n == 0) {
-    //     document.getElementById("prevBtn").style.display = "none";
-    // } else {
-    //     document.getElementById("prevBtn").style.display = "inline";
-    // }
+
     if (n == (x.length - 1)) {
         document.getElementById("nextBtn").innerHTML = "Submit";
-        document.getElementById("nextBtn").setAttribute("onclick", "showScore();");
+        // document.getElementById("nextBtn").setAttribute("onclick", "showScore();");
     } else {
 
         document.getElementById("nextBtn").innerHTML = "Next Question" + ' <span><i class="fas fa-arrow-right"></i></span>';
@@ -107,8 +63,8 @@ function showScore() {
     `;
     $("#showScoreModal .modal-body").html(scoreHtml);
     $("#showScoreModal").modal("show");
-    move();
-    
+
+
     if (scorecard.scoreInPercent > 0) {
         updateScoreInDb(scorecard.scoreInPercent);
     }
@@ -137,11 +93,9 @@ function showDescPopup(isCorrect, desc) {
 }
 
 function nextPrev(n) {
-    // This function will figure out which tab to display
+
     var x = document.querySelectorAll("#trainingQContainers .multisteps_form_panel");
-    // Exit the function if any field in the current tab is invalid:
-    // if (n == 1 && !validateForm()) return false;
-    // Hide the current tab:
+
 
     // Get all radio buttons inside the current tab
     var currentTabRadios = x[currentTab].querySelectorAll('input[type="radio"]');
@@ -176,13 +130,9 @@ function nextPrev(n) {
     currentTab = currentTab + n;
     // if you have reached the end of the form... :
     if (currentTab >= x.length) {
-        //...the form gets submitted:
-        // console.log(correctAnswered);
-        // const scorecard = calculateScore(allQuestions, correctAnswered, wrongAnswered);
-        // if (scorecard.scoreInPercent > 0) {
-        //     updateScoreInDb(scorecard.scoreInPercent);
-        // }
-        // console.log(scorecard);
+
+        showScore();
+        move();
         return false;
     }
     // Otherwise, display the correct tab:
@@ -267,16 +217,16 @@ function move() {
     } else {
         var dividedPercentage = Math.floor(100 / allQuestions.length);
         var elem = document.getElementById("myBar");
-    
+
         // Get current width safely (default to 20 if empty)
         var currentWidth = parseInt(elem.style.width) || 20;
         var newWidth = currentWidth + dividedPercentage;
-    
+
         // Ensure newWidth doesn't exceed 100%
-        if (newWidth > 100 || currentTab + 1 === allQuestions.length) {
+        if (currentTab === allQuestions.length) {
             newWidth = 100;
         }
-    
+
         elem.style.width = `${newWidth}%`;
         elem.innerHTML = `${newWidth}%`;
         elem.setAttribute("aria-valuenow", newWidth);
