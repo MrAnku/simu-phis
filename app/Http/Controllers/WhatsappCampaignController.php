@@ -409,7 +409,7 @@ class WhatsappCampaignController extends Controller
 
         // Check if training is already assigned to the user
         $already_have_this_training = DB::table('training_assigned_users')
-            ->where('user_id', $campaign_user->user_id)
+            ->where('user_email', $campaign_user->user_email)
             ->where('training', $campaign_user->training)
             ->first();
 

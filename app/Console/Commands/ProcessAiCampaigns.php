@@ -147,7 +147,7 @@ class ProcessAiCampaigns extends Command
     {
         // Check if training is already assigned to the user
         $checkAssignedUser = DB::table('training_assigned_users')
-            ->where('user_id', $campaign->user_id)
+            ->where('user_email', $campaign->employee_email)
             ->where('training', $campaign->training)
             ->first();
 

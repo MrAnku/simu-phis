@@ -229,7 +229,7 @@ class ShowWebsiteController extends Controller
 
         // Check if training is already assigned to the user
         $checkAssignedUser = DB::table('training_assigned_users')
-            ->where('user_id', $user->user_id)
+            ->where('user_email', $user->user_email)
             ->where('training', $user->training_module)
             ->first();
 
@@ -256,7 +256,7 @@ class ShowWebsiteController extends Controller
         foreach ($trainings as $training) {
             // Check if training is already assigned to the user
             $checkAssignedUser = DB::table('training_assigned_users')
-                ->where('user_id', $user->user_id)
+                ->where('user_email', $user->user_email)
                 ->where('training', $training)
                 ->first();
 

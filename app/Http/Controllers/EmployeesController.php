@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiCallCampaign;
+use App\Models\AiCallCampLive;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\Campaign;
@@ -12,8 +14,13 @@ use App\Models\BreachedEmail;
 use App\Models\CampaignReport;
 use App\Models\DomainVerified;
 use App\Models\OutlookAdToken;
+use App\Models\QuishingCamp;
+use App\Models\QuishingLiveCamp;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
+use App\Models\UserLogin;
+use App\Models\WhatsappCampaign;
+use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -40,7 +47,7 @@ class EmployeesController extends Controller
 
         return view('employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
- public function BlueCOllarIndex()
+    public function BlueCOllarIndex()
     {
 
         $companyId = Auth::user()->company_id;
@@ -211,7 +218,7 @@ class EmployeesController extends Controller
 
         return redirect()->route('employees');
     }
-  public function blueCollarNewGroup(Request $request)
+    public function blueCollarNewGroup(Request $request)
     {
         $input = $request->all();
         foreach ($input as $key => $value) {
@@ -254,19 +261,47 @@ class EmployeesController extends Controller
 
     public function deleteUser(Request $request)
     {
-        $user = Users::find($request->user_id);
-        $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
+        $user = Users::where('id', $request->user_id)->where('company_id', Auth::user()->company_id)->first();
+        // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
 
         if ($user) {
-            $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
+
+            //delete from email campaign live
+            CampaignLive::where('user_id', $user->id)->delete();
+
+
+            //delete ai campaign live
+            AiCallCampLive::where('user_id', $user->id)->delete();
+
+
+            //delete from whatsapp campaign live
+            WhatsAppCampaignUser::where('user_id', $user->id)->delete();
+
+
+            //delete from quishing campaign live
+            QuishingLiveCamp::where('user_id', $user->id)->delete();
+
+
+            //delete from training assigned table
+            TrainingAssignedUser::where('user_email', $user->user_email)->delete();
+
+            //delete from user login table
+            UserLogin::where('user_id', $user->id)->delete();
+
+            //checking if no emails available then delete from breached email table
+            $emailsExists = Users::where('user_email', $user->user_email)->where('company_id', Auth::user()->company_id)->count();
+            if ($emailsExists == 1) {
+                BreachedEmail::where('email', $user->user_email)->delete();
+            }
+
             log_action("User {$user->user_email} deleted");
             $user->delete();
 
-            return response()->json(['status' => 1, 'msg' => 'User deleted successfully'], 200);
+            return response()->json(['status' => 1, 'msg' => 'User deleted successfully']);
         } else {
 
             log_action("User not found to delete");
-            return response()->json(['status' => 0, 'msg' => 'User not found'], 404);
+            return response()->json(['status' => 0, 'msg' => 'User not found']);
         }
     }
 
@@ -317,9 +352,21 @@ class EmployeesController extends Controller
         }
 
         //checking if the email is unique
-        $user = Users::where('user_email', $request->usrEmail)->exists();
-        if ($user) {
-            return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
+        // $user = Users::where('user_email', $request->usrEmail)->exists();
+        // if ($user) {
+        //     return response()->json(['status' => 0, 'msg' => 'This email already exists / Or added by some other company']);
+        // }
+
+        //this user already in this group
+        $userExists = Users::where('user_email', $request->usrEmail)->where('group_id', $request->groupid)->exists();
+        if ($userExists) {
+            return response()->json(['status' => 0, 'msg' => 'This employee already in this group']);
+        }
+
+        //this user is already added in this company
+        $userExists = Users::where('user_email', $request->usrEmail)->where('company_id', $companyId)->exists();
+        if (!$userExists) {
+            Auth::user()->increment('usedemployees');
         }
 
         Users::create(
@@ -333,7 +380,6 @@ class EmployeesController extends Controller
                 'company_id' => $companyId,
             ]
         );
-        Auth::user()->increment('usedemployees');
         log_action("Employee {$request->usrEmail} added");
         return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
@@ -361,40 +407,72 @@ class EmployeesController extends Controller
         DB::beginTransaction();
         try {
             // Delete the group
+            $groupExists = UsersGroup::where('group_id', $grpId)
+                ->where('company_id', $companyId)
+                ->get();
+            if (!$groupExists) {
+                return response()->json(['status' => 0, 'msg' => 'Group not found']);
+            }
+
+            //delete the group
             UsersGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)
                 ->delete();
 
-            // Find all users in the group
+            //deleting from email campaign
+            $email_camps = Campaign::where('users_group', $grpId)->get();
+            if ($email_camps) {
+                //deleting campaign reports
+                $email_camps->each(function ($camp) {
+                    CampaignReport::where('campaign_id', $camp->campaign_id)->delete();
+                    CampaignLive::where('campaign_id', $camp->campaign_id)->delete();
+                });
+                Campaign::where('users_group', $grpId)->delete();
+            }
+
+            //deleting from ai campaign
+            $ai_camps = AiCallCampaign::where('emp_group', $grpId)->get();
+            if ($ai_camps) {
+                //deleting campaign reports
+                $ai_camps->each(function ($camp) {
+                    AiCallCampLive::where('campaign_id', $camp->campaign_id)->delete();
+                });
+                AiCallCampaign::where('emp_group', $grpId)->delete();
+            }
+
+            //deleting from quishing
+            $qsh_camps = QuishingCamp::where('users_group', $grpId)->get();
+            if ($qsh_camps) {
+                $qsh_camps->each(function ($camp) {
+
+                    QuishingLiveCamp::where('campaign_id', $camp->campaign_id)->delete();
+                });
+                QuishingCamp::where('users_group', $grpId)->delete();
+            }
+
+            //deleting from whatsapp
+            $whatsapp_camps = WhatsappCampaign::where('user_group', $grpId)->get();
+            if ($whatsapp_camps) {
+                $whatsapp_camps->each(function ($camp) {
+
+                    WhatsAppCampaignUser::where('camp_id', $camp->camp_id)->delete();
+                });
+                WhatsappCampaign::where('user_group', $grpId)->delete();
+            }
+
+            //deleting from assigned training table
             $users = Users::where('group_id', $grpId)->get();
+            if ($users) {
+                $users->each(function ($user) {
+                    TrainingAssignedUser::where('user_id', $user->id)->delete();
 
-            // Delete associated data for each user
-            foreach ($users as $user) {
-                DB::table('user_login')->where('user_id', $user->id)->delete();
-                TrainingAssignedUser::where('user_id', $user->id)->delete();
+                    //deleting from user login table
+                    UserLogin::where('user_id', $user->id)->delete();
+                });
+
+                Users::where('group_id', $grpId)->delete();
             }
 
-            // Check if any campaigns are using this group
-            $campaigns = Campaign::where('users_group', $grpId)
-                ->where('company_id', $companyId)
-                ->get();
-
-            foreach ($campaigns as $campaign) {
-                Campaign::where('campaign_id', $campaign->campaign_id)
-                    ->where('company_id', $companyId)
-                    ->delete();
-
-                CampaignLive::where('campaign_id', $campaign->campaign_id)
-                    ->where('company_id', $companyId)
-                    ->delete();
-
-                CampaignReport::where('campaign_id', $campaign->campaign_id)
-                    ->where('company_id', $companyId)
-                    ->delete();
-            }
-
-            // Delete all users in the group
-            Users::where('group_id', $grpId)->delete();
 
             DB::commit();
 
@@ -457,9 +535,21 @@ class EmployeesController extends Controller
                     continue;
                 }
 
-                $user = Users::where('user_email', $email)->exists();
-                if ($user) {
+                // $user = Users::where('user_email', $email)->exists();
+                // if ($user) {
+                //     continue;
+                // }
+
+                //this user already in this group
+                $userExists = Users::where('user_email', $email)->where('group_id', $grpId)->exists();
+                if ($userExists) {
                     continue;
+                }
+
+                //this user is already added in this company
+                $userExists = Users::where('user_email', $email)->where('company_id', $companyId)->exists();
+                if (!$userExists) {
+                    Auth::user()->increment('usedemployees');
                 }
 
                 $user = new Users();
@@ -472,7 +562,7 @@ class EmployeesController extends Controller
                 $user->company_id = $companyId;
                 $user->save();
 
-                Auth::user()->increment('usedemployees');
+                // Auth::user()->increment('usedemployees');
             }
             fclose($handle);
 

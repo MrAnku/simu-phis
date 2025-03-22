@@ -246,7 +246,7 @@ class ProcessCampaigns extends Command
       foreach ($trainings as $training) {
         // Check if training is already assigned to the user
         $checkAssignedUser = DB::table('training_assigned_users')
-          ->where('user_id', $campaign->user_id)
+          ->where('user_email', $campaign->user_email)
           ->where('training', $training)
           ->first();
 
@@ -270,7 +270,7 @@ class ProcessCampaigns extends Command
     }
     // Check if training is already assigned to the user
     $checkAssignedUser = DB::table('training_assigned_users')
-      ->where('user_id', $campaign->user_id)
+      ->where('user_email', $campaign->user_email)
       ->where('training', $campaign->training_module)
       ->first();
 

@@ -156,6 +156,12 @@ class OutlookAdController extends Controller
                 break;
             }
 
+            //checking employees limit
+            if ((int)auth()->user()->usedemployees >= (int)auth()->user()->employees) {
+                $error = 'You have reached your employees limit.';
+                break;
+            }
+
             //checking domain verification
             $domain = explode("@", $emp['email'])[1];
             $checkDomain = DomainVerified::where('domain', $domain)
@@ -168,19 +174,27 @@ class OutlookAdController extends Controller
             }
 
             //checking email duplication
-            $checkEmail = Users::where('user_email', $emp['email'])
-                ->where('company_id', $company_id)
-                ->exists();
-            if ($checkEmail) {
-                $error = 'Email already exists.';
-                break;
+            // $checkEmail = Users::where('user_email', $emp['email'])
+            //     ->where('company_id', $company_id)
+            //     ->exists();
+            // if ($checkEmail) {
+            //     $error = 'Email already exists.';
+            //     break;
+            // }
+
+            //this user already in this group
+            $userExists = Users::where('user_email', $emp['email'])->where('group_id', $groupId)->exists();
+            if ($userExists) {
+                continue;
             }
 
-            //checking employees limit
-            if ((int)auth()->user()->usedemployees >= (int)auth()->user()->employees) {
-                $error = 'You have reached your employees limit.';
-                break;
+            //this user is already added in this company
+            $userExists = Users::where('user_email', $emp['email'])->where('company_id', $company_id)->exists();
+            if (!$userExists) {
+                auth()->user()->increment('usedemployees');
             }
+
+            
 
             Users::firstOrCreate(
                 ['user_email' => $emp['email']], // Avoid duplicates
@@ -196,7 +210,7 @@ class OutlookAdController extends Controller
             );
 
             // Update used employees count
-            auth()->user()->increment('usedemployees');
+            // auth()->user()->increment('usedemployees');
         }
 
         if($error){
