@@ -6,7 +6,6 @@
     <option value="bg">Bulgarian</option>
     <option value="ca">Catalan</option>
     <option value="zh">Chinese</option>
-    <option value="zt">Chinese (traditional)</option>
     <option value="cs">Czech</option>
     <option value="da">Danish</option>
     <option value="nl">Dutch</option>

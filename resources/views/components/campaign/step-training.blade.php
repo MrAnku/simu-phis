@@ -74,7 +74,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body htmlPhishingGrid">
+                    <div class="card-body htmlPhishingGrid" style="width: 100%; height: 300px;">
                         <img class="trainingCoverImg" src="{{ $coverImgPath }}" />
                     </div>
                     <div class="card-footer">
