@@ -96,7 +96,14 @@
                                                     <img class="trainingCoverImg"
                                                         src="{{ Storage::url('uploads/trainingGame/' . $trainingModule->cover_image) }}" />
                                                 </div>
-                                                
+                                                <div class="card-footer">
+                                                    <div class="d-flex justify-content-center">
+
+                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }}"
+                                                            target="_blank"
+                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     @empty
