@@ -116,19 +116,21 @@
         </div>
         <div class="tab-pane fade text-muted" id="shipped-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
             tabindex="0">
-            <ul class="ps-3 mb-0">
-                <li>but also the leap into electronic typesetting, remaining essentially
-                    unchanged. It was popularised in the 1960s with the release of Letraset
-                    sheets containing Lorem Ipsum passages, and more recently.</li>
-            </ul>
+            <div>
+                <p class="text-muted">
+                    Refer to our knowledge base article for setup instructions. simUphish will request permission to
+                    access directory data, including users and groups. We will also retrieve the profile information of
+                    the authorizing user.
+                </p>
+            </div>
+            <div class="text-center">
+                <button 
+                        class="btn btn-danger custom-button rounded-pill">
+                        <span class="custom-btn-icons"><i class="ri-google-fill text-danger"></i></span>
+                        Sign in with Google
+                    </button>
+            </div>
         </div>
-        <div class="tab-pane fade text-muted" id="delivered-tab-pane" role="tabpanel" tabindex="0">
-            <ul class="list-unstyled mb-0">
-                <li>A Latin professor at Hampden-Sydney College in Virginia, looked up one
-                    of the more obscure Latin words, consectetur, from a Lorem Ipsum
-                    passage, and going through the cites of the word in classical
-                    literature.</li>
-            </ul>
-        </div>
+        
     </div>
 </div>

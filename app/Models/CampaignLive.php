@@ -26,6 +26,10 @@ class CampaignLive extends Model
         'phishing_material',
         'email_lang',
         'sent',
+        'mail_open',
+        'payload_clicked',
+        'emp_compromised',
+        'email_reported',
         'training_assigned',
         'company_id'
     ];
