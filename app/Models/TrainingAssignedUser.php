@@ -30,4 +30,8 @@ class TrainingAssignedUser extends Model
     public function trainingGame(){
         return $this->hasOne(TrainingGame::class, 'id', 'training');
     }
+
+    public function campaign(){
+        return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
+    }
 }

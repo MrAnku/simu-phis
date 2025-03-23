@@ -576,14 +576,75 @@
                 showTrainingReportIndividual(res);
             }
 
+            function showGameProgressReport(response) {
+                $.post({
+                    url: '/campaigns/fetch-game-detail',
+                    data: {
+                        campaignId: response.campaign_id
+                    },
+                    success: function(res){
+                        if(res.status === 0){
+                            $("#gameReportStatus").html('<tr><td colspan="5" class="text-center">No data found</td></tr>');
+                            return;
+                        }
+                        console.log(res);
+                        // return;
+                        let campaign = `
+                        <tr>
+                            <td>
+                                ${res.campaign_detail.campaign_name}
+                            </td>    
+                            <td>
+                                <span class="badge bg-secondary">${res.target_employees.length}</span>
+                                
+                            </td>    
+                            <td>
+                                <span class="badge bg-secondary">${res.campaign_detail.total_assigned}</span>
+                            </td>    
+                            <td>
+                                <span class="badge bg-secondary">${res.campaign_detail.game_completed}</span>
+                            </td>    
+                        </tr>
+                        `;
+                        $("#gameReportStatus").html(campaign);
+                       
+                        if(res.target_employees.length > 0){
+                            let targetEmployees = '';
+                            res.target_employees.forEach((employee, index) => {
+                                targetEmployees += `
+                                <tr>
+                                    <td>${employee.user_name}</td>
+                                    <td>${employee.user_email}</td>
+                                    <td>
+                                        <span class="badge bg-primary">${employee.training_game?.name}</span>
+                                    </td>
+                                    <td>${employee.assigned_date}</td>
+                                    <td>${employee.personal_best}%</td>
+                                    <td>${Math.floor(employee.game_time / 60).toString().padStart(2, '0')}:${(employee.game_time % 60).toString().padStart(2, '0')} mins</td>
+                                </tr>
+                                `;
+                            });
+                            $("#gameReportsIndividual").html(targetEmployees);
+                        }else{
+                            $("#gameReportsIndividual").html('<tr><td colspan="6" class="text-center">No data found</td></tr>');
+                        }
+                    }
+                })
+            }
+
             function fetchCampaignDetails(campid) {
                 // console.log(campid)
                 $("#training_tab").hide();
                 $("#training_tab a").removeClass('active');
                 $("#training_campaign").removeClass("active show");
+
                 $("#phishing_tab").hide();
                 $("#phishing_tab a").removeClass('active');
                 $("#phishing_campaign").removeClass("active show");
+
+                $("#game_tab").hide();
+                $("#game_tab a").removeClass('active');
+                $("#game_training").removeClass("active show");
 
                 $.post({
                     url: '/campaigns/fetch-campaign-detail',
@@ -605,20 +666,35 @@
 
                         }
                         if (response.campaign_type === "Training") {
-                            $("#training_tab").show();
-                            $("#training_tab a").addClass('active');
-                            $("#training_campaign").addClass("active show");
+                            if (response.training_type == 'games') {
+                                $("#game_tab").show();
+                                $("#game_tab a").addClass('active');
+                                $("#game_training").addClass("active show");
+                                showGameProgressReport(response);
+                            } else {
+                                $("#training_tab").show();
+                                $("#training_tab a").addClass('active');
+                                $("#training_campaign").addClass("active show");
 
-                            showTrainingReport(response);
+                                showTrainingReport(response);
+                            }
+
                         }
                         if (response.campaign_type === "Phishing & Training") {
+
                             $("#phishing_tab").show();
                             $("#phishing_tab a").addClass('active');
                             $("#phishing_campaign").addClass("active show");
-                            $("#training_tab").show();
-
                             showPhishingReport(response);
-                            showTrainingReport(response);
+
+                            if (response.training_type == 'games') {
+                                $("#game_tab").show();
+                                showGameProgressReport(response);
+                            }else{
+                                $("#training_tab").show();
+                                showTrainingReport(response);
+                            }
+
                         }
 
                         return;

@@ -15,6 +15,10 @@
                     href="#training_campaign" aria-selected="false" tabindex="-1">Training
                     Campaign</a>
             </li>
+            <li class="nav-item" role="presentation" id="game_tab">
+                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                    href="#game_training" aria-selected="false" tabindex="-1">Game Progress</a>
+            </li>
         </ul>
 </div>
 <div>
@@ -114,6 +118,49 @@
                                     </tr>
                                 </thead>
                                 <tbody id="trainingReportsIndividual">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane text-muted" id="game_training" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table text-nowrap table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Campaign name</th>
+                                <th scope="col">Total Employees Played</th>
+                                <th scope="col">Total Assigned</th>
+                                <th scope="col">Game Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gameReportStatus">
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">Game Statistics</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="file-export3" class="table table-bordered text-nowrap w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Employee Name</th>
+                                        <th>Email Address</th>
+                                        <th>Game</th>
+                                        <th>Date Assigned</th>
+                                        <th>Score</th>
+                                        <th>Play Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gameReportsIndividual">
 
                                 </tbody>
                             </table>

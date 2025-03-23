@@ -907,4 +907,42 @@ class CampaignController extends Controller
 
         return response()->json(['html' => $responseHtml]);
     }
+
+    public function fetchGameDetail(Request $request){
+
+        $campaignName = Campaign::where('campaign_id', $request->campaignId)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('training_type', 'games')
+            ->value('campaign_name');
+
+        $playedUsers = CampaignLive::where('campaign_id', $request->campaignId)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('training_type', 'games')
+            ->count();
+
+        $totalAssigned = TrainingAssignedUser::where('campaign_id', $request->campaignId)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('training_type', 'games')
+            ->count();
+
+        $gameCompleted = TrainingAssignedUser::where('campaign_id', $request->campaignId)
+            ->where('company_id', Auth::user()->company_id)
+            ->where('training_type', 'games')
+            ->where('completed', 1)
+            ->count();
+
+        $campaignDetail = [
+                'campaign_name' => $campaignName,
+                'played_users' => $playedUsers,
+                'total_assigned' => $totalAssigned,
+                'game_completed' => $gameCompleted
+        ];
+
+        $targetEmployees = TrainingAssignedUser::with('trainingGame')->where('training_type', 'games')
+            ->where('campaign_id', $request->campaignId)
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+        
+        return response()->json(['status' => 1, 'campaign_detail' => $campaignDetail, 'target_employees' => $targetEmployees]);
+    }
 }

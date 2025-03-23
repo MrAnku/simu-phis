@@ -19,6 +19,7 @@ use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Mail\GameAssignedEmail;
 use App\Models\QuishingCamp;
 use App\Models\QuishingLiveCamp;
 
@@ -307,14 +308,21 @@ class ShowWebsiteController extends Controller
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
         $mailData = [
             'user_name' => $user->user_name,
-            'training_name' => $this->trainingName($training ?? $user->training_module),
+            'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
             'password_create_link' => $passwordGenLink,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
             'learning_site' => $learnSiteAndLogo['learn_domain'],
             'logo' => $learnSiteAndLogo['logo']
         ];
-        log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$user->user_email}.", 'employee', 'employee');
+
+        log_action(
+            "Email simulation | Training " . 
+            (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
+            " assigned to " . $user->user_email . ".",
+            'employee',
+            'employee'
+        );
 
         Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData));
 
@@ -363,7 +371,7 @@ class ShowWebsiteController extends Controller
 
             $mailData = [
                 'user_name' => $user->user_name,
-                'training_name' => $this->trainingName($training ?? $user->training_module),
+                'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
                 'login_email' => $checkLoginExist->login_username,
                 'login_pass' => $checkLoginExist->login_password,
                 'company_name' => $learnSiteAndLogo['company_name'],
@@ -372,9 +380,20 @@ class ShowWebsiteController extends Controller
                 'logo' => $learnSiteAndLogo['logo']
             ];
 
-            log_action("Email simulation | Training {$this->trainingName($training ??$user->training_module)} assigned to {$checkLoginExist->login_username}.", 'employee', 'employee');
+            log_action(
+                "Email simulation | Training " . 
+                (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
+                " assigned to " . $user->user_email . ".",
+                'employee',
+                'employee'
+            );
 
-            Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData));
+            if($user->training_type == 'games'){
+                Mail::to($checkLoginExist->login_username)->send(new GameAssignedEmail($mailData));
+            }else{
+                Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData));
+            }
+            
 
 
             // Update campaign_live table
@@ -403,7 +422,7 @@ class ShowWebsiteController extends Controller
 
         $mailData = [
             'user_name' => $user->user_name,
-            'training_name' => $this->trainingName($user->training_module),
+            'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
             'login_email' => $userCredentials->login_username,
             'login_pass' => $userCredentials->login_password,
             'company_name' => $learnSiteAndLogo['company_name'],
@@ -412,9 +431,21 @@ class ShowWebsiteController extends Controller
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        log_action("Email simulation | Training {$this->trainingName($user->training_module)} assigned to {$userCredentials->login_username}.", 'employee', 'employee');
+        log_action(
+            "Email simulation | Training " . 
+            (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
+            " assigned to " . $user->user_email . ".",
+            'employee',
+            'employee'
+        );
 
-        Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
+        if($user->training_type == 'games'){
+            Mail::to($userCredentials->login_username)->send(new GameAssignedEmail($mailData));
+        }else{
+            Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
+        }
+
+        
 
         // Update campaign_live table
         $user->training_assigned = 1;
