@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
 use Illuminate\Support\Facades\DB;
@@ -17,25 +18,36 @@ class TrainingModuleController extends Controller
 
         if ($request->has('type')) {
             $selectedType = $request->input('type');
-            $trainings = TrainingModule::where('training_type', $selectedType)
-                ->where(function ($query) use ($company_id) {
+            if ($selectedType == 'games') {
+
+                $trainings = TrainingGame::where(function ($query) use ($company_id) {
                     $query->where('company_id', $company_id)
                         ->orWhere('company_id', 'default');
                 })->get();
-        }else{
+            } else {
+                $trainings = TrainingModule::where('training_type', $selectedType)
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id)
+                            ->orWhere('company_id', 'default');
+                    })->get();
+            }
+        } else {
             $trainings = TrainingModule::where(function ($query) use ($company_id) {
                 $query->where('company_id', $company_id)
                     ->orWhere('company_id', 'default');
             })->where('training_type', 'static_training')->get();
         }
 
-       
 
-        // Separate the trainings based on the category
-        $interTrainings = $trainings->where('category', 'international');
-        $middleEastTrainings = $trainings->where('category', 'middle_east');
+        if ($request->input('type') !== 'games') {
+            // Separate the trainings based on the category
+            $interTrainings = $trainings->where('category', 'international');
+            $middleEastTrainings = $trainings->where('category', 'middle_east');
 
-        return view('trainingModules', compact('interTrainings', 'middleEastTrainings'));
+            return view('trainingModules', compact('interTrainings', 'middleEastTrainings'));
+        }else{
+            return view('trainingModules', compact('trainings'));
+        }
     }
 
 
