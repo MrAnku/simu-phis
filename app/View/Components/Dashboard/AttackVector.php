@@ -8,12 +8,15 @@ use Illuminate\View\Component;
 
 class AttackVector extends Component
 {
+    public $activeAIVishing;
+    public $activeTprm;
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct($activeAIVishing, $activeTprm)
     {
-        //
+        $this->activeAIVishing = $activeAIVishing;
+        $this->activeTprm = $activeTprm;
     }
 
     /**

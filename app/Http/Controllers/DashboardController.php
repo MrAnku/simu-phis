@@ -6,6 +6,7 @@ use App\Models\BreachedEmail;
 use App\Models\Campaign;
 use App\Models\CampaignReport;
 use App\Models\EmailCampActivity;
+use App\Models\TpmrVerifiedDomain;
 use App\Models\Users;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,7 +33,14 @@ class DashboardController extends Controller
         $package = $this->getPackage();
         $usageCounts = $this->osBrowserUsage();
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
-        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts'));
+
+        $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', auth()->user()->company_id)
+        ->where('status', true)->first();
+
+        $activeTprm = TpmrVerifiedDomain::where('company_id', auth()->user()->company_id)
+        ->where('verified', true)->first();
+
+        return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts', 'activeAIVishing', 'activeTprm'));
     }
 
     public function osBrowserUsage()

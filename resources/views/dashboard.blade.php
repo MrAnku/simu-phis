@@ -10,7 +10,7 @@
                 <div class="col-lg-4">
                     <x-dashboard.hi-card />
                     <x-dashboard.package-card :package="$package" :upgrade="$data" />
-                    <x-dashboard.attack-vector />
+                    <x-dashboard.attack-vector :activeAIVishing="$activeAIVishing" :activeTprm="$activeTprm" />
                     <x-dashboard.wa-camp-report />
                 </div>
 
