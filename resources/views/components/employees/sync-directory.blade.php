@@ -10,11 +10,11 @@
                 type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false"><i
                     class="ri-windows-line me-1 align-middle"></i>Outlook/Azure</button>
         </li>
-        <li class="nav-item" role="presentation">
+        {{-- <li class="nav-item" role="presentation">
             <button class="nav-link" id="shipped-tab" data-bs-toggle="tab" data-bs-target="#shipped-tab-pane"
                 type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false"><i
                     class="ri-google-line me-1 align-middle"></i>Google Workspace</button>
-        </li>
+        </li> --}}
     </ul>
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="order-tab-pane" role="tabpanel" aria-labelledby="home-tab"
@@ -114,7 +114,7 @@
             
 
         </div>
-        <div class="tab-pane fade text-muted" id="shipped-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
+        {{-- <div class="tab-pane fade text-muted" id="shipped-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
             tabindex="0">
             <div>
                 <p class="text-muted">
@@ -130,7 +130,7 @@
                         Sign in with Google
                     </button>
             </div>
-        </div>
+        </div> --}}
         
     </div>
 </div>
