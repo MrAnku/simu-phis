@@ -48,6 +48,7 @@ use App\Http\Controllers\Admin\AdminPhishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\AdminQuishingEmailController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\BluecolarController;
@@ -549,6 +550,14 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/delete-email-template', [AdminPhishingEmailController::class, 'deleteTemplate'])->name('admin.phishing.template.delete');
 
     //----------------phishing emails route ----------------------//
+
+    // -----------------quishing emails route ----------------------//
+    Route::get('admin/quishing-emails', [AdminQuishingEmailController::class, 'index'])->name('admin.quishingEmails');
+
+    Route::post('admin/quishing-emails/add-temp', [AdminQuishingEmailController::class, 'addTemplate'])->name('admin.quishing.emails.add');
+    Route::post('/admin/quishing-emails/delete-temp', [AdminQuishingEmailController::class, 'deleteTemplate'])->name('admin.quishing.emails.delete');
+    Route::post('admin/quishing-emails/update-temp', [AdminQuishingEmailController::class, 'updateTemplate'])->name('admin.quishing.emails.update');
+    // -----------------quishing emails route ----------------------//
 
     //----------------phishing websites route -------------------------//
 

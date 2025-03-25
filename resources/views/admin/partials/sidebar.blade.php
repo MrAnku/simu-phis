@@ -106,14 +106,14 @@
                                     </li>
 
                                     <li
-                                        class="slide has-sub {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is(['admin/phishing-emails', 'admin/quishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
                                             class="side-menu__item {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'active' : '' }}">
                                             <i class="bx bx-laptop side-menu__icon"></i>
                                             <span class="side-menu__label">Phishing Material</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
                                         </a>
-                                        <ul class="slide-menu child1 {{ Request::is(['admin/phishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'active' : '' }}"
+                                        <ul class="slide-menu child1 {{ Request::is(['admin/phishing-emails', 'admin/quishing-emails', 'admin/phishing-websites', 'admin/sender-profiles']) ? 'active' : '' }}"
                                             style="position: relative; left: 0px; top: 0px; margin: 0px; transform: translate3d(119.2px, 287.2px, 0px);"
                                             data-popper-placement="bottom">
                                             <li class="slide side-menu__label1">
@@ -123,13 +123,15 @@
                                                 class="slide {{ Request::is('admin/phishing-emails') ? 'active' : '' }}">
                                                 <a href="{{ route('admin.phishingEmails') }}" class="side-menu__item {{ Request::is('admin/phishing-emails') ? 'active' : '' }}">Phishing Emails</a>
                                             </li>
-                                            <li
-                                                class="slide {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">
+                                            <li class="slide {{ Request::is('admin/quishing-emails') ? 'active' : '' }}">
+                                                <a href="{{ route('admin.quishingEmails') }}" class="side-menu__item {{ Request::is('admin/quishing-emails') ? 'active' : '' }}">Quishing Emails
+                                                </a>
+                                            </li>
+                                            <li class="slide {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">
                                                 <a href="{{ route('admin.phishing.websites') }}"
                                                     class="side-menu__item {{ Request::is('admin/phishing-websites') ? 'active' : '' }}">Phishing Websites</a>
                                             </li>
-                                            <li
-                                                class="slide {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">
+                                            <li class="slide {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">
                                                 <a href="{{ route('admin.senderprofile.index') }}"
                                                     class="side-menu__item {{ Request::is('admin/sender-profiles') ? 'active' : '' }}">Sender Profiles</a>
                                             </li>
