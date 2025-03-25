@@ -10,10 +10,12 @@
         "endroid/qr-code": "^6.0",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "3.0",
         "netflie/whatsapp-cloud-api": "^2.2",
         "plivo/plivo-php": "^4.67",
+        "php-open-source-saver/jwt-auth": "^2.3",
         "pragmarx/google2fa-laravel": "^2.2"
     },
     "require-dev": {

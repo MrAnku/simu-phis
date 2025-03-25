@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-class Company extends Authenticatable
+class Company extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
@@ -60,25 +61,34 @@ class Company extends Authenticatable
         ];
     }
 
-    public function company_settings(){
+    public function company_settings()
+    {
 
         return $this->hasOne(Settings::class, 'company_id', 'company_id');
     }
 
-    public function partner(){
+    public function partner()
+    {
         return $this->belongsTo(Partner::class, 'partner_id', 'partner_id');
     }
 
-    public function whatsappConfig(){
+    public function whatsappConfig()
+    {
         return $this->hasOne(CompanyWhatsappConfig::class, 'company_id', 'company_id');
     }
 
-    public function users(){
+    public function users()
+    {
         return $this->hasMany(Users::class, 'company_id', 'company_id');
     }
 
-    public function quishingLiveCamps(){
+    public function quishingLiveCamps()
+    {
         return $this->hasMany(QuishingLiveCamp::class, 'company_id', 'company_id');
+    }
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
     }
 
     public function siemConfig(){
@@ -89,4 +99,8 @@ class Company extends Authenticatable
         return $this->hasMany(SmishingLiveCampaign::class, 'company_id', 'company_id');
     }
 
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

@@ -3,61 +3,50 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Handle an incoming authentication request and return JWT.
      */
-    public function create(): View
+    public function login(Request $request)
     {
-        return view('auth.login');
+        $credentials = $request->only('email', 'password');
+
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        return response()->json([
+            'token' => $token,
+            'company' => Auth::user(),
+            "success" => true
+        ]);
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Logout and invalidate JWT token.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function logout(Request $request): JsonResponse
     {
         try {
-            $request->authenticate();
-    
-            $request->session()->regenerate();
-
-            log_action('Company logged in');
-    
-            return redirect()->intended(route('dashboard', absolute: false));
-        } catch (ValidationException $e) {
-            // Check if the exception is related to MFA
-            if ($e->validator->errors()->has('mfa')) {
-                return redirect()->route('mfa.enter');
-            }
-    
-            // If it's a different validation exception, rethrow it
-            throw $e;
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Failed to logout'], 500);
         }
     }
 
     /**
-     * Destroy an authenticated session.
+     * Get authenticated user details.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function me(): JsonResponse
     {
-        log_action('Company logged out');
-        
-        Auth::guard('company')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-
-        return redirect('/login');
+        return response()->json(Auth::user());
     }
 }

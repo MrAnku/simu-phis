@@ -1,0 +1,13 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
+
+Route::post('login', [AuthenticatedSessionController::class, 'login']);
+Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
+Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
+Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
+Route::middleware('auth:api')->get('/get-pie-data', [DashboardController::class, 'getPieData']);
+Route::middleware('auth:api')->get('/get-line-chart-data', [DashboardController::class, 'getLineChartData']);
