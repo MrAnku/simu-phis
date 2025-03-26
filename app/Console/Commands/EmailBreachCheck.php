@@ -2,11 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\BreachAlertAdminMail;
+use App\Mail\BreachAlertEmployeeMail;
+use App\Mail\BreachMail;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\BreachedEmail;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class EmailBreachCheck extends Command
 {
@@ -44,16 +48,16 @@ class EmailBreachCheck extends Command
         if($employees->isEmpty()){ 
             return;
         }
+
         foreach ($employees as $employee) {
 
             
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
-            ])->get('https://haveibeenpwned.com/api/v3/breachedaccount/' . $employee->user_email, [
+            ])->withoutVerifying()->get('https://haveibeenpwned.com/api/v3/breachedaccount/' . $employee->user_email, [
                 'truncateResponse' => 'false'
             ]);
-
             if ($response->successful()) {
                 // Process the response
                 $breachData = $response->json();
@@ -66,6 +70,18 @@ class EmailBreachCheck extends Command
                 ]);
                 $employee->save();
                 echo "Breach found for " . $employee->user_email . "\n";
+
+                $company = Company::where('company_id', $employee->company_id)->first();
+                  // send Email Notification
+                try{
+                    Mail::to($employee->user_email)->send(new BreachAlertEmployeeMail($employee, $breachData));
+                    echo "Breach Alert sent successfully to " . $employee->user_email . "\n";
+
+                    Mail::to($company->email)->send(new BreachAlertAdminMail($company, $employee,  $breachData));
+                    echo "Breach Alert sent successfully to " . $company->email . "\n";
+                }catch(\Exception $e){
+                    echo "Failed to send email. Error: " . $e->getMessage() . "\n";
+                }
             }else{
                 $employee->breach_scan_date = now();
                 $employee->save();
