@@ -14,14 +14,10 @@
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#active_d"
                     aria-selected="true">Import From Directory</a>
             </li>
-            <li onclick="viewPlanAddUsers()" class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#all_user_d"
-                    aria-selected="true">All Users</a>
-            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane show active text-muted" id="usingForm" role="tabpanel">
-                <form action="" method="post" id="adduserForm">
+                <form action="" method="post" id="adduserPlanForm">
                     <div class="row">
 
                         <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
@@ -166,28 +162,6 @@
 
 
             </div>
-            <div class="tab-pane" id="all_user_d" role="tabpanel">
-
-                <div class="table-responsive">
-                    <table id="addedUsersTable" class="employeesTable table table-bordered text-nowrap w-100">
-                        <thead>
-                            <tr>
-                                <th>Sl</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Company</th>
-                                <th>Job Title</th>
-                                <th>WhatsApp</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="addedPlanUsers"></tbody>
-                    </table>
-                </div>
-                <button onclick="updateUsersGroup()" class="btn btn-primary">Add Selected Users to Group</button>
-
-
-            </div>
         </div>
     </div>
 </div>
@@ -204,6 +178,6 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody class="addedUsers"></tbody>
+        <tbody class="addedPlanUsers"></tbody>
     </table>
 </div>

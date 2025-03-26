@@ -240,6 +240,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     //employees route----------------------------------------------
 
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
+    Route::get('/all-employees', [EmployeesController::class, 'allEmployee'])->name('all-employees');
     Route::get('/blue-collar-employees', [BluecolarController::class, 'BlueCollarIndex'])->name('bluecollar.employees');
     Route::get('/normalemployees', [EmployeesController::class, 'index'])->name('normal.employees');
     // Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
@@ -263,11 +264,15 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/employees/newGroup', [EmployeesController::class, 'newGroup'])->name('employee.newgroup');
     Route::post('/employees/blueCollarnewGroup', [BluecolarController::class, 'blueCollarNewGroup'])->name('bluecollar.employee.newgroup');
     Route::get('/employees/viewUsers/{groupid}', [EmployeesController::class, 'viewUsers'])->name('employee.viewUsers');
+    Route::get('/employees/viewPlanUsers', [EmployeesController::class, 'viewPlanUsers'])->name('employee.viewPlanUsers');
+    Route::post('/employees/updateGroupUsers', [EmployeesController::class, 'updateGroupUsers']);
+
     Route::get('/employees/viewBlueCollarUsers/{groupid}', [BluecolarController::class, 'viewBlueCollarUsers'])->name('employee.viewBlueCollarUsers');
     Route::post('/employees/deleteUser', [EmployeesController::class, 'deleteUser'])->name('employee.deleteUser');
     Route::post('/employees/deleteBlueUser', [BluecolarController::class, 'deleteBlueUser'])->name('employee.deleteUser');
     Route::post('employees/update-whatsapp-number', [EmployeesController::class, 'updateWhatsapp'])->name('employee.updatewhatsapp');
     Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
+    Route::post('/employees/addPlanUser', [EmployeesController::class, 'addPlanUser'])->name('employee.addPlanUser');
     Route::post('/employees/addBlueCollarUser', [BluecolarController::class, 'addBlueCollarUser'])->name('employee.addUser');
     Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
     Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');

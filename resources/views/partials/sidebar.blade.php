@@ -46,9 +46,9 @@
                                     </li>
                                     {{-- Employee dffd --}}
                                     <li
-                                        class="slide has-sub {{ Request::is('employees') || Request::is('blue-collar-employees') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('employees') || Request::is('blue-collar-employees') || Request::is('all-employees') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('employees') || Request::is('blue-collar-employees') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('employees') || Request::is('blue-collar-employees') || Request::is('all-employees') ? 'active' : '' }}">
                                             <i class="bx bx-group side-menu__icon"></i>
                                             <span class="side-menu__label">Employees</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -62,7 +62,15 @@
                                                     class="side-menu__item {{ Request::is('employees') ? 'active' : '' }}">
                                                     <i class="bx bx-user side-menu__icon"></i>
                                                     {{-- <i class='bx bx-user'></i> --}}
-                                                    <span class="side-menu__label">Employees</span>
+                                                    <span class="side-menu__label">Group</span>
+                                                </a>
+                                            </li>
+                                            <li class="slide {{ Request::is('all-employees') ? 'active' : '' }}">
+                                                <a href="{{ route('all-employees') }}"
+                                                    class="side-menu__item {{ Request::is('all-employees') ? 'active' : '' }}">
+                                                    <i class="bx bx-user side-menu__icon"></i>
+                                                    {{-- <i class='bx bx-user'></i> --}}
+                                                    <span class="side-menu__label">All Employees</span>
                                                 </a>
                                             </li>
                                             <li
@@ -146,7 +154,7 @@
                                                 </a>
                                             </li>
 
-                                            
+
 
                                             <li class="slide {{ Request::is('tprm') ? 'active' : '' }}">
                                                 <a href="{{ route('campaign.tprm') }}"

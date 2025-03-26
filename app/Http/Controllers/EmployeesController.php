@@ -21,6 +21,7 @@ use App\Models\TrainingAssignedUser;
 use App\Models\UserLogin;
 use App\Models\WhatsappCampaign;
 use App\Models\WhatsAppCampaignUser;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -47,6 +48,26 @@ class EmployeesController extends Controller
 
         return view('employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
+    public function allEmployee()
+    {
+
+        $companyId = Auth::user()->company_id;
+        $groups = UsersGroup::withCount('users')
+            ->where('company_id', $companyId)
+            ->get();
+
+        $totalEmps = $groups->sum('users_count');
+        $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
+        $notVerifiedDomains = DomainVerified::where('verified', 0)->where('company_id', $companyId)->get();
+
+        $allDomains = DomainVerified::where('company_id', $companyId)->get();
+        $allEmployees = User::where('company_id', $companyId)->get();
+        // return $allEmployees;
+
+        $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
+
+        return view('all-employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken', 'allEmployees'));
+    }
     public function BlueCOllarIndex()
     {
 
@@ -65,6 +86,31 @@ class EmployeesController extends Controller
 
         return view('BlueCollars', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
+    public function updateGroupUsers(Request $request)
+    {
+
+        // $request->merge([
+        //     'groupid' =>  $request->groupid,
+        // ]);
+
+        // return $request->groupid;
+
+        try {
+            foreach ($request->user_ids as $id) {
+                $user = Users::find($id);
+                if ($user) {
+                    $user->update(['group_id' => $request->groupid]);
+                }
+            }
+
+
+            return response()->json(['status' => 1, 'message' => 'Users successfully added to the group.']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'message' => 'Failed to add users.'], 500);
+        }
+    }
+
+
 
     public function sendDomainVerifyOtp(Request $request)
     {
@@ -258,6 +304,17 @@ class EmployeesController extends Controller
             return response()->json(['status' => 0, 'msg' => 'no employees found']);
         }
     }
+    public function viewPlanUsers()
+    {
+        $companyId = auth()->user()->company_id;
+        $users = Users::where('group_id', null)->where('company_id', $companyId)->get();
+
+        if (!$users->isEmpty()) {
+            return response()->json(['status' => 1, 'data' => $users]);
+        } else {
+            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+        }
+    }
 
     public function deleteUser(Request $request)
     {
@@ -380,6 +437,84 @@ class EmployeesController extends Controller
                 'company_id' => $companyId,
             ]
         );
+        log_action("Employee {$request->usrEmail} added");
+        return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+    }
+
+    public function addPlanUser(Request $request)
+    {
+        // XSS check start
+        $input = $request->all();
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+            }
+        }
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+        // XSS check end
+
+        $validator = Validator::make($request->all(), [
+            'usrName' => 'required|string|max:255',
+            'usrEmail' => 'required|email|max:255',
+            'usrCompany' => 'nullable|string|max:255',
+            'usrJobTitle' => 'nullable|string|max:255',
+            'usrWhatsapp' => 'nullable|digits_between:11,15',
+        ]);
+
+        $request->merge([
+            'usrWhatsapp' => preg_replace('/\D/', '', $request->usrWhatsapp)
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 0, 'msg' => $validator->errors()->first()]);
+        }
+
+        $companyId = Auth::user()->company_id;
+
+        // Checking the limit of employees
+        if (Auth::user()->usedemployees >= Auth::user()->employees) {
+            log_action("Employee limit has exceeded");
+            return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+        }
+
+        // Checking if the domain is verified
+        if (!$this->domainVerified($request->usrEmail, $companyId)) {
+            return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
+        }
+
+        // Checking if the employee is already in this group
+        if (!empty($request->groupid)) {
+            $userExists = Users::where('user_email', $request->usrEmail)
+                ->where('group_id', $request->groupid)
+                ->exists();
+
+            if ($userExists) {
+                return response()->json(['status' => 0, 'msg' => 'This employee is already in this group']);
+            }
+        }
+
+        // Checking if this user is already added in this company
+        $userExists = Users::where('user_email', $request->usrEmail)
+            ->where('company_id', $companyId)
+            ->exists();
+
+        if (!$userExists) {
+            Auth::user()->increment('usedemployees');
+        }
+
+        Users::create([
+            'group_id' => null,
+            'user_name' => $request->usrName,
+            'user_email' => $request->usrEmail,
+            'user_company' => !empty($request->usrCompany) ? $request->usrCompany : null,
+            'user_job_title' => !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
+            'whatsapp' => !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null,
+            'company_id' => $companyId,
+        ]);
+
         log_action("Employee {$request->usrEmail} added");
         return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }

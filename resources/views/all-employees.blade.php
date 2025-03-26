@@ -72,14 +72,14 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newEmpGroupModal">New Employee Group</button>
+                        data-bs-target="#addUserModalForm">Add Employee</button>
                 </div>
-                <div>
+                {{-- <div>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
                         data-bs-target="#domainVerificationModal">Domain Verification</button>
                     <button type="button" class="btn btn-dark mb-3" onclick="checkHasConfig()" data-bs-toggle="modal"
                         data-bs-target="#syncDirectoryModal">Directory Sync</button>
-                </div>
+                </div> --}}
             </div>
 
             <div class="row">
@@ -96,41 +96,28 @@
                                     <thead>
                                         <tr>
                                             <th>Sl</th>
-                                            <th>Employee Group Name</th>
-                                            <th>Employee Count</th>
-                                            <th>Group Unique Id</th>
-                                            <th>Actions</th>
+                                            <th> Name</th>
+                                            <th>Email</th>
+                                            <th>Company</th>
+                                            <th>Job Title</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($groups as $group)
+                                        @forelse ($allEmployees as  $group)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td> <!-- Serial number -->
                                                 <td>
-                                                    <a href="#" class="text-primary"
-                                                        onclick="viewUsersByGroup('{{ $group->group_id }}')"
-                                                        data-bs-target="#viewUsers" data-bs-toggle="modal">
-                                                        {{ $group->group_name }}
+                                                    <a href="#" class="text-primary" onclick="viewPlanUsers()"
+                                                        data-bs-target="#addUserModalForm" data-bs-toggle="modal">
+                                                        {{ $group->user_name }}
                                                     </a>
                                                 </td>
                                                 {{-- <td>{{ $group }}</td> --}}
-                                                <td>{{ $group->users_count }}</td>
-                                                <td><span class="badge bg-info">{{ $group->group_id }}</span></td>
+                                                <td>{{ $group->user_email }}</td>
+                                                <td>{{ $group->user_company }}</td>
+                                                <td>{{ $group->user_job_title }}</td>
 
-
-                                                <td>
-                                                    <input type="hidden" id="selectedGroupId">
-                                                    <span class="text-secondary mx-1"
-                                                        onclick="viewUsersByGroup('{{ $group->group_id }}'); setGroupId('{{ $group->group_id }}')"
-                                                        role="button" data-bs-target="#addUserModal"
-                                                        data-bs-toggle="modal">
-                                                        <i class="bx bx-plus fs-4"></i>
-                                                    </span>
-                                                    <span class="text-danger ms-1"
-                                                        onclick="deleteGroup('{{ $group->group_id }}')" role="button">
-                                                        <i class="bx bx-trash fs-4"></i>
-                                                    </span>
-                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
@@ -178,8 +165,8 @@
 
 
     <!-- add employees modal -->
-    <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
-        <x-employees.add-user />
+    <x-modal id="addUserModalForm" size="modal-xl" heading="Add Employee">
+        <x-employees.add-plan-user />
     </x-modal>
 
 

@@ -52,6 +52,249 @@ function viewUsersByGroup(groupid) {
         },
     });
 }
+function setGroupId(groupid) {
+    document.getElementById("selectedGroupId").value = groupid;
+}
+function viewPlanUsers() {
+    $.get({
+        url: "/employees/viewPlanUsers/",
+        success: function (res) {
+            if (res.status == 1) {
+                // console.log(res);
+                $(".addedPlanUsers").empty();
+                var userRows = "";
+                $.each(res.data, function (index, value) {
+                    userRows += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                        <a href="/employee/${btoa(
+                            value.id
+                        )}" class="text-primary" target="_blank">${
+                        value.user_name
+                    }</a>
+                        </td>
+                        <td>${value.user_email}</td>
+                        <td>${value.user_company ?? "--"}</td>
+                        <td>${value.user_job_title ?? "--"}</td>
+                        <td>${value.whatsapp ?? "--"}</td>
+                        <td><span class="text-danger ms-1" onclick="deleteUser('${
+                            value.id
+                        }', '${
+                        value.group_id
+                    }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
+                        </tr>`;
+                });
+                $(".addedPlanUsers").html(userRows);
+                $(".groupid").val(groupid);
+                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
+                    $("#allUsersByGroupTable").DataTable({
+                        language: {
+                            searchPlaceholder: "Search...",
+                            sSearch: "",
+                        },
+                        pageLength: 10,
+                        // scrollX: true
+                    });
+                }
+            } else {
+                var emptyRow =
+                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                $(".addedPlanUsers").html(emptyRow);
+
+                $(".groupid").val(groupid);
+            }
+        },
+    });
+}
+// Function to send API request
+let selectedUsers = []; // Store selected user IDs
+
+// Function to send API request
+function updateUsersGroup() {
+    let groupid = document.getElementById("selectedGroupId").value;
+    // Convert to integer
+    console.log("Converted Group ID:", groupid);
+
+    console.log("Adding users to group:", groupid);
+    if (selectedUsers.length === 0) {
+        alert("No users selected!");
+        return;
+    }
+
+    $.ajax({
+        url: "/employees/updateGroupUsers",
+        type: "POST",
+        data: {
+            _token: $('meta[name="csrf-token"]').attr("content"),
+            user_ids: selectedUsers,
+            groupid: groupid,
+        },
+        success: function (res) {
+            console.log(res);
+            alert("Users successfully added to the group!");
+        },
+        error: function (xhr) {
+            console.log(xhr.responseJSON); // Log validation errors
+            alert("Error: " + xhr.responseText);
+        },
+    });
+}
+
+// Function to store selected user IDs
+// function AddUser(userId, button) {
+//     if (!selectedUsers.includes(userId)) {
+//         selectedUsers.push(userId);
+
+//         // Change button text to "Added" and disable further clicks
+//         button.text("Added").addClass("text-muted").removeClass("text-primary");
+//         button.closest("td").css("pointer-events", "none");
+//     }
+// }
+
+// Function to fetch and display users in the table
+function viewPlanAddUsers() {
+    $.get({
+        url: "/employees/viewPlanUsers/",
+        success: function (res) {
+            if (res.status == 1) {
+                $(".addedPlanUsers").empty();
+                var userRows = "";
+                $.each(res.data, function (index, value) {
+                    userRows += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>
+                <a href="/employee/${btoa(
+                    value.id
+                )}" class="text-primary" target="_blank">
+                    ${value.user_name}
+                </a>
+            </td>
+            <td>${value.user_email}</td>
+            <td>${value.user_company ?? "--"}</td>
+            <td>${value.user_job_title ?? "--"}</td>
+            <td>${value.whatsapp ?? "--"}</td>
+            <td>
+                <span class="text-primary ms-1 add-btn" data-id="${
+                    value.id
+                }" role="button">
+                    Add
+                </span>
+            </td>
+        </tr>`;
+                });
+
+                $(".addedPlanUsers").html(userRows);
+                $(".groupid").val(groupid);
+
+                // Initialize DataTable if not already initialized
+                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
+                    $("#allUsersByGroupTable").DataTable({
+                        language: {
+                            searchPlaceholder: "Search...",
+                            sSearch: "",
+                        },
+                        pageLength: 10,
+                    });
+                }
+
+                // Add click event listener after table is updated
+                $(".add-btn").click(function () {
+                    var userId = $(this).data("id");
+                    var button = $(this);
+
+                    // Call the AddUser function
+                    AddUser(userId, button);
+                });
+            } else {
+                var emptyRow =
+                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                $(".addedPlanUsers").html(emptyRow);
+
+                $(".groupid").val(groupid);
+            }
+        },
+    });
+}
+
+function AddUser(userId) {
+    if (!selectedUsers.includes(userId)) {
+        selectedUsers.push(userId);
+    }
+    console.log("selectedUsers", selectedUsers);
+    // updateUsers();
+}
+
+function RemoveUser(userId) {
+    selectedUsers = selectedUsers.filter((id) => id !== userId);
+    console.log("selectedUsers", selectedUsers);
+
+    // updateUsers();
+}
+function viewPlanAddUsers() {
+    $.get({
+        url: "/employees/viewPlanUsers/",
+        success: function (res) {
+            if (res.status == 1) {
+                $(".addedPlanUsers").empty();
+                var userRows = "";
+
+                $.each(res.data, function (index, value) {
+                    userRows += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>
+                <a href="/employee/${btoa(
+                    value.id
+                )}" class="text-primary" target="_blank">
+                    ${value.user_name}
+                </a>
+            </td>
+            <td>${value.user_email}</td>
+            <td>${value.user_company ?? "--"}</td>
+            <td>${value.user_job_title ?? "--"}</td>
+            <td>${value.whatsapp ?? "--"}</td>
+            <td>
+                <input type="checkbox" class="user-checkbox" data-id="${
+                    value.id
+                }">
+            </td>
+        </tr>`;
+                });
+
+                $(".addedPlanUsers").html(userRows);
+
+                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
+                    $("#allUsersByGroupTable").DataTable({
+                        language: {
+                            searchPlaceholder: "Search...",
+                            sSearch: "",
+                        },
+                        pageLength: 10,
+                    });
+                }
+
+                // Handle checkbox selection
+                $(".user-checkbox").change(function () {
+                    var userId = $(this).data("id");
+
+                    if ($(this).is(":checked")) {
+                        AddUser(userId);
+                    } else {
+                        RemoveUser(userId);
+                    }
+                });
+            } else {
+                var emptyRow =
+                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                $(".addedPlanUsers").html(emptyRow);
+
+                $(".groupid").val(groupid);
+            }
+        },
+    });
+}
 
 function viewBlueUsersByGroup(groupid) {
     $.get({
@@ -140,6 +383,33 @@ $("#adduserForm").submit(function (e) {
                     var params = new URLSearchParams(formData);
                     var groupid = params.get("groupid");
                     viewUsersByGroup(groupid);
+                }
+            },
+        });
+        // console.log(formData);
+        $(this).trigger("reset");
+        $("#usrWhatsapp").removeClass("is-valid");
+    }
+});
+$("#adduserPlanForm").submit(function (e) {
+    e.preventDefault();
+
+    if (!$("#usrWhatsapp").hasClass("is-invalid")) {
+        var formData = $(this).serialize();
+        console.log("formData", formData);
+        // return;
+        // console.log(formData.usrWhatsapp);
+        $.post({
+            url: "/employees/addPlanUser",
+            data: formData,
+            success: function (res) {
+                if (res.status == 0) {
+                    // alert(resJson.msg);
+                    Swal.fire(res.msg, "", "error");
+                } else {
+                    var params = new URLSearchParams(formData);
+                    // var groupid = params.get("groupid");
+                    viewPlanUsers();
                 }
             },
         });
