@@ -265,18 +265,19 @@ function viewPlanAddUsers() {
 
                 $(".addedPlanUsers").html(userRows);
 
-                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
-                    $("#allUsersByGroupTable").DataTable({
-                        language: {
-                            searchPlaceholder: "Search...",
-                            sSearch: "",
-                        },
-                        pageLength: 10,
-                    });
-                }
+                // if (!$.fn.DataTable.isDataTable(".employeesTable")) {
+                //     $("#allUsersByGroupTable").DataTable({
+                //         language: {
+                //             searchPlaceholder: "Search...",
+                //             sSearch: "",
+                //         },
+                //         pageLength: 10,
+                //     });
+                // }
 
                 // Handle checkbox selection
                 $(".user-checkbox").change(function () {
+                    console.log("bunty");
                     var userId = $(this).data("id");
 
                     if ($(this).is(":checked")) {
@@ -287,10 +288,10 @@ function viewPlanAddUsers() {
                 });
             } else {
                 var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                    '<tr><td colspan="6" class="text-center">No employees available</td></tr>';
                 $(".addedPlanUsers").html(emptyRow);
 
-                $(".groupid").val(groupid);
+                // $(".groupid").val(groupid);
             }
         },
     });
@@ -544,6 +545,41 @@ function deleteUser(usrId, grpId) {
         }
     });
 }
+function deletePlanUser(usrId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#e6533c",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Delete",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post({
+                url: "/employees/deleteUser",
+                data: {
+                    user_id: usrId,
+                },
+                success: function (response) {
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "User has been deleted successfully.",
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        location.reload(); // Refresh the page after deletion
+                    });
+                },
+                error: function () {
+                    Swal.fire("Error", "Something went wrong!", "error");
+                },
+            });
+        }
+    });
+}
+
 function deleteBlueUser(usrId, grpId) {
     Swal.fire({
         title: "Are you sure?",

@@ -184,9 +184,7 @@
                         <tbody class="addedPlanUsers"></tbody>
                     </table>
                 </div>
-                <button onclick="updateUsersGroup()" class="btn btn-primary">Add Selected Users to Group</button>
-
-
+                <button onclick="updateUsersGroup()" class="btn btn-primary mt-3">Add Selected Users to Group</button>
             </div>
         </div>
     </div>

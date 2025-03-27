@@ -100,11 +100,12 @@
                                             <th>Email</th>
                                             <th>Company</th>
                                             <th>Job Title</th>
+                                            <th>Action</th>
 
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($allEmployees as  $group)
+                                        @forelse ($allEmployees as $group)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td> <!-- Serial number -->
                                                 <td>
@@ -113,19 +114,23 @@
                                                         {{ $group->user_name }}
                                                     </a>
                                                 </td>
-                                                {{-- <td>{{ $group }}</td> --}}
                                                 <td>{{ $group->user_email }}</td>
                                                 <td>{{ $group->user_company }}</td>
                                                 <td>{{ $group->user_job_title }}</td>
-
+                                                <td>
+                                                    <span class="text-danger ms-1"
+                                                        onclick="deletePlanUser('{{ $group->id }}')" role="button">
+                                                        <i class="bx bx-trash fs-4"></i>
+                                                    </span>
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td class="text-center" colspan="5">No records found</td>
+                                                <td class="text-center" colspan="6">No records found</td>
                                             </tr>
                                         @endforelse
-
                                     </tbody>
+
                                 </table>
                             </div>
                         </div>
