@@ -11,6 +11,7 @@ use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Password;
@@ -46,6 +47,34 @@ class LearnerAuthController extends Controller
             return back()->withErrors(['email' => 'Invalid Credentials!']);
         }
     }
+    public function loginWithoutPassword(Request $request)
+    {
+        $email = $request->input('email');
+
+        // Fetch the token and expiry time from learnerloginsession
+        $session = DB::table('learnerloginsession')
+            ->where('email', $email)
+            ->orderBy('created_at', 'desc') // Ensure the latest session is checked
+            ->first();
+
+        // Check if session exists and if the token is expired
+        if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
+            return back()->withErrors(['email' => 'Invalid Credentials!']);
+        }
+
+
+        // Fetch user details from user_login table
+        $user = DB::table('user_login')->where('login_username', $email)->first();
+
+        if ($user) {
+            Session::put('learner', $user);
+            log_action("Learner {$email} logged in", 'learner', 'learner');
+            return redirect()->route('learner.dashboard'); // Redirect to learner dashboard
+        } else {
+            return back()->withErrors(['email' => 'Invalid Credentials!']);
+        }
+    }
+
     public function logout(Request $request)
     {
         // Destroy the session

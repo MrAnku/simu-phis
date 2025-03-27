@@ -66,7 +66,14 @@ Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
 Route::get('/learner/create-password/{token}', [CreatePassController::class, 'createPasswordPage'])->name('learner.create.password');
 Route::post('/learner/create-password', [CreatePassController::class, 'storePassword'])->name('learner.store.password');
 
+
+
 Route::domain('learn.simuphish.com')->group(function () {
+    // Route::post('/learner/login-without-password', [LearnerAuthController::class, 'loginWithoutPassword'])->name('learner.loginWithoutPassword');
+    Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
+        ->name('learner.training.dashboard');
+    Route::post('/renew-token', [LearnerDashController::class, 'renewToken']);
+
 
     Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
     Route::post('/login', [LearnerAuthController::class, 'login'])->name('learner.login');
@@ -76,25 +83,25 @@ Route::domain('learn.simuphish.com')->group(function () {
     Route::get('/create-password/{token}', [LearnerAuthController::class, 'createPassPage'])->name('learner.create.pass');
     Route::post('/create-password/store', [LearnerAuthController::class, 'storePassword'])->name('learner.store.pass');
 
-    Route::middleware('isLearnerLoggedIn')->group(function () {
+    // Route::middleware('isLearnerLoggedIn')->group(function () {
 
-        Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
-        Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
+    Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
+    Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
 
-        Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
-        Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
+    Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
+    Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
-        Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
-        Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
+    Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
+    Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
 
-        Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
+    Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
 
 
 
-        Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
-        Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
-        Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
-    });
+    Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+    Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
+    Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
+    // });
 });
 
 //  ========================== Game Training Routes ===================================

@@ -11,11 +11,11 @@
     <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon" />
 
     <!-- CSS files -->
-    <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/demo.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/demo.min.css?1685973381" rel="stylesheet" />
 
 
     <style>
@@ -33,7 +33,7 @@
 </head>
 
 <body class="layout-boxed">
-    <script src="./dist/js/demo-theme.min.js?1685973381"></script>
+    <script src="/dist/js/demo-theme.min.js?1685973381"></script>
     <div class="page">
         <!-- Navbar -->
         <header class="navbar navbar-expand-md d-print-none">
@@ -59,15 +59,15 @@
                             <!-- Page pre-title -->
 
                             <h2 class="page-title">
-                                Learner Dashboard: {{ session('learner')->login_username }}
+                                {{-- Learner Dashboard: {{ session('learner')->login_username }} --}}
                             </h2>
                         </div>
                         <!-- Page title actions -->
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
-                                <span class="d-none d-sm-inline">
+                                {{-- <span class="d-none d-sm-inline">
                                     <a href="{{ route('learner.logout') }}" class="btn"> Log Out </a>
-                                </span>
+                                </span> --}}
                             </div>
                         </div>
                     </div>
@@ -341,15 +341,16 @@
                                         @forelse ($assignedTrainingCount as $training)
                                             <tr>
                                                 @if ($training->training_type == 'games')
-                                                <td class="text-secondary">
-                                                    <a href="{{env('TRAINING_GAME_URL')}}/{{ $training->trainingGame->slug }}/?id={{ base64_encode($training->id) }}" target="_blank">
-                                                        {{ $training->trainingGame->name }}
-                                                    </a>
-                                                </td>
-                                                <td class="text-secondary">
-                                                    {{ sprintf('%02d:%02d', floor($training->game_time / 60), $training->game_time % 60) }}
-                                                </td>
-                                                    
+                                                    <td class="text-secondary">
+                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug }}/?id={{ base64_encode($training->id) }}"
+                                                            target="_blank">
+                                                            {{ $training->trainingGame->name }}
+                                                        </a>
+                                                    </td>
+                                                    <td class="text-secondary">
+                                                        {{ sprintf('%02d:%02d', floor($training->game_time / 60), $training->game_time % 60) }}
+                                                    </td>
+
                                                     @if ($training->personal_best < 30)
                                                         <td class="text-danger"><b>{{ $training->personal_best }}%</b>
                                                         </td>
@@ -448,7 +449,7 @@
     </div>
 
     <!-- Tabler Core -->
-    <script src="./dist/js/tabler.min.js?1685973381" defer></script>
+    <script src="/dist/js/tabler.min.js?1685973381" defer></script>
 
 
 

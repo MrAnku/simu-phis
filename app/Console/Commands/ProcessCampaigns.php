@@ -24,6 +24,7 @@ use Illuminate\Validation\Rules\Email;
 use App\Mail\AssignTrainingWithPassResetLink;
 use App\Models\CompanySettings;
 use App\Models\TrainingAssignedUser;
+use Illuminate\Support\Facades\Hash;
 
 class ProcessCampaigns extends Command
 {
@@ -425,7 +426,16 @@ class ProcessCampaigns extends Command
       // echo "user created successfully";
 
       $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-
+      $token = encrypt($campaign->user_email);
+      // $token = Hash::make($campaign->user_email);
+      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+      DB::table('learnerloginsession')
+        ->insert([
+          'token' => $token,
+          'email' => $campaign->user_email,
+          'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+          'created_at' => now(), // Ensure ordering works properly
+        ]);
       $mailData = [
         'user_name' => $campaign->user_name,
         // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
@@ -434,7 +444,8 @@ class ProcessCampaigns extends Command
         // 'login_pass' => $userLogin->login_password,
         'company_name' => $learnSiteAndLogo['company_name'],
         'company_email' => $learnSiteAndLogo['company_email'],
-        'learning_site' => $learnSiteAndLogo['learn_domain'],
+        // 'learning_site' => $learnSiteAndLogo['learn_domain'],
+        'learning_site' =>  $learning_dashboard_link,
         'logo' => $learnSiteAndLogo['logo']
       ];
 
@@ -516,7 +527,16 @@ class ProcessCampaigns extends Command
       ->first();
 
     $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-
+    $token = encrypt($campaign->user_email);
+    // $token = Hash::make($campaign->user_email);
+    $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+    DB::table('learnerloginsession')
+      ->insert([
+        'token' => $token,
+        'email' => $campaign->user_email,
+        'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+        'created_at' => now(), // Ensure ordering works properly
+      ]);
     $mailData = [
       'user_name' => $campaign->user_name,
       // 'training_name' => $this->trainingModuleName($campaign->training_module),
@@ -525,7 +545,8 @@ class ProcessCampaigns extends Command
       // 'login_pass' => $userCredentials->login_password,
       'company_name' => $learnSiteAndLogo['company_name'],
       'company_email' => $learnSiteAndLogo['company_email'],
-      'learning_site' => $learnSiteAndLogo['learn_domain'],
+      // 'learning_site' => $learnSiteAndLogo['learn_domain'],
+      'learning_site' =>  $learning_dashboard_link,
       'logo' => $learnSiteAndLogo['logo']
     ];
 

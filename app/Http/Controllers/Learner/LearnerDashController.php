@@ -7,15 +7,18 @@ use App\Models\TrainingModule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\TrainingAssignedUser;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class LearnerDashController extends Controller
 {
     public function index()
     {
 
-        $userEmail = session('learner')->login_username; // Assuming you're using Laravel's built-in authentication
+        $userEmail = session('learner')->login_username;
 
         $averageScore = DB::table('training_assigned_users')
             ->where('user_email', $userEmail)
@@ -41,6 +44,85 @@ class LearnerDashController extends Controller
         // return $assignedTrainingCount;
 
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
+    }
+
+    public function trainingWithoutLogin(Request $request)
+    {
+        $token = $request->route('token');
+
+
+        // Fetch the token and expiry time from learnerloginsession
+        $session = DB::table('learnerloginsession')
+            ->where('token', $token)
+            ->orderBy('created_at', 'desc') // Ensure the latest session is checked
+            ->first();
+
+        // Check if session exists and if the token is expired
+        if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
+            return view('learning.ActiveToken'); // Stop execution
+        }
+
+
+        // Decrypt the email
+        $userEmail = decrypt($session->token);
+
+        $averageScore = DB::table('training_assigned_users')
+            ->where('user_email', $userEmail)
+            ->avg('personal_best');
+
+        $assignedTrainingCount = TrainingAssignedUser::with('trainingData')
+            ->where('user_email', $userEmail)
+            ->where('completed', 0)
+            ->get();
+
+        $completedTrainingCount = TrainingAssignedUser::with('trainingData')
+            ->where('user_email', $userEmail)
+            ->where('completed', 1)
+            ->get();
+
+        $totalCertificates = TrainingAssignedUser::where('user_email', $userEmail)
+            ->where('completed', 1)
+            ->where('personal_best', 100)
+            ->count();
+
+        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
+    }
+    public function renewToken(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        // Encrypt email to generate token
+        $token = encrypt($request->email);
+
+        // Construct learning dashboard link
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+
+        // Update existing record where email matches
+        $updated = DB::table('learnerloginsession')
+            ->where('email', $request->email)
+            ->update([
+                'token' => $token,
+                'expiry' => now()->addHours(24), // Change to 'expiry'
+                'updated_at' => now()
+            ]);
+
+
+        // return  $learning_dashboard_link;
+        // Check if email exists, if not return an error
+        if (!$updated) {
+            return response()->json(['message' => 'Email not found in database'], 404);
+        }
+
+        // Prepare email data
+        $mailData = [
+            'learning_site' => $learning_dashboard_link,
+        ];
+
+        // Send email
+        Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData));
+
+        // Return success response
+        return response()->json(['message' => 'Mail sent successfully', 'token' => $token]);
     }
 
     public function startTraining($training_id, $training_lang, $id)
