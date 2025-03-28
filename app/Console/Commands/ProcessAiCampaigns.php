@@ -13,6 +13,7 @@ use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Models\TrainingAssignedUser;
 
 class ProcessAiCampaigns extends Command
 {
@@ -204,7 +205,16 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        Mail::to($campaign->employee_email)->send(new AssignTrainingWithPassResetLink($mailData));
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+
+        $trainingNames = $allAssignedTrainings->map(function ($training) {
+          if ($training->training_type == 'games') {
+            return $training->trainingGame->name;
+          }
+          return $training->trainingData->name;
+        });
+
+        Mail::to($campaign->employee_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
 
         NewLearnerPassword::create([
             'email' => $campaign->employee_email,
@@ -246,7 +256,16 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        $isMailSent = Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData));
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+
+        $trainingNames = $allAssignedTrainings->map(function ($training) {
+          if ($training->training_type == 'games') {
+            return $training->trainingGame->name;
+          }
+          return $training->trainingData->name;
+        });
+
+        $isMailSent = Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
         $campaign->training_assigned = 1;
         $campaign->save();
@@ -277,7 +296,16 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData));
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+
+        $trainingNames = $allAssignedTrainings->map(function ($training) {
+          if ($training->training_type == 'games') {
+            return $training->trainingGame->name;
+          }
+          return $training->trainingData->name;
+        });
+
+        $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
         $campaign->training_assigned = 1;
         $campaign->save();
