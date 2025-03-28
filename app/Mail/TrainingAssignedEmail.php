@@ -15,13 +15,15 @@ class TrainingAssignedEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $mailData;
+    public $trainingNames;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($mailData)
+    public function __construct($mailData, $trainingNames)
     {
         $this->mailData = $mailData;
+        $this->trainingNames = $trainingNames;
     }
 
     /**

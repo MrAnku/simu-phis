@@ -192,7 +192,8 @@ class ShowWebsiteController extends Controller
                 $campaign = QuishingCamp::where('campaign_id', $user->campaign_id)->first();
 
                 if ($campaign->training_assignment == 'all') {
-                    $trainings = json_decode($campaign->training_module, true);
+                    $trainings = 
+                    json_decode($campaign->training_module, true);
                     return $this->assignAllTrainings($trainings, $user);
                 } else {
                     return $this->assignSingleTraining($user);
