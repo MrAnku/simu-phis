@@ -27,7 +27,7 @@
             <div class="row py-5">
                 <div class="col-md-6">
                     <div class="logo_area ps-5">
-                        <a href="{{route('learner.dashboard')}}">
+                        <a href="#">
                             <img src="{{ asset('assets/images/simu-logo.png') }}" alt="image-not-found" width="200">
                         </a>
                     </div>
