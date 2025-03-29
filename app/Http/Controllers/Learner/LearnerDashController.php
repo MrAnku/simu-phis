@@ -128,6 +128,12 @@ class LearnerDashController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
+        $hasTraining = TrainingAssignedUser::where('email', $request->email)->exists();
+
+        if (!$hasTraining) {
+            return response()->json(['message' => 'No training has assigned on this email'], 404);
+        }
+
         // Encrypt email to generate token
         $token = encrypt($request->email);
 
