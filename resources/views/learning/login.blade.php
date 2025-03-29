@@ -56,7 +56,7 @@
                                 placeholder="your@email.com" autocomplete="off">
                         </div>
                         <div class="mb-3">
-                            <p id="responseMessage" style="margin-top: 15px; font-size: 14px; color: green;"></p>
+                            <p id="responseMessage" class="text-center" style="margin-top: 15px; font-size: 14px; color: green;"></p>
                         </div>
                         {{-- <div class="mb-2">
               <label class="form-label">
@@ -122,7 +122,14 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('responseMessage').innerText = data.message;
+                    if(data.error){
+                        document.getElementById('responseMessage').innerText = data.error;
+                        document.getElementById('responseMessage').style.color = 'red';
+                        submitButton.innerText = 'Regenerate';
+                        submitButton.classList.remove('disabled');
+                        return;
+                    }
+                    document.getElementById('responseMessage').innerText = data.success;
                     submitButton.innerText = 'Session Regenerated';
                 })
                 .catch(error => {
