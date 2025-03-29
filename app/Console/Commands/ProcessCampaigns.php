@@ -328,7 +328,7 @@ class ProcessCampaigns extends Command
         $token = encrypt($campaign->user_email);
         // $token = Hash::make($campaign->user_email);
 
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
         DB::table('learnerloginsession')
           ->insert([
             'token' => $token,
@@ -382,7 +382,7 @@ class ProcessCampaigns extends Command
       $token = encrypt($campaign->user_email);
       // $token = Hash::make($campaign->user_email);
 
-      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
       DB::table('learnerloginsession')
         ->insert([
           'token' => $token,
@@ -449,7 +449,7 @@ class ProcessCampaigns extends Command
       $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
       $token = encrypt($campaign->user_email);
       // $token = Hash::make($campaign->user_email);
-      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
       DB::table('learnerloginsession')
         ->insert([
           'token' => $token,
@@ -550,7 +550,7 @@ class ProcessCampaigns extends Command
     $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
     $token = encrypt($campaign->user_email);
     // $token = Hash::make($campaign->user_email);
-    $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+    $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
     DB::table('learnerloginsession')
       ->insert([
         'token' => $token,

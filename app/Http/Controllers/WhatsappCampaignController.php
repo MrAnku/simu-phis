@@ -464,7 +464,7 @@ class WhatsappCampaignController extends Controller
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
         $token = encrypt($campaign_user->user_email);
         // $token = Hash::make($campaign->user_email);
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
         DB::table('learnerloginsession')
             ->insert([
                 'token' => $token,
@@ -604,7 +604,7 @@ class WhatsappCampaignController extends Controller
             $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
             $token = encrypt($campaign_user->user_email);
             // $token = Hash::make($campaign->user_email);
-            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
             DB::table('learnerloginsession')
                 ->insert([
                     'token' => $token,
@@ -661,7 +661,7 @@ class WhatsappCampaignController extends Controller
 
         $token = encrypt($campaign_user->user_email);
         // $token = Hash::make($campaign->user_email);
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
         DB::table('learnerloginsession')
             ->insert([
                 'token' => $token,
