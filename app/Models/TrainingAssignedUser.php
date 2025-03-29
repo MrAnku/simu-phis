@@ -24,11 +24,11 @@ class TrainingAssignedUser extends Model
     ];
 
     public function trainingData(){
-        return $this->hasOne(TrainingModule::class, 'id', 'training');
+        return $this->belongsTo(TrainingModule::class, 'training', 'id');
     }
 
     public function trainingGame(){
-        return $this->hasOne(TrainingGame::class, 'id', 'training');
+        return $this->belongsTo(TrainingGame::class, 'training', 'id');
     }
 
     public function campaign(){

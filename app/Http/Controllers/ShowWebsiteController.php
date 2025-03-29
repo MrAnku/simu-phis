@@ -22,6 +22,7 @@ use App\Mail\AssignTrainingWithPassResetLink;
 use App\Mail\GameAssignedEmail;
 use App\Models\QuishingCamp;
 use App\Models\QuishingLiveCamp;
+use App\Models\TrainingAssignedUser;
 
 class ShowWebsiteController extends Controller
 {
@@ -254,7 +255,9 @@ class ShowWebsiteController extends Controller
 
     private function assignAllTrainings($trainings, $user)
     {
-        foreach ($trainings as $training) {
+        $lastIndex = array_key_last($trainings);
+
+        foreach ($trainings as $trainingIndex => $training) {
             // Check if training is already assigned to the user
             $checkAssignedUser = DB::table('training_assigned_users')
                 ->where('user_email', $user->user_email)
@@ -263,7 +266,7 @@ class ShowWebsiteController extends Controller
 
             if ($checkAssignedUser) {
 
-                $this->sendTrainingReminder($checkAssignedUser, $user);
+                $this->sendTrainingReminder($checkAssignedUser, $user, $trainingIndex, $lastIndex);
             } else {
                 // Check if user login already exists
                 $checkLoginExist = DB::table('user_login')
@@ -272,16 +275,16 @@ class ShowWebsiteController extends Controller
 
                 if ($checkLoginExist) {
 
-                    $this->assignAnotherTraining($checkLoginExist, $user, $training);
+                    $this->assignAnotherTraining($checkLoginExist, $user, $training, $trainingIndex, $lastIndex);
                 } else {
-                    $this->assignFirstTraining($user, $training);
+                    $this->assignFirstTraining($user, $training, $trainingIndex, $lastIndex);
                 }
             }
         }
         return response()->json(['success' => 'All trainings assigned successfully']);
     }
 
-    private function assignFirstTraining($user, $training = null)
+    private function assignFirstTraining($user, $training = null, $trainingIndex = null, $lastIndex = null)
     {
 
         $training_assigned = DB::table('training_assigned_users')
@@ -317,14 +320,38 @@ class ShowWebsiteController extends Controller
         ];
 
         log_action(
-            "Email simulation | Training " . 
-            (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
-            " assigned to " . $user->user_email . ".",
+            "Email simulation | Training " .
+                (($user->training_type == 'games') ? $user->game->name : $user->training->name) .
+                " assigned to " . $user->user_email . ".",
             'employee',
             'employee'
         );
 
-        Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData));
+        if ($trainingIndex !== null) {
+            if ($trainingIndex === $lastIndex) {
+                $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
+
+                $trainingNames = $allAssignedTrainings->map(function ($training) {
+                    if ($training->training_type == 'games') {
+                        return $training->trainingGame->name;
+                    }
+                    return $training->trainingData->name;
+                });
+
+                Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
+            }
+        }else{
+            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
+
+                $trainingNames = $allAssignedTrainings->map(function ($training) {
+                    if ($training->training_type == 'games') {
+                        return $training->trainingGame->name;
+                    }
+                    return $training->trainingData->name;
+                });
+
+                Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
+        }
 
         NewLearnerPassword::create([
             'email' => $user->user_email,
@@ -344,7 +371,7 @@ class ShowWebsiteController extends Controller
         return response()->json(['success' => 'New training assigned successfully']);
     }
 
-    private function assignAnotherTraining($checkLoginExist, $user, $training = null)
+    private function assignAnotherTraining($checkLoginExist, $user, $training = null, $trainingIndex = null, $lastIndex = null)
     {
 
         // Insert into training_assigned_users table
@@ -381,19 +408,41 @@ class ShowWebsiteController extends Controller
             ];
 
             log_action(
-                "Email simulation | Training " . 
-                (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
-                " assigned to " . $user->user_email . ".",
+                "Email simulation | Training " .
+                    (($user->training_type == 'games') ? $user->game->name : $user->training->name) .
+                    " assigned to " . $user->user_email . ".",
                 'employee',
                 'employee'
             );
 
-            if($user->training_type == 'games'){
+            if ($user->training_type == 'games') {
                 Mail::to($checkLoginExist->login_username)->send(new GameAssignedEmail($mailData));
-            }else{
-                Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData));
+            } else {
+                if ($trainingIndex !== null) {
+                    if ($trainingIndex === $lastIndex) {
+                        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
+
+                        $trainingNames = $allAssignedTrainings->map(function ($training) {
+                            if ($training->training_type == 'games') {
+                                return $training->trainingGame->name;
+                            }
+                            return $training->trainingData->name;
+                        });
+
+                        Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                    }
+                } else {
+                    $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
+
+                    $trainingNames = $allAssignedTrainings->map(function ($training) {
+                        if ($training->training_type == 'games') {
+                            return $training->trainingGame->name;
+                        }
+                        return $training->trainingData->name;
+                    });
+                    Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                }
             }
-            
 
 
             // Update campaign_live table
@@ -410,7 +459,7 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function sendTrainingReminder($assigned_user, $user)
+    private function sendTrainingReminder($assigned_user, $user, $trainingIndex = null, $lastIndex = null)
     {
 
         // Fetch user credentials
@@ -432,20 +481,42 @@ class ShowWebsiteController extends Controller
         ];
 
         log_action(
-            "Email simulation | Training " . 
-            (($user->training_type == 'games') ? $user->game->name : $user->training->name) . 
-            " assigned to " . $user->user_email . ".",
+            "Email simulation | Training " .
+                (($user->training_type == 'games') ? $user->game->name : $user->training->name) .
+                " assigned to " . $user->user_email . ".",
             'employee',
             'employee'
         );
 
-        if($user->training_type == 'games'){
+        if ($user->training_type == 'games') {
             Mail::to($userCredentials->login_username)->send(new GameAssignedEmail($mailData));
-        }else{
-            Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
-        }
+        } else {
+            if ($trainingIndex !== null) {
+                if ($trainingIndex === $lastIndex) {
+                    $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
 
-        
+                    $trainingNames = $allAssignedTrainings->map(function ($training) {
+                        if ($training->training_type == 'games') {
+                            return $training->trainingGame->name;
+                        }
+                        return $training->trainingData->name;
+                    });
+
+                    Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                }
+            } else {
+                $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
+
+                $trainingNames = $allAssignedTrainings->map(function ($training) {
+                    if ($training->training_type == 'games') {
+                        return $training->trainingGame->name;
+                    }
+                    return $training->trainingData->name;
+                });
+
+                Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+            }
+        }
 
         // Update campaign_live table
         $user->training_assigned = 1;
@@ -519,11 +590,10 @@ class ShowWebsiteController extends Controller
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
 
-            if($qsh == 1){
+            if ($qsh == 1) {
                 $campaign = QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->first();
-                if($campaign){
+                if ($campaign) {
                     $campaign->update(['compromised' => '1']);
-                    
                 }
 
                 return;

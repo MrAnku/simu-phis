@@ -23,6 +23,7 @@ use App\Http\Requests\StoreWhatsAppTemplateRequest;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarGroup;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\TrainingAssignedUser;
 
 class WhatsappCampaignController extends Controller
 {
@@ -474,7 +475,16 @@ class WhatsappCampaignController extends Controller
 
         log_action("WhatsApp simulation | Training {$training->name} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
 
-        Mail::to($campaign_user->user_email)->send(new AssignTrainingWithPassResetLink($mailData));
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
+
+        $trainingNames = $allAssignedTrainings->map(function ($training) {
+          if ($training->training_type == 'games') {
+            return $training->trainingGame->name;
+          }
+          return $training->trainingData->name;
+        });
+
+        Mail::to($campaign_user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
 
         NewLearnerPassword::create([
             'email' => $campaign_user->user_email,
@@ -597,7 +607,16 @@ class WhatsappCampaignController extends Controller
 
             log_action("WhatsApp simulation | Training {$campaign_user->training} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
 
-            Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
+            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
+
+            $trainingNames = $allAssignedTrainings->map(function ($training) {
+              if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+              }
+              return $training->trainingData->name;
+            });
+
+            Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
             // Update campaign_live table
             DB::table('whatsapp_camp_users')
@@ -635,7 +654,16 @@ class WhatsappCampaignController extends Controller
 
         log_action("WhatsApp simulation | Training {$training->name} already assigned to {$campaign_user->user_email}, Reminder Sent.", 'employee', 'employee');
 
-        Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData));
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
+
+        $trainingNames = $allAssignedTrainings->map(function ($training) {
+          if ($training->training_type == 'games') {
+            return $training->trainingGame->name;
+          }
+          return $training->trainingData->name;
+        });
+
+        Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
         return response()->json(['success' => 'Training reminder has sent']);
     }
