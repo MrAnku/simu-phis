@@ -7,7 +7,8 @@
             <div id="preloader" class="text-center">
                 <img src="{{ asset('learner/assets/images/preloader.svg') }}" alt="preloader" width="200">
                 <div class="d-flex justify-content-center align-items-center">
-                    <h1 class="bg-white rounded-pill px-4 py-4" style="font-size: 21px; width: fit-content;">AI is generating your questions...</h1>
+                    <h1 class="bg-white rounded-pill px-4 py-4" style="font-size: 21px; width: fit-content;">AI is generating
+                        your questions...</h1>
                 </div>
 
             </div>
@@ -506,7 +507,7 @@
             }
 
             $('#showScoreModal').on('hidden.bs.modal', function() {
-                window.location.href = '{{ route('learner.dashboard') }}';
+                window.location.href = '{{ route('learner.training.dashboard') }}';
             });
         </script>
         <script>
@@ -545,7 +546,7 @@
                     confirmLanguage(optionText, lang);
                     console.log(lang);
 
-                   
+
                 });
             });
         </script>

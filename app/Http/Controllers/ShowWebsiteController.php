@@ -308,14 +308,23 @@ class ShowWebsiteController extends Controller
         $learnSiteAndLogo = $this->checkWhitelabeled($user->company_id);
         $token = encrypt($user->user_email);
 
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $user->user_email,
+                'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
         $mailData = [
             'user_name' => $user->user_name,
             'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
-            'password_create_link' => $passwordGenLink,
+            'password_create_link' => $learning_dashboard_link,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' => $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
@@ -340,17 +349,17 @@ class ShowWebsiteController extends Controller
 
                 Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
             }
-        }else{
+        } else {
             $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
 
-                $trainingNames = $allAssignedTrainings->map(function ($training) {
-                    if ($training->training_type == 'games') {
-                        return $training->trainingGame->name;
-                    }
-                    return $training->trainingData->name;
-                });
+            $trainingNames = $allAssignedTrainings->map(function ($training) {
+                if ($training->training_type == 'games') {
+                    return $training->trainingGame->name;
+                }
+                return $training->trainingData->name;
+            });
 
-                Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
+            Mail::to($user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
         }
 
         NewLearnerPassword::create([
@@ -395,15 +404,24 @@ class ShowWebsiteController extends Controller
             // echo "user created successfully";
 
             $learnSiteAndLogo = $this->checkWhitelabeled($user->company_id);
-
+            $token = encrypt($user->user_email);
+            // $token = Hash::make($campaign->user_email);
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+            DB::table('learnerloginsession')
+                ->insert([
+                    'token' => $token,
+                    'email' => $user->user_email,
+                    'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+                    'created_at' => now(), // Ensure ordering works properly
+                ]);
             $mailData = [
                 'user_name' => $user->user_name,
                 'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
-                'login_email' => $checkLoginExist->login_username,
-                'login_pass' => $checkLoginExist->login_password,
+                // 'login_email' => $checkLoginExist->login_username,
+                // 'login_pass' => $checkLoginExist->login_password,
                 'company_name' => $learnSiteAndLogo['company_name'],
                 'company_email' => $learnSiteAndLogo['company_email'],
-                'learning_site' => $learnSiteAndLogo['learn_domain'],
+                'learning_site' => $learning_dashboard_link,
                 'logo' => $learnSiteAndLogo['logo']
             ];
 
@@ -416,7 +434,7 @@ class ShowWebsiteController extends Controller
             );
 
             if ($user->training_type == 'games') {
-                Mail::to($checkLoginExist->login_username)->send(new GameAssignedEmail($mailData));
+                Mail::to($user->user_email)->send(new GameAssignedEmail($mailData));
             } else {
                 if ($trainingIndex !== null) {
                     if ($trainingIndex === $lastIndex) {
@@ -429,7 +447,7 @@ class ShowWebsiteController extends Controller
                             return $training->trainingData->name;
                         });
 
-                        Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                        Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
                     }
                 } else {
                     $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
@@ -440,7 +458,7 @@ class ShowWebsiteController extends Controller
                         }
                         return $training->trainingData->name;
                     });
-                    Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                    Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
                 }
             }
 
@@ -468,15 +486,24 @@ class ShowWebsiteController extends Controller
             ->first();
 
         $learnSiteAndLogo = $this->checkWhitelabeled($user->company_id);
-
+        $token = encrypt($user->user_email);
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $user->user_email,
+                'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $mailData = [
             'user_name' => $user->user_name,
             'training_name' => $user->training_type == 'games' ? $user->game->name : $user->training->name,
-            'login_email' => $userCredentials->login_username,
-            'login_pass' => $userCredentials->login_password,
+            // 'login_email' => $userCredentials->login_username,
+            // 'login_pass' => $userCredentials->login_password,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' =>  $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
@@ -489,7 +516,7 @@ class ShowWebsiteController extends Controller
         );
 
         if ($user->training_type == 'games') {
-            Mail::to($userCredentials->login_username)->send(new GameAssignedEmail($mailData));
+            Mail::to($user->user_email)->send(new GameAssignedEmail($mailData));
         } else {
             if ($trainingIndex !== null) {
                 if ($trainingIndex === $lastIndex) {
@@ -502,7 +529,7 @@ class ShowWebsiteController extends Controller
                         return $training->trainingData->name;
                     });
 
-                    Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                    Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
                 }
             } else {
                 $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $user->user_email)->get();
@@ -514,7 +541,7 @@ class ShowWebsiteController extends Controller
                     return $training->trainingData->name;
                 });
 
-                Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                Mail::to($user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
             }
         }
 

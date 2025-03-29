@@ -9,15 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('learnerloginsession', function (Blueprint $table) {
-            $table->id();
-            $table->string('token', 191)->unique(); // Reduce token length to 191 characters
-            $table->string('email')->index();
-            $table->timestamp('expiry');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('learnerloginsession')) {
+            Schema::create('learnerloginsession', function (Blueprint $table) {
+                $table->id();
+                $table->string('token', 191);
+                $table->string('email', 255);
+                $table->timestamp('expiry');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

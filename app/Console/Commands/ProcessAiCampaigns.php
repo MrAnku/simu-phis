@@ -193,25 +193,34 @@ class ProcessAiCampaigns extends Command
 
         $token = encrypt($campaign->employee_email);
 
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $campaign->employee_email,
+                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
 
         $mailData = [
             'user_name' => $campaign->employee_name,
             'training_name' => $this->trainingModuleName($campaign->training),
-            'password_create_link' => $passwordGenLink,
+            'password_create_link' => $learning_dashboard_link,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' => $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
+            if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+            }
+            return $training->trainingData->name;
         });
 
         Mail::to($campaign->employee_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
@@ -226,7 +235,7 @@ class ProcessAiCampaigns extends Command
 
     private function assignAnotherTraining($checkLoginExist, $campaign)
     {
-       
+
 
         // Insert into training_assigned_users table
         $res2 = DB::table('training_assigned_users')
@@ -244,7 +253,17 @@ class ProcessAiCampaigns extends Command
             ]);
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
+        $token = encrypt($campaign->employee_email);
 
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $campaign->employee_email,
+                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $mailData = [
             'user_name' => $campaign->employee_name,
             'training_name' => $this->trainingModuleName($campaign->training),
@@ -252,20 +271,20 @@ class ProcessAiCampaigns extends Command
             'login_pass' => $checkLoginExist->login_password,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' =>  $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
+            if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+            }
+            return $training->trainingData->name;
         });
 
-        $isMailSent = Mail::to($checkLoginExist->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+        $isMailSent = Mail::to($campaign->employee_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
         $campaign->training_assigned = 1;
         $campaign->save();
@@ -284,7 +303,17 @@ class ProcessAiCampaigns extends Command
         $checkAssignedUserLoginPass = $userCredentials->login_password;
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
+        $token = encrypt($campaign->employee_email);
 
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $campaign->employee_email,
+                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $mailData = [
             'user_name' => $campaign->employee_name,
             'training_name' => $this->trainingModuleName($campaign->training),
@@ -292,20 +321,20 @@ class ProcessAiCampaigns extends Command
             'login_pass' => $checkAssignedUserLoginPass,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' => $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
+            if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+            }
+            return $training->trainingData->name;
         });
 
-        $isMailSent = Mail::to($checkAssignedUserLoginEmail)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+        $isMailSent = Mail::to($campaign->employee_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
         $campaign->training_assigned = 1;
         $campaign->save();

@@ -324,7 +324,18 @@ class ProcessCampaigns extends Command
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
 
-        $token = substr(encrypt($campaign->user_email), 0, 200);
+        // $token = substr(encrypt($campaign->user_email), 0, 200);
+        $token = encrypt($campaign->user_email);
+        // $token = Hash::make($campaign->user_email);
+
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+          ->insert([
+            'token' => $token,
+            'email' => $campaign->user_email,
+            'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+            'created_at' => now(), // Ensure ordering works properly
+          ]);
 
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
 
@@ -332,10 +343,10 @@ class ProcessCampaigns extends Command
           'user_name' => $campaign->user_name,
           // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
           'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-          'password_create_link' => $passwordGenLink,
+          'password_create_link' => $learning_dashboard_link,
           'company_name' => $learnSiteAndLogo['company_name'],
           'company_email' => $learnSiteAndLogo['company_email'],
-          'learning_site' => $learnSiteAndLogo['learn_domain'],
+          'learning_site' => $learning_dashboard_link,
           'logo' => $learnSiteAndLogo['logo']
         ];
 
@@ -368,7 +379,17 @@ class ProcessCampaigns extends Command
 
       $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
 
-      $token = substr(encrypt($campaign->user_email), 0, 200);
+      $token = encrypt($campaign->user_email);
+      // $token = Hash::make($campaign->user_email);
+
+      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+      DB::table('learnerloginsession')
+        ->insert([
+          'token' => $token,
+          'email' => $campaign->user_email,
+          "expiry" => now()->addHours(24), // Ensure it expires in 24 hours
+          'created_at' => now(), // Ensure ordering works properly
+        ]);
 
       $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
 
@@ -376,7 +397,7 @@ class ProcessCampaigns extends Command
         'user_name' => $campaign->user_name,
         // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
         'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-        'password_create_link' => $passwordGenLink,
+        'password_create_link' => $learning_dashboard_link,
         'company_name' => $learnSiteAndLogo['company_name'],
         'company_email' => $learnSiteAndLogo['company_email'],
         'learning_site' => $learnSiteAndLogo['learn_domain'],
@@ -433,7 +454,7 @@ class ProcessCampaigns extends Command
         ->insert([
           'token' => $token,
           'email' => $campaign->user_email,
-          'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+          'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
           'created_at' => now(), // Ensure ordering works properly
         ]);
       $mailData = [
@@ -534,7 +555,7 @@ class ProcessCampaigns extends Command
       ->insert([
         'token' => $token,
         'email' => $campaign->user_email,
-        'expiry' => now()->addDay(), // Sets expiry to 24 hours from now
+        'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
         'created_at' => now(), // Ensure ordering works properly
       ]);
     $mailData = [

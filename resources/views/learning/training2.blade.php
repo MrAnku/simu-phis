@@ -374,11 +374,11 @@
                         //     videoIndex: index,
                         //     status: "completed"
                         // }, "*");
-                            completedVideos.push({
-                                videoIndex: index,
-                                status: "completed"
-                            });
-                            console.log(completedVideos);
+                        completedVideos.push({
+                            videoIndex: index,
+                            status: "completed"
+                        });
+                        console.log(completedVideos);
                     });
                 });
 
@@ -457,7 +457,7 @@
             }
 
             $('#showScoreModal').on('hidden.bs.modal', function() {
-                window.location.href = '{{ route('learner.dashboard') }}';
+                window.location.href = '{{ route('learner.training.dashboard') }}';
             });
         </script>
         <script>

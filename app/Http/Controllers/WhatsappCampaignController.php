@@ -462,14 +462,23 @@ class WhatsappCampaignController extends Controller
         $token = encrypt($campaign_user->user_email);
 
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
-
+        $token = encrypt($campaign_user->user_email);
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $campaign_user->user_email,
+                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $mailData = [
             'user_name' => $campaign_user->user_name,
             'training_name' => $training->name,
-            'password_create_link' => $passwordGenLink,
+            'password_create_link' => $learning_dashboard_link,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' => $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
@@ -478,10 +487,10 @@ class WhatsappCampaignController extends Controller
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
+            if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+            }
+            return $training->trainingData->name;
         });
 
         Mail::to($campaign_user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
@@ -593,7 +602,16 @@ class WhatsappCampaignController extends Controller
             // echo "user created successfully";
 
             $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
-
+            $token = encrypt($campaign_user->user_email);
+            // $token = Hash::make($campaign->user_email);
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+            DB::table('learnerloginsession')
+                ->insert([
+                    'token' => $token,
+                    'email' => $campaign_user->user_email,
+                    'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                    'created_at' => now(), // Ensure ordering works properly
+                ]);
             $mailData = [
                 'user_name' => $campaign_user->user_name,
                 'training_name' => $training->name,
@@ -601,7 +619,7 @@ class WhatsappCampaignController extends Controller
                 'login_pass' => $user_have_login->login_password,
                 'company_name' => $learnSiteAndLogo['company_name'],
                 'company_email' => $learnSiteAndLogo['company_email'],
-                'learning_site' => $learnSiteAndLogo['learn_domain'],
+                'learning_site' =>  $learning_dashboard_link,
                 'logo' => $learnSiteAndLogo['logo']
             ];
 
@@ -610,10 +628,10 @@ class WhatsappCampaignController extends Controller
             $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
 
             $trainingNames = $allAssignedTrainings->map(function ($training) {
-              if ($training->training_type == 'games') {
-                return $training->trainingGame->name;
-              }
-              return $training->trainingData->name;
+                if ($training->training_type == 'games') {
+                    return $training->trainingGame->name;
+                }
+                return $training->trainingData->name;
             });
 
             Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
@@ -641,6 +659,16 @@ class WhatsappCampaignController extends Controller
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
 
+        $token = encrypt($campaign_user->user_email);
+        // $token = Hash::make($campaign->user_email);
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        DB::table('learnerloginsession')
+            ->insert([
+                'token' => $token,
+                'email' => $campaign_user->user_email,
+                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
+                'created_at' => now(), // Ensure ordering works properly
+            ]);
         $mailData = [
             'user_name' => $campaign_user->user_name,
             'training_name' => $training->name,
@@ -648,7 +676,7 @@ class WhatsappCampaignController extends Controller
             // 'login_pass' => $userCredentials->login_password,
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learnSiteAndLogo['learn_domain'],
+            'learning_site' => $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo']
         ];
 
@@ -657,10 +685,10 @@ class WhatsappCampaignController extends Controller
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
+            if ($training->training_type == 'games') {
+                return $training->trainingGame->name;
+            }
+            return $training->trainingData->name;
         });
 
         Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
