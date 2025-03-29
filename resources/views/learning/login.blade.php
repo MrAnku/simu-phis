@@ -2,56 +2,60 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Login | simUphish Learning</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Login | simUphish Learning</title>
 
-  <link rel="icon" href="{{asset('assets')}}/images/simu-icon.png" type="image/x-icon" />
+    <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon" />
 
-  <!-- CSS files -->
-  <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
-  <link href="./dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
-  <link href="./dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
-  <link href="./dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
-  <style>
-    @import url('https://rsms.me/inter/inter.css');
+    <!-- CSS files -->
+    <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
+    <link href="./dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
+    <link href="./dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
+    <link href="./dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
+    <style>
+        @import url('https://rsms.me/inter/inter.css');
 
-    :root {
-      --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-    }
+        :root {
+            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        }
 
-    body {
-      font-feature-settings: "cv03", "cv04", "cv11";
-    }
+        body {
+            font-feature-settings: "cv03", "cv04", "cv11";
+        }
 
-    .navbar-brand-image {
-      height: 5rem !important;
-      width: auto;
-    }
-  </style>
+        .navbar-brand-image {
+            height: 5rem !important;
+            width: auto;
+        }
+    </style>
 </head>
 
 <body class=" d-flex flex-column">
-  <script src="./dist/js/demo-theme.min.js?1685973381"></script>
-  <div class="page page-center">
-    <div class="container container-tight py-4">
-      <div class="text-center mb-4">
-        <a href="." class="navbar-brand navbar-brand-autodark">
-          {{-- <img src="" width="150" alt="Logo" class="navbar-brand-image"> --}}
-          <img src="/assets/images/simu-logo-dark.png" alt="logo" class="navbar-brand-image">
-        </a>
-      </div>
-      <div class="card card-md">
-        <div class="card-body">
-          <h2 class="h2 text-center mb-4">Welcome Back</h2>
-          <form action="{{route('learner.login')}}" method="post" autocomplete="off" novalidate>
-            @csrf
-            <div class="mb-3">
-              <label class="form-label">Email address</label>
-              <input type="email" class="form-control" name="email" placeholder="your@email.com" autocomplete="off">
+    <script src="./dist/js/demo-theme.min.js?1685973381"></script>
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="text-center mb-4">
+                <a href="." class="navbar-brand navbar-brand-autodark">
+                    {{-- <img src="" width="150" alt="Logo" class="navbar-brand-image"> --}}
+                    <img src="/assets/images/simu-logo-dark.png" alt="logo" class="navbar-brand-image">
+                </a>
             </div>
-            <div class="mb-2">
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Enter your email to regenerate training session</h2>
+                    <form id="renewTokenForm">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label">Email address</label>
+                            <input type="email" id="email" class="form-control" name="email"
+                                placeholder="your@email.com" autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <p id="responseMessage" style="margin-top: 15px; font-size: 14px; color: green;"></p>
+                        </div>
+                        {{-- <div class="mb-2">
               <label class="form-label">
                 Password
                 <span class="form-label-description">
@@ -70,22 +74,49 @@
                   </a>
                 </span>
               </div>
-            </div>
+            </div> --}}
 
-            <div class="form-footer">
-              <button type="submit" name="signIn" class="btn btn-primary w-100">Sign in</button>
+                        <div class="form-footer">
+                            <button type="submit" name="signIn" class="btn btn-primary w-100">Regenerate</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-          </form>
-        </div>
-      </div>
-      <!-- <div class="text-center text-secondary mt-3">
+            <!-- <div class="text-center text-secondary mt-3">
           Don't have account yet? <a href="./sign-up.html" tabindex="-1">Sign up</a>
         </div> -->
+        </div>
     </div>
-  </div>
-  <!-- Libs JS -->
-  <!-- Tabler Core -->
-  <script src="./dist/js/tabler.min.js?1685973381" defer></script>
+    <!-- Libs JS -->
+    <!-- Tabler Core -->
+    <script src="./dist/js/tabler.min.js?1685973381" defer></script>
+    <script>
+        document.getElementById('renewTokenForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form from refreshing the page
+
+            const email = document.getElementById('email').value;
+
+            fetch('/create-new-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF protection
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('responseMessage').innerText = data.message;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('responseMessage').innerText = 'Error While Send Mail';
+                    document.getElementById('responseMessage').style.color = 'red';
+                });
+        });
+    </script>
 </body>
 
 </html>

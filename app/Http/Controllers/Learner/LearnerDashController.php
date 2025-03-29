@@ -95,7 +95,7 @@ class LearnerDashController extends Controller
         $token = encrypt($request->email);
 
         // Construct learning dashboard link
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/dashboard/' . $token;
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
 
         // Update existing record where email matches
         $updated = DB::table('learnerloginsession')
@@ -124,6 +124,42 @@ class LearnerDashController extends Controller
         // Return success response
         return response()->json(['message' => 'Mail sent successfully', 'token' => $token]);
     }
+    public function createNewToken(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        // Encrypt email to generate token
+        $token = encrypt($request->email);
+
+        // Construct learning dashboard link
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+
+        // Insert new record into the database
+        $inserted = DB::table('learnerloginsession')->insert([
+            'email' => $request->email,
+            'token' => $token,
+            'expiry' => now()->addHours(24),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Check if the record was inserted successfully
+        if (!$inserted) {
+            return response()->json(['message' => 'Failed to create token'], 500);
+        }
+
+        // Prepare email data
+        $mailData = [
+            'learning_site' => $learning_dashboard_link,
+        ];
+
+        // Send email
+        Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData));
+
+        // Return success response
+        return response()->json(['message' => 'Mail sent successfully', 'token' => $token]);
+    }
+
 
     public function startTraining($training_id, $training_lang, $id)
     {

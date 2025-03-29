@@ -73,6 +73,7 @@ Route::domain('learn.simuphish.com')->group(function () {
     Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
         ->name('learner.training.dashboard');
     Route::post('/renew-token', [LearnerDashController::class, 'renewToken']);
+    Route::post('/create-new-token', [LearnerDashController::class, 'createNewToken']);
 
 
     Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
