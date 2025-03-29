@@ -507,7 +507,7 @@
             }
 
             $('#showScoreModal').on('hidden.bs.modal', function() {
-                window.location.href = '{{ route('learner.training.dashboard') }}';
+                window.location.href = window.location.href;
             });
         </script>
         <script>
