@@ -59,7 +59,7 @@ class LearnerDashController extends Controller
 
         // Check if session exists and if the token is expired
         if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
-            return view('learning.ActiveToken'); // Stop execution
+            return view('learning.login', ['msg'=>'Your training session has expired!']); // Stop execution
         }
 
 
@@ -128,12 +128,15 @@ class LearnerDashController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $hasTraining = TrainingAssignedUser::where('email', $request->email)->exists();
+        $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->exists();
 
         if (!$hasTraining) {
             return response()->json(['message' => 'No training has assigned on this email'], 404);
         }
 
+        // delete old generated tokens from db
+        DB::table('learnerloginsession')->where('email', $request->email)->delete();
+       
         // Encrypt email to generate token
         $token = encrypt($request->email);
 

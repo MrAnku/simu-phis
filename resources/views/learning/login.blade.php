@@ -10,10 +10,10 @@
     <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon" />
 
     <!-- CSS files -->
-    <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
-    <link href="./dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-flags.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-payments.min.css?1685973381" rel="stylesheet" />
+    <link href="/dist/css/tabler-vendors.min.css?1685973381" rel="stylesheet" />
     <style>
         @import url('https://rsms.me/inter/inter.css');
 
@@ -33,7 +33,7 @@
 </head>
 
 <body class=" d-flex flex-column">
-    <script src="./dist/js/demo-theme.min.js?1685973381"></script>
+    <script src="/dist/js/demo-theme.min.js?1685973381"></script>
     <div class="page page-center">
         <div class="container container-tight py-4">
             <div class="text-center mb-4">
@@ -44,8 +44,11 @@
             </div>
             <div class="card card-md">
                 <div class="card-body">
+                    @if (isset($msg))
+                    <p class="my-2 text-center text-danger">{{$msg}}</p>
+                    @endif
                     <h2 class="h2 text-center mb-4">Enter your email to regenerate training session</h2>
-                    <form id="renewTokenForm">
+                    <form id="newTokenForm">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label">Email address</label>
@@ -89,12 +92,23 @@
     </div>
     <!-- Libs JS -->
     <!-- Tabler Core -->
-    <script src="./dist/js/tabler.min.js?1685973381" defer></script>
+    <script src="/dist/js/tabler.min.js?1685973381" defer></script>
     <script>
-        document.getElementById('renewTokenForm').addEventListener('submit', function(event) {
+        document.getElementById('newTokenForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent form from refreshing the page
 
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            submitButton.classList.add('disabled');
+            submitButton.innerText = 'Please wait...';
+
             const email = document.getElementById('email').value;
+            if(!email) {
+                document.getElementById('responseMessage').innerText = 'Please enter your email';
+                document.getElementById('responseMessage').style.color = 'red';
+                submitButton.innerText = 'Regenerate';
+                submitButton.classList.remove('disabled');
+                return;
+            }
 
             fetch('/create-new-token', {
                     method: 'POST',
@@ -109,11 +123,14 @@
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('responseMessage').innerText = data.message;
+                    submitButton.innerText = 'Session Regenerated';
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('responseMessage').innerText = 'Error While Send Mail';
                     document.getElementById('responseMessage').style.color = 'red';
+                    submitButton.innerText = 'Regenerate';
+                    submitButton.classList.remove('disabled');
                 });
         });
     </script>

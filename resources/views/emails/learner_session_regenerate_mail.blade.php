@@ -707,7 +707,7 @@
                                       mso-line-height-alt: 50.4px;
                                     ">
                                                                     <span class="tinyMce-placeholder"
-                                                                        style="word-break: break-word">Trainings</span>
+                                                                        style="word-break: break-word">Popular Trainings</span>
                                                                 </h3>
                                                             </td>
                                                         </tr>
