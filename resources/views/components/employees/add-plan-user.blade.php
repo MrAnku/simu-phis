@@ -175,7 +175,6 @@
                 <th>Company</th>
                 <th>Job Title</th>
                 <th>WhatsApp</th>
-                <th>Action</th>
             </tr>
         </thead>
         <tbody class="addedPlanUsers"></tbody>

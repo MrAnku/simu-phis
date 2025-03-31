@@ -283,6 +283,7 @@ $("#adduserForm").submit(function (e) {
         $("#usrWhatsapp").removeClass("is-valid");
     }
 });
+let addedPlanUser = 0;
 $("#adduserPlanForm").submit(function (e) {
     e.preventDefault();
 
@@ -299,9 +300,18 @@ $("#adduserPlanForm").submit(function (e) {
                     // alert(resJson.msg);
                     Swal.fire(res.msg, "", "error");
                 } else {
-                    var params = new URLSearchParams(formData);
-                    // var groupid = params.get("groupid");
-                    viewPlanUsers();
+                    addedPlanUser++;
+                    const formDataObj = Object.fromEntries(new URLSearchParams(formData));
+                    $(".addedPlanUsers").append(`
+                        <tr>
+                            <td>${addedPlanUser}</td>
+                            <td>${formDataObj.usrName}</td>
+                            <td>${formDataObj.usrEmail}</td>
+                            <td>${formDataObj.usrCompany ?? '--'}</td>
+                            <td>${formDataObj.usrJobTitle ?? '--'}</td>
+                            <td>${formDataObj.usrWhatsapp ?? '--'}</td>
+                        </tr>
+                    `);
                 }
             },
         });
@@ -436,7 +446,7 @@ function deleteUser(usrId, grpId) {
         }
     });
 }
-function deletePlanUser(usrId) {
+function deletePlanUser(usrEmail) {
     Swal.fire({
         title: "Are you sure?",
         text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
@@ -448,14 +458,14 @@ function deletePlanUser(usrId) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
-                url: "/employees/deleteUser",
+                url: "/employees/delete-emp-by-email",
                 data: {
-                    user_id: usrId,
+                    user_email: usrEmail,
                 },
                 success: function (response) {
                     Swal.fire({
                         title: "Deleted!",
-                        text: "User has been deleted successfully.",
+                        text: "Employee has been deleted successfully.",
                         icon: "success",
                         timer: 1500,
                         showConfirmButton: false,

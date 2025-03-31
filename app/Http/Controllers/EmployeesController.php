@@ -52,21 +52,24 @@ class EmployeesController extends Controller
     {
 
         $companyId = Auth::user()->company_id;
-        $groups = UsersGroup::withCount('users')
-            ->where('company_id', $companyId)
-            ->get();
 
-        $totalEmps = $groups->sum('users_count');
+
+        $totalEmps = Users::where('company_id', $companyId)->pluck('user_email')->unique()->count();
         $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
         $notVerifiedDomains = DomainVerified::where('verified', 0)->where('company_id', $companyId)->get();
 
         $allDomains = DomainVerified::where('company_id', $companyId)->get();
-        $allEmployees = User::where('company_id', $companyId)->get();
-        // return $allEmployees;
+        $allEmployees = Users::where('company_id', $companyId)
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('users')
+                    ->groupBy('user_email');
+            })
+            ->get();
 
         $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
 
-        return view('all-employees', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken', 'allEmployees'));
+        return view('all-employees', compact('totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken', 'allEmployees'));
     }
     public function BlueCOllarIndex()
     {
@@ -102,7 +105,7 @@ class EmployeesController extends Controller
                     $employee = new EmployeeService();
                     // Check if the user is already in the group
                     $emailExists = $employee->emailExistsInGroup($request->groupid, $user->user_email);
-                    if($emailExists){
+                    if ($emailExists) {
                         return response()->json(['status' => 0, 'msg' => 'This email(s) already exists in this group']);
                     }
                     $addedEmployee = $employee->addEmployee(
@@ -414,6 +417,24 @@ class EmployeesController extends Controller
         // }
     }
 
+    public function deleteUserByEmail(Request $request)
+    {
+        $user_email = base64_decode($request->input('user_email'));
+        $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
+        if ($users->isEmpty()) {
+            return response()->json(['status' => 0, 'msg' => 'Employee not found']);
+        }
+        $employee = new EmployeeService();
+        foreach ($users as $user) {
+            try {
+                $employee->deleteEmployeeById($user->id);
+            } catch (\Exception $e) {
+                return response()->json(['status' => 0, 'msg' => 'Failed to delete employee']);
+            }
+        }
+        return response()->json(['status' => 1, 'msg' => 'Employee deleted successfully']);
+    }
+
     public function addUser(Request $request)
     {
         //xss check start
@@ -550,51 +571,73 @@ class EmployeesController extends Controller
             return response()->json(['status' => 0, 'msg' => $validator->errors()->first()]);
         }
 
-        $companyId = Auth::user()->company_id;
-
-        // Checking the limit of employees
-        if (Auth::user()->usedemployees >= Auth::user()->employees) {
-            log_action("Employee limit has exceeded");
-            return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+        //check if this email already exists in table
+        $user = Users::where('user_email', $request->usrEmail)->where('company_id', Auth::user()->company_id)->exists();
+        if ($user) {
+            return response()->json(['status' => 0, 'msg' => 'This email already exists']);
         }
 
-        // Checking if the domain is verified
-        if (!$this->domainVerified($request->usrEmail, $companyId)) {
-            return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
+        $employee = new EmployeeService();
+        
+        $addedEmployee = $employee->addEmployee(
+            $request->usrName,
+            $request->usrEmail,
+            !empty($request->usrCompany) ? $request->usrCompany : null,
+            !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
+            !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null
+        );
+        if ($addedEmployee['status'] == 1) {
+            
+            return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+        } else {
+            return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
         }
 
-        // Checking if the employee is already in this group
-        if (!empty($request->groupid)) {
-            $userExists = Users::where('user_email', $request->usrEmail)
-                ->where('group_id', $request->groupid)
-                ->exists();
+        // $companyId = Auth::user()->company_id;
 
-            if ($userExists) {
-                return response()->json(['status' => 0, 'msg' => 'This employee is already in this group']);
-            }
-        }
+        // // Checking the limit of employees
+        // if (Auth::user()->usedemployees >= Auth::user()->employees) {
+        //     log_action("Employee limit has exceeded");
+        //     return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+        // }
 
-        // Checking if this user is already added in this company
-        $userExists = Users::where('user_email', $request->usrEmail)
-            ->where('company_id', $companyId)
-            ->exists();
+        // // Checking if the domain is verified
+        // if (!$this->domainVerified($request->usrEmail, $companyId)) {
+        //     return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
+        // }
 
-        if (!$userExists) {
-            Auth::user()->increment('usedemployees');
-        }
+        // // Checking if the employee is already in this group
+        // if (!empty($request->groupid)) {
+        //     $userExists = Users::where('user_email', $request->usrEmail)
+        //         ->where('group_id', $request->groupid)
+        //         ->exists();
 
-        Users::create([
-            'group_id' => null,
-            'user_name' => $request->usrName,
-            'user_email' => $request->usrEmail,
-            'user_company' => !empty($request->usrCompany) ? $request->usrCompany : null,
-            'user_job_title' => !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
-            'whatsapp' => !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null,
-            'company_id' => $companyId,
-        ]);
+        //     if ($userExists) {
+        //         return response()->json(['status' => 0, 'msg' => 'This employee is already in this group']);
+        //     }
+        // }
 
-        log_action("Employee {$request->usrEmail} added");
-        return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+        // // Checking if this user is already added in this company
+        // $userExists = Users::where('user_email', $request->usrEmail)
+        //     ->where('company_id', $companyId)
+        //     ->exists();
+
+        // if (!$userExists) {
+        //     Auth::user()->increment('usedemployees');
+        // }
+
+        // Users::create([
+        //     'group_id' => null,
+        //     'user_name' => $request->usrName,
+        //     'user_email' => $request->usrEmail,
+        //     'user_company' => !empty($request->usrCompany) ? $request->usrCompany : null,
+        //     'user_job_title' => !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
+        //     'whatsapp' => !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null,
+        //     'company_id' => $companyId,
+        // ]);
+
+        // log_action("Employee {$request->usrEmail} added");
+        // return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
 
 
