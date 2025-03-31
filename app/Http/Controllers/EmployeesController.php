@@ -35,11 +35,10 @@ class EmployeesController extends Controller
     {
 
         $companyId = Auth::user()->company_id;
-        $groups = UsersGroup::withCount('users')
-            ->where('company_id', $companyId)
+        $groups = UsersGroup::where('company_id', $companyId)
             ->get();
 
-        $totalEmps = $groups->sum('users_count');
+        $totalEmps = Users::where('company_id', $companyId)->pluck('user_email')->unique()->count();
         $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
         $notVerifiedDomains = DomainVerified::where('verified', 0)->where('company_id', $companyId)->get();
 
@@ -297,13 +296,41 @@ class EmployeesController extends Controller
     public function viewUsers($groupid)
     {
         $companyId = auth()->user()->company_id;
-        $users = Users::where('group_id', $groupid)->where('company_id', $companyId)->get();
+        $group = UsersGroup::where('group_id', $groupid)
+            ->where('company_id', $companyId)
+            ->first();
 
-        if (!$users->isEmpty()) {
-            return response()->json(['status' => 1, 'data' => $users]);
-        } else {
+        if (!$group) {
+            return response()->json(['status' => 0, 'msg' => 'group not found']);
+        }
+
+        if (empty($group->users)) {
             return response()->json(['status' => 0, 'msg' => 'no employees found']);
         }
+
+        $userIdsArray = json_decode($group->users, true);
+
+        if (!is_array($userIdsArray) || empty($userIdsArray)) {
+            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+        }
+
+        $users = Users::whereIn('id', $userIdsArray)->get();
+
+        return response()->json([
+            'status' => $users->isEmpty() ? 0 : 1,
+            'data' => $users->isEmpty() ? null : $users,
+            'msg' => $users->isEmpty() ? 'no employees found' : 'success'
+        ]);
+
+
+
+        // $users = Users::where('group_id', $groupid)->where('company_id', $companyId)->get();
+
+        // if (!$users->isEmpty()) {
+        //     return response()->json(['status' => 1, 'data' => $users]);
+        // } else {
+        //     return response()->json(['status' => 0, 'msg' => 'no employees found']);
+        // }
     }
     public function viewPlanUsers()
     {
@@ -319,48 +346,56 @@ class EmployeesController extends Controller
 
     public function deleteUser(Request $request)
     {
-        $user = Users::where('id', $request->user_id)->where('company_id', Auth::user()->company_id)->first();
-        // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
-
-        if ($user) {
-
-            //delete from email campaign live
-            CampaignLive::where('user_id', $user->id)->delete();
-
-
-            //delete ai campaign live
-            AiCallCampLive::where('user_id', $user->id)->delete();
-
-
-            //delete from whatsapp campaign live
-            WhatsAppCampaignUser::where('user_id', $user->id)->delete();
-
-
-            //delete from quishing campaign live
-            QuishingLiveCamp::where('user_id', $user->id)->delete();
-
-
-            //delete from training assigned table
-            TrainingAssignedUser::where('user_email', $user->user_email)->delete();
-
-            //delete from user login table
-            UserLogin::where('user_id', $user->id)->delete();
-
-            //checking if no emails available then delete from breached email table
-            $emailsExists = Users::where('user_email', $user->user_email)->where('company_id', Auth::user()->company_id)->count();
-            if ($emailsExists == 1) {
-                BreachedEmail::where('email', $user->user_email)->delete();
-            }
-
-            log_action("User {$user->user_email} deleted");
-            $user->delete();
-
-            return response()->json(['status' => 1, 'msg' => 'User deleted successfully']);
-        } else {
-
-            log_action("User not found to delete");
-            return response()->json(['status' => 0, 'msg' => 'User not found']);
+        $user_id = base64_decode($request->input('user_id'));
+        $employee = new EmployeeService();
+        try {
+            $employee->deleteEmployeeById($user_id);
+            return response()->json(['status' => 1, 'msg' => 'Employee deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'msg' => 'Failed to delete employee']);
         }
+        // $user = Users::where('id', $request->user_id)->where('company_id', Auth::user()->company_id)->first();
+        // // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
+
+        // if ($user) {
+
+        //     //delete from email campaign live
+        //     CampaignLive::where('user_id', $user->id)->delete();
+
+
+        //     //delete ai campaign live
+        //     AiCallCampLive::where('user_id', $user->id)->delete();
+
+
+        //     //delete from whatsapp campaign live
+        //     WhatsAppCampaignUser::where('user_id', $user->id)->delete();
+
+
+        //     //delete from quishing campaign live
+        //     QuishingLiveCamp::where('user_id', $user->id)->delete();
+
+
+        //     //delete from training assigned table
+        //     TrainingAssignedUser::where('user_email', $user->user_email)->delete();
+
+        //     //delete from user login table
+        //     UserLogin::where('user_id', $user->id)->delete();
+
+        //     //checking if no emails available then delete from breached email table
+        //     $emailsExists = Users::where('user_email', $user->user_email)->where('company_id', Auth::user()->company_id)->count();
+        //     if ($emailsExists == 1) {
+        //         BreachedEmail::where('email', $user->user_email)->delete();
+        //     }
+
+        //     log_action("User {$user->user_email} deleted");
+        //     $user->delete();
+
+        //     return response()->json(['status' => 1, 'msg' => 'User deleted successfully']);
+        // } else {
+
+        //     log_action("User not found to delete");
+        //     return response()->json(['status' => 0, 'msg' => 'User not found']);
+        // }
     }
 
     public function addUser(Request $request)
@@ -410,15 +445,15 @@ class EmployeesController extends Controller
             !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
             !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null
         );
-        if($addedEmployee['status'] == 1){
+        if ($addedEmployee['status'] == 1) {
             $addedInGroup = $employee->addEmployeeInGroup($request->groupid, $addedEmployee['user_id']);
 
-            if($addedInGroup['status'] == 0){
+            if ($addedInGroup['status'] == 0) {
                 return response()->json(['status' => 0, 'msg' => $addedInGroup['msg']]);
             }
 
             return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
-        }else{
+        } else {
             return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
         }
 

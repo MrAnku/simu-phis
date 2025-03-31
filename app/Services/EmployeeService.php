@@ -109,7 +109,7 @@ class EmployeeService
             ];
         }
         //delete this group users also
-        if($group->users !== null){
+        if ($group->users !== null) {
             $usersArray = json_decode($group->users, true);
             foreach ($usersArray as $userId) {
                 $this->deleteCampaignsByGroupId($groupId);
@@ -122,7 +122,8 @@ class EmployeeService
             'msg' => 'Group deleted successfully'
         ];
     }
-    public function deleteCampaignsByGroupId($groupId){
+    public function deleteCampaignsByGroupId($groupId)
+    {
 
         $email_camps = Campaign::where('users_group', $groupId)->get();
         if ($email_camps) {
@@ -137,9 +138,9 @@ class EmployeeService
 
         QuishingCamp::where('users_group', $groupId)->delete();
         WhatsappCampaign::where('user_group', $groupId)->delete();
-
     }
-    public function deleteEmployeeById($employeeId){
+    public function deleteEmployeeById($employeeId)
+    {
 
         $user = Users::where('id', $employeeId)->where('company_id', Auth::user()->company_id)->first();
         // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
@@ -174,24 +175,45 @@ class EmployeeService
                 BreachedEmail::where('email', $user->user_email)->delete();
             }
 
-            $user->delete();
+            //remove this id users column array from all groups
+            $groups = UsersGroup::where('company_id', Auth::user()->company_id)->get();
+            if ($groups) {
+                foreach ($groups as $group) {
+                    if ($group->users !== null) {
+                        $usersArray = json_decode($group->users, true);
+                        if (in_array($user->id, $usersArray)) {
+                            $key = array_search($user->id, $usersArray);
+                            unset($usersArray[$key]);
+                            if (count($usersArray) >= 1) {
+                                $group->users = json_encode(array_values($usersArray));
+                                $group->save();
+                            }else{
+                                $group->users = null;
+                                $group->save();
+                            }
+                        }
+                    }
+                }
+            }
 
+
+            $user->delete();
         }
     }
 
     public function emailExistsInGroup($groupId, $email)
     {
         $users = Users::where('user_email', $email)->where('company_id', Auth::user()->company_id)->get();
-        if(!$users){
+        if (!$users) {
             return false;
         }
         $group = UsersGroup::where('group_id', $groupId)->first();
-        if($group->users === null){
+        if ($group->users === null) {
             return false;
         }
         $usersArray = json_decode($group->users, true);
         foreach ($users as $user) {
-            
+
             if (in_array($user->id, $usersArray)) {
                 return true;
             }

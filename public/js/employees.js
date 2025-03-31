@@ -24,7 +24,7 @@ function viewUsersByGroup(groupid) {
                         <td>${value.user_job_title ?? "--"}</td>
                         <td>${value.whatsapp ?? "--"}</td>
                         <td><span class="text-danger ms-1" onclick="deleteUser('${
-                            value.id
+                            btoa(value.id)
                         }', '${
                         value.group_id
                     }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
@@ -44,7 +44,7 @@ function viewUsersByGroup(groupid) {
                 }
             } else {
                 var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                    '<tr><td colspan="7" class="text-center">No employees available in this group!</td></tr>';
                 $(".addedUsers").html(emptyRow);
 
                 $(".groupid").val(groupid);
@@ -79,7 +79,7 @@ function viewPlanUsers() {
                         <td>${value.user_job_title ?? "--"}</td>
                         <td>${value.whatsapp ?? "--"}</td>
                         <td><span class="text-danger ms-1" onclick="deleteUser('${
-                            value.id
+                            btoa(value.id)
                         }', '${
                         value.group_id
                     }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
@@ -538,8 +538,8 @@ function deleteUser(usrId, grpId) {
                     user_id: usrId,
                 },
                 success: function (response) {
-                    // addedUsers(grpId)
-                    viewUsersByGroup(grpId);
+                    const groupId = document.getElementById("selectedGroupId").value;
+                    viewUsersByGroup(groupId);
                 },
             });
         }
