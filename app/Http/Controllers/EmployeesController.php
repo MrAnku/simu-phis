@@ -86,7 +86,7 @@ class EmployeesController extends Controller
 
         return view('BlueCollars', compact('groups', 'totalEmps', 'verifiedDomains', 'notVerifiedDomains', 'allDomains', 'hasOutlookAdToken'));
     }
-    public function updateGroupUsers(Request $request)
+    public function addEmpFromAllEmp(Request $request)
     {
 
         // $request->merge([
@@ -99,14 +99,34 @@ class EmployeesController extends Controller
             foreach ($request->user_ids as $id) {
                 $user = Users::find($id);
                 if ($user) {
-                    $user->update(['group_id' => $request->groupid]);
+                    $employee = new EmployeeService();
+                    // Check if the user is already in the group
+                    $emailExists = $employee->emailExistsInGroup($request->groupid, $user->user_email);
+                    if($emailExists){
+                        return response()->json(['status' => 0, 'msg' => 'This email(s) already exists in this group']);
+                    }
+                    $addedEmployee = $employee->addEmployee(
+                        $user->user_name,
+                        $user->user_email,
+                        $user->user_company,
+                        $user->user_job_title,
+                        $user->whatsapp
+                    );
+                    if ($addedEmployee['status'] == 1) {
+                        $addedInGroup = $employee->addEmployeeInGroup($request->groupid, $addedEmployee['user_id']);
+                        if ($addedInGroup['status'] == 0) {
+                            return response()->json(['status' => 0, 'msg' => $addedInGroup['msg']]);
+                        }
+                    } else {
+                        return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
+                    }
                 }
             }
 
 
-            return response()->json(['status' => 1, 'message' => 'Users successfully added to the group.']);
+            return response()->json(['status' => 1, 'msg' => 'Employee(s) successfully added to the group.']);
         } catch (\Exception $e) {
-            return response()->json(['status' => 0, 'message' => 'Failed to add users.'], 500);
+            return response()->json(['status' => 0, 'msg' => 'Failed to add employee(s) in this group'], 500);
         }
     }
 
@@ -323,11 +343,16 @@ class EmployeesController extends Controller
         //     return response()->json(['status' => 0, 'msg' => 'no employees found']);
         // }
     }
-    public function viewPlanUsers()
+    public function viewUniqueEmails()
     {
         $companyId = auth()->user()->company_id;
-        $users = Users::where('group_id', null)->where('company_id', $companyId)->get();
-
+        $users = Users::where('company_id', $companyId)
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('users')
+                    ->groupBy('user_email');
+            })
+            ->get();
         if (!$users->isEmpty()) {
             return response()->json(['status' => 1, 'data' => $users]);
         } else {

@@ -272,8 +272,8 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::post('/employees/newGroup', [EmployeesController::class, 'newGroup'])->name('employee.newgroup');
     Route::post('/employees/blueCollarnewGroup', [BluecolarController::class, 'blueCollarNewGroup'])->name('bluecollar.employee.newgroup');
     Route::get('/employees/viewUsers/{groupid}', [EmployeesController::class, 'viewUsers'])->name('employee.viewUsers');
-    Route::get('/employees/viewPlanUsers', [EmployeesController::class, 'viewPlanUsers'])->name('employee.viewPlanUsers');
-    Route::post('/employees/updateGroupUsers', [EmployeesController::class, 'updateGroupUsers']);
+    Route::get('/employees/viewUniqueEmails', [EmployeesController::class, 'viewUniqueEmails'])->name('employee.viewUniqueEmails');
+    Route::post('/employees/addEmpFromAllEmp', [EmployeesController::class, 'addEmpFromAllEmp']);
 
     Route::get('/employees/viewBlueCollarUsers/{groupid}', [BluecolarController::class, 'viewBlueCollarUsers'])->name('employee.viewBlueCollarUsers');
     Route::post('/employees/deleteUser', [EmployeesController::class, 'deleteUser'])->name('employee.deleteUser');

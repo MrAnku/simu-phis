@@ -14,9 +14,9 @@
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#active_d"
                     aria-selected="true">Import From Directory</a>
             </li>
-            <li onclick="viewPlanAddUsers()" class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#all_user_d"
-                    aria-selected="true">All Users</a>
+            <li onclick="viewUniqueEmails()" class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#all_emps"
+                    aria-selected="true">All Employees</a>
             </li>
         </ul>
         <div class="tab-content">
@@ -166,10 +166,10 @@
 
 
             </div>
-            <div class="tab-pane" id="all_user_d" role="tabpanel">
+            <div class="tab-pane" id="all_emps" role="tabpanel">
 
                 <div class="table-responsive">
-                    <table id="addedUsersTable" class="employeesTable table table-bordered text-nowrap w-100">
+                    <table id="allUniqueUsers" class="employeesTable table table-bordered text-nowrap w-100">
                         <thead>
                             <tr>
                                 <th>Sl</th>
@@ -181,10 +181,10 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody class="addedPlanUsers"></tbody>
+                        <tbody class="allUniqueUsers"></tbody>
                     </table>
                 </div>
-                <button onclick="updateUsersGroup()" class="btn btn-primary mt-3">Add Selected Users to Group</button>
+                <button onclick="addFromAllEmp()" class="btn btn-primary mt-3">Add Selected Employees to Group</button>
             </div>
         </div>
     </div>

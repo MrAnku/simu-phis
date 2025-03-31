@@ -14,20 +14,17 @@ function viewUsersByGroup(groupid) {
                         <td>${index + 1}</td>
                         <td>
                         <a href="/employee/${btoa(
-                            value.id
-                        )}" class="text-primary" target="_blank">${
-                        value.user_name
-                    }</a>
+                        value.id
+                    )}" class="text-primary" target="_blank">${value.user_name
+                        }</a>
                         </td>
                         <td>${value.user_email}</td>
                         <td>${value.user_company ?? "--"}</td>
                         <td>${value.user_job_title ?? "--"}</td>
                         <td>${value.whatsapp ?? "--"}</td>
-                        <td><span class="text-danger ms-1" onclick="deleteUser('${
-                            btoa(value.id)
-                        }', '${
-                        value.group_id
-                    }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
+                        <td><span class="text-danger ms-1" onclick="deleteUser('${btoa(value.id)
+                        }', '${value.group_id
+                        }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
                         </tr>`;
                 });
                 $(".addedUsers").html(userRows);
@@ -55,63 +52,12 @@ function viewUsersByGroup(groupid) {
 function setGroupId(groupid) {
     document.getElementById("selectedGroupId").value = groupid;
 }
-function viewPlanUsers() {
-    $.get({
-        url: "/employees/viewPlanUsers/",
-        success: function (res) {
-            if (res.status == 1) {
-                // console.log(res);
-                $(".addedPlanUsers").empty();
-                var userRows = "";
-                $.each(res.data, function (index, value) {
-                    userRows += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>
-                        <a href="/employee/${btoa(
-                            value.id
-                        )}" class="text-primary" target="_blank">${
-                        value.user_name
-                    }</a>
-                        </td>
-                        <td>${value.user_email}</td>
-                        <td>${value.user_company ?? "--"}</td>
-                        <td>${value.user_job_title ?? "--"}</td>
-                        <td>${value.whatsapp ?? "--"}</td>
-                        <td><span class="text-danger ms-1" onclick="deleteUser('${
-                            btoa(value.id)
-                        }', '${
-                        value.group_id
-                    }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
-                        </tr>`;
-                });
-                $(".addedPlanUsers").html(userRows);
-                $(".groupid").val(groupid);
-                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
-                    $("#allUsersByGroupTable").DataTable({
-                        language: {
-                            searchPlaceholder: "Search...",
-                            sSearch: "",
-                        },
-                        pageLength: 10,
-                        // scrollX: true
-                    });
-                }
-            } else {
-                var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
-                $(".addedPlanUsers").html(emptyRow);
 
-                $(".groupid").val(groupid);
-            }
-        },
-    });
-}
 // Function to send API request
 let selectedUsers = []; // Store selected user IDs
 
 // Function to send API request
-function updateUsersGroup() {
+function addFromAllEmp() {
     let groupid = document.getElementById("selectedGroupId").value;
     // Convert to integer
     console.log("Converted Group ID:", groupid);
@@ -123,7 +69,7 @@ function updateUsersGroup() {
     }
 
     $.ajax({
-        url: "/employees/updateGroupUsers",
+        url: "/employees/addEmpFromAllEmp",
         type: "POST",
         data: {
             _token: $('meta[name="csrf-token"]').attr("content"),
@@ -131,8 +77,19 @@ function updateUsersGroup() {
             groupid: groupid,
         },
         success: function (res) {
-            console.log(res);
-            alert("Users successfully added to the group!");
+            if(res.status == 0){
+                Swal.fire(res.msg, "", "error");
+            }
+            else{
+                viewUsersByGroup(groupid);
+                // Reset selected users
+                selectedUsers = [];
+                // Reset checkboxes
+                $(".user-checkbox").prop("checked", false);
+                Swal.fire(res.msg, "", "success").then(() => {
+                    window.location.reload();
+                });
+            }
         },
         error: function (xhr) {
             console.log(xhr.responseJSON); // Log validation errors
@@ -153,70 +110,7 @@ function updateUsersGroup() {
 // }
 
 // Function to fetch and display users in the table
-function viewPlanAddUsers() {
-    $.get({
-        url: "/employees/viewPlanUsers/",
-        success: function (res) {
-            if (res.status == 1) {
-                $(".addedPlanUsers").empty();
-                var userRows = "";
-                $.each(res.data, function (index, value) {
-                    userRows += `
-        <tr>
-            <td>${index + 1}</td>
-            <td>
-                <a href="/employee/${btoa(
-                    value.id
-                )}" class="text-primary" target="_blank">
-                    ${value.user_name}
-                </a>
-            </td>
-            <td>${value.user_email}</td>
-            <td>${value.user_company ?? "--"}</td>
-            <td>${value.user_job_title ?? "--"}</td>
-            <td>${value.whatsapp ?? "--"}</td>
-            <td>
-                <span class="text-primary ms-1 add-btn" data-id="${
-                    value.id
-                }" role="button">
-                    Add
-                </span>
-            </td>
-        </tr>`;
-                });
 
-                $(".addedPlanUsers").html(userRows);
-                $(".groupid").val(groupid);
-
-                // Initialize DataTable if not already initialized
-                if (!$.fn.DataTable.isDataTable(".employeesTable")) {
-                    $("#allUsersByGroupTable").DataTable({
-                        language: {
-                            searchPlaceholder: "Search...",
-                            sSearch: "",
-                        },
-                        pageLength: 10,
-                    });
-                }
-
-                // Add click event listener after table is updated
-                $(".add-btn").click(function () {
-                    var userId = $(this).data("id");
-                    var button = $(this);
-
-                    // Call the AddUser function
-                    AddUser(userId, button);
-                });
-            } else {
-                var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
-                $(".addedPlanUsers").html(emptyRow);
-
-                $(".groupid").val(groupid);
-            }
-        },
-    });
-}
 
 function AddUser(userId) {
     if (!selectedUsers.includes(userId)) {
@@ -232,12 +126,13 @@ function RemoveUser(userId) {
 
     // updateUsers();
 }
-function viewPlanAddUsers() {
+function viewUniqueEmails() {
     $.get({
-        url: "/employees/viewPlanUsers/",
+        url: "/employees/viewUniqueEmails",
         success: function (res) {
+            console.log(res)
             if (res.status == 1) {
-                $(".addedPlanUsers").empty();
+                $(".allUniqueUsers").empty();
                 var userRows = "";
 
                 $.each(res.data, function (index, value) {
@@ -246,8 +141,8 @@ function viewPlanAddUsers() {
             <td>${index + 1}</td>
             <td>
                 <a href="/employee/${btoa(
-                    value.id
-                )}" class="text-primary" target="_blank">
+                        value.id
+                    )}" class="text-primary" target="_blank">
                     ${value.user_name}
                 </a>
             </td>
@@ -256,14 +151,13 @@ function viewPlanAddUsers() {
             <td>${value.user_job_title ?? "--"}</td>
             <td>${value.whatsapp ?? "--"}</td>
             <td>
-                <input type="checkbox" class="user-checkbox" data-id="${
-                    value.id
-                }">
+                <input type="checkbox" class="user-checkbox" data-id="${value.id
+                        }">
             </td>
         </tr>`;
                 });
 
-                $(".addedPlanUsers").html(userRows);
+                $(".allUniqueUsers").html(userRows);
 
                 // if (!$.fn.DataTable.isDataTable(".employeesTable")) {
                 //     $("#allUsersByGroupTable").DataTable({
@@ -288,7 +182,7 @@ function viewPlanAddUsers() {
                 });
             } else {
                 var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available</td></tr>';
+                    '<tr><td colspan="7" class="text-center">No employees available</td></tr>';
                 $(".addedPlanUsers").html(emptyRow);
 
                 // $(".groupid").val(groupid);
@@ -311,20 +205,17 @@ function viewBlueUsersByGroup(groupid) {
                         <td>${index + 1}</td>
                         <td>
                         <a href="/employee/${btoa(
-                            value.id
-                        )}" class="text-primary" target="_blank">${
-                        value.user_name
-                    }</a>
+                        value.id
+                    )}" class="text-primary" target="_blank">${value.user_name
+                        }</a>
                         </td>
                         
                         <td>${value.user_company ?? "--"}</td>
                         <td>${value.user_job_title ?? "--"}</td>
                         <td>${value.whatsapp ?? "--"}</td>
-                        <td><span class="text-danger ms-1" onclick="deleteBlueUser('${
-                            value.id
-                        }', '${
-                        value.group_id
-                    }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
+                        <td><span class="text-danger ms-1" onclick="deleteBlueUser('${value.id
+                        }', '${value.group_id
+                        }');" role="button"><i class="bx bx-trash fs-4"></i></span></td>
                         </tr>`;
                 });
                 $(".addedBlueCollarUsers").html(userRows);
