@@ -97,7 +97,7 @@
                                         <tr>
                                             <th>Sl</th>
                                             <th>Employee Group Name</th>
-                                            <th>Employee Count</th>
+                                            <th>Employees</th>
                                             <th>Group Unique Id</th>
                                             <th>Actions</th>
                                         </tr>
@@ -114,7 +114,7 @@
                                                     </a>
                                                 </td>
                                                 {{-- <td>{{ $group }}</td> --}}
-                                                <td>{{ $group->users_count }}</td>
+                                                <td>{{ $group->users !== null ? count(json_decode($group->users, true)) : 0 }}</td>
                                                 <td><span class="badge bg-info">{{ $group->group_id }}</span></td>
 
 
