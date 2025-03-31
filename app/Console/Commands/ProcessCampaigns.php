@@ -7,24 +7,25 @@ use App\Models\Users;
 use App\Models\Company;
 use App\Models\Campaign;
 use App\Mail\CampaignMail;
+use App\Models\UsersGroup;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use App\Models\SenderProfile;
 use App\Models\CampaignReport;
 use App\Models\TrainingModule;
+use App\Models\CompanySettings;
 use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Email;
 use App\Mail\AssignTrainingWithPassResetLink;
-use App\Models\CompanySettings;
-use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\Hash;
 
 class ProcessCampaigns extends Command
 {
@@ -84,7 +85,11 @@ class ProcessCampaigns extends Command
   private function makeCampaignLive($campaignid)
   {
     $campaign = Campaign::where('campaign_id', $campaignid)->first();
-    $users = Users::where('group_id', $campaign->users_group)->get();
+
+    $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+    $userIds = json_decode($userIdsJson, true);
+    $users = Users::whereIn('id', $userIds)->get();
+    // $users = Users::where('group_id', $campaign->users_group)->get();
 
     // Check if users exist in the group
     if (!$users->isEmpty()) {

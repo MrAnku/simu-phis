@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Users;
 use Aws\Api\Validator;
+use App\Models\UsersGroup;
 use App\Models\QshTemplate;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
@@ -32,7 +33,7 @@ class QuishingController extends Controller
         $campaigns = QuishingCamp::with('userGroupData')->where('company_id', $company_id)->get();
 
         $campLive = QuishingLiveCamp::where('company_id', $company_id)
-        ->get();
+            ->get();
 
         return view('quishing', compact('quishingEmails', 'trainingModules', 'campaigns', 'campLive'));
     }
@@ -76,9 +77,13 @@ class QuishingController extends Controller
         }
         //xss attack
 
-        $users = Users::where('group_id', $request->employee_group)
-            ->where('company_id', Auth::user()->company_id)
-            ->get();
+        $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
+        $userIds = json_decode($userIdsJson, true);
+        $users = Users::whereIn('id', $userIds)->get();
+
+        // $users = Users::where('group_id', $request->employee_group)
+        //     ->where('company_id', Auth::user()->company_id)
+        //     ->get();
 
         if (!$users) {
             return response()->json(['status' => 0, 'msg' => 'No employees found in selected group.']);
@@ -138,15 +143,16 @@ class QuishingController extends Controller
         return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully.']);
     }
 
-    public function fetchCampDetail(Request $request){
+    public function fetchCampDetail(Request $request)
+    {
         $campaign_id = $request->campid;
         $campaign = QuishingCamp::with('campLive')->where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->first();
         if (!$campaign) {
             return response()->json(['status' => 0, 'msg' => 'Campaign not found.']);
         }
         $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
-        ->where('company_id', Auth::user()->company_id)
-        ->get();
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
         $campaign->trainingAssigned = $trainingAssigned;
         return response()->json(['status' => 1, 'data' => $campaign]);
     }

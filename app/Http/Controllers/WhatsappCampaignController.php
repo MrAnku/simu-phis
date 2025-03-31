@@ -34,7 +34,7 @@ class WhatsappCampaignController extends Controller
         if (!$config) {
             return view('whatsapp-unavailable');
         }
-        $all_users = UsersGroup::where('company_id', $company_id)->get();
+        $all_users = UsersGroup::where('company_id', $company_id)->where('users', '!=', null)->get();
         $hasTemplates = CompanyWhatsappTemplate::where('company_id', $company_id)->first();
         if (!$hasTemplates) {
             $templates = [];
@@ -170,7 +170,12 @@ class WhatsappCampaignController extends Controller
         $users = [];
 
         if ($campaignData->empType == "Normal") {
-            $users = Users::where('group_id', $campaignData->user_group)->get();
+
+            $userIdsJson = UsersGroup::where('group_id', $campaignData->user_group)->value('users');
+            $userIds = json_decode($userIdsJson, true);
+            $users = Users::whereIn('id', $userIds)->get();
+
+            // $users = Users::where('group_id', $campaignData->user_group)->get();
         } else {
             $users = BlueCollarEmployee::where('group_id', $campaignData->user_group)->get();
         }

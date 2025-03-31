@@ -44,7 +44,14 @@ class EmailBreachCheck extends Command
     private function scanNewUsers()
     {
         //scan new employees
-        $employees = Users::where('breach_scan_date', null)->take(7)->get();
+        $employees = Users::where('breach_scan_date', null)
+        ->whereIn('id', function ($query) {
+            $query->selectRaw('MAX(id)')
+                ->from('users')
+                ->groupBy('user_email');
+        })
+        ->take(7)
+        ->get();
         if($employees->isEmpty()){ 
             return;
         }

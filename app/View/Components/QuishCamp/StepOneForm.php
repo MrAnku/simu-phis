@@ -16,7 +16,7 @@ class StepOneForm extends Component
      */
     public function __construct()
     {
-        $this->empGroups = UsersGroup::where('company_id', auth()->user()->company_id)->get();
+        $this->empGroups = UsersGroup::where('company_id', auth()->user()->company_id)->where('users', '!=', null)->get();
     }
 
     /**

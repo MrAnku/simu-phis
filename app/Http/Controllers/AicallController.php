@@ -28,7 +28,7 @@ class AicallController extends Controller
 
         $companyId = Auth::user()->company_id;
 
-        $empGroups = UsersGroup::where('company_id', $companyId)->get();
+        $empGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
         $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
         $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->paginate(10);
         $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
@@ -225,16 +225,33 @@ class AicallController extends Controller
 
     private function checkValidMobile($groupid)
     {
-        $users = Users::where('group_id', $groupid)->get();
-        if ($users) {
-            foreach ($users as $user) {
+        // Retrieve the JSON-encoded users column and decode it
+        $userIdsJson = UsersGroup::where('group_id', $groupid)->value('users');
 
-                if ($user->whatsapp == 0 || $user->whatsapp == null) {
-                    return false;
-                }
-            }
-            return true;
+        // Decode the JSON into an array
+        $userIds = json_decode($userIdsJson, true);
+
+        // If decoding fails or no user IDs exist, return false
+        if (empty($userIds) || !is_array($userIds)) {
+            return false;
         }
+
+        // Fetch users based on the retrieved IDs
+        $users = Users::whereIn('id', $userIds)->get();
+
+        // If no users exist in Users table, return false
+        if ($users->isEmpty()) {
+            return false;
+        }
+
+        // Check if any user has whatsapp = 0 or null
+        foreach ($users as $user) {
+            if (empty($user->whatsapp)) { // Checks both 0 and null
+                return false;
+            }
+        }
+
+        return true; // All users have valid WhatsApp numbers
     }
 
     private function makeCampaignLive($campaignid)
@@ -246,8 +263,9 @@ class AicallController extends Controller
 
         if ($campaign) {
 
-
-            $users = Users::where('group_id', $campaign->emp_group)->get();
+            $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+            $userIds = json_decode($userIdsJson, true);
+            $users = Users::whereIn('id', $userIds)->get();
             if ($users) {
                 foreach ($users as $user) {
 

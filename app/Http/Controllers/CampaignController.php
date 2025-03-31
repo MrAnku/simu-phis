@@ -44,7 +44,7 @@ class CampaignController extends Controller
 
 
         // Fetch users groups and phishing emails, and pass to view
-        $usersGroups = UsersGroup::where('company_id', $companyId)->get();
+        $usersGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
         $phishingEmails = PhishingEmail::where('company_id', $companyId)
             ->orWhere('company_id', 'default')
             ->limit(10)->get();
@@ -257,7 +257,11 @@ class CampaignController extends Controller
         $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
         $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
 
-        $users = User::where('group_id', $data['users_group'])->get();
+        $userIdsJson = UsersGroup::where('group_id', $data['users_group'])->value('users');
+        $userIds = json_decode($userIdsJson, true);
+        $users = Users::whereIn('id', $userIds)->get();
+
+        // $users = User::where('group_id', $data['users_group'])->get();
 
         if ($users->isEmpty()) {
             return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
@@ -489,7 +493,11 @@ class CampaignController extends Controller
 
         $campaign = Campaign::where('campaign_id', $campid)->first();
 
-        $users = User::where('group_id', $campaign->users_group)->get();
+        $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+        $userIds = json_decode($userIdsJson, true);
+        $users = Users::whereIn('id', $userIds)->get();
+
+        // $users = User::where('group_id', $campaign->users_group)->get();
 
         if ($users->isEmpty()) {
             return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
@@ -658,7 +666,11 @@ class CampaignController extends Controller
         $campaign = Campaign::where('id', $campaignid)->first();
 
         // Retrieve the users in the specified group
-        $users = Users::where('group_id', $campaign->users_group)->get();
+        $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+        $userIds = json_decode($userIdsJson, true);
+        $users = Users::whereIn('id', $userIds)->get();
+
+        // $users = Users::where('group_id', $campaign->users_group)->get();
 
         // Check if users exist in the group
         if ($users->isEmpty()) {
