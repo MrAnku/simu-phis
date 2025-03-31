@@ -300,26 +300,17 @@ class EmployeesController extends Controller
             ->where('company_id', $companyId)
             ->first();
 
-        if (!$group) {
-            return response()->json(['status' => 0, 'msg' => 'group not found']);
-        }
-
-        if (empty($group->users)) {
+        if (!$group || $group->users == null) {
             return response()->json(['status' => 0, 'msg' => 'no employees found']);
         }
 
         $userIdsArray = json_decode($group->users, true);
 
-        if (!is_array($userIdsArray) || empty($userIdsArray)) {
-            return response()->json(['status' => 0, 'msg' => 'no employees found']);
-        }
-
         $users = Users::whereIn('id', $userIdsArray)->get();
 
         return response()->json([
-            'status' => $users->isEmpty() ? 0 : 1,
-            'data' => $users->isEmpty() ? null : $users,
-            'msg' => $users->isEmpty() ? 'no employees found' : 'success'
+            'status' => 1,
+            'data' => $users
         ]);
 
 

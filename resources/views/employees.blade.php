@@ -108,7 +108,7 @@
                                                 <td>{{ $loop->iteration }}</td> <!-- Serial number -->
                                                 <td>
                                                     <a href="#" class="text-primary"
-                                                        onclick="viewUsersByGroup('{{ $group->group_id }}')"
+                                                        onclick="viewUsersByGroup('{{ $group->group_id }}'); setGroupId('{{ $group->group_id }}')"
                                                         data-bs-target="#viewUsers" data-bs-toggle="modal">
                                                         {{ $group->group_name }}
                                                     </a>
