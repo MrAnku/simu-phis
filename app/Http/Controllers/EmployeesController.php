@@ -578,7 +578,7 @@ class EmployeesController extends Controller
         }
 
         $employee = new EmployeeService();
-        
+
         $addedEmployee = $employee->addEmployee(
             $request->usrName,
             $request->usrEmail,
@@ -587,57 +587,11 @@ class EmployeesController extends Controller
             !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null
         );
         if ($addedEmployee['status'] == 1) {
-            
+
             return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
         } else {
             return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
         }
-
-        // $companyId = Auth::user()->company_id;
-
-        // // Checking the limit of employees
-        // if (Auth::user()->usedemployees >= Auth::user()->employees) {
-        //     log_action("Employee limit has exceeded");
-        //     return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
-        // }
-
-        // // Checking if the domain is verified
-        // if (!$this->domainVerified($request->usrEmail, $companyId)) {
-        //     return response()->json(['status' => 0, 'msg' => 'Domain is not verified']);
-        // }
-
-        // // Checking if the employee is already in this group
-        // if (!empty($request->groupid)) {
-        //     $userExists = Users::where('user_email', $request->usrEmail)
-        //         ->where('group_id', $request->groupid)
-        //         ->exists();
-
-        //     if ($userExists) {
-        //         return response()->json(['status' => 0, 'msg' => 'This employee is already in this group']);
-        //     }
-        // }
-
-        // // Checking if this user is already added in this company
-        // $userExists = Users::where('user_email', $request->usrEmail)
-        //     ->where('company_id', $companyId)
-        //     ->exists();
-
-        // if (!$userExists) {
-        //     Auth::user()->increment('usedemployees');
-        // }
-
-        // Users::create([
-        //     'group_id' => null,
-        //     'user_name' => $request->usrName,
-        //     'user_email' => $request->usrEmail,
-        //     'user_company' => !empty($request->usrCompany) ? $request->usrCompany : null,
-        //     'user_job_title' => !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
-        //     'whatsapp' => !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null,
-        //     'company_id' => $companyId,
-        // ]);
-
-        // log_action("Employee {$request->usrEmail} added");
-        // return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
     }
 
 
@@ -665,88 +619,6 @@ class EmployeesController extends Controller
         } else {
             return response()->json(['status' => 0, 'msg' => $deleted['msg']]);
         }
-        // $companyId = Auth::user()->company_id;
-
-        // DB::beginTransaction();
-        // try {
-        //     // Delete the group
-        //     $groupExists = UsersGroup::where('group_id', $grpId)
-        //         ->where('company_id', $companyId)
-        //         ->get();
-        //     if (!$groupExists) {
-        //         return response()->json(['status' => 0, 'msg' => 'Group not found']);
-        //     }
-
-        //     //delete the group
-        //     UsersGroup::where('group_id', $grpId)
-        //         ->where('company_id', $companyId)
-        //         ->delete();
-
-        //     //deleting from email campaign
-        //     $email_camps = Campaign::where('users_group', $grpId)->get();
-        //     if ($email_camps) {
-        //         //deleting campaign reports
-        //         $email_camps->each(function ($camp) {
-        //             CampaignReport::where('campaign_id', $camp->campaign_id)->delete();
-        //             CampaignLive::where('campaign_id', $camp->campaign_id)->delete();
-        //         });
-        //         Campaign::where('users_group', $grpId)->delete();
-        //     }
-
-        //     //deleting from ai campaign
-        //     $ai_camps = AiCallCampaign::where('emp_group', $grpId)->get();
-        //     if ($ai_camps) {
-        //         //deleting campaign reports
-        //         $ai_camps->each(function ($camp) {
-        //             AiCallCampLive::where('campaign_id', $camp->campaign_id)->delete();
-        //         });
-        //         AiCallCampaign::where('emp_group', $grpId)->delete();
-        //     }
-
-        //     //deleting from quishing
-        //     $qsh_camps = QuishingCamp::where('users_group', $grpId)->get();
-        //     if ($qsh_camps) {
-        //         $qsh_camps->each(function ($camp) {
-
-        //             QuishingLiveCamp::where('campaign_id', $camp->campaign_id)->delete();
-        //         });
-        //         QuishingCamp::where('users_group', $grpId)->delete();
-        //     }
-
-        //     //deleting from whatsapp
-        //     $whatsapp_camps = WhatsappCampaign::where('user_group', $grpId)->get();
-        //     if ($whatsapp_camps) {
-        //         $whatsapp_camps->each(function ($camp) {
-
-        //             WhatsAppCampaignUser::where('camp_id', $camp->camp_id)->delete();
-        //         });
-        //         WhatsappCampaign::where('user_group', $grpId)->delete();
-        //     }
-
-        //     //deleting from assigned training table
-        //     $users = Users::where('group_id', $grpId)->get();
-        //     if ($users) {
-        //         $users->each(function ($user) {
-        //             TrainingAssignedUser::where('user_id', $user->id)->delete();
-
-        //             //deleting from user login table
-        //             UserLogin::where('user_id', $user->id)->delete();
-        //         });
-
-        //         Users::where('group_id', $grpId)->delete();
-        //     }
-
-
-        //     DB::commit();
-
-        //     log_action("Employee group deleted");
-        //     return response()->json(['status' => 1, 'msg' => 'Employee group deleted successfully']);
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-
-        //     log_action("An error occurred while deleting the employee group");
-        //     return response()->json(['status' => 0, 'msg' => 'An error occurred while deleting the employee group']);
-        // }
     }
 
     public function importCsv(Request $request)
@@ -771,6 +643,7 @@ class EmployeesController extends Controller
         if (($handle = fopen(storage_path('app/' . $path), "r")) !== FALSE) {
             // Flag to track if it's the first row
             $firstRow = true;
+            $employee = new EmployeeService();
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 // Skip the first row
@@ -779,10 +652,10 @@ class EmployeesController extends Controller
                     continue;
                 }
 
-                // Checking the limit of employees
-                if (Auth::user()->usedemployees >= Auth::user()->employees) {
-                    break;
-                }
+                // // Checking the limit of employees
+                // if (Auth::user()->usedemployees >= Auth::user()->employees) {
+                //     break;
+                // }
 
                 $name = $data[0];
                 $email = $data[1];
@@ -794,38 +667,40 @@ class EmployeesController extends Controller
                     continue;
                 }
 
-                if (!$this->domainVerified($email, $companyId)) {
-                    continue;
+                if (!empty($grpId)) {
+                    // Check if the user is already in the group
+                    $emailExists = $employee->emailExistsInGroup($grpId, $email);
+                    if ($emailExists) {
+                        continue;
+                    } else {
+                        $addedEmployee = $employee->addEmployee(
+                            $name,
+                            $email,
+                            $company,
+                            $job_title,
+                            $whatsapp
+                        );
+
+                        if ($addedEmployee['status'] == 0) {
+                            continue;
+                        }
+                        if ($addedEmployee['status'] == 1) {
+                            $employee->addEmployeeInGroup($grpId, $addedEmployee['user_id']);
+                        }
+                    }
+                }else{
+                    $addedEmployee = $employee->addEmployee(
+                        $name,
+                        $email,
+                        $company,
+                        $job_title,
+                        $whatsapp
+                    );
+
+                    if ($addedEmployee['status'] == 0) {
+                        continue;
+                    }
                 }
-
-                // $user = Users::where('user_email', $email)->exists();
-                // if ($user) {
-                //     continue;
-                // }
-
-                //this user already in this group
-                $userExists = Users::where('user_email', $email)->where('group_id', $grpId)->exists();
-                if ($userExists) {
-                    continue;
-                }
-
-                //this user is already added in this company
-                $userExists = Users::where('user_email', $email)->where('company_id', $companyId)->exists();
-                if (!$userExists) {
-                    Auth::user()->increment('usedemployees');
-                }
-
-                $user = new Users();
-                $user->group_id = $grpId;
-                $user->user_name = $name;
-                $user->user_email = $email;
-                $user->user_company = $company;
-                $user->user_job_title = $job_title;
-                $user->whatsapp = $whatsapp;
-                $user->company_id = $companyId;
-                $user->save();
-
-                // Auth::user()->increment('usedemployees');
             }
             fclose($handle);
 
