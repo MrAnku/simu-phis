@@ -60,9 +60,9 @@
                                             <li class="slide {{ Request::is('employees') ? 'active' : '' }}">
                                                 <a href="{{ route('employees') }}"
                                                     class="side-menu__item {{ Request::is('employees') ? 'active' : '' }}">
-                                                    <i class="bx bx-user side-menu__icon"></i>
+                                                    <i class="bx bx-group side-menu__icon"></i>
                                                     {{-- <i class='bx bx-user'></i> --}}
-                                                    <span class="side-menu__label">Group</span>
+                                                    <span class="side-menu__label">Groups</span>
                                                 </a>
                                             </li>
                                             <li class="slide {{ Request::is('all-employees') ? 'active' : '' }}">

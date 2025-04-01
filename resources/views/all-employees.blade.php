@@ -577,7 +577,7 @@
 
             function saveOutlookSyncedEmployees(btn) {
                 $(btn).html("Saving...").attr('disabled', true);
-                const groupId = $(".groupid").val();
+                const groupId = null;
                 const employees = [];
                 $("#outlookEmps tbody tr").each(function(index, tr) {
                     const name = $(tr).find('.name').val();
@@ -593,6 +593,7 @@
                         whatsapp
                     });
                 });
+               
                 $.ajax({
                     url: "/save-outlook-employees",
                     type: "POST",
@@ -604,11 +605,19 @@
                         // console.log(response);
                         // return;
                         if (response.status == 0) {
-                            Swal.fire(
-                                response.msg,
-                                '',
-                                'error'
-                            )
+                            if (Array.isArray(response.msg)) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Errors',
+                                    html: response.msg.map(error => `<p>${error}</p>`).join(''),
+                                });
+                            } else {
+                                Swal.fire(
+                                    response.msg,
+                                    '',
+                                    'error'
+                                );
+                            }
                             $(btn).html("Save Employees").attr('disabled', false);
                             return;
                         }

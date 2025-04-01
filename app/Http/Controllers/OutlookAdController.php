@@ -6,8 +6,11 @@ use App\Models\Users;
 use Illuminate\Http\Request;
 use App\Models\DomainVerified;
 use App\Models\OutlookAdToken;
+use App\Services\EmployeeService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
 
 class OutlookAdController extends Controller
 {
@@ -142,82 +145,130 @@ class OutlookAdController extends Controller
 
         $company_id = auth()->user()->company_id;
         $groupId = $request->groupId;
-        if (!$groupId) {
-            return response()->json(['status' => 0, 'msg' => 'Group ID is required.']);
-        }
-
-        $error = '';
-
+        $employee = new EmployeeService();
+        $errors = [];
         foreach ($request->employees as $emp) {
+            $validator = Validator::make($emp, [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'company' => 'nullable|string|max:255',
+                'jobTitle' => 'nullable|string|max:255',
+                'whatsapp' => 'nullable|digits_between:11,15',
+            ]);
 
-            // Validate required fields
-            if (!isset($emp['email']) || !isset($emp['name'])) {
-                $error = 'Email and Name are required fields.';
-                break;
-            }
+            $emp['whatsapp'] = preg_replace('/\D/', '', $emp['whatsapp']);
 
-            //checking employees limit
-            if ((int)auth()->user()->usedemployees >= (int)auth()->user()->employees) {
-                $error = 'You have reached your employees limit.';
-                break;
-            }
-
-            //checking domain verification
-            $domain = explode("@", $emp['email'])[1];
-            $checkDomain = DomainVerified::where('domain', $domain)
-                ->where('verified', 1)
-                ->where('company_id', $company_id)
-                ->exists();
-            if (!$checkDomain) {
-                $error = 'Domain is not verified.';
-                break;
-            }
-
-            //checking email duplication
-            // $checkEmail = Users::where('user_email', $emp['email'])
-            //     ->where('company_id', $company_id)
-            //     ->exists();
-            // if ($checkEmail) {
-            //     $error = 'Email already exists.';
-            //     break;
-            // }
-
-            //this user already in this group
-            $userExists = Users::where('user_email', $emp['email'])->where('group_id', $groupId)->exists();
-            if ($userExists) {
+            if ($validator->fails()) {
+                array_push($errors, $validator->errors()->all());
                 continue;
             }
 
-            //this user is already added in this company
-            $userExists = Users::where('user_email', $emp['email'])->where('company_id', $company_id)->exists();
-            if (!$userExists) {
-                auth()->user()->increment('usedemployees');
+            //check if this email already exists in table
+            $user = Users::where('user_email', $emp['email'])->where('company_id', Auth::user()->company_id)->exists();
+            if ($user) {
+                array_push($errors, "Email {$emp['email']} already exists.");
+                continue;
             }
 
-            
-
-            Users::firstOrCreate(
-                ['user_email' => $emp['email']], // Avoid duplicates
-                [
-                    'group_id' => $groupId,
-                    'user_name' => $emp['name'],
-                    'user_email' => $emp['email'],
-                    'user_company' => $emp['company'],
-                    'user_job_title' => $emp['jobTitle'],
-                    'whatsapp' => $emp['whatsapp'],
-                    'company_id' => $company_id
-                ]
+            $addedEmployee = $employee->addEmployee(
+                $emp['name'],
+                $emp['email'],
+                !empty($emp['company']) ? $emp['company'] : null,
+                !empty($emp['jobTitle']) ? $emp['jobTitle'] : null,
+                !empty($emp['whatsapp']) ? $emp['whatsapp'] : null
             );
+            if ($addedEmployee['status'] == 1) {
 
-            // Update used employees count
-            // auth()->user()->increment('usedemployees');
+                if($groupId !== null){
+                    $addedInGroup = $employee->addEmployeeInGroup($groupId, $addedEmployee['user_id']);
+                        if ($addedInGroup['status'] == 0) {
+                            array_push($errors, $addedInGroup['msg']);
+                            
+                        }
+                }
+
+                continue;
+            } else {
+                array_push($errors, $addedEmployee['msg']);
+                continue;
+            }
+        }
+        if (count($errors) > 0) {
+            return response()->json(['status' => 0, 'msg' => $errors]);
         }
 
-        if($error){
-            log_action("Failed to add employees from Outlook AD", $error);
-            return response()->json(['status' => 0, 'msg' => $error]);
-        }
-        log_action("Employees added from Outlook AD");
+        // $error = '';
+
+        // foreach ($request->employees as $emp) {
+
+        //     // Validate required fields
+        //     if (!isset($emp['email']) || !isset($emp['name'])) {
+        //         $error = 'Email and Name are required fields.';
+        //         break;
+        //     }
+
+        //     //checking employees limit
+        //     if ((int)auth()->user()->usedemployees >= (int)auth()->user()->employees) {
+        //         $error = 'You have reached your employees limit.';
+        //         break;
+        //     }
+
+        //     //checking domain verification
+        //     $domain = explode("@", $emp['email'])[1];
+        //     $checkDomain = DomainVerified::where('domain', $domain)
+        //         ->where('verified', 1)
+        //         ->where('company_id', $company_id)
+        //         ->exists();
+        //     if (!$checkDomain) {
+        //         $error = 'Domain is not verified.';
+        //         break;
+        //     }
+
+        //     //checking email duplication
+        //     // $checkEmail = Users::where('user_email', $emp['email'])
+        //     //     ->where('company_id', $company_id)
+        //     //     ->exists();
+        //     // if ($checkEmail) {
+        //     //     $error = 'Email already exists.';
+        //     //     break;
+        //     // }
+
+        //     //this user already in this group
+        //     $userExists = Users::where('user_email', $emp['email'])->where('group_id', $groupId)->exists();
+        //     if ($userExists) {
+        //         continue;
+        //     }
+
+        //     //this user is already added in this company
+        //     $userExists = Users::where('user_email', $emp['email'])->where('company_id', $company_id)->exists();
+        //     if (!$userExists) {
+        //         auth()->user()->increment('usedemployees');
+        //     }
+
+
+
+        //     Users::firstOrCreate(
+        //         ['user_email' => $emp['email']], // Avoid duplicates
+        //         [
+        //             'group_id' => $groupId,
+        //             'user_name' => $emp['name'],
+        //             'user_email' => $emp['email'],
+        //             'user_company' => $emp['company'],
+        //             'user_job_title' => $emp['jobTitle'],
+        //             'whatsapp' => $emp['whatsapp'],
+        //             'company_id' => $company_id
+        //         ]
+        //     );
+
+        // Update used employees count
+        // auth()->user()->increment('usedemployees');
+        // }
+
+        // if ($error) {
+        //     log_action("Failed to add employees from Outlook AD", $error);
+        //     return response()->json(['status' => 0, 'msg' => $error]);
+        // }
+        // log_action("Employees added from Outlook AD");
         return response()->json(['status' => 1, 'msg' => 'Employees saved successfully.']);
     }
 }
