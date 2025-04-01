@@ -551,10 +551,10 @@
                                     "
                                   >
                                     <p style="margin: 0">
-										Training <strong>{{$mailData['training_name']}}</strong> is assigned to you. Kindly login to our Learning Portal to complete your training.
+										Training is assigned to you. Kindly login to our Learning Portal to complete your training.
                                     </p>
 									<p style="margin-top: 10px">
-										If You are not created your password with password create link, then please forget your password.
+										Click the link below to start your training:
                                     </p>
                                   </div>
                                 </td>
