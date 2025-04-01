@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Validator;
 use PragmaRX\Google2FA\Google2FA;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\ErrorCorrectionLevel;
 
 class SettingsController extends Controller
 {
@@ -156,7 +160,17 @@ class SettingsController extends Controller
             );
 
             // Generate the QR code image
-            $qrCode = QrCode::create($QR_URL);
+            // $qrCode = QrCode::create($QR_URL);
+            $qrCode = new QrCode(
+                data: $QR_URL,
+                encoding: new Encoding('UTF-8'),
+                errorCorrectionLevel: ErrorCorrectionLevel::Low,
+                size: 300,
+                margin: 10,
+                roundBlockSizeMode: RoundBlockSizeMode::Margin,
+                foregroundColor: new Color(0, 0, 0),
+                backgroundColor: new Color(255, 255, 255)
+            );
             $writer = new PngWriter();
             $QR_Image = $writer->write($qrCode)->getDataUri();
 
