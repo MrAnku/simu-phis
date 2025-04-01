@@ -55,7 +55,9 @@ class DashboardController extends Controller
                 'totalEmpCompromised' => $totalEmpCompromised,
                 'package' => $package,
                 'breachedEmails' => $breachedEmails,
-                'usageCounts' => $usageCounts
+                'usageCounts' => $usageCounts,
+                "activeAIVishing" => $activeAIVishing,
+                "activeTprm" => $activeTprm,
             ]
         ], 200);
     }
