@@ -31,6 +31,7 @@ class Company extends Authenticatable
         'approved',
         'service_status',
         'password',
+        'pass_create_token',
         'created_at',
         'approve_date',
         'usedemployess'

@@ -60,11 +60,16 @@ Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
 
 // Route::get('/translate', [TestController::class, 'translate']);
 
+Route::get('/company/create-password/{token}', [CreatePassController::class, 'createCompanyPassPage'])->name('company.createCompanyPassPage');
+Route::post('/company/create-password', [CreatePassController::class, 'storeCompanyPass'])->name('company.storeCompanyPass');
+
 
 //---------------learning portal routes------------//
 
 Route::get('/learner/create-password/{token}', [CreatePassController::class, 'createPasswordPage'])->name('learner.create.password');
 Route::post('/learner/create-password', [CreatePassController::class, 'storePassword'])->name('learner.store.password');
+
+
 
 
 

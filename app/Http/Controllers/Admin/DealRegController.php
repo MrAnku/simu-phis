@@ -47,7 +47,8 @@ class DealRegController extends Controller
             mt_rand(0, 0xffff)
         );
 
-        $password = Str::random(16);
+        $token = Str::random(32);
+        $pass_create_link = env('APP_URL') . "/company/create-password/" . $token;
 
         $company = Company::create([
             'email' => $deal->email,
@@ -59,7 +60,7 @@ class DealRegController extends Controller
             'storage_region' => 'USA',
             'approved' => 1,
             'service_status' => 1,
-            'password' => bcrypt($password),
+            'password' => null,
             'created_at' => now(),
             'approve_date' => now(),
         ]);
@@ -82,7 +83,7 @@ class DealRegController extends Controller
         $deal->status = 'approved';
         $deal->save();
 
-        Mail::to($deal->email)->send(new DealApprove($deal, $password));
+        Mail::to($deal->email)->send(new DealApprove($deal, $pass_create_link));
 
         return response()->json(['status' => 1, 'msg' => 'Deal approved successfully']);
     }

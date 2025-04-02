@@ -14,15 +14,15 @@ class DealApprove extends Mailable
     use Queueable, SerializesModels;
 
     public $deal;
-    public $password;
+    public $pass_create_link;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($deal, $password)
+    public function __construct($deal, $pass_create_link)
     {
         $this->deal = $deal;
-        $this->password = $password;
+        $this->pass_create_link = $pass_create_link;
     }
 
     /**
