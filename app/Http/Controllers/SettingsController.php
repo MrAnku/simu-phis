@@ -39,27 +39,45 @@ class SettingsController extends Controller
 
         $whiteLabel = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->first();
 
-        return view('settings', compact('all_settings', 'whiteLabel'));
+
+        if (!$all_settings) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Settings not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'all_settings' => $all_settings,
+                'whiteLabel' => $whiteLabel
+            ]
+        ], 200);
     }
+
 
     public function updateProfile(Request $request)
     {
-        //xss check start
-
+        // XSS check start
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
+                return response()->json([
+                    'status' => 0,
+                    'msg' => __('Invalid input detected.')
+                ], 400);
             }
         }
+
         array_walk_recursive($input, function (&$input) {
             $input = strip_tags($input);
         });
         $request->merge($input);
+        // XSS check end
 
-        //xss check end
-
-        $request->validate([
+        // Validation
+        $validated = $request->validate([
             'country' => 'required|string|max:255',
             'timeZone' => 'required|string|max:255',
             'dateFormat' => 'required|string|max:255',
@@ -71,38 +89,47 @@ class SettingsController extends Controller
         $isUpdated = DB::table('company_settings')
             ->where('company_id', $companyId)
             ->update([
-                'country' => $request->input('country'),
-                'time_zone' => $request->input('timeZone'),
-                'date_format' => $request->input('dateFormat'),
+                'country' => $validated['country'],
+                'time_zone' => $validated['timeZone'],
+                'date_format' => $validated['dateFormat'],
             ]);
 
         if ($isUpdated) {
-
             log_action("Profile updated");
-            return response()->json(['status' => 1, 'msg' => __('Profile updated')]);
+            return response()->json([
+                'status' => 1,
+                'msg' => __('Profile updated')
+            ], 200);
         } else {
             log_action("Failed to update profile");
-            return response()->json(['status' => 0, 'msg' => __('Failed to update profile')]);
+            return response()->json([
+                'status' => 0,
+                'msg' => __('Failed to update profile')
+            ], 500);
         }
     }
 
+
     public function updatePassword(UpdatePasswordRequest $request)
     {
-        //xss check start
-
+        // XSS check start
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
+                return response()->json([
+                    'status' => 0,
+                    'msg' => __('Invalid input detected.')
+                ], 400);
             }
         }
+
         array_walk_recursive($input, function (&$input) {
             $input = strip_tags($input);
         });
         $request->merge($input);
+        // XSS check end
 
-        //xss check end
-
+        // Validation
         $validator = Validator::make($request->all(), [
             'currentPassword' => 'required|string',
             'newPassword' => 'required|string|min:8|confirmed',
@@ -112,25 +139,39 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 0,
                 'msg' => $validator->errors()->first(),
-            ]);
+            ], 400);
         }
 
         $user = Auth::user();
 
+        // Check current password
         if (!Hash::check($request->currentPassword, $user->password)) {
-            return response()->json(['status' => 0, 'msg' => __('Entered current password is wrong')]);
+            return response()->json([
+                'status' => 0,
+                'msg' => __('Entered current password is wrong')
+            ], 400);
         }
 
+        // Custom strong password check
         if (!$this->isStrongPassword($request->newPassword)) {
-            return response()->json(['status' => 0, 'msg' => __('Please set a strong password')]);
+            return response()->json([
+                'status' => 0,
+                'msg' => __('Please set a strong password')
+            ], 400);
         }
 
+        // Update password
         $user->password = Hash::make($request->newPassword);
         $user->save();
 
         log_action("Password updated");
-        return response()->json(['status' => 1, 'msg' => __('Password Updated')]);
+
+        return response()->json([
+            'status' => 1,
+            'msg' => __('Password Updated')
+        ], 200);
     }
+
 
     private function isStrongPassword($password)
     {
@@ -412,18 +453,22 @@ class SettingsController extends Controller
             ]);
         }
     }
-
     public function deactivateAccount(Request $request)
     {
-        $company_id = Auth::user()->company_id; // Assuming company_id is stored in session or retrieved from Auth
+        $user = Auth::user(); // API authentication ke liye
+
+        if (!$user) {
+            return response()->json(['status' => 0, 'msg' => 'Unauthorized'], 401);
+        }
+
+        $company_id = $user->company_id;
 
         $isUpdated = DB::table('company')
             ->where('company_id', $company_id)
             ->update(['service_status' => 0]);
 
         if ($isUpdated) {
-
-            log_action("Account has deactivated");
+            log_action("Account has been deactivated");
             return response()->json(['status' => 1, 'msg' => __('Your Account has been Deactivated')]);
         } else {
             log_action("Failed to deactivate account");
