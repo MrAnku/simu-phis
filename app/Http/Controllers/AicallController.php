@@ -320,11 +320,12 @@ class AicallController extends Controller
                 if ($response->successful()) {
                     // Return the response data
                     $res = $response->json();
-                    $localReport->call_report = $res;
-
                     log_action("AI Vishing Call report fetched for call id {$callid}");
-
-                    $localReport->save();
+                    if(isset($res['transcript_object']) && count($res['transcript_object']) > 0) {
+                        $localReport->call_report = $res;
+                        $localReport->save();
+                    }
+                    
                     return $res;
                 } else {
                     // Handle the error, e.g., log the error or throw an exception
