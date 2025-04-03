@@ -34,33 +34,12 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
                                 Manage Training Modules
                             </div>
-                        </div>
-                        <div class="card-body">
-
-                            <div class="d-flex justify-content-between">
-                                @if (request('type') !== 'games')
-                                    <div>
-                                        <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
-                                            <li class="nav-item">
-                                                <a class="nav-link active" data-bs-toggle="tab" role="tab"
-                                                    aria-current="page" href="#international"
-                                                    aria-selected="true">International</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                                    href="#middle_east" aria-selected="true">Middle East</a>
-                                            </li>
-
-                                        </ul>
-                                    </div>
-                                @endif
-
+                            <div class="d-flex gap-2">
                                 <div>
-
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">
                                             Training Type
@@ -76,62 +55,166 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div>
+                                    @if (request('type') !== 'games')
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">
+                                                Category
+                                            </span>
+                                            <select class="form-select" id="category_select">
+                                                <option value="international"
+                                                    {{ request('category') == 'international' ? 'selected' : '' }}>
+                                                    International</option>
+                                                <option value="middle_east"
+                                                    {{ request('category') == 'middle_east' ? 'selected' : '' }}>
+                                                    Middle East</option>
+                                            </select>
+                                        </div>
+                                    @endif
+                                </div>
+
+
+
+
                             </div>
+                        </div>
+                        <div class="card-body">
+
+                            {{-- <div class="d-flex justify-content-between"> --}}
+                            {{-- @if (request('type') !== 'games')
+                                    <div>
+                                        <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" data-bs-toggle="tab" role="tab"
+                                                    aria-current="page" href="#international"
+                                                    aria-selected="true">International</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                                    href="#middle_east" aria-selected="true">Middle East</a>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                @endif --}}
 
 
-                            @if (request('type') == 'games')
-                                <div class="row">
-                                    @forelse ($trainings as $trainingModule)
-                                        <div class="col-lg-6 t_modules">
-                                            <div class="card custom-card">
-                                                <div class="card-header">
-                                                    <div class="d-flex align-items-center w-100">
+                            {{-- @if (request('type') == 'games') --}}
+                            <div class="row">
+                                @forelse ($trainings as $trainingModule)
+                                    <div class="col-lg-6 t_modules">
+                                        <div class="card custom-card">
+                                            <div class="card-header">
+                                                <div class="d-flex align-items-center w-100">
 
-                                                        <div class="">
-                                                            <div class="fs-15 fw-semibold">{{ $trainingModule->name }}</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body htmlPhishingGrid">
-                                                    <img class="trainingCoverImg"
-                                                        src="{{ Storage::url('uploads/trainingGame/' . $trainingModule->cover_image) }}" />
-                                                </div>
-                                                <div class="card-footer">
-                                                    <div class="d-flex justify-content-center">
-
-                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }}"
-                                                            target="_blank"
-                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                                    <div class="">
+                                                        <div class="fs-15 fw-semibold">{{ $trainingModule->name }}</div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="card-body htmlPhishingGrid">
+                                                <img class="trainingCoverImg"
+                                                    src="{{ request('type') == 'games' ? Storage::url('uploads/trainingGame/' . $trainingModule->cover_image) : Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                            </div>
+                                            <div class="card-footer">
+                                                <div class="d-flex justify-content-center">
+
+                                                    <a href="@if (request('type') == 'games') {{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }} @else {{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }} @endif"
+                                                        target="_blank"
+                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+
+                                                    @if (request('type') !== 'games' && $trainingModule->company_id !== 'default')
+                                                        <button type="button"
+                                                            onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+
+                                                        <button type="button"
+                                                            onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
+                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                                                    @endif
+
+
+                                                </div>
+                                            </div>
                                         </div>
-                                    @empty
-                                        <div class="col-lg-6">
-                                            No records found
-                                        </div>
-                                    @endforelse
+                                    </div>
+                                @empty
+                                    <div class="col-lg-6">
+                                        No records found
+                                    </div>
+                                @endforelse
 
 
 
 
-                                </div>
-                            @else
-                                <div class="tab-content">
+                            </div>
+                            {{-- @else --}}
+                            {{-- <div class="tab-content">
                                     <div class="tab-pane show active text-muted" id="international" role="tabpanel">
                                         <x-training_module.trainings :trainingModules="$interTrainings" />
+
+                                        <div class="pagination-container">
+                                          {{ $interTrainings->append(['category'=>'international'])->links() }}
+                                      </div>
                                     </div>
                                     <div class="tab-pane text-muted" id="middle_east" role="tabpanel">
                                         <x-training_module.trainings :trainingModules="$middleEastTrainings" />
+
+                                        <div class="pagination-container">
+                                          {{ $middleEastTrainings->links() }}
+                                      </div>
                                     </div>
 
-                                </div>
-                            @endif
+                                </div> --}}
+
+
+
+                            {{-- <div class="row">
+                                  @forelse ($trainings as $trainingModule)
+                                      <div class="col-lg-6 t_modules">
+                                          <div class="card custom-card">
+                                              <div class="card-header">
+                                                  <div class="d-flex align-items-center w-100">
+
+                                                      <div class="">
+                                                          <div class="fs-15 fw-semibold">{{ $trainingModule->name }}</div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              <div class="card-body htmlPhishingGrid">
+                                                  <img class="trainingCoverImg"
+                                                      src="{{ Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                              </div>
+                                              <div class="card-footer">
+                                                  <div class="d-flex justify-content-center">
+
+                                                      <a href="{{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }}"
+                                                          target="_blank"
+                                                          class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  @empty
+                                      <div class="col-lg-6">
+                                          No records found
+                                      </div>
+                                  @endforelse
+                              </div> --}}
+
+                            {{-- @endif --}}
 
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div>
+                {{ $trainings->links() }}
+            </div>
+
 
         </div>
     </div>
@@ -1255,8 +1338,26 @@
         <script>
             $('#training_type_select').on('change', function() {
                 const selectedType = $(this).val();
+                let selectedCategory = $('#category_select').val();
+                if (typeof selectedCategory === 'undefined') {
+                    selectedCategory = 'international';
+                }
+                console.log("category is : ", selectedCategory);
 
-                window.location.href = `/training-modules?type=${selectedType}`;
+                if (selectedType == 'games') {
+                    window.location.href = `/training-modules?type=${selectedType}`;
+                } else {
+                    window.location.href = `/training-modules?type=${selectedType}&category=${selectedCategory}`;
+                }
+            });
+
+            $('#category_select').on('change', function() {
+                const selectedCategory = $(this).val();
+
+                let selectedTrainingType = $("#training_type_select").val();
+
+
+                window.location.href = `/training-modules?category=${selectedCategory}&type=${selectedTrainingType}`;
             });
         </script>
     @endpush

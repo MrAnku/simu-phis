@@ -16,38 +16,37 @@ class TrainingModuleController extends Controller
     {
         $company_id = auth()->user()->company_id;
 
-        if ($request->has('type')) {
+        if ($request->has('type') || $request->has('category')) {
             $selectedType = $request->input('type');
+            $selectedCategory = $request->input('category');
+            
             if ($selectedType == 'games') {
 
                 $trainings = TrainingGame::where(function ($query) use ($company_id) {
                     $query->where('company_id', $company_id)
                         ->orWhere('company_id', 'default');
-                })->get();
+                })->paginate(10);
             } else {
                 $trainings = TrainingModule::where('training_type', $selectedType)
+                        ->where('category', $selectedCategory)
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->get();
+                    })->paginate(10);
             }
-        } else {
-            $trainings = TrainingModule::where(function ($query) use ($company_id) {
-                $query->where('company_id', $company_id)
-                    ->orWhere('company_id', 'default');
-            })->where('training_type', 'static_training')->get();
+        } 
+        else {
+        $trainings = TrainingModule::where(function ($query) use ($company_id) {
+            $query->where('company_id', $company_id)
+                ->orWhere('company_id', 'default');
+        })->where('training_type', 'static_training')
+        ->where('category', 'international')
+        ->paginate(10);
         }
 
+        $trainings->appends($request->except('page'));
 
-        if ($request->input('type') !== 'games') {
-            // Separate the trainings based on the category
-            $interTrainings = $trainings->where('category', 'international');
-            $middleEastTrainings = $trainings->where('category', 'middle_east');
-
-            return view('trainingModules', compact('interTrainings', 'middleEastTrainings'));
-        }else{
-            return view('trainingModules', compact('trainings'));
-        }
+        return view('trainingModules', compact('trainings'));
     }
 
 
