@@ -95,7 +95,7 @@
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
 
-                                                    <a href="@if (request('type') == 'games') {{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }} @else {{ route('trainingmodule.preview', base64_encode($trainingModule->id)) }} @endif"
+                                                    <a href="@if (request('type') == 'games') {{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }} @else {{ '/training-preview/' . base64_encode($trainingModule->id) }} @endif"
                                                         target="_blank"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 

@@ -17,7 +17,7 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-center">
                         @if (auth('company')->check())
-                            <a href="{{ route('trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                            <a href="{{ '/admin/training-preview/' . base64_encode($trainingModule->id) }}"
                                 target="_blank"
                                 class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
 
@@ -33,7 +33,7 @@
                                     data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
                             @endif
                         @else
-                            <a href="{{ route('admin.trainingmodule.preview', base64_encode($trainingModule->id)) }}"
+                            <a href="{{ '/admin/training-preview/' . base64_encode($trainingModule->id)  }}"
                                 target="_blank"
                                 class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
                             <button type="button"
