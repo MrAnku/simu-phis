@@ -908,7 +908,7 @@
                                                                 <div align="right" class="alignment"
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 57.5px">
-                                                                        <a href="www.example.com"
+                                                                        <a href="learn.simuphish.com"
                                                                             style="outline: none" tabindex="-1"
                                                                             target="_blank"><img
                                                                                 alt="a white arrow in a blue circle"
@@ -1090,7 +1090,7 @@
                                                                 <div align="right" class="alignment"
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 57.5px">
-                                                                        <a href="www.example.com"
+                                                                        <a href="learn.simuphish.com"
                                                                             style="outline: none" tabindex="-1"
                                                                             target="_blank"><img
                                                                                 alt="a white arrow in a blue circle"
@@ -1273,7 +1273,7 @@
                                                                 <div align="right" class="alignment"
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 57.5px">
-                                                                        <a href="www.example.com"
+                                                                        <a href="learn.simuphish.com"
                                                                             style="outline: none" tabindex="-1"
                                                                             target="_blank"><img
                                                                                 alt="a white arrow in a blue circle"
@@ -1456,7 +1456,7 @@
                                                                 <div align="right" class="alignment"
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 57.5px">
-                                                                        <a href="www.example.com"
+                                                                        <a href="learn.simuphish.com"
                                                                             style="outline: none" tabindex="-1"
                                                                             target="_blank"><img
                                                                                 alt="a white arrow in a blue circle"
@@ -1604,7 +1604,7 @@
                                       margin-bottom: 0;
                                       mso-line-height-alt: 21.599999999999998px;
                                     ">
-                                                                    <strong><a href="http://www.example.com"
+                                                                    <strong><a href="http://learn.simuphish.com"
                                                                             rel="noopener"
                                                                             style="
                                           text-decoration: none;
@@ -1654,7 +1654,7 @@
                                                                 <div align="right" class="alignment"
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 57.5px">
-                                                                        <a href="www.example.com"
+                                                                        <a href="learn.simuphish.com"
                                                                             style="outline: none" tabindex="-1"
                                                                             target="_blank"><img
                                                                                 alt="a white arrow in a blue circle"
