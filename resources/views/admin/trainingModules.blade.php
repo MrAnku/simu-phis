@@ -30,34 +30,16 @@
                 </div>
             </div>
 
-
-
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
                                 Manage Training Modules
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" data-bs-toggle="tab" role="tab"
-                                                aria-current="page" href="#international"
-                                                aria-selected="true">International</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                                href="#middle_east" aria-selected="true">Middle East</a>
-                                        </li>
 
-                                    </ul>
-                                </div>
+                            <div class="d-flex gap-2">
                                 <div>
-
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">
                                             Training Type
@@ -71,19 +53,34 @@
                                         </select>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="tab-content">
-                                <div class="tab-pane show active text-muted" id="international" role="tabpanel">
-                                    <x-training_module.trainings :trainingModules="$interTrainings" />
-                                </div>
-                                <div class="tab-pane text-muted" id="middle_east" role="tabpanel">
-                                    <x-training_module.trainings :trainingModules="$middleEastTrainings" />
+                                <div>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                            Category
+                                        </span>
+                                        <select class="form-select" id="category_select">
+                                            <option value="international"
+                                                {{ request('category') == 'international' ? 'selected' : '' }}>
+                                                International</option>
+                                            <option value="middle_east"
+                                                {{ request('category') == 'middle_east' ? 'selected' : '' }}>
+                                                Middle East</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="card-body">
+
+                            <x-training_module.trainings :trainingModules="$trainingModules" />
+
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div>
+                {{ $trainingModules->links() }}
             </div>
 
         </div>
@@ -1226,8 +1223,18 @@
         <script>
             $('#training_type_select').on('change', function() {
                 const selectedType = $(this).val();
+                let selectedCategory = $('#category_select').val();
 
-                window.location.href = `/admin/training-modules?type=${selectedType}`;
+                window.location.href = `/admin/training-modules?type=${selectedType}&category=${selectedCategory}`;
+            });
+
+            $('#category_select').on('change', function() {
+                const selectedCategory = $(this).val();
+
+                let selectedTrainingType = $("#training_type_select").val();
+
+                window.location.href =
+                    `/admin/training-modules?category=${selectedCategory}&type=${selectedTrainingType}`;
             });
         </script>
     @endpush

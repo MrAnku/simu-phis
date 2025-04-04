@@ -14,18 +14,22 @@ class AdminTrainingModuleController extends Controller
     public function index(Request $request)
     {
 
-        if ($request->has('type')) {
+        if ($request->has('type') || $request->has('category')) {
             $selectedType = $request->input('type');
-            $trainingModules = TrainingModule::where('training_type', $selectedType)->get();
+            $selectedCategory = $request->input('category');
+
+            $trainingModules = TrainingModule::where('training_type', $selectedType)
+            ->where('category', $selectedCategory)
+            ->paginate(10);
         }else{
 
-            $trainingModules = TrainingModule::where('training_type', 'static_training')->get();
+            $trainingModules = TrainingModule::where('training_type', 'static_training')
+            ->where('category', 'international')->paginate(10);
         }
+        
+        $trainingModules->appends($request->except('page'));
 
-
-        $interTrainings = $trainingModules->where('category', 'international');
-        $middleEastTrainings = $trainingModules->where('category', 'middle_east');
-        return view('admin.trainingModules', compact('interTrainings', 'middleEastTrainings'));
+        return view('admin.trainingModules', compact('trainingModules'));
     }
 
     public function addTraining(Request $request)
