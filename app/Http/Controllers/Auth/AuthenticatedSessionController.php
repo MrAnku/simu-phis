@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,11 +22,27 @@ class AuthenticatedSessionController extends Controller
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
-
+        $user = Auth::user();
+        $company_settings = Settings::where('company_id', $user->company_id)->first();
+        if ($company_settings->mfa == 1) {
+            // Store the user ID in the session and logout
+            session(['mfa_user_id' => $user->id]);
+            Auth::logout();
+            return response()->json([
+                "MFA" => true,
+                'token' => $token,
+                'company' => $user,
+                "success" => false
+            ]);
+            // throw ValidationException::withMessages([
+            //     'mfa' => 'Multi-factor authentication is required.',
+            // ])->redirectTo(route('mfa.enter'));
+        }
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),
-            "success" => true
+            "success" => true,
+            "MFA" => false,
         ]);
     }
 

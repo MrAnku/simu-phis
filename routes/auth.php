@@ -38,9 +38,6 @@ Route::middleware(['guest', 'checkWhiteLabel'])->group(function () {
 
     Route::get('mfa/enter', [MFAController::class, 'showEnterOTPForm'])->name('mfa.enter');
     Route::post('mfa/verify', [MFAController::class, 'verifyOTP'])->name('mfa.verify');
-
- 
-
 });
 
 
@@ -67,6 +64,3 @@ Route::middleware('auth')->group(function () {
     Route::get('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
-
-
-

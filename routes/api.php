@@ -4,9 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MFAController;
 use App\Http\Controllers\SettingsController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
+Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
 Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
 Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
@@ -28,5 +30,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update-profile', [SettingsController::class, 'updateProfile']);
         Route::post('/update-password', [SettingsController::class, 'updatePassword']);
         Route::post('/acc-dectivate', [SettingsController::class, 'deactivateAccount']);
+        Route::post('/update-lang', [SettingsController::class, 'updateLang']);
+        Route::put('/update-phish-edu', [SettingsController::class, 'updatePhishingEdu']);
+        Route::post('/update-train-freq', [SettingsController::class, 'updateTrainFreq']);
+        Route::post('/update-reporting', [SettingsController::class, 'updateReporting']);
+        Route::post('/update-mfa', [SettingsController::class, 'updateMFA']);
+        Route::post('/verify-mfa', [SettingsController::class, 'verifyMFA']);
     });
 });

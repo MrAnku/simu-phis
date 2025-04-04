@@ -20,28 +20,54 @@ class MFAController extends Controller
     {
         $request->validate([
             'otp' => 'required|string',
+            'mfa_id' => 'required|integer', // ✅ now expect mfa_id from frontend
         ]);
 
-        $userId = session('mfa_user_id');
-        $user = Company::find($userId);        
+        $user = Company::find($request->mfa_id);
 
         if (!$user) {
-            return redirect()->route('login')->withErrors(['email' => 'User not found']);
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
+            ], 404);
         }
+
         $settings = Settings::where('company_id', $user->company_id)->first();
 
-        $google2fa = new Google2FA();
+        // return response()->json([
+        //     'message' => 'Logged in successfully',
+        //     'user' => decrypt(
+        //         $settings->mfa_secret
+        //     ),
+        // ], 200);
 
-        $valid = $google2fa->verifyKey(decrypt($settings->mfa_secret), $request->otp);
-
-        if ($valid) {
-            Auth::login($user);
-            session()->forget('mfa_user_id');
-
-            log_action("Logged in using MFA");
-            return redirect()->route('dashboard')->with('success', 'Logged in successfully');
+        if (!$settings || !$settings->mfa_secret) {
+            return response()->json([
+                'success' => false,
+                'message' => 'MFA settings not found',
+            ], 400);
         }
 
-        return back()->withErrors(['otp' => 'Invalid OTP']);
+        $google2fa = new Google2FA();
+        $valid = $google2fa->verifyKey(decrypt($settings->mfa_secret), $request->otp);
+
+        // return response()->json([
+        //     'message' => 'Logged in successfully',
+        //     'user' =>   $valid,
+        // ], 200);
+
+        if ($valid) {
+            // Auth::login($user);
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged in successfully',
+                'user' => $user,
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid OTP',
+        ], 401);
     }
 }

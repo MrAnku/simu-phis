@@ -55,9 +55,7 @@ class DashboardController extends Controller
                 'totalEmpCompromised' => $totalEmpCompromised,
                 'package' => $package,
                 'breachedEmails' => $breachedEmails,
-                'usageCounts' => $usageCounts,
-                "activeAIVishing" => $activeAIVishing,
-                "activeTprm" => $activeTprm,
+                'usageCounts' => $usageCounts
             ]
         ], 200);
     }
@@ -149,7 +147,7 @@ class DashboardController extends Controller
 
             $lastSixMonthsData[] = [
                 'month' => __($monthName),
-                'no_of_camps' => $noOfCampaigns
+                'no_of_camps' => $noOfCampaigns,
             ];
         }
 
