@@ -276,20 +276,7 @@
             }
         }
     </style>
-    <!--[if mso
-      ]><style>
-        sup,
-        sub {
-          font-size: 100% !important;
-        }
-        sup {
-          mso-text-raise: 10%;
-        }
-        sub {
-          mso-text-raise: -10%;
-        }
-      </style>
-    <![endif]-->
+   
 </head>
 
 <body class="body"
@@ -365,7 +352,7 @@
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 69px">
                                                                         <img alt="Logo" height="auto"
-                                                                            src="https://cdn.simuphish.com/images/LOGO.png"
+                                                                            src="{{asset('assets/images/simu-logo-dark.png')}}"
                                                                             style="
                                           display: block;
                                           height: auto;
@@ -1694,358 +1681,9 @@
                             </tr>
                         </tbody>
                     </table>
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-21"
-                        role="presentation"
-                        style="
-                mso-table-lspace: 0pt;
-                mso-table-rspace: 0pt;
-                background-color: #d1e3f3;
-              "
-                        width="100%">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <table align="center" border="0" cellpadding="0" cellspacing="0"
-                                        class="row-content stack" role="presentation"
-                                        style="
-                        mso-table-lspace: 0pt;
-                        mso-table-rspace: 0pt;
-                        border-radius: 0;
-                        color: #000000;
-                        width: 690px;
-                        margin: 0 auto;
-                      "
-                                        width="690">
-                                        <tbody>
-                                            <tr>
-                                                <td class="column column-1"
-                                                    style="
-                              mso-table-lspace: 0pt;
-                              mso-table-rspace: 0pt;
-                              font-weight: 400;
-                              text-align: left;
-                              padding-bottom: 5px;
-                              padding-top: 5px;
-                              vertical-align: top;
-                            "
-                                                    width="100%">
-                                                    <div class="spacer_block block-1"
-                                                        style="
-                                height: 35px;
-                                line-height: 35px;
-                                font-size: 1px;
-                              ">
-
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-22"
-                        role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt" width="100%">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <table align="center" border="0" cellpadding="0" cellspacing="0"
-                                        class="row-content stack" role="presentation"
-                                        style="
-                        mso-table-lspace: 0pt;
-                        mso-table-rspace: 0pt;
-                        border-radius: 0;
-                        color: #000000;
-                        width: 690px;
-                        margin: 0 auto;
-                      "
-                                        width="690">
-                                        <tbody>
-                                            <tr>
-                                                <td class="column column-1"
-                                                    style="
-                              mso-table-lspace: 0pt;
-                              mso-table-rspace: 0pt;
-                              font-weight: 400;
-                              text-align: left;
-                              padding-bottom: 5px;
-                              padding-top: 5px;
-                              vertical-align: top;
-                            "
-                                                    width="100%">
-                                                    <div class="spacer_block block-1"
-                                                        style="
-                                height: 60px;
-                                line-height: 60px;
-                                font-size: 1px;
-                              ">
-
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-23"
-                        role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt" width="100%">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <table align="center" border="0" cellpadding="0" cellspacing="0"
-                                        class="row-content stack" role="presentation"
-                                        style="
-                        mso-table-lspace: 0pt;
-                        mso-table-rspace: 0pt;
-                        border-radius: 0;
-                        color: #000000;
-                        width: 690px;
-                        margin: 0 auto;
-                      "
-                                        width="690">
-                                        <tbody>
-                                            <tr>
-                                                <td class="column column-1"
-                                                    style="
-                              mso-table-lspace: 0pt;
-                              mso-table-rspace: 0pt;
-                              font-weight: 400;
-                              text-align: left;
-                              padding-bottom: 5px;
-                              padding-top: 5px;
-                              vertical-align: middle;
-                            "
-                                                    width="50%">
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="image_block block-1" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    width: 100%;
-                                    padding-right: 0px;
-                                    padding-left: 0px;
-                                  ">
-                                                                <div align="center" class="alignment"
-                                                                    style="line-height: 10px">
-                                                                    <div class="fullWidth" style="max-width: 345px">
-                                                                        <a href="www.example.com"
-                                                                            style="outline: none" tabindex="-1"
-                                                                            target="_blank"><img alt="Guest spekaers"
-                                                                                height="auto"
-                                                                                src="images/cyber-sec1.jpg"
-                                                                                style="
-                                            display: block;
-                                            height: auto;
-                                            border: 0;
-                                            width: 100%;
-                                          "
-                                                                                title="Guest spekaers"
-                                                                                width="355" /></a>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                                <td class="column column-2"
-                                                    style="
-                              mso-table-lspace: 0pt;
-                              mso-table-rspace: 0pt;
-                              font-weight: 400;
-                              text-align: left;
-                              padding-bottom: 5px;
-                              padding-top: 5px;
-                              vertical-align: middle;
-                            "
-                                                    width="50%">
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="image_block block-1" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-left: 20px;
-                                    width: 100%;
-                                    padding-right: 0px;
-                                  ">
-                                                                <div align="left" class="alignment"
-                                                                    style="line-height: 10px">
-                                                                    <div style="max-width: 52px">
-                                                                        <img alt="a flower with a flower in the middle"
-                                                                            height="auto"
-                                                                            src="https://cdn.simuphish.com/images/Capa_10.png"
-                                                                            style="
-                                          display: block;
-                                          height: auto;
-                                          border: 0;
-                                          width: 100%;
-                                        "
-                                                                            title="a flower with a flower in the middle"
-                                                                            width="52" />
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="heading_block block-2" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-bottom: 10px;
-                                    padding-left: 20px;
-                                    padding-right: 20px;
-                                    padding-top: 10px;
-                                    text-align: center;
-                                    width: 100%;
-                                  ">
-                                                                <h3
-                                                                    style="
-                                      margin: 0;
-                                      color: #12141d;
-                                      direction: ltr;
-                                      font-family: Fira Sans,
-                                        Lucida Sans Unicode, Lucida Grande,
-                                        sans-serif;
-                                      font-size: 39px;
-                                      font-weight: 700;
-                                      letter-spacing: normal;
-                                      line-height: 120%;
-                                      text-align: left;
-                                      margin-top: 0;
-                                      margin-bottom: 0;
-                                      mso-line-height-alt: 46.8px;
-                                    ">
-                                                                    <span class="tinyMce-placeholder"
-                                                                        style="word-break: break-word">Cybersecurity</span>
-                                                                </h3>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="paragraph_block block-3" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                                word-break: break-word;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-bottom: 10px;
-                                    padding-left: 20px;
-                                    padding-right: 20px;
-                                    padding-top: 10px;
-                                  ">
-                                                                <div
-                                                                    style="
-                                      color: #12141d;
-                                      direction: ltr;
-                                      font-family: 'Fira Sans',
-                                        'Lucida Sans Unicode', 'Lucida Grande',
-                                        sans-serif;
-                                      font-size: 20px;
-                                      font-weight: 300;
-                                      letter-spacing: 0px;
-                                      line-height: 150%;
-                                      text-align: left;
-                                      mso-line-height-alt: 30px;
-                                    ">
-                                                                    <p style="margin: 0">
-                                                                        <strong> In today’s digital age,</strong>
-                                                                        Cybersecurity has become more important than
-                                                                        ever. Cybersecurity refers to the practices and
-                                                                        technologies used to protect systems, networks,
-                                                                        and data from digital threats such as hacking,
-                                                                        data breaches, and malware.
-                                                                    </p>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="button_block block-4" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-bottom: 10px;
-                                    padding-left: 20px;
-                                    padding-right: 20px;
-                                    padding-top: 10px;
-                                    text-align: left;
-                                  ">
-                                                                <div align="left" class="alignment">
-                                                                    <a href="www.example.com"
-                                                                        style="
-                                        color: #ffffff;
-                                        text-decoration: none;
-                                      "
-                                                                        target="_blank">><span class="button"
-                                                                            style="
-                                          background-color: #583de0;
-                                          border-bottom: 1px solid #583de0;
-                                          border-left: 1px solid #583de0;
-                                          border-radius: 4px;
-                                          border-right: 1px solid #583de0;
-                                          border-top: 1px solid #583de0;
-                                          color: #ffffff;
-                                          display: inline-block;
-                                          font-family: Fira Sans,
-                                            Lucida Sans Unicode, Lucida Grande,
-                                            sans-serif;
-                                          font-size: 16px;
-                                          font-weight: 400;
-                                          mso-border-alt: none;
-                                          padding-bottom: 5px;
-                                          padding-top: 5px;
-                                          padding-left: 20px;
-                                          padding-right: 20px;
-                                          text-align: center;
-                                          width: auto;
-                                          word-break: keep-all;
-                                          letter-spacing: normal;
-                                        "><span
-                                                                                style="
-                                            word-break: break-word;
-                                            line-height: 32px;
-                                          ">Read
-                                                                                more</span></span>><!--[if mso]></center></v:textbox></v:roundrect><![endif]-->
-                                                                        </a< /a>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    
+                    
+                    
 
                     <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-31"
                         role="presentation"
@@ -2124,12 +1762,12 @@
                                           padding-left: 5px;
                                           padding-right: 6px;
                                         ">
-                                                                            <a href="http://designedwithbeefree.com/"
+                                                                            <a href="https://simuphish.com/"
                                                                                 style="text-decoration: none"
                                                                                 target="_blank"><img align="center"
-                                                                                    alt="Beefree Logo" class="icon"
+                                                                                    alt="simUphish Logo" class="icon"
                                                                                     height="auto"
-                                                                                    src="https://cdn.simuphish.com/images/Beefree-logo.png"
+                                                                                    src="{{asset('assets/images/simu-icon.png')}}"
                                                                                     style="
                                               display: block;
                                               height: auto;
@@ -2149,7 +1787,7 @@
                                           text-align: center;
                                           line-height: normal;
                                         ">
-                                                                            <a href="http://designedwithbeefree.com/"
+                                                                            <a href="https://simuphish.com/"
                                                                                 style="
                                             color: #ffffff;
                                             text-decoration: none;
