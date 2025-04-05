@@ -68,19 +68,22 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $campaign->users_group_name }}</td>
-                                                
+
                                                 <td>
-                                                    <span class="badge bg-secondary-transparent">{{ $campaign->campaign_type }}</span>
-                                                    
+                                                    <span
+                                                        class="badge bg-secondary-transparent">{{ $campaign->campaign_type }}</span>
+
                                                 </td>
-                                                
+
                                                 <td>
-                                                    <button class="btn btn-icon btn-danger-transparent rounded-pill btn-wave" title="Delete"
-                                                    onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
+                                                    <button
+                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
+                                                        title="Delete"
+                                                        onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
 
-                                                    
+
                                                 </td>
                                             </tr>
                                         @empty
@@ -157,7 +160,7 @@
 
                                                 <div class="col-lg-6 ">
 
-                                                    <label for="input-label" class="form-label">Domain</label>
+                                                    <label for="input-label" class="form-label">Domains</label>
                                                     <select class="form-control required" id="users_group">
                                                         @foreach ($usersGroups as $group)
                                                             <option value="{{ $group->group_id }}">
@@ -347,9 +350,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                                                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                                                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                                                                                                                                </div> -->
+                                                                                                                                                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                                                                </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -1005,7 +1008,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    
+
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1033,8 +1036,8 @@
                                                     Email</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                                                                                                <i class="bx bx-x fs-25"></i>
-                                                                                                                            </span> -->
+                                                                                                                                                <i class="bx bx-x fs-25"></i>
+                                                                                                                                            </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1087,7 +1090,7 @@
                                         </td>
                                         <td>
                                             <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                    <i class="bx bx-x fs-25"></i>
+                                                <i class="bx bx-x fs-25"></i>
                                             </span>
                                         </td>
                                     </tr>
@@ -1110,9 +1113,9 @@
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-               
+
                 <div class="modal-body">
-                    
+
                     <div class="table-responsive">
                         <table id="downloadVerifiedDomain" class="table table-bordered text-nowrap w-100">
                             <thead>
@@ -1195,8 +1198,8 @@
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
                                 placeholder="Enter email address">
-                            <button type="button" class="btn btn-primary" id="addEmailButton"
-                                onclick="addEmail()">Add Email</button>
+                            <button type="button" class="btn btn-primary" id="addEmailButton" onclick="addEmail()">Add
+                                Email</button>
                         </div>
                         <div id="emailWarning" class="text-danger mt-2" style="display: none;">
                             Warning: Email domain does not match the provided domain.
@@ -1551,12 +1554,25 @@
 
         // Function to add a domain
         function addDomain() {
+
             const domainInput = document.getElementById("domainEmailInput");
             const domain = domainInput.value.trim();
 
             const invalidTagsPattern = /<[^>]*>/;
             const invalidPhpPattern = /^<\?php/;
-            if (invalidPhpPattern.test(domain)) {
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$/;
+
+            if (domain == '') {
+                Swal.fire(
+                    'Oops!',
+                    'Please Enter a domain',
+                    'error'
+                );
+                return;
+            }
+
+            if (invalidPhpPattern.test(domain) || invalidTagsPattern.test(domain)) {
                 Swal.fire(
                     'Oops!',
                     'Invalid input detected.',
@@ -1565,24 +1581,31 @@
                 return;
             }
 
-            if (invalidTagsPattern.test(domain)) {
+            if (emailPattern.test(domain) || !domainPattern.test(domain)) {
                 Swal.fire(
                     'Oops!',
-                    'Invalid input detected.',
+                    'Please enter a valid domain',
                     'error'
                 );
                 return;
             }
-
 
             if (domain && !domains.includes(domain)) {
                 domains.push(domain);
                 updateDomainList();
                 domainInput.value = ""; // Clear input after adding
             } else if (domains.includes(domain)) {
-                alert("This domain is already added.");
+                Swal.fire(
+                    'Oops!',
+                    'This domain is already added.',
+                    'error'
+                );
             } else {
-                alert("Please enter a valid domain.");
+                Swal.fire(
+                    'Oops!',
+                    'Something went wrong.',
+                    'error'
+                );
             }
         }
 
@@ -1637,36 +1660,62 @@
 
                         // Show success or failure message based on backend response
                         if (data.status === 1) { // Change to check for status
-                            // alert("Domains successfully requested for verification!");
                             Swal.fire(
                                 'Request Submitted',
-                                'Domains successfully requested for verification!',
+                                `${data.msg}`,
                                 'success'
-                            );
+                            ).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
                             domains = []; // Clear domains list after successful submission
                             updateDomainList();
                             // Optionally close the modal if needed
                             $('#newDomainVerificationModal').modal('hide'); // Use jQuery for Bootstrap modal
+                        } else if (data.status === 0) {
+                            Swal.fire(
+                                'Oops!',
+                                `${data.msg}`,
+                                'error'
+                            );
+                            return;
+
                         } else {
-                            alert(`Unable to submit domains for verification: ${data.msg}`); // Show specific message
+                            Swal.fire(
+                                'Oops!',
+                                `Unable to submit domains for verification: ${data.msg}`,
+                                'error'
+                            );
+                            return;
                         }
                     })
                     .catch(error => {
                         console.error("Error submitting domains:", error);
-                        alert("An error occurred while submitting domains. Please try again.");
+                        Swal.fire(
+                            'Oops!',
+                            'An error occurred while submitting domains. Please try again.',
+                            'error'
+                        );
+                        return;
 
                         // Reset the buttons in case of error
                         document.getElementById("submitSpinner").classList.add("d-none");
                         document.getElementById("sendOtpBtn").classList.remove("d-none");
                     });
             } else {
-                alert("Please add at least one domain.");
+                Swal.fire(
+                    'Oops!',
+                    'Please add at least one domain.',
+                    'error'
+                );
+                return;
             }
         }
     </script>
 
 
-    
+
     <div class="modal" id="newDomainVerificationModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -1702,8 +1751,8 @@
                     </div>
 
                     <!-- Submit Button and Spinner -->
-                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3"
-                        onclick="submitDomains()">Submit Domains for Verification</button>
+                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3" onclick="submitDomains()">Submit
+                        Domains for Verification</button>
                     <button class="btn btn-primary my-3 d-none" id="submitSpinner">
                         <span class="me-2">Please wait...</span>
                         <span class="loading"><i class="ri-loader-2-fill fs-16"></i></span>
@@ -1729,8 +1778,8 @@
                         <div class="card-body">
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item" role="presentation" id="phishing_tab">
-                                    <a class="nav-link active" data-bs-toggle="tab" role="tab"
-                                        aria-current="page" href="#phishing_campaign" aria-selected="true">Phishing
+                                    <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#phishing_campaign" aria-selected="true">Phishing
                                         Campaign</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
@@ -2187,7 +2236,7 @@
                     }
                 })
 
-               
+
             }
 
             function reschedulecampid(id) {
@@ -2220,7 +2269,7 @@
                     }
                 })
 
-               
+
             }
 
             //campaign type toggling
@@ -2600,7 +2649,7 @@
                 $("#rexp_after").removeClass("d-none");
             })
 
-           
+
 
             // Event listener for input field change
             $('#templateSearch').on('input', function() {

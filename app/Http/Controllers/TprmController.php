@@ -31,9 +31,9 @@ class TprmController extends Controller
     {
         $companyId = Auth::user()->company_id;
         $allCamps = TprmCampaign::where('company_id', $companyId)->orderBy('id', 'desc')
-        ->paginate(10); 
+            ->paginate(10);
         $lastCampaign = TprmCampaign::orderBy('id', 'desc')->first();
-// return $lastCampaign;
+        // return $lastCampaign;
         if ($lastCampaign) {
             $lastDeliveryDate = Carbon::parse($lastCampaign->delivery_date);
             $currentDate = Carbon::now();  //dobut
@@ -96,7 +96,7 @@ class TprmController extends Controller
         $notVerifiedDomains = TpmrVerifiedDomain::where('verified', 0)->where('company_id', $companyId)->get();
 
         $allDomains = TpmrVerifiedDomain::where('company_id', $companyId)->get();
-// return $allDomains;
+        // return $allDomains;
         // $allDomainsDownload = TpmrVerifiedDomain::where('company_id', $companyId)->get();
 
         return view('tprm', compact(
@@ -119,7 +119,7 @@ class TprmController extends Controller
         return response()->json(['status' => 1, 'message' => 'Frontend is working correctly!']);
     }
 
-   
+
     public function submitdomains(Request $request)
     {
         //xss check start
@@ -166,25 +166,25 @@ class TprmController extends Controller
         foreach ($domains as $domain) {
 
             // Check if the domain is already in the database for this company
-            $verifiedDomain = TpmrVerifiedDomain::where('domain', $domain)
+            $domainExists = TpmrVerifiedDomain::where('domain', $domain)
                 ->where('company_id', $companyId)
                 ->first();
 
-            if ($verifiedDomain) {
-               
+            $verifiedDomain = TpmrVerifiedDomain::where('domain', $domain)
+                ->where('verified', 1)
+                ->first();
 
-                $results[] = [
-                    'domain' => $domain,
-                    'status' => 0,
-                    'msg' => 'Domain already exists, skipping.'
-                ];
+            if ($domainExists) {
+                return response()->json(['status' => 0, 'msg' => 'Domain already exists']);
+            }else if ($verifiedDomain) {
+                return response()->json(['status' => 0, 'msg' => 'Domain already verified by another company']);
             } else {
                 // Generate a temporary code for the new domain and save it
                 $genCode = generateRandom(6);
 
                 // Ensure partnerId is valid before attempting to store
                 if ($partnerId) {
-                  
+
                     TpmrVerifiedDomain::create([
                         'domain' => $domain,
                         'temp_code' => $genCode,
@@ -193,25 +193,20 @@ class TprmController extends Controller
                         'partner_id' => $partnerId,
                     ]);
 
-                   
+
                     $results[] = [
                         'domain' => $domain,
                         'status' => 1,
                         'msg' => 'New domain verification requested successfully.'
                     ];
                 } else {
-                   
-                    $results[] = [
-                        'domain' => $domain,
-                        'status' => 0,
-                        'msg' => 'Failed to verify domain; partner ID is missing.'
-                    ];
+                    return response()->json(['status' => 0, 'msg' => 'Failed to verify domain; partner ID is missing.']);
                 }
             }
         }
 
 
-        return response()->json(['status' => 1, 'results' => $results]);
+        return response()->json(['status' => 1, 'results' => $results, 'msg' => 'New domain verification requested successfully.']);
     }
 
 
@@ -248,6 +243,33 @@ class TprmController extends Controller
     {
         $domain = $request->vDomainId;
 
+        $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
+                            ->where('company_id', Auth()->user()->company_id)->first();
+
+        if($tprmUserGroup){
+            $group_id = $tprmUserGroup->group_id;
+            $tprmUserGroup->delete();
+
+            $tprmUsers = TprmUsers::where('group_id', $group_id)->get();
+
+            foreach($tprmUsers as $tprmUser){
+                $tprmUser->delete();
+            }
+
+            $tprmCampaign = TprmCampaign::where('users_group', $group_id)->first();
+
+            if($tprmCampaign){
+
+                $tprmCampaignId = $tprmCampaign->campaign_id;
+                $tprmCampaign->delete();
+                $TprmLiveCampaigns = TprmCampaignLive::where('campaign_id', $tprmCampaignId)->get();
+                
+                foreach($TprmLiveCampaigns as $TprmLiveCampaign){
+                    $TprmLiveCampaign->delete();
+                }
+            }
+        }
+
         DB::beginTransaction();
 
         try {
@@ -270,13 +292,13 @@ class TprmController extends Controller
                 $groupId = $group->group_id;
                 $companyId = Auth::user()->company_id;
 
-               
+
                 // Delete all users in the group
                 TprmUsers::where('group_id', $groupId)->delete();
 
                 // Delete the group itself
                 $group->delete();
-               
+
                 // 3. Delete campaigns associated with this user group
                 $campaigns = TprmCampaign::where('users_group', $groupId)
                     ->where('company_id', $companyId)
@@ -285,7 +307,7 @@ class TprmController extends Controller
                 foreach ($campaigns as $campaign) {
                     $campaignId = $campaign->campaign_id;
 
-                    
+
                     // Delete campaign records from all associated tables
                     TprmCampaign::where('campaign_id', $campaignId)
                         ->where('company_id', $companyId)
@@ -296,7 +318,6 @@ class TprmController extends Controller
                     TprmCampaignReport::where('campaign_id', $campaignId)
                         ->where('company_id', $companyId)
                         ->delete();
-
                 }
             }
 
@@ -311,7 +332,7 @@ class TprmController extends Controller
             // Rollback the transaction if an error occurs
             DB::rollBack();
 
-          
+
 
             return response()->json(['status' => 0, 'msg' => 'An error occurred: ' . $e->getMessage()], 500);
         }
@@ -359,7 +380,7 @@ class TprmController extends Controller
         }
     }
 
-    
+
 
 
 
@@ -389,7 +410,7 @@ class TprmController extends Controller
     {
 
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -402,7 +423,7 @@ class TprmController extends Controller
         $request->merge($input);
 
         //xss check end
-        
+
         $campaignType = $request->input('campaign_type');
         $campName = $request->input('camp_name');
         $usersGroup = $request->input('users_group');
@@ -417,7 +438,7 @@ class TprmController extends Controller
         $expAfter = $request->input('expire_after');
         $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
 
-        
+
         $phishingEmail = PhishingEmail::where('id', $phishMaterial)
             ->where(function ($query) {
                 $query->where('senderProfile', '0')
@@ -493,8 +514,6 @@ class TprmController extends Controller
 
             return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
         }
-
-        
     }
 
 
@@ -561,7 +580,7 @@ class TprmController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-           
+
             return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
         }
     }
@@ -746,68 +765,68 @@ class TprmController extends Controller
         return $campaign;
     }
     public function fetchEmail(Request $request)
-{
-    $token = $this->getAccessToken();
+    {
+        $token = $this->getAccessToken();
 
-    // Check if access token was retrieved successfully
-    if (empty($token)) {
-        return response()->json([
-            'message' => 'Failed to retrieve access token.',
-        ], 500);
-    }
-
-    // Prepare the API request parameters
-    $params = [
-        'access_token' => $token,
-        'domain'       => $request->domain,
-        'type'         => 'all',
-        'limit'        => 10,
-        'lastId'       => 0,
-    ];
-
-    // Make the API request using Laravel's HTTP client
-    $response = Http::timeout(30) // Set a timeout to prevent hanging
-    ->withOptions(['verify' => false])
-        ->get('https://api.snov.io/v2/domain-emails-with-info', $params);
-
-    // Log the raw response for debugging
-    Log::info('Raw API response:', ['response' => $response->body(), 'status' => $response->status()]);
-
-    // Handle unsuccessful HTTP responses
-    if (!$response->successful()) {
-        return response()->json([
-            'message'  => 'Failed to fetch data from API.',
-            'httpCode' => $response->status(),
-        ], 500);
-    }
-
-    // Decode the JSON response
-    $res = $response->json();
-
-    // Check if the response contains data
-    if (isset($res['data']) && is_array($res['data'])) {
-        // Save the fetched emails to the database
-        foreach ($res['data'] as $emailData) {
-            DomainEmail::create([
-                'domain' => $res['meta']['domain'] ?? 'N/A', // Default if domain is not present
-                'email'  => $emailData['email'] ?? 'N/A',    // Default if email is not present
-                'status' => $emailData['status'] ?? 'N/A',   // Default if status is not present
-            ]);
+        // Check if access token was retrieved successfully
+        if (empty($token)) {
+            return response()->json([
+                'message' => 'Failed to retrieve access token.',
+            ], 500);
         }
 
-        return response()->json([
-            'message' => 'Emails fetched and saved successfully!',
-            'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
-            'emails'  => $res['data'],
-        ]);
-    } else {
-        return response()->json([
-            'message' => 'No emails found for this domain.',
-            'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
-            'emails'  => [],
-        ]);
+        // Prepare the API request parameters
+        $params = [
+            'access_token' => $token,
+            'domain'       => $request->domain,
+            'type'         => 'all',
+            'limit'        => 10,
+            'lastId'       => 0,
+        ];
+
+        // Make the API request using Laravel's HTTP client
+        $response = Http::timeout(30) // Set a timeout to prevent hanging
+            ->withOptions(['verify' => false])
+            ->get('https://api.snov.io/v2/domain-emails-with-info', $params);
+
+        // Log the raw response for debugging
+        Log::info('Raw API response:', ['response' => $response->body(), 'status' => $response->status()]);
+
+        // Handle unsuccessful HTTP responses
+        if (!$response->successful()) {
+            return response()->json([
+                'message'  => 'Failed to fetch data from API.',
+                'httpCode' => $response->status(),
+            ], 500);
+        }
+
+        // Decode the JSON response
+        $res = $response->json();
+
+        // Check if the response contains data
+        if (isset($res['data']) && is_array($res['data'])) {
+            // Save the fetched emails to the database
+            foreach ($res['data'] as $emailData) {
+                DomainEmail::create([
+                    'domain' => $res['meta']['domain'] ?? 'N/A', // Default if domain is not present
+                    'email'  => $emailData['email'] ?? 'N/A',    // Default if email is not present
+                    'status' => $emailData['status'] ?? 'N/A',   // Default if status is not present
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Emails fetched and saved successfully!',
+                'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
+                'emails'  => $res['data'],
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'No emails found for this domain.',
+                'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
+                'emails'  => [],
+            ]);
+        }
     }
-}
 
 
 
@@ -858,7 +877,7 @@ class TprmController extends Controller
         $emails = $request->input('emails'); // Get the emails from the request
         $companyId = auth()->user()->company_id;
 
-       
+
 
         // Check if the combination of domain name and company ID already exists
         $existingGroup = TprmUsersGroup::where('group_name', $domainName)
@@ -879,8 +898,6 @@ class TprmController extends Controller
                         $user->user_name = $userName;  // Set the username
                         $user->company_id = $companyId;
                         $user->save();
-
-                       
                     } else {
                     }
                 } else {
@@ -914,8 +931,6 @@ class TprmController extends Controller
                     $user->user_name = $userName;  // Set the username
                     $user->company_id = $companyId;
                     $user->save();
-
-                  
                 } else {
                 }
             } else {
@@ -936,28 +951,61 @@ class TprmController extends Controller
         return $checkDomain;
     }
 
-    
-public function emailtprmnewGroup(Request $request)
-{
-    // Validate incoming request
-    $request->validate([
-        'domainName' => 'required|string',  // Ensure 'domainName' is passed correctly
-        'emails' => 'required|array',       // Ensure 'emails' is passed as an array
-    ]);
 
-    // Process the request if validation passes
-    $domainName = $request->input('domainName'); // Get the domainName from the request
-    $emails = $request->input('emails'); // Get the emails from the request
-    $companyId = auth()->user()->company_id;
+    public function emailtprmnewGroup(Request $request)
+    {
+        // Validate incoming request
+        $request->validate([
+            'domainName' => 'required|string',  // Ensure 'domainName' is passed correctly
+            'emails' => 'required|array',       // Ensure 'emails' is passed as an array
+        ]);
 
-   
-    // Check if the combination of domain name and company ID already exists
-    $existingGroup = TprmUsersGroup::where('group_name', $domainName)
-                                    ->where('company_id', $companyId)
-                                    ->first();
+        // Process the request if validation passes
+        $domainName = $request->input('domainName'); // Get the domainName from the request
+        $emails = $request->input('emails'); // Get the emails from the request
+        $companyId = auth()->user()->company_id;
 
-    if ($existingGroup) {
 
+        // Check if the combination of domain name and company ID already exists
+        $existingGroup = TprmUsersGroup::where('group_name', $domainName)
+            ->where('company_id', $companyId)
+            ->first();
+
+        if ($existingGroup) {
+
+            foreach ($emails as $usrEmail) {
+                if ($this->TprmdomainVerified($usrEmail, $companyId)) {
+                    if ($this->TprmuniqueEmail($usrEmail)) {
+                        // Extract username from email (part before '@')
+                        $userName = explode('@', $usrEmail)[0];
+
+                        $user = new TprmUsers();
+                        $user->group_id = $existingGroup->group_id;
+                        $user->user_email = $usrEmail;
+                        $user->user_name = $userName;  // Set the username
+                        $user->company_id = $companyId;
+                        $user->save();
+                    } else {
+                    }
+                } else {
+                }
+            }
+            return response()->json(['status' => 1, 'message' => 'Success']);
+        }
+
+        // Generate a new group ID
+        $grpId = generateRandom(6);
+
+        // Create a new group using the domain name
+        TprmUsersGroup::create([
+            'group_id' => $grpId,
+            'group_name' => $domainName,
+            'users' => null,
+            'company_id' => $companyId,
+        ]);
+
+
+        // If new group created, add emails to the tprm_users database
         foreach ($emails as $usrEmail) {
             if ($this->TprmdomainVerified($usrEmail, $companyId)) {
                 if ($this->TprmuniqueEmail($usrEmail)) {
@@ -965,58 +1013,19 @@ public function emailtprmnewGroup(Request $request)
                     $userName = explode('@', $usrEmail)[0];
 
                     $user = new TprmUsers();
-                    $user->group_id = $existingGroup->group_id;
+                    $user->group_id = $grpId;
                     $user->user_email = $usrEmail;
                     $user->user_name = $userName;  // Set the username
                     $user->company_id = $companyId;
                     $user->save();
-
-                  
                 } else {
                 }
             } else {
             }
         }
+
         return response()->json(['status' => 1, 'message' => 'Success']);
-
     }
-
-    // Generate a new group ID
-    $grpId = generateRandom(6);
-
-    // Create a new group using the domain name
-    TprmUsersGroup::create([
-        'group_id' => $grpId,
-        'group_name' => $domainName,
-        'users' => null,
-        'company_id' => $companyId,
-    ]);
-
-
-    // If new group created, add emails to the tprm_users database
-    foreach ($emails as $usrEmail) {
-        if ($this->TprmdomainVerified($usrEmail, $companyId)) {
-            if ($this->TprmuniqueEmail($usrEmail)) {
-                // Extract username from email (part before '@')
-                $userName = explode('@', $usrEmail)[0];
-
-                $user = new TprmUsers();
-                $user->group_id = $grpId;
-                $user->user_email = $usrEmail;
-                $user->user_name = $userName;  // Set the username
-                $user->company_id = $companyId;
-                $user->save();
-
-                
-            } else {
-            }
-        } else {
-        }
-    }
-
-    return response()->json(['status' => 1, 'message' => 'Success']);
-
-}
 
     private function TprmuniqueEmail($email)
     {
