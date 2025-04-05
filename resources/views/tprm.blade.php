@@ -1204,9 +1204,9 @@
                         <div id="emailWarning" class="text-danger mt-2" style="display: none;">
                             Warning: Email domain does not match the provided domain.
                         </div>
-                        <ul id="emailList" class="list-unstyled mt-3">
+                        {{-- <ul id="emailList" class="list-unstyled mt-3">
                             <!-- Added emails will appear here -->
-                        </ul>
+                        </ul> --}}
                     </div>
                 </div>
 
@@ -1256,9 +1256,9 @@
                             emailList.appendChild(li);
                         });
                     } else {
-                        const li = document.createElement('li');
-                        li.innerText = 'No emails found for this domain.';
-                        emailList.appendChild(li);
+                        const p = document.createElement('p');
+                        p.innerText = 'No emails found for this domain.';
+                        emailList.appendChild(p);
                     }
 
                     var modal = new bootstrap.Modal(document.getElementById('domainModal'));
@@ -1276,7 +1276,7 @@
 
             // Count the number of <li> elements inside the <ul>
             const liCount = ulElement.querySelectorAll('li').length;
-
+            
             if (liCount >= 5) {
                 return true;
             }
