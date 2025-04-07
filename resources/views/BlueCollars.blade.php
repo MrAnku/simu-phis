@@ -14,9 +14,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">Across all employee groups
-                                        (Total)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $totalEmployees }} Employees</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Across all employee groups (Total)') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $totalEmployees }} {{ __('Employees') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -35,9 +34,8 @@
 
                                 <div class="flex-fill">
                                     <span class="fw-semibold text-muted d-block mb-2">
-                                        Employees
-                                        (In Running Campaign.)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $totalActiveEmployees }} Active Employees
+                                        {{ __('Employees(In Running Campaign.)') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $totalActiveEmployees }} {{ __('Active Employees') }}
                                     </h5>
 
                                 </div>
@@ -56,8 +54,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">Employees In Attack</span>
-                                    <h5 class="fw-semibold mb-2">{{ $totalCompromisedEmployees }} Compromised </h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Employees In Attack') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $totalCompromisedEmployees }} {{ __('Compromised') }} </h5>
 
                                 </div>
                                 <div class="me-3">
@@ -74,7 +72,7 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newBlueEmpGroupModal">New Employee Group</button>
+                        data-bs-target="#newBlueEmpGroupModal">{{ __('New Employee Group') }}</button>
                 </div>
 
             </div>
@@ -84,7 +82,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Employees
+                                {{ __('Manage Employees') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -92,11 +90,11 @@
                                 <table id="allGroupsTable" class="table table-bordered text-nowrap w-100">
                                     <thead>
                                         <tr>
-                                            <th>Sl</th>
-                                            <th>Employee Group Name</th>
-                                            <th>Employee Count</th>
-                                            <th>Group Unique Id</th>
-                                            <th>Actions</th>
+                                            <th>{{ __('Sl') }}</th>
+                                            <th>{{ __('Employee Group Name') }}</th>
+                                            <th>{{ __('Employee Count') }}</th>
+                                            <th>{{ __('Group Unique Id') }}</th>
+                                            <th>{{ __('Actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -128,7 +126,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td class="text-center" colspan="5">No records found</td>
+                                                <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                                             </tr>
                                         @endforelse
 
@@ -146,11 +144,11 @@
     {{-- -------------------Modals------------------------ --}}
 
     <!-- new Employee group modal -->
-    <x-modal id="newEmpGroupModal" heading="Add Employee Group">
+    <x-modal id="newEmpGroupModal" heading="{{ __('Add Employee Group') }}">
         <x-employees.new-group-form />
     </x-modal>
 
-    <x-modal id="newBlueEmpGroupModal" heading="Add Employee Group">
+    <x-modal id="newBlueEmpGroupModal" heading="{{ __('Add Employee Group') }}">
         <x-employees.blue-new-group-form />
     </x-modal>
 
@@ -162,7 +160,7 @@
 
 
     <!-- new domain verification modal -->
-    <x-modal id="newDomainVerificationModal" heading="Verify Domain">
+    <x-modal id="newDomainVerificationModal" heading="{{ __('Verify Domain') }}">
         <x-employees.new-domain-verify />
     </x-modal>
 
@@ -172,7 +170,7 @@
     {{-- <x-modal id="viewUsers" size="modal-xl" heading="All Employees">
         <x-employees.view-users />
     </x-modal> --}}
-    <x-modal id="viewBluecollarUsers" size="modal-xl" heading="All Bluecollar Employees">
+    <x-modal id="viewBluecollarUsers" size="modal-xl" heading="{{ __('All Bluecollar Employees') }}">
         <x-employees.view-bluecollar-users />
     </x-modal>
 
@@ -181,7 +179,7 @@
     {{-- <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
         <x-employees.add-user />
     </x-modal> --}}
-    <x-modal id="addBlueCollarUserModal" size="modal-xl" heading="Add Bluecollar Employee">
+    <x-modal id="addBlueCollarUserModal" size="modal-xl" heading="{{ __('Add Bluecollar Employee') }}">
         <x-employees.bluecollar-add-user />
     </x-modal>
 
@@ -189,7 +187,7 @@
 
     {{-- Directory sync Modal --}}
 
-    <x-modal id="syncDirectoryModal" size="modal-lg" heading="Provider">
+    <x-modal id="syncDirectoryModal" size="modal-lg" heading="{{ __('Provider') }}">
         <x-employees.sync-directory :hasOutlookToken="$hasOutlookAdToken" />
     </x-modal>
 

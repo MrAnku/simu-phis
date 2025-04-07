@@ -1,7 +1,7 @@
 <div class="card custom-card">
     <div class="card-header  justify-content-between">
         <div class="card-title">
-            OS Usage
+            {{ __('OS Usage') }}
         </div>
     </div>
     <div class="card-body">

@@ -30,7 +30,7 @@
                                                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                                                     <div>
                                                         <h4 class="fw-semibold mt-1">{{ $data['active_campaigns'] }}</h4>
-                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">ACTIVE CAMPAIGNS
+                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">{{ __('ACTIVE CAMPAIGNS') }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -56,7 +56,7 @@
                                                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                                                     <div>
                                                         <h4 class="fw-semibold mt-1">{{ $data['phishing_emails'] }}</h4>
-                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">PHISHING EMAILS
+                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">{{ __('PHISHING EMAILS') }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -81,7 +81,7 @@
                                                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                                                     <div>
                                                         <h4 class="fw-semibold mt-1">{{ $data['phishing_websites'] }}</h4>
-                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">PHISHING WEBSITES
+                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">{{ __('PHISHING WEBSITES') }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -106,7 +106,7 @@
                                                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                                                     <div>
                                                         <h4 class="fw-semibold mt-1">{{ $data['training_modules'] }}</h4>
-                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">TRAINING MODULES
+                                                        <p class="mb-0 fs-11 op-7 text-muted fw-semibold">{{ __('TRAINING MODULES') }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -123,7 +123,7 @@
                         <div class="col-lg-8">
                             <div class="card custom-card">
                                 <div class="card-header">
-                                    <div class="card-title">Campaign Activity</div>
+                                    <div class="card-title">{{ __('Campaign Activity') }}</div>
                                 </div>
 
                                 <div class="card-body">
@@ -134,7 +134,7 @@
                         <div class="col-lg-4">
                             <div class="card custom-card">
                                 <div class="card-header">
-                                    <div class="card-title">Emails and Trainings</div>
+                                    <div class="card-title">{{ __('Emails and Trainings') }}</div>
                                 </div>
                                 <div class="card-body">
                                     <canvas id="chartjs-doughnut" class="chartjs-chart"></canvas>
@@ -154,7 +154,7 @@
                                     <div class="d-flex align-items-center flex-wrap">
                                         <div id="analytics-views"></div>
                                         <div class="p-2">
-                                            <p class="mb-1 text-muted">Payload Clicks</p>
+                                            <p class="mb-1 text-muted">{{ __('Payload Clicks') }}</p>
                                             <h5 class="fw-semibold mb-0" id="all-payload-clicks"></h5>
                                         </div>
                                     </div>
@@ -166,7 +166,7 @@
                                     <div class="d-flex align-items-center flex-wrap">
                                         <div id="analytics-views-2"></div>
                                         <div class="p-2">
-                                            <p class="mb-1 text-muted">Email Reported</p>
+                                            <p class="mb-1 text-muted">{{ __('Email Reported') }}</p>
                                             <h5 class="fw-semibold mb-0" id="all-email-reported"></h5>
                                         </div>
                                     </div>

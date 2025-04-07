@@ -1,6 +1,6 @@
 <div class="card custom-card">
     <div class="card-header">
-        <div class="card-title">Package</div>
+        <div class="card-title">{{ __('Package') }}</div>
     </div>
     <div class="card-body">
 
@@ -9,10 +9,9 @@
 
                 <p class="mb-0 fs-25 fw-semibold">{{ $package['total_emp'] }} of
                     {{ $package['alloted_emp'] }} <span
-                        class="text-muted fs-11">{{ round($package['used_percent'], 2) }}% of total
-                        used</span>
+                        class="text-muted fs-11">{{ round($package['used_percent'], 2) }} {{ __('% of total used') }}</span>
                 </p>
-                <span class="text-muted fs-12">Employees</span>
+                <span class="text-muted fs-12">{{ __('Employees') }}</span>
             </div>
             <div>
                 <span class="avatar bg-warning">
@@ -34,11 +33,10 @@
 
                     @if ($upgrade['upgrade_req'])
                         <button
-                            class="btn btn-warning btn-sm btn-wave waves-effect waves-light mt-3">Upgrade
-                            request is pending</button>
+                            class="btn btn-warning btn-sm btn-wave waves-effect waves-light mt-3">{{ __('Upgrade request is pending') }}</button>
                     @else
                         <a href="#" data-bs-toggle="modal" data-bs-target="#upgradeModal"
-                            class="btn btn-success btn-sm btn-wave waves-effect waves-light mt-3">Upgrade</a>
+                            class="btn btn-success btn-sm btn-wave waves-effect waves-light mt-3">{{ __('Upgrade') }}</a>
                     @endif
 
 

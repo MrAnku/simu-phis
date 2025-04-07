@@ -14,9 +14,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">Across all employee groups
-                                        (Total)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $totalEmps }} Employees</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Across all employee groups (Total)') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $totalEmps }} {{ __('Employees') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -34,9 +33,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">{{ $verifiedDomains->count() }} Used
-                                        (500 Domains Max.)</span>
-                                    <h5 class="fw-semibold mb-2">{{ $verifiedDomains->count() }} Domains Verified</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ $verifiedDomains->count() }} {{ __('Used (500 Domains Max.)') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $verifiedDomains->count() }} {{ __('Domains Verified') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -54,8 +52,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">Verification of ownership</span>
-                                    <h5 class="fw-semibold mb-2">{{ $notVerifiedDomains->count() }} Domains Pending</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Verification of ownership') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $notVerifiedDomains->count() }} {{ __('Domains Pending') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -72,13 +70,13 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newEmpGroupModal">New Employee Group</button>
+                        data-bs-target="#newEmpGroupModal">{{ __('New Employee Group') }}</button>
                 </div>
                 <div>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#domainVerificationModal">Domain Verification</button>
+                        data-bs-target="#domainVerificationModal">{{ __('Domain Verification') }}</button>
                     <button type="button" class="btn btn-dark mb-3" onclick="checkHasConfig()" data-bs-toggle="modal"
-                        data-bs-target="#syncDirectoryModal">Directory Sync</button>
+                        data-bs-target="#syncDirectoryModal">{{ __('Directory Sync') }}</button>
                 </div>
             </div>
 
@@ -87,7 +85,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Employees
+                                {{ __('Manage Employees') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -95,11 +93,11 @@
                                 <table id="allGroupsTable" class="table table-bordered text-nowrap w-100">
                                     <thead>
                                         <tr>
-                                            <th>Sl</th>
-                                            <th>Employee Group Name</th>
-                                            <th>Employees</th>
-                                            <th>Group Unique Id</th>
-                                            <th>Actions</th>
+                                            <th>{{ __('Sl') }}</th>
+                                            <th>{{ __('Employee Group Name') }}</th>
+                                            <th>{{ __('Employees') }}</th>
+                                            <th>{{ __('Group Unique Id') }}</th>
+                                            <th>{{ __('Actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -134,7 +132,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td class="text-center" colspan="5">No records found</td>
+                                                <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                                             </tr>
                                         @endforelse
 
@@ -152,33 +150,33 @@
     {{-- -------------------Modals------------------------ --}}
 
     <!-- new Employee group modal -->
-    <x-modal id="newEmpGroupModal" heading="Add Employee Group">
+    <x-modal id="newEmpGroupModal" heading="{{ __('Add Employee Group') }}">
         <x-employees.new-group-form />
     </x-modal>
 
 
     <!-- verified domains modal -->
-    <x-modal id="domainVerificationModal" heading="Domain Verification">
+    <x-modal id="domainVerificationModal" heading="{{ __('Domain Verification') }}">
         <x-employees.domain-verification :allDomains="$allDomains" />
     </x-modal>
 
 
 
     <!-- new domain verification modal -->
-    <x-modal id="newDomainVerificationModal" heading="Verify Domain">
+    <x-modal id="newDomainVerificationModal" heading="{{ __('Verify Domain') }}">
         <x-employees.new-domain-verify />
     </x-modal>
 
 
     <!-- view employees modal -->
 
-    <x-modal id="viewUsers" size="modal-xl" heading="All Employees">
+    <x-modal id="viewUsers" size="modal-xl" heading="{{ __('All Employees') }}">
         <x-employees.view-users />
     </x-modal>
 
 
     <!-- add employees modal -->
-    <x-modal id="addUserModal" size="modal-xl" heading="Add Employee">
+    <x-modal id="addUserModal" size="modal-xl" heading="{{ __('Add Employee') }}">
         <x-employees.add-user />
     </x-modal>
 
@@ -186,7 +184,7 @@
 
     {{-- Directory sync Modal --}}
 
-    <x-modal id="syncDirectoryModal" size="modal-lg" heading="Provider">
+    <x-modal id="syncDirectoryModal" size="modal-lg" heading="{{ __('Provider') }}">
         <x-employees.sync-directory :hasOutlookToken="$hasOutlookAdToken" />
     </x-modal>
 

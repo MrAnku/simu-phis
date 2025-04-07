@@ -1,7 +1,7 @@
 <div class="card custom-card">
     <div class="card-header  justify-content-between">
         <div class="card-title">
-            Browser Usage
+            {{ __('Browser Usage') }}
         </div>
     </div>
     <div class="card-body">

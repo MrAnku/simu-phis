@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use App\Models\Settings;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
@@ -80,7 +81,9 @@ class LoginRequest extends FormRequest
            ])->redirectTo(route('mfa.enter'));
         }
 
-        
+        $locale = $user->lang;
+        session(['locale' => $locale]); 
+        App::setLocale($locale); 
 
         RateLimiter::clear($this->throttleKey());
     }

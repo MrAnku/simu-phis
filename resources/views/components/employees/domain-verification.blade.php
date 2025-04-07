@@ -1,12 +1,12 @@
 <button type="button" id="newDomainVerificationModalBtn"
-    class="btn btn-primary mb-2 btn-wave waves-effect waves-light">Verify a new domain</button>
+    class="btn btn-primary mb-2 btn-wave waves-effect waves-light">{{ __('Verify a new domain') }}</button>
 <div class="table-responsive">
     <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
         <thead>
             <tr>
-                <th>Domain Name</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ __('Domain Name') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody id="allDomains">
@@ -15,9 +15,9 @@
                     <td>{{ $domain->domain }}</td>
                     <td>
                         @if ($domain->verified == 1)
-                            <span class="badge bg-success">Verified</span>
+                            <span class="badge bg-success">{{ __('Verified') }}</span>
                         @else
-                            <span class="badge bg-warning">Pending</span>
+                            <span class="badge bg-warning">{{ __('Pending') }}</span>
                         @endif
                     </td>
                     <td>
@@ -27,7 +27,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td class="text-center" colspan="5">No records found</td>
+                    <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                 </tr>
             @endforelse
         </tbody>

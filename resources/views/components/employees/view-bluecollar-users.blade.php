@@ -2,13 +2,13 @@
     <table id="allUsersByGroupTable" class="employeesTable table table-bordered text-nowrap w-100">
         <thead>
             <tr>
-                <th>Sl</th>
-                <th>Name</th>
+                <th>{{ __('Sl') }}</th>
+                <th>{{ __('Name') }}</th>
 
-                <th>Company</th>
-                <th>Job Title</th>
-                <th>WhatsApp</th>
-                <th>Action</th>
+                <th>{{ __('Company') }}</th>
+                <th>{{ __('Job Title') }}</th>
+                <th>{{ __('WhatsApp') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody class="addedBlueCollarUsers"></tbody>

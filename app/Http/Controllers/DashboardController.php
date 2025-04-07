@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BreachedEmail;
 use App\Models\Campaign;
 use App\Models\CampaignReport;
+use App\Models\Company;
 use App\Models\EmailCampActivity;
 use App\Models\TpmrVerifiedDomain;
 use App\Models\Users;
@@ -35,10 +36,10 @@ class DashboardController extends Controller
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
 
         $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', auth()->user()->company_id)
-        ->where('status', true)->first();
+            ->where('status', true)->first();
 
         $activeTprm = TpmrVerifiedDomain::where('company_id', auth()->user()->company_id)
-        ->where('verified', true)->first();
+            ->where('verified', true)->first();
 
         return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts', 'activeAIVishing', 'activeTprm'));
     }
@@ -64,22 +65,22 @@ class DashboardController extends Controller
             ->count();
 
         //browser usage counts
-            $chromeUsers = EmailCampActivity::whereNotNull('client_details')
-                ->whereJsonContains('client_details->browser', 'Chrome')
-                ->where('company_id', $companyId)
-                ->count();
+        $chromeUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->browser', 'Chrome')
+            ->where('company_id', $companyId)
+            ->count();
 
-            $firefoxUsers = EmailCampActivity::whereNotNull('client_details')
-                ->whereJsonContains('client_details->browser', 'Firefox')
-                ->where('company_id', $companyId)
-                ->count();
+        $firefoxUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->browser', 'Firefox')
+            ->where('company_id', $companyId)
+            ->count();
 
-            $edgeUsers = EmailCampActivity::whereNotNull('client_details')
-                ->whereJsonContains('client_details->browser', 'Edge')
-                ->where('company_id', $companyId)
-                ->count();
+        $edgeUsers = EmailCampActivity::whereNotNull('client_details')
+            ->whereJsonContains('client_details->browser', 'Edge')
+            ->where('company_id', $companyId)
+            ->count();
 
-           
+
 
 
         $usage = [
@@ -94,7 +95,7 @@ class DashboardController extends Controller
                 'edge' => $edgeUsers,
             ]
         ];
-        
+
         return $usage;
     }
 
@@ -383,5 +384,14 @@ class DashboardController extends Controller
         log_action("Employees limit upgrade request submitted");
 
         return redirect()->back()->with('success', 'Upgrade request submitted');
+    }
+
+    public function appLangChange($locale)
+    {
+        if (in_array($locale, ['en', 'ar', 'ru'])) {
+            session(['locale' => $locale]);
+            Company::where('company_id', Auth::user()->company_id)->update(['lang' => $locale]);
+        }
+        return redirect()->back();
     }
 }
