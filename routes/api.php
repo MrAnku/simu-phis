@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MFAController;
+use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
@@ -36,5 +37,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update-reporting', [SettingsController::class, 'updateReporting']);
         Route::post('/update-mfa', [SettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [SettingsController::class, 'verifyMFA']);
+    });
+    Route::prefix('sender-profiles')->group(function () {
+        Route::get('/', [SenderProfileController::class, 'index']);
+        Route::post('/add', [SenderProfileController::class, 'addSenderProfile']);
+        Route::delete('/delete', [SenderProfileController::class, 'deleteSenderProfile']);
+        Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
     });
 });
