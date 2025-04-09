@@ -22,26 +22,25 @@
                                         <button class="nav-link active" id="order-tab" data-bs-toggle="tab"
                                             data-bs-target="#order-tab-pane" type="button" role="tab"
                                             aria-controls="order-tab" aria-selected="true"><i
-                                                class="ri-mail-line me-2 align-middle"></i>Emails Campaign Report</button>
+                                                class="ri-mail-line me-2 align-middle"></i>{{ __('Emails Campaign Report') }}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="confirmed-tab" data-bs-toggle="tab"
                                             data-bs-target="#confirm-tab-pane" type="button" role="tab"
                                             aria-controls="confirmed-tab" aria-selected="false"><i
-                                                class="ri-whatsapp-line me-2 align-middle"></i>WhatsApp Campaign
-                                            Report</button>
+                                                class="ri-whatsapp-line me-2 align-middle"></i>{{ __('WhatsApp Campaign Report') }}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="shipped-tab" data-bs-toggle="tab"
                                             data-bs-target="#shipped-tab-pane" type="button" role="tab"
                                             aria-controls="shipped-tab" aria-selected="false"><i
-                                                class="ri-robot-line me-2 align-middle"></i>AI Campaign Report</button>
+                                                class="ri-robot-line me-2 align-middle"></i>{{ __('AI Campaign Report') }}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="tprm-tab" data-bs-toggle="tab"
                                             data-bs-target="#tprm-tab-pane" type="button" role="tab"
                                             aria-controls="tprm-tab" aria-selected="false"><i
-                                                class="bx bx-shape-circle side-menu__icon"></i>TPRM Campaign Report</button>
+                                                class="bx bx-shape-circle side-menu__icon"></i>{{ __('TPRM Campaign Report') }}</button>
                                     </li>
 
                                 </ul>
@@ -65,7 +64,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Phishing Emails Delivered</div>
+                                                                    <div class="mb-2">{{ __('Phishing Emails Delivered') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -89,7 +88,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Active &amp; Recurring Campaigns
+                                                                    <div class="mb-2">{{ __('Active') }} &amp; {{ __('Recurring Campaigns') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -114,7 +113,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Training Assigned</div>
+                                                                    <div class="mb-2">{{ __('Training Assigned') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -132,7 +131,7 @@
                                                 <div class="col-lg-12">
                                                     <div class="card custom-card">
                                                         <div class="card-header">
-                                                            <div class="card-title">Employees Interaction</div>
+                                                            <div class="card-title">{{ __('Employees Interaction') }}</div>
                                                         </div>
                                                         <div class="card-body">
                                                             <div id="dashed-chart"></div>
@@ -147,13 +146,13 @@
                                                         <div style="display: flex; justify-content: space-between;">
                                                             <div class="card-header">
                                                                 <div class="card-title">
-                                                                    Campaign Reports
+                                                                    {{ __('Campaign Reports') }}
                                                                 </div>
                                                             </div>
 
                                                             <div><a target="blank"
                                                                     href="{{ route('email_full_report-download-pdf') }}">
-                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    <button class="btn btn-primary">{{ __('Download Full Report') }}
                                                                     </button>
                                                                 </a>
                                                             </div>
@@ -164,14 +163,14 @@
                                                                     class="table table-bordered text-nowrap w-100">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>Sl</th>
-                                                                            <th>Campaign Name</th>
-                                                                            <th>Status</th>
-                                                                            <th>Scheduled Date</th>
-                                                                            <th>Emails Delivered</th>
-                                                                            <th>Emails Viewed</th>
-                                                                            <th>Training Assigned</th>
-                                                                            <th>Training Completed</th>
+                                                                            <th>{{ __('Sl') }}</th>
+                                                                            <th>{{ __('Campaign Name') }}</th>
+                                                                            <th>{{ __('Status') }}</th>
+                                                                            <th>{{ __('Scheduled Date') }}</th>
+                                                                            <th>{{ __('Emails Delivered') }}</th>
+                                                                            <th>{{ __('Emails Viewed') }}</th>
+                                                                            <th>{{ __('Training Assigned') }}</th>
+                                                                            <th>{{ __('Training Completed') }}</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -255,8 +254,7 @@
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
-                                                                                <td class="text-center" colspan="8">No
-                                                                                    records found</td>
+                                                                                <td class="text-center" colspan="8">{{ __('No records found') }}</td>
                                                                             </tr>
                                                                         @endforelse
 
@@ -287,7 +285,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">WhatsApp Messages Delivered</div>
+                                                                    <div class="mb-2">{{ __('WhatsApp Messages Delivered') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -312,7 +310,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Active &amp; Recurring Campaigns
+                                                                    <div class="mb-2">{{ __('Active') }} &amp; {{ __('Recurring Campaigns') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -337,7 +335,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Training Assigned</div>
+                                                                    <div class="mb-2">{{ __('Training Assigned') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -355,7 +353,7 @@
                                                 <div class="col-lg-12">
                                                     <div class="card custom-card">
                                                         <div class="card-header">
-                                                            <div class="card-title">Employees Interaction</div>
+                                                            <div class="card-title">{{ __('Employees Interaction') }}</div>
                                                         </div>
                                                         <div class="card-body">
                                                             <div id="wdashed-chart"></div>
@@ -371,12 +369,12 @@
                                                         <div style="display: flex; justify-content: space-between;">
                                                             <div class="card-header">
                                                                 <div class="card-title">
-                                                                    WhatsApp Campaign Reports
+                                                                    {{ __('WhatsApp Campaign Reports') }}
                                                                 </div>
                                                             </div>
                                                             <div> <a target="blank"
                                                                     href="{{ route('whatsapp_full_report-download-pdf') }}">
-                                                                    <button class="btn btn-primary">Download Full Report
+                                                                    <button class="btn btn-primary">{{ __('Download Full Report') }}
                                                                     </button>
                                                                 </a>
                                                             </div>
@@ -388,13 +386,13 @@
                                                                     class="table table-bordered text-nowrap w-100">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>Sl</th>
-                                                                            <th>Campaign Name</th>
+                                                                            <th>{{ __('Sl') }}</th>
+                                                                            <th>{{ __('Campaign Name') }}</th>
                                                                             {{-- <th>Status</th> --}}
-                                                                            <th>Created Date</th>
-                                                                            <th>Link Clicked</th>
-                                                                            <th>Compromised</th>
-                                                                            <th>Training Assigned</th>
+                                                                            <th>{{ __('Created Date') }}</th>
+                                                                            <th>{{ __('Link Clicked') }}</th>
+                                                                            <th>{{ __('Compromised') }}</th>
+                                                                            <th>{{ __('Training Assigned') }}</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -442,8 +440,7 @@
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
-                                                                                <td class="text-center" colspan="8">No
-                                                                                    records found</td>
+                                                                                <td class="text-center" colspan="8">{{ __('No records found') }}</td>
                                                                             </tr>
                                                                         @endforelse
 
@@ -475,7 +472,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Phone Calls Delivered</div>
+                                                                    <div class="mb-2">{{ __('Phone Calls Delivered') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -502,7 +499,7 @@
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
                                                                     <div class="mb-2">
-                                                                        Pending Calls
+                                                                        {{ __('Pending Calls') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -532,7 +529,7 @@
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
                                                                     <div class="mb-2">
-                                                                        Call Answered
+                                                                        {{ __('Call Answered') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -558,7 +555,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">Training Assigned</div>
+                                                                    <div class="mb-2">{{ __('Training Assigned') }}</div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
                                                                             class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
@@ -593,15 +590,14 @@
                                                         <div style="display: flex; justify-content: space-between;">
                                                             <div class="card-header">
                                                                 <div class="card-title">
-                                                                    Call Campaign Reports
+                                                                    {{ __('Call Campaign Reports') }}
                                                                 </div>
                                                             </div>
 
                                                             <div>
                                                                 <a target="blank"
                                                                     href="{{ route('ai-full-report-download-pdf') }}">
-                                                                    <button class="btn btn-primary">Download Full
-                                                                        Report</button>
+                                                                    <button class="btn btn-primary">{{ __('Download Report') }}</button>
                                                                 </a>
                                                             </div>
 
@@ -614,14 +610,14 @@
                                                                     class="table table-bordered text-nowrap w-100">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>Sl</th>
-                                                                            <th>Campaign Name</th>
-                                                                            <th>Status</th>
-                                                                            <th>Created Date</th>
-                                                                            <th>Employee Group</th>
-                                                                            <th>AI Agent</th>
-                                                                            <th>Training </th>
-                                                                            <th>Training Assigned</th>
+                                                                            <th>{{ __('SI') }}</th>
+                                                                            <th>{{ __('Campaign Name') }}</th>
+                                                                            <th>{{ __('Status') }}</th>
+                                                                            <th>{{ __('Created Date') }}</th>
+                                                                            <th>{{ __('Employee Group') }}</th>
+                                                                            <th>{{ __('AI Agent') }}</th>
+                                                                            <th>{{ __('Training') }} </th>
+                                                                            <th>{{ __('Training Assigned') }}</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -672,8 +668,7 @@
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
-                                                                                <td class="text-center" colspan="8">No
-                                                                                    records found</td>
+                                                                                <td class="text-center" colspan="8">{{ __('No records found') }}</td>
                                                                             </tr>
                                                                         @endforelse
 
@@ -705,7 +700,7 @@
                                                                 </div>
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                                                    <div class="mb-2">TPRM Phishing Emails Delivered
+                                                                    <div class="mb-2">{{ __('TPRM Phishing Emails Delivered') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
 
@@ -738,7 +733,7 @@
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
                                                                     <div class="mb-2">
-                                                                        TPRM Email Report
+                                                                        {{ __('TPRM Email Report') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -771,7 +766,7 @@
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
                                                                     <div class="mb-2">
-                                                                        Payload Clicked
+                                                                        {{ __('Payload Clicked') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -804,7 +799,7 @@
                                                                 <div
                                                                     class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
                                                                     <div class="mb-2">
-                                                                        Emp Compromised
+                                                                        {{ __('Emp Compromised') }}
                                                                     </div>
                                                                     <div class="text-muted mb-1 fs-12">
                                                                         <span
@@ -844,13 +839,12 @@
 
 
                                                             <div class="card-title">
-                                                                TPRM Campaign Reports
+                                                                {{ __('TPRM Campaign Reports') }}
                                                             </div>
                                                             <div>
                                                                 <a target="blank"
                                                                     href="{{ route('tprm-full-report-download-pdf') }}">
-                                                                    <button class="btn btn-primary">Download Full
-                                                                        Report</button>
+                                                                    <button class="btn btn-primary">{{ __('Download Full Report') }}</button>
                                                                 </a>
 
                                                             </div>
@@ -861,13 +855,13 @@
                                                                     class="table table-bordered text-nowrap w-100">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>Sl</th>
-                                                                            <th>Campaign Name</th>
-                                                                            <th>Status</th>
-                                                                            <th>Launch Time</th>
-                                                                            <th>Campaign Type</th>
-                                                                            <th>Email Lang</th>
-                                                                            <th>Training </th>
+                                                                            <th>{{ __('Sl') }}</th>
+                                                                            <th>{{ __('Campaign Name') }}</th>
+                                                                            <th>{{ __('Status') }}</th>
+                                                                            <th>{{ __('Launch Time') }}</th>
+                                                                            <th>{{ __('Campaign Type') }}</th>
+                                                                            <th>{{ __('Email Lang') }}</th>
+                                                                            <th>{{ __('Training') }} </th>
                                                                             {{-- <th>Training Assigned</th> --}}
                                                                         </tr>
                                                                     </thead>
@@ -919,8 +913,7 @@
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
-                                                                                <td class="text-center" colspan="8">No
-                                                                                    records found</td>
+                                                                                <td class="text-center" colspan="8">{{ __('No records found') }}</td>
                                                                             </tr>
                                                                         @endforelse
 
@@ -976,7 +969,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -989,19 +982,17 @@
                                         <li class="nav-item" role="presentation" id="phishing_tab">
                                             <a class="nav-link active" data-bs-toggle="tab" role="tab"
                                                 aria-current="page" href="#phishing_campaign"
-                                                aria-selected="true">Phishing
-                                                Campaign</a>
+                                                aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                         </li>
                                         <li class="nav-item" role="presentation" id="training_tab">
                                             <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                                href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                                                Campaign</a>
+                                                href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training Campaign') }}</a>
                                         </li>
                                     </ul>
                                 </div>
                                 <div><a target="blank" id="emailcampaignPdfLink"
                                         href="{{ route('email_campaigns_wise_report-download-pdf') }}">
-                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                        <button class="btn btn-primary">{{ __('Download Campaign Report') }}</button>
                                     </a></div>
                             </div>
                             <div class="tab-content">
@@ -1010,14 +1001,14 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Emails Delivered</th>
-                                                    <th scope="col">Emails Viewed</th>
-                                                    <th scope="col">Payloads Clicked</th>
-                                                    <th scope="col">Employees Compromised</th>
-                                                    <th scope="col">Emails Reported</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Emails Delivered') }}</th>
+                                                    <th scope="col">{{ __('Emails Viewed') }}</th>
+                                                    <th scope="col">{{ __('Payloads Clicked') }}</th>
+                                                    <th scope="col">{{ __('Employees Compromised') }}</th>
+                                                    <th scope="col">{{ __('Emails Reported') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="campReportStatus">
@@ -1029,20 +1020,20 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>Email Address</th>
-                                                            <th>Email Delivery</th>
-                                                            <th>Email Viewed</th>
-                                                            <th>Payload Clicked</th>
-                                                            <th>Employee Compromised</th>
-                                                            <th>Email Reported</th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Email Delivery') }}</th>
+                                                            <th>{{ __('Email Viewed') }}</th>
+                                                            <th>{{ __('Payload Clicked') }}</th>
+                                                            <th>{{ __('Employee Compromised') }}</th>
+                                                            <th>{{ __('Email Reported') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="campReportsIndividual">
@@ -1058,11 +1049,11 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="trainingReportStatus">
@@ -1074,19 +1065,19 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="trainingReportsIndividual">
@@ -1112,7 +1103,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">WhatsApp Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('WhatsApp Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1124,18 +1115,17 @@
                                     <li class="nav-item" role="presentation" id="phishing_tab">
                                         <a class="nav-link active" data-bs-toggle="tab" role="tab"
                                             aria-current="page" href="#whatsappphishing_campaign"
-                                            aria-selected="true">Phishing Campaign</a>
+                                            aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                     </li>
                                     <li class="nav-item" role="presentation" id="whatsapptraining_tab">
                                         <a class="nav-link" data-bs-toggle="tab" role="tab"
                                             href="#whatsapptraining_campaign" aria-selected="false"
-                                            tabindex="-1">Training
-                                            Campaign</a>
+                                            tabindex="-1">{{ __('Training Campaign') }}</a>
                                     </li>
                                 </ul>
                                 <div><a target="black" id="whatsappcampaignPdfLink"
                                         href="{{ route('whatsapp-company-wise-download-pdf') }}">
-                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                        <button class="btn btn-primary">{{ __('Download Campaign Report') }}</button>
                                     </a></div>
                             </div>
                             <!-- Tab Content -->
@@ -1147,12 +1137,12 @@
                                         <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign Name</th>
-                                                    <th scope="col">Campaign Type</th>
-                                                    <th scope="col">Training</th>
-                                                    <th scope="col">Template Name</th>
-                                                    <th scope="col">Employees Group</th>
-                                                    <th scope="col">Launch Date</th>
+                                                    <th scope="col">{{ __('Campaign Name') }}</th>
+                                                    <th scope="col">{{ __('Campaign Type') }}</th>
+                                                    <th scope="col">{{ __('Training') }}</th>
+                                                    <th scope="col">{{ __('Template Name') }}</th>
+                                                    <th scope="col">{{ __('Employees Group') }}</th>
+                                                    <th scope="col">{{ __('Launch Date') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="whatsappcampReportStatus">
@@ -1163,19 +1153,19 @@
                                     <hr>
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>WhatsApp Number</th>
-                                                            <th>Message Delivered</th>
-                                                            <th>Link Clicked</th>
-                                                            <th>Employee Compromised</th>
-                                                            <th>Training Assigned</th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('WhatsApp Number') }}</th>
+                                                            <th>{{ __('Message Delivered') }}</th>
+                                                            <th>{{ __('Link Clicked') }}</th>
+                                                            <th>{{ __('Employee Compromised') }}</th>
+                                                            <th>{{ __('Training Assigned') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="whatsappcampReportsIndividual">
@@ -1192,11 +1182,11 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign Name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign Name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="whatsapptrainingReportStatus">
@@ -1207,19 +1197,19 @@
                                     <hr>
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="whatsapptrainingReportsIndividual">
@@ -1244,7 +1234,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Ai Calling Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('Ai Calling Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1257,21 +1247,19 @@
                                     <li class="nav-item" role="presentation" id="ai_phishing_tab">
                                         <a class="nav-link active" data-bs-toggle="tab" role="tab"
                                             aria-current="page" href="#aicallingphishing_campaign"
-                                            aria-selected="true">Phishing
-                                            Campaign</a>
+                                            aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                     </li>
                                     <li class="nav-item" role="presentation" id="ai_training_tab">
                                         <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                             href="#aicallingtraining_campaign" aria-selected="false"
-                                            tabindex="-1">Training
-                                            Campaign</a>
+                                            tabindex="-1">{{ __('Training Campaign') }}</a>
                                     </li>
                                 </ul>
 
                                 <div>
                                     <a target="blank" id="aicallingcampaignPdfLink"
                                         href="{{ route('ai-calling-company-wise-download-pdf') }}">
-                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                        <button class="btn btn-primary">{{ __('Download Campaign Report') }}</button>
                                     </a>
                                 </div>
                             </div>
@@ -1282,12 +1270,12 @@
                                         <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Delivered At</th>
-                                                    <th scope="col">Ai Agent</th>
-                                                    <th scope="col">Ai Agent Name</th>
-                                                    <th scope="col">Ai Phone Number</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Delivered At') }}</th>
+                                                    <th scope="col">{{ __('Ai Agent') }}</th>
+                                                    <th scope="col">{{ __('Ai Agent Name') }}</th>
+                                                    <th scope="col">{{ __('Ai Phone Number') }}</th>
 
                                                 </tr>
                                             </thead>
@@ -1300,20 +1288,20 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>Phone Number </th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('Phone Number') }} </th>
 
-                                                            <th>Created At</th>
-                                                            <th>Employee Email </th>
-                                                            <th>Status</th>
-                                                            <th>Training Assigned</th>
+                                                            <th>{{ __('Created At') }}</th>
+                                                            <th>{{ __('Employee Email') }} </th>
+                                                            <th>{{ __('Status') }}</th>
+                                                            <th>{{ __('Training Assigned') }}</th>
 
                                                         </tr>
                                                     </thead>
@@ -1330,10 +1318,10 @@
                                         <table class="table text-nowrap">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="aicallingtrainingReportStatus">
@@ -1345,19 +1333,19 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="aicallingtrainingReportsIndividual">
@@ -1380,7 +1368,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title"> TPRM Campaign Report</h6>
+                    <h6 class="modal-title"> {{ __('TPRM Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1391,8 +1379,7 @@
                                 <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                     <li class="nav-item" role="presentation" id="phishing_tab">
                                         <a class="nav-link active" data-bs-toggle="tab" role="tab"
-                                            aria-current="page" href="#phishing_campaign" aria-selected="true">Phishing
-                                            Campaign</a>
+                                            aria-current="page" href="#phishing_campaign" aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                     </li>
                                     {{-- <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
@@ -1403,7 +1390,7 @@
                                 <div>
                                     <a target="blank" id="campaignPdfLink"
                                         href="{{ route('tprm-company-wise-download-pdf') }}">
-                                        <button class="btn btn-primary">Download Campaign Report</button>
+                                        <button class="btn btn-primary">{{ __('Download Campaign Report') }}</button>
                                     </a>
 
                                 </div>
@@ -1414,14 +1401,14 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Emails Delivered</th>
-                                                    <th scope="col">Emails Viewed</th>
-                                                    <th scope="col">Payloads Clicked</th>
-                                                    <th scope="col">Employees Compromised</th>
-                                                    <th scope="col">Emails Reported</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Emails Delivered') }}</th>
+                                                    <th scope="col">{{ __('Emails Viewed') }}</th>
+                                                    <th scope="col">{{ __('Payloads Clicked') }}</th>
+                                                    <th scope="col">{{ __('Employees Compromised') }}</th>
+                                                    <th scope="col">{{ __('Emails Reported') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tprmcampReportStatus">
@@ -1433,20 +1420,20 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>Email Address</th>
-                                                            <th>Email Delivery</th>
-                                                            <th>Email Viewed</th>
-                                                            <th>Payload Clicked</th>
-                                                            <th>Employee Compromised</th>
-                                                            <th>Email Reported</th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Email Delivery') }}</th>
+                                                            <th>{{ __('Email Viewed') }}</th>
+                                                            <th>{{ __('Payload Clicked') }}</th>
+                                                            <th>{{ __('Employee Compromised') }}</th>
+                                                            <th>{{ __('Email Reported') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="tprmcampReportsIndividual">
@@ -1462,11 +1449,11 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="trainingReportStatus">
@@ -1478,19 +1465,19 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="trainingReportsIndividual">
@@ -1602,11 +1589,11 @@
 
                         let status = '';
                         if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
+                            status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                         } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
+                            status = '<span class="badge bg-warning">{{ __('Pending') }}<</span>';
                         } else {
-                            status = '<span class="badge bg-success">Running</span>';
+                            status = '<span class="badge bg-success">{{ __('Running') }}<</span>';
                         }
 
                         let rowHtml = `
@@ -1787,7 +1774,7 @@
                         },
                         colors: ["#845adf", "#23b7e5", "#f5b849", "#f55679"],
                         title: {
-                            text: 'Employees interation of last 12 days',
+                            text: "{{ __('Employees interation of last 12 days') }}",
                             align: 'left',
                             style: {
                                 fontSize: '13px',
@@ -1920,7 +1907,7 @@
                         },
                         colors: ["#845adf", "#23b7e5", "#f5b849", "#f55679"],
                         title: {
-                            text: 'Employees interation of last 12 days',
+                            text: "{{ __('Employees interation of last 12 days') }}",
                             align: 'left',
                             style: {
                                 fontSize: '13px',
@@ -2051,7 +2038,7 @@
                         },
                         colors: ["#845adf", "#23b7e5", "#f5b849", "#f55679"],
                         title: {
-                            text: 'Employees interation of last 12 days',
+                            text: "{{ __('Employees interation of last 12 days') }}",
                             align: 'left',
                             style: {
                                 fontSize: '13px',
@@ -2327,11 +2314,11 @@
 
                         let status = '';
                         if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
+                            status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                         } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
+                            status = '<span class="badge bg-warning">{{ __('Pending') }}</span>';
                         } else {
-                            status = '<span class="badge bg-success">Running</span>';
+                            status = '<span class="badge bg-success">{{ __('Running') }}</span>';
                         }
                         let rowHtml = `
             <tr>
@@ -2525,11 +2512,11 @@
 
                         let status = '';
                         if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
+                            status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                         } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
+                            status = '<span class="badge bg-warning">{{ __('Pending') }}</span>';
                         } else {
-                            status = '<span class="badge bg-success">Running</span>';
+                            status = '<span class="badge bg-success">{{ __('Running') }}</span>';
                         }
 
                         let rowHtml = `

@@ -19,10 +19,10 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Since Last Campaign Delivery</div>
+                                    <div class="mb-2">{{ __('Since Last Campaign Delivery') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{ $daysSinceLastDelivery }} Day(s)
+                                            {{ $daysSinceLastDelivery }} {{ __('Day(s)') }}
                                         </span>
                                     </div>
 
@@ -42,10 +42,10 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Total Sent Emails</div>
+                                    <div class="mb-2">{{ __('Total Sent Emails') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{ $all_sent }} Delivered
+                                            {{ $all_sent }} {{ __('Delivered') }}
                                         </span>
                                     </div>
 
@@ -65,10 +65,10 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Mail Opened</div>
+                                    <div class="mb-2">{{ __('Mail Opened') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{ $mail_open }} Opened
+                                            {{ $mail_open }} {{ __('Opened') }}
                                         </span>
                                     </div>
 
@@ -79,15 +79,14 @@
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">New
-                Campaign</button>
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
 
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Campaign
+                                {{ __('Manage Campaign') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -96,12 +95,12 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Campaign Name</th>
-                                            <th>Campaign Type</th>
-                                            <th>Status</th>
-                                            <th>Employees Group</th>
-                                            <th>Launch Time</th>
-                                            <th>Action</th>
+                                            <th>{{ __('Campaign Name') }}</th>
+                                            <th>{{ __('Campaign Type') }}</th>
+                                            <th>{{ __('Status') }}</th>
+                                            <th>{{ __('Employees Group') }}</th>
+                                            <th>{{ __('Launch Time') }}</th>
+                                            <th>{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -121,13 +120,13 @@
                                                 <td>{{ $campaign->campaign_type }}</td>
                                                 <td>
                                                     @if ($campaign->status == 'completed')
-                                                        <span class="badge bg-success">Completed</span>
+                                                        <span class="badge bg-success">{{ __('Completed') }}</span>
                                                     @elseif ($campaign->status == 'pending')
-                                                        <span class="badge bg-warning">Pending</span>
+                                                        <span class="badge bg-warning">{{ __('Pending') }}</span>
                                                     @elseif ($campaign->status == 'Not Scheduled')
-                                                        <span class="badge bg-warning">Not Scheduled</span>
+                                                        <span class="badge bg-warning">{{ __('Not Scheduled') }}</span>
                                                     @else
-                                                        <span class="badge bg-success">Running</span>
+                                                        <span class="badge bg-success">{{ __('Running') }}</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -139,7 +138,7 @@
 
                                                         @if ($campaign->launch_type == 'schLater')
                                                             <small class="text-danger">
-                                                                Not scheduled
+                                                                {{ __('Not scheduled') }}
                                                             </small>
                                                         @else
                                                             <span
@@ -194,7 +193,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">No campaigns are running</td>
+                                                <td colspan="8" class="text-center">{{ __('No campaigns are running') }}</td>
                                             </tr>
                                         @endforelse
 
@@ -222,23 +221,23 @@
     {{-- --------------------------------------- modals ---------------------- --}}
 
     <!-- new campaign modal -->
-    <x-modal id="newCampModal" size="modal-xl" heading="Add New Campaign">
+    <x-modal id="newCampModal" size="modal-xl" heading="{{ __('Add New Campaign') }}">
         <x-campaign.new-campaign-body :usersGroups="$usersGroups" :phishingEmails="$phishingEmails" :trainingModules="$trainingModules" />
     </x-modal>
 
     <!-- campaign report modal -->
-    <x-modal id="campaignReportModal" size="modal-fullscreen" heading="Campaign Report">
+    <x-modal id="campaignReportModal" size="modal-fullscreen" heading="{{ __('Campaign Report') }}">
         <x-campaign.campaign-report-body />
     </x-modal>
 
     <!-- view material modal -->
-    <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="Phishing Material">
+    <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="{{ __('Phishing Material') }}">
         <x-campaign.phishing-material-preview />
     </x-modal>
 
 
     <!-- re-schedule campaign modal -->
-    <x-modal id="reschedulemodal" size="modal-lg" heading="Re-Schedule Campaign">
+    <x-modal id="reschedulemodal" size="modal-lg" heading="{{ __('Re-Schedule Campaign') }}">
         <x-campaign.re-sch-camp-body />
     </x-modal>
 

@@ -1,11 +1,11 @@
 <fieldset class="included" style="display: block; opacity: 1;">
     <div class="text-center py-2">
         <button type="button" class="btn btn-dark label-btn label-end stickyBtn rounded-pill previous" onclick="showPrevious('stepThree')">
-            Previous
+            {{ __('Previous') }}
             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
         </button>
         <button type="button" class="btn btn-info label-btn label-end stickyBtn rounded-pill next" onclick="showNext('stepThree')">
-            Next
+            {{ __('Next') }}
             <i class="ri-arrow-right-line label-btn-icon ms-2 rounded-pill"></i>
         </button>
     </div>
@@ -17,13 +17,13 @@
                 <div>
                     <div class="input-group input-group-sm mb-3">
     
-                        <label for="input-label" class="input-group-text">Language:</label>
+                        <label for="input-label" class="input-group-text">{{ __('Language:') }}</label>
     
                         <x-language-select id="training_lang" />
                     </div>
                     <div>
                         <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Days Until Due:</span>
+                            <span class="input-group-text">{{ __('Days Until Due:') }}</span>
                             <input type="number" data-name="Days Until Due" name="days_until_due" class="form-control" id="days_until_due"
                                 value="14">
                         </div>
@@ -31,19 +31,19 @@
                 </div>
                 <div>
                     <div class="input-group input-group-sm mb-3">
-                        <label class="input-group-text" for="training_type">Training Type:</label>
+                        <label class="input-group-text" for="training_type">{{ __('Training Type:') }}</label>
                         <select class="form-select" id="training_type" data-name="Training Type">
-                            <option value="static_training" selected>Static Training</option>
-                            <option value="ai_training">AI Training</option>
-                            <option value="gamified">Gamified Training</option>
+                            <option value="static_training" selected>{{ __('Static Training') }}</option>
+                            <option value="ai_training">{{ __('AI Training') }}</option>
+                            <option value="gamified">{{ __('Gamified Training') }}</option>
                         </select>
                     </div>
     
                     <div class="input-group input-group-sm mb-3">
-                        <label class="input-group-text" for="training_assignment">Assignments:</label>
+                        <label class="input-group-text" for="training_assignment">{{ __('Assignments:') }}</label>
                         <select class="form-select" id="training_assignment" data-name="Training Assignment">
-                            <option value="random" selected>Intelligently assign one of the selected trainings.</option>
-                            <option value="all">Assign all of the selected trainings.</option>
+                            <option value="random" selected>{{ __('Intelligently assign one of the selected trainings.') }}</option>
+                            <option value="all">{{ __('Assign all of the selected trainings.') }}</option>
                         </select>
                     </div>
     
@@ -55,16 +55,16 @@
     
             <div>
                 <div class="input-group input-group-sm mb-3">
-                    <span class="input-group-text">Search: </span>
+                    <span class="input-group-text">{{ __('Search:') }} </span>
                     <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search template">
                 </div>
     
                 <div class="input-group input-group-sm mb-3">
-                    <label class="input-group-text" for="training_cat">Category:</label>
+                    <label class="input-group-text" for="training_cat">{{ __('Category:') }}</label>
                     <select class="form-select" id="training_cat" data-name="Training Category">
-                        <option value="all" selected>All</option>
-                        <option value="international">International</option>
-                        <option value="middle_east">Middle East</option>
+                        <option value="all" selected>{{ __('All') }}</option>
+                        <option value="international">{{ __('International') }}</option>
+                        <option value="middle_east">{{ __('Middle East') }}</option>
                     </select>
                 </div>
             </div>
@@ -102,21 +102,19 @@
                                     class="btn-check " 
                                     id="training{{ $module->id }}">
                                     
-                                    <label class="btn btn-outline-primary mb-3" for="training{{ $module->id }}">Select
-                                        this
-                                        training</label>
+                                    <label class="btn btn-outline-primary mb-3" for="training{{ $module->id }}">{{ __('Select this training') }}</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             @empty
-                <p>No training modules available.</p>
+                <p>{{ __('No training modules available.') }}</p>
             @endforelse
     
         </div>
         <div class="d-flex justify-content-center">
-            <button type="button" onclick="loadMoreTrainings(this)" class="btn btn-primary btn-sm btn-wave">Show More</button>
+            <button type="button" onclick="loadMoreTrainings(this)" class="btn btn-primary btn-sm btn-wave">{{ __('Show More') }}</button>
         </div>
     </div>
 </fieldset>

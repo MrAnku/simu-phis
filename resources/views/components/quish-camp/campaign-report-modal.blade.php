@@ -2,11 +2,11 @@
     <ul class="nav nav-pills justify-content-start nav-style-3 mb-3" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="quishing-detail" data-bs-toggle="tab" role="tab" aria-current="page" href="#home-right"
-                aria-selected="true">Quishing</a>
+                aria-selected="true">{{ __('Quishing') }}</a>
         </li>
         <li class="nav-item quishing-training-detail" role="presentation" style="display: none;">
             <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#about-right"
-                aria-selected="false" tabindex="-1">Training</a>
+                aria-selected="false" tabindex="-1">{{ __('Training') }}</a>
         </li>
 
     </ul>
@@ -15,7 +15,7 @@
             <div class="card custom-card">
                 <div class="card-header">
                     <div class="card-title">
-                        Quishing Campaign Details
+                        {{ __('Quishing Campaign Details') }}
                     </div>
                 </div>
                 <div class="card-body">
@@ -23,14 +23,14 @@
                         <table class="table text-nowrap">
                             <thead>
                                 <tr>
-                                    <th scope="col">Campaign name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Employees</th>
-                                    <th scope="col">Emails Delivered</th>
-                                    <th scope="col">Emails Viewed</th>
-                                    <th scope="col">QR Scanned</th>
-                                    <th scope="col">Employees Compromised</th>
-                                    <th scope="col">Emails Reported</th>
+                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                    <th scope="col">{{ __('Status') }}</th>
+                                    <th scope="col">{{ __('Employees') }}</th>
+                                    <th scope="col">{{ __('Emails Delivered') }}</th>
+                                    <th scope="col">{{ __('Emails Viewed') }}</th>
+                                    <th scope="col">{{ __('QR Scanned') }}</th>
+                                    <th scope="col">{{ __('Employees Compromised') }}</th>
+                                    <th scope="col">{{ __('Emails Reported') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="qcampdetail">
@@ -43,7 +43,7 @@
             <div class="card custom-card">
                 <div class="card-header">
                     <div class="card-title">
-                        Target Employees Interaction
+                        {{ __('Target Employees Interaction') }}
                     </div>
                 </div>
                 <div class="card-body">
@@ -51,13 +51,13 @@
                         <table class="table text-nowrap">
                             <thead>
                                 <tr>
-                                    <th>Employee Name</th>
-                                    <th>Email Address</th>
-                                    <th>Email Delivery</th>
-                                    <th>Email Viewed</th>
-                                    <th>QR Scanned</th>
-                                    <th>Employee Compromised</th>
-                                    <th>Email Reported</th>
+                                    <th>{{ __('Employee Name') }}</th>
+                                    <th>{{ __('Email Address') }}</th>
+                                    <th>{{ __('Email Delivery') }}</th>
+                                    <th>{{ __('Email Viewed') }}</th>
+                                    <th>{{ __('QR Scanned') }}</th>
+                                    <th>{{ __('Employee Compromised') }}</th>
+                                    <th>{{ __('Email Reported') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="qcampdetailLive">
@@ -72,7 +72,7 @@
             <div class="card custom-card">
                 <div class="card-header">
                     <div class="card-title">
-                        Quishing Training Details
+                        {{ __('Quishing Training Details') }}
                     </div>
                 </div>
                 <div class="card-body">
@@ -80,18 +80,18 @@
                         <table class="table text-nowrap">
                             <thead>
                                 <tr>
-                                    <th scope="col">Campaign name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Employees</th>
-                                    <th scope="col">Trainings Assigned</th>
-                                    <th scope="col">Trainings Type</th>
-                                    <th scope="col">Trainings Language</th>
-                                    <th scope="col">Trainings Completed</th>
+                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                    <th scope="col">{{ __('Status') }}</th>
+                                    <th scope="col">{{ __('Employees') }}</th>
+                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                    <th scope="col">{{ __('Trainings Type') }}</th>
+                                    <th scope="col">{{ __('Trainings Language') }}</th>
+                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="qcampTrainingData">
                                 <tr>
-                                    <th scope="row">Mark</th>
+                                    <th scope="row">{{ __('Mark') }}</th>
                                     <td>21,Dec 2021</td>
                                     <td>+1234-12340</td>
                                     <td>+1234-12340</td>
@@ -107,7 +107,7 @@
             <div class="card custom-card">
                 <div class="card-header">
                     <div class="card-title">
-                        Target Employees Progress
+                        {{ __('Target Employees Progress') }}
                     </div>
                 </div>
                 <div class="card-body">
@@ -115,13 +115,13 @@
                         <table class="table text-nowrap">
                             <thead>
                                 <tr>
-                                    <th>Employee Name</th>
-                                    <th>Email Address</th>
-                                    <th>Training Module</th>
-                                    <th>Date Assigned</th>
-                                    <th>Score</th>
-                                    <th>Passing Score</th>
-                                    <th>Status</th>
+                                    <th>{{ __('Employee Name') }}</th>
+                                    <th>{{ __('Email Address') }}</th>
+                                    <th>{{ __('Training Module') }}</th>
+                                    <th>{{ __('Date Assigned') }}</th>
+                                    <th>{{ __('Score') }}</th>
+                                    <th>{{ __('Passing Score') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="qcampTrainingDataLive">

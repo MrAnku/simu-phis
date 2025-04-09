@@ -10,7 +10,7 @@
             <h4 class="fw-bold mb-0">{{ $totalEmpCompromised ?? 0 }}</h4>
             <div class="ms-2">
 
-                <span class="text-muted ms-1">Employees compromised</span>
+                <span class="text-muted ms-1">{{ __('Employees compromised') }}</span>
             </div>
         </div>
 

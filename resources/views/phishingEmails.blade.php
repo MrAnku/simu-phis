@@ -10,30 +10,30 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newPhishingmailModal">New Email Template</button>
+                        data-bs-target="#newPhishingmailModal">{{ __('New Email Template') }}</button>
 
                     <button class="btn btn-secondary label-btn mb-3 mx-2" data-bs-toggle="modal"
                         data-bs-target="#generatePhishMailModal">
                         <i class="ri-magic-line label-btn-icon me-2"></i>
-                        Generate With AI
+                        {{ __('Generate With AI') }}
                     </button>
                 </div>
 
                 <div class="row">
                     <div class="col-auto">
-                        <label for="" class="col-form-label">Filter</label>
+                        <label for="" class="col-form-label">{{ __('Filter') }}</label>
                     </div>
                     <div class="col-auto">
                         <select class="form-select" aria-label="Default select example" id="filterDiff">
-                            <option value="" selected>Difficulty</option>
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
+                            <option value="" selected>{{ __('Difficulty') }}</option>
+                            <option value="easy">{{ __('Easy') }}</option>
+                            <option value="medium">{{ __('Medium') }}</option>
+                            <option value="hard">{{ __('Hard') }}</option>
                         </select>
                     </div>
 
                     <div class="col-auto">
-                        <a href="#" id="clearFilter" style="display: none;">Clear Filter</a>
+                        <a href="#" id="clearFilter" style="display: none;">{{ __('Clear Filter') }}</a>
                     </div>
 
                 </div>
@@ -46,7 +46,7 @@
                     <div class="card custom-card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
-                                Manage Phishing Emails
+                                {{ __('Manage Phishing Emails') }}
                             </div>
                             <div>
                                 <div class="input-group mb-3">
@@ -82,13 +82,13 @@
                                             <div class="card-body htmlPhishingGrid" id="mailBody{{ $pemail->id }}">
 
                                                 @if ($pemail->difficulty == 'easy')
-                                                    <span class="badge bg-outline-success">Easy</span>
+                                                    <span class="badge bg-outline-success">{{ __('Easy') }}</span>
                                                 @elseif ($pemail->difficulty == 'medium')
-                                                    <span class="badge bg-outline-warning">Medium</span>
+                                                    <span class="badge bg-outline-warning">{{ __('Medium') }}</span>
                                                 @elseif ($pemail->difficulty == 'hard')
-                                                    <span class="badge bg-outline-danger">Hard</span>
+                                                    <span class="badge bg-outline-danger">{{ __('Hard') }}</span>
                                                 @else
-                                                    <span class="badge bg-outline-secondary">Unknown</span>
+                                                    <span class="badge bg-outline-secondary">{{ __('Unknown') }}</span>
                                                 @endif
 
 
@@ -104,17 +104,17 @@
                                                         `{{ $pemail->email_subject }}`,`mailBody{{ $pemail->id }}`
                                                         )"
                                                         data-bs-toggle="modal" data-bs-target="#viewPhishingmailModal"
-                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</button>
+                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('View') }}</button>
 
                                                     @if ($pemail->company_id !== 'default')
                                                         <button type="button"
                                                             onclick="editETemplate(`{{ $pemail->id }}`)"
                                                             data-bs-toggle="modal" data-bs-target="#editEtemplateModal"
-                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">Edit</button>
+                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('Edit') }}</button>
 
                                                         <button type="button"
                                                             onclick="deleteETemplate(`{{ $pemail->id }}`, `{{ $pemail->mailBodyFilePath }}`)"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
                                                     @endif
 
 
@@ -125,7 +125,7 @@
                                     </div>
                                 @empty
                                     <div class="col-lg-6">
-                                        No records found
+                                        {{ __('No records found') }}
                                     </div>
                                 @endforelse
 

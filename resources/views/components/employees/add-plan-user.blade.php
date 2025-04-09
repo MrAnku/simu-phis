@@ -45,8 +45,7 @@
                         <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
                             <div class="text-start mt-2">
                                 <button type="submit" name="addUsr"
-                                    class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Add
-                                    Employee') }}</button>
+                                    class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Add Employee') }}</button>
                             </div>
                         </div>
 

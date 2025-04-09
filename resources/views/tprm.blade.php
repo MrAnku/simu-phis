@@ -10,11 +10,11 @@
                 <div>
                     <button type="button" class="btn btn-primary mb-3 me-2" data-bs-toggle="modal"
                         data-bs-target="#newCampModal">
-                        New Campaign
+                        {{ __('New Campaign') }}
                     </button>
                     <button type="button" class="btn btn-success mb-3 me-2" data-bs-toggle="modal"
                         data-bs-target="#newdomainVerificationModal">
-                        Show/Add Email
+                        {{ __('Show/Add Email') }}
                     </button>
                 </div>
 
@@ -22,13 +22,13 @@
                     @if (!$allCamps->isEmpty())
                         <button type="button" class="btn btn-danger mb-3 me-2" data-bs-toggle="modal"
                             data-bs-target="#domainDownloadModal">
-                            Download Scoring
+                            {{ __('Download Scoring') }}
                         </button>
                     @endif
 
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
                         data-bs-target="#domainVerificationModal">
-                        Domain Verification
+                        {{ __('Domain Verification') }}
                     </button>
                 </div>
             </div>
@@ -38,7 +38,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Campaign
+                                {{ __('Manage Campaign') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -47,10 +47,10 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Campaign Name</th>
-                                            <th>Domain</th>
-                                            <th>Campaign Type</th>
-                                            <th>Action</th>
+                                            <th>{{ __('Campaign Name') }}</th>
+                                            <th>{{ __('Domain') }}</th>
+                                            <th>{{ __('Campaign Type') }}</th>
+                                            <th>{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -88,7 +88,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center">No Campaigns</td>
+                                                <td colspan="5" class="text-center">{{ __('No Campaigns') }}</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -120,7 +120,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Add New Campaign</h6>
+                    <h6 class="modal-title">{{ __('Add New Campaign') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -132,17 +132,17 @@
                                     <ul id="progressbar">
                                         <li class="active">
                                             <i class='bx bx-cog'></i>
-                                            <strong>Initial Setup & Domain Selection</strong>
+                                            <strong>{{ __('Initial Setup & Domain Selection') }}</strong>
                                         </li>
                                         <li id="pm_step">
                                             <i class='bx bx-mail-send'></i>
-                                            <strong>Select Phishing Material</strong>
+                                            <strong>{{ __('Select Phishing Material') }}</strong>
                                         </li>
 
 
                                         <li>
                                             <i class='bx bx-check-square'></i>
-                                            <strong>Review & Submit</strong>
+                                            <strong>{{ __('Review & Submit') }}</strong>
                                         </li>
                                     </ul>
                                     <!-- fieldsets -->
@@ -151,7 +151,7 @@
                                             <div class="row">
                                                 <div class="col-lg-6">
 
-                                                    <label for="input-label" class="form-label">Campaign Name<sup
+                                                    <label for="input-label" class="form-label">{{ __('Campaign Name') }}<sup
                                                             class="text-danger">*</sup></label>
                                                     <input type="text" class="form-control required" id="camp_name"
                                                         placeholder="Enter a unique campaign name">
@@ -160,7 +160,7 @@
 
                                                 <div class="col-lg-6 ">
 
-                                                    <label for="input-label" class="form-label">Domains</label>
+                                                    <label for="input-label" class="form-label">{{ __('Domains') }}</label>
                                                     <select class="form-control required" id="users_group">
                                                         @foreach ($usersGroups as $group)
                                                             <option value="{{ $group->group_id }}">
@@ -182,7 +182,7 @@
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-info label-btn label-end rounded-pill next">
-                                            Next
+                                            {{ __('Next') }}
                                             <i class="ri-arrow-right-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
                                     </fieldset>
@@ -190,72 +190,72 @@
                                     <fieldset class="included" id="pm_step_form">
                                         <button type="button"
                                             class="btn btn-dark label-btn label-end stickyBtn rounded-pill previous">
-                                            Previous
+                                            {{ __('Previous') }}
                                             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
 
                                         <button type="button"
                                             class="btn btn-info label-btn stickyBtn label-end last-step rounded-pill next">
-                                            Next
+                                            {{ __('Next') }}
                                             <i class="ri-arrow-right-line label-btn-icon  ms-2 rounded-pill"></i>
                                         </button>
                                         <div class="form-card">
 
                                             <div class="d-flex justify-content-between">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Email Language</label>
+                                                    <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
 
                                                     <select class="form-select" id="email_lang">
-                                                        <option value="sq">Albanian</option>
-                                                        <option value="ar">Arabic</option>
-                                                        <option value="az">Azerbaijani</option>
-                                                        <option value="bn">Bengali</option>
-                                                        <option value="bg">Bulgarian</option>
-                                                        <option value="ca">Catalan</option>
-                                                        <option value="zh">Chinese</option>
-                                                        <option value="zt">Chinese (traditional)</option>
-                                                        <option value="cs">Czech</option>
-                                                        <option value="da">Danish</option>
-                                                        <option value="nl">Dutch</option>
-                                                        <option value="en" selected="">English</option>
-                                                        <option value="eo">Esperanto</option>
-                                                        <option value="et">Estonian</option>
-                                                        <option value="fi">Finnish</option>
-                                                        <option value="fr">French</option>
-                                                        <option value="de">German</option>
-                                                        <option value="el">Greek</option>
-                                                        <option value="he">Hebrew</option>
-                                                        <option value="hi">Hindi</option>
-                                                        <option value="hu">Hungarian</option>
-                                                        <option value="id">Indonesian</option>
-                                                        <option value="ga">Irish</option>
-                                                        <option value="it">Italian</option>
-                                                        <option value="ja">Japanese</option>
-                                                        <option value="ko">Korean</option>
-                                                        <option value="lv">Latvian</option>
-                                                        <option value="lt">Lithuanian</option>
-                                                        <option value="ms">Malay</option>
-                                                        <option value="nb">Norwegian</option>
-                                                        <option value="fa">Persian</option>
-                                                        <option value="pl">Polish</option>
-                                                        <option value="pt">Portuguese</option>
-                                                        <option value="ro">Romanian</option>
-                                                        <option value="ru">Russian</option>
-                                                        <option value="sk">Slovak</option>
-                                                        <option value="sl">Slovenian</option>
-                                                        <option value="es">Spanish</option>
-                                                        <option value="sv">Swedish</option>
-                                                        <option value="tl">Tagalog</option>
-                                                        <option value="th">Thai</option>
-                                                        <option value="tr">Turkish</option>
-                                                        <option value="uk">Ukranian</option>
-                                                        <option value="ur">Urdu</option>
+                                                        <option value="sq">{{ __('Albanian') }}</option>
+                                                        <option value="ar">{{ __('Arabic') }}</option>
+                                                        <option value="az">{{ __('Azerbaijani') }}</option>
+                                                        <option value="bn">{{ __('Bengali') }}</option>
+                                                        <option value="bg">{{ __('Bulgarian') }}</option>
+                                                        <option value="ca">{{ __('Catalan') }}</option>
+                                                        <option value="zh">{{ __('Chinese') }}</option>
+                                                        <option value="zt">{{ __('Chinese (traditional)') }}</option>
+                                                        <option value="cs">{{ __('Czech') }}</option>
+                                                        <option value="da">{{ __('Danish') }}</option>
+                                                        <option value="nl">{{ __('Dutch') }}</option>
+                                                        <option value="en" selected="">{{ __('English') }}</option>
+                                                        <option value="eo">{{ __('Esperanto') }}</option>
+                                                        <option value="et">{{ __('Estonian') }}</option>
+                                                        <option value="fi">{{ __('Finnish') }}</option>
+                                                        <option value="fr">{{ __('French') }}</option>
+                                                        <option value="de">{{ __('German') }}</option>
+                                                        <option value="el">{{ __('Greek') }}</option>
+                                                        <option value="he">{{ __('Hebrew') }}</option>
+                                                        <option value="hi">{{ __('Hindi') }}</option>
+                                                        <option value="hu">{{ __('Hungarian') }}</option>
+                                                        <option value="id">{{ __('Indonesian') }}</option>
+                                                        <option value="ga">{{ __('Irish') }}</option>
+                                                        <option value="it">{{ __('Italian') }}</option>
+                                                        <option value="ja">{{ __('Japanese') }}</option>
+                                                        <option value="ko">{{ __('Korean') }}</option>
+                                                        <option value="lv">{{ __('Latvian') }}</option>
+                                                        <option value="lt">{{ __('Lithuanian') }}</option>
+                                                        <option value="ms">{{ __('Malay') }}</option>
+                                                        <option value="nb">{{ __('Norwegian') }}</option>
+                                                        <option value="fa">{{ __('Persian') }}</option>
+                                                        <option value="pl">{{ __('Polish') }}</option>
+                                                        <option value="pt">{{ __('Portuguese') }}</option>
+                                                        <option value="ro">{{ __('Romanian') }}</option>
+                                                        <option value="ru">{{ __('Russian') }}</option>
+                                                        <option value="sk">{{ __('Slovak') }}</option>
+                                                        <option value="sl">{{ __('Slovenian') }}</option>
+                                                        <option value="es">{{ __('Spanish') }}</option>
+                                                        <option value="sv">{{ __('Swedish') }}</option>
+                                                        <option value="tl">{{ __('Tagalog') }}</option>
+                                                        <option value="th">{{ __('Thai') }}</option>
+                                                        <option value="tr">{{ __('Turkish') }}</option>
+                                                        <option value="uk">{{ __('Ukranian') }}</option>
+                                                        <option value="ur">{{ __('Urdu') }}</option>
                                                     </select>
                                                 </div>
 
                                                 <div>
 
-                                                    <label for="templateSearch" class="form-label">Search</label>
+                                                    <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
                                                     <input type="text" class="form-control" id="templateSearch"
                                                         placeholder="Search template">
 
@@ -289,7 +289,7 @@
                                                                         <button type="button"
                                                                             onclick="showMaterialDetails(this, '{{ $email->name }}', '{{ $email->email_subject }}', '{{ $email->website }}', '{{ $email->senderProfile }}')"
                                                                             class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
-                                                                            View
+                                                                            {{ __('View') }}
                                                                         </button>
                                                                     </div>
                                                                     <div class="fs-semibold fs-14">
@@ -298,15 +298,14 @@
                                                                             value="{{ $email->id }}" class="btn-check"
                                                                             id="pm{{ $email->id }}">
                                                                         <label class="btn btn-outline-primary mb-3"
-                                                                            for="pm{{ $email->id }}">Select this
-                                                                            attack</label>
+                                                                            for="pm{{ $email->id }}">{{ __('Select this attack') }}</label>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 @empty
-                                                    <p>No phishing emails available.</p>
+                                                    <p>{{ __('No phishing emails available.') }}</p>
                                                 @endforelse
 
                                             </div>
@@ -325,7 +324,7 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will begin delivering emails within 1-3 minutes of submission."
-                                                        id="imediateLabelBtn" for="imediateBtn">Deliver Immediately
+                                                        id="imediateLabelBtn" for="imediateBtn">{{ __('Deliver Immediately') }}
                                                     </label>
                                                 </div>
                                                 <div class="checkb mx-1">
@@ -335,7 +334,7 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will deliver emails using a defined schedule over a period of hours and days (e.g. 9am-5pm Monday-Friday)."
-                                                        id="scheduleLabelBtn" for="ScheduleBtn">Setup Schedule</label>
+                                                        id="scheduleLabelBtn" for="ScheduleBtn">{{ __('Setup Schedule') }}</label>
                                                 </div>
 
                                                 <div class="checkb mx-1">
@@ -345,7 +344,7 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will not deliver emails until an update to the schedule is made at a later date."
-                                                        id="scheduleLLabelBtn" for="ScheduleLBtn">Schedule Later
+                                                        id="scheduleLLabelBtn" for="ScheduleLBtn">{{ __('Schedule Later') }}
                                                         </i></label>
                                                 </div>
 
@@ -357,12 +356,10 @@
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
                                                 <label
-                                                    class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>Note:</b>We
-                                                    will capture employee interactions as long as a campaign remains active
-                                                    (isn't updated or deleted). </label>
+                                                    class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>{{ __('Note:') }}</b>{{ __("We will capture employee interactions as long as a campaign remains active (isn't updated or deleted).") }}</label>
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule
-                                                        Date<i class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule
+                                                        Date') }}<i class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
                                                             data-bs-original-title="Select a particular date for shooting this campaign"></i>
                                                     </label>
@@ -382,15 +379,14 @@
                                                 </div>
 
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule
-                                                        (Between Times) <i class='bx bx-info-circle p-2'
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule (Between Times)') }} <i class='bx bx-info-circle p-2'
                                                             data-bs-toggle="tooltip" data-bs-placement="top"
                                                             data-bs-original-title="We recommend scheduling campaigns between business hours to get the most ineraction (e.g. 9am - 5pm)"></i></label>
                                                     <div class="col-sm-8">
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="schTimeStart" name="appt"
                                                                 class="form-control" value="09:00" step="60">
-                                                            <label class="col-md-1 m-t-15" style="text-align:center"> To
+                                                            <label class="col-md-1 m-t-15" style="text-align:center"> {{ __('To') }}
                                                             </label>
                                                             <input type="time" id="schTimeEnd" name="appt"
                                                                 class="form-control" value="17:00" step="60">
@@ -399,8 +395,7 @@
                                                 </div>
 
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Schedule
-                                                        (Time Zone) <i class='bx bx-info-circle p-2'
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule (Time Zone)') }} <i class='bx bx-info-circle p-2'
                                                             data-bs-toggle="tooltip" data-bs-placement="top"
                                                             data-bs-original-title="Select the timezone that best aligns with your business hours."></i></label>
                                                     <div class="col-sm-8">
@@ -577,14 +572,14 @@
                                                         <input type="radio" class="btn-check" name="emailFreq"
                                                             data-val="One-off" value="one" id="foneoff" checked>
                                                         <label class="btn btn-outline-dark mb-3"
-                                                            for="foneoff">One-off</label>
+                                                            for="foneoff">{{ __('One-off') }}</label>
                                                     </div>
                                                     <div class="checkb mx-1">
 
                                                         <input type="radio" class="btn-check" name="emailFreq"
                                                             data-val="Monthly" value="monthly" id="fmonthly">
                                                         <label class="btn btn-outline-dark mb-3"
-                                                            for="fmonthly">Monthly</label>
+                                                            for="fmonthly">{{ __('Monthly') }}</label>
                                                     </div>
 
                                                     <div class="checkb mx-1">
@@ -592,18 +587,18 @@
                                                         <input type="radio" class="btn-check" name="emailFreq"
                                                             data-val="Weekly" value="weekly" id="fweekly">
                                                         <label class="btn btn-outline-dark mb-3"
-                                                            for="fweekly">Weekly</label>
+                                                            for="fweekly">{{ __('Weeky') }}</label>
                                                     </div>
                                                     <div class="checkb mx-1">
 
                                                         <input type="radio" class="btn-check" name="emailFreq"
                                                             data-val="Quaterly" value="quaterly" id="fquaterly">
                                                         <label class="btn btn-outline-dark mb-3"
-                                                            for="fquaterly">Quaterly</label>
+                                                            for="fquaterly">{{ __('Quaterly') }}</label>
                                                     </div>
                                                     <div id="exp_after" class="d-none">
                                                         <div class="input-group">
-                                                            <div class="input-group-text text-muted"> Expire After</div>
+                                                            <div class="input-group-text text-muted"> {{ __('Expire After') }}</div>
                                                             <input type="text"
                                                                 class="form-control flatpickr-input active"
                                                                 id="expire_after" placeholder="Choose date"
@@ -622,13 +617,13 @@
                                         </div>
                                         <button type="button"
                                             class="btn btn-dark label-btn label-end rounded-pill previous">
-                                            Previous
+                                            {{ __('Previous') }}
                                             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
 
                                         <button type="button"
                                             class="btn btn-info label-btn  label-end rounded-pill next">
-                                            Next
+                                            {{ __('Next') }}
                                             <i class="ri-arrow-right-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
 
@@ -638,7 +633,7 @@
                                         <div class="form-card row">
                                             <div class="col-lg-6 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Campaign Name</label>
+                                                    <label for="input-label" class="form-label">{{ __('Campaign Name') }}</label>
                                                     <input type="text" class="form-control" id="revCampName" disabled
                                                         readonly>
                                                 </div>
@@ -652,63 +647,63 @@
                                             </div> --}}
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Employee Group</label>
+                                                    <label for="input-label" class="form-label">{{ __('Employee Group') }}</label>
                                                     <input type="text" class="form-control" id="revEmpGroup" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Email Language</label>
+                                                    <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
                                                     <input type="text" class="form-control" id="revEmailLang" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Phishing Material</label>
+                                                    <label for="input-label" class="form-label">{{ __('Phishing Material') }}</label>
                                                     <input type="text" class="form-control" id="revPhishmat" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Training Language</label>
+                                                    <label for="input-label" class="form-label">{{ __('Training Language') }}</label>
                                                     <input type="text" class="form-control" id="revTrainingLang"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Training Module</label>
+                                                    <label for="input-label" class="form-label">{{ __('Training Module') }}</label>
                                                     <input type="text" class="form-control" id="revTrainingMod"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Campaign Delivery</label>
+                                                    <label for="input-label" class="form-label">{{ __('Campaign Delivery') }}</label>
                                                     <input type="text" class="form-control" id="revCampDelivery"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Schedule Date</label>
+                                                    <label for="input-label" class="form-label">{{ __('chedule Date') }}</label>
                                                     <input type="text" class="form-control" id="revBtwDays" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 mb-3" id="revBtwTime">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Schedule Between
-                                                        Times</label>
+                                                    <label for="input-label" class="form-label">{{ __('chedule Between
+                                                        Times') }}</label>
                                                     <div>
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="revSchTimeStart" name="appt"
                                                                 class="form-control" value="09:00" step="60"
                                                                 disabled readonly>
-                                                            <label class="col-md-1 m-t-15" style="text-align:center"> To
+                                                            <label class="col-md-1 m-t-15" style="text-align:center">{{ __('To')}}
                                                             </label>
                                                             <input type="time" id="revSchTimeEnd" name="appt"
                                                                 class="form-control" value="17:00" step="60"
@@ -719,7 +714,7 @@
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">Schedule Time Zone</label>
+                                                    <label for="input-label" class="form-label">{{ __('Schedule Time Zone') }}</label>
                                                     <input type="text" class="form-control" id="revSchTimeZone"
                                                         disabled readonly>
                                                 </div>
@@ -744,13 +739,13 @@
 
                                         <button type="button"
                                             class="btn btn-dark label-btn label-end rounded-pill previous">
-                                            Previous
+                                            {{ __('Previous') }}
                                             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
 
                                         <button type="submit" id="createCampaign"
                                             class="btn btn-info label-btn label-end rounded-pill">
-                                            Submit
+                                            {{ __('Submit') }}
                                             <i class="ri-arrow-right-line label-btn-icon ms-2 rounded-pill"></i>
                                         </button>
                                     </fieldset>
@@ -769,7 +764,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -779,12 +774,12 @@
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item" role="presentation" id="phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">Phishing Campaign</a>
+                                        href="#phishing_campaign" aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
+                                        href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training
+                                        Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -793,14 +788,14 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Emails Delivered</th>
-                                                    <th scope="col">Emails Viewed</th>
-                                                    <th scope="col">Payloads Clicked</th>
-                                                    <th scope="col">Employees Compromised</th>
-                                                    <th scope="col">Emails Reported</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Emails Delivered') }}</th>
+                                                    <th scope="col">{{ __('Emails Viewed') }}</th>
+                                                    <th scope="col">{{ __('Payloads Clicked') }}</th>
+                                                    <th scope="col">{{ __('Employees Compromised') }}</th>
+                                                    <th scope="col">{{ __('Emails Reported') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="campReportStatus">
@@ -812,20 +807,20 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>Email Address</th>
-                                                            <th>Email Delivery</th>
-                                                            <th>Email Viewed</th>
-                                                            <th>Payload Clicked</th>
-                                                            <th>Employee Compromised</th>
-                                                            <th>Email Reported</th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Email Delivery') }}</th>
+                                                            <th>{{ __('Email Viewed') }}</th>
+                                                            <th>{{ __('Payload Clicked') }}</th>
+                                                            <th>{{ __('Employee Compromised') }}</th>
+                                                            <th>{{ __('Email Reported') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="campReportsIndividual">
@@ -841,11 +836,11 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="trainingReportStatus">
@@ -857,19 +852,19 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="trainingReportsIndividual">
@@ -894,7 +889,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Phishing Material</h6>
+                    <h6 class="modal-title">{{ __('Phishing Material') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="min-height: 100vh;">
@@ -904,19 +899,19 @@
                                 <button class="nav-link active" id="products-tab" data-bs-toggle="tab"
                                     data-bs-target="#email-tab-pane" type="button" role="tab"
                                     aria-controls="email-tab-pane" aria-selected="true"><i
-                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>Email</button>
+                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>{{ __('Email') }}</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="sales-tab" data-bs-toggle="tab"
                                     data-bs-target="#website-tab-pane" type="button" role="tab"
                                     aria-controls="website-tab-pane" aria-selected="false" tabindex="-1"><i
-                                        class="bx bx-globe me-1 align-middle d-inline-block"></i>Website</button>
+                                        class="bx bx-globe me-1 align-middle d-inline-block"></i>{{ __('Website') }}</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="profit-tab" data-bs-toggle="tab"
                                     data-bs-target="#senderp-tab-pane" type="button" role="tab"
                                     aria-controls="senderp-tab-pane" aria-selected="false" tabindex="-1"><i
-                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>Sender Profile</button>
+                                        class="bx bx-envelope me-1 align-middle d-inline-block"></i>{{ __('Sender Profile') }}</button>
                             </li>
 
                         </ul>
@@ -925,19 +920,19 @@
                                 role="tabpanel" aria-labelledby="products-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vphishEmail" class="col-sm-6 col-form-label">Phishing Email</label>
+                                    <label for="vphishEmail" class="col-sm-6 col-form-label">{{ __('Phishing Email') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vphishEmail" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vSub" class="col-sm-6 col-form-label">Email Subject</label>
+                                    <label for="vSub" class="col-sm-6 col-form-label">{{ __('Email Subject') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vSub" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="inputEmail3" class="col-sm-6 col-form-label">Employee Requirements</label>
+                                    <label for="inputEmail3" class="col-sm-6 col-form-label">{{ __('Employee Requirements') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="inputEmail3"
                                             value="Email Address | Name" disabled>
@@ -953,13 +948,13 @@
                                 aria-labelledby="sales-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vphishWeb" class="col-sm-6 col-form-label">Phishing Website</label>
+                                    <label for="vphishWeb" class="col-sm-6 col-form-label">{{ __('Phishing Website') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vphishWeb" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vPhishUrl" class="col-sm-6 col-form-label">Website URL</label>
+                                    <label for="vPhishUrl" class="col-sm-6 col-form-label">{{ __('Website URL') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vPhishUrl" disabled>
                                     </div>
@@ -978,13 +973,13 @@
                                 aria-labelledby="profit-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vsenderProf" class="col-sm-6 col-form-label">Sender Profile</label>
+                                    <label for="vsenderProf" class="col-sm-6 col-form-label">{{ __('Sender Profile') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vsenderProf" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vDispName" class="col-sm-6 col-form-label">Display Name & Address</label>
+                                    <label for="vDispName" class="col-sm-6 col-form-label">{{ __('Display Name & Address') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vDispName" disabled>
                                     </div>
@@ -1004,7 +999,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Email Show/Add</h6>
+                    <h6 class="modal-title">{{ __('Email Show/Add') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1013,9 +1008,9 @@
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
                                 <tr>
-                                    <th>Domain Name</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>{{ __('Domain Name') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="allDomains">
@@ -1024,16 +1019,15 @@
                                         <td>{{ $domain->domain }}</td>
                                         <td>
                                             @if ($domain->verified == 1)
-                                                <span class="badge bg-success">Verified</span>
+                                                <span class="badge bg-success">{{ __('Verified') }}</span>
                                             @else
-                                                <span class="badge bg-warning">Pending</span>
+                                                <span class="badge bg-warning">{{ __('Pending') }}</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if ($domain->verified == 1)
                                                 <button type="button" class="btn btn-outline-info btn-sm ms-2"
-                                                    onclick="openDomainModal('{{ $domain->domain }}')">Show/Add
-                                                    Email</button>
+                                                    onclick="openDomainModal('{{ $domain->domain }}')">{{ __('Show/Add Email') }}</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
                                                                                                                                                 <i class="bx bx-x fs-25"></i>
@@ -1042,7 +1036,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="text-center" colspan="5">No records found</td>
+                                        <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1060,21 +1054,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Domain Verification</h6>
+                    <h6 class="modal-title">{{ __('Domain Verification') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <button type="button" id="newDomainVerificationModalBtn" class="btn btn-primary mb-2"
                         data-bs-toggle="modal" data-bs-target="#domainVerificationModal">
-                        Add Domain For Verification
+                        {{ __('Add Domain For Verification') }}
                     </button>
                     <div class="table-responsive">
                         <table id="domainVerificationTable" class="table table-bordered text-nowrap w-100">
                             <thead>
                                 <tr>
-                                    <th>Domain Name</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>{{ __('Domain Name') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="allDomains">
@@ -1083,9 +1077,9 @@
                                         <td>{{ $domain->domain }}</td>
                                         <td>
                                             @if ($domain->verified == 1)
-                                                <span class="badge bg-success">Verified</span>
+                                                <span class="badge bg-success">{{ __('Verified') }}</span>
                                             @else
-                                                <span class="badge bg-warning">Pending</span>
+                                                <span class="badge bg-warning">{{ __('Pending') }}</span>
                                             @endif
                                         </td>
                                         <td>
@@ -1096,7 +1090,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="text-center" colspan="5">No records found</td>
+                                        <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1120,9 +1114,9 @@
                         <table id="downloadVerifiedDomain" class="table table-bordered text-nowrap w-100">
                             <thead>
                                 <tr>
-                                    <th>Domain Name</th>
+                                    <th>{{ __('Domain Name') }}</th>
                                     {{-- <th>Status</th> --}}
-                                    <th>Actions</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="allDomains">
@@ -1155,7 +1149,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="text-center" colspan="5">No records found</td>
+                                        <td class="text-center" colspan="5">{{ __('No records found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1174,7 +1168,7 @@
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="domainModalLabel">Domain Details</h5>
+                    <h5 class="modal-title fw-bold" id="domainModalLabel">{{ __('Domain Details') }}</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
@@ -1184,7 +1178,7 @@
                     <p id="domainName" class="fs-5 fw-semibold mb-3"></p>
                     <hr>
 
-                    <p class="text-muted fs-6">Associated emails:</p>
+                    <p class="text-muted fs-6">{{ __('Associated emails:') }}</p>
                     <ul id="emailList" class="list-unstyled">
                         <!-- Dynamically added email items will appear here -->
                     </ul>
@@ -1194,15 +1188,14 @@
 
                     <!-- Add email form -->
                     <div class="mt-4">
-                        <label for="emailInput" class="form-label">Add Email Address</label>
+                        <label for="emailInput" class="form-label">{{ __('Add Email Address') }}</label>
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
                                 placeholder="Enter email address">
-                            <button type="button" class="btn btn-primary" id="addEmailButton" onclick="addEmail()">Add
-                                Email</button>
+                            <button type="button" class="btn btn-primary" id="addEmailButton" onclick="addEmail()">{{ __('Add Email') }}</button>
                         </div>
                         <div id="emailWarning" class="text-danger mt-2" style="display: none;">
-                            Warning: Email domain does not match the provided domain.
+                            {{ __('Warning: Email domain does not match the provided domain.') }}
                         </div>
                         {{-- <ul id="emailList" class="list-unstyled mt-3">
                             <!-- Added emails will appear here -->
@@ -1212,8 +1205,8 @@
 
                 <!-- Modal Footer -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="submitDomainData()">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="submitDomainData()">{{ __('Save Changes') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -1721,40 +1714,37 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Verify Domains</h6>
+                    <h6 class="modal-title">{{ __('Verify Domains') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted">
-                        Domain verification is performed through challenge-response authentication of the provided email
-                        addresses.
-                        (e.g., verifying support@mybusiness.com will enable mybusiness.com.)
+                        {{ __('Domain verification is performed through challenge-response authentication of the provided email addresses. (e.g., verifying support@mybusiness.com will enable mybusiness.com.)') }}
                     </p>
 
                     <!-- Form to Add Domains -->
                     <form id="domainForm" method="post" onsubmit="return false;">
                         <div class="mb-3">
-                            <label for="domainEmailInput" class="form-label">Domain<sup
+                            <label for="domainEmailInput" class="form-label">{{ __('Domain') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" class="form-control" id="domainEmailInput"
                                 placeholder="i.e. domain.com" />
                         </div>
-                        <button type="button" class="btn btn-secondary" onclick="addDomain()">Add Domain</button>
+                        <button type="button" class="btn btn-secondary" onclick="addDomain()">{{ __('Add Domain') }}</button>
                     </form>
 
                     <!-- List of Added Domains -->
                     <div class="mt-3">
-                        <h6>Domains to Verify:</h6>
+                        <h6>{{ __('Domains to Verify:') }}</h6>
                         <ul id="domainList" class="list-group">
                             <!-- Dynamically added domains will appear here -->
                         </ul>
                     </div>
 
                     <!-- Submit Button and Spinner -->
-                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3" onclick="submitDomains()">Submit
-                        Domains for Verification</button>
+                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3" onclick="submitDomains()">{{ __('Submit Domains for Verification') }}</button>
                     <button class="btn btn-primary my-3 d-none" id="submitSpinner">
-                        <span class="me-2">Please wait...</span>
+                        <span class="me-2">{{ __('Please wait...') }}</span>
                         <span class="loading"><i class="ri-loader-2-fill fs-16"></i></span>
                     </button>
                 </div>
@@ -1769,7 +1759,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1779,13 +1769,13 @@
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item" role="presentation" id="phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">Phishing
-                                        Campaign</a>
+                                        href="#phishing_campaign" aria-selected="true">{{ __('Phishing
+                                        Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                                        Campaign</a>
+                                        href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training
+                                        Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -1794,14 +1784,14 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Emails Delivered</th>
-                                                    <th scope="col">Emails Viewed</th>
-                                                    <th scope="col">Payloads Clicked</th>
-                                                    <th scope="col">Employees Compromised</th>
-                                                    <th scope="col">Emails Reported</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Emails Delivered') }}</th>
+                                                    <th scope="col">{{ __('Emails Viewed') }}</th>
+                                                    <th scope="col">{{ __('Payloads Clicked') }}</th>
+                                                    <th scope="col">{{ __('Employees Compromised') }}</th>
+                                                    <th scope="col">{{ __('Emails Reported') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="campReportStatus">
@@ -1813,20 +1803,20 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Phishing Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Employee Name</th>
-                                                            <th>Email Address</th>
-                                                            <th>Email Delivery</th>
-                                                            <th>Email Viewed</th>
-                                                            <th>Payload Clicked</th>
-                                                            <th>Employee Compromised</th>
-                                                            <th>Email Reported</th>
+                                                            <th>{{ __('Employee Name') }}</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Email Delivery') }}</th>
+                                                            <th>{{ __('Email Viewed') }}</th>
+                                                            <th>{{ __('Payload Clicked') }}</th>
+                                                            <th>{{ __('Employee Compromised') }}</th>
+                                                            <th>{{ __('Email Reported') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="campReportsIndividual">
@@ -1842,11 +1832,11 @@
                                         <table class="table text-nowrap table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Campaign name</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Employees</th>
-                                                    <th scope="col">Trainings Assigned</th>
-                                                    <th scope="col">Trainings Completed</th>
+                                                    <th scope="col">{{ __('Campaign name') }}</th>
+                                                    <th scope="col">{{ __('Status') }}</th>
+                                                    <th scope="col">{{ __('Employees') }}</th>
+                                                    <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                                    <th scope="col">{{ __('Trainings Completed') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="trainingReportStatus">
@@ -1858,19 +1848,19 @@
 
                                     <div class="card custom-card">
                                         <div class="card-header">
-                                            <div class="card-title">Training Campaign Statistics</div>
+                                            <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>Email Address</th>
-                                                            <th>Training Module</th>
-                                                            <th>Date Assigned</th>
-                                                            <th>Score</th>
-                                                            <th>Passing Score</th>
-                                                            <th>Status</th>
+                                                            <th>{{ __('Email Address') }}</th>
+                                                            <th>{{ __('Training Module') }}</th>
+                                                            <th>{{ __('Date Assigned') }}</th>
+                                                            <th>{{ __('Score') }}</th>
+                                                            <th>{{ __('Passing Score') }}</th>
+                                                            <th>{{ __('Status') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="trainingReportsIndividual">

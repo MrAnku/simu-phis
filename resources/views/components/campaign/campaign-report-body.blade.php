@@ -8,16 +8,15 @@
         <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
             <li class="nav-item" role="presentation" id="phishing_tab">
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                    href="#phishing_campaign" aria-selected="true">Phishing Campaign</a>
+                    href="#phishing_campaign" aria-selected="true">{{ __('Phishing Campaign') }}</a>
             </li>
             <li class="nav-item" role="presentation" id="training_tab">
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                    href="#training_campaign" aria-selected="false" tabindex="-1">Training
-                    Campaign</a>
+                    href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training Campaign') }}</a>
             </li>
             <li class="nav-item" role="presentation" id="game_tab">
                 <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                    href="#game_training" aria-selected="false" tabindex="-1">Game Progress</a>
+                    href="#game_training" aria-selected="false" tabindex="-1">{{ __('Game Progress') }}</a>
             </li>
         </ul>
 </div>
@@ -34,14 +33,14 @@
                     <table class="table text-nowrap table-striped">
                         <thead>
                             <tr>
-                                <th scope="col">Campaign name</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Employees</th>
-                                <th scope="col">Emails Delivered</th>
-                                <th scope="col">Emails Viewed</th>
-                                <th scope="col">Payloads Clicked</th>
-                                <th scope="col">Employees Compromised</th>
-                                <th scope="col">Emails Reported</th>
+                                <th scope="col">{{ __('Campaign name') }}</th>
+                                <th scope="col">{{ __('Status') }}</th>
+                                <th scope="col">{{ __('Employees') }}</th>
+                                <th scope="col">{{ __('Emails Delivered') }}</th>
+                                <th scope="col">{{ __('Emails Viewed') }}</th>
+                                <th scope="col">{{ __('Payloads Clicked') }}</th>
+                                <th scope="col">{{ __('Employees Compromised') }}</th>
+                                <th scope="col">{{ __('Emails Reported') }}</th>
                             </tr>
                         </thead>
                         <tbody id="campReportStatus">
@@ -53,20 +52,20 @@
 
                 <div class="card custom-card">
                     <div class="card-header">
-                        <div class="card-title">Phishing Campaign Statistics</div>
+                        <div class="card-title">{{ __('Phishing Campaign Statistics') }}</div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="file-export" class="table table-bordered text-nowrap w-100 table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Employee Name</th>
-                                        <th>Email Address</th>
-                                        <th>Email Delivery</th>
-                                        <th>Email Viewed</th>
-                                        <th>Payload Clicked</th>
-                                        <th>Employee Compromised</th>
-                                        <th>Email Reported</th>
+                                        <th>{{ __('Employee Name') }}</th>
+                                        <th>{{ __('Email Address') }}</th>
+                                        <th>{{ __('Email Delivery') }}</th>
+                                        <th>{{ __('Email Viewed') }}</th>
+                                        <th>{{ __('Payload Clicked') }}</th>
+                                        <th>{{ __('Employee Compromised') }}</th>
+                                        <th>{{ __('Email Reported') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="campReportsIndividual">
@@ -82,13 +81,13 @@
                     <table class="table text-nowrap table-striped">
                         <thead>
                             <tr>
-                                <th scope="col">Campaign name</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Employees</th>
-                                <th scope="col">Trainings Assigned</th>
-                                <th scope="col">Trainings Type</th>
-                                <th scope="col">Trainings Language</th>
-                                <th scope="col">Trainings Completed</th>
+                                <th scope="col">{{ __('Campaign name') }}</th>
+                                <th scope="col">{{ __('Status') }}</th>
+                                <th scope="col">{{ __('Employees') }}</th>
+                                <th scope="col">{{ __('Trainings Assigned') }}</th>
+                                <th scope="col">{{ __('Trainings Type') }}</th>
+                                <th scope="col">{{ __('Trainings Language') }}</th>
+                                <th scope="col">{{ __('Trainings Completed') }}</th>
                             </tr>
                         </thead>
                         <tbody id="trainingReportStatus">
@@ -100,21 +99,21 @@
 
                 <div class="card custom-card">
                     <div class="card-header">
-                        <div class="card-title">Training Campaign Statistics</div>
+                        <div class="card-title">{{ __('Training Campaign Statistics') }}</div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="file-export2" class="table table-bordered text-nowrap w-100">
                                 <thead>
                                     <tr>
-                                        <th>Employee Name</th>
-                                        <th>Email Address</th>
-                                        <th>Training Module</th>
-                                        <th>Date Assigned</th>
-                                        <th>Score</th>
-                                        <th>Passing Score</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th>{{ __('Employee Name') }}</th>
+                                        <th>{{ __('Email Address') }}</th>
+                                        <th>{{ __('Training Module') }}</th>
+                                        <th>{{ __('Date Assigned') }}</th>
+                                        <th>{{ __('Score') }}</th>
+                                        <th>{{ __('Passing Score') }}</th>
+                                        <th>{{ __('Status') }}</th>
+                                        <th>{{ __('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="trainingReportsIndividual">
@@ -130,10 +129,10 @@
                     <table class="table text-nowrap table-striped">
                         <thead>
                             <tr>
-                                <th scope="col">Campaign name</th>
-                                <th scope="col">Total Employees Played</th>
-                                <th scope="col">Total Assigned</th>
-                                <th scope="col">Game Completed</th>
+                                <th scope="col">{{ __('Campaign name') }}</th>
+                                <th scope="col">{{ __('Total Employees Played') }}</th>
+                                <th scope="col">{{ __('Total Assigned') }}</th>
+                                <th scope="col">{{ __('Game Completed') }}</th>
                             </tr>
                         </thead>
                         <tbody id="gameReportStatus">
@@ -145,19 +144,19 @@
 
                 <div class="card custom-card">
                     <div class="card-header">
-                        <div class="card-title">Game Statistics</div>
+                        <div class="card-title">{{ __('Game Statistics') }}</div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="file-export3" class="table table-bordered text-nowrap w-100">
                                 <thead>
                                     <tr>
-                                        <th>Employee Name</th>
-                                        <th>Email Address</th>
-                                        <th>Game</th>
-                                        <th>Date Assigned</th>
-                                        <th>Score</th>
-                                        <th>Play Time</th>
+                                        <th>{{ __('Employee Name') }}</th>
+                                        <th>{{ __('Email Address') }}</th>
+                                        <th>{{ __('Game') }}</th>
+                                        <th>{{ __('Date Assigned') }}</th>
+                                        <th>{{ __('Score') }}</th>
+                                        <th>{{ __('Play Time') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="gameReportsIndividual">

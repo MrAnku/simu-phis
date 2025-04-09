@@ -9,10 +9,10 @@
             <table class="table text-nowrap text-center">
                 <thead>
                     <tr>
-                        <th scope="col">Employee Email</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Breached</th>
-                        <th scope="col">Website</th>
+                        <th scope="col">{{ __('Employee Email') }}</th>
+                        <th scope="col">{{ __('Name') }}</th>
+                        <th scope="col">{{ __('Breached') }}</th>
+                        <th scope="col">{{ __('Website') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -25,7 +25,7 @@
                             <td>{{ $email->email }}</td>
                             <td>{{ $email->userData->user_name }}</td>
                             <td>
-                                <span class="badge bg-danger">Yes</span>
+                                <span class="badge bg-danger">{{ __('Yes') }}</span>
                             </td>
                             <td class="d-flex gap-2 flex-wrap justify-content-center">
                                 @forelse($breachDescs as $desc)
@@ -37,7 +37,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center">No data found</td>
+                            <td colspan="4" class="text-center">{{ __('No data found') }}</td>
                         </tr>
                     @endforelse
 

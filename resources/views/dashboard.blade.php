@@ -520,11 +520,11 @@
 
             var options = {
                 series: [{
-                        name: "WhatsApp Simulation",
+                        name: "{{ __('WhatsApp Simulation') }}",
                         data: chartData.map(item => item.whatsapp_campaigns)
                     },
                     {
-                        name: "Phishing Simulation",
+                        name: "{{ __('Phishing Simulation') }}",
                         data: chartData.map(item => item.all_campaigns)
                     }
                 ],

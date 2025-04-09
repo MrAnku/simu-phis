@@ -19,7 +19,7 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Total Templates</div>
+                                    <div class="mb-2">{{ __('Total Templates') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
                                             {{$quishingEmails->count()}}
@@ -42,10 +42,10 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Total Sent Emails</div>
+                                    <div class="mb-2">{{ __('Total Sent Emails') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$campLive->where('sent', '1')->count()}} Delivered
+                                            {{$campLive->where('sent', '1')->count()}} {{ __('Delivered') }}
                                         </span>
                                     </div>
 
@@ -65,10 +65,10 @@
                                     </span>
                                 </div>
                                 <div class="col-xxl-9 col-xl-10 col-lg-9 col-md-9 col-sm-8 col-8 px-0">
-                                    <div class="mb-2">Mail Opened</div>
+                                    <div class="mb-2">{{ __('Mail Opened') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$campLive->where('mail_open', '1')->count()}} Opened
+                                            {{$campLive->where('mail_open', '1')->count()}} {{ __('Opened') }}
                                         </span>
                                     </div>
 
@@ -79,15 +79,14 @@
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">New
-                Campaign</button>
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
 
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Campaign
+                                {{ __('Manage Campaign') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -96,12 +95,12 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Campaign Name</th>
-                                            <th>Campaign Type</th>
-                                            <th>Status</th>
-                                            <th>Employees Group</th>
-                                            <th>Launch Time</th>
-                                            <th>Action</th>
+                                            <th>{{ __('Campaign Name') }}</th>
+                                            <th>{{ __('Campaign Type') }}</th>
+                                            <th>{{ __('Status') }}</th>
+                                            <th>{{ __('Employees Group') }}</th>
+                                            <th>{{ __('Launch Time') }}</th>
+                                            <th>{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -118,19 +117,18 @@
                                                 </th>
                                                 <th>
                                                     @if ($camp->campaign_type == 'quishing')
-                                                        <span class="badge bg-secondary-transparent">Only Quishing</span>
+                                                        <span class="badge bg-secondary-transparent">{{ __('Only Quishing') }}</span>
                                                     @else
-                                                        <span class="badge bg-secondary-transparent">Quishing &
-                                                            Training</span>
+                                                        <span class="badge bg-secondary-transparent">{{ __('Quishing & Training') }}</span>
                                                     @endif
                                                 </th>
                                                 <th>
                                                     @if ($camp->status == 'pending')
-                                                        <span class="badge bg-warning-transparent">Pending</span>
+                                                        <span class="badge bg-warning-transparent">{{ __('Pending') }}</span>
                                                     @elseif($camp->status == 'running')
-                                                        <span class="badge bg-success-transparent">Running</span>
+                                                        <span class="badge bg-success-transparent">{{ __('Running') }}</span>
                                                     @else
-                                                        <span class="badge bg-success-transparent">Completed</span>
+                                                        <span class="badge bg-success-transparent">{{ __('Completed') }}</span>
                                                     @endif
 
                                                 <th>{{ $camp->userGroupData->group_name ?? '' }}</th>
@@ -146,7 +144,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center text-muted">No quishing campaign found
+                                                <td colspan="7" class="text-center text-muted">{{ __('No quishing campaign found') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -173,23 +171,23 @@
     {{-- --------------------------------------- modals ---------------------- --}}
 
     <!-- new campaign modal -->
-    <x-modal id="newCampModal" size="modal-xl" heading="New Quishing Campaign">
+    <x-modal id="newCampModal" size="modal-xl" heading="{{ __('New Quishing Campaign') }}">
         <x-quish-camp.new-camp :quishingEmails="$quishingEmails" :trainingModules="$trainingModules" />
     </x-modal>
 
     <!-- campaign report modal -->
-    <x-modal id="campaignReportModal" size="modal-fullscreen" heading="Campaign Report">
+    <x-modal id="campaignReportModal" size="modal-fullscreen" heading="{{ __('Campaign Report') }}">
         <x-quish-camp.campaign-report-modal />
     </x-modal>
 
     <!-- view material modal -->
-    <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="Phishing Material">
+    <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="{{ __('Phishing Material') }}">
         hello3
     </x-modal>
 
 
     <!-- re-schedule campaign modal -->
-    <x-modal id="reschedulemodal" size="modal-lg" heading="Re-Schedule Campaign">
+    <x-modal id="reschedulemodal" size="modal-lg" heading="{{ __('Re-Schedule Campaign') }}">
         hello4
     </x-modal>
 
@@ -287,17 +285,17 @@
                 }).get().join(', ');
 
                 let reviewData = {
-                    "Campaign Name": $('#camp_name').val(),
-                    "Campaign Type": $('#campaign_type option:selected').text().trim(),
-                    "Employee Group": $('#users_group option:selected').text().trim(),
-                    "Quishing Materials": phishingMaterials,
-                    "Quishing Language": $('#quishing_lang option:selected').text().trim(),
-                    "Training Modules": trainingModules,
-                    "Training Language": $('#training_lang option:selected').text().trim(),
-                    "Days Until Due": $('#days_until_due').val(),
-                    "Training Type": $('#training_type option:selected').text().trim(),
-                    "Training Assignment": $('#training_assignment option:selected').text().trim(),
-                    "Training Category": $('#training_cat option:selected').text().trim(),
+                    "{{ __('Campaign Name') }}": $('#camp_name').val(),
+                    "{{ __('Campaign Type') }}": $('#campaign_type option:selected').text().trim(),
+                    "{{ __('Employee Group') }}": $('#users_group option:selected').text().trim(),
+                    "{{ __('Quishing Materials') }}": phishingMaterials,
+                    "{{ __('Quishing Language') }}": $('#quishing_lang option:selected').text().trim(),
+                    "{{ __('Training Modules') }}": trainingModules,
+                    "{{ __('Training Language') }}": $('#training_lang option:selected').text().trim(),
+                    "{{ __('Days Until Due') }}": $('#days_until_due').val(),
+                    "{{ __('Training Type') }}": $('#training_type option:selected').text().trim(),
+                    "{{ __('Training Assignment') }}": $('#training_assignment option:selected').text().trim(),
+                    "{{ __('Training Category') }}": $('#training_cat option:selected').text().trim(),
                 }
                 console.log(reviewData);
 

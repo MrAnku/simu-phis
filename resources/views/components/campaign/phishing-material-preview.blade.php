@@ -4,19 +4,19 @@
             <button class="nav-link active" id="products-tab" data-bs-toggle="tab"
                 data-bs-target="#email-tab-pane" type="button" role="tab"
                 aria-controls="email-tab-pane" aria-selected="true"><i
-                    class="bx bx-envelope me-1 align-middle d-inline-block"></i>Email</button>
+                    class="bx bx-envelope me-1 align-middle d-inline-block"></i>{{ __('Email') }}</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="sales-tab" data-bs-toggle="tab"
                 data-bs-target="#website-tab-pane" type="button" role="tab"
                 aria-controls="website-tab-pane" aria-selected="false" tabindex="-1"><i
-                    class="bx bx-globe me-1 align-middle d-inline-block"></i>Website</button>
+                    class="bx bx-globe me-1 align-middle d-inline-block"></i>{{ __('Website') }}</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="profit-tab" data-bs-toggle="tab"
                 data-bs-target="#senderp-tab-pane" type="button" role="tab"
                 aria-controls="senderp-tab-pane" aria-selected="false" tabindex="-1"><i
-                    class="bx bx-envelope me-1 align-middle d-inline-block"></i>Sender Profile</button>
+                    class="bx bx-envelope me-1 align-middle d-inline-block"></i>{{ __('Sender Profile') }}</button>
         </li>
 
     </ul>
@@ -25,19 +25,19 @@
             role="tabpanel" aria-labelledby="products-tab" tabindex="0">
 
             <div class="row mb-3">
-                <label for="vphishEmail" class="col-sm-6 col-form-label">Phishing Email</label>
+                <label for="vphishEmail" class="col-sm-6 col-form-label">{{ __('Phishing Email') }}</label>
                 <div class="col-sm-6">
                     <input type="email" class="form-control" id="vphishEmail" disabled>
                 </div>
             </div>
             <div class="row mb-3">
-                <label for="vSub" class="col-sm-6 col-form-label">Email Subject</label>
+                <label for="vSub" class="col-sm-6 col-form-label">{{ __('Email Subject') }}</label>
                 <div class="col-sm-6">
                     <input type="email" class="form-control" id="vSub" disabled>
                 </div>
             </div>
             <div class="row mb-3">
-                <label for="inputEmail3" class="col-sm-6 col-form-label">Employee Requirements</label>
+                <label for="inputEmail3" class="col-sm-6 col-form-label">{{ __('Employee Requirements') }}</label>
                 <div class="col-sm-6">
                     <input type="email" class="form-control" id="inputEmail3"
                         value="Email Address | Name" disabled>
@@ -53,13 +53,13 @@
             aria-labelledby="sales-tab" tabindex="0">
 
             <div class="row mb-3">
-                <label for="vphishWeb" class="col-sm-6 col-form-label">Phishing Website</label>
+                <label for="vphishWeb" class="col-sm-6 col-form-label">{{ __('Phishing Website') }}</label>
                 <div class="col-sm-6">
                     <input type="email" class="form-control" id="vphishWeb" disabled>
                 </div>
             </div>
             <div class="row mb-3">
-                <label for="vPhishUrl" class="col-sm-6 col-form-label">Website URL</label>
+                <label for="vPhishUrl" class="col-sm-6 col-form-label">{{ __('Website URL') }}</label>
                 <div class="col-sm-6">
                     <input type="text" class="form-control" id="vPhishUrl" disabled>
                 </div>
@@ -78,13 +78,13 @@
             aria-labelledby="profit-tab" tabindex="0">
 
             <div class="row mb-3">
-                <label for="vsenderProf" class="col-sm-6 col-form-label">Sender Profile</label>
+                <label for="vsenderProf" class="col-sm-6 col-form-label">{{ __('Sender Profile') }}</label>
                 <div class="col-sm-6">
                     <input type="text" class="form-control" id="vsenderProf" disabled>
                 </div>
             </div>
             <div class="row mb-3">
-                <label for="vDispName" class="col-sm-6 col-form-label">Display Name & Address</label>
+                <label for="vDispName" class="col-sm-6 col-form-label">{{ __('Display Name & Address') }}</label>
                 <div class="col-sm-6">
                     <input type="text" class="form-control" id="vDispName" disabled>
                 </div>

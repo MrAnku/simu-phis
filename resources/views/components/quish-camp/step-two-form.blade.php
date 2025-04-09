@@ -1,11 +1,11 @@
 <fieldset class="included" id="pm_step_form" style="display: block; opacity: 1;">
     <div class="text-center py-2">
         <button type="button" class="btn btn-dark label-btn label-end stickyBtn rounded-pill previous" onclick="showPrevious('stepTwo')">
-            Previous
+            {{ __('Previous') }}
             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
         </button>
         <button type="button" class="btn btn-info label-btn label-end stickyBtn rounded-pill next" onclick="showNext('stepTwo')">
-            Next
+            {{ __('Next') }}
             <i class="ri-arrow-right-line label-btn-icon ms-2 rounded-pill"></i>
         </button>
     </div>
@@ -14,17 +14,17 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <label for="input-label" class="form-label">Email Language</label>
+                <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
                 <x-language-select id="quishing_lang"/>
             </div>
 
             <div>
 
-                <label for="templateSearch" class="form-label">Search</label>
+                <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
                 <div class="d-flex gap-2 align-items-center">
                     <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
                     <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">{{ __('Loading...') }}</span>
                     </div>
                 </div>
     
@@ -69,7 +69,7 @@
                                     id="pm{{ $email->id }}" 
                                     value="{{ $email->id }}">
 
-                                    <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this attack</label>
+                                    <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">{{ __('Select this attack') }}</label>
 
 
                                 </div>
@@ -80,7 +80,7 @@
             @empty
                 <div class="col-lg-12">
                     <div>
-                        No quishing emails found.
+                        {{ __('No quishing emails found.') }}
                     </div>
                 </div>
             @endforelse
@@ -89,7 +89,7 @@
         </div>
         <div class="d-flex justify-content-center mt-2">
             <button type="button" onclick="loadMoreQuishingEmails(this)"
-                class="btn btn-primary btn-sm btn-wave waves-effect waves-light">Show More</button>
+                class="btn btn-primary btn-sm btn-wave waves-effect waves-light">{{ __('Show More') }}</button>
         </div>
     </div>
 </fieldset>

@@ -11,22 +11,21 @@
                 <div class="d-flex" style="gap: 10px;">
                     <div>
                         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                            data-bs-target="#newWhatsappCampaignModal">New Whatsapp Campaign</button>
+                            data-bs-target="#newWhatsappCampaignModal">{{ __('New Whatsapp Campaign') }}</button>
                     </div>
                     <div>
                         <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                            data-bs-target="#templatesModal">Available Templates</button>
+                            data-bs-target="#templatesModal">{{ __('Available Templates') }}</button>
                     </div>
                 </div>
 
                 <div>
-                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">Sync
-                        Templates</button>
+                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">{{ __('Sync Templates') }}</button>
 
                     <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newtemplatesModal">Request New Template</button>
+                        data-bs-target="#newtemplatesModal">{{ __('Request New Template') }}</button>
                     <button class="btn btn-secondary-light btn-border-start ms-2 mb-3" data-bs-toggle="modal"
-                        data-bs-target="#updateConfigModal">Update Config</button>
+                        data-bs-target="#updateConfigModal">{{ __('Update Config') }}</button>
                 </div>
 
 
@@ -38,7 +37,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                All WhatsApp Campaigns
+                                {{ __('All WhatsApp Campaigns') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -46,13 +45,13 @@
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Campaign Name</th>
-                                            <th>Campaign Type</th>
-                                            <th>Training</th>
-                                            <th>Template Name</th>
-                                            <th>Employee Group</th>
-                                            <th>Launch Date</th>
-                                            <th>Action</th>
+                                            <th>{{ __('Campaign Name') }}</th>
+                                            <th>{{ __('Campaign Type') }}</th>
+                                            <th>{{ __('Training') }}</th>
+                                            <th>{{ __('Template Name') }}</th>
+                                            <th>{{ __('Employee Group') }}</th>
+                                            <th>{{ __('Launch Date') }}</th>
+                                            <th>{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -70,8 +69,7 @@
                                                     @if ($campaign->trainingData?->name !== null)
                                                         {{ $campaign->trainingData->name }}
                                                     @else
-                                                        <span class="text-muted"><small>Simulated without
-                                                                training</small></span>
+                                                        <span class="text-muted"><small>{{ __('Simulated without training') }}</small></span>
                                                     @endif
 
                                                 </td>
@@ -93,7 +91,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center">No records found</td>
+                                                <td colspan="7" class="text-center">{{ __('No records found') }}</td>
                                             </tr>
                                         @endforelse
 
@@ -120,7 +118,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Request New Template</h6>
+                    <h6 class="modal-title">{{ __('Request New Template') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -128,14 +126,14 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Template name<sup
+                            <label for="input-label" class="form-label">{{ __('Template name') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" name="temp_name" class="form-control" id="temp_name"
                                 placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
 
                         </div>
                         <div class="mb-3">
-                            <label for="temp_body" class="form-label">Template Body<sup class="text-danger">*</sup></label>
+                            <label for="temp_body" class="form-label">{{ __('Template Body') }}<sup class="text-danger">*</sup></label>
                             <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;"
                                 placeholder="Hi @{{ var }} .....your content......@{{ var }}....Please click the link below to get started @{{ var }}"
                                 required></textarea>
@@ -147,15 +145,14 @@
                                 <li>
                                     <small>
                                         Add <span class="text-secondary">@{{ var }}</span> for variable. For
-                                        example Hello <span class="text-secondary">@{{ var }}</span> Thank you
-                                        for choosing our services.
+                                        example Hello <span class="text-secondary">@{{ var }}</span> {{ __('Thank you
+                                        for choosing our services.') }}
                                     </small>
                                 </li>
                                 <li>
                                     <small>
-                                        Please add minimum 3 and maximum 4 variables in which the <span
-                                            class="text-secondary">first and last variable will be reserved</span> for
-                                        Employee name and campaign url.
+                                        {{ __('Please add minimum 3 and maximum 4 variables in which the') }} <span
+                                            class="text-secondary">{{ __('first and last variable will be reserved') }}</span> {{ __('for Employee name and campaign url.') }}
                                     </small>
                                 </li>
                             </ul>
@@ -164,8 +161,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Request
-                                Template</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Request Template') }}</button>
                         </div>
                     </form>
                 </div>
@@ -180,21 +176,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Create Campaign</h6>
+                    <h6 class="modal-title">{{ __('Create Campaign') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">Campaign name<sup class="text-danger">*</sup></label>
+                        <label for="input-label" class="form-label">{{ __('Campaign name') }}<sup class="text-danger">*</sup></label>
                         <input type="text" class="form-control" id="camp_name" placeholder="Template name" required>
 
                     </div>
                     <div class="mb-3">
-                        <label for="whatsapp-template" class="form-label">Template<sup
+                        <label for="whatsapp-template" class="form-label">{{ __('Template') }}<sup
                                 class="text-danger">*</sup></label>
                         <select class="form-select" aria-label="Default select example" name="whatsapp_template"
                             id="whatsapp_template" required>
-                            <option value="">Choose Template</option>
+                            <option value="">{{ __('Choose Template') }}</option>
                             @forelse ($templates as $template)
                                 <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
                                     data-lang="{{ $template['language'] }}"
@@ -203,7 +199,7 @@
                                     {{ $template['status'] }}
                                 </option>
                             @empty
-                                <option value="">No templates available</option>
+                                <option value="">{{ __('No templates available') }}</option>
                             @endforelse
 
                         </select>
@@ -212,11 +208,11 @@
 
                     <div class="mb-3 row" id="template_info" style="display: none;">
                         <div class="col-lg-6">
-                            <label for="template_category" class="form-label">Category</label>
+                            <label for="template_category" class="form-label">{{ __('Category') }}</label>
                             <input type="text" class="form-control" id="template_category" disabled>
                         </div>
                         <div class="col-lg-6">
-                            <label for="template_lang" class="form-label">Language</label>
+                            <label for="template_lang" class="form-label">{{ __('Language') }}</label>
                             <input type="text" class="form-control" id="template_lang" disabled>
                         </div>
                         <div class="col-lg-12 my-3">
@@ -258,42 +254,42 @@
 
                         <div class="row">
                             <div class="col-lg-6">
-                                <label for="input-label" class="form-label">Campaign Type<sup
+                                <label for="input-label" class="form-label">{{ __('Campaign Type') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                     <select class="form-select" aria-label="Default select example" id="campType">
-                                        <option value="Phishing">Phishing</option>
-                                        <option value="Phishing and Training">Phishing with Training</option>
+                                        <option value="Phishing">{{ __('Phishing') }}</option>
+                                        <option value="Phishing and Training">{{ __('Phishing with Training') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <label for="input-label" class="form-label">Employee Type<sup
+                                <label for="input-label" class="form-label">{{ __('Employee Type') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                     <select id="groupType" class="form-select" aria-label="Default select example">
-                                        <option value="Normal" selected>Normal Employee</option>
-                                        <option value="Bluecollar">Bluecollar Employee</option>
+                                        <option value="Normal" selected>{{ __('Normal Employee') }}</option>
+                                        <option value="Bluecollar">{{ __('Bluecollar Employee') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="mt-3 col-lg-6">
-                                <label for="input-label" class="form-label">Groups<sup
+                                <label for="input-label" class="form-label">{{ __('Groups') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                     <select id="fetchGroup" class="form-select" disabled>
-                                        <option value="">Select a group</option>
+                                        <option value="">{{ __('Select a group') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="mt-3 col-lg-6">
-                                <label for="input-label" class="form-label">Select Training<sup
+                                <label for="input-label" class="form-label">{{ __('Select Training') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
@@ -303,7 +299,7 @@
                                         @forelse ($trainings as $training)
                                             <option value="{{ $training->id }}">{{ $training->name }}</option>
                                         @empty
-                                            <option value="">No Trainings Available</option>
+                                            <option value="">{{ __('No Trainings Available') }}</option>
                                         @endforelse
 
                                     </select>
@@ -312,15 +308,15 @@
 
 
                             <div class="mb-3 mt-3 col-lg-6">
-                                <label for="input-label" class="form-label">Training Type<sup
+                                <label for="input-label" class="form-label">{{ __('Training Type') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="d-flex">
 
                                     {{-- <input type="text" class="form-control mx-1" name="subdomain" placeholder="Sub-domain"> --}}
                                     <select class="form-select" aria-label="Default select example" id="training_type"
                                         disabled>
-                                        <option value="static_training">Static Training</option>
-                                        <option value="ai_training">AI Training</option>
+                                        <option value="static_training">{{ __('Static Training') }}</option>
+                                        <option value="ai_training">{{ __('AI Training') }}</option>
 
                                     </select>
                                 </div>
@@ -331,8 +327,7 @@
                     </div>
                     <div class="mb-3">
                         <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light"
-                            onclick="submitCampaign();">Create
-                            Campaign</button>
+                            onclick="submitCampaign();">{{ __('Create Campaign') }}</button>
                     </div>
 
                 </div>
@@ -346,7 +341,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Campaign Report</h6>
+                    <h6 class="modal-title">{{ __('Campaign Report') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -354,14 +349,14 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th scope="col">Employee name</th>
-                                    <th scope="col">WhatsApp No.</th>
-                                    <th scope="col">Template Name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Link Clicked</th>
-                                    <th scope="col">Employee Compromised</th>
-                                    <th scope="col">Training Assigned</th>
-                                    <th scope="col">Date</th>
+                                    <th scope="col">{{ __('Employee name') }}</th>
+                                    <th scope="col">{{ __('WhatsApp No.') }}</th>
+                                    <th scope="col">{{ __('Template Name') }}</th>
+                                    <th scope="col">{{ __('Status') }}</th>
+                                    <th scope="col">{{ __('Link Clicked') }}</th>
+                                    <th scope="col">{{ __('Employee Compromise') }}</th>
+                                    <th scope="col">{{ __('Training Assigned') }}</th>
+                                    <th scope="col">{{ __('Date') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="camp_users">
@@ -380,7 +375,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">WhatsApp Templates</h6>
+                    <h6 class="modal-title">{{ __('WhatsApp Templates') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -390,9 +385,9 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Components</th>
+                                    <th scope="col">{{ __('Name') }}</th>
+                                    <th scope="col">{{ __('Status') }}</th>
+                                    <th scope="col">{{ __('Components') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="temps">
@@ -420,7 +415,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center">No templates available</td>
+                                        <td colspan="3" class="text-center">{{ __('No templates available') }}</td>
                                     </tr>
                                 @endforelse
 
@@ -439,7 +434,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">WhatsApp Templates</h6>
+                    <h6 class="modal-title">{{ __('WhatsApp Templates') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -449,20 +444,20 @@
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" name="from_phone_id" id="phone_id"
                                 value="{{ $config->from_phone_id }}" placeholder="Phone Number ID">
-                            <label for="phone_id">From Phone Number ID</label>
+                            <label for="phone_id">{{ __('From Phone Number ID') }}</label>
                         </div>
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="access_token" name="access_token"
                                 value="{{ $config->access_token }}" placeholder="Access Token">
-                            <label for="access_token">Access Token</label>
+                            <label for="access_token">{{ __('Access Token') }}</label>
                         </div>
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="business_id" name="business_id"
                                 value="{{ $config->business_id }}" placeholder="Business ID">
-                            <label for="business_id">Business ID</label>
+                            <label for="business_id">{{ __('Business ID') }}</label>
                         </div>
                         <div>
-                            <button type="submit" class="btn w-100 btn-primary btn-wave">Update</button>
+                            <button type="submit" class="btn w-100 btn-primary btn-wave">{{ __('Update') }}</button>
                         </div>
                     </form>
 

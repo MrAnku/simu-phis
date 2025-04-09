@@ -2,18 +2,18 @@
 
     <div class="d-flex justify-content-between">
         <div>
-            <label for="input-label" class="form-label">Email Language</label>
+            <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
 
             <x-language-select id="email_lang" />
         </div>
 
         <div>
 
-            <label for="templateSearch" class="form-label">Search</label>
+            <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
             <div class="d-flex gap-2 align-items-center">
                 <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
                 <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden">{{ __('oading...') }}</span>
                 </div>
             </div>
 
@@ -58,7 +58,7 @@
                                     id="pm{{ $email->id }}" 
                                     value="{{ $email->id }}"
                                 >
-                                <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">Select this attack</label>
+                                <label class="btn btn-outline-primary mb-3" for="pm{{ $email->id }}">{{ __('Select this attack') }}</label>
 
                                 
                             </div>
@@ -67,11 +67,11 @@
                 </div>
             </div>
         @empty
-            <p>No phishing emails available.</p>
+            <p>{{ __('No phishing emails available.') }}</p>
         @endforelse
 
     </div>
     <div class="d-flex justify-content-center">
-        <button type="button" onclick="loadMorePhishingEmails(this)" class="btn btn-primary btn-sm btn-wave">Show More</button>
+        <button type="button" onclick="loadMorePhishingEmails(this)" class="btn btn-primary btn-sm btn-wave">{{ __('Show More') }}</button>
     </div>
 </div>
