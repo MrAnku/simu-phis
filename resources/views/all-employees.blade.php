@@ -108,18 +108,22 @@
                                         @forelse ($allEmployees as $emp)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td> <!-- Serial number -->
+
                                                 <td>
-                                                    <a href="#" class="text-primary" onclick="viewPlanUsers()"
-                                                        data-bs-target="#addUserModalForm" data-bs-toggle="modal">
+                                                    <a target="blank"
+                                                        href="{{ route('employee.detail', base64_encode($emp->id)) }}"
+                                                        class="text-primary">
                                                         {{ $emp->user_name }}
                                                     </a>
                                                 </td>
+
                                                 <td>{{ $emp->user_email }}</td>
                                                 <td>{{ $emp->user_company }}</td>
                                                 <td>{{ $emp->user_job_title }}</td>
                                                 <td>
                                                     <span class="text-danger ms-1"
-                                                        onclick="deletePlanUser('{{ base64_encode($emp->user_email) }}')" role="button">
+                                                        onclick="deletePlanUser('{{ base64_encode($emp->user_email) }}')"
+                                                        role="button">
                                                         <i class="bx bx-trash fs-4"></i>
                                                     </span>
                                                 </td>
@@ -593,7 +597,7 @@
                         whatsapp
                     });
                 });
-               
+
                 $.ajax({
                     url: "/save-outlook-employees",
                     type: "POST",
