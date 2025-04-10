@@ -63,13 +63,13 @@ class BluecolarController extends Controller
     public function fetchGroup(Request $request)
     {
         $query = $request->data;
-
         if ($query == "Normal") {
-            $result = UsersGroup::all();
+            $companyId = auth()->user()->company_id;
+            $result = UsersGroup::where('company_id', $companyId)->get();
         } else {
-            $result = BlueCollarGroup::all();
+            $companyId = auth()->user()->company_id;
+            $result = BlueCollarGroup::where('company_id', $companyId)->get();
         }
-
         return response()->json($result);
     }
 
