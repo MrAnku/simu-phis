@@ -342,7 +342,7 @@
                                 line-height: 35px;
                                 font-size: 1px;
                               ">
-                                                        
+
                                                     </div>
                                                     <table border="0" cellpadding="15" cellspacing="0"
                                                         class="image_block block-2" role="presentation"
@@ -443,10 +443,8 @@
                                       mso-line-height-alt: 100.8px;
                                     ">
                                                                     <span class="tinyMce-placeholder"
-                                                                        style="word-break: break-word">Your organization
-                                                                        has enrolled you in a training session after you
-                                                                        encountered a simulated phishing
-                                                                        exercise.<br /></span>
+                                                                        style="word-break: break-word">Training has been
+                                                                        assigned!<br /></span>
                                                                 </h1>
                                                             </td>
                                                         </tr>
@@ -482,8 +480,9 @@
                                       mso-line-height-alt: 26.4px;
                                     ">
                                                                     <p style="margin: 0">
-                                                                        Training is assigned to you. Kindly login to our
-                                                                        Learning Portal to complete your training.
+                                                                        Your organization has enrolled you in a training
+                                                                        session after you encountered a simulated
+                                                                        phishing exercise.
                                                                     </p>
                                                                     <p style="margin-top: 10px">
                                                                         Click the link below to start your training:
@@ -557,7 +556,7 @@
                                 line-height: 10px;
                                 font-size: 1px;
                               ">
-                                                        
+
                                                     </div>
                                                     <div class="spacer_block block-9"
                                                         style="
@@ -565,7 +564,7 @@
                                 line-height: 1px;
                                 font-size: 1px;
                               ">
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -754,7 +753,7 @@
                                 line-height: 25px;
                                 font-size: 1px;
                               ">
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -940,7 +939,7 @@
                                 line-height: 5px;
                                 font-size: 1px;
                               ">
-                                                            
+
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -993,7 +992,7 @@
                                 line-height: 35px;
                                 font-size: 1px;
                               ">
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
