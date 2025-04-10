@@ -3,7 +3,7 @@
     <div class="mb-3">
         <label for="input-label" class="form-label">{{ __('Email Template Name') }}<sup
                 class="text-danger">*</sup></label>
-        <input type="text" class="form-control" name="eTempName" placeholder="Template name"
+        <input type="text" class="form-control" name="eTempName" placeholder="{{ __('Template name') }}"
             required>
 
     </div>
@@ -11,7 +11,7 @@
         <label for="input-label" class="form-label">{{ __('Email Subject') }}<sup
                 class="text-danger">*</sup></label>
         <input type="text" class="form-control" name="eSubject"
-            placeholder="i.e. Reset your password" required>
+            placeholder="{{ __('i.e. Reset your password') }}" required>
 
     </div>
     <div class="mb-3">

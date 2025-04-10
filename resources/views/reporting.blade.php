@@ -1669,7 +1669,7 @@
                                         'copy', 'csv', 'excel', 'pdf', 'print'
                                     ],
                                     language: {
-                                        searchPlaceholder: 'Search...',
+                                        searchPlaceholder: "{{ __('Search...') }}",
                                         sSearch: '',
                                     },
                                 });
@@ -1722,7 +1722,7 @@
 
             $('#datatable-basic').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,
@@ -1740,19 +1740,19 @@
                     /* dashed chart */
                     var options = {
                         series: [{
-                                name: "Mail Open",
+                                name: "{{ __('Mail Open') }}",
                                 data: chartData.mail_open
                             },
                             {
-                                name: "Payload Clicked",
+                                name: "{{ __('Payload Clicked') }}",
                                 data: chartData.payload_clicked
                             },
                             {
-                                name: 'Employee Compromised',
+                                name: "{{ __('Employee Compromised') }}",
                                 data: chartData.employee_compromised
                             },
                             {
-                                name: 'Email Reported',
+                                name: "{{ __('Email Reported') }}",
                                 data: chartData.email_reported
                             }
 
@@ -1873,19 +1873,19 @@
                     /* dashed chart */
                     var options = {
                         series: [{
-                                name: "Link Clicked",
+                                name: "{{ __('Link Clicked') }}",
                                 data: chartData.mail_open
                             },
                             {
-                                name: "Payload Clicked",
+                                name: "{{ __('Payload Clicked') }}",
                                 data: chartData.payload_clicked
                             },
                             {
-                                name: 'Employee Compromised',
+                                name: "{{ __('Employee Compromised') }}",
                                 data: chartData.employee_compromised
                             },
                             {
-                                name: 'Status Send',
+                                name: "{{ __('Status Send') }}",
                                 data: chartData.email_reported
                             }
 
@@ -2243,7 +2243,7 @@
                                     'copy', 'csv', 'excel', 'pdf', 'print'
                                 ],
                                 language: {
-                                    searchPlaceholder: 'Search...',
+                                    searchPlaceholder: "{{ __('Search...') }}",
                                     sSearch: '',
                                 },
                             });
@@ -2398,7 +2398,7 @@
                                 dom: 'Bfrtip',
                                 buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
                                 language: {
-                                    searchPlaceholder: 'Search...',
+                                    searchPlaceholder: "{{ __('Search...') }}",
                                     sSearch: '',
                                 },
                             });
@@ -2586,7 +2586,7 @@
                                         'copy', 'csv', 'excel', 'pdf', 'print'
                                     ],
                                     language: {
-                                        searchPlaceholder: 'Search...',
+                                        searchPlaceholder: "{{ __('Search...') }}",
                                         sSearch: '',
                                     },
                                 });

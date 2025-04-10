@@ -1,7 +1,7 @@
 <div>
     <div class="input-group mb-3">
         <span class="input-group-text" id="basic-addon1">{{ __('Description') }}</span>
-        <input type="text" id="prompt" class="form-control" placeholder="Generate a invoice mail template of company">
+        <input type="text" id="prompt" class="form-control" placeholder="{{ __('Generate a invoice mail template of company') }}">
         <button class="btn btn-primary" onclick="generateTemplate(this)" type="button" id="button-addon2">{{ __('Generate Template') }}</button>
     </div>
 

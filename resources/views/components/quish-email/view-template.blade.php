@@ -16,7 +16,7 @@
                                     <div class="simplebar-content" style="padding: 16px;">
                                         <li class="px-0 pt-0">
                                             <span
-                                                class="fs-11 text-muted op-7 fw-semibold">MAILS</span>
+                                                class="fs-11 text-muted op-7 fw-semibold">{{ __('MAILS') }}</span>
                                         </li>
                                         <li class="active mail-type">
                                             <a href="javascript:void(0);">
@@ -26,7 +26,7 @@
                                                             class="ri-inbox-archive-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        All Mails
+                                                        {{ __('All Mails') }}
                                                     </span>
                                                     <span
                                                         class="badge bg-success-transparent rounded-pill">12,456</span>
@@ -41,7 +41,7 @@
                                                             class="ri-inbox-archive-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Inbox
+                                                        {{ __('Inbox') }}
                                                     </span>
                                                     <span
                                                         class="badge bg-primary-transparent rounded-circle">8</span>
@@ -56,7 +56,7 @@
                                                             class="ri-send-plane-2-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Sent
+                                                        {{ __('Sent') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -69,7 +69,7 @@
                                                             class="ri-draft-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Drafts
+                                                        {{ __('Drafts') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -82,7 +82,7 @@
                                                             class="ri-spam-2-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Spam
+                                                        {{ __('Spam') }}
                                                     </span>
                                                     <span
                                                         class="badge bg-danger-transparent rounded-circle">4</span>
@@ -97,7 +97,7 @@
                                                             class="ri-bookmark-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Important
+                                                        {{ __('Important') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -110,7 +110,7 @@
                                                             class="ri-delete-bin-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Trash
+                                                        {{ __('Trash') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -123,7 +123,7 @@
                                                             class="ri-archive-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Archive
+                                                        {{ __('Archive') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -135,7 +135,7 @@
                                                         <i class="ri-star-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Starred
+                                                        {{ __('Starred') }}
                                                     </span>
                                                     <span
                                                         class="badge bg-warning-transparent rounded-circle">12</span>
@@ -144,7 +144,7 @@
                                         </li>
                                         <li class="px-0">
                                             <span
-                                                class="fs-11 text-muted op-7 fw-semibold">SETTINGS</span>
+                                                class="fs-11 text-muted op-7 fw-semibold">{{ __('SETTINGS') }}</span>
                                         </li>
                                         <li>
                                             <a href="javascript:void(0);">
@@ -154,14 +154,14 @@
                                                             class="ri-settings-3-line align-middle fs-14"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Settings
+                                                        {{ __('Settings') }}
                                                     </span>
                                                 </div>
                                             </a>
                                         </li>
                                         <li class="px-0">
                                             <span
-                                                class="fs-11 text-muted op-7 fw-semibold">LABELS</span>
+                                                class="fs-11 text-muted op-7 fw-semibold">{{ __('LABELS') }}</span>
                                         </li>
                                         <li>
                                             <a href="javascript:void(0);">
@@ -171,7 +171,7 @@
                                                             class="ri-price-tag-line align-middle fs-14 fw-semibold text-secondary"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Mail
+                                                        {{ __('Mail') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -184,7 +184,7 @@
                                                             class="ri-price-tag-line align-middle fs-14 fw-semibold text-danger"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Home
+                                                        {{ __('Home') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -197,7 +197,7 @@
                                                             class="ri-price-tag-line align-middle fs-14 fw-semibold text-success"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Work
+                                                        {{ __('Work') }}
                                                     </span>
                                                 </div>
                                             </a>
@@ -210,14 +210,13 @@
                                                             class="ri-price-tag-line align-middle fs-14 fw-semibold text-dark"></i>
                                                     </span>
                                                     <span class="flex-fill text-nowrap">
-                                                        Friends
+                                                        {{ __('Friends') }}
                                                     </span>
                                                 </div>
                                             </a>
                                         </li>
                                         <li class="px-0">
-                                            <span class="fs-11 text-muted op-7 fw-semibold">ONLINE
-                                                USERS</span>
+                                            <span class="fs-11 text-muted op-7 fw-semibold">{{ __('ONLINE USERS') }}</span>
                                         </li>
                                         <li>
                                             <a href="javascript:void(0);">
@@ -231,9 +230,8 @@
                                                     </div>
                                                     <div>
                                                         <p class="text-default fw-semibold mb-1">
-                                                            Angelica</p>
-                                                        <p class="fs-12 text-muted mb-0">Hello this is
-                                                            angelica.</p>
+                                                            {{ __('Angelica') }}</p>
+                                                        <p class="fs-12 text-muted mb-0">{{ __('Hello this is angelica.') }}</p>
                                                     </div>
                                                 </div>
                                             </a>
@@ -249,10 +247,9 @@
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <p class="text-default fw-semibold mb-1">Rexha
+                                                        <p class="text-default fw-semibold mb-1">{{ __('Rexha') }}
                                                         </p>
-                                                        <p class="fs-12 text-muted mb-0">Thanks for
-                                                            sharing file 😀.</p>
+                                                        <p class="fs-12 text-muted mb-0">{{ __('Thanks for sharing file 😀.') }}</p>
                                                     </div>
                                                 </div>
                                             </a>
@@ -283,7 +280,7 @@
                     </span>
                 </div>
                 <div class="flex-fill">
-                    <h6 class="mb-0 fw-semibold" id="displayFromName">Michael Jeremy</h6>
+                    <h6 class="mb-0 fw-semibold" id="displayFromName">{{ __('Michael Jeremy') }}</h6>
                     <span class="text-muted fs-12"
                         id="displayFromEmail">michaeljeremy2194@gmail.com</span>
                 </div>
@@ -318,19 +315,18 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                        class="ri-star-line me-1 align-middle d-inline-block"></i>Starred</a>
+                                        class="ri-star-line me-1 align-middle d-inline-block"></i>{{ __('Starred') }}</a>
                             </li>
                             <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                        class="ri-inbox-archive-line me-1 align-middle d-inline-block"></i>Archive</a>
+                                        class="ri-inbox-archive-line me-1 align-middle d-inline-block"></i>{{ __('Archive') }}</a>
                             </li>
                             <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                        class="ri-spam-2-line me-1 align-middle d-inline-block"></i>Report
-                                    Spam</a></li>
+                                        class="ri-spam-2-line me-1 align-middle d-inline-block"></i>{{ __('Report Spam') }}</a></li>
                             <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                        class="ri-delete-bin-line me-1 align-middle d-inline-block"></i>Delete</a>
+                                        class="ri-delete-bin-line me-1 align-middle d-inline-block"></i>{{ __('Delete') }}</a>
                             </li>
                             <li><a class="dropdown-item" href="javascript:void(0);"><i
-                                        class="ri-reply-line me-1 align-middle d-inline-block"></i>Reply</a>
+                                        class="ri-reply-line me-1 align-middle d-inline-block"></i>{{ __('Reply') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -355,7 +351,7 @@
                                         class="d-sm-flex d-block align-items-center justify-content-between mb-4">
                                         <div>
                                             <p class="fs-20 fw-semibold mb-0" id="displayMailSubject">
-                                                History of planets are discovered yesterday.</p>
+                                                {{ __('History of planets are discovered yesterday.') }}</p>
                                         </div>
                                         <div class="float-end">
                                             <span

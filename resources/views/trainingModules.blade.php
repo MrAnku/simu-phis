@@ -11,11 +11,11 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" onclick="addNewTraining()" data-bs-toggle="modal"
-                        data-bs-target="#newTrainingModuleModal">New Training Module</button>
+                        data-bs-target="#newTrainingModuleModal">{{ __('New Training Module') }}</button>
                     <button class="btn btn-secondary label-btn mb-3 mx-2" data-bs-toggle="modal"
                         data-bs-target="#newGamifiedTrainingModal">
                         <i class="ri-settings-4-line label-btn-icon me-2"></i>
-                        New Gamified Training
+                        {{ __('New Gamified Training') }}
                     </button>
                 </div>
                 <div
@@ -25,7 +25,7 @@
                             gap: 10px;
                         ">
 
-                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search training">
+                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="{{ __('Search training') }}">
                     <i class="bx bx-search fs-23"></i>
                 </div>
             </div>
@@ -36,22 +36,21 @@
                     <div class="card custom-card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
-                                Manage Training Modules
+                                {{ __('Manage Training Modules') }}
                             </div>
                             <div class="d-flex gap-2">
                                 <div>
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">
-                                            Training Type
+                                            {{ __('Training Type') }}
                                         </span>
                                         <select class="form-select" id="training_type_select">
                                             <option value="static_training"
-                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>Static/AI
-                                                Training</option>
+                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>{{ __('Static/ AI Training') }}</option>
                                             <option value="gamified" {{ request('type') == 'gamified' ? 'selected' : '' }}>
-                                                Gamified Training</option>
+                                                {{ __('Gamified Training') }}</option>
                                             <option value="games" {{ request('type') == 'games' ? 'selected' : '' }}>
-                                                Games</option>
+                                                {{ __('Games') }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -59,15 +58,15 @@
                                     @if (request('type') !== 'games')
                                         <div class="input-group mb-2">
                                             <span class="input-group-text">
-                                                Category
+                                                {{ __('Category') }}
                                             </span>
                                             <select class="form-select" id="category_select">
                                                 <option value="international"
                                                     {{ request('category') == 'international' ? 'selected' : '' }}>
-                                                    International</option>
+                                                    {{ __('International') }}</option>
                                                 <option value="middle_east"
                                                     {{ request('category') == 'middle_east' ? 'selected' : '' }}>
-                                                    Middle East</option>
+                                                    {{ __('Middle East') }}</option>
                                             </select>
                                         </div>
                                     @endif
@@ -97,18 +96,18 @@
 
                                                     <a href="@if (request('type') == 'games') {{ env('TRAINING_GAME_URL') }}/{{ $trainingModule->slug }} @else {{ '/training-preview/' . base64_encode($trainingModule->id) }} @endif"
                                                         target="_blank"
-                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('View') }}</a>
 
                                                     @if (request('type') !== 'games' && $trainingModule->company_id !== 'default')
                                                         <button type="button"
                                                             onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
 
                                                         <button type="button"
                                                             onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
                                                             class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                                                            data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">{{ __('Edit') }}</button>
                                                     @endif
 
                                                 </div>
@@ -117,7 +116,7 @@
                                     </div>
                                 @empty
                                     <div class="col-lg-6">
-                                        No records found
+                                        {{ __('No records found') }}
                                     </div>
                                 @endforelse
                             </div>
@@ -139,27 +138,27 @@
 
     {{-- add new training  --}}
 
-    <x-modal id="newTrainingModuleModal" size="modal-lg" heading="Add Training">
+    <x-modal id="newTrainingModuleModal" size="modal-lg" heading="{{ __('Add Training') }}">
         <x-training_module.new-training-form />
     </x-modal>
 
 
     {{-- edit training --}}
 
-    <x-modal id="editTrainingModuleModal" size="modal-lg" heading="Edit Training">
+    <x-modal id="editTrainingModuleModal" size="modal-lg" heading="{{ __('Edit Training') }}">
         <x-training_module.edit-training-form />
     </x-modal>
 
 
     {{-- new gamified training --}}
 
-    <x-modal id="newGamifiedTrainingModal" size="modal-lg" heading="Add Gamified Training">
+    <x-modal id="newGamifiedTrainingModal" size="modal-lg" heading="{{ __('Add Gamified Training') }}">
         <x-training_module.new-gamified-training-form />
     </x-modal>
 
     {{-- edit gamified training --}}
 
-    <x-modal id="editGamifiedTrainingModuleModal" size="modal-lg" heading="Edit Gamified Training">
+    <x-modal id="editGamifiedTrainingModuleModal" size="modal-lg" heading="{{ __('Edit Gamified Training') }}">
         <x-training_module.edit-gamified-training-form />
     </x-modal>
 
@@ -377,7 +376,7 @@
                         type="text"
                         class="form-control"
                         name="option${i + 1}"
-                        placeholder="Enter as answer option"
+                        placeholder="{{ __('Enter as answer option') }}"
                       />
                     </div>`;
                     options += input;
@@ -441,28 +440,28 @@
                         >Page <span class="noofpages">${pageNo}</span> - Question</span>
                         <div>
                     <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
-                      Add Question
+                      {{ __('Add Question') }}
                     </button>
                     <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
-                      Add Statement
+                      {{ __('Add Statement') }}
                     </button>
                   
                       <button type="button" onclick="removePage('${pageNo}', 'forms')" class="btn btn-sm btn-danger">
-                        Remove
+                        {{ __('Remove') }}
                       </button>
                       </div>
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question</span>
+                      <span class="input-group-text">{{ __('Question') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="question"
-                        placeholder="Enter a question"
+                        placeholder="{{ __('Enter a question') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Question Type</span>
+                      <span class="input-group-text">{{ __('Question Type') }}</span>
                       <select
                         class="form-select"
                         aria-label="Default select example"
@@ -470,70 +469,70 @@
                         id="questionType${pageNo}"
                         onchange="changeQuestionType(this,'${pageNo}')"
                       >
-                        <option value="multipleChoice">Multiple Choice</option>
-                        <option value="trueFalse">True/False</option>
+                        <option value="multipleChoice">{{ __('Multiple Choice') }}</option>
+                        <option value="trueFalse">{{ __('True/False') }}</option>
                       </select>
                     </div>
                     <div id="optionContainer${pageNo}">
                       <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Option 1:</span>
+                      <span class="input-group-text">{{ __('Option 1:') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="option1"
-                        placeholder="Enter as answer option"
+                        placeholder="{{ __('Enter as answer option') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Option 2:</span>
+                      <span class="input-group-text">{{ __('Option 2:') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="option2"
-                        placeholder="Enter as answer option"
+                        placeholder="{{ __('Enter as answer option') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Option 3:</span>
+                      <span class="input-group-text">{{ __('Option 3:') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="option3"
-                        placeholder="Enter as answer option"
+                        placeholder="{{ __('Enter as answer option') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Option 4:</span>
+                      <span class="input-group-text">{{ __('Option 4:') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="option4"
-                        placeholder="Enter as answer option"
+                        placeholder="{{ __('Enter as answer option') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Correct Option</span>
+                      <span class="input-group-text">{{ __('Correct Option') }}</span>
                       <select
                         class="form-select"
                         aria-label="Default select example"
                         name="correctOption"
                       >
-                        <option value="option1">Option 1</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
-                        <option value="option4">Option 4</option>
+                        <option value="option1">{{ __('Option 1') }}</option>
+                        <option value="option2">{{ __('Option 2') }}</option>
+                        <option value="option3">{{ __('Option 3') }}</option>
+                        <option value="option4">{{ __('Option 4') }}</option>
                       </select>
                     </div>
     
                       </div>
     
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Answer Description</span>
+                      <span class="input-group-text">{{ __('Answer Description') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="ansDesc"
-                        placeholder="Enter the content that is displayed under this navbar."
+                        placeholder="{{ __('Enter the content that is displayed under this navbar.') }}"
                       />
                     </div>
                   </div>`;
@@ -597,7 +596,7 @@
                         type="text"
                         class="form-control"
                         name="sTitle"
-                        placeholder="Enter a statement title"
+                        placeholder="{{ __('Enter a statement title') }}"
                       />
                       <input type="hidden" name="qtype" value="statement">
                     </div>
@@ -607,27 +606,27 @@
                         type="text"
                         class="form-control"
                         name="sContent"
-                        placeholder="Enter a statement content"
+                        placeholder="{{ __('Enter a statement content') }}"
                       />
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Additional Content</span>
+                      <span class="input-group-text">{{ __('Additional Content') }}</span>
                       <select
                         class="form-select"
                         aria-label="Default select example"
                         name="embeddedVideo"
                       >
-                        <option value="embeddedVideo">Embedded Video URL</option>
+                        <option value="embeddedVideo">{{ __('Embedded Video URL') }}</option>
                       </select>
                     </div>
                     <div id="optionContainer">
                       <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Embedded Video URL</span>
+                      <span class="input-group-text">{{ __('Embedded Video URL') }}</span>
                       <input
                         type="text"
                         class="form-control"
                         name="videoUrl"
-                        placeholder="Enter the URL of an Embedded Video (Youtube)"
+                        placeholder="{{ __('Enter the URL of an Embedded Video (Youtube)') }}"
                       />
                     </div>
                     </div>`;
@@ -688,63 +687,63 @@
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
                       <div class="pageQuestion my-3">
                         <div class="d-flex justify-content-between my-2">
-                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
+                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - {{ __('Question') }}</span>
                           <div>
                     <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                      Add Question
+                      {{ __('Add Question') }}
                     </button>
                     <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                      Add Statement
+                      {{ __('Add Statement') }}
                     </button>
                     <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                            Remove
+                            {{ __('Remove') }}
                           </button>
                   </div>
                           
                         </div>
                         <div class="input-group input-group-sm mb-3">
                           <span class="input-group-text">Question</span>
-                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
+                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="{{ __('Enter a question') }}">
                         </div>
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Question Type</span>
+                          <span class="input-group-text">{{ __('Question Type') }}</span>
                           <select class="form-select" aria-label="Default select example" value="${obj.qtype}" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
-                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
-                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
+                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>{{ __('Multiple Choice') }}</option>
+                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>{{ __('True/False') }}</option>
                           </select>
                         </div>
                         <div id="optionContainer${index}">
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Option 1:</span>
-                            <input type="text" class="form-control" name="option1" value="${obj.option1}" placeholder="Enter as answer option">
+                            <span class="input-group-text">{{ __('Option 1:') }}</span>
+                            <input type="text" class="form-control" name="option1" value="${obj.option1}" placeholder="{{ __('Enter as answer option') }}">
                           </div>
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Option 2:</span>
-                            <input type="text" class="form-control" name="option2" value="${obj.option2}" placeholder="Enter as answer option">
+                            <span class="input-group-text">{{ __('Option 2:') }}</span>
+                            <input type="text" class="form-control" name="option2" value="${obj.option2}" placeholder="{{ __('Enter as answer option') }}">
                           </div>
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Option 3:</span>
-                            <input type="text" class="form-control" name="option3" value="${obj.option3}" placeholder="Enter as answer option">
+                            <span class="input-group-text">{{ __('Option 3:') }}</span>
+                            <input type="text" class="form-control" name="option3" value="${obj.option3}" placeholder="{{ __('Enter as answer option') }}">
                           </div>
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Option 4:</span>
-                            <input type="text" class="form-control" name="option4" value="${obj.option4}" placeholder="Enter as answer option">
+                            <span class="input-group-text">{{ __('Option 4:') }}</span>
+                            <input type="text" class="form-control" name="option4" value="${obj.option4}" placeholder="{{ __('Enter as answer option') }}">
                           </div>
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Correct Option</span>
+                            <span class="input-group-text">{{ __('Correct Option') }}</span>
                             <select class="form-select" aria-label="Default select example" name="correctOption">
-                              <option value="option1" ${obj.correctOption === 'option1' ? 'selected' : ''}>Option 1</option>
-                              <option value="option2" ${obj.correctOption === 'option2' ? 'selected' : ''}>Option 2</option>
-                              <option value="option3" ${obj.correctOption === 'option3' ? 'selected' : ''}>Option 3</option>
-                              <option value="option4" ${obj.correctOption === 'option4' ? 'selected' : ''}>Option 4</option>
+                              <option value="option1" ${obj.correctOption === 'option1' ? 'selected' : ''}>{{ __('Option 1') }}</option>
+                              <option value="option2" ${obj.correctOption === 'option2' ? 'selected' : ''}>{{ __('Option 2') }}</option>
+                              <option value="option3" ${obj.correctOption === 'option3' ? 'selected' : ''}>{{ __('Option 3') }}</option>
+                              <option value="option4" ${obj.correctOption === 'option4' ? 'selected' : ''}>{{ __('Option 4') }}</option>
                             </select>
                           </div>
     
                         </div>
     
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Answer Description</span>
-                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
+                          <span class="input-group-text">{{ __('Answer Description') }}</span>
+                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="{{ __('Enter the content that is displayed under this navbar.') }}">
                         </div>
                       </div>
                     </form>`;
@@ -758,38 +757,38 @@
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
                       <div class="pageQuestion my-3">
                         <div class="d-flex justify-content-between my-2">
-                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Statement</span>
+                          <span class="badge rounded-pill text-bg-primary my-2">{{ __('Page') }} <span class="noofpages"></span> - {{ __('Statement') }}</span>
                         <div>
                           <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                      Add Question
+                      {{ __('Add Question') }}
                     </button>
                     <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                      Add Statement
+                      {{ __('Add Statement') }}
                     </button>
                           <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                            Remove
+                            {{ __('Remove') }}
                           </button>
                           </div>
                         </div>
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Statement Title</span>
-                          <input type="text" class="form-control" name="sTitle" value="${obj.sTitle}" placeholder="Enter a statement title">
+                          <span class="input-group-text">{{ __('Statement Title') }}</span>
+                          <input type="text" class="form-control" name="sTitle" value="${obj.sTitle}" placeholder="{{ __('Enter a statement title') }}">
                           <input type="hidden" name="qtype" value="statement">
                         </div>
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Statement Content</span>
-                          <input type="text" class="form-control" name="sContent" value="${obj.sContent}" placeholder="Enter a statement content">
+                          <span class="input-group-text">{{ __('Statement Content') }}</span>
+                          <input type="text" class="form-control" name="sContent" value="${obj.sContent}" placeholder="{{ __('Enter a statement content') }}">
                         </div>
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Additional Content</span>
+                          <span class="input-group-text">{{ __('Additional Content') }}</span>
                           <select class="form-select" aria-label="Default select example" name="embeddedVideo">
-                            <option value="embeddedVideo">Embedded Video URL</option>
+                            <option value="embeddedVideo">{{ __('Embedded Video URL') }}</option>
                           </select>
                         </div>
                         <div id="optionContainer">
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Embedded Video URL</span>
-                            <input type="text" class="form-control" name="videoUrl" value="${obj.videoUrl}" placeholder="Enter the URL of an Embedded Video (Youtube)">
+                            <span class="input-group-text">{{ __('Embedded Video URL') }}</span>
+                            <input type="text" class="form-control" name="videoUrl" value="${obj.videoUrl}" placeholder="{{ __('Enter the URL of an Embedded Video (Youtube)') }}">
                           </div>
                         </div>
                       </div>
@@ -804,43 +803,43 @@
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
                       <div class="pageQuestion my-3">
                         <div class="d-flex justify-content-between my-2">
-                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - Question</span>
+                          <span class="badge rounded-pill text-bg-primary my-2">{{ __('Page') }} <span class="noofpages"></span> - {{ __('Question') }}</span>
                         <div>
                           <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
-                      Add Question
+                      {{ __('Add Question') }}
                     </button>
                     <button type="button" onclick="createStatementPageForm('editforms')" class="btn btn-sm btn-secondary mx-1">
-                      Add Statement
+                      {{ __('Add Statement') }}
                     </button>
                           <button type="button" onclick="removePage('${index}', 'editforms')" class="btn btn-sm btn-danger">
-                            Remove
+                            {{ __('Remove') }}
                           </button>
                           </div>
                         </div>
                         <div class="input-group input-group-sm mb-3">
                           <span class="input-group-text">Question</span>
-                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="Enter a question">
+                          <input type="text" class="form-control" name="question" value="${obj.question}" placeholder="{{ __('Enter a question') }}">
                         </div>
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Question Type</span>
+                          <span class="input-group-text">{{ __('Question Type') }}</span>
                           <select class="form-select" aria-label="Default select example" name="qtype" id="questionType${index}" onchange="changeQuestionType(this,'${index}')">
-                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>Multiple Choice</option>
-                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>True/False</option>
+                            <option value="multipleChoice" ${obj.qtype === 'multipleChoice' ? 'selected' : ''}>{{ __('Multiple Choice') }}</option>
+                            <option value="trueFalse" ${obj.qtype === 'trueFalse' ? 'selected' : ''}>{{ __('True/False') }}</option>
                           </select>
                         </div>
                         <div id="optionContainer${index}">
                           <div class="input-group input-group-sm mb-3">
-                            <span class="input-group-text">Answer</span>
+                            <span class="input-group-text">{{ __('Answer') }}</span>
                             <select class="form-select" aria-label="Default select example" name="correctOption">
-                              <option value="true" ${obj.correctOption === 'true' ? 'selected' : ''}>True</option>
-                              <option value="false" ${obj.correctOption === 'false' ? 'selected' : ''}>False</option>
+                              <option value="true" ${obj.correctOption === 'true' ? 'selected' : ''}>{{ __('True') }}</option>
+                              <option value="false" ${obj.correctOption === 'false' ? 'selected' : ''}>{{ __('False') }}</option>
                             </select>
                           </div>
                         </div>
     
                         <div class="input-group input-group-sm mb-3">
-                          <span class="input-group-text">Answer Description</span>
-                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="Enter the content that is displayed under this navbar.">
+                          <span class="input-group-text">{{ __('Answer Description') }}</span>
+                          <input type="text" class="form-control" name="ansDesc" value="${obj.ansDesc}" placeholder="{{ __('Enter the content that is displayed under this navbar.') }}">
                         </div>
                       </div>
                     </form>`;

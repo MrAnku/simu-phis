@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newPhishingmailModal">New Quishing Template</button>
+                        data-bs-target="#newPhishingmailModal">{{ __('New Quishing Template') }}</button>
 
                     {{-- <button class="btn btn-secondary label-btn mb-3 mx-2" data-bs-toggle="modal"
                         data-bs-target="#generatePhishMailModal">
@@ -46,14 +46,14 @@
                     <div class="card custom-card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
-                                Manage Quishing Emails
+                                {{ __('Manage Quishing Emails') }}
                             </div>
                             <div>
                                 <div class="input-group mb-3">
 
                                     <form method="GET" action="{{ route('quishing.emails') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="Search Template..." aria-label="Example text with button addon"
+                                            placeholder="{{ __('Search Template...') }}" aria-label="Example text with button addon"
                                             aria-describedby="button-addon1" value="{{ request('search') }}">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">
@@ -82,13 +82,13 @@
                                             <div class="card-body htmlPhishingGrid" id="qmailBody{{ $pemail->id }}">
 
                                                 @if ($pemail->difficulty == 'easy')
-                                                    <span class="badge bg-outline-success difficulty">Easy</span>
+                                                    <span class="badge bg-outline-success difficulty">{{ __('Easy') }}</span>
                                                 @elseif ($pemail->difficulty == 'medium')
-                                                    <span class="badge bg-outline-warning difficulty">Medium</span>
+                                                    <span class="badge bg-outline-warning difficulty">{{ __('Medium') }}</span>
                                                 @elseif ($pemail->difficulty == 'hard')
-                                                    <span class="badge bg-outline-danger difficulty">Hard</span>
+                                                    <span class="badge bg-outline-danger difficulty">{{ __('Hard') }}</span>
                                                 @else
-                                                    <span class="badge bg-outline-secondary difficulty">Unknown</span>
+                                                    <span class="badge bg-outline-secondary difficulty">{{ __('Unknown') }}</span>
                                                 @endif
 
 
@@ -107,17 +107,17 @@
                                                         `{{ $pemail->email_subject }}`,`qmailBody{{ $pemail->id }}`
                                                         )"
                                                         data-bs-toggle="modal" data-bs-target="#viewPhishingmailModal"
-                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</button>
+                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('View') }}</button>
 
                                                     @if ($pemail->company_id !== 'default')
                                                         <button type="button"
                                                             onclick="editETemplate(`{{ base64_encode($pemail->id) }}`, `{{ $pemail->website }}`, `{{ $pemail->difficulty }}`, `{{ $pemail->sender_profile }}`)"
                                                             data-bs-toggle="modal" data-bs-target="#editEtemplateModal"
-                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">Edit</button>
+                                                            class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('Edit') }}</button>
 
                                                         <button type="button"
                                                             onclick="deleteETemplate(`{{ base64_encode($pemail->id) }}`)"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
                                                     @endif
 
 
@@ -128,7 +128,7 @@
                                     </div>
                                 @empty
                                     <div class="col-lg-12">
-                                        <p class="text-muted text-center">No records found</p>
+                                        <p class="text-muted text-center">{{ __('No records found') }}</p>
                                     </div>
                                 @endforelse
 
@@ -151,25 +151,25 @@
     {{-- -------------------Modals------------------------ --}}
 
     {{-- view mailbody modal  --}}
-    <x-modal id="viewPhishingmailModal" size="modal-xl" heading="Email Preview">
+    <x-modal id="viewPhishingmailModal" size="modal-xl" heading="{{ __('Email Preview') }}">
         <x-quish-email.view-template />
     </x-modal>
 
 
     <!-- new phishing email template modal -->
-    <x-modal id="newPhishingmailModal" heading="Add Quishing Template">
+    <x-modal id="newPhishingmailModal" heading="{{ __('Add Quishing Template') }}">
         <x-quish-email.new-temp-form :senderProfiles="$senderProfiles" :phishingWebsites="$phishingWebsites" />
     </x-modal>
 
 
 
     <!-- edit phishing email template modal -->
-    <x-modal id="editEtemplateModal" heading="Edit Quishing Template">
+    <x-modal id="editEtemplateModal" heading="{{ __('Edit Quishing Template') }}">
         <x-quish-email.edit-template :senderProfiles="$senderProfiles" :phishingWebsites="$phishingWebsites" />
     </x-modal>
 
     {{-- generate phishing email with ai modal --}}
-    <x-modal id="generatePhishMailModal" size="modal-lg" heading="Generate Email Template">
+    <x-modal id="generatePhishMailModal" size="modal-lg" heading="{{ __('Generate Email Template') }}">
         hello
     </x-modal>
 

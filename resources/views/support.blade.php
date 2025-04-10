@@ -9,7 +9,7 @@
             <div class="d-flex justify-content-between mt-3">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#new_tkt_modal">Create New Ticket</button>
+                        data-bs-target="#new_tkt_modal">{{ __('Create New Ticket') }}</button>
                 </div>
             </div>
             <div class="main-chart-wrapper p-2 gap-2 d-lg-flex responsive-chat-open">
@@ -17,7 +17,7 @@
 
                     <div class="d-flex align-items-center justify-content-between w-100 p-3 border-bottom">
                         <div>
-                            <h5 class="fw-semibold mb-0">Support Ticket</h5>
+                            <h5 class="fw-semibold mb-0">{{ __('Support Ticket') }}</h5>
                         </div>
 
                     </div>
@@ -27,13 +27,13 @@
                             <button class="nav-link active h-100" id="users-tab" data-bs-toggle="tab"
                                 data-bs-target="#users-tab-pane" type="button" role="tab"
                                 aria-controls="users-tab-pane" aria-selected="true"><i
-                                    class="ri-history-line me-1 align-middle d-inline-block"></i>Open</button>
+                                    class="ri-history-line me-1 align-middle d-inline-block"></i>{{ __('Open') }}</button>
                         </li>
                         <li class="nav-item border-end me-0" role="presentation">
                             <button class="nav-link h-100" id="groups-tab" data-bs-toggle="tab"
                                 data-bs-target="#groups-tab-pane" type="button" role="tab"
                                 aria-controls="groups-tab-pane" aria-selected="false" tabindex="-1"><i
-                                    class="ri-group-2-line me-1 align-middle d-inline-block"></i>Closed</button>
+                                    class="ri-group-2-line me-1 align-middle d-inline-block"></i>{{ __('Closed') }}</button>
                         </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
@@ -51,7 +51,7 @@
                                                 style="height: auto; overflow: hidden scroll;">
                                                 <div class="simplebar-content" style="padding: 0px;">
                                                     <li class="pb-0">
-                                                        <p class="text-muted fs-11 fw-semibold mb-2 op-7">Open Tickets</p>
+                                                        <p class="text-muted fs-11 fw-semibold mb-2 op-7">{{ __('Open Tickets') }}</p>
                                                     </li>
 
                                                     @forelse ($openTickets as $ticket)
@@ -98,7 +98,7 @@
                             aria-labelledby="groups-tab" tabindex="0">
                             <ul class="list-unstyled mb-0 mt-2 ">
                                 <li class="pb-0">
-                                    <p class="text-muted fs-11 fw-semibold mb-1 op-7">Closed Tickets</p>
+                                    <p class="text-muted fs-11 fw-semibold mb-1 op-7">{{ __('Closed Tickets') }}</p>
                                 </li>
                                 @forelse ($closedTickets as $ticket)
                                     <li class="checkforactive active"
@@ -136,7 +136,7 @@
                         <div class="flex-fill">
                             <p class="mb-0 fw-semibold fs-14">
                                 <a href="javascript:void(0);"
-                                    class="chatnameperson responsive-userinfo-open">Conversations</a>
+                                    class="chatnameperson responsive-userinfo-open">{{ __('Conversation') }}</a>
                             </p>
 
                         </div>
@@ -196,7 +196,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Ticket Information</h6>
+                    <h6 class="modal-title">{{ __('Ticket Information') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -204,33 +204,33 @@
                         @csrf
                         <div class="row">
                             <div class="col-xl-6">
-                                <label class="form-label text-default">Name<sup class="text-danger">*</sup></label>
+                                <label class="form-label text-default">{{ __('Name') }}<sup class="text-danger">*</sup></label>
                                 <input type="text" class="form-control form-control-lg" name="name"
-                                    placeholder="Full name" required>
+                                    placeholder="{{ __('Full name') }}" required>
                             </div>
                             <div class="col-xl-6">
-                                <label class="form-label text-default">Email<sup class="text-danger">*</sup></label>
+                                <label class="form-label text-default">{{ __('Email') }}<sup class="text-danger">*</sup></label>
                                 <input type="email" class="form-control form-control-lg" name="email"
-                                    placeholder="Enter your email" required>
+                                    placeholder="{{ __('Enter your email') }}" required>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-xl-6">
-                                <label for="company" class="form-label text-default">Subject<sup
+                                <label for="company" class="form-label text-default">{{ __('Subject') }}<sup
                                         class="text-danger">*</sup></label>
                                 <div class="input-group">
                                     <input type="text" class="form-control form-control-lg" name="sub"
-                                        id="company" placeholder="Subject" required>
+                                        id="company" placeholder="{{ __('Subject') }}" required>
 
                                 </div>
                             </div>
                             <div class="col-xl-6">
-                                <label for="input-label" class="form-label">Priority<sup
+                                <label for="input-label" class="form-label">{{ __('Priority') }}<sup
                                         class="text-danger">*</sup></label>
                                 <select class="form-control" name="priority" required>
-                                    <option value="High">High</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Low">Low</option>
+                                    <option value="High">{{ __('High') }}</option>
+                                    <option value="Medium">{{ __('Medium') }}</option>
+                                    <option value="Low">{{ __('Low') }}</option>
                                 </select>
 
                             </div>
@@ -238,14 +238,14 @@
 
                         <div class="row mt-3">
                             <div class="col-xl-12">
-                                <label for="text-area" class="form-label">Message<sup class="text-danger">*</sup></label>
-                                <textarea class="form-control" id="text-area" name="msg" placeholder="Enter your Message" rows="5"></textarea>
+                                <label for="text-area" class="form-label">{{ __('Message') }}<sup class="text-danger">*</sup></label>
+                                <textarea class="form-control" id="text-area" name="msg" placeholder="{{ __('Enter your Message') }}" rows="5"></textarea>
                             </div>
                         </div>
 
 
                         <div class="col-xl-12 d-grid mt-2">
-                            <button type="submit" class="btn btn-lg btn-primary">Create Ticket</button>
+                            <button type="submit" class="btn btn-lg btn-primary">{{ __('Create Ticket') }}</button>
                         </div>
 
                     </form>

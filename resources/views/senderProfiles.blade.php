@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newSenderProfileModal">New Sender Profile</button>
+                        data-bs-target="#newSenderProfileModal">{{ __('New Sender Profile') }}</button>
                 </div>
             </div>
 
@@ -20,7 +20,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                Manage Profiles
+                                {{ __('Manage Profiles') }}
                             </div>
                         </div>
                         <div class="card-body">
@@ -28,10 +28,10 @@
                                 <table id="allProfiles" class="table table-bordered text-nowrap w-100">
                                     <thead>
                                         <tr>
-                                            <th>Profile Name</th>
-                                            <th>Display Name & Address</th>
-                                            <th>Profile Type</th>
-                                            <th>Actions</th>
+                                            <th>{{ __('Profile Name') }}</th>
+                                            <th>{{ __('Display Name & Address') }}</th>
+                                            <th>{{ __('Profile Type') }}</th>
+                                            <th>{{ __('Actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -66,7 +66,7 @@
                                             </tr>
                                         @empty
                                             <div class="col-lg-6">
-                                                No records found
+                                                {{ __('No records found') }}
                                             </div>
                                         @endforelse
 
@@ -91,48 +91,47 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Add New Profile</h6>
+                    <h6 class="modal-title">{{ __('Add New Profile') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="{{ route('senderprofile.add') }}" method="POST">
                         @csrf
                         <div class="my-1">
-                            <label for="input-label" class="form-label">Profile Name<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">{{ __('Profile Name') }}<sup class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="pName"
-                                placeholder="Lookalike domain Facebook" required>
+                                placeholder="{{ __('Lookalike domain Facebook') }}" required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">From Address Name<sup
+                            <label for="input-label" class="form-label">{{ __('From Address Name') }}<sup
                                     class="text-danger">*</sup></label>
-                            <input type="text" class="form-control" name="from_name" placeholder="john doe" required>
+                            <input type="text" class="form-control" name="from_name" placeholder="{{ __('john doe') }}" required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">From Address Email<sup
+                            <label for="input-label" class="form-label">{{ __('From Address Email') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="email" class="form-control" name="from_email" placeholder="john@domain.com"
                                 required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Host<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">{{ __('SMTP Host') }}<sup class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="smtp_host" placeholder="mail.domain.com"
                                 required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Username<sup
+                            <label for="input-label" class="form-label">{{ __('SMTP Username') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="email" class="form-control" name="smtp_username" placeholder="user@domain.com"
                                 required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Password<sup
+                            <label for="input-label" class="form-label">{{ __('SMTP Password') }}<sup
                                     class="text-danger">*</sup></label>
-                            <input type="password" class="form-control" name="smtp_password" placeholder="Password"
+                            <input type="password" class="form-control" name="smtp_password" placeholder="{{ __('Password') }}"
                                 required>
                         </div>
                         <div class="my-1">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
-                                Profile</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Add Profile') }}</button>
                         </div>
                     </form>
 
@@ -148,50 +147,49 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Edit Sender Profile</h6>
+                    <h6 class="modal-title">{{ __('Edit Sender Profile') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="{{route('senderprofile.update')}}" method="post">
                         @csrf
                         <div class="my-1">
-                            <label for="input-label" class="form-label">Profile Name<sup
+                            <label for="input-label" class="form-label">{{ __('Profile Name') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="pName"
                                 placeholder="Lookalike domain Facebook" required>
                                 <input type="hidden" name="profile_id">
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">From Address Name<sup
+                            <label for="input-label" class="form-label">{{ __('From Address Name') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="from_name" placeholder="john doe" required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">From Address Email<sup
+                            <label for="input-label" class="form-label">{{ __('From Address Email') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="email" class="form-control" name="from_email" placeholder="john@domain.com"
                                 required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Host<sup class="text-danger">*</sup></label>
+                            <label for="input-label" class="form-label">{{ __('SMTP Host') }}<sup class="text-danger">*</sup></label>
                             <input type="text" class="form-control" name="smtp_host" placeholder="mail.domain.com"
                                 required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Username<sup
+                            <label for="input-label" class="form-label">{{ __('SMTP Username') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="email" class="form-control" name="smtp_username"
                                 placeholder="user@domain.com" required>
                         </div>
                         <div class="my-1">
-                            <label for="input-label" class="form-label">SMTP Password<sup
+                            <label for="input-label" class="form-label">{{ __('SMTP Password') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="password" class="form-control" name="smtp_password" placeholder="Password"
                                 required>
                         </div>
                         <div class="my-1">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Update
-                                Profile</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Update Profile') }}</button>
                         </div>
                     </form>
 
@@ -212,7 +210,7 @@
             <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
                 aria-atomic="true">
                 <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
+                    <strong class="me-auto">{{ __('Success') }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
@@ -225,7 +223,7 @@
             <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
                 aria-atomic="true">
                 <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
+                    <strong class="me-auto">{{ __('Error') }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
@@ -239,7 +237,7 @@
                 <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
                     aria-atomic="true">
                     <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
+                        <strong class="me-auto">{{ __('Error') }}</strong>
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
                     <div class="toast-body">
@@ -274,7 +272,7 @@
         <script>
             $('#allProfiles').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,

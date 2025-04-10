@@ -56,7 +56,7 @@
             <div>
                 <div class="input-group input-group-sm mb-3">
                     <span class="input-group-text">{{ __('Search:') }} </span>
-                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search template">
+                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="{{ __('Search template') }}">
                 </div>
     
                 <div class="input-group input-group-sm mb-3">

@@ -35,11 +35,11 @@
 
                         <div class="card-footer p-0 pt-2 mt-2 d-flex align-items-center justify-content-between">
                             <div>
-                                <span class="text-muted fs-11 d-block">Breach Date :</span>
+                                <span class="text-muted fs-11 d-block">{{ __('Breach Date :') }}</span>
                                 <span class="fw-semibold d-block">{{ $value['BreachDate'] }}</span>
                             </div>
                             <div class="text-end">
-                                <span class="text-muted fs-11 d-block">Modified Date :</span>
+                                <span class="text-muted fs-11 d-block">{{  __('Modified Date :')}}</span>
                                 <span
                                     class="fw-semibold d-block">{{ \Carbon\Carbon::parse($value['ModifiedDate'])->format('Y-m-d') }}</span>
                             </div>

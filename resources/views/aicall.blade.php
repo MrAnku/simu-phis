@@ -357,7 +357,7 @@
                                                     <div class="input-group mb-3">
                                                         <span class="input-group-text" id="basic-addon1">{{ __('Campaign Name') }}</span>
                                                         <input type="text" class="form-control" id="campaignName"
-                                                            name="camp_name" placeholder="Enter Campaign name">
+                                                            name="camp_name" placeholder="{{ __('Enter Campaign name') }}">
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-6">
@@ -473,7 +473,7 @@
 
                                                         <label for="t_moduleSearch" class="form-label">{{ __('Search') }}</label>
                                                         <input type="text" class="form-control" id="t_moduleSearch"
-                                                            placeholder="Search template">
+                                                            placeholder="{{ __('Search template') }}">
 
                                                     </div>
                                                 </div>
@@ -614,7 +614,7 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Enter agent name') }} <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="agent-name" name="agent_name" placeholder="Enter agent name">
+                                <input type="text" class="form-control" id="agent-name" name="agent_name" placeholder="{{ __('Enter agent name') }}">
                             </div>
                             <div class="mb-3">
                                 <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Language') }} <span class="text-danger">*</span></label>
@@ -644,7 +644,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="agent-prompt" class="form-label fs-14 text-dark">{{ __('Enter prompt') }} <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="Enter the prompt/instruction for the AI agent to interact with or ask something from your employees."></textarea>
+                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="{{ __('Enter the prompt/instruction for the AI agent to interact with or ask something from your employees.') }}"></textarea>
                                 <small class="text-muted mt-2">{{ __('Kindly type your prompt in english.') }}</small>
                             </div>
                             <div class="mb-3 d-flex justify-content-center">

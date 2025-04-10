@@ -53,7 +53,7 @@
 
                                     <form method="GET" action="{{ route('phishingEmails.search') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="Search Template..." aria-label="Example text with button addon"
+                                            placeholder="{{ __('Search Template...') }}" aria-label="Example text with button addon"
                                             aria-describedby="button-addon1">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">
@@ -148,30 +148,30 @@
     {{-- -------------------Modals------------------------ --}}
 
     {{-- view mailbody modal  --}}
-    <x-modal id="viewPhishingmailModal" size="modal-xl" heading="Email Preview">
+    <x-modal id="viewPhishingmailModal" size="modal-xl" heading="{{ __('Email Preview') }}">
         <x-phish-email.view-phish-mail-modal />
     </x-modal>
 
 
     <!-- new phishing email template modal -->
-    <x-modal id="newPhishingmailModal" heading="Add Email Template">
+    <x-modal id="newPhishingmailModal" heading="{{ __('Add Email Template') }}">
         <x-phish-email.new-phish-mail-form :phishingWebsites="$phishingWebsites" :senderProfiles="$senderProfiles" />
     </x-modal>
 
 
 
     <!-- edit phishing email template modal -->
-    <x-modal id="editEtemplateModal" heading="Edit Email Template">
+    <x-modal id="editEtemplateModal" heading="{{ __('Edit Email Template') }}">
         <x-phish-email.edit-phish-mail-form :phishingWebsites="$phishingWebsites" :senderProfiles="$senderProfiles" />
     </x-modal>
 
     {{-- generate phishing email with ai modal --}}
-    <x-modal id="generatePhishMailModal" size="modal-lg" heading="Generate Email Template">
+    <x-modal id="generatePhishMailModal" size="modal-lg" heading="{{ __('Generate Email Template') }}">
         <x-phish-email.generate-phish-mail-form />
     </x-modal>
 
     {{-- save generate phishing email template modal --}}
-    <x-modal id="savePhishMailModal" heading="Save Generated Email Template">
+    <x-modal id="savePhishMailModal" heading="{{ __('Save Generated Email Template') }}">
         <x-phish-email.save-ai-phish-temp-form :phishingWebsites="$phishingWebsites" :senderProfiles="$senderProfiles" />
     </x-modal>
 

@@ -41,8 +41,8 @@
             <div class="header-element country-selector">
                 <!-- Start::header-link -->
                 <a href="javascript:void(0);" class="header-link" data-bs-toggle="modal" data-bs-target="#countryModal">
-                    <img src="../assets/images/flags/us_flag.jpg" alt="img"
-                        class="rounded-circle header-link-icon">
+                    {{-- <img src="../assets/images/flags/russia_flag.jpeg" alt="img"
+                        class="rounded-circle header-link-icon"> --}}
                     <span class="fw-semibold mb-0 lh-1">{{ strtoupper(Auth::user()->lang) }}</span>
                 </a>
             </div>

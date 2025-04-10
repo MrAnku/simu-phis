@@ -14,7 +14,7 @@
                 <div class="col-xl-5">
                     <div class="card custom-card">
                         <div class="card-header">
-                            <div class="card-title">Scan Domain</div>
+                            <div class="card-title">{{ __('Scan Domain') }}</div>
                         </div>
                         <div class="card-body">
                             <div>
@@ -23,10 +23,10 @@
                                     <input type="hidden" id="sid">
                                     <div class="row">
                                         <div class="col-lg-8">
-                                            <input type="text" class="form-control" id="url" placeholder="Enter domain name" autofocus>
+                                            <input type="text" class="form-control" id="url" placeholder="{{ __('Enter domain name') }}" autofocus>
                                         </div>
                                         <div class="col-lg-4">
-                                            <button id="scan" class="btn btn-primary w-100 btn-wave">Scan</button>
+                                            <button id="scan" class="btn btn-primary w-100 btn-wave">{{ __('Scan') }}</button>
                                         </div>
                                     </div>
                                     
@@ -48,7 +48,7 @@
                 <div class="col-xl-7">
                     <div class="card custom-card">
                         <div class="card-header">
-                            <div class="card-title">Suspicious Domains Registered</div>
+                            <div class="card-title">{{ __('Suspicious Domains Registered') }}</div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -159,7 +159,7 @@
         
         function actionScan() {
             if (!$('#url').val()) {
-                $('#status').html('↖ You need to type in a domain name first');
+                $('#status').html("{{ __('↖ You need to type in a domain name first') }}");
                 return
             }
         

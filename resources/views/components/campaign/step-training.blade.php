@@ -23,7 +23,7 @@
                     <select class="form-select" id="training_type">
                         <option value="static_training" selected>{{ __('Static Training') }}</option>
                         <option value="ai_training">{{ __('AI Training') }}</option>
-                        <option value="gamified">{{ __('amified Training') }}</option>
+                        <option value="gamified">{{ __('Gamified Training') }}</option>
                         <option value="games">{{ __('Games') }}</option>
                     </select>
                 </div>
@@ -45,7 +45,7 @@
         <div>
             <div class="input-group input-group-sm mb-3">
                 <span class="input-group-text">{{ __('Search:') }} </span>
-                <input type="text" class="form-control" id="t_moduleSearch" placeholder="Search template">
+                <input type="text" class="form-control" id="t_moduleSearch" placeholder="{{ __('Search template') }}">
             </div>
 
             <div class="input-group input-group-sm mb-3" id="training_cat_container">

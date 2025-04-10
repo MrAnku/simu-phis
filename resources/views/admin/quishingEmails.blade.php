@@ -25,7 +25,7 @@
 
                                     <form method="GET" action="{{ route('quishing.emails') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="Search Template..." aria-label="Example text with button addon"
+                                            placeholder="{{ __('Search Template...') }}" aria-label="Example text with button addon"
                                             aria-describedby="button-addon1" value="{{ request('search') }}">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">

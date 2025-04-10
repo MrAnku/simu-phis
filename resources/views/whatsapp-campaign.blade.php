@@ -129,7 +129,7 @@
                             <label for="input-label" class="form-label">{{ __('Template name') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" name="temp_name" class="form-control" id="temp_name"
-                                placeholder="Enter a unique name for your template i.e. alert_for_renewal" required>
+                                placeholder="{{ __('Enter a unique name for your template i.e. alert_for_renewal') }}" required>
 
                         </div>
                         <div class="mb-3">
@@ -182,7 +182,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="input-label" class="form-label">{{ __('Campaign name') }}<sup class="text-danger">*</sup></label>
-                        <input type="text" class="form-control" id="camp_name" placeholder="Template name" required>
+                        <input type="text" class="form-control" id="camp_name" placeholder="{{ __('Template name') }}" required>
 
                     </div>
                     <div class="mb-3">

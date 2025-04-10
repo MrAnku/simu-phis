@@ -11,9 +11,9 @@
 
             <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
             <div class="d-flex gap-2 align-items-center">
-                <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
+                <input type="text" class="form-control" id="templateSearch" placeholder="{{ __('Search template') }}">
                 <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
-                    <span class="visually-hidden">{{ __('oading...') }}</span>
+                    <span class="visually-hidden">{{ __('Loading...') }}</span>
                 </div>
             </div>
 
@@ -45,7 +45,7 @@
                                 <button type="button"
                                     onclick="showMaterialDetails(this, '{{ $email->name }}', '{{ $email->email_subject }}', '{{ $email->website }}', '{{ $email->senderProfile }}')"
                                     class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
-                                    View
+                                    {{ __('View') }}
                                 </button>
                             </div>
                             <div class="fs-semibold fs-14">

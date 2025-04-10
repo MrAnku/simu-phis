@@ -10,12 +10,12 @@
             <div class="d-flex" style="gap: 10px;">
                 <div>
                     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#newWebsiteModal">New Website</button>
+                        data-bs-target="#newWebsiteModal">{{ __('New Website') }}</button>
                 </div>
 
                 <div>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#generateWebsiteModal">Gen4 AI Builder</button>
+                        data-bs-target="#generateWebsiteModal">{{ __('Gen4 AI Builder') }}</button>
                 </div>
 
 
@@ -28,7 +28,7 @@
                     <div class="card custom-card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="card-title">
-                                Manage Phishing Websites
+                                {{ __('Manage Phishing Websites') }}
                             </div>
 
                             <div>
@@ -36,7 +36,7 @@
 
                                     <form method="GET" action="{{ route('phishingWebsites.search') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="Search website..." aria-label="Example text with button addon"
+                                            placeholder="{{ __('Search website...') }}" aria-label="Example text with button addon"
                                             aria-describedby="button-addon1">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">
@@ -68,13 +68,13 @@
                                                 <div class="d-flex justify-content-center">
                                                     <a href="http://{{ Str::random(6) }}.{{ $phishingWebsite->domain }}/{{ Str::random(10) }}?v=r&c={{ Str::random(10) }}&p={{ $phishingWebsite->id }}&l={{ Str::slug($phishingWebsite->name) }}"
                                                         target="_blank"
-                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                                        class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('View') }}</a>
 
                                                     @if ($phishingWebsite->company_id !== 'default')
                                                         <button type="button"
                                                             onclick="deleteWebsite(`{{ $phishingWebsite->id }}`, `{{ $phishingWebsite->file }}`)"
                                                             target="_blank"
-                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                                            class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
                                                     @endif
 
 
@@ -85,7 +85,7 @@
                                     </div>
                                 @empty
                                     <div class="col-lg-6">
-                                        No records found
+                                        {{ __('No records found') }}
                                     </div>
                                 @endforelse
 
@@ -110,24 +110,24 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Add Website</h6>
+                    <h6 class="modal-title">{{ __('Add Website') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="{{ route('phishing.website.add') }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website name<sup class="text-danger">*</sup></label>
-                            <input type="text" class="form-control" name="webName" placeholder="Template name" required>
+                            <label for="input-label" class="form-label">{{ __('Website name') }}<sup class="text-danger">*</sup></label>
+                            <input type="text" class="form-control" name="webName" placeholder="{{ __('Template name') }}" required>
 
                         </div>
                         <div class="mb-3">
-                            <label for="formFile" class="form-label">Website File<sup class="text-danger">*</sup></label>
+                            <label for="formFile" class="form-label">{{ __('Website File') }}<sup class="text-danger">*</sup></label>
                             <input class="form-control" type="file" name="webFile" accept=".html" required>
 
                         </div>
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website Domain<sup
+                            <label for="input-label" class="form-label">{{ __('Website Domain') }}<sup
                                     class="text-danger">*</sup></label>
                             <div class="d-flex">
 
@@ -140,8 +140,7 @@
 
                         </div>
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Add
-                                Website</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Add Website') }}</button>
                         </div>
                     </form>
 
@@ -157,39 +156,39 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Generate website with AI</h6>
+                    <h6 class="modal-title">{{ __('Generate website with AI') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">Description<sup class="text-danger">*</sup></label>
+                        <label for="input-label" class="form-label">{{ __('Description') }}<sup class="text-danger">*</sup></label>
                         <input type="text" class="form-control" id="web_des"
-                            placeholder="Enter your website description" required>
+                            placeholder="{{ __('Enter your website description') }}" required>
 
                     </div>
                     <div class="mb-3">
-                        <label for="formFile" class="form-label">Company Name<sup class="text-danger">*</sup></label>
+                        <label for="formFile" class="form-label">{{ __('Company Name') }}<sup class="text-danger">*</sup></label>
                         <input type="text" class="form-control" id="com_name"
-                            placeholder="Enter the company name which would be appear as heading on website" required>
+                            placeholder="{{ __('Enter the company name which would be appear as heading on website') }}" required>
 
                     </div>
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">Logo url<sup class="text-danger">*</sup></label>
+                        <label for="input-label" class="form-label">{{ __('Logo url') }}<sup class="text-danger">*</sup></label>
                         <input type="text" class="form-control" id="logo_url"
-                            placeholder="Enter the website url link" required>
+                            placeholder="{{ __('Enter the website url link') }}" required>
 
                     </div>
                     <div class="mb-3">
                         <button onclick="generateWebsite(this)"
-                            class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Generate Website</button>
+                            class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Generate Website') }}</button>
                     </div>
 
                     <div class="mb-3" id="iframe-container" style="display:none;">
                         <iframe id="generated-site-iframe" width="100%" height="600px"></iframe>
                         <div class="text-end">
                             <button data-bs-toggle="modal" id="saveSite" data-bs-target="#saveGeneratedSiteModal"
-                                class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save</button>
+                                class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Save') }}</button>
                         </div>
                     </div>
 
@@ -205,7 +204,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Save Generated Website</h6>
+                    <h6 class="modal-title">{{ __('Save Generated Website') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -214,14 +213,14 @@
                         enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website name<sup
+                            <label for="input-label" class="form-label">{{ __('Website name') }}<sup
                                     class="text-danger">*</sup></label>
-                            <input type="text" class="form-control" name="webName" placeholder="Template name"
+                            <input type="text" class="form-control" name="webName" placeholder="{{ __('Template name') }}"
                                 required>
                             <input type="hidden" name="sitePagePath" id="sitePagePath">
                         </div>
                         <div class="mb-3">
-                            <label for="input-label" class="form-label">Website Domain<sup
+                            <label for="input-label" class="form-label">{{ __('Website Domain') }}<sup
                                     class="text-danger">*</sup></label>
                             <div class="d-flex">
 
@@ -234,8 +233,7 @@
 
                         </div>
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">Save
-                                Website</button>
+                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Save Website') }}</button>
                         </div>
                     </form>
 
@@ -259,7 +257,7 @@
             <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
                 aria-atomic="true">
                 <div class="toast-header bg-success text-fixed-white">
-                    <strong class="me-auto">Success</strong>
+                    <strong class="me-auto">{{ __('Success') }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
@@ -272,7 +270,7 @@
             <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
                 aria-atomic="true">
                 <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
+                    <strong class="me-auto">{{ __('Error') }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
@@ -286,7 +284,7 @@
                 <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
                     aria-atomic="true">
                     <div class="toast-header bg-danger text-fixed-white">
-                        <strong class="me-auto">Error</strong>
+                        <strong class="me-auto">{{ __('Error') }}</strong>
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
                     <div class="toast-body">

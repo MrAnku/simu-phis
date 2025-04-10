@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="input-group mb-3">
-                    <span class="input-group-text">Module name</span>
+                    <span class="input-group-text">{{ __('Module name') }}</span>
                     <input type="text" class="form-control required" name="module_name" placeholder="Enter a unique module name"
                         aria-label="Enter a unique module name" aria-describedby="basic-addon1" data-name="Module name"
                         required>
@@ -12,7 +12,7 @@
             </div>
             <div class="col-lg-4">
                 <div class="input-group mb-3">
-                    <span class="input-group-text">Passing Score</span>
+                    <span class="input-group-text">{{ __('Passing Score') }}</span>
                     <input type="number" class="form-control required mPassingScore" name="passing_score" min="0"
                         max="100" placeholder="70" aria-label="70" aria-describedby="basic-addon1"
                         data-name="Passing Score" required>
@@ -21,10 +21,10 @@
             </div>
             <div class="col-lg-4">
                 <div class="input-group mb-3">
-                    <span class="input-group-text">Category</span>
+                    <span class="input-group-text">{{ __('Category') }}</span>
                     <select class="form-select" name="category" id="edit_g_category">
-                        <option value="international">International</option>
-                        <option value="middle_east">Middle East</option>
+                        <option value="international">{{ __('International') }}</option>
+                        <option value="middle_east">{{ __('Middle East') }}</option>
                     </select>
                 </div>
             </div>
@@ -35,16 +35,16 @@
             <div class="col-lg-6">
     
                 <div class="input-group">
-                    <label class="input-group-text" for="edit_g_coverImageFile">Cover Image</label>
+                    <label class="input-group-text" for="edit_g_coverImageFile">{{ __('Cover Image') }}</label>
                     <input type="file" class="form-control" name="cover_file" id="edit_g_coverImageFile">
     
                 </div>
-                <small class="text-muted mx-3">Only .jpeg, .jpg and .png files allowed</small>
+                <small class="text-muted mx-3">{{ __('Only .jpeg, .jpg and .png files allowed') }}</small>
     
             </div>
             <div class="col-lg-6">
                 <div class="input-group mb-3">
-                    <span class="input-group-text">Completion Time(minutes)</span>
+                    <span class="input-group-text">{{ __('Completion Time(minutes)') }}</span>
                     <input type="number" class="form-control required mCompTime" name="completion_time" placeholder="5"
                         aria-label="Username" aria-describedby="basic-addon1" data-name="Completion Time" required>
                 </div>
@@ -62,17 +62,17 @@
 
 <div>
     <div class="input-group mb-3">
-        <span class="input-group-text">Enter Video URL:</span>
+        <span class="input-group-text">{{ __('Enter Video URL:') }}</span>
         <input type="text" class="form-control" id="edit_gamified_training_video_url" name="gamified_training_video_url"
             data-name="Gamified Training Video" required>
-        <button class="btn btn-primary" type="button" id="fetchVideoUrl" onclick="fetchVideoUrl()">Fetch Video</button>
+        <button class="btn btn-primary" type="button" id="fetchVideoUrl" onclick="fetchVideoUrl()">Fetch Video') }}</button>
     </div>
 </div>
 
 <div id="edit_game_training_video_preview" style="display: none;">
     <video id="editGameTrainingVideoPlayer" controls style="width: 100%;">
         <source src="https://sparrow.host/videos/financial-AR.mp4" type="video/mp4">
-        Your browser does not support the video tag.
+        {{ __('Your browser does not support the video tag.') }}
     </video>
 </div>
 
@@ -80,43 +80,43 @@
     <div class="gamified_training_question border px-3 my-3">
         <div class="d-flex gap-2 justify-content-end my-3">
             <button type="button" class="btn btn-primary btn-sm btn-wave"
-                onclick="addMoreGamifiedTrainingQues(this)">Add More</button>
+                onclick="addMoreGamifiedTrainingQues(this)">{{ __('Add More') }}</button>
             <button type="button" class="btn btn-danger deleteQuesBtn btn-sm btn-wave"
-                onclick="deleteGamifiedTrainingQues(this)" style="display: none;">Delete</button>
+                onclick="deleteGamifiedTrainingQues(this)" style="display: none;">{{ __('Delete') }}</button>
         </div>
 
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Enter Video Time:</span>
+            <span class="input-group-text">{{ __('Enter Video Time:') }}</span>
             <input type="text" class="form-control time" name="video_time" onblur="isTimeValid(this)" data-name="Video Time" placeholder="0:32"
                 required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Question:</span>
+            <span class="input-group-text">{{ __('Question:') }}</span>
             <input type="text" class="form-control question" name="question" data-name="Question" required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Option 1:</span>
+            <span class="input-group-text">{{ __('Option 1:') }}</span>
             <input type="text" class="form-control option1" name="options[]" required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Option 2:</span>
+            <span class="input-group-text">{{ __('Option 2:') }}</span>
             <input type="text" class="form-control option2" name="options[]" required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Option 3:</span>
+            <span class="input-group-text">{{ __('Option 3:') }}</span>
             <input type="text" class="form-control option3" name="options[]" required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Option 4:</span>
+            <span class="input-group-text">{{ __('Option 4:') }}</span>
             <input type="text" class="form-control option4" name="options[]" required>
         </div>
         <div class="input-group input-group-sm mb-3">
-            <span class="input-group-text">Correct Answer:</span>
+            <span class="input-group-text">{{ __('Correct Answer:') }}</span>
             <select class="form-select answer" name="correct_answer" required>
-                <option value="0">Option 1</option>
-                <option value="1">Option 2</option>
-                <option value="2">Option 3</option>
-                <option value="3">Option 4</option>
+                <option value="0">{{ __('Option 1') }}</option>
+                <option value="1">{{ __('Option 2') }}</option>
+                <option value="2">{{ __('Option 3') }}</option>
+                <option value="3">{{ __('Option 4') }}</option>
             </select>
         </div>
       
@@ -126,6 +126,6 @@
 
 <div class="d-flex justify-content-end mt-3">
     <button type="button" class="btn btn-primary" onclick="updateGamifiedQues()">
-        Update
+        {{ __('Update') }}
     </button>
 </div>

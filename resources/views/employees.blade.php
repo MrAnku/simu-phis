@@ -219,7 +219,7 @@
         <script>
             $('#allGroupsTable').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,
@@ -228,7 +228,7 @@
 
             $('#domainVerificationTable').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,

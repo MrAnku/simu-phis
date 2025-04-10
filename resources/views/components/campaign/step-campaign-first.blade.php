@@ -5,7 +5,7 @@
             <label for="input-label" class="form-label">{{ __('Campaign Name') }}<sup
                     class="text-danger">*</sup></label>
             <input type="text" class="form-control required" id="camp_name"
-                placeholder="Enter a unique campaign name">
+                placeholder="{{ __('Enter a unique campaign name') }}">
 
         </div>
         <div class="col-lg-6">

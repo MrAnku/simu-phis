@@ -51,7 +51,7 @@
                         ">
 
                                 <input type="text" class="form-control" id="templateSearch"
-                                    placeholder="Search template">
+                                    placeholder="{{ __('Search template') }}">
                                 <i class='bx bx-search fs-23'></i>
                             </div>
                         </div>

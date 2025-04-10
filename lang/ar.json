@@ -288,7 +288,6 @@
     "Business ID": "معرّف النشاط التجاري",
     "Access Token": "رمز الوصول",
     "From Phone Number ID": "من معرّف رقم الهاتف",
-
     "Albanian": "الألبانية",
     "Arabic": "العربية",
     "Azerbaijani": "الأذربيجانية",
@@ -454,5 +453,214 @@
     "Don't forget to add the shortcodes": "لا تنسَ إضافة الرموز المختصرة",
     "in the Email Template File.": "في ملف قالب البريد الإلكتروني.",
     "Watch Now": "شاهد الآن",
-    "Tutorial Video": "فيديو تعليمي"
+    "Tutorial Video": "فيديو تعليمي",
+    "New Quishing Template": "قالب تصيد جديد",
+    "Manage Quishing Emails": "إدارة رسائل التصيد الإلكتروني",
+    "MAILS": "الرسائل",
+    "All Mails": "كل الرسائل",
+    "Inbox": "الوارد",
+    "Sent": "المرسلة",
+    "Drafts": "المسودات",
+    "Spam": "البريد المزعج",
+    "Important": "مهم",
+    "Archive": "الأرشيف",
+    "Starred": "المميزة",
+    "SETTINGS": "إعدادات",
+    "Settings": "إعدادات",
+    "Mail": "البريد",
+    "Home": "المنزل",
+    "Work": "العمل",
+    "Friends": "الأصدقاء",
+    "ONLINE USERS": "المستخدمون المتصلون",
+    "Hello this is angelica.": "مرحبًا، هذه أنجيليكا.",
+    "Thanks for sharing file 😀.": "شكرًا لمشاركة الملف 😀.",
+    "Report Spam": "الإبلاغ عن بريد مزعج",
+    "Reply": "الرد",
+    "History of planets are discovered yesterday.": "تم اكتشاف تاريخ الكواكب بالأمس.",
+    "Trash": "نفاية",
+    "Email Preview": "معاينة البريد الإلكتروني",
+    "Add Quishing Template": "إضافة قالب تصيد",
+    "Edit Quishing Template": "تعديل قالب التصيد",
+    "Generate Email Template": "إنشاء قالب بريد إلكتروني",
+    "i.e. Reset your password": "مثال: إعادة تعيين كلمة المرور الخاصة بك",
+    "New Website": "موقع جديد",
+    "Gen4 AI Builder": "منشئ الذكاء الاصطناعي Gen4",
+    "Manage Phishing Websites": "إدارة مواقع التصيد",
+    "Add Website": "إضافة موقع",
+    "Website name": "اسم الموقع",
+    "Website File": "ملف الموقع",
+    "Website Domain": "نطاق الموقع",
+    "Generate website with AI": "إنشاء موقع باستخدام الذكاء الاصطناعي",
+    "Company Name": "اسم الشركة",
+    "Logo url": "رابط الشعار",
+    "Generate Website": "إنشاء الموقع",
+    "Save Generated Website": "حفظ الموقع المُنشأ",
+    "Success": "تم بنجاح",
+    "Error": "خطأ",
+    "Enter your website description": "أدخل وصف موقعك",
+    "Enter the company name which would be appear as heading on website": "أدخل اسم الشركة الذي سيظهر كعنوان في الموقع",
+    "Enter the website url link": "أدخل رابط عنوان الموقع الإلكتروني",
+    "New Sender Profile": "ملف مرسل جديد",
+    "Manage Profiles": "إدارة الملفات الشخصية",
+    "Profile Name": "اسم الملف الشخصي",
+    "Profile Type": "نوع الملف الشخصي",
+    "Add New Profile": "إضافة ملف شخصي جديد",
+    "From Address Name": "اسم عنوان المرسل",
+    "From Address Email": "البريد الإلكتروني للمرسل",
+    "SMTP Host": "مضيف SMTP",
+    "SMTP Username": "اسم مستخدم SMTP",
+    "SMTP Password": "كلمة مرور SMTP",
+    "Add Profile": "إضافة ملف شخصي",
+    "Edit Sender Profile": "تعديل ملف المرسل",
+    "Search...": "يبحث...",
+    "Add Email Template": "إضافة قالب البريد الإلكتروني",
+    "New Training Module": "وحدة تدريبية جديدة",
+    "New Gamified Training": "تدريب تفاعلي جديد",
+    "Manage Training Modules": "إدارة الوحدات التدريبية",
+    "Static/ AI Training": "تدريب ثابت / بالذكاء الاصطناعي",
+    "Module name": "اسم الوحدة",
+    "Cover Image": "صورة الغلاف",
+    "Only .jpeg, .jpg and .png files allowed": "يُسمح فقط بملفات .jpeg و .jpg و .png",
+    "Completion Time(minutes)": "مدة الإكمال (بالدقائق)",
+    "Enter Video URL:": "أدخل رابط الفيديو:",
+    "Your browser does not support the video tag.": "المتصفح لا يدعم وسم الفيديو.",
+    "Add More": "إضافة المزيد",
+    "Enter Video Time:": "أدخل وقت الفيديو:",
+    "Question:": "السؤال:",
+    "Option 1:": "الخيار 1:",
+    "Option 2:": "الخيار 2:",
+    "Option 3:": "الخيار 3:",
+    "Option 4:": "الخيار 4:",
+    "Correct Answer:": "الإجابة الصحيحة:",
+    "Option 1": "الخيار 1",
+    "Option 2": "الخيار 2",
+    "Option 3": "الخيار 3",
+    "Option 4": "الخيار 4",
+    "Add Training": "إضافة تدريب",
+    "Edit Training": "تعديل التدريب",
+    "Add Gamified Training": "إضافة تدريب تفاعلي",
+    "Edit Gamified Training": "تعديل التدريب التفاعلي",
+    "Add Question": "أضف سؤالاً",
+    "Add Statement": "إضافة بيان",
+    "Enter a unique module name": "أدخل اسم وحدة فريدًا",
+    "Answer Description": "وصف الإجابة",
+    "Multiple Choice": "اختيار من متعدد",
+    "Correct Option": "الخيار الصحيح",
+    "Question": "سؤال",
+    "Question Type": "نوع السؤال",
+    "Enter as answer option": "أدخل كخيار إجابة",
+    "Enter the content that is displayed under this navbar.": "أدخل المحتوى الذي يتم عرضه تحت شريط التنقل هذا.",
+    "Remove": "يزيل",
+    "Enter a question": "أدخل سؤالا",
+    "Fetch Video": "جلب الفيديو",
+    "Page 1 - Question": "الصفحة 1 - سؤال",
+    "Search training": "البحث عن تدريب",
+    "Scan Domain": "فحص النطاق",
+    "Scan": "فحص",
+    "Suspicious Domains Registered": "تم تسجيل نطاقات مشبوهة",
+    "Enter domain name": "أدخل اسم النطاق",
+    "↖ You need to type in a domain name first": "↖ يجب إدخال اسم نطاق أولاً",
+    "Dark Web Monitoring": "مراقبة الويب المظلم",
+    "No emails have breached.": "لم يتم اختراق أي رسائل بريد إلكتروني.",
+    "Breach Date :": "تاريخ الاختراق :",
+    "Modified Date :": "تاريخ التعديل :",
+    "Create New Ticket": "إنشاء تذكرة جديدة",
+    "Open": "مفتوح",
+    "Closed": "مغلق",
+    "Open Tickets": "تذاكر مفتوحة",
+    "Closed Tickets": "تذاكر مغلقة",
+    "Conversation": "محادثة",
+    "Ticket Information": "معلومات التذكرة",
+    "Subject": "الموضوع",
+    "Priority": "الأولوية",
+    "Create Ticket": "إنشاء التذكرة",
+    "Full name": "الاسم الكامل",
+    "Enter your email": "أدخل بريدك الإلكتروني",
+    "Enter your Message": "أدخل رسالتك",
+    "High": "عالٍ",
+    "Low": "منخفض",
+    "Platform Super Admin": "المسؤول العام للنظام",
+    "Company ID:": "معرف الشركة:",
+    "Data Storage Location:": "موقع تخزين البيانات:",
+    "Personal Information": "المعلومات الشخصية",
+    "Platform Management": "إدارة النظام",
+    "Time Zone": "المنطقة الزمنية",
+    "Date Format": "تنسيق التاريخ",
+    "Update Profile": "تحديث الملف الشخصي",
+    "Change Password": "تغيير كلمة المرور",
+    "Reset Password": "إعادة تعيين كلمة المرور",
+    "Password should be min of": "يجب أن تكون كلمة المرور على الأقل",
+    "8 digits": "8 أحرف",
+    ",atleast": "، على الأقل",
+    "One Capital letter": "حرف كبير واحد",
+    "One Special Character": "رمز خاص واحد",
+    "included.": "مشمول.",
+    "Current Password": "كلمة المرور الحالية",
+    "New Password": "كلمة المرور الجديدة",
+    "Confirm Password": "تأكيد كلمة المرور",
+    "Update Password": "تحديث كلمة المرور",
+    "Account Multi-Factor Authentication": "المصادقة متعددة العوامل للحساب",
+    "Enable Multi-Factor Authentication on your Account?": "تفعيل المصادقة متعددة العوامل لحسابك؟",
+    "Account Deactivation": "تعطيل الحساب",
+    "Deactivate your Account?": "هل تريد تعطيل حسابك؟",
+    "Deactivate Account": "تعطيل الحساب",
+    "Language Settings": "إعدادات اللغة",
+    "Default Language (Phishing Emails)": "اللغة الافتراضية (لبريد التصيد)",
+    "Default Language (Training Modules)": "اللغة الافتراضية (لوحدات التدريب)",
+    "Phish Education": "التوعية حول التصيد",
+    "If an employee falls victim to a phishing website, what action should be taken?": "إذا وقع موظف ضحية لموقع تصيد، ما الإجراء الذي يجب اتخاذه؟",
+    "Note: This setting configures the default selection for new campaigns. This setting can be modified on a campaign-by-campaign basis.": "ملاحظة: هذا الإعداد يحدد الاختيار الافتراضي للحملات الجديدة. يمكن تعديله لكل حملة على حدة.",
+    "Redirect to the": "إعادة التوجيه إلى",
+    "education website": "موقع التوعية",
+    "Redirect to my own education website": "إعادة التوجيه إلى موقعي التوعوي الخاص",
+    "Don't do anything": "عدم اتخاذ أي إجراء",
+    "Phish Reporting": "الإبلاغ عن التصيد",
+    "Enable employees to report phishing via Gmail, Office 365 and Outlook?": "تمكين الموظفين من الإبلاغ عن التصيد عبر Gmail وOffice 365 وOutlook؟",
+    "Notification Settings": "إعدادات الإشعارات",
+    "Deliver Training Assignment Reminders?": "إرسال تذكيرات مهام التدريب؟",
+    "Frequency Days": "عدد الأيام بين التذكيرات",
+    "Setup Multi Factor Authentication": "إعداد المصادقة متعددة العوامل",
+    "Enter MFA Code": "أدخل رمز المصادقة",
+    "Enter the code from Google Authenticator": "أدخل الرمز من Google Authenticator",
+    "Verify": "تحقق",
+    "Full Name": "الاسم الكامل",
+    "Company Name:": "اسم الشركة:",
+    "Country": "الدولة",
+    "Default Language (Notifications)": "اللغة الافتراضية (للتنبيهات)",
+    "Dynamic Translation": "الترجمة الديناميكية",
+    "Add Selected Employees to Group": "إضافة الموظفين المحددين إلى المجموعة",
+    "Enter a unique campaign name": "أدخل اسم حملة فريدًا",
+    "Not scheduled": "غير مجدول",
+    "immediately": "فورًا",
+    "Search template": "البحث في القوالب",
+     "Enter a unique name for your template i.e. alert_for_renewal": "أدخل اسمًا فريدًا لقالبك مثل: alert_for_renewal",
+     "Enter Campaign name": "أدخل اسم الحملة",
+     "English (UK)": "الإنجليزية (المملكة المتحدة)",
+     "Multilingual (English and Spanish)": "متعدد اللغات (الإنجليزية والإسبانية)",
+     "Spanish (Latin America)": "الإسبانية (أمريكا اللاتينية)",
+     "Spanish (Spain)": "الإسبانية (إسبانيا)",
+     "English (India)": "الإنجليزية (الهند)",
+     "Portuguese (Portugal)": "البرتغالية (البرتغال)",
+     "Portuguese (Brazil)": "البرتغالية (البرازيل)",
+     "Vietnamese": "الفيتنامية",
+     "Enter the prompt/instruction for the AI agent to interact with or ask something from your employees.": "أدخل التعليمات أو الطلب الذي يجب على وكيل الذكاء الاصطناعي استخدامه للتفاعل مع موظفيك أو طرح سؤال عليهم.",
+      "Enter email address": "أدخل عنوان البريد الإلكتروني",
+      "Download Report": "تنزيل التقرير",
+      "Download Campaign Report": "تنزيل تقرير الحملة",
+      "Generate a invoice mail template of company": "إنشاء قالب بريد فاتورة للشركة",
+      "Search Template...": "قالب البحث...",
+       "Search website...": "ابحث في الموقع...",
+       "Lookalike domain Facebook": "نطاق مشابه لفيسبوك",
+       "john doe": "جون دو",
+       "Password": "كلمة المرور",
+       "Download as PDF": "تنزيل بصيغة PDF",
+       "Oops! No Interaction Found": "عذرًا! لم يتم العثور على أي تفاعل",
+       "Interaction": "التفاعل",
+       "Details": "التفاصيل",
+       "Analysis Data": "بيانات التحليل",
+       "Campaings Reports": "تقارير الحملات",
+       "Graph": "الرسم البياني",
+       "Training Completed": "تم إكمال التدريب",
+       "Mail Open": "تم فتح البريد",
+       "Status Send": "تم إرسال الحالة"
 }

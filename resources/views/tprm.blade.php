@@ -154,7 +154,7 @@
                                                     <label for="input-label" class="form-label">{{ __('Campaign Name') }}<sup
                                                             class="text-danger">*</sup></label>
                                                     <input type="text" class="form-control required" id="camp_name"
-                                                        placeholder="Enter a unique campaign name">
+                                                        placeholder="{{ __('Enter a unique campaign name') }}">
 
                                                 </div>
 
@@ -257,7 +257,7 @@
 
                                                     <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
                                                     <input type="text" class="form-control" id="templateSearch"
-                                                        placeholder="Search template">
+                                                        placeholder="{{ __('Search template') }}">
 
                                                 </div>
                                             </div>
@@ -1191,7 +1191,7 @@
                         <label for="emailInput" class="form-label">{{ __('Add Email Address') }}</label>
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
-                                placeholder="Enter email address">
+                                placeholder="{{ __('Enter email address') }}">
                             <button type="button" class="btn btn-primary" id="addEmailButton" onclick="addEmail()">{{ __('Add Email') }}</button>
                         </div>
                         <div id="emailWarning" class="text-danger mt-2" style="display: none;">
@@ -1907,7 +1907,7 @@
         <script>
             $('#allGroupsTable').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,
@@ -1916,7 +1916,7 @@
 
             $('#domainVerificationTable').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,
@@ -2088,7 +2088,7 @@
                                         'copy', 'csv', 'excel', 'pdf', 'print'
                                     ],
                                     language: {
-                                        searchPlaceholder: 'Search...',
+                                        searchPlaceholder: "{{ __('Search...') }}",
                                         sSearch: '',
                                     },
                                 });
@@ -2138,7 +2138,7 @@
 
             $('#datatable-basic').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,
@@ -2685,7 +2685,7 @@
 
             $('#datatable-basic').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
                 },
                 "pageLength": 10,

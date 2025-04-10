@@ -9,12 +9,12 @@
 
             <!-- Page Header -->
             <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
-                <h1 class="page-title fw-semibold fs-18 mb-0">Settings</h1>
+                <h1 class="page-title fw-semibold fs-18 mb-0">{{ __('Settings') }}</h1>
                 <div class="ms-md-1 ms-0">
                     <nav>
                         <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Settings</li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Dashboard') }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ __('Settings') }}</li>
                         </ol>
                     </nav>
                 </div>
@@ -29,17 +29,17 @@
                             
                                 <img src="{{$companyLogoDark}}" alt="logo" class="desktop-logo" width="250" style="margin-bottom: 20px;">
 
-                            <h5>Platform Super Admin</h5>
+                            <h5>{{ __('Platform Super Admin') }}</h5>
                             <p>{{ $all_settings->email }}</p>
                         </div>
                         <div>
                             <div class="p-4 border-bottom border-block-end-dashed">
                                 <div class="mb-4">
-                                    <p class="fs-15 mb-2 fw-semibold">Company ID:</p>
+                                    <p class="fs-15 mb-2 fw-semibold">{{ __('Company ID:') }}</p>
                                     <p class="fs-12 op-7 mb-0">{{ $all_settings->company_id }}</p>
                                 </div>
                                 <div class="mb-4">
-                                    <p class="fs-15 mb-2 fw-semibold">Data Storage Location:</p>
+                                    <p class="fs-15 mb-2 fw-semibold">{{ __('Data Storage Location:') }}</p>
                                     <p class="fs-12 op-7 mb-0">
                                         {{ $all_settings->storage_region }}
                                     </p>
@@ -54,11 +54,11 @@
                             <ul class="nav nav-tabs nav-tabs-header mb-0 d-sm-flex d-block" role="tablist">
                                 <li class="nav-item m-1" role="presentation">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#personal-info" aria-selected="true">Personal Information</a>
+                                        href="#personal-info" aria-selected="true">{{ __('Personal Information') }}</a>
                                 </li>
                                 <li class="nav-item m-1" role="presentation">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#platformManage" aria-selected="false" tabindex="-1">Platform Management</a>
+                                        href="#platformManage" aria-selected="false" tabindex="-1">{{ __('Platform Management') }}</a>
                                 </li>
                                 <!-- <li class="nav-item m-1" role="presentation">
                                                                             <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#subManage" aria-selected="false" tabindex="-1">Subscription management</a>
@@ -75,17 +75,17 @@
 
                                         <div class="row gy-4 mb-4">
                                             <div class="col-xl-12">
-                                                <label for="first-name" class="form-label">Full Name</label>
+                                                <label for="first-name" class="form-label">{{ __('Full Name') }}</label>
                                                 <input type="text" class="form-control" id="fullName"
-                                                    value="{{ $all_settings->full_name }}" placeholder="Full Name" disabled>
+                                                    value="{{ $all_settings->full_name }}" placeholder="{{ __('Full Name') }}" disabled>
                                             </div>
 
                                         </div>
                                         <div class="row gy-4 mb-4">
                                             <div class="col-xl-12">
-                                                <label for="email-address" class="form-label">Email Address</label>
+                                                <label for="email-address" class="form-label">{{ __('Email Address') }}</label>
                                                 <input type="email" class="form-control" id="emailAdd"
-                                                    value="{{ $all_settings->email }}" placeholder="Company Email" disabled>
+                                                    value="{{ $all_settings->email }}" placeholder="{{ __('Company Email') }}" disabled>
                                             </div>
 
                                         </div>
@@ -93,110 +93,110 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">Company Name:</label>
+                                                <label for="Contact-Details" class="form-label">{{ __('Company Name:') }}</label>
                                                 <input type="text" class="form-control" id="compName"
                                                     value="{{ $all_settings->company_name }}" id="Contact-Details"
-                                                    placeholder="Company name" disabled>
+                                                    placeholder="{{ __('Company name') }}" disabled>
                                             </div>
                                         </div>
 
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">Country</label>
+                                                <label for="Contact-Details" class="form-label">{{ __('Country') }}</label>
                                                 <select id="countryInput" class="form-control form-control-line">
-                                                    <option value="">Select country</option>
-                                                    <option value="AF">Afghanistan</option>
-                                                    <option value="AX">Åland Islands</option>
-                                                    <option value="AL">Albania</option>
-                                                    <option value="DZ">Algeria</option>
-                                                    <option value="AS">American Samoa</option>
-                                                    <option value="AD">Andorra</option>
-                                                    <option value="AO">Angola</option>
-                                                    <option value="AI">Anguilla</option>
-                                                    <option value="AQ">Antarctica</option>
-                                                    <option value="AG">Antigua and Barbuda</option>
-                                                    <option value="AR">Argentina</option>
-                                                    <option value="AM">Armenia</option>
-                                                    <option value="AW">Aruba</option>
-                                                    <option value="AU">Australia</option>
-                                                    <option value="AT">Austria</option>
-                                                    <option value="AZ">Azerbaijan</option>
-                                                    <option value="BS">Bahamas</option>
-                                                    <option value="BH">Bahrain</option>
-                                                    <option value="BD">Bangladesh</option>
-                                                    <option value="BB">Barbados</option>
-                                                    <option value="BY">Belarus</option>
-                                                    <option value="BE">Belgium</option>
-                                                    <option value="BZ">Belize</option>
-                                                    <option value="BJ">Benin</option>
-                                                    <option value="BM">Bermuda</option>
-                                                    <option value="BT">Bhutan</option>
-                                                    <option value="BO">Bolivia, Plurinational State of</option>
-                                                    <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
-                                                    <option value="BA">Bosnia and Herzegovina</option>
-                                                    <option value="BW">Botswana</option>
-                                                    <option value="BV">Bouvet Island</option>
-                                                    <option value="BR">Brazil</option>
-                                                    <option value="IO">British Indian Ocean Territory</option>
-                                                    <option value="BN">Brunei Darussalam</option>
-                                                    <option value="BG">Bulgaria</option>
-                                                    <option value="BF">Burkina Faso</option>
-                                                    <option value="BI">Burundi</option>
-                                                    <option value="KH">Cambodia</option>
-                                                    <option value="CM">Cameroon</option>
-                                                    <option value="CA">Canada</option>
-                                                    <option value="CV">Cape Verde</option>
-                                                    <option value="KY">Cayman Islands</option>
-                                                    <option value="CF">Central African Republic</option>
-                                                    <option value="TD">Chad</option>
-                                                    <option value="CL">Chile</option>
-                                                    <option value="CN">China</option>
-                                                    <option value="CX">Christmas Island</option>
-                                                    <option value="CC">Cocos (Keeling) Islands</option>
-                                                    <option value="CO">Colombia</option>
-                                                    <option value="KM">Comoros</option>
-                                                    <option value="CG">Congo</option>
-                                                    <option value="CD">Congo, the Democratic Republic of the</option>
-                                                    <option value="CK">Cook Islands</option>
-                                                    <option value="CR">Costa Rica</option>
-                                                    <option value="CI">Côte d'Ivoire</option>
-                                                    <option value="HR">Croatia</option>
-                                                    <option value="CU">Cuba</option>
-                                                    <option value="CW">Curaçao</option>
-                                                    <option value="CY">Cyprus</option>
-                                                    <option value="CZ">Czech Republic</option>
-                                                    <option value="DK">Denmark</option>
-                                                    <option value="DJ">Djibouti</option>
-                                                    <option value="DM">Dominica</option>
-                                                    <option value="DO">Dominican Republic</option>
-                                                    <option value="EC">Ecuador</option>
-                                                    <option value="EG">Egypt</option>
-                                                    <option value="SV">El Salvador</option>
-                                                    <option value="GQ">Equatorial Guinea</option>
-                                                    <option value="ER">Eritrea</option>
-                                                    <option value="EE">Estonia</option>
-                                                    <option value="ET">Ethiopia</option>
-                                                    <option value="FK">Falkland Islands (Malvinas)</option>
-                                                    <option value="FO">Faroe Islands</option>
-                                                    <option value="FJ">Fiji</option>
-                                                    <option value="FI">Finland</option>
-                                                    <option value="FR">France</option>
-                                                    <option value="GF">French Guiana</option>
-                                                    <option value="PF">French Polynesia</option>
-                                                    <option value="TF">French Southern Territories</option>
-                                                    <option value="GA">Gabon</option>
-                                                    <option value="GM">Gambia</option>
-                                                    <option value="GE">Georgia</option>
-                                                    <option value="DE">Germany</option>
-                                                    <option value="GH">Ghana</option>
-                                                    <option value="GI">Gibraltar</option>
-                                                    <option value="GR">Greece</option>
-                                                    <option value="GL">Greenland</option>
-                                                    <option value="GD">Grenada</option>
-                                                    <option value="GP">Guadeloupe</option>
-                                                    <option value="GU">Guam</option>
-                                                    <option value="GT">Guatemala</option>
+                                                    <option value="">{{ __('Select country') }}</option>
+                                                    <option value="AF">{{ __('Afghanistan') }}</option>
+                                                    <option value="AX">{{ __('Åland Islands') }}</option>
+                                                    <option value="AL">{{ __('Albania') }}</option>
+                                                    <option value="DZ">{{ __('Algeria') }}</option>
+                                                    <option value="AS">{{ __('American Samoa') }}</option>
+                                                    <option value="AD">{{ __('Andorra') }}</option>
+                                                    <option value="AO">{{ __('Angola') }}</option>
+                                                    <option value="AI">{{ __('Anguilla') }}</option>
+                                                    <option value="AQ">{{ __('Antarctica') }}</option>
+                                                    <option value="AG">{{ __('Antigua and Barbuda') }}</option>
+                                                    <option value="AR">{{ __('Argentina') }}</option>
+                                                    <option value="AM">{{ __('Armenia') }}</option>
+                                                    <option value="AW">{{ __('Aruba') }}</option>
+                                                    <option value="AU">{{ __('Australia') }}</option>
+                                                    <option value="AT">{{ __('Austria') }}</option>
+                                                    <option value="AZ">{{ __('Azerbaijan') }}</option>
+                                                    <option value="BS">{{ __('Bahamas') }}</option>
+                                                    <option value="BH">{{ __('Bahrain') }}</option>
+                                                    <option value="BD">{{ __('Bangladesh') }}</option>
+                                                    <option value="BB">{{ __('Barbados') }}</option>
+                                                    <option value="BY">{{ __('Belarus') }}</option>
+                                                    <option value="BE">{{ __('Belgium') }}</option>
+                                                    <option value="BZ">{{ __('Belize') }}</option>
+                                                    <option value="BJ">{{ __('Benin') }}</option>
+                                                    <option value="BM">{{ __('Bermuda') }}</option>
+                                                    <option value="BT">{{ __('Bhutan') }}</option>
+                                                    <option value="BO">{{ __('Bolivia, Plurinational State of') }}</option>
+                                                    <option value="BQ">{{ __('Bonaire, Sint Eustatius and Saba') }}</option>
+                                                    <option value="BA">{{ __('Bosnia and Herzegovina') }}</option>
+                                                    <option value="BW">{{ __('Botswana') }}</option>
+                                                    <option value="BV">{{ __('Bouvet Island') }}</option>
+                                                    <option value="BR">{{ __('Brazil') }}</option>
+                                                    <option value="IO">{{ __('British Indian Ocean Territory') }}</option>
+                                                    <option value="BN">{{ __('Brunei Darussalam') }}</option>
+                                                    <option value="BG">{{ __('Bulgaria') }}</option>
+                                                    <option value="BF">{{ __('Burkina Faso') }}</option>
+                                                    <option value="BI">{{ __('Burundi') }}</option>
+                                                    <option value="KH">{{ __('Cambodia') }}</option>
+                                                    <option value="CM">{{ __('Cameroon') }}</option>
+                                                    <option value="CA">{{ __('Canada') }}</option>
+                                                    <option value="CV">{{ __('Cape Verde') }}</option>
+                                                    <option value="KY">{{ __('Cayman Islands') }}</option>
+                                                    <option value="CF">{{ __('Central African Republic') }}</option>
+                                                    <option value="TD">{{ __('Chad') }}</option>
+                                                    <option value="CL">{{ __('Chile') }}</option>
+                                                    <option value="CN">{{ __('China') }}</option>
+                                                    <option value="CX">{{ __('Christmas Island') }}</option>
+                                                    <option value="CC">{{ __('Cocos (Keeling) Islands') }}</option>
+                                                    <option value="CO">{{ __('Colombia') }}</option>
+                                                    <option value="KM">{{ __('Comoros') }}</option>
+                                                    <option value="CG">{{ __('Congo') }}</option>
+                                                    <option value="CD">{{ __('Congo, the Democratic Republic of the') }}</option>
+                                                    <option value="CK">{{ __('Cook Islands') }}</option>
+                                                    <option value="CR">{{ __('Costa Rica') }}</option>
+                                                    <option value="CI">{{ __("Côte d'Ivoire") }}</option>
+                                                    <option value="HR">{{ __('Croatia') }}</option>
+                                                    <option value="CU">{{ __('Cuba') }}</option>
+                                                    <option value="CW">{{ __('Curaçao') }}</option>
+                                                    <option value="CY">{{ __('Cyprus') }}</option>
+                                                    <option value="CZ">{{ __('Czech Republic') }}</option>
+                                                    <option value="DK">{{ __('Denmark') }}</option>
+                                                    <option value="DJ">{{ __('Djibouti') }}</option>
+                                                    <option value="DM">{{ __('Dominica') }}</option>
+                                                    <option value="DO">{{ __('Dominican Republic') }}</option>
+                                                    <option value="EC">{{ __('Ecuador') }}</option>
+                                                    <option value="EG">{{ __('Egypt') }}</option>
+                                                    <option value="SV">{{ __('El Salvador') }}</option>
+                                                    <option value="GQ">{{ __('Equatorial Guinea') }}</option>
+                                                    <option value="ER">{{ __('Eritrea') }}</option>
+                                                    <option value="EE">{{ __('Estonia') }}</option>
+                                                    <option value="ET">{{ __('Ethiopia') }}</option>
+                                                    <option value="FK">{{ __('Falkland Islands (Malvinas)') }}</option>
+                                                    <option value="FO">{{ __('Faroe Islands') }}</option>
+                                                    <option value="FJ">{{ __('Fiji') }}</option>
+                                                    <option value="FI">{{ __('Finland') }}</option>
+                                                    <option value="FR">{{ __('France') }}</option>
+                                                    <option value="GF">{{ __('French Guiana') }}</option>
+                                                    <option value="PF">{{ __('French Polynesia') }}</option>
+                                                    <option value="TF">{{ __('French Southern Territories') }}</option>
+                                                    <option value="GA">{{ __('Gabon') }}</option>
+                                                    <option value="GM">{{ __('Gambia') }}</option>
+                                                    <option value="GE">{{ __('Georgia') }}</option>
+                                                    <option value="DE">{{ __('Germany') }}</option>
+                                                    <option value="GH">{{ __('Ghana') }}</option>
+                                                    <option value="GI">{{ __('Gibraltar') }}</option>
+                                                    <option value="GR">{{ __('Greece') }}</option>
+                                                    <option value="GL">{{ __('Greenland') }}</option>
+                                                    <option value="GD">{{ __('Grenada') }}</option>
+                                                    <option value="GP">{{ __('Guadeloupe') }}</option>
+                                                    <option value="GU">{{ __('Guam') }}</option>
+                                                    <option value="GT">{{ __('Guatemala') }}</option>
                                                     <option value="GG">Guernsey</option>
                                                     <option value="GN">Guinea</option>
                                                     <option value="GW">Guinea-Bissau</option>
@@ -365,130 +365,129 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">Time Zone</label>
+                                                <label for="Contact-Details" class="form-label">{{ __('Time Zone') }}</label>
                                                 <select class="form-control form-control-line" id="timeZoneInput">
-                                                    <option value="Etc/Greenwich">(GMT+00:00) Greenwich Mean Time : Dublin,
-                                                        Edinburgh, Lisbon, London</option>
-                                                    <option value="Etc/GMT+12">(GMT-12:00) International Date Line West
+                                                    <option value="Etc/Greenwich">(GMT+00:00) {{ __('Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London') }}</option>
+                                                    <option value="Etc/GMT+12">(GMT-12:00) {{ __('International Date Line West') }}
                                                     </option>
-                                                    <option value="Pacific/Midway">(GMT-11:00) Midway Island, Samoa
+                                                    <option value="Pacific/Midway">(GMT-11:00) {{ __('Midway Island, Samoa') }}
                                                     </option>
-                                                    <option value="Pacific/Honolulu">(GMT-10:00) Hawaii</option>
-                                                    <option value="US/Alaska">(GMT-09:00) Alaska</option>
-                                                    <option value="America/Los_Angeles">(GMT-08:00) Pacific Time (US &amp;
+                                                    <option value="Pacific/Honolulu">(GMT-10:00) {{ __('Hawaii') }}</option>
+                                                    <option value="US/Alaska">(GMT-09:00) {{ __('Alaska') }}</option>
+                                                    <option value="America/Los_Angeles">(GMT-08:00) {{ __('Pacific Time') }} (US &amp;
                                                         Canada)</option>
-                                                    <option value="America/Tijuana">(GMT-08:00) Tijuana, Baja California
+                                                    <option value="America/Tijuana">(GMT-08:00) {{ __('Tijuana, Baja California') }}
                                                     </option>
-                                                    <option value="US/Arizona">(GMT-07:00) Arizona</option>
-                                                    <option value="America/Chihuahua">(GMT-07:00) Chihuahua, La Paz,
-                                                        Mazatlan</option>
-                                                    <option value="US/Mountain">(GMT-07:00) Mountain Time (US &amp; Canada)
+                                                    <option value="US/Arizona">(GMT-07:00) {{ __('Arizona') }}</option>
+                                                    <option value="America/Chihuahua">(GMT-07:00) {{ __('Chihuahua, La Paz,
+                                                        Mazatlan') }}</option>
+                                                    <option value="US/Mountain">(GMT-07:00) {{ __('Mountain Time') }} (US &amp; Canada)
                                                     </option>
-                                                    <option value="America/Managua">(GMT-06:00) Central America</option>
-                                                    <option value="US/Central">(GMT-06:00) Central Time (US &amp; Canada)
+                                                    <option value="America/Managua">(GMT-06:00) {{ __('Central America') }}</option>
+                                                    <option value="US/Central">(GMT-06:00) {{ __('Central Time') }} (US &amp; Canada)
                                                     </option>
-                                                    <option value="America/Mexico_City">(GMT-06:00) Guadalajara, Mexico
-                                                        City, Monterrey</option>
-                                                    <option value="Canada/Saskatchewan">(GMT-06:00) Saskatchewan</option>
-                                                    <option value="America/Bogota">(GMT-05:00) Bogota, Lima, Quito, Rio
-                                                        Branco</option>
-                                                    <option value="US/Eastern">(GMT-05:00) Eastern Time (US &amp; Canada)
+                                                    <option value="America/Mexico_City">(GMT-06:00) {{ __('Guadalajara, Mexico
+                                                        City, Monterrey') }}</option>
+                                                    <option value="Canada/Saskatchewan">(GMT-06:00) {{ __('Saskatchewan') }}</option>
+                                                    <option value="America/Bogota">(GMT-05:00) {{ __('Bogota, Lima, Quito, Rio
+                                                        Branco') }}</option>
+                                                    <option value="US/Eastern">(GMT-05:00) {{ __('Eastern Time') }} (US &amp; Canada)
                                                     </option>
-                                                    <option value="US/East-Indiana">(GMT-05:00) Indiana (East)</option>
-                                                    <option value="Canada/Atlantic">(GMT-04:00) Atlantic Time (Canada)
+                                                    <option value="US/East-Indiana">(GMT-05:00) {{ __('Indiana (East)') }}</option>
+                                                    <option value="Canada/Atlantic">(GMT-04:00) {{ __('Atlantic Time (Canada)') }}
                                                     </option>
-                                                    <option value="America/Caracas">(GMT-04:00) Caracas, La Paz</option>
-                                                    <option value="America/Manaus">(GMT-04:00) Manaus</option>
-                                                    <option value="America/Santiago">(GMT-04:00) Santiago</option>
-                                                    <option value="Canada/Newfoundland">(GMT-03:30) Newfoundland</option>
-                                                    <option value="America/Sao_Paulo">(GMT-03:00) Brasilia</option>
-                                                    <option value="America/Argentina/Buenos_Aires">(GMT-03:00) Buenos
-                                                        Aires, Georgetown</option>
-                                                    <option value="America/Godthab">(GMT-03:00) Greenland</option>
-                                                    <option value="America/Montevideo">(GMT-03:00) Montevideo</option>
-                                                    <option value="America/Noronha">(GMT-02:00) Mid-Atlantic</option>
-                                                    <option value="Atlantic/Cape_Verde">(GMT-01:00) Cape Verde Is.</option>
-                                                    <option value="Atlantic/Azores">(GMT-01:00) Azores</option>
-                                                    <option value="Africa/Casablanca">(GMT+00:00) Casablanca, Monrovia,
-                                                        Reykjavik</option>
-                                                    <option value="Etc/Greenwich">(GMT+00:00) Greenwich Mean Time : Dublin,
-                                                        Edinburgh, Lisbon, London</option>
-                                                    <option value="Europe/Amsterdam">(GMT+01:00) Amsterdam, Berlin, Bern,
-                                                        Rome, Stockholm, Vienna</option>
-                                                    <option value="Europe/Belgrade">(GMT+01:00) Belgrade, Bratislava,
-                                                        Budapest, Ljubljana, Prague</option>
-                                                    <option value="Europe/Brussels">(GMT+01:00) Brussels, Copenhagen,
-                                                        Madrid, Paris</option>
-                                                    <option value="Europe/Sarajevo">(GMT+01:00) Sarajevo, Skopje, Warsaw,
-                                                        Zagreb</option>
-                                                    <option value="Africa/Lagos">(GMT+01:00) West Central Africa</option>
-                                                    <option value="Asia/Amman">(GMT+02:00) Amman</option>
-                                                    <option value="Europe/Athens">(GMT+02:00) Athens, Bucharest, Istanbul
+                                                    <option value="America/Caracas">(GMT-04:00) {{ __('Caracas, La Paz') }}</option>
+                                                    <option value="America/Manaus">(GMT-04:00) {{ __('Manaus') }}</option>
+                                                    <option value="America/Santiago">(GMT-04:00) {{ __('Santiago') }}</option>
+                                                    <option value="Canada/Newfoundland">(GMT-03:30) {{ __('Newfoundland') }}</option>
+                                                    <option value="America/Sao_Paulo">(GMT-03:00) {{ __('Brasilia') }}</option>
+                                                    <option value="America/Argentina/Buenos_Aires">(GMT-03:00) {{ __('Buenos
+                                                        Aires, Georgetown') }}</option>
+                                                    <option value="America/Godthab">(GMT-03:00) {{ __('Greenland') }}</option>
+                                                    <option value="America/Montevideo">(GMT-03:00) {{ __('Montevideo') }}</option>
+                                                    <option value="America/Noronha">(GMT-02:00) {{ __('Mid-Atlantic') }}</option>
+                                                    <option value="Atlantic/Cape_Verde">(GMT-01:00) {{ __('Cape Verde Is.') }}</option>
+                                                    <option value="Atlantic/Azores">(GMT-01:00) {{ __('Azores') }}</option>
+                                                    <option value="Africa/Casablanca">(GMT+00:00) {{ __('Casablanca, Monrovia,
+                                                        Reykjavik') }}</option>
+                                                    <option value="Etc/Greenwich">(GMT+00:00) {{ __('Greenwich Mean Time : Dublin,
+                                                        Edinburgh, Lisbon, London') }}</option>
+                                                    <option value="Europe/Amsterdam">(GMT+01:00) {{ __('Amsterdam, Berlin, Bern,
+                                                        Rome, Stockholm, Vienna') }}</option>
+                                                    <option value="Europe/Belgrade">(GMT+01:00) {{ __('Belgrade, Bratislava,
+                                                        Budapest, Ljubljana, Prague') }}</option>
+                                                    <option value="Europe/Brussels">(GMT+01:00) {{ __('Brussels, Copenhagen,
+                                                        Madrid, Paris') }}</option>
+                                                    <option value="Europe/Sarajevo">(GMT+01:00) {{ __('Sarajevo, Skopje, Warsaw,
+                                                        Zagreb') }}</option>
+                                                    <option value="Africa/Lagos">(GMT+01:00) {{ __('West Central Africa') }}</option>
+                                                    <option value="Asia/Amman">(GMT+02:00) {{ __('Amman') }}</option>
+                                                    <option value="Europe/Athens">(GMT+02:00) {{ __('Athens, Bucharest, Istanbul') }}
                                                     </option>
-                                                    <option value="Asia/Beirut">(GMT+02:00) Beirut</option>
-                                                    <option value="Africa/Cairo">(GMT+02:00) Cairo</option>
-                                                    <option value="Africa/Harare">(GMT+02:00) Harare, Pretoria</option>
-                                                    <option value="Europe/Helsinki">(GMT+02:00) Helsinki, Kyiv, Riga,
-                                                        Sofia, Tallinn, Vilnius</option>
-                                                    <option value="Asia/Jerusalem">(GMT+02:00) Jerusalem</option>
-                                                    <option value="Europe/Minsk">(GMT+02:00) Minsk</option>
-                                                    <option value="Africa/Windhoek">(GMT+02:00) Windhoek</option>
-                                                    <option value="Asia/Kuwait">(GMT+03:00) Kuwait, Riyadh, Baghdad
+                                                    <option value="Asia/Beirut">(GMT+02:00) {{ __('Beirut') }}</option>
+                                                    <option value="Africa/Cairo">(GMT+02:00) {{ __('Cairo') }}</option>
+                                                    <option value="Africa/Harare">(GMT+02:00) {{ __('Harare, Pretoria') }}</option>
+                                                    <option value="Europe/Helsinki">(GMT+02:00) {{ __('Helsinki, Kyiv, Riga,
+                                                        Sofia, Tallinn, Vilnius') }}</option>
+                                                    <option value="Asia/Jerusalem">(GMT+02:00) {{ __('Jerusalem') }}</option>
+                                                    <option value="Europe/Minsk">(GMT+02:00) {{ __('Minsk') }}</option>
+                                                    <option value="Africa/Windhoek">(GMT+02:00) {{ __('Windhoek') }}</option>
+                                                    <option value="Asia/Kuwait">(GMT+03:00) {{ __('Kuwait, Riyadh, Baghdad') }}
                                                     </option>
-                                                    <option value="Europe/Moscow">(GMT+03:00) Moscow, St. Petersburg,
-                                                        Volgograd</option>
-                                                    <option value="Africa/Nairobi">(GMT+03:00) Nairobi</option>
-                                                    <option value="Asia/Tbilisi">(GMT+03:00) Tbilisi</option>
-                                                    <option value="Asia/Tehran">(GMT+03:30) Tehran</option>
-                                                    <option value="Asia/Muscat">(GMT+04:00) Abu Dhabi, Muscat</option>
-                                                    <option value="Asia/Baku">(GMT+04:00) Baku</option>
-                                                    <option value="Asia/Yerevan">(GMT+04:00) Yerevan</option>
-                                                    <option value="Asia/Kabul">(GMT+04:30) Kabul</option>
-                                                    <option value="Asia/Yekaterinburg">(GMT+05:00) Yekaterinburg</option>
-                                                    <option value="Asia/Karachi">(GMT+05:00) Islamabad, Karachi, Tashkent
+                                                    <option value="Europe/Moscow">(GMT+03:00) {{ __('Moscow, St. Petersburg,
+                                                        Volgograd') }}</option>
+                                                    <option value="Africa/Nairobi">(GMT+03:00) {{ __('Nairobi') }}</option>
+                                                    <option value="Asia/Tbilisi">(GMT+03:00) {{ __('Tbilisi') }}</option>
+                                                    <option value="Asia/Tehran">(GMT+03:30) {{ __('Tehran') }}</option>
+                                                    <option value="Asia/Muscat">(GMT+04:00) {{ __('Abu Dhabi, Muscat') }}</option>
+                                                    <option value="Asia/Baku">(GMT+04:00) {{ __('Baku') }}</option>
+                                                    <option value="Asia/Yerevan">(GMT+04:00) {{ __('Yerevan') }}</option>
+                                                    <option value="Asia/Kabul">(GMT+04:30) {{ __('Kabul') }}</option>
+                                                    <option value="Asia/Yekaterinburg">(GMT+05:00) {{ __('Yekaterinburg') }}</option>
+                                                    <option value="Asia/Karachi">(GMT+05:00) {{ __('Islamabad, Karachi, Tashkent') }}
                                                     </option>
-                                                    <option value="Asia/Calcutta">(GMT+05:30) Chennai, Kolkata, Mumbai, New
-                                                        Delhi</option>
-                                                    <option value="Asia/Calcutta">(GMT+05:30) Sri Jayawardenapura</option>
-                                                    <option value="Asia/Katmandu">(GMT+05:45) Kathmandu</option>
-                                                    <option value="Asia/Almaty">(GMT+06:00) Almaty, Novosibirsk</option>
-                                                    <option value="Asia/Dhaka">(GMT+06:00) Astana, Dhaka</option>
-                                                    <option value="Asia/Rangoon">(GMT+06:30) Yangon (Rangoon)</option>
-                                                    <option value="Asia/Bangkok">(GMT+07:00) Bangkok, Hanoi, Jakarta
+                                                    <option value="Asia/Calcutta">(GMT+05:30) {{ __('Chennai, Kolkata, Mumbai, New
+                                                        Delhi') }}</option>
+                                                    <option value="Asia/Calcutta">(GMT+05:30) {{ __('Sri Jayawardenapura') }}</option>
+                                                    <option value="Asia/Katmandu">(GMT+05:45) {{ __('Kathmandu') }}</option>
+                                                    <option value="Asia/Almaty">(GMT+06:00) {{ __('Almaty, Novosibirsk') }}</option>
+                                                    <option value="Asia/Dhaka">(GMT+06:00) {{ __('Astana, Dhaka') }}</option>
+                                                    <option value="Asia/Rangoon">(GMT+06:30) {{ __('Yangon (Rangoon)') }}</option>
+                                                    <option value="Asia/Bangkok">(GMT+07:00) {{ __('Bangkok, Hanoi, Jakarta') }}
                                                     </option>
-                                                    <option value="Asia/Krasnoyarsk">(GMT+07:00) Krasnoyarsk</option>
-                                                    <option value="Asia/Hong_Kong">(GMT+08:00) Beijing, Chongqing, Hong
-                                                        Kong, Urumqi</option>
-                                                    <option value="Asia/Kuala_Lumpur">(GMT+08:00) Kuala Lumpur, Singapore
+                                                    <option value="Asia/Krasnoyarsk">(GMT+07:00) {{ __('Krasnoyarsk') }}</option>
+                                                    <option value="Asia/Hong_Kong">(GMT+08:00) {{ __('Beijing, Chongqing, Hong
+                                                        Kong, Urumqi') }}</option>
+                                                    <option value="Asia/Kuala_Lumpur">(GMT+08:00) {{ __('Kuala Lumpur, Singapore') }}
                                                     </option>
-                                                    <option value="Asia/Irkutsk">(GMT+08:00) Irkutsk, Ulaan Bataar</option>
-                                                    <option value="Australia/Perth">(GMT+08:00) Perth</option>
-                                                    <option value="Asia/Taipei">(GMT+08:00) Taipei</option>
-                                                    <option value="Asia/Tokyo">(GMT+09:00) Osaka, Sapporo, Tokyo</option>
-                                                    <option value="Asia/Seoul">(GMT+09:00) Seoul</option>
-                                                    <option value="Asia/Yakutsk">(GMT+09:00) Yakutsk</option>
-                                                    <option value="Australia/Adelaide">(GMT+09:30) Adelaide</option>
-                                                    <option value="Australia/Darwin">(GMT+09:30) Darwin</option>
-                                                    <option value="Australia/Brisbane">(GMT+10:00) Brisbane</option>
-                                                    <option value="Australia/Canberra">(GMT+10:00) Canberra, Melbourne,
-                                                        Sydney</option>
-                                                    <option value="Australia/Hobart">(GMT+10:00) Hobart</option>
-                                                    <option value="Pacific/Guam">(GMT+10:00) Guam, Port Moresby</option>
-                                                    <option value="Asia/Vladivostok">(GMT+10:00) Vladivostok</option>
-                                                    <option value="Asia/Magadan">(GMT+11:00) Magadan, Solomon Is., New
-                                                        Caledonia</option>
-                                                    <option value="Pacific/Auckland">(GMT+12:00) Auckland, Wellington
+                                                    <option value="Asia/Irkutsk">(GMT+08:00) {{ __('Irkutsk, Ulaan Bataar') }}</option>
+                                                    <option value="Australia/Perth">(GMT+08:00) {{ __('Perth') }}</option>
+                                                    <option value="Asia/Taipei">(GMT+08:00) {{ __('Taipei') }}</option>
+                                                    <option value="Asia/Tokyo">(GMT+09:00) {{ __('Osaka, Sapporo, Tokyo') }}</option>
+                                                    <option value="Asia/Seoul">(GMT+09:00) {{ __('Seoul') }}</option>
+                                                    <option value="Asia/Yakutsk">(GMT+09:00) {{ __('Yakutsk') }}</option>
+                                                    <option value="Australia/Adelaide">(GMT+09:30) {{ __('Adelaide') }}</option>
+                                                    <option value="Australia/Darwin">(GMT+09:30) {{ __('Darwin') }}</option>
+                                                    <option value="Australia/Brisbane">(GMT+10:00) {{ __('Brisbane') }}</option>
+                                                    <option value="Australia/Canberra">(GMT+10:00) {{ __('Canberra, Melbourne,
+                                                        Sydney') }}</option>
+                                                    <option value="Australia/Hobart">(GMT+10:00) {{ __('Hobart') }}</option>
+                                                    <option value="Pacific/Guam">(GMT+10:00) {{ __('Guam, Port Moresby') }}</option>
+                                                    <option value="Asia/Vladivostok">(GMT+10:00) {{ __('Vladivostok') }}</option>
+                                                    <option value="Asia/Magadan">(GMT+11:00) {{ __('Magadan, Solomon Is., New
+                                                        Caledonia') }}</option>
+                                                    <option value="Pacific/Auckland">(GMT+12:00) {{ __('Auckland, Wellington') }}
                                                     </option>
-                                                    <option value="Pacific/Fiji">(GMT+12:00) Fiji, Kamchatka, Marshall Is.
+                                                    <option value="Pacific/Fiji">(GMT+12:00) {{ __('Fiji, Kamchatka, Marshall Is.') }}
                                                     </option>
-                                                    <option value="Pacific/Tongatapu">(GMT+13:00) Nuku'alofa</option>
+                                                    <option value="Pacific/Tongatapu">(GMT+13:00) {{ __("Nuku'alofa") }}</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">Date Format</label>
+                                                <label for="Contact-Details" class="form-label">{{ __('Date Format') }}</label>
                                                 <select class="form-control form-control-line" id="dateFormatInput">
                                                     <option value="dd/MM/yyyy">dd/mm/yyyy</option>
                                                     <option value="MM/dd/yyyy">mm/dd/yyyy</option>
@@ -499,7 +498,7 @@
                                         <div class="card-footer mb-3" style="margin-bottom: 53px !important;">
                                             <div class="float-end">
                                                 <button class="btn btn-primary m-1" id="updateProfileBtn">
-                                                    Update Profile
+                                                    {{ __('Update Profile') }}
                                                 </button>
                                             </div>
                                         </div>
@@ -509,41 +508,37 @@
                                                     <button class="accordion-button collapsed" type="button"
                                                         data-bs-toggle="collapse" data-bs-target="#collapseCngPassword"
                                                         aria-expanded="false" aria-controls="collapseCngPassword">
-                                                        Change Password
+                                                        {{ __('Change Password') }}
                                                     </button>
                                                 </h2>
                                                 <div id="collapseCngPassword" class="accordion-collapse collapse"
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#chgPassAccor">
                                                     <div class="accordion-body">
                                                         <div>
-                                                            <p class="fs-14 mb-1 fw-semibold">Reset Password</p>
-                                                            <p class="fs-12 text-muted">Password should be min of <b
-                                                                    class="text-success">8 digits<sup>*</sup></b>,atleast
-                                                                <b class="text-success">One Capital letter<sup>*</sup></b>
-                                                                and <b class="text-success">One Special
-                                                                    Character<sup>*</sup></b> included.
-                                                            </p>
+                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Reset Password') }}</p>
+                                                            <p class="fs-12 text-muted">{{ __('Password should be min of') }} <b
+                                                                    class="text-success">8 {{ __('digits') }}<sup>*</sup></b>{{ __(',atleast') }}
+                                                                <b class="text-success">{{ __('One Capital letter') }}<sup>*</sup></b>
+                                                                {{ __('and') }} <b class="text-success">{{ __('One Special Character') }}<sup>*</sup></b> {{ __('included.') }}
+                                                            </p> 
                                                             <div class="mb-2">
-                                                                <label for="current-password" class="form-label">Current
-                                                                    Password</label>
+                                                                <label for="current-password" class="form-label">{{ __('Current Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="currentPassword" placeholder="Current Password">
+                                                                    id="currentPassword" placeholder="{{ __('Current Password') }}">
                                                             </div>
                                                             <div class="mb-2">
-                                                                <label for="new-password" class="form-label">New
-                                                                    Password</label>
+                                                                <label for="new-password" class="form-label">{{ __('New Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="newPassword" placeholder="New Password">
+                                                                    id="newPassword" placeholder="{{ __('New Password') }}">
                                                             </div>
                                                             <div class="mb-0">
-                                                                <label for="confirm-password" class="form-label">Confirm
-                                                                    Password</label>
+                                                                <label for="confirm-password" class="form-label">{{ __('Confirm Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="confirmPassword" placeholder="Confirm Password">
+                                                                    id="confirmPassword" placeholder="{{ __('Confirm Password') }}">
                                                             </div>
                                                             <div class="card-footer p-2 text-end">
                                                                 <button class="btn btn-primary m-1" id="updatePassBtn">
-                                                                    Update Password
+                                                                    {{ __('Update Password') }}
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -557,15 +552,14 @@
                                                     <button class="accordion-button collapsed" type="button"
                                                         data-bs-toggle="collapse" data-bs-target="#collapseCngMFA"
                                                         aria-expanded="false" aria-controls="collapseCngPassword">
-                                                        Account Multi-Factor Authentication
+                                                        {{ __('Account Multi-Factor Authentication') }}
                                                     </button>
                                                 </h2>
                                                 <div id="collapseCngMFA" class="accordion-collapse collapse"
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#mfaAccor">
                                                     <div class="accordion-body">
                                                         <div class="d-flex justify-content-between">
-                                                            <p class="fs-14 mb-1 fw-semibold">Enable Multi-Factor
-                                                                Authentication on your Account?
+                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Enable Multi-Factor Authentication on your Account?') }}
                                                                 <i class="bx bx-info-circle p-2" data-bs-toggle="tooltip"
                                                                     data-bs-placement="top"
                                                                     data-bs-original-title="MFA is provided by a timed-based one-time password (TOTP) utilising Google Authenticator. You will be prompted to setup MFA during your next login."
@@ -589,14 +583,14 @@
                                                     <button class="accordion-button collapsed" type="button"
                                                         data-bs-toggle="collapse" data-bs-target="#collapseAccDe"
                                                         aria-expanded="false" aria-controls="collapseCngMFA">
-                                                        Account Deactivation
+                                                        {{ __('Account Deactivation') }}
                                                     </button>
                                                 </h2>
                                                 <div id="collapseAccDe" class="accordion-collapse collapse"
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#AccDeactivation">
                                                     <div class="accordion-body">
                                                         <div class="d-flex justify-content-between">
-                                                            <p class="fs-14 mb-1 fw-semibold">Deactivate your Account?
+                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Deactivate your Account?') }}
                                                                 <i class="bx bx-info-circle p-2" data-bs-toggle="tooltip"
                                                                     data-bs-placement="top"
                                                                     data-bs-original-title="The team will be notified to deactivate this account. Deactivation may take up to 24 hours."
@@ -604,8 +598,7 @@
                                                             </p>
                                                             <div class="form-check form-switch mb-2">
                                                                 <button type="button" onclick="deactivateAcc();"
-                                                                    class="btn btn-danger btn-wave waves-effect waves-light">Deactivate
-                                                                    Account</button>
+                                                                    class="btn btn-danger btn-wave waves-effect waves-light">{{ __('Deactivate Account') }}</button>
 
                                                             </div>
                                                         </div>
@@ -622,7 +615,7 @@
                                                 <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                                     data-bs-target="#langSetting" aria-expanded="false"
                                                     aria-controls="langSetting">
-                                                    Language Settings
+                                                    {{ __('Language Settings') }}
                                                 </button>
                                             </h2>
                                             <div id="langSetting" class="accordion-collapse collapse show"
@@ -630,162 +623,159 @@
                                                 <div class="accordion-body">
                                                     <div>
                                                         <div class="input-group mb-3">
-                                                            <label class="input-group-text" for="defaultLnag">Default
-                                                                Language (Phishing Emails)</label>
+                                                            <label class="input-group-text" for="defaultLnag">{{ __('Default Language (Phishing Emails)') }}</label>
                                                             <select class="form-select" id="default_phish_lang">
-                                                                <option value="sq">Albanian</option>
-                                                                <option value="ar">Arabic</option>
-                                                                <option value="az">Azerbaijani</option>
-                                                                <option value="bn">Bengali</option>
-                                                                <option value="bg">Bulgarian</option>
-                                                                <option value="ca">Catalan</option>
-                                                                <option value="zh">Chinese</option>
-                                                                <option value="zt">Chinese (traditional)</option>
-                                                                <option value="cs">Czech</option>
-                                                                <option value="da">Danish</option>
-                                                                <option value="nl">Dutch</option>
-                                                                <option value="en" selected="">English</option>
-                                                                <option value="eo">Esperanto</option>
-                                                                <option value="et">Estonian</option>
-                                                                <option value="fi">Finnish</option>
-                                                                <option value="fr">French</option>
-                                                                <option value="de">German</option>
-                                                                <option value="el">Greek</option>
-                                                                <option value="he">Hebrew</option>
-                                                                <option value="hi">Hindi</option>
-                                                                <option value="hu">Hungarian</option>
-                                                                <option value="id">Indonesian</option>
-                                                                <option value="ga">Irish</option>
-                                                                <option value="it">Italian</option>
-                                                                <option value="ja">Japanese</option>
-                                                                <option value="ko">Korean</option>
-                                                                <option value="lv">Latvian</option>
-                                                                <option value="lt">Lithuanian</option>
-                                                                <option value="ms">Malay</option>
-                                                                <option value="nb">Norwegian</option>
-                                                                <option value="fa">Persian</option>
-                                                                <option value="pl">Polish</option>
-                                                                <option value="pt">Portuguese</option>
-                                                                <option value="ro">Romanian</option>
-                                                                <option value="ru">Russian</option>
-                                                                <option value="sk">Slovak</option>
-                                                                <option value="sl">Slovenian</option>
-                                                                <option value="es">Spanish</option>
-                                                                <option value="sv">Swedish</option>
-                                                                <option value="tl">Tagalog</option>
-                                                                <option value="th">Thai</option>
-                                                                <option value="tr">Turkish</option>
-                                                                <option value="uk">Ukranian</option>
-                                                                <option value="ur">Urdu</option>
+                                                                <option value="sq">{{ __('Albanian') }}</option>
+                                                                <option value="ar">{{ __('Arabic') }}</option>
+                                                                <option value="az">{{ __('Azerbaijani') }}</option>
+                                                                <option value="bn">{{ __('Bengali') }}</option>
+                                                                <option value="bg">{{ __('Bulgarian') }}</option>
+                                                                <option value="ca">{{ __('Catalan') }}</option>
+                                                                <option value="zh">{{ __('Chinese') }}</option>
+                                                                <option value="zt">{{ __('Chinese (traditional)') }}</option>
+                                                                <option value="cs">{{ __('Czech') }}</option>
+                                                                <option value="da">{{ __('Danish') }}</option>
+                                                                <option value="nl">{{ __('Dutch') }}</option>
+                                                                <option value="en" selected="">{{ __('English') }}</option>
+                                                                <option value="eo">{{ __('Esperanto') }}</option>
+                                                                <option value="et">{{ __('Estonian') }}</option>
+                                                                <option value="fi">{{ __('Finnish') }}</option>
+                                                                <option value="fr">{{ __('French') }}</option>
+                                                                <option value="de">{{ __('German') }}</option>
+                                                                <option value="el">{{ __('Greek') }}</option>
+                                                                <option value="he">{{ __('Hebrew') }}</option>
+                                                                <option value="hi">{{ __('Hindi') }}</option>
+                                                                <option value="hu">{{ __('Hungarian') }}</option>
+                                                                <option value="id">{{ __('Indonesian') }}</option>
+                                                                <option value="ga">{{ __('Irish') }}</option>
+                                                                <option value="it">{{ __('Italian') }}</option>
+                                                                <option value="ja">{{ __('Japanese') }}</option>
+                                                                <option value="ko">{{ __('Korean') }}</option>
+                                                                <option value="lv">{{ __('Latvian') }}</option>
+                                                                <option value="lt">{{ __('Lithuanian') }}</option>
+                                                                <option value="ms">{{ __('Malay') }}</option>
+                                                                <option value="nb">{{ __('Norwegian') }}</option>
+                                                                <option value="fa">{{ __('Persian') }}</option>
+                                                                <option value="pl">{{ __('Polish') }}</option>
+                                                                <option value="pt">{{ __('Portuguese') }}</option>
+                                                                <option value="ro">{{ __('Romanian') }}</option>
+                                                                <option value="ru">{{ __('Russian') }}</option>
+                                                                <option value="sk">{{ __('Slovak') }}</option>
+                                                                <option value="sl">{{ __('Slovenian') }}</option>
+                                                                <option value="es">{{ __('Spanish') }}</option>
+                                                                <option value="sv">{{ __('Swedish') }}</option>
+                                                                <option value="tl">{{ __('Tagalog') }}</option>
+                                                                <option value="th">{{ __('Thai') }}</option>
+                                                                <option value="tr">{{ __('Turkish') }}</option>
+                                                                <option value="uk">{{ __('Ukranian') }}</option>
+                                                                <option value="ur">{{ __('Urdu') }}</option>
                                                             </select>
                                                         </div>
                                                         <div class="input-group mb-3">
                                                             <label class="input-group-text"
-                                                                for="default_train_lang">Default Language (Training
-                                                                Modules)</label>
+                                                                for="default_train_lang">{{ __('Default Language (Training Modules)') }}</label>
                                                             <select class="form-select" id="default_train_lang">
-                                                                <option value="dynamic">Dynamic Translation</option>
-                                                                <option value="sq">Albanian</option>
-                                                                <option value="ar">Arabic</option>
-                                                                <option value="az">Azerbaijani</option>
-                                                                <option value="bn">Bengali</option>
-                                                                <option value="bg">Bulgarian</option>
-                                                                <option value="ca">Catalan</option>
-                                                                <option value="zh">Chinese</option>
-                                                                <option value="zt">Chinese (traditional)</option>
-                                                                <option value="cs">Czech</option>
-                                                                <option value="da">Danish</option>
-                                                                <option value="nl">Dutch</option>
-                                                                <option value="en" selected="">English</option>
-                                                                <option value="eo">Esperanto</option>
-                                                                <option value="et">Estonian</option>
-                                                                <option value="fi">Finnish</option>
-                                                                <option value="fr">French</option>
-                                                                <option value="de">German</option>
-                                                                <option value="el">Greek</option>
-                                                                <option value="he">Hebrew</option>
-                                                                <option value="hi">Hindi</option>
-                                                                <option value="hu">Hungarian</option>
-                                                                <option value="id">Indonesian</option>
-                                                                <option value="ga">Irish</option>
-                                                                <option value="it">Italian</option>
-                                                                <option value="ja">Japanese</option>
-                                                                <option value="ko">Korean</option>
-                                                                <option value="lv">Latvian</option>
-                                                                <option value="lt">Lithuanian</option>
-                                                                <option value="ms">Malay</option>
-                                                                <option value="nb">Norwegian</option>
-                                                                <option value="fa">Persian</option>
-                                                                <option value="pl">Polish</option>
-                                                                <option value="pt">Portuguese</option>
-                                                                <option value="ro">Romanian</option>
-                                                                <option value="ru">Russian</option>
-                                                                <option value="sk">Slovak</option>
-                                                                <option value="sl">Slovenian</option>
-                                                                <option value="es">Spanish</option>
-                                                                <option value="sv">Swedish</option>
-                                                                <option value="tl">Tagalog</option>
-                                                                <option value="th">Thai</option>
-                                                                <option value="tr">Turkish</option>
-                                                                <option value="uk">Ukranian</option>
-                                                                <option value="ur">Urdu</option>
+                                                                <option value="dynamic">{{ __('Dynamic Translation') }}</option>
+                                                                <option value="sq">{{ __('Albanian') }}</option>
+                                                                <option value="ar">{{ __('Arabic') }}</option>
+                                                                <option value="az">{{ __('Azerbaijani') }}</option>
+                                                                <option value="bn">{{ __('Bengali') }}</option>
+                                                                <option value="bg">{{ __('Bulgarian') }}</option>
+                                                                <option value="ca">{{ __('Catalan') }}</option>
+                                                                <option value="zh">{{ __('Chinese') }}</option>
+                                                                <option value="zt">{{ __('Chinese (traditional)') }}</option>
+                                                                <option value="cs">{{ __('Czech') }}</option>
+                                                                <option value="da">{{ __('Danish') }}</option>
+                                                                <option value="nl">{{ __('Dutch') }}</option>
+                                                                <option value="en" selected="">{{ __('English') }}</option>
+                                                                <option value="eo">{{ __('Esperanto') }}</option>
+                                                                <option value="et">{{ __('Estonian') }}</option>
+                                                                <option value="fi">{{ __('Finnish') }}</option>
+                                                                <option value="fr">{{ __('French') }}</option>
+                                                                <option value="de">{{ __('German') }}</option>
+                                                                <option value="el">{{ __('Greek') }}</option>
+                                                                <option value="he">{{ __('Hebrew') }}</option>
+                                                                <option value="hi">{{ __('Hindi') }}</option>
+                                                                <option value="hu">{{ __('Hungarian') }}</option>
+                                                                <option value="id">{{ __('Indonesian') }}</option>
+                                                                <option value="ga">{{ __('Irish') }}</option>
+                                                                <option value="it">{{ __('Italian') }}</option>
+                                                                <option value="ja">{{ __('Japanese') }}</option>
+                                                                <option value="ko">{{ __('Korean') }}</option>
+                                                                <option value="lv">{{ __('Latvian') }}</option>
+                                                                <option value="lt">{{ __('Lithuanian') }}</option>
+                                                                <option value="ms">{{ __('Malay') }}</option>
+                                                                <option value="nb">{{ __('Norwegian') }}</option>
+                                                                <option value="fa">{{ __('Persian') }}</option>
+                                                                <option value="pl">{{ __('Polish') }}</option>
+                                                                <option value="pt">{{ __('Portuguese') }}</option>
+                                                                <option value="ro">{{ __('Romanian') }}</option>
+                                                                <option value="ru">{{ __('Russian') }}</option>
+                                                                <option value="sk">{{ __('Slovak') }}</option>
+                                                                <option value="sl">{{ __('Slovenian') }}</option>
+                                                                <option value="es">{{ __('Spanish') }}</option>
+                                                                <option value="sv">{{ __('Swedish') }}</option>
+                                                                <option value="tl">{{ __('Tagalog') }}</option>
+                                                                <option value="th">{{ __('Thai') }}</option>
+                                                                <option value="tr">{{ __('Turkish') }}</option>
+                                                                <option value="uk">{{ __('Ukranian') }}</option>
+                                                                <option value="ur">{{ __('Urdu') }}</option>
                                                             </select>
                                                         </div>
                                                         <div class="input-group mb-3">
                                                             <label class="input-group-text"
-                                                                for="default_notifi_lang">Default Language
-                                                                (Notifications)</label>
+                                                                for="default_notifi_lang">{{ __('Default Language (Notifications)') }}</label>
                                                             <select class="form-select" id="default_notifi_lang">
-                                                                <option value="en">English</option>
-                                                                <option value="sq">Albanian</option>
-                                                                <option value="ar">Arabic</option>
-                                                                <option value="az">Azerbaijani</option>
-                                                                <option value="bn">Bengali</option>
-                                                                <option value="bg">Bulgarian</option>
-                                                                <option value="ca">Catalan</option>
-                                                                <option value="zh">Chinese</option>
-                                                                <option value="zt">Chinese (traditional)</option>
-                                                                <option value="cs">Czech</option>
-                                                                <option value="da">Danish</option>
-                                                                <option value="nl">Dutch</option>
-                                                                <option value="en" selected="">English</option>
-                                                                <option value="eo">Esperanto</option>
-                                                                <option value="et">Estonian</option>
-                                                                <option value="fi">Finnish</option>
-                                                                <option value="fr">French</option>
-                                                                <option value="de">German</option>
-                                                                <option value="el">Greek</option>
-                                                                <option value="he">Hebrew</option>
-                                                                <option value="hi">Hindi</option>
-                                                                <option value="hu">Hungarian</option>
-                                                                <option value="id">Indonesian</option>
-                                                                <option value="ga">Irish</option>
-                                                                <option value="it">Italian</option>
-                                                                <option value="ja">Japanese</option>
-                                                                <option value="ko">Korean</option>
-                                                                <option value="lv">Latvian</option>
-                                                                <option value="lt">Lithuanian</option>
-                                                                <option value="ms">Malay</option>
-                                                                <option value="nb">Norwegian</option>
-                                                                <option value="fa">Persian</option>
-                                                                <option value="pl">Polish</option>
-                                                                <option value="pt">Portuguese</option>
-                                                                <option value="ro">Romanian</option>
-                                                                <option value="ru">Russian</option>
-                                                                <option value="sk">Slovak</option>
-                                                                <option value="sl">Slovenian</option>
-                                                                <option value="es">Spanish</option>
-                                                                <option value="sv">Swedish</option>
-                                                                <option value="tl">Tagalog</option>
-                                                                <option value="th">Thai</option>
-                                                                <option value="tr">Turkish</option>
-                                                                <option value="uk">Ukranian</option>
-                                                                <option value="ur">Urdu</option>
+                                                                <option value="en">{{ __('English') }}</option>
+                                                                <option value="sq">{{ __('Albanian') }}</option>
+                                                                <option value="ar">{{ __('Arabic') }}</option>
+                                                                <option value="az">{{ __('Azerbaijani') }}</option>
+                                                                <option value="bn">{{ __('Bengali') }}</option>
+                                                                <option value="bg">{{ __('Bulgarian') }}</option>
+                                                                <option value="ca">{{ __('Catalan') }}</option>
+                                                                <option value="zh">{{ __('Chinese') }}</option>
+                                                                <option value="zt">{{ __('Chinese (traditional)') }}</option>
+                                                                <option value="cs">{{ __('Czech') }}</option>
+                                                                <option value="da">{{ __('Danish') }}</option>
+                                                                <option value="nl">{{ __('Dutch') }}</option>
+                                                                <option value="en" selected="">{{ __('English') }}</option>
+                                                                <option value="eo">{{ __('Esperanto') }}</option>
+                                                                <option value="et">{{ __('Estonian') }}</option>
+                                                                <option value="fi">{{ __('Finnish') }}</option>
+                                                                <option value="fr">{{ __('French') }}</option>
+                                                                <option value="de">{{ __('German') }}</option>
+                                                                <option value="el">{{ __('Greek') }}</option>
+                                                                <option value="he">{{ __('Hebrew') }}</option>
+                                                                <option value="hi">{{ __('Hindi') }}</option>
+                                                                <option value="hu">{{ __('Hungarian') }}</option>
+                                                                <option value="id">{{ __('Indonesian') }}</option>
+                                                                <option value="ga">{{ __('Irish') }}</option>
+                                                                <option value="it">{{ __('Italian') }}</option>
+                                                                <option value="ja">{{ __('Japanese') }}</option>
+                                                                <option value="ko">{{ __('Korean') }}</option>
+                                                                <option value="lv">{{ __('Latvian') }}</option>
+                                                                <option value="lt">{{ __('Lithuanian') }}</option>
+                                                                <option value="ms">{{ __('Malay') }}</option>
+                                                                <option value="nb">{{ __('Norwegian') }}</option>
+                                                                <option value="fa">{{ __('Persian') }}</option>
+                                                                <option value="pl">{{ __('Polish') }}</option>
+                                                                <option value="pt">{{ __('Portuguese') }}</option>
+                                                                <option value="ro">{{ __('Romanian') }}</option>
+                                                                <option value="ru">{{ __('Russian') }}</option>
+                                                                <option value="sk">{{ __('Slovak') }}</option>
+                                                                <option value="sl">{{ __('Slovenian') }}</option>
+                                                                <option value="es">{{ __('Spanish') }}</option>
+                                                                <option value="sv">{{ __('Swedish') }}</option>
+                                                                <option value="tl">{{ __('Tagalog') }}</option>
+                                                                <option value="th">{{ __('Thai') }}</option>
+                                                                <option value="tr">{{ __('Turkish') }}</option>
+                                                                <option value="uk">{{ __('Ukranian') }}</option>
+                                                                <option value="ur">{{ __('Urdu') }}</option>
                                                             </select>
                                                         </div>
                                                         <div class="card-footer p-2 text-end">
                                                             <button class="btn btn-primary m-1" id="updateLang">
-                                                                Update
+                                                                {{ __('Update') }}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -799,26 +789,22 @@
                                                 <button class="accordion-button collapsed" type="button"
                                                     data-bs-toggle="collapse" data-bs-target="#phish_edu"
                                                     aria-expanded="false" aria-controls="phish_edu">
-                                                    Phish Education
+                                                    {{ __('Phish Education') }}
                                                 </button>
                                             </h2>
                                             <div id="phish_edu" class="accordion-collapse collapse"
                                                 aria-labelledby="headingPhishEdu" data-bs-parent="#phishEdu">
                                                 <div class="accordion-body">
                                                     <div>
-                                                        <h6>If an employee falls victim to a phishing website, what action
-                                                            should be taken?</h6>
-                                                        <span>Note: This setting configures the default selection for new
-                                                            campaigns. This setting can be modified on a
-                                                            campaign-by-campaign basis.</span>
+                                                        <h6>{{ __('If an employee falls victim to a phishing website, what action should be taken?') }}</h6>
+                                                        <span>{{ __('Note: This setting configures the default selection for new campaigns. This setting can be modified on a campaign-by-campaign basis.') }}</span>
                                                         <div class="my-3">
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="radio"
                                                                     name="phish_redirect" value="simuEducation"
                                                                     id="simuEducation">
                                                                 <label class="form-check-label" for="simuEducation">
-                                                                    Redirect to the {{ $companyName }}
-                                                                    education website
+                                                                    {{ __('Redirect to the') }} {{ $companyName }} {{ __('education website') }}
                                                                 </label>
                                                             </div>
                                                             <div class="form-check">
@@ -826,7 +812,7 @@
                                                                     name="phish_redirect" value="byoEducation"
                                                                     id="byoEducation">
                                                                 <label class="form-check-label" for="byoEducation">
-                                                                    Redirect to my own education website
+                                                                    {{ __('Redirect to my own education website') }}
                                                                 </label>
                                                             </div>
                                                             <div class="form-check">
@@ -834,7 +820,7 @@
                                                                     name="phish_redirect" value="noEducation"
                                                                     id="noEducation">
                                                                 <label class="form-check-label" for="noEducation">
-                                                                    Don't do anything
+                                                                    {{ __("Don't do anything") }}
                                                                 </label>
                                                             </div>
 
@@ -846,7 +832,7 @@
 
                                                         <div class="card-footer p-2 text-end">
                                                             <button class="btn btn-primary m-1" id="updatePhishEdu">
-                                                                Update
+                                                                {{ __('Update') }}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -860,7 +846,7 @@
                                                 <button class="accordion-button collapsed" type="button"
                                                     data-bs-toggle="collapse" data-bs-target="#report_phish"
                                                     aria-expanded="false" aria-controls="report_phish">
-                                                    Phish Reporting
+                                                    {{ __('Phish Reporting') }}
                                                 </button>
                                             </h2>
                                             <div id="report_phish" class="accordion-collapse collapse"
@@ -869,8 +855,7 @@
                                                     <div class="my-3">
                                                         <div class="d-flex justify-content-between">
 
-                                                            <h6>Enable employees to report phishing via Gmail, Office 365
-                                                                and Outlook?</h6>
+                                                            <h6>{{ __('Enable employees to report phishing via Gmail, Office 365 and Outlook?') }}</h6>
                                                             <div
                                                                 class="custom-toggle-switch d-flex align-items-center mb-4">
                                                                 <input id="reportngVia" name="reportVia"
@@ -893,7 +878,7 @@
                                                 <button class="accordion-button collapsed" type="button"
                                                     data-bs-toggle="collapse" data-bs-target="#train_remind"
                                                     aria-expanded="false" aria-controls="train_remind">
-                                                    Notification Settings
+                                                    {{ __('Notification Settings') }}
                                                 </button>
                                             </h2>
                                             <div id="train_remind" class="accordion-collapse collapse"
@@ -903,15 +888,15 @@
                                                     <div class="my-3 d-flex justify-content-between align-items-center">
                                                         <div>
 
-                                                            <h6>Deliver Training Assignment Reminders?</h6>
+                                                            <h6>{{ __('Deliver Training Assignment Reminders?') }}</h6>
                                                         </div>
                                                         <div class="d-flex">
-                                                            <label for="freqdays" class="mx-3">Frequency Days</label>
+                                                            <label for="freqdays" class="mx-3">{{ __('Frequency Days') }}</label>
                                                             <input type="number" class="form-control" id="freqdays"
                                                                 style="width:70px;" min="0" max="30">
                                                             <button type="button"
                                                                 class="btn mx-2 btn-primary btn-wave waves-effect waves-light"
-                                                                id="trainFreq">Save</button>
+                                                                id="trainFreq">{{ __('Save') }}</button>
                                                         </div>
 
                                                     </div>
@@ -944,7 +929,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">Setup Multi Factor Authentication</h6>
+                    <h6 class="modal-title">{{ __('Setup Multi Factor Authentication') }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -955,8 +940,8 @@
                         </div>
                         <div class="card custom-card">
                             <div class="card-body p-5">
-                                <p class="h5 fw-semibold mb-2 text-center">Enter MFA Code</p>
-                                <p class="text-center">Enter the code from Google Authenticator</p>
+                                <p class="h5 fw-semibold mb-2 text-center">{{ __('Enter MFA Code') }}</p>
+                                <p class="text-center">{{ __('Enter the code from Google Authenticator') }}</p>
                                 <form action="{{ route('settings.verify.mfa') }}" method="post">
                                     @csrf
                                     <div class="row gy-3">
@@ -965,7 +950,7 @@
                                             <input type="hidden" name="secret" value="" id="mfa_secret">
                                         </div>
                                         <div class="col-xl-12 d-grid mt-2">
-                                            <button type="submit" name="verifyMfaCode" class="btn btn-lg btn-primary">Verify</button>
+                                            <button type="submit" name="verifyMfaCode" class="btn btn-lg btn-primary">{{ __('Verify') }}</button>
                                         </div>
                                     </div>
                                 </form>

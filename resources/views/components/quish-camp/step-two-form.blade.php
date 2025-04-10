@@ -22,7 +22,7 @@
 
                 <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
                 <div class="d-flex gap-2 align-items-center">
-                    <input type="text" class="form-control" id="templateSearch" placeholder="Search template">
+                    <input type="text" class="form-control" id="templateSearch" placeholder="{{ __('Search template') }}">
                     <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
                         <span class="visually-hidden">{{ __('Loading...') }}</span>
                     </div>

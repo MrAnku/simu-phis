@@ -24,27 +24,27 @@
                             @if ($trainingModule->company_id !== 'default')
                                 <button type="button"
                                     onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                    class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                    class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
 
                                 <button type="button"
                                     onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
                                     class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
                                     data-bs-toggle="modal"
-                                    data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                                    data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">{{ __('Edit') }}</button>
                             @endif
                         @else
                             <a href="{{ '/admin/training-preview/' . base64_encode($trainingModule->id)  }}"
                                 target="_blank"
-                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</a>
+                                class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('View') }}</a>
                             <button type="button"
                                 onclick="deleteTrainingModule(`{{ $trainingModule->id }}`, `{{ $trainingModule->cover_image }}`)"
-                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">Delete</button>
+                                class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
 
                             <button type="button"
                                 onclick="{{ $trainingModule->training_type == 'gamified' ? 'editGamifiedTrainingModule' : 'editTrainingModule' }}(`{{ $trainingModule->id }}`)"
                                 class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light"
                                 data-bs-toggle="modal"
-                                data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">Edit</button>
+                                data-bs-target="{{ $trainingModule->training_type == 'gamified' ? '#editGamifiedTrainingModuleModal' : '#editTrainingModuleModal' }}">{{ __('Edit') }}</button>
                         @endif
 
 
@@ -56,7 +56,7 @@
         </div>
     @empty
         <div class="col-lg-6">
-            No records found
+            {{ __('No records found') }}
         </div>
     @endforelse
 
