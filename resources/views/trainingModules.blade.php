@@ -437,7 +437,7 @@
                   <div class="pageQuestion my-3">
                     <div class="d-flex justify-content-between my-2">
                       <span class="badge rounded-pill text-bg-primary my-2"
-                        >Page <span class="noofpages">${pageNo}</span> - Question</span>
+                        >{{ __('Page') }} <span class="noofpages">${pageNo}</span> - {{ __('Question') }}</span>
                         <div>
                     <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
                       {{ __('Add Question') }}
@@ -575,23 +575,23 @@
                 <div class"pageQuestion my-3">
                     <div class="d-flex justify-content-between my-2">
                       <span class="badge rounded-pill text-bg-primary my-2"
-                        >Page <span class="noofpages">${pageNo}</span> - Statement</span>
+                        >{{ __('Page') }} <span class="noofpages">${pageNo}</span> - {{ __('Statement') }}</span>
     
                         <div>
                         <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('${formType}')">
-                      Add Question
+                      {{ __('Add Question') }}
                     </button>
                     <button type="button" onclick="createStatementPageForm('${formType}')" class="btn btn-sm btn-secondary mx-1">
-                      Add Statement
+                      {{ __('Add Statement') }}
                     </button>
     
                       <button type="button" onclick="removePage('${pageNo}', '${formType}')" class="btn btn-sm btn-danger">
-                        Remove
+                        {{ __('Remove') }}
                       </button>
                       </div>
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Statement Title</span>
+                      <span class="input-group-text">{{ __('Statement Title') }}</span>
                       <input
                         type="text"
                         class="form-control"
@@ -601,7 +601,7 @@
                       <input type="hidden" name="qtype" value="statement">
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text">Statement Content</span>
+                      <span class="input-group-text">{{ __('Statement Content') }}</span>
                       <input
                         type="text"
                         class="form-control"
@@ -687,7 +687,7 @@
                     let cont = `<form class="p-2 trainingForms my-3" id="formid${index}" style="border: 0.5px solid rgb(223, 223, 223); border-radius: 6px;">
                       <div class="pageQuestion my-3">
                         <div class="d-flex justify-content-between my-2">
-                          <span class="badge rounded-pill text-bg-primary my-2">Page <span class="noofpages"></span> - {{ __('Question') }}</span>
+                          <span class="badge rounded-pill text-bg-primary my-2">{{ __('Page') }} <span class="noofpages"></span> - {{ __('Question') }}</span>
                           <div>
                     <button type="button" class="btn btn-sm btn-primary mx-1" onclick="createPageForm('editforms')">
                       {{ __('Add Question') }}

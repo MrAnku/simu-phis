@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ App::setLocale(session('locale')) }}" dir="ltr" data-nav-layout="vertical"
+data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
 
 <head>
     <meta charset="UTF-8">
@@ -256,7 +257,7 @@
 
     <div class="button_class">
 
-        <button id="downloadPdf">Download as PDF</button>
+        <button id="downloadPdf">{{ __('Download as PDF') }}</button>
     </div>
 
 
@@ -271,7 +272,7 @@
         <div class="flex-box">
             {{-- <div><img class="width-graph" src="{{ asset('images/graph.png') }}" alt=""></div> --}}
             <div class="reporting" style="text-align: center;">
-                {{ $label }} Phishing Simulation
+                {{ $label }} {{ __('Phishing Simulation') }}
             </div>
             <div
                 style="color: white; font-weight:600; margin-left: 10px;text-align: center; text-transform: capitalize;
@@ -298,7 +299,7 @@
                     <div style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
                         <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
                             alt="">
-                        <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
+                        <h5 style="color: #606781; padding-top: 20px;">{{ __('Oops! No Interaction Found') }}</h5>
                     </div>
                 @endif
             </div>
@@ -308,8 +309,8 @@
                         <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
                     </div> --}}
                     <div>
-                        <span class="details">Interaction</span>
-                        <span class="user">Details</span>
+                        <span class="details">{{ __('Interaction') }}</span>
+                        <span class="user">{{ __('Details') }}</span>
                     </div>
                 </div>
                 <div style="background: white; padding: 5px; margin-top: 15px;">
@@ -318,7 +319,7 @@
                         <div style="display: flex">
                             <img style="width: 30px" src="{{ asset('images/chart.png') }}" alt="">
                             <div style="margin-left: 20px" class="total_user">
-                                Analysis Data
+                                {{ __('Analysis Data') }}
                             </div>
                         </div>
                         {{-- <div class="total_user_count">100</div> --}}
@@ -371,8 +372,8 @@
                     <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
                 </div>
                 <div>
-                    <span class="reporting_2">Training</span>
-                    <span class="of_2">Campaings Reports</span>
+                    <span class="reporting_2">{{ __('Training') }}</span>
+                    <span class="of_2">{{ __('Campaings Reports') }}</span>
                 </div>
             </div>
 
@@ -383,8 +384,8 @@
                     <img class="image-presentation" src="http://127.0.0.1:8000/images/presentation.png" alt="">
                 </div>
                 <div>
-                    <span class="details">Graph</span>
-                    <span class="user">Details</span>
+                    <span class="details">{{ __('Graph') }}</span>
+                    <span class="user">{{ __('Details') }}</span>
                 </div>
             </div>
 
@@ -402,8 +403,8 @@
                                 alt="">
                         </div>
                         <div>
-                            <span class="details">Graph</span>
-                            <span class="user">Details</span>
+                            <span class="details">{{ __('Graph') }}</span>
+                            <span class="user">{{ __('Details') }}</span>
                         </div>
                     </div>
                     <div style="background: white; padding: 20px; margin-top: 15px;">
@@ -412,7 +413,7 @@
                             <div style="display: flex">
                                 <img style="width: 30px" src="http://127.0.0.1:8000/images/chart.png" alt="">
                                 <div style="margin-left: 20px" class="total_user">
-                                    Analysis Data
+                                    {{ __('Analysis Data') }}
                                 </div>
                             </div>
                             {{-- <div class="total_user_count">100</div> --}}
@@ -447,21 +448,21 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>Employee Name</th>
+                    <th>{{ __('Employee Name') }}</th>
 
-                    <th> Email <div>Address
+                    <th> {{ __('Email') }} <div>{{ __('Address') }}
                         </div>
                     </th>
 
-                    <th>Email Delivery</th>
+                    <th>{{ __('Email Delivery') }}</th>
 
 
-                    <th>Email Viewed</th>
+                    <th>{{ __('Email Viewed') }}</th>
 
 
-                    <th>Payload Clicked</th>
-                    <th>Employee Compromised</th>
-                    <th>Email Reported</th>
+                    <th>{{ __('Payload Clicked') }}</th>
+                    <th>{{ __('Employee Compromised') }}</th>
+                    <th>{{ __('Email Reported') }}</th>
 
 
 

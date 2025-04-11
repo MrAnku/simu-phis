@@ -3,7 +3,7 @@
         <div class="toast colored-toast bg-success-transparent fade show" role="alert" aria-live="assertive"
             aria-atomic="true">
             <div class="toast-header bg-success text-fixed-white">
-                <strong class="me-auto">Success</strong>
+                <strong class="me-auto">{{ __('Success') }}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">

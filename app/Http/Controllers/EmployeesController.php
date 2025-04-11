@@ -757,7 +757,7 @@ class EmployeesController extends Controller
             ]);
 
         log_action("LDAP config updated");
-        return redirect()->back()->with('success', 'LDAP Config Updated');
+        return redirect()->back()->with('success', __('LDAP Config Updated'));
     }
 
     public function addLdapConfig(Request $request)

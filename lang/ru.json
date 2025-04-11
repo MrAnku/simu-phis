@@ -553,7 +553,7 @@
     "Remove": "Удалять",
     "Enter a question": "Введите вопрос",
     "Fetch Video": "Получить видео",
-    "Page 1 - Question": "Страница 1 - Вопрос",
+    "Page": "Страница",
     "Search training": "Поиск обучения",
     "Scan Domain": "Сканировать домен",
     "Scan": "Сканировать",
@@ -662,5 +662,22 @@
     "Graph": "График",
     "Training Completed": "Обучение завершено",
     "Mail Open": "Письмо открыто",
-    "Status Send": "Статус отправлен"
+    "Status Send": "Статус отправлен",
+    "Statement Title": "Название заявления",
+    "Enter a statement title": "Введите название заявления",
+    "Enter a statement content": "Введите содержание заявления",
+    "Additional Content": "Дополнительный контент",
+    "Statement Content": "Содержание заявления",
+    "Embedded Video URL": "URL встроенного видео",
+    "Enter the URL of an Embedded Video (Youtube)": "Введите URL встроенного видео (Youtube)",
+    "Statement": "Заявление",
+    "True/False": "Истина / Ложь",
+    "Vishing Simulation": "Симуляция вишинга",
+    "Mobile Number": "Мобильный номер",
+    "Call Sent": "Звонок отправлен",
+    "Call Responded": "Звонок принят",
+    "Please enter your WhatsApp Cloud API Details": "Пожалуйста, введите данные WhatsApp Cloud API",
+    "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.": "Этот пользователь будет удален из активной или запланированной кампании. Если пользователю назначено обучение, его учебная учетная запись будет удалена.",
+     "LDAP Config Updated": "Конфигурация LDAP обновлена"
+
 }
