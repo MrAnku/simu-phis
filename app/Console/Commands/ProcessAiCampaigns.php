@@ -214,7 +214,7 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->employee_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
             if ($training->training_type == 'games') {
@@ -275,7 +275,7 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->employee_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
             if ($training->training_type == 'games') {
@@ -325,7 +325,7 @@ class ProcessAiCampaigns extends Command
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->employee_email)->get();
 
         $trainingNames = $allAssignedTrainings->map(function ($training) {
             if ($training->training_type == 'games') {
