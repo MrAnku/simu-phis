@@ -10,7 +10,8 @@
         </div>
         <div class="col-lg-6">
 
-            <label for="input-label" class="form-label">{{ __('Campaign Type') }}</label>
+            <label for="input-label" class="form-label">{{ __('Campaign Type') }}<sup
+                class="text-danger">*</sup></label>
             <select class="form-control required" id="campaign_type">
                 <option value="">{{ __('Choose') }}</option>
                 <option value="Phishing">{{ __('Simulate Phishing') }}</option>
@@ -25,8 +26,10 @@
     <div class="row">
         <div class="col-lg-6 mt-3">
 
-            <label for="input-label" class="form-label">{{ __('Select Employee Group') }}</label>
+            <label for="input-label" class="form-label">{{ __('Select Employee Group') }}<sup
+                class="text-danger">*</sup></label>
             <select class="form-control required" id="users_group">
+                <option value="">{{ __('Choose') }}</option>
                 @foreach ($usersGroups as $group)
                     <option value="{{ $group->group_id }}">
                         {{ $group->group_name }}

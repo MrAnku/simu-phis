@@ -357,7 +357,7 @@
                     selectedPhishingMaterial.push(checkbox.value);
 
                     // Change the text inside the label
-                    label.textContent = "Attack selected";
+                    label.textContent = "{{ __('Attack selected') }}";
 
                     // Add the classes to the label
                     label.classList.add('bg-primary', 'text-white');
@@ -398,7 +398,7 @@
                     selectedTrainings = selectedTrainings.filter(value => value !== checkbox.value);
 
                     // Change the text back to the original
-                    label.textContent = "Select this training";
+                    label.textContent = "{{ __('Select this training') }}";
 
                     // Remove the classes from the label
                     label.classList.remove('bg-primary', 'text-white');

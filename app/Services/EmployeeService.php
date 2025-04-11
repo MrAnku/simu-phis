@@ -28,14 +28,14 @@ class EmployeeService
         if ($this->isLimitExceeded()) {
             return [
                 'status' => 0,
-                'msg' => 'Employee limit exceeded'
+                'msg' => __('Employee limit exceeded')
             ];
         }
         //domain verified
         if (!$this->domainVerified($email)) {
             return [
                 'status' => 0,
-                'msg' => 'This domain is not verified'
+                'msg' => __('This domain is not verified')
             ];
         }
         //increase the limit
@@ -54,7 +54,7 @@ class EmployeeService
         return [
             'status' => 1,
             'user_id' => $user->id,
-            'msg' => 'Employee added successfully'
+            'msg' => __('Employee added successfully')
         ];
     }
 
@@ -79,7 +79,7 @@ class EmployeeService
             if (in_array($employeeId, $usersArray)) {
                 return [
                     'status' => 0,
-                    'msg' => 'Employee already exists in group'
+                    'msg' => __('Employee already exists in group')
                 ];
             }
             $usersArray[] = $employeeId;
@@ -87,14 +87,14 @@ class EmployeeService
             $group->save();
             return [
                 'status' => 1,
-                'msg' => 'Employee added to group successfully'
+                'msg' => __('Employee added to group successfully')
             ];
         } else {
             $group->users = json_encode([$employeeId]);
             $group->save();
             return [
                 'status' => 1,
-                'msg' => 'Employee added to group successfully'
+                'msg' => __('Employee added to group successfully')
             ];
         }
     }
@@ -105,7 +105,7 @@ class EmployeeService
         if (!$group) {
             return [
                 'status' => 0,
-                'msg' => 'Group not found'
+                'msg' => __('Group not found')
             ];
         }
         //delete this group users also
@@ -119,7 +119,7 @@ class EmployeeService
         $group->delete();
         return [
             'status' => 1,
-            'msg' => 'Group deleted successfully'
+            'msg' => __('Group deleted successfully')
         ];
     }
     public function deleteCampaignsByGroupId($groupId)

@@ -126,7 +126,7 @@ class QuishingController extends Controller
             ]);
         }
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign created successfully.']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign created successfully.')]);
     }
 
     public function deleteCampaign(Request $request)
@@ -140,7 +140,7 @@ class QuishingController extends Controller
         $campaign->delete();
         QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully.']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
     }
 
     public function fetchCampDetail(Request $request)

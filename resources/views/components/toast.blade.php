@@ -16,7 +16,7 @@
         <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
             aria-atomic="true">
             <div class="toast-header bg-danger text-fixed-white">
-                <strong class="me-auto">Error</strong>
+                <strong class="me-auto">{{ __('Error') }}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
@@ -30,7 +30,7 @@
             <div class="toast colored-toast bg-danger-transparent fade show" role="alert" aria-live="assertive"
                 aria-atomic="true">
                 <div class="toast-header bg-danger text-fixed-white">
-                    <strong class="me-auto">Error</strong>
+                    <strong class="me-auto">{{ __('Error') }}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">

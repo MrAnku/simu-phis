@@ -184,12 +184,12 @@ class CampaignController extends Controller
                 if (is_array($value)) {
                     array_walk_recursive($value, function ($item) {
                         if (preg_match('/<[^>]*>|<\?php/', $item)) {
-                            return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                            return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
                         }
                     });
                 } else {
                     if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                        return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                        return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
                     }
                 }
             }
@@ -214,7 +214,7 @@ class CampaignController extends Controller
                 if ($phishingEmail) {
                     return response()->json([
                         'status' => 0,
-                        'msg' => 'Sender profile or Website is not associated with the selected phishing email template',
+                        'msg' => __('Sender profile or Website is not associated with the selected phishing email template'),
                     ]);
                 }
             }
@@ -236,7 +236,7 @@ class CampaignController extends Controller
                 return $this->handleLaterLaunch($validated, $campId, $companyId);
             }
 
-            return response()->json(['status' => 0, 'msg' => 'Invalid launch type']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid launch type')]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => 0,
@@ -264,7 +264,7 @@ class CampaignController extends Controller
         // $users = User::where('group_id', $data['users_group'])->get();
 
         if ($users->isEmpty()) {
-            return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
+            return response()->json(['status' => 0, 'msg' => __('No employees available in this group')]);
         }
 
         foreach ($users as $user) {
@@ -329,7 +329,7 @@ class CampaignController extends Controller
 
         log_action('Email campaign created');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign created and running!')]);
     }
 
     private function handleScheduledLaunch($data, $campId, $companyId)
@@ -378,7 +378,7 @@ class CampaignController extends Controller
 
         log_action('Email campaign scheduled');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign created and scheduled!']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign created and scheduled!')]);
     }
 
     private function handleLaterLaunch($data, $campId, $companyId)
@@ -410,7 +410,7 @@ class CampaignController extends Controller
 
         log_action('Email campaign created for schedule later');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign saved successfully!']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign saved successfully!')]);
     }
 
 
@@ -457,7 +457,7 @@ class CampaignController extends Controller
         EmailCampActivity::where('campaign_id', $campid)->delete();
         log_action('Email campaign deleted');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
     }
 
     public function relaunchCampaign(Request $request)
@@ -500,7 +500,7 @@ class CampaignController extends Controller
         // $users = User::where('group_id', $campaign->users_group)->get();
 
         if ($users->isEmpty()) {
-            return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
+            return response()->json(['status' => 0, 'msg' => __('No employees available in this group')]);
         }
 
         foreach ($users as $user) {
@@ -525,7 +525,7 @@ class CampaignController extends Controller
 
         log_action('Email campaign relaunched');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign relaunched successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign relaunched successfully')]);
     }
 
     public function fetchPhishData(Request $request)
@@ -656,7 +656,7 @@ class CampaignController extends Controller
 
         log_action('Email campaign rescheduled');
 
-        return redirect()->back()->with('success', 'Campaign rescheduled successfully');
+        return redirect()->back()->with('success', __('Campaign rescheduled successfully'));
     }
 
     private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
@@ -674,7 +674,7 @@ class CampaignController extends Controller
 
         // Check if users exist in the group
         if ($users->isEmpty()) {
-            return ['status' => 0, 'msg' => 'No employees available in this group'];
+            return ['status' => 0, 'msg' => __('No employees available in this group')];
         }
 
         // Iterate through the users and create CampaignLive entries
@@ -718,14 +718,14 @@ class CampaignController extends Controller
             ->first();
 
         if (!$userCredentials) {
-            return response()->json(['status' => 0, 'msg' => 'User credentials not found']);
+            return response()->json(['status' => 0, 'msg' => __('User credentials not found')]);
         }
 
         $assignedTraining = TrainingAssignedUser::where('user_email', $request->email)
             ->first();
 
         if (!$assignedTraining) {
-            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+            return response()->json(['status' => 0, 'msg' => __('No training assigned to this user')]);
         }
 
 
@@ -748,7 +748,7 @@ class CampaignController extends Controller
 
         log_action("Training reminder sent to {$request->email}");
 
-        return response()->json(['status' => 1, 'msg' => 'Training reminder sent successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Training reminder sent successfully')]);
     }
 
     public function completeTraining(Request $request)
@@ -759,7 +759,7 @@ class CampaignController extends Controller
         $trainingAssigned = TrainingAssignedUser::find($training_id);
 
         if (!$trainingAssigned) {
-            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+            return response()->json(['status' => 0, 'msg' => __('No training assigned to this user')]);
         }
 
         $trainingAssigned->update([
@@ -772,7 +772,7 @@ class CampaignController extends Controller
 
         log_action("Training marked as completed to {$trainingAssigned->user_email}");
 
-        return response()->json(['status' => 1, 'msg' => 'Training completed successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Training completed successfully')]);
     }
 
     public function removeTraining(Request $request)
@@ -781,14 +781,14 @@ class CampaignController extends Controller
 
         $trainingAssigned = TrainingAssignedUser::find($training_id);
         if (!$trainingAssigned) {
-            return response()->json(['status' => 0, 'msg' => 'No training assigned to this user']);
+            return response()->json(['status' => 0, 'msg' => __('No training assigned to this user')]);
         }
         $trainingAssigned->delete();
 
 
         log_action("Training removed from {$trainingAssigned->user_email}");
 
-        return response()->json(['status' => 1, 'msg' => 'Training removed successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Training removed successfully')]);
     }
     public function fetchCampaignDetail(Request $request)
     {
@@ -804,7 +804,7 @@ class CampaignController extends Controller
         // return response()->json($detail);
         // Check if campaign exists
         if (!$detail) {
-            return response()->json(['error' => 'Campaign not found']);
+            return response()->json(['error' => __('Campaign not found')]);
         }
         // Extract campReport safely
         $campReport = $detail->campReport ?? null;
@@ -853,7 +853,7 @@ class CampaignController extends Controller
             return response()->json([
                 'html' => '
                 <tr>
-                    <td colspan="7" class="text-center"> No records found</td>
+                    <td colspan="7" class="text-center">' . __('No records found') . '</td>
                 </tr>',
             ]);
         }
@@ -866,10 +866,10 @@ class CampaignController extends Controller
             $dueDate = new \DateTime($assignedUser->training_due_date);
 
             if ($assignedUser->completed == 1) {
-                $status = "<span class='text-success'><strong>Training Completed</strong></span>";
+                $status = "<span class='text-success'><strong>" .__('Training Completed'). "</strong></span>";
             } else {
                 if ($dueDate > $today) {
-                    $status = "<span class='text-success'><strong>In training period</strong></span>";
+                    $status = "<span class='text-success'><strong>" .__('In training period'). "</strong></span>";
                 } else {
                     $days_difference = $today->diff($dueDate)->days;
                     $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';

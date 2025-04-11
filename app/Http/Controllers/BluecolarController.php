@@ -78,7 +78,7 @@ class BluecolarController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -109,7 +109,7 @@ class BluecolarController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -139,7 +139,7 @@ class BluecolarController extends Controller
         // Checking the limit of employees
         if (Auth::user()->usedemployees >= Auth::user()->employees) {
             log_action("Employee limit has exceeded");
-            return response()->json(['status' => 0, 'msg' => 'Employee limit has been reached']);
+            return response()->json(['status' => 0, 'msg' => __('mployee limit has been reached')]);
         }
 
         //checking if the domain is verified
@@ -150,7 +150,7 @@ class BluecolarController extends Controller
         //checking if the email is unique
         $user = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)->exists();
         if ($user) {
-            return response()->json(['status' => 0, 'msg' => 'This Whatsapp already exists / Or added by some other company']);
+            return response()->json(['status' => 0, 'msg' => __('This Whatsapp already exists / Or added by some other company')]);
         }
 
         BlueCollarEmployee::create(
@@ -165,7 +165,7 @@ class BluecolarController extends Controller
         );
         Auth::user()->increment('usedemployees');
 
-        return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Employee Added Successfully')]);
     }
 
     public function deleteBlueUser(Request $request)
@@ -178,11 +178,11 @@ class BluecolarController extends Controller
             // log_action("User {$user->user_email} deleted");
             $user->delete();
 
-            return response()->json(['status' => 1, 'msg' => 'User deleted successfully'], 200);
+            return response()->json(['status' => 1, 'msg' => __('User deleted successfully')], 200);
         } else {
 
             log_action("User not found to delete");
-            return response()->json(['status' => 0, 'msg' => 'User not found'], 404);
+            return response()->json(['status' => 0, 'msg' => __('User not found')], 404);
         }
     }
     public function viewBlueCollarUsers($groupid)
@@ -193,7 +193,7 @@ class BluecolarController extends Controller
         if (!$users->isEmpty()) {
             return response()->json(['status' => 1, 'data' => $users]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+            return response()->json(['status' => 0, 'msg' => __('no employees found')]);
         }
     }
 
@@ -241,11 +241,11 @@ class BluecolarController extends Controller
 
             DB::commit();
             log_action("Employee group deleted");
-            return response()->json(['status' => 1, 'msg' => 'Employee group deleted successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Employee group deleted successfully')]);
         } catch (\Exception $e) {
             DB::rollBack();
             log_action("An error occurred while deleting the employee group");
-            return response()->json(['status' => 0, 'msg' => 'An error occurred while deleting the employee group', 'error' => $e->getMessage()]);
+            return response()->json(['status' => 0, 'msg' => __('An error occurred while deleting the employee group'), 'error' => $e->getMessage()]);
         }
     }
 
@@ -262,7 +262,7 @@ class BluecolarController extends Controller
 
             $TrainingData = BlueCollarTrainingUser::where('id', $decodedId)->first();
             if (!$TrainingData) {
-                return response()->json(['success' => false, 'message' => 'Training data not found.'], 404);
+                return response()->json(['success' => false, 'message' => __('Training data not found')], 404);
             }
 
             BluecollarTrainingInitiator::create([
@@ -285,12 +285,12 @@ class BluecolarController extends Controller
                 return response()->json(['success' => true, 'trainingUrl' => $trainingUrl]);
             } else {
 
-                return response()->json(['success' => true, 'message' => 'User created successfully.']);
+                return response()->json(['success' => true, 'message' => __('User created successfully.')]);
             }
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'errors' => $e->errors()], 422);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Something went wrong:') . $e->getMessage()], 500);
         }
     }
 
@@ -333,7 +333,7 @@ class BluecolarController extends Controller
         }
 
 
-        return response()->json(['message' => 'Score updated']);
+        return response()->json(['message' => __('Score updated')]);
     }
 
 

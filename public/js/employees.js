@@ -425,7 +425,7 @@ function deleteBlueCollarGroup(grpId) {
 function deleteUser(usrId, grpId) {
     Swal.fire({
         title: "Are you sure?",
-        text: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
+        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",

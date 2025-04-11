@@ -62,7 +62,7 @@ class WhatsappCampaignController extends Controller
 
         CompanyWhatsappConfig::create($validated);
 
-        return redirect()->back()->with('success', 'Configuration saved successfully!');
+        return redirect()->back()->with('success', __('Configuration saved successfully!)'));
     }
 
     public function updateConfig(Request $request)
@@ -79,7 +79,7 @@ class WhatsappCampaignController extends Controller
 
         CompanyWhatsappConfig::where('company_id', $company_id)->update($validated);
 
-        return redirect()->back()->with('success', 'Configuration updated successfully!');
+        return redirect()->back()->with('success', __('Configuration updated successfully!'));
     }
 
     public function syncTemplates()
@@ -102,7 +102,7 @@ class WhatsappCampaignController extends Controller
                     'template' => json_encode($responseData),
                     'company_id' => $company_id
                 ]);
-                return response()->json(['success' => 'Templates synced successfully']);
+                return response()->json(['success' => __('Templates synced successfully')]);
             } else {
                 $responseData = $response->json();
                 if (isset($responseData['error'])) {
@@ -110,7 +110,7 @@ class WhatsappCampaignController extends Controller
                 }
             }
         } catch (\Throwable $th) {
-            return $response->json(['error' => 'Something went wrong']);
+            return $response->json(['error' => __('Something went wrong')]);
         }
     }
 
@@ -122,7 +122,7 @@ class WhatsappCampaignController extends Controller
         $input = $request->only('camp_name');
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -162,7 +162,7 @@ class WhatsappCampaignController extends Controller
 
         log_action('WhatsApp campaign created');
 
-        return response()->json(['status' => 1, 'msg' => 'Campaign created successfully!']);
+        return response()->json(['status' => 1, 'msg' => __('Campaign created successfully.')]);
     }
 
     public function createCampaignIndividual($camp_id, $campaignData)
@@ -226,11 +226,11 @@ class WhatsappCampaignController extends Controller
             DB::table('whatsapp_camp_users')->where('camp_id', $request->campid)->delete();
 
             log_action('WhatsApp campaign deleted');
-            return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
         } else {
 
             log_action('Something went wrong while deleting WhatsApp campaign');
-            return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
+            return response()->json(['status' => 0, 'msg' => __('Something went wrong!')]);
         }
     }
 
@@ -288,7 +288,7 @@ class WhatsappCampaignController extends Controller
         if ($User) {
             return view('start-training', compact('training_module_name'));
         } else {
-            return back()->with('error', 'Invalid User');
+            return back()->with('error', __('Invalid User'));
         }
     }
 
@@ -307,12 +307,12 @@ class WhatsappCampaignController extends Controller
 
             log_action('WhatsApp phishing payload clicked', 'employee', 'employee');
 
-            return response()->json(['status' => 1, 'msg' => 'Payload updated']);
+            return response()->json(['status' => 1, 'msg' => __('Payload updated')]);
         } else {
 
             log_action('WhatsApp phishing | Payload not updated because of invalid campaign id', 'employee', 'employee');
 
-            return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid cid')]);
         }
     }
 
@@ -327,9 +327,9 @@ class WhatsappCampaignController extends Controller
 
             log_action('Employee compromised in WhatsApp campaign', 'employee', 'employee');
 
-            return response()->json(['status' => 1, 'msg' => 'emp compromised updated']);
+            return response()->json(['status' => 1, 'msg' => __('emp compromised updated')]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'Invalid cid']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid cid')]);
         }
     }
 
@@ -340,7 +340,7 @@ class WhatsappCampaignController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -367,7 +367,7 @@ class WhatsappCampaignController extends Controller
 
         log_action('New WhatsApp templete requested');
 
-        return redirect()->back()->with('success', 'New template request added successfully.');
+        return redirect()->back()->with('success', __('New template request added successfully.'));
     }
 
     public function assignTraining(Request $request)
@@ -380,17 +380,17 @@ class WhatsappCampaignController extends Controller
             ->first();
 
         if (!$campaign_user) {
-            return response()->json(['error' => 'Invalid campaign id']);
+            return response()->json(['error' => __('Invalid campaign id')]);
         }
         if ($campaign_user->training == null) {
-            return response()->json(['error' => 'No training assigned']);
+            return response()->json(['error' => __('No training assigned')]);
         }
         $training =  DB::table('training_modules')
             ->where('id', $campaign_user->training)
             ->first();
 
         if (!$training) {
-            return response()->json(['error' => 'Training not found']);
+            return response()->json(['error' => __('Training not found')]);
         }
 
         if ($campaign_user->employee_type == "Bluecollar") {
@@ -400,7 +400,7 @@ class WhatsappCampaignController extends Controller
                 ->first();
 
             if (!$training) {
-                return response()->json(['error' => 'Training not found']);
+                return response()->json(['error' => __('Training not found')]);
             }
             if ($already_have_this_training) {
                 // return "Send Remainder";
@@ -460,7 +460,7 @@ class WhatsappCampaignController extends Controller
                 'company_id' => $campaign_user->company_id
             ]);
         if (!$training_assigned) {
-            return response()->json(['error' => 'Failed to assign training']);
+            return response()->json(['error' => __('Failed to assign training')]);
         }
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
@@ -509,7 +509,7 @@ class WhatsappCampaignController extends Controller
             ->where('id', $campaign_user->id)
             ->update(['training_assigned' => 1]);
 
-        return response()->json(['success' => 'First assigned successfully']);
+        return response()->json(['success' => __('First assigned successfully')]);
     }
     private function whatsappAssignFirstTraining($campaign_user, $training)
     {
@@ -530,7 +530,7 @@ class WhatsappCampaignController extends Controller
 
 
         if (!$training_assigned) {
-            return response()->json(['error' => 'Failed to assign training']);
+            return response()->json(['error' => __('Failed to assign training')]);
         }
 
         $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
@@ -581,7 +581,7 @@ class WhatsappCampaignController extends Controller
             log_action("WhatsApp message failed | Status: " . $whatsapp_response->status(), 'employee', 'employee');
         }
 
-        return response()->json(['success' => 'Training assigned and WhatsApp notification sent']);
+        return response()->json(['success' => __('Training assigned and WhatsApp notification sent')]);
     }
 
     private function assignAnotherTraining($campaign_user, $training, $user_have_login)
@@ -646,12 +646,12 @@ class WhatsappCampaignController extends Controller
                 ->where('id', $campaign_user->id)
                 ->update(['training_assigned' => 1]);
 
-            return response()->json(['success' => 'Another training has assigned successfully']);
+            return response()->json(['success' => __('Another training has assigned successfully')]);
         } else {
 
             log_action("WhatsApp simulation | Failed to assign training", 'employee', 'employee');
 
-            return response()->json(['error' => 'Failed to assign another training']);
+            return response()->json(['error' => __('Failed to assign another training')]);
         }
     }
 
@@ -698,7 +698,7 @@ class WhatsappCampaignController extends Controller
 
         Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
-        return response()->json(['success' => 'Training reminder has sent']);
+        return response()->json(['success' => __('Training reminder has sent')]);
     }
 
 
@@ -757,10 +757,10 @@ class WhatsappCampaignController extends Controller
 
         if ($whatsapp_response->successful()) {
             log_action("WhatsApp Reminder Sent | Training {$training->name} assigned to 919122668359.", 'employee', 'employee');
-            return response()->json(['success' => 'Training reminder sent via WhatsApp']);
+            return response()->json(['success' => __('Training reminder sent via WhatsApp')]);
         } else {
             return response()->json([
-                'error' => 'Failed to send WhatsApp message',
+                'error' => __('Failed to send WhatsApp message'),
                 'status' => $whatsapp_response->status(),
                 'response' => $whatsapp_response->body()
             ], 500);

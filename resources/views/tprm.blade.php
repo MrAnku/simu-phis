@@ -601,7 +601,7 @@
                                                             <div class="input-group-text text-muted"> {{ __('Expire After') }}</div>
                                                             <input type="text"
                                                                 class="form-control flatpickr-input active"
-                                                                id="expire_after" placeholder="Choose date"
+                                                                id="expire_after" placeholder="{{ __('Choose date') }}"
                                                                 readonly="readonly">
                                                             <div class="input-group-text text-muted"> <i
                                                                     class="ri-calendar-line"></i> </div>

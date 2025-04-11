@@ -35,8 +35,7 @@
 
     </div>
     <div id="dvSchedule2" class="d-none">
-        <label class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>{{ __('Note:') }}</b>{{ __("We will capture employee interactions as long as a campaign remains active
-            (isn't updated or deleted).") }} </label>
+        <label class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>{{ __('Note:') }}</b>{{ __("We will capture employee interactions as long as a campaign remains active (isn't updated or deleted).") }} </label>
         <div class="row mb-3">
             <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule Date') }}<i class='bx bx-info-circle p-2'
                     data-bs-toggle="tooltip" data-bs-placement="top"
@@ -117,7 +116,7 @@
                 <div class="input-group">
                     <div class="input-group-text text-muted"> {{ __('Expire After') }}</div>
                     <input type="text" class="form-control flatpickr-input active" id="expire_after"
-                        placeholder="Choose date" readonly="readonly">
+                        placeholder="{{ __('Choose date') }}" readonly="readonly">
                     <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
                 </div>
             </div>

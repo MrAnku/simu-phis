@@ -45,7 +45,7 @@ class AicallController extends Controller
         $input = $request->only('agent_name', 'agent_prompt', 'language');
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -79,7 +79,7 @@ class AicallController extends Controller
             'status' => 0
         ]);
 
-        return redirect()->back()->with('success', 'New agent request submitted successfully.');
+        return redirect()->back()->with('success', __('New agent request submitted successfully.'));
     }
 
     public function submitReq(Request $request)
@@ -97,7 +97,7 @@ class AicallController extends Controller
         ]);
 
         log_action('Request submitted for AI vishing simulation');
-        return redirect()->back()->with('success', 'Your request has been submitted successfully.');
+        return redirect()->back()->with('success', __('Your request has been submitted successfully.'));
     }
 
     public function getAgents()
@@ -115,7 +115,7 @@ class AicallController extends Controller
         } else {
             // Handle the error, e.g., log the error or throw an exception
             return [
-                'error' => 'Unable to fetch agents',
+                'error' => __('Unable to fetch agents'),
                 'status' => $response->status(),
                 'message' => $response->body()
             ];
@@ -136,7 +136,7 @@ class AicallController extends Controller
         } else {
             // Handle the error, e.g., log the error or throw an exception
             return [
-                'error' => 'Unable to fetch agents',
+                'error' => __('Unable to fetch agents'),
                 'status' => $response->status(),
                 'message' => $response->body()
             ];
@@ -151,7 +151,7 @@ class AicallController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -174,7 +174,7 @@ class AicallController extends Controller
                 'ai_phone' => 'required|string'
             ],
             [
-                "camp_name.min" => "Campaign Name must be at least 5 Characters"
+                "camp_name.min" => __('Campaign Name must be at least 5 Characters')
             ]
         );
 
@@ -187,7 +187,7 @@ class AicallController extends Controller
         $isvalid = $this->checkValidMobile($request->emp_group);
 
         if (!$isvalid) {
-            return redirect()->back()->with('error', 'Please check if selected employee group has valid phone number');
+            return redirect()->back()->with('error', __('Please check if selected employee group has valid phone number'));
         }
 
         AiCallCampaign::create([
@@ -210,7 +210,7 @@ class AicallController extends Controller
 
         log_action('Campaign for AI Vishing simulation created');
 
-        return redirect()->back()->with('success', 'Campaign Created Successfully!');
+        return redirect()->back()->with('success', __('Campaign created successfully.'));
     }
 
     public function viewCampaign($id)
@@ -300,7 +300,7 @@ class AicallController extends Controller
             AiCallCampLive::where('campaign_id', $camp->campaign_id)->delete();
 
             log_action('AI Vishing campaign deleted');
-            return redirect()->back()->with('success', 'Campaign Deleted');
+            return redirect()->back()->with('success', __('Campaign Deleted'));
         }
     }
 
@@ -332,7 +332,7 @@ class AicallController extends Controller
                     log_action("Error while fetching AI Vishing Call report for call id {$callid}");
 
                     return [
-                        'error' => 'Unable to fetch call detail',
+                        'error' => __('Unable to fetch call detail'),
                         'status' => $response->status(),
                         'message' => $response->body()
                     ];
@@ -359,6 +359,6 @@ class AicallController extends Controller
 
         log_action("Post call received after call hangup from AI Vishing Provider", 'retell_ai', 'retell_ai');
 
-        return response()->json(['status' => 1, 'msg' => 'msg logged']);
+        return response()->json(['status' => 1, 'msg' => __('msg logged')]);
     }
 }

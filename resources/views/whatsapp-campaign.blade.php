@@ -828,7 +828,7 @@
 
 
             function syncTemps(btn) {
-                $(btn).html('Syncing...').attr('disabled', true);
+                $(btn).html("{{ __('Syncing...') }}").attr('disabled', true);
                 $.get({
                     url: '/whatsapp-sync-templates',
                     success: function(res) {

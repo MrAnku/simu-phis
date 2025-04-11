@@ -116,7 +116,7 @@ class TprmController extends Controller
     }
     public function test()
     {
-        return response()->json(['status' => 1, 'message' => 'Frontend is working correctly!']);
+        return response()->json(['status' => 1, 'message' => __('Frontend is working correctly!')]);
     }
 
 
@@ -128,12 +128,12 @@ class TprmController extends Controller
             if (is_array($value)) {
                 array_walk_recursive($value, function ($item) {
                     if (preg_match('/<[^>]*>|<\?php/', $item)) {
-                        return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                        return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
                     }
                 });
             } else {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                    return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                    return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
                 }
             }
         }
@@ -145,7 +145,7 @@ class TprmController extends Controller
 
         // Validate that the input is an array
         if (!is_array($domains) || empty($domains)) {
-            return response()->json(['status' => 0, 'msg' => 'Please provide one or more domains in an array format.']);
+            return response()->json(['status' => 0, 'msg' => __('Please provide one or more domains in an array format.')]);
         }
 
         // Get the company ID of the authenticated user
@@ -156,7 +156,7 @@ class TprmController extends Controller
 
         // Check if partnerId is null
         if (!$partnerId) {
-            return response()->json(['status' => 0, 'msg' => 'Partner ID not found for the specified company']);
+            return response()->json(['status' => 0, 'msg' => __('Partner ID not found for the specified company')]);
         }
 
         // Array to store the result of each domain verification attempt
@@ -175,9 +175,9 @@ class TprmController extends Controller
                 ->first();
 
             if ($domainExists) {
-                return response()->json(['status' => 0, 'msg' => 'Domain already exists']);
+                return response()->json(['status' => 0, 'msg' => __('Domain already exists')]);
             }else if ($verifiedDomain) {
-                return response()->json(['status' => 0, 'msg' => 'Domain already verified by another company']);
+                return response()->json(['status' => 0, 'msg' => __('Domain already verified by another company')]);
             } else {
                 // Generate a temporary code for the new domain and save it
                 $genCode = generateRandom(6);
@@ -197,16 +197,16 @@ class TprmController extends Controller
                     $results[] = [
                         'domain' => $domain,
                         'status' => 1,
-                        'msg' => 'New domain verification requested successfully.'
+                        'msg' => __('New domain verification requested successfully.')
                     ];
                 } else {
-                    return response()->json(['status' => 0, 'msg' => 'Failed to verify domain; partner ID is missing.']);
+                    return response()->json(['status' => 0, 'msg' => __('Failed to verify domain; partner ID is missing.')]);
                 }
             }
         }
 
 
-        return response()->json(['status' => 1, 'results' => $results, 'msg' => 'New domain verification requested successfully.']);
+        return response()->json(['status' => 1, 'results' => $results, 'msg' => __('New domain verification requested successfully.')]);
     }
 
 
@@ -231,9 +231,9 @@ class TprmController extends Controller
             $verifiedDomain->verified = '1';
             $verifiedDomain->save();
 
-            return response()->json(['status' => 1, 'msg' => 'Domain verified successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Domain verified successfully')]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'Invalid Code']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid Code')]);
         }
     }
 
@@ -327,14 +327,14 @@ class TprmController extends Controller
             // Commit the transaction if all deletions are successful
             DB::commit();
 
-            return response()->json(['status' => 1, 'msg' => 'Domain and associated data deleted successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Domain and associated data deleted successfully')]);
         } catch (\Exception $e) {
             // Rollback the transaction if an error occurs
             DB::rollBack();
 
 
 
-            return response()->json(['status' => 0, 'msg' => 'An error occurred: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 0, 'msg' => __('An error occurred: ') . $e->getMessage()], 500);
         }
     }
 
@@ -364,7 +364,7 @@ class TprmController extends Controller
         if (!$users->isEmpty()) {
             return response()->json(['status' => 1, 'data' => $users]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+            return response()->json(['status' => 0, 'msg' => __('no employees found')]);
         }
     }
 
@@ -374,9 +374,9 @@ class TprmController extends Controller
 
         if ($user) {
             $user->delete();
-            return response()->json(['status' => 1, 'msg' => 'User deleted successfully'], 200);
+            return response()->json(['status' => 1, 'msg' => __('User deleted successfully')], 200);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'User not found'], 404);
+            return response()->json(['status' => 0, 'msg' => __('User not found')], 404);
         }
     }
 
@@ -414,7 +414,7 @@ class TprmController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -447,7 +447,7 @@ class TprmController extends Controller
             ->first();
 
         if ($phishingEmail) {
-            return response()->json(['status' => 0, 'msg' => 'Sender profile or Website is not associated with the selected phishing email template']);
+            return response()->json(['status' => 0, 'msg' => __('Sender profile or Website is not associated with the selected phishing email template')]);
         }
 
         $campId = generateRandom(); // Assuming you have a method to generate a random ID
@@ -461,7 +461,7 @@ class TprmController extends Controller
             $users = TprmUsers::where('group_id', $usersGroup)->get();
 
             if ($users->isEmpty()) {
-                return response()->json(['status' => 0, 'msg' => 'No employees available in this group']);
+                return response()->json(['status' => 0, 'msg' => __('No employees available in this group')]);
             }
 
             foreach ($users as $user) {
@@ -512,7 +512,7 @@ class TprmController extends Controller
                 'company_id' => $companyId,
             ]);
 
-            return response()->json(['status' => 1, 'msg' => 'Campaign created and running!']);
+            return response()->json(['status' => 1, 'msg' => __('Campaign created and running!')]);
         }
     }
 
@@ -560,7 +560,7 @@ class TprmController extends Controller
             // Check if campaign exists
             $campaign = TprmCampaign::where('campaign_id', $campid)->first();
             if (!$campaign) {
-                return response()->json(['status' => 0, 'msg' => 'Campaign not found'], 404);
+                return response()->json(['status' => 0, 'msg' => __('Campaign not found')], 404);
             }
 
 
@@ -573,15 +573,15 @@ class TprmController extends Controller
             // Check if any records were deleted
             if ($res1 || $res2 || $res3) {
                 DB::commit();
-                return response()->json(['status' => 1, 'msg' => 'Campaign deleted successfully']);
+                return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully.')]);
             } else {
                 DB::rollBack();
-                return response()->json(['status' => 0, 'msg' => 'No records deleted'], 400);
+                return response()->json(['status' => 0, 'msg' => __('No records deleted')], 400);
             }
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json(['status' => 0, 'msg' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 0, 'msg' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -717,7 +717,7 @@ class TprmController extends Controller
         }
 
 
-        return redirect()->back()->with('success', 'Campaign rescheduled successfully');
+        return redirect()->back()->with('success', __('Campaign rescheduled successfully'));
     }
 
     private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
@@ -731,7 +731,7 @@ class TprmController extends Controller
 
         // Check if users exist in the group
         if ($users->isEmpty()) {
-            return redirect()->back()->with('error', 'No employees available in this group GroupID:' . $campaign->users_group);
+            return redirect()->back()->with('error', __('No employees available in this group GroupID:') . $campaign->users_group);
         } else {
             // Iterate through the users and create CampaignLive entries
             foreach ($users as $user) {
@@ -771,7 +771,7 @@ class TprmController extends Controller
         // Check if access token was retrieved successfully
         if (empty($token)) {
             return response()->json([
-                'message' => 'Failed to retrieve access token.',
+                'message' => __('Failed to retrieve access token.'),
             ], 500);
         }
 
@@ -795,7 +795,7 @@ class TprmController extends Controller
         // Handle unsuccessful HTTP responses
         if (!$response->successful()) {
             return response()->json([
-                'message'  => 'Failed to fetch data from API.',
+                'message'  => __('Failed to fetch data from API.'),
                 'httpCode' => $response->status(),
             ], 500);
         }
@@ -855,7 +855,7 @@ class TprmController extends Controller
             }
         } else {
             // Handle an unsuccessful response
-            return ['error' => 'Failed to fetch access token', 'status' => $response->status()];
+            return ['error' => __('Failed to fetch access token'), 'status' => $response->status()];
         }
     }
     public function viewEmails()
@@ -903,7 +903,7 @@ class TprmController extends Controller
                 } else {
                 }
             }
-            return redirect()->route('tprmcampaigns')->with('success', 'Emails added to the existing group successfully.');
+            return redirect()->route('tprmcampaigns')->with('success', __('Emails added to the existing group successfully.'));
         }
 
         // Generate a new group ID
@@ -937,7 +937,7 @@ class TprmController extends Controller
             }
         }
 
-        return redirect()->route('tprmcampaigns')->with('success', 'New group created and emails added successfully.');
+        return redirect()->route('tprmcampaigns')->with('success', __('New group created and emails added successfully.'));
     }
 
     private function TprmdomainVerified($email, $companyId)
@@ -990,7 +990,7 @@ class TprmController extends Controller
                 } else {
                 }
             }
-            return response()->json(['status' => 1, 'message' => 'Success']);
+            return response()->json(['status' => 1, 'message' => __('Success')]);
         }
 
         // Generate a new group ID
@@ -1024,7 +1024,7 @@ class TprmController extends Controller
             }
         }
 
-        return response()->json(['status' => 1, 'message' => 'Success']);
+        return response()->json(['status' => 1, 'message' => __('Success')]);
     }
 
     private function TprmuniqueEmail($email)

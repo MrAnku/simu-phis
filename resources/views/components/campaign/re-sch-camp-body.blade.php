@@ -114,7 +114,7 @@
                     <div class="input-group">
                         <div class="input-group-text text-muted">   </div>
                         <input type="text" class="form-control flatpickr-input active"
-                            name="rexpire_after" id="rexpire_after" placeholder="Choose date"
+                            name="rexpire_after" id="rexpire_after" placeholder="{{ __('Choose date') }}"
                             readonly="readonly">
                         <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i>
                         </div>

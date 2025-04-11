@@ -26,7 +26,7 @@ class StoreWhatsAppTemplateRequest extends FormRequest
             'temp_body' => ['required', 'string', 'max:5000', function ($attribute, $value, $fail) {
                 $count = substr_count($value, '{{var}}');
                 if ($count !== 3) {
-                    $fail('The Template Body must contain exactly 3 instances of {{var}}.');
+                    $fail(__('The Template Body must contain exactly 3 instances of {{var}}.'));
                 }
             }],
         ];

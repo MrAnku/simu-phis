@@ -106,7 +106,7 @@ class EmployeesController extends Controller
                     // Check if the user is already in the group
                     $emailExists = $employee->emailExistsInGroup($request->groupid, $user->user_email);
                     if ($emailExists) {
-                        return response()->json(['status' => 0, 'msg' => 'This email(s) already exists in this group']);
+                        return response()->json(['status' => 0, 'msg' => __('This email(s) already exists in this group')]);
                     }
                     $addedEmployee = $employee->addEmployee(
                         $user->user_name,
@@ -127,9 +127,9 @@ class EmployeesController extends Controller
             }
 
 
-            return response()->json(['status' => 1, 'msg' => 'Employee(s) successfully added to the group.']);
+            return response()->json(['status' => 1, 'msg' => __('Employee(s) successfully added to the group.')]);
         } catch (\Exception $e) {
-            return response()->json(['status' => 0, 'msg' => 'Failed to add employee(s) in this group'], 500);
+            return response()->json(['status' => 0, 'msg' => __('Failed to add employee(s) in this group')], 500);
         }
     }
 
@@ -140,7 +140,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -164,7 +164,7 @@ class EmployeesController extends Controller
         ];
 
         if (in_array($domain, $notAllowedDomains)) {
-            return response()->json(['status' => 0, 'msg' => 'This email provider is not allowed.']);
+            return response()->json(['status' => 0, 'msg' => __('This email provider is not allowed.')]);
         }
 
         $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
@@ -172,7 +172,7 @@ class EmployeesController extends Controller
             ->first();
 
         if ($verifiedDomain && $verifiedDomain->verified == '1') {
-            return response()->json(['status' => 0, 'msg' => 'Domain already verified or by some other company']);
+            return response()->json(['status' => 0, 'msg' => __('Domain already verified or by some other company')]);
         }
 
         if ($verifiedDomain && $verifiedDomain->verified == '0') {
@@ -195,7 +195,7 @@ class EmployeesController extends Controller
         }
 
         log_action("Domain verification mail sent");
-        return response()->json(['status' => 1, 'msg' => 'Verification email sent']);
+        return response()->json(['status' => 1, 'msg' => __('Verification email sent')]);
     }
 
     private function domainVerificationMail($email, $code)
@@ -213,7 +213,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -236,9 +236,9 @@ class EmployeesController extends Controller
 
             log_action("Domain verified successfully");
 
-            return response()->json(['status' => 1, 'msg' => 'Domain verified successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Domain verified successfully')]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'Invalid Code']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid Code')]);
         }
     }
 
@@ -256,7 +256,7 @@ class EmployeesController extends Controller
 
         log_action("Domain {$domain} deleted from platform");
 
-        return response()->json(['status' => 1, 'msg' => 'Domain and associated users deleted successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Domain and associated users deleted successfully')]);
     }
 
     public function newGroup(Request $request)
@@ -264,7 +264,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -292,7 +292,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -324,7 +324,7 @@ class EmployeesController extends Controller
             ->first();
 
         if (!$group || $group->users == null) {
-            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+            return response()->json(['status' => 0, 'msg' => __('no employees found')]);
         }
 
         $userIdsArray = json_decode($group->users, true);
@@ -359,7 +359,7 @@ class EmployeesController extends Controller
         if (!$users->isEmpty()) {
             return response()->json(['status' => 1, 'data' => $users]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'no employees found']);
+            return response()->json(['status' => 0, 'msg' => __('no employees found')]);
         }
     }
 
@@ -369,9 +369,9 @@ class EmployeesController extends Controller
         $employee = new EmployeeService();
         try {
             $employee->deleteEmployeeById($user_id);
-            return response()->json(['status' => 1, 'msg' => 'Employee deleted successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Employee deleted successfully')]);
         } catch (\Exception $e) {
-            return response()->json(['status' => 0, 'msg' => 'Failed to delete employee']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to delete employee')]);
         }
         // $user = Users::where('id', $request->user_id)->where('company_id', Auth::user()->company_id)->first();
         // // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
@@ -422,17 +422,17 @@ class EmployeesController extends Controller
         $user_email = base64_decode($request->input('user_email'));
         $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
         if ($users->isEmpty()) {
-            return response()->json(['status' => 0, 'msg' => 'Employee not found']);
+            return response()->json(['status' => 0, 'msg' => __('Employee not found')]);
         }
         $employee = new EmployeeService();
         foreach ($users as $user) {
             try {
                 $employee->deleteEmployeeById($user->id);
             } catch (\Exception $e) {
-                return response()->json(['status' => 0, 'msg' => 'Failed to delete employee']);
+                return response()->json(['status' => 0, 'msg' => __('Failed to delete employee')]);
             }
         }
-        return response()->json(['status' => 1, 'msg' => 'Employee deleted successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Employee deleted successfully')]);
     }
 
     public function addUser(Request $request)
@@ -442,7 +442,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -473,7 +473,7 @@ class EmployeesController extends Controller
         //if email exists in group
         $emailExists = $employee->emailExistsInGroup($request->groupid, $request->usrEmail);
         if ($emailExists) {
-            return response()->json(['status' => 0, 'msg' => 'This email already exists in this group']);
+            return response()->json(['status' => 0, 'msg' => __('This email already exists in this group')]);
         }
         $addedEmployee = $employee->addEmployee(
             $request->usrName,
@@ -489,7 +489,7 @@ class EmployeesController extends Controller
                 return response()->json(['status' => 0, 'msg' => $addedInGroup['msg']]);
             }
 
-            return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Employee Added Successfully')]);
         } else {
             return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
         }
@@ -546,7 +546,7 @@ class EmployeesController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -574,7 +574,7 @@ class EmployeesController extends Controller
         //check if this email already exists in table
         $user = Users::where('user_email', $request->usrEmail)->where('company_id', Auth::user()->company_id)->exists();
         if ($user) {
-            return response()->json(['status' => 0, 'msg' => 'This email already exists']);
+            return response()->json(['status' => 0, 'msg' => __('This email already exists')]);
         }
 
         $employee = new EmployeeService();
@@ -588,7 +588,7 @@ class EmployeesController extends Controller
         );
         if ($addedEmployee['status'] == 1) {
 
-            return response()->json(['status' => 1, 'msg' => 'Employee Added Successfully']);
+            return response()->json(['status' => 1, 'msg' => __('Employee Added Successfully')]);
         } else {
             return response()->json(['status' => 0, 'msg' => $addedEmployee['msg']]);
         }
@@ -633,7 +633,7 @@ class EmployeesController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->with('error', 'Invalid file type. Please upload a CSV file.');
+            return redirect()->back()->with('error', __('Invalid file type. Please upload a CSV file.'));
         }
 
         // Path to store the uploaded file
@@ -705,10 +705,10 @@ class EmployeesController extends Controller
             fclose($handle);
 
             log_action("Employees added by csv file");
-            return redirect()->back()->with('success', 'CSV file imported successfully!');
+            return redirect()->back()->with('success', __('CSV file imported successfully!'));
         } else {
             log_action("Unable to open csv file");
-            return redirect()->back()->with('error', 'Invalid file type. Please upload a CSV file.');
+            return redirect()->back()->with('error', __('Invalid file type. Please upload a CSV file.'));
         }
     }
 
@@ -723,13 +723,13 @@ class EmployeesController extends Controller
         if ($ldap_config) {
             return response()->json([
                 "status" => 1,
-                "msg" => "config exists",
+                "msg" => __('config exists'),
                 "data" => $ldap_config
             ]);
         } else {
             return response()->json([
                 "status" => 0,
-                "msg" => "config not exists"
+                "msg" => __('config not exists')
             ]);
         }
     }
@@ -809,7 +809,7 @@ class EmployeesController extends Controller
         if (!$ldapConfig) {
             return response()->json([
                 'status' => 0,
-                'message' => 'LDAP configuration not found in the database.',
+                'message' => __('LDAP configuration not found in the database.'),
             ]);
         }
 
@@ -827,7 +827,7 @@ class EmployeesController extends Controller
         if (!$ldapConn) {
             return response()->json([
                 'status' => 0,
-                'message' => 'Failed to connect to LDAP server.',
+                'message' => __('Failed to connect to LDAP server.'),
             ]);
         }
 
@@ -837,7 +837,7 @@ class EmployeesController extends Controller
         if (!$ldapBind) {
             return response()->json([
                 'status' => 0,
-                'message' => 'LDAP bind failed. Check admin credentials.',
+                'message' => __('LDAP bind failed. Check admin credentials.'),
             ]);
         }
 
@@ -850,7 +850,7 @@ class EmployeesController extends Controller
             ldap_unbind($ldapConn);
             return response()->json([
                 'status' => 0,
-                'message' => 'LDAP search failed.',
+                'message' => __('LDAP search failed.'),
             ]);
         }
 
@@ -861,7 +861,7 @@ class EmployeesController extends Controller
             ldap_unbind($ldapConn);
             return response()->json([
                 'status' => 0,
-                'message' => 'No users found in the LDAP directory.',
+                'message' => __('No users found in the LDAP directory.'),
             ]);
         }
 
@@ -884,7 +884,7 @@ class EmployeesController extends Controller
         // Return the user data as JSON
         return response()->json([
             'status' => 1,
-            'message' => 'User sync completed successfully.',
+            'message' => __('User sync completed successfully.'),
             'data' => $users,
         ]);
     }
