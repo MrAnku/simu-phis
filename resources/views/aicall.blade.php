@@ -885,7 +885,18 @@
                 $.get({
                     url: "/ai-calling/fetch-call-report/" + callid,
                     success: function(res) {
-                        console.log(res);
+                        let fell_in_simulation = false;
+                        if(res.transcript_with_tool_calls){
+                            
+                            res.transcript_with_tool_calls.forEach(element => {
+                                if(element.role == 'tool_call_invocation'){
+                                    const func = JSON.parse(element.arguments);
+                                    if(func.fell_for_simulation){
+                                        fell_in_simulation = true;
+                                    }
+                                }
+                            })
+                        }
 
                         var conversation = '';
                         if (res.transcript_object) {
@@ -914,7 +925,7 @@
                 </div>
                 <div>
 
-                    ${res.call_status == 'ended' ? `<audio id="recording_audio" controls='' class='h-11 w-[258px]'
+                    ${(res.call_status == 'ended' && !fell_in_simulation) ? `<audio id="recording_audio" controls='' class='h-11 w-[258px]'
                                                                                                                 src='${res.recording_url}'>Your
                                                                                                                 browser does not support the audio element.</audio>` : ''}
                 
