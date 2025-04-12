@@ -22,7 +22,7 @@
                                     <div class="mb-2">{{ __('Total Templates') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$quishingEmails->count()}}
+                                            {{ $quishingEmails->count() }}
                                         </span>
                                     </div>
 
@@ -45,7 +45,7 @@
                                     <div class="mb-2">{{ __('Total Sent Emails') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$campLive->where('sent', '1')->count()}} {{ __('Delivered') }}
+                                            {{ $campLive->where('sent', '1')->count() }} {{ __('Delivered') }}
                                         </span>
                                     </div>
 
@@ -68,7 +68,7 @@
                                     <div class="mb-2">{{ __('Mail Opened') }}</div>
                                     <div class="text-muted mb-1 fs-12">
                                         <span class="text-dark fw-semibold fs-20 lh-1 vertical-bottom">
-                                            {{$campLive->where('mail_open', '1')->count()}} {{ __('Opened') }}
+                                            {{ $campLive->where('mail_open', '1')->count() }} {{ __('Opened') }}
                                         </span>
                                     </div>
 
@@ -79,7 +79,8 @@
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
+                data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
 
             <div class="row">
                 <div class="col-xl-12">
@@ -117,18 +118,23 @@
                                                 </th>
                                                 <th>
                                                     @if ($camp->campaign_type == 'quishing')
-                                                        <span class="badge bg-secondary-transparent">{{ __('Only Quishing') }}</span>
+                                                        <span
+                                                            class="badge bg-secondary-transparent">{{ __('Only Quishing') }}</span>
                                                     @else
-                                                        <span class="badge bg-secondary-transparent">{{ __('Quishing & Training') }}</span>
+                                                        <span
+                                                            class="badge bg-secondary-transparent">{{ __('Quishing & Training') }}</span>
                                                     @endif
                                                 </th>
                                                 <th>
                                                     @if ($camp->status == 'pending')
-                                                        <span class="badge bg-warning-transparent">{{ __('Pending') }}</span>
+                                                        <span
+                                                            class="badge bg-warning-transparent">{{ __('Pending') }}</span>
                                                     @elseif($camp->status == 'running')
-                                                        <span class="badge bg-success-transparent">{{ __('Running') }}</span>
+                                                        <span
+                                                            class="badge bg-success-transparent">{{ __('Running') }}</span>
                                                     @else
-                                                        <span class="badge bg-success-transparent">{{ __('Completed') }}</span>
+                                                        <span
+                                                            class="badge bg-success-transparent">{{ __('Completed') }}</span>
                                                     @endif
 
                                                 <th>{{ $camp->userGroupData->group_name ?? '' }}</th>
@@ -144,7 +150,8 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center text-muted">{{ __('No quishing campaign found') }}
+                                                <td colspan="7" class="text-center text-muted">
+                                                    {{ __('No quishing campaign found') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -210,7 +217,7 @@
             function showNext(current_page) {
                 if (current_page == 'stepOne') {
                     if ($('#camp_name').val() == '' || $('#campaign_type').val() == '' || $('#users_group').val() == '') {
-                        alert('All fields are required');
+                        alert("{{ __('All fields are required') }}");
                         return;
                     }
                     if (campType == 'quishing-training' || campType == 'quishing') {
@@ -431,20 +438,20 @@
                     data: campaignData,
                     success: function(res) {
                         if (res.status === 1) {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'success'
-                            ).then(() => {
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            }).then(() => {
                                 $('#newCampModal').modal('hide');
                                 location.reload();
                             });
                         } else {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
                     }
                 })
@@ -495,11 +502,11 @@
                     success: function(res) {
                         // console.log(res)
                         if (res.status !== 1) {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             return;
                         }
                         if (res.data.length === 0) {
@@ -551,17 +558,17 @@
                     success: function(res) {
                         // console.log(res)
                         if (res.status !== 1) {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             return;
                         }
                         if (res.data.length === 0) {
 
                             btn.disabled = true;
-                            btn.innerText = 'No more training modules';
+                            btn.innerText = "{{ __('No more training modules') }}";
                             return;
                         }
                         const htmlrows = prepareTrainingHtml(res.data);
@@ -612,7 +619,11 @@
                             const htmlrows = prepareTrainingHtml(res.data);
                             $('#trainingModulesCampModal').append(htmlrows);
                         } else {
-                            Swal.fire(res.msg, '', 'error');
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                         }
                     }
                 });
@@ -658,7 +669,11 @@
                             const htmlrows = prepareHtml(res.data);
                             $('#phishingEmailsCampModal').append(htmlrows);
                         } else {
-                            Swal.fire(res.msg, '', 'error');
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                         }
                     }
                 });
@@ -719,7 +734,7 @@
 
             function loadMoreQuishingEmails(btn) {
                 btn.disabled = true;
-                btn.innerText = 'Loading...'
+                btn.innerText = "{{ __('Loading...') }}"
                 $.post({
                     url: '/quishing/show-more-quishing-emails',
                     data: {
@@ -728,17 +743,17 @@
                     success: function(res) {
                         // console.log(res)
                         if (res.status !== 1) {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             return;
                         }
                         if (res.data.length === 0) {
 
                             btn.disabled = true;
-                            btn.innerText = 'No more phishing materials';
+                            btn.innerText = "{{ __('No more phishing materials') }}";
                             return;
                         }
                         const htmlrows = prepareHtml(res.data);
@@ -752,13 +767,14 @@
 
             function deleteCampaign(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You want to delete this campaign!",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('You want to delete this campaign!') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -768,19 +784,19 @@
                             },
                             success: function(res) {
                                 if (res.status === 1) {
-                                    Swal.fire(
-                                        res.msg,
-                                        '',
-                                        'success'
-                                    ).then(() => {
+                                    Swal.fire({
+                                        title: res.msg,
+                                        icon: 'success',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    }).then(() => {
                                         location.reload();
                                     });
                                 } else {
-                                    Swal.fire(
-                                        res.msg,
-                                        '',
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                        title: res.msg,
+                                        icon: 'error',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    });
                                 }
                             }
                         })
@@ -792,7 +808,7 @@
             $('#campaignReportModal').on('shown.bs.modal', function() {
                 $(this).find('.nav-item .nav-link').removeClass('active'); // Remove active class from all tabs
                 $(this).find('.nav-item:first-child .nav-link').addClass(
-                'active'); // Set the first tab as active
+                    'active'); // Set the first tab as active
                 $(this).find('.tab-pane').removeClass('show active'); // Remove active state from tab content
                 $(this).find('.tab-pane:first-child').addClass('show active'); // Set first tab content as active
             });
@@ -801,31 +817,31 @@
             function fetchCampaignDetails(campId, isQuishing) {
                 if (isQuishing) {
                     $(".quishing-training-detail").hide();
-                    
-                }else{
+
+                } else {
                     $(".quishing-training-detail").show();
                 }
-                
+
                 $.post({
                     url: '/quishing/fetch-campaign-details',
                     data: {
                         campid: campId
                     },
-                    success: function (res){
+                    success: function(res) {
                         console.log(res);
-                        if(res.data){
+                        if (res.data) {
                             renderData(res.data);
                             renderLiveData(res.data.camp_live);
-                            if(res.data.campaign_type == 'quishing-training'){
+                            if (res.data.campaign_type == 'quishing-training') {
                                 renderTrainingData(res.data)
                                 renderTrainingDataLive(res.data)
                             }
-                        }else{
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                        } else {
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
                     }
                 })
@@ -833,8 +849,8 @@
 
             }
 
-            function renderData(data){
-                
+            function renderData(data) {
+
                 const campaignDetail = `<tr>
                                     <td>${data.campaign_name}</td>
                                     <td>
@@ -892,7 +908,7 @@
                 $('#qcampdetail').html(campaignDetail);
             }
 
-            function renderLiveData(users){
+            function renderLiveData(users) {
                 let usersData = '';
                 users.forEach(user => {
                     usersData += `<tr>
@@ -923,14 +939,14 @@
                                     </td>
                                 </tr>`;
 
-                    
+
                 });
 
                 $('#qcampdetailLive').html('');
-                    $('#qcampdetailLive').html(usersData);
+                $('#qcampdetailLive').html(usersData);
             }
 
-            function renderTrainingData(data){
+            function renderTrainingData(data) {
                 const campaignDetail = `<tr>
                                     <td>${data.campaign_name}</td>
                                     <td>
@@ -978,9 +994,11 @@
                 $('#qcampTrainingData').html(campaignDetail);
 
             }
-            function renderTrainingDataLive(data){
-                if(data.trainingAssigned.length === 0){
-                    $('#qcampTrainingDataLive').html('<tr><td colspan="7" class="text-center text-muted">No training assigned</td></tr>');
+
+            function renderTrainingDataLive(data) {
+                if (data.trainingAssigned.length === 0) {
+                    $('#qcampTrainingDataLive').html(
+                        '<tr><td colspan="7" class="text-center text-muted">No training assigned</td></tr>');
                     return;
                 }
                 let trainingData = '';

@@ -35,6 +35,8 @@ class DashboardController extends Controller
         $usageCounts = $this->osBrowserUsage();
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
 
+        // return $breachedEmails['userData'];
+
         $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', auth()->user()->company_id)
             ->where('status', true)->first();
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ App::setLocale(session('locale')) }}" dir="ltr" data-nav-layout="vertical"
+data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
 
 <head>
     <meta charset="UTF-8">
@@ -273,7 +274,7 @@
 
     <div class="button_class">
 
-        <button id="downloadPdf">Download as PDF</button>
+        <button id="downloadPdf">{{ __('Download as PDF') }}</button>
     </div>
     <div id="content" class="container_pdf_body">
         <div class="background-head">
@@ -282,12 +283,11 @@
             <div class="flex-box ">
                 <div>
                     <span class="of">{{ $label }}</span>
-                    <span class="of">Report</span>
+                    <span class="of">{{ __('Report') }}</span>
                     {{-- <span class="phising">Simulation</span> --}}
                 </div>
             </div>
-            <div style="color: white; font-weight:600; margin-left: 10px;text-align: center">TPRM Grade Report &
-                Analytics According to Data</div>
+            <div style="color: white; font-weight:600; margin-left: 10px;text-align: center">{{ __('TPRM Grade Report & Analytics According to Data') }}</div>
         </div>
 
         <!-- Chart Container -->
@@ -305,8 +305,8 @@
                         <div>
 
                             <span class="details">
-                                Interaction</span>
-                            <span class="user">Details</span>
+                                {{ __('Interaction') }}</span>
+                            <span class="user">{{ __('Details') }}</span>
                         </div>
                     </div>
                     <div style="background: white; padding: 20px; overflow-wrap: anywhere;">
@@ -345,7 +345,7 @@
                                     </div>
                                     <div style="margin-left: 8px;">
 
-                                        Total Employee
+                                        {{ __('Total Employee') }}
                                     </div>
                                 </div>
                                 <div>{{ $Total_data }}</div>
@@ -363,7 +363,7 @@
                                     </div>
                                     <div style="margin-left: 8px;">
 
-                                        Emp Compromised
+                                        {{ __('Emp Compromised') }}
                                     </div>
                                 </div>
                                 <div style="margin-left: 28px;">{{ $Total_emp_compromised }}</div>
@@ -382,7 +382,7 @@
                                     </div>
                                     <div style="margin-left: 8px;">
 
-                                        Emp Not Compromised
+                                        {{ __('Emp Not Compromised') }}
                                     </div>
                                 </div>
                                 <div>{{ $Total_emp_compromised_not }}</div>
@@ -404,7 +404,7 @@
                             style="background: white; margin-top: 16px; padding: 23px; width: 360px; text-align: center;">
                             <img style="width: 200px; text-align: center;" src="{{ asset('images/error.png') }}"
                                 alt="">
-                            <h5 style="color: #606781; padding-top: 20px;">Oops! No Interaction Found</h5>
+                            <h5 style="color: #606781; padding-top: 20px;">{{ __('Oops! No Interaction Found') }}</h5>
                         </div>
                     @endif
 
@@ -414,11 +414,11 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>Campaign Name</th>
-                    <th>Email Address</th>
-                    <th>Link Clicked</th>
-                    <th>Emp Compromised</th>
-                    <th>Training Assigned</th>
+                    <th>{{ __('Campaign Name') }}</th>
+                    <th>{{ __('Email Address') }}</th>
+                    <th>{{ __('Link Clicked') }}</th>
+                    <th>{{ __('Emp Compromised') }}</th>
+                    <th>{{ __('Training Assigned') }}</th>
                 </tr>
             </thead>
             <tbody id="ReportsIndividual">
@@ -432,8 +432,8 @@
                     <img class="image-presentation" src="{{ asset('images/presentation.png') }}" alt="">
                 </div>
                 <div>
-                    <span class="reporting_2">Training</span>
-                    <span class="of_2">Campaings Reports</span>
+                    <span class="reporting_2">{{ __('Training') }}</span>
+                    <span class="of_2">{{ __('Campaings Reports') }}</span>
                 </div>
             </div>
 
@@ -444,8 +444,8 @@
                     <img class="image-presentation" src="http://127.0.0.1:8000/images/presentation.png" alt="">
                 </div>
                 <div>
-                    <span class="details">Graph</span>
-                    <span class="user">Details</span>
+                    <span class="details">{{ __('Graph') }}</span>
+                    <span class="user">{{ __('Details') }}</span>
                 </div>
             </div>
 
@@ -463,8 +463,8 @@
                                 alt="">
                         </div>
                         <div>
-                            <span class="details">Graph</span>
-                            <span class="user">Details</span>
+                            <span class="details">{{ __('Graph') }}</span>
+                            <span class="user">{{ __('Details') }}</span>
                         </div>
                     </div>
                     <div style="background: white; padding: 20px; margin-top: 15px;">
@@ -473,7 +473,7 @@
                             <div style="display: flex">
                                 <img style="width: 30px" src="http://127.0.0.1:8000/images/chart.png" alt="">
                                 <div style="margin-left: 20px" class="total_user">
-                                    Analysis Data
+                                    {{ __('Analysis Data') }}
                                 </div>
                             </div>
                             {{-- <div class="total_user_count">100</div> --}}

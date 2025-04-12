@@ -206,6 +206,26 @@
     @endpush
 
     @push('newscripts')
+    {{-- All Alert's lang conversion of js file --}}
+    <script>
+        const alertMsgs = {
+            title : "{{ __('Are you sure?') }}",
+            deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
+            deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
+            deleteDomainText: "{{ __('All employees will be deleted from Group whose email associated with this domain.') }}",
+            deleteBtnText: "{{ __('Delete') }}",
+            cancelBtnText: "{{ __('Cancel') }}",
+            noUsersSel: "{{ __('No users selected!') }}",
+            deletedUserText: "{{ __('Employee has been deleted successfully.') }}",
+            deletedTitle: "{{ __('Deleted') }}",
+            somethingWrong: "{{ __('Something went wrong!') }}",
+            error: "{{ __('Error') }}",
+            noEmp: "{{ __('No employees available in this group!') }}",
+            search: "{{ __('Search...') }}"
+        };
+    </script>
+    {{-- All Alert's lang conversion of js file --}}
+    
         <script src="/js/employees.js"></script>
 
         <!-- Datatables Cdn -->

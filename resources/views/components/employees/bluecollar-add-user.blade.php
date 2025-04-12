@@ -35,7 +35,7 @@
                             <input type="text" class="form-control" name="usrJobTitle">
                         </div>
                         <div class="mt-3 col-xl-4 col-lg-6 col-md-6 col-sm-12">
-                            <label for="input-label" class="form-label">{{ __('WhatsApp No.') }}</label>
+                            <label for="input-label" class="form-label">{{ __('WhatsApp No.') }}<sup class="text-danger">*</sup></label>
                             <input type="text" class="form-control" placeholder="919876543210" name="usrWhatsapp"
                                 id="usrWhatsapp" required>
                         </div>

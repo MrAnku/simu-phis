@@ -773,8 +773,8 @@
 
             function deleteCamp(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Are you sure that you want to delete this Campaign?",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Are you sure that you want to delete this Campaign?') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',

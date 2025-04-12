@@ -29,7 +29,7 @@ class SupportController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->withErrors(['error' => 'Invalid input detected.']);
+                return redirect()->back()->withErrors(['error' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -70,7 +70,7 @@ class SupportController extends Controller
 
         log_action("{$email} created support ticket");
 
-        return redirect()->back()->with(['success' => 'Ticket created successfully']);
+        return redirect()->back()->with(['success' => __('Ticket created successfully')]);
     }
 
     public function loadConversations(Request $request)
@@ -100,7 +100,7 @@ class SupportController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status'=> 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status'=> 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -123,6 +123,6 @@ class SupportController extends Controller
 
         log_action("Company replied in raised ticket");
 
-        return response()->json(['status'=> 1, 'msg' => 'Reply submitted successfully']);
+        return response()->json(['status'=> 1, 'msg' => __('Reply submitted successfully')]);
     }
 }

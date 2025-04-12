@@ -106,13 +106,14 @@ $("#adduserForm").submit(function (e) {
 function deleteGroup(grpId) {
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteGroupText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Delete'
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -157,13 +158,14 @@ function deleteGroup(grpId) {
 function deleteUser(usrId, grpId) {
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteUserText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Delete'
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -275,13 +277,14 @@ $("#otpSubmitForm").submit(function (e) {
 function deleteDomain(id) {
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "All employees will be deleted whose email associated with this domain.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteDomainText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Delete'
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({

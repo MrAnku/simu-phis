@@ -41,10 +41,10 @@ class SenderProfileController extends Controller
 
                 log_action("Sender profile deleted successfully");
 
-            return redirect()->back()->with('success', 'Sender profile deleted successfully');
+            return redirect()->back()->with('success', __('Sender profile deleted successfully'));
         }
         log_action("Failed to delete sender profile");
-        return redirect()->back()->with('error', 'Failed to delete sender profile');
+        return redirect()->back()->with('error', __('Failed to delete sender profile'));
     }
 
     public function addSenderProfile(Request $request)
@@ -55,7 +55,7 @@ class SenderProfileController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -87,10 +87,10 @@ class SenderProfileController extends Controller
         if ($senderProfile->save()) {
 
             log_action("Sender profile added successfully");
-            return redirect()->back()->with('success', 'Sender profile added successfully!');
+            return redirect()->back()->with('success', __('Sender profile added successfully!'));
         } else {
             log_action("Failed to add sender profile");
-            return redirect()->back()->with('error', 'Failed to add Sender Profile');
+            return redirect()->back()->with('error', __('Failed to add Sender Profile'));
         }
     }
 
@@ -101,7 +101,7 @@ class SenderProfileController extends Controller
         if ($senderprofile) {
             return response()->json(['status' => 1, 'data' => $senderprofile]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'sender profile not found']);
+            return response()->json(['status' => 0, 'msg' => __('sender profile not found')]);
         }
     }
 
@@ -113,7 +113,7 @@ class SenderProfileController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -149,10 +149,10 @@ class SenderProfileController extends Controller
             ]);
 
             log_action("Sender profile updated successfully");
-            return redirect()->back()->with('success', 'Sender Profile Updated Successfully!');
+            return redirect()->back()->with('success', __('Sender Profile Updated Successfully!'));
         } else {
             log_action("Failed to update sender profile");
-            return redirect()->back()->with('error', 'Failed to update Sender Profile');
+            return redirect()->back()->with('error', __('Failed to update Sender Profile'));
         }
     }
 }

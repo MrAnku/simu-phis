@@ -1034,14 +1034,14 @@
                         // var resJson = JSON.parse(res);
                         // alert(resJson.msg);
                         if (res.status == 1) {
-                            clickedBtn.text("Update Profile");
+                            clickedBtn.text("{{ __('Update Profile') }}");
                             Swal.fire(
                                 res.msg,
                                 '',
                                 'success'
                             )
                         } else {
-                            clickedBtn.text("Update Profile");
+                            clickedBtn.text("{{ __('Update Profile') }}");
                             Swal.fire(
                                 res.msg,
                                 '',
@@ -1066,14 +1066,14 @@
                     },
                     success: function(res) {
                         if (res.status == 1) {
-                            clickedBtn.text("Update Password");
+                            clickedBtn.text("{{ __('Update Password') }}");
                             Swal.fire(
                                 res.msg,
                                 '',
                                 'success'
                             )
                         } else {
-                            clickedBtn.text("Update Password");
+                            clickedBtn.text("{{ __('Update Password') }}");
                             Swal.fire(
                                 res.msg,
                                 '',

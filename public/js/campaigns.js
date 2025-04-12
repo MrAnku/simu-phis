@@ -21,13 +21,14 @@ function checkResponse(res) {
 
 function relaunch_camp(campid) {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "The previous statistics and reports of this campaign will be erased.",
+        title: alertMsgs.title,
+        text: alertMsgs.relaunchCampText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Re-Launch'
+        confirmButtonText: alertMsgs.relaunchBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -54,13 +55,14 @@ function reschedulecampid(id) {
 function deletecampaign(campid) {
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "Are you sure that you want to delete this Campaign?",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteCampText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Delete'
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -219,7 +221,7 @@ $(document).ready(function () {
             });
 
             if (!radioChecked) {
-                alert('Please select phishing material');
+                alert(alertMsgs.selPhishMat);
                 return; // Stop further execution
             }
         }
@@ -236,16 +238,16 @@ $(document).ready(function () {
 
             days_until_due = $('#days_until_due').val();
             if (days_until_due == '') {
-                alert('Please enter days until due');
+                alert(alertMsgs.daysUntiDue);
                 return false; // Stop further execution
             }
             if (days_until_due < 1) {
-                alert('Days until due must be greater than 0');
+                alert(alertMsgs.daysUntilGreater);
                 return false; // Stop further execution
             }
 
             if (!radioChecked) {
-                alert('Please select training module');
+                alert(alertMsgs.selTrainMod);
                 return; // Stop further execution
             }
         }
@@ -284,7 +286,7 @@ $(document).ready(function () {
             }
         } else {
             // Alert or inform the user that some required fields are empty
-            alert('Please fill all required fields!');
+            alert(alertMsgs.fillAllReq);
         }
 
 
@@ -630,13 +632,14 @@ function resendTrainingAssignmentReminder(btn, email, training) {
     console.log(email, training);
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "This will send a training reminder to: " + email,
+        title: alertMsgs.title,
+        text: alertMsgs.resendTrainAssignRemText + ' ' + email,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, send the reminder email'
+        confirmButtonText: alertMsgs.resendTrainAssignBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             var icon = $(btn).html();
@@ -664,13 +667,14 @@ function resendTrainingAssignmentReminder(btn, email, training) {
 
 function completeAssignedTraining(btn, encodedTrainingId) {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "This will mark the training as completed",
+        title: alertMsgs.title,
+        text: alertMsgs.compAssignTrainText,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, mark as completed'
+        confirmButtonText: alertMsgs.compAssignTainBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             var icon = $(btn).html();
@@ -698,13 +702,14 @@ function completeAssignedTraining(btn, encodedTrainingId) {
 
 function removeAssignedTraining(btn, encodedTrainingId, trainingname, email) {
     Swal.fire({
-        title: 'Are you sure?',
+        title: alertMsgs.title,
         text: `This will remove the ${trainingname} training assigned to: ${email}`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, remove assignment'
+        confirmButtonText: alertMsgs.removeAssignTrainText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             var icon = $(btn).html();

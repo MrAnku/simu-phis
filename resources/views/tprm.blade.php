@@ -206,50 +206,50 @@
                                                     <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
 
                                                     <select class="form-select" id="email_lang">
-                                                        <option value="sq">{{ __('Albanian') }}</option>
-                                                        <option value="ar">{{ __('Arabic') }}</option>
-                                                        <option value="az">{{ __('Azerbaijani') }}</option>
-                                                        <option value="bn">{{ __('Bengali') }}</option>
-                                                        <option value="bg">{{ __('Bulgarian') }}</option>
-                                                        <option value="ca">{{ __('Catalan') }}</option>
-                                                        <option value="zh">{{ __('Chinese') }}</option>
-                                                        <option value="zt">{{ __('Chinese (traditional)') }}</option>
-                                                        <option value="cs">{{ __('Czech') }}</option>
-                                                        <option value="da">{{ __('Danish') }}</option>
-                                                        <option value="nl">{{ __('Dutch') }}</option>
-                                                        <option value="en" selected="">{{ __('English') }}</option>
-                                                        <option value="eo">{{ __('Esperanto') }}</option>
-                                                        <option value="et">{{ __('Estonian') }}</option>
-                                                        <option value="fi">{{ __('Finnish') }}</option>
-                                                        <option value="fr">{{ __('French') }}</option>
-                                                        <option value="de">{{ __('German') }}</option>
-                                                        <option value="el">{{ __('Greek') }}</option>
-                                                        <option value="he">{{ __('Hebrew') }}</option>
-                                                        <option value="hi">{{ __('Hindi') }}</option>
-                                                        <option value="hu">{{ __('Hungarian') }}</option>
-                                                        <option value="id">{{ __('Indonesian') }}</option>
-                                                        <option value="ga">{{ __('Irish') }}</option>
-                                                        <option value="it">{{ __('Italian') }}</option>
-                                                        <option value="ja">{{ __('Japanese') }}</option>
-                                                        <option value="ko">{{ __('Korean') }}</option>
-                                                        <option value="lv">{{ __('Latvian') }}</option>
-                                                        <option value="lt">{{ __('Lithuanian') }}</option>
-                                                        <option value="ms">{{ __('Malay') }}</option>
-                                                        <option value="nb">{{ __('Norwegian') }}</option>
-                                                        <option value="fa">{{ __('Persian') }}</option>
-                                                        <option value="pl">{{ __('Polish') }}</option>
-                                                        <option value="pt">{{ __('Portuguese') }}</option>
-                                                        <option value="ro">{{ __('Romanian') }}</option>
-                                                        <option value="ru">{{ __('Russian') }}</option>
-                                                        <option value="sk">{{ __('Slovak') }}</option>
-                                                        <option value="sl">{{ __('Slovenian') }}</option>
-                                                        <option value="es">{{ __('Spanish') }}</option>
-                                                        <option value="sv">{{ __('Swedish') }}</option>
-                                                        <option value="tl">{{ __('Tagalog') }}</option>
-                                                        <option value="th">{{ __('Thai') }}</option>
-                                                        <option value="tr">{{ __('Turkish') }}</option>
-                                                        <option value="uk">{{ __('Ukranian') }}</option>
-                                                        <option value="ur">{{ __('Urdu') }}</option>
+                                                        <option value="sq">Albanian</option>
+                                                        <option value="ar">Arabic</option>
+                                                        <option value="az">Azerbaijani</option>
+                                                        <option value="bn">Bengali</option>
+                                                        <option value="bg">Bulgarian</option>
+                                                        <option value="ca">Catalan</option>
+                                                        <option value="zh">Chinese</option>
+                                                        <option value="zt">Chinese (traditional)</option>
+                                                        <option value="cs">Czech</option>
+                                                        <option value="da">Danish</option>
+                                                        <option value="nl">Dutch</option>
+                                                        <option value="en" selected="">English</option>
+                                                        <option value="eo">Esperanto</option>
+                                                        <option value="et">Estonian</option>
+                                                        <option value="fi">Finnish</option>
+                                                        <option value="fr">French</option>
+                                                        <option value="de">German</option>
+                                                        <option value="el">Greek</option>
+                                                        <option value="he">Hebrew</option>
+                                                        <option value="hi">Hindi</option>
+                                                        <option value="hu">Hungarian</option>
+                                                        <option value="id">Indonesian</option>
+                                                        <option value="ga">Irish</option>
+                                                        <option value="it">Italian</option>
+                                                        <option value="ja">Japanese</option>
+                                                        <option value="ko">Korean</option>
+                                                        <option value="lv">Latvian</option>
+                                                        <option value="lt">Lithuanian</option>
+                                                        <option value="ms">Malay</option>
+                                                        <option value="nb">Norwegian</option>
+                                                        <option value="fa">Persian</option>
+                                                        <option value="pl">Polish</option>
+                                                        <option value="pt">Portuguese</option>
+                                                        <option value="ro">Romanian</option>
+                                                        <option value="ru">Russian</option>
+                                                        <option value="sk">Slovak</option>
+                                                        <option value="sl">Slovenian</option>
+                                                        <option value="es">Spanish</option>
+                                                        <option value="sv">Swedish</option>
+                                                        <option value="tl">Tagalog</option>
+                                                        <option value="th">Thai</option>
+                                                        <option value="tr">Turkish</option>
+                                                        <option value="uk">Ukranian</option>
+                                                        <option value="ur">Urdu</option>
                                                     </select>
                                                 </div>
 
@@ -1233,7 +1233,7 @@
 
         // Function to open the domain modal and fetch emails
         function openDomainModal(domain) {
-            console.log("Domain clicked: " + domain); // Debugging line
+            // console.log("Domain clicked: " + domain); // Debugging line
             document.getElementById('domainName').innerText = domain;
 
             fetch(`/tprmcampaigns/emails/${domain}`)
@@ -1250,7 +1250,7 @@
                         });
                     } else {
                         const p = document.createElement('p');
-                        p.innerText = 'No emails found for this domain.';
+                        p.innerText = "{{ __('No emails found for this domain.') }}";
                         emailList.appendChild(p);
                     }
 
@@ -1258,8 +1258,8 @@
                     modal.show();
                 })
                 .catch(error => {
-                    console.error('Error fetching emails:', error);
-                    alert('Error fetching emails. Please try again.');
+                    // console.error('Error fetching emails:', error);
+                    alert("{{ __('Error fetching emails. Please try again.') }}");
                 });
         }
 
@@ -1282,8 +1282,8 @@
 
             if (emailLimitExceed()) {
                 Swal.fire(
-                    'Limit Exceeded',
-                    'You can only add 5 emails',
+                    "{{ __('Limit Exceeded') }}",
+                    "{{ __('You can only add 5 emails') }}",
                     'error'
                 );
                 return;
@@ -1294,7 +1294,7 @@
             const emailDomain = email.split('@')[1];
 
             if (!email) {
-                alert('Please enter a valid email.');
+                alert("{{ __('Please enter a valid email.') }}");
                 return;
             }
 
@@ -1307,7 +1307,7 @@
 
             // Check if the email is not already added
             if (newlyAddedEmails.includes(email)) {
-                alert('This email has already been added.');
+                alert("{{ __('This email has already been added.') }}");
                 return;
             }
 
@@ -1365,7 +1365,7 @@
                         const removeButton = li.querySelector('.btn-danger');
                         if (!removeButton) {
                             li.innerHTML +=
-                                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')">Remove</button>`;
+                                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')""{{ __('Remov') }}"</button>`;
                         }
                     } else {
                         // Hide the "Remove" button for emails that are not the most recently added
@@ -1383,12 +1383,12 @@
             const domain = document.getElementById('domainName').innerText.trim();
 
             if (!domain) {
-                alert('Domain name is missing.');
+                alert("{{ __('Domain name is missing.') }}");
                 return;
             }
 
             if (newlyAddedEmails.length === 0) {
-                alert('No new emails to save.');
+                alert("{{ __('No new emails to save.') }}");
                 return;
             }
 
@@ -1403,13 +1403,13 @@
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
-                    console.log('Response:', response);
+                    // console.log('Response:', response);
                     // Check if the response is HTML, indicating a redirect
                     if (typeof response === 'string' && response.includes('<html>')) {
                         // Assume success since controller redirected
                         Swal.fire(
-                            'Emails saved successfully!',
-                            'New emails added successfully.',
+                            "{{ __('Emails saved successfully!') }}",
+                            "{{ __('New emails added successfully.') }}",
                             'success'
                         );
 
@@ -1421,14 +1421,14 @@
                         // Handle as JSON response if response contains a status
                         if (response.status === 1) {
                             Swal.fire(
-                                'Emails saved successfully!',
+                                "{{ __('Emails saved successfully!') }}",
                                 response.msg,
                                 'success'
                             );
                         } else {
                             Swal.fire(
-                                'Something went wrong!',
-                                response.msg || 'Unknown error occurred.',
+                                "{{ __('Something went wrong!') }}",
+                                response.msg || "{{ __('Unknown error occurred.') }}",
                                 'error'
                             );
                         }
@@ -1438,10 +1438,10 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX error:', error);
+                    // console.error('AJAX error:', error);
                     Swal.fire(
-                        'Error!',
-                        'Could not complete the request.',
+                        "{{ __('Error!') }}",
+                        "{{ __('Could not complete the request.') }}",
                         'error'
                     );
                 }
@@ -1462,12 +1462,12 @@
                 },
                 success: function(response) {
                     // Debugging: Check the structure of the response
-                    console.log('AJAX Response:', response);
+                    // console.log('AJAX Response:', response);
 
                     // Check if the response contains emails
                     if (!response.emails || response.emails.length === 0) {
                         document.getElementById('modalEmail').innerHTML =
-                            '<p>No emails found for this domain.</p>';
+                            '<p>{{ __('No emails found for this domain') }}</p>';
                         return; // Exit if no emails are found
                     }
 
@@ -1495,7 +1495,7 @@
                     fetchEmailModal.show();
                 },
                 error: function(error) {
-                    console.log('Error fetching email:', error);
+                    // console.log('Error fetching email:', error);
                 }
             });
         }
@@ -1517,7 +1517,7 @@
             // console.log('Domain:', domain);
 
             if (selectedEmails.length === 0) {
-                alert('Please select at least one email to save.');
+                alert("{{ __('Please select at least one email to save.') }}");
                 return;
             }
 
@@ -1535,9 +1535,9 @@
                     $('#fetchEmailModal').modal('hide');
                 },
                 error: function(error) {
-                    console.log('Error saving email:', error);
+                    // console.log('Error saving email:', error);
                     // Debugging: Log the error response
-                    console.log(error.responseText);
+                    // console.log(error.responseText);
                 }
             });
         }
@@ -1558,8 +1558,8 @@
 
             if (domain == '') {
                 Swal.fire(
-                    'Oops!',
-                    'Please Enter a domain',
+                    "{{ __('Oops!') }}",
+                    "{{ __('Please Enter a domain') }}",
                     'error'
                 );
                 return;
@@ -1567,8 +1567,8 @@
 
             if (invalidPhpPattern.test(domain) || invalidTagsPattern.test(domain)) {
                 Swal.fire(
-                    'Oops!',
-                    'Invalid input detected.',
+                    "{{ __('Oops!') }}",
+                    "{{ __('Invalid input detected.') }}",
                     'error'
                 );
                 return;
@@ -1576,8 +1576,8 @@
 
             if (emailPattern.test(domain) || !domainPattern.test(domain)) {
                 Swal.fire(
-                    'Oops!',
-                    'Please enter a valid domain',
+                    "{{ __('Oops!') }}",
+                    "{{ __('Please enter a valid domain') }}",
                     'error'
                 );
                 return;
@@ -1589,14 +1589,14 @@
                 domainInput.value = ""; // Clear input after adding
             } else if (domains.includes(domain)) {
                 Swal.fire(
-                    'Oops!',
-                    'This domain is already added.',
+                    "{{ __('Oops!') }}",
+                    "{{ __('This domain is already added.') }}",
                     'error'
                 );
             } else {
                 Swal.fire(
-                    'Oops!',
-                    'Something went wrong.',
+                    "{{ __('Oops!') }}",
+                    "{{ __('Something went wrong.') }}",
                     'error'
                 );
             }
@@ -1608,7 +1608,7 @@
             domainList.innerHTML = domains
                 .map((domain, index) => `<li class="list-group-item d-flex justify-content-between">
                                ${domain}
-                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">Remove</button>
+                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">Remov') }}"</button>
                              </li>`)
                 .join("");
         }
@@ -1622,7 +1622,7 @@
         // Function to submit domains for verification
         function submitDomains() {
             if (domains.length > 0) {
-                console.log("Submitting domains for verification:", domains);
+                // console.log("Submitting domains for verification:", domains);
 
                 // Show spinner and hide the submit button
                 document.getElementById("sendOtpBtn").classList.add("d-none");
@@ -1654,7 +1654,7 @@
                         // Show success or failure message based on backend response
                         if (data.status === 1) { // Change to check for status
                             Swal.fire(
-                                'Request Submitted',
+                                "{{ __('Request Submitted') }}",
                                 `${data.msg}`,
                                 'success'
                             ).then((result) => {
@@ -1668,7 +1668,7 @@
                             $('#newDomainVerificationModal').modal('hide'); // Use jQuery for Bootstrap modal
                         } else if (data.status === 0) {
                             Swal.fire(
-                                'Oops!',
+                                "{{ __('Oops!') }}",
                                 `${data.msg}`,
                                 'error'
                             );
@@ -1676,18 +1676,18 @@
 
                         } else {
                             Swal.fire(
-                                'Oops!',
-                                `Unable to submit domains for verification: ${data.msg}`,
+                                "{{ __('Oops!') }}",
+                                `"{{ __('Unable to submit domains for verification') }}" ${data.msg}`,
                                 'error'
                             );
                             return;
                         }
                     })
                     .catch(error => {
-                        console.error("Error submitting domains:", error);
+                        // console.error("Error submitting domains:", error);
                         Swal.fire(
-                            'Oops!',
-                            'An error occurred while submitting domains. Please try again.',
+                            "{{ __('Oops!') }}",
+                            "{{ __('An error occurred while submitting domains. Please try again.') }}",
                             'error'
                         );
                         return;
@@ -1698,8 +1698,8 @@
                     });
             } else {
                 Swal.fire(
-                    'Oops!',
-                    'Please add at least one domain.',
+                    "{{ __('Oops!') }}",
+                    "{{ __('Please add at least one domain.') }}",
                     'error'
                 );
                 return;
@@ -1889,6 +1889,23 @@
     @endpush
 
     @push('newscripts')
+
+         {{-- All Alert's lang conversion of js file --}}
+         <script>
+            const alertMsgs = {
+                title : "{{ __('Are you sure?') }}",
+                deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
+                deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
+                deleteDomainText: "{{ __('All employees will be deleted whose email associated with this domain.') }}",
+                deleteBtnText: "{{ __('Delete') }}",
+                cancelBtnText: "{{ __('Cancel') }}"
+            };
+        </script>
+        {{-- All Alert's lang conversion of js file --}}
+
+
+
+
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="/js/tprmdomain.js"></script>
         <!-- <script src="assets/js/tprmcampaigns.js"></script> -->
@@ -2013,11 +2030,11 @@
 
                         let status = '';
                         if (response.status === 'completed') {
-                            status = '<span class="badge bg-success">Completed</span>';
+                            status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                         } else if (response.status === 'pending') {
-                            status = '<span class="badge bg-warning">Pending</span>';
+                            status = '<span class="badge bg-warning">{{ __('Pending') }}</span>';
                         } else {
-                            status = '<span class="badge bg-success">Running</span>';
+                            status = '<span class="badge bg-success">{{ __('Running') }}</span>';
                         }
 
                         let rowHtml = `
@@ -2203,13 +2220,14 @@
 
             function relaunch_camp(campid) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "The previous statistics and reports of this campaign will be erased.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('The previous statistics and reports of this campaign will be erased.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Re-Launch'
+                    confirmButtonText: "{{ __('Re-Launch') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -2236,13 +2254,14 @@
             function deletecampaign(campid) {
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Are you sure that you want to delete this Campaign?",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Are you sure that you want to delete this Campaign?') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -2333,7 +2352,7 @@
                         });
 
                         if (!radioChecked) {
-                            alert('Please select phishing material');
+                            alert("{{ __('Please select phishing material') }}");
                             return; // Stop further execution
                         }
                     }
@@ -2349,7 +2368,7 @@
                         });
 
                         if (!radioChecked) {
-                            alert('Please select training module');
+                            alert("{{ __('Please select training module') }}");
                             return; // Stop further execution
                         }
                     }
@@ -2388,7 +2407,7 @@
                         }
                     } else {
                         // Alert or inform the user that some required fields are empty
-                        alert('Please fill all required fields!');
+                        alert("{{ __('Please fill all required fields!') }}");
                     }
 
 
@@ -2538,7 +2557,7 @@
                     }
 
                     // Output JSON
-                    console.log(formData);
+                    // console.log(formData);
 
                     dataToBeSaved = formData;
                 }
@@ -2547,7 +2566,7 @@
                 $('#createCampaign').click(function(e) {
                     e.preventDefault();
 
-                    console.log(dataToBeSaved);
+                    // console.log(dataToBeSaved);
                     $.post({
                         url: '/tprmcampaigns/create',
                         data: dataToBeSaved,

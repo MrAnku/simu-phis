@@ -55,7 +55,7 @@ class PhishingWebsitesController extends Controller
             }
         });
         log_action("Phishing website deleted successfully");
-        return redirect()->back()->with('success', 'Phishing website deleted successfully.');
+        return redirect()->back()->with('success', __('Phishing website deleted successfully.'));
     }
 
     public function searchWebsite(Request $request)
@@ -81,7 +81,7 @@ class PhishingWebsitesController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -128,7 +128,7 @@ class PhishingWebsitesController extends Controller
         $phishingWebsite->save();
 
         log_action("New phishing website is added");
-        return redirect()->back()->with('success', 'New phishing website is added');
+        return redirect()->back()->with('success', __('New phishing website is added'));
     }
 
     public function generateWebsite(Request $request)
@@ -183,7 +183,7 @@ class PhishingWebsitesController extends Controller
         // Read the predefined template
         $template = Storage::get('public/login_template.html');
         if ($template === false) {
-            return response()->json(['status' => 0, 'msg' => 'Could not read the template file.']);
+            return response()->json(['status' => 0, 'msg' => __('Could not read the template file.')]);
         }
 
         // Replace placeholders with user-provided values
@@ -245,6 +245,6 @@ class PhishingWebsitesController extends Controller
 
         // Return a response or redirect
         log_action("AI generated phishing website added");
-        return redirect()->back()->with('success', 'Website saved successfully.');
+        return redirect()->back()->with('success', __('Website saved successfully.'));
     }
 }

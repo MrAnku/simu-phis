@@ -37,7 +37,7 @@ class SettingsController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -67,10 +67,10 @@ class SettingsController extends Controller
         if ($isUpdated) {
 
             log_action("Profile updated");
-            return response()->json(['status' => 1, 'msg' => 'Profile updated']);
+            return response()->json(['status' => 1, 'msg' => __('Profile updated')]);
         } else {
             log_action("Failed to update profile");
-            return response()->json(['status' => 0, 'msg' => 'Failed to update profile']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to update profile')]);
         }
     }
 
@@ -81,7 +81,7 @@ class SettingsController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -106,18 +106,18 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($request->currentPassword, $user->password)) {
-            return response()->json(['status' => 0, 'msg' => 'Entered current password is wrong']);
+            return response()->json(['status' => 0, 'msg' => __('Entered current password is wrong')]);
         }
 
         if (!$this->isStrongPassword($request->newPassword)) {
-            return response()->json(['status' => 0, 'msg' => 'Please set a strong password']);
+            return response()->json(['status' => 0, 'msg' => __('Please set a strong password')]);
         }
 
         $user->password = Hash::make($request->newPassword);
         $user->save();
 
         log_action("Password updated");
-        return response()->json(['status' => 1, 'msg' => 'Password Updated']);
+        return response()->json(['status' => 1, 'msg' => __('Password Updated')]);
     }
 
     private function isStrongPassword($password)
@@ -190,7 +190,7 @@ class SettingsController extends Controller
             } else {
 
 
-                return response()->json(['status' => 0, 'msg' => 'Failed to enable MFA']);
+                return response()->json(['status' => 0, 'msg' => __('Failed to enable MFA')]);
             }
 
 
@@ -212,11 +212,11 @@ class SettingsController extends Controller
 
                 log_action("Multi-Factor Authentication is disabled");
 
-                return response()->json(['status' => 1, 'msg' => 'Multi-Factor Authentication is disabled']);
+                return response()->json(['status' => 1, 'msg' => __('Multi-Factor Authentication is disabled')]);
             } else {
 
                 log_action("Failed to disable MFA");
-                return response()->json(['status' => 0, 'msg' => 'Failed to disable MFA']);
+                return response()->json(['status' => 0, 'msg' => __('Failed to disable MFA')]);
             }
         }
     }
@@ -234,7 +234,7 @@ class SettingsController extends Controller
         $user_settings = Settings::where('company_id', $companyId)->first();
 
         if (!$user_settings) {
-            return response()->json(['status' => 0, 'msg' => 'User settings not found']);
+            return response()->json(['status' => 0, 'msg' => __('User settings not found')]);
         }
 
         // Decrypt the stored MFA secret
@@ -252,12 +252,12 @@ class SettingsController extends Controller
             $user_settings->save();
 
             log_action("Multi-Factor Authentication is enabled");
-            return redirect()->route('settings.index')->with(['success' => 'Multi Factor Authentication is enabled']);
+            return redirect()->route('settings.index')->with(['success' => __('Multi Factor Authentication is enabled')]);
 
             // return response()->json(['status' => 1, 'msg' => 'Multi Factor Authentication is enabled']);
         } else {
             log_action("Entered invalid TOTP code to enable MFA");
-            return redirect()->route('settings.index')->with(['error' => 'Invalid TOTP code']);
+            return redirect()->route('settings.index')->with(['error' => __('Invalid TOTP code')]);
         }
     }
 
@@ -269,7 +269,7 @@ class SettingsController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -295,11 +295,11 @@ class SettingsController extends Controller
 
         if ($isUpdated) {
             log_action("Default language changed to Phishing: {$default_phish_lang} , Training: {$default_train_lang} and Notification: {$default_notifi_lang}");
-            return response()->json(['status' => 1, 'msg' => 'Language Updated']);
+            return response()->json(['status' => 1, 'msg' => __('Language Updated')]);
         } else {
 
             log_action("Failed to update default language to Phishing: {$default_phish_lang} , Training: {$default_train_lang} and Notification: {$default_notifi_lang}");
-            return response()->json(['status' => 0, 'msg' => 'Failed to update language']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to update language')]);
         }
     }
 
@@ -310,7 +310,7 @@ class SettingsController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -334,10 +334,10 @@ class SettingsController extends Controller
 
         if ($isUpdated) {
             log_action('Website to redirect after felling into simulation updated');
-            return response()->json(['status' => 1, 'msg' => 'Phishing Education Settings Updated']);
+            return response()->json(['status' => 1, 'msg' => __('Phishing Education Settings Updated')]);
         } else {
             log_action('Failed to update website to redirect after felling into simulation');
-            return response()->json(['status' => 0, 'msg' => 'Failed to update phishing education settings']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to update phishing education settings')]);
         }
     }
 
@@ -348,7 +348,7 @@ class SettingsController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status' => 0, 'msg' => 'Invalid input detected.']);
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -368,10 +368,10 @@ class SettingsController extends Controller
 
         if ($isUpdated) {
             log_action('Training notification frequency updated');
-            return response()->json(['status' => 1, 'msg' => 'Training notification frequency updated']);
+            return response()->json(['status' => 1, 'msg' => __('Training notification frequency updated')]);
         } else {
             log_action('Failed to update training notification frequency');
-            return response()->json(['status' => 0, 'msg' => 'Failed to update training notification frequency']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to update training notification frequency')]);
         }
     }
 
@@ -389,14 +389,14 @@ class SettingsController extends Controller
             log_action('Phish Reporting using Gmail, Outlook and Office365 is ' . ($status == '1' ? "enabled" : "disabled") . '!');
             return response()->json([
                 'status' => 1,
-                'msg' => 'Phish Reporting using Gmail, Outlook and Office365 is ' . ($status == '1' ? "enabled" : "disabled") . '!'
+                'msg' => __('Phish Reporting using Gmail, Outlook and Office365 is ') . ($status == '1' ? __("enabled") : __("disabled")) . '!'
             ]);
             
         } else {
             log_action('Failed to ' . ($status == '1' ? "enable" : "disable") . ' Phish Reporting');
             return response()->json([
                 'status' => 0,
-                'msg' => 'Failed to ' . ($status == '1' ? "enable" : "disable") . ' Phish Reporting',
+                'msg' => __('Failed to ') . ($status == '1' ? __("enable") : __("disable")) . __('Phish Reporting'),
                 'error' => DB::connection()->getPdo()->errorInfo()
             ]);
             
@@ -414,10 +414,10 @@ class SettingsController extends Controller
         if ($isUpdated) {
 
             log_action("Account has deactivated");
-            return response()->json(['status' => 1, 'msg' => 'Your Account has been Deactivated']);
+            return response()->json(['status' => 1, 'msg' => __('Your Account has been Deactivated')]);
         } else {
             log_action("Failed to deactivate account");
-            return response()->json(['status' => 0, 'msg' => 'Failed to deactivate account']);
+            return response()->json(['status' => 0, 'msg' => __('Failed to deactivate account')]);
         }
     }
 }

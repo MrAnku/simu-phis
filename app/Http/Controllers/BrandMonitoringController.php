@@ -26,11 +26,11 @@ class BrandMonitoringController extends Controller
             }
 
             log_action('Failed to fetch domains for branch monitoring');
-            return response()->json(['error' => 'Failed to fetch domains'], $response->status());
+            return response()->json(['error' => __('Failed to fetch domains')], $response->status());
         } catch (\Exception $e) {
 
             log_action('An error occurred in domain scanning for brand monitoring');
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -44,9 +44,9 @@ class BrandMonitoringController extends Controller
                 return response()->json($response->json());
             }
 
-            return response()->json(['error' => 'Failed to poll scan'], $response->status());
+            return response()->json(['error' => __('Failed to poll scan')], $response->status());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -59,7 +59,7 @@ class BrandMonitoringController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['error' => 'Invalid input detected.']);
+                return response()->json(['error' => __('Invalid input detected.')]);
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -79,11 +79,11 @@ class BrandMonitoringController extends Controller
             }
 
             log_action('Failed to create scan for brand monitoring');
-            return response()->json(['error' => 'Failed to create scan'], $response->status());
+            return response()->json(['error' => __('Failed to create scan')], $response->status());
         } catch (\Exception $e) {
 
             log_action('An error occured while domain scanning for brand monitoring');
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -96,13 +96,13 @@ class BrandMonitoringController extends Controller
             if ($response->successful()) {
 
                 log_action('Domain scanning stopped for brand monitoring');
-                return response()->json(['message' => 'Scan stopped successfully']);
+                return response()->json(['message' => __('Scan stopped successfully')]);
             }
 
             log_action('Failed to stop scanning for brand monitoring');
-            return response()->json(['error' => 'Failed to stop scan'], $response->status());
+            return response()->json(['error' => __('Failed to stop scan')], $response->status());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -116,9 +116,9 @@ class BrandMonitoringController extends Controller
                 return response()->json($response->json());
             }
 
-            return response()->json(['error' => 'Failed to fetch scan list'], $response->status());
+            return response()->json(['error' => __('Failed to fetch scan list')], $response->status());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -135,9 +135,9 @@ class BrandMonitoringController extends Controller
                 ]);
             }
 
-            return response()->json(['error' => 'Failed to download CSV'], $response->status());
+            return response()->json(['error' => __('Failed to download CSV')], $response->status());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -151,9 +151,9 @@ class BrandMonitoringController extends Controller
                 return response()->json($response->json());
             }
 
-            return response()->json(['error' => 'Failed to download JSON'], $response->status());
+            return response()->json(['error' => __('Failed to download JSON')], $response->status());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => __('An error occurred'), 'message' => $e->getMessage()], 500);
         }
     }
 }

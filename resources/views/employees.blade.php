@@ -203,6 +203,27 @@
     @endpush
 
     @push('newscripts')
+
+         {{-- All Alert's lang conversion of js file --}}
+         <script>
+            const alertMsgs = {
+                title : "{{ __('Are you sure?') }}",
+                deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
+                deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
+                deleteDomainText: "{{ __('All employees will be deleted from Group whose email associated with this domain.') }}",
+                deleteBtnText: "{{ __('Delete') }}",
+                cancelBtnText: "{{ __('Cancel') }}",
+                noUsersSel: "{{ __('No users selected!') }}",
+                deletedUserText: "{{ __('Employee has been deleted successfully.') }}",
+                deletedTitle: "{{ __('Deleted!') }}",
+                somethingWrong: "{{ __('Something went wrong!') }}",
+                error: "{{ __('Error') }}",
+                noEmp: "{{ __('No employees available in this group!') }}",
+                search: "{{ __('Search...') }}"
+            };
+        </script>
+        {{-- All Alert's lang conversion of js file --}}
+
         <script src="/js/employees.js"></script>
 
         <!-- Datatables Cdn -->
@@ -241,7 +262,7 @@
 
                 $.get('/employees/check-ldap-ad-config', function(res) {
 
-                    console.log(res)
+                    // console.log(res)
 
                     if (res.status === 1) {
                         $("#ldap_host").val(res.data.ldap_host).attr('disabled', true)
@@ -258,7 +279,7 @@
                         $("#add_ldap_config").show();
                     }
                 }).fail(function(error) {
-                    console.log(error);
+                    // console.log(error);
                 });
             }
 
@@ -297,7 +318,7 @@
                             alert(res.msg)
                             window.location.href = window.location.href;
                         } else {
-                            console.log(res)
+                            // console.log(res)
                             // alert(res.msg)
                             alert(res.msg)
                         }
@@ -368,7 +389,7 @@
                     groupid: groupid
                 }
 
-                console.log(userdata)
+                // console.log(userdata)
 
                 $.post({
                     url: '/employees/addUser',
@@ -403,7 +424,7 @@
 
                 if (provider == 'ldap') {
                     $.get('/employees/sync-ldap-directory', function(res) {
-                        console.log(res)
+                        // console.log(res)
 
                         if (res.status === 1) {
                             btn.innerText = 'Sync Directory';
@@ -417,7 +438,7 @@
                             alert(res.message);
                         }
                     }).fail(function(error) {
-                        console.log(error);
+                        // console.log(error);
                     });
                 } else if (provider == 'outlook') {
                     fetchOutlookGroups(btn);
@@ -512,7 +533,7 @@
                     url: "/fetch-outlook-groups",
                     type: "GET",
                     success: function(res) {
-                        console.log(res);
+                        // console.log(res);
                         if (res.status == 0) {
                             Swal.fire(
                                 res.msg,
@@ -551,7 +572,7 @@
                             )
                             return;
                         }
-                        console.log(response);
+                        // console.log(response);
                         $("#outlookEmps tbody").html('');
                         let tableRows = "";
                         $.each(response.employees, function(index, employee) {

@@ -91,10 +91,10 @@ class TrainingModuleController extends Controller
 
         if ($trainingModule->save()) {
             log_action("New training added {$moduleName}");
-            return redirect()->back()->with('success', 'Training Added Successfully');
+            return redirect()->back()->with('success', __('Training Added Successfully'));
         } else {
             log_action("Failed to add Training");
-            return redirect()->back()->with('error', 'Failed to add Training');
+            return redirect()->back()->with('error', __('Failed to add Training'));
         }
     }
 
@@ -134,10 +134,10 @@ class TrainingModuleController extends Controller
 
         if ($trainingModule->save()) {
             log_action("New gamified training added {$request->module_name}");
-            return redirect()->back()->with('success', 'Gamified training added successfully');
+            return redirect()->back()->with('success', __('Gamified training added successfully'));
         } else {
             log_action("Failed to add Training");
-            return redirect()->back()->with('error', 'Failed to add gamified training');
+            return redirect()->back()->with('error', __('Failed to add gamified training'));
         }
     }
 
@@ -189,10 +189,10 @@ class TrainingModuleController extends Controller
 
         if ($isTrainingUpdated) {
             log_action("Gamified training module updated");
-            return redirect()->back()->with('success', 'Gamified training updated successfully');
+            return redirect()->back()->with('success', __('Gamified training updated successfully'));
         } else {
             log_action("Failed to update Gamified Training");
-            return redirect()->back()->with('error', 'Failed to update Gamified Training');
+            return redirect()->back()->with('error', __('Failed to update Gamified Training'));
         }
     }
 
@@ -203,7 +203,7 @@ class TrainingModuleController extends Controller
         if ($trainingData) {
             return response()->json($trainingData);
         } else {
-            return response()->json(['error' => 'Training Module not found'], 404);
+            return response()->json(['error' => __('Training Module not found')], 404);
         }
     }
 
@@ -285,10 +285,10 @@ class TrainingModuleController extends Controller
 
         if ($isTrainingUpdated) {
             log_action("Training module updated");
-            return redirect()->back()->with('success', 'Training updated successfully');
+            return redirect()->back()->with('success', __('Training updated successfully'));
         } else {
             log_action("Failed to update Training");
-            return redirect()->back()->with('error', 'Failed to update Training');
+            return redirect()->back()->with('error', __('Failed to update Training'));
         }
     }
 
@@ -331,10 +331,10 @@ class TrainingModuleController extends Controller
 
         if ($isDeletedFromTrainingModules) {
             log_action("Training module deleted");
-            return redirect()->back()->with('success', 'Training deleted successfully');
+            return redirect()->back()->with('success', __('Training deleted successfully'));
         } else {
             log_action("Failed to delete training module");
-            return redirect()->back()->with('error', 'Failed to delete Training');
+            return redirect()->back()->with('error', __('Failed to delete Training'));
         }
     }
 
@@ -343,7 +343,7 @@ class TrainingModuleController extends Controller
         $training = TrainingModule::find(base64_decode($trainingid));
 
         if (!$training) {
-            return redirect()->back()->with('error', 'Invalid Training Module');
+            return redirect()->back()->with('error', __('Invalid Training Module'));
         }
 
         if ($training->training_type == 'gamified') {
@@ -361,7 +361,7 @@ class TrainingModuleController extends Controller
 
         // Validate the ID
         if ($id === false || !ctype_digit($id)) {
-            return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
+            return response()->json(['status' => 0, 'msg' => __('Invalid training module ID.')]);
         }
 
         // Fetch the training data
@@ -369,7 +369,7 @@ class TrainingModuleController extends Controller
 
         // Check if the training module exists
         if (!$trainingData) {
-            return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
+            return response()->json(['status' => 0, 'msg' => __('Training Module Not Found')]);
         }
 
         if ($trainingData->training_type == 'static_training') {
@@ -425,7 +425,7 @@ class TrainingModuleController extends Controller
             ])->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+                    ['role' => 'system', 'content' => __('You are an expert JSON translator. Always provide valid JSON data.')],
                     ['role' => 'user', 'content' => $prompt],
                 ],
                 'max_tokens' => 1500,

@@ -45,7 +45,7 @@ class QuishingEmailController extends Controller
         $input = $request->only('template_name', 'template_subject');
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -67,7 +67,7 @@ class QuishingEmailController extends Controller
         $templateContent = file_get_contents($request->file('template_file')->getRealPath());
 
         if (strpos($templateContent, '{{user_name}}') === false || strpos($templateContent, '{{qr_code}}') === false) {
-            return back()->withErrors(['template_file' => 'The template file must contain {{user_name}} and {{qr_code}} shortcodes.']);
+            return back()->withErrors(['template_file' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')]);
         }
 
         $fileName = uniqid() . '.' . $request->file('template_file')->getClientOriginalExtension();
@@ -84,7 +84,7 @@ class QuishingEmailController extends Controller
             'company_id' => Auth::user()->company_id,
         ]);
 
-        return redirect()->route('quishing.emails')->with('success', 'Template added successfully.');
+        return redirect()->route('quishing.emails')->with('success', __('Template added successfully.'));
 
     }
 
@@ -94,9 +94,9 @@ class QuishingEmailController extends Controller
         if ($template) {
             $template->delete();
             Storage::delete($template->file);
-            return response()->json(['success' => 'Template deleted successfully.']);
+            return response()->json(['success' => __('Template deleted successfully.')]);
         }
-        return response()->json(['error' => 'Template not found.']);
+        return response()->json(['error' => __('Template not found.')]);
     }
 
     public function updateTemplate(Request $request){
@@ -115,9 +115,9 @@ class QuishingEmailController extends Controller
         ]);
 
         if ($updated) {
-            return redirect()->back()->with('success', 'Template updated successfully.');
+            return redirect()->back()->with('success', __('Template updated successfully.'));
         }
-        return redirect()->back()->withErrors(['error' => 'Failed to update template.']);
+        return redirect()->back()->withErrors(['error' => __('Failed to update template.')]);
 
     }
 }

@@ -79,7 +79,8 @@
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
+                data-bs-target="#newCampModal">{{ __('New Campaign') }}</button>
 
             <div class="row">
                 <div class="col-xl-12">
@@ -193,7 +194,8 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">{{ __('No campaigns are running') }}</td>
+                                                <td colspan="8" class="text-center">{{ __('No campaigns are running') }}
+                                                </td>
                                             </tr>
                                         @endforelse
 
@@ -262,6 +264,28 @@
         <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+        {{-- All Alert's lang conversion of js file --}}
+        <script>
+            const alertMsgs = {
+                title : "{{ __('Are you sure?') }}",
+                deleteCampText: "{{ __('Are you sure that you want to delete this Campaign?') }}",
+                relaunchCampText: "{{ __('The previous statistics and reports of this campaign will be erased.') }}",
+                resendTrainAssignRemText: "{{ __('This will send a training reminder to:') }}",
+                compAssignTrainText: "{{ __('This will mark the training as completed') }}",
+                deleteBtnText: "{{ __('Delete') }}",
+                cancelBtnText: "{{ __('Cancel') }}",
+                relaunchBtnText: "{{ __('Re-Launch') }}",
+                resendTrainAssignBtnText: "{{ __('Yes, send the reminder email') }}",
+                compAssignTainBtnText: "{{ __('Yes, mark as completed') }}",
+                removeAssignTrainText: "{{ __('Yes, remove assignment') }}",
+                selPhishMat: "{{ __('Please select phishing material') }}",
+                daysUntiDue: "{{ __('Please enter days until due') }}",
+                daysUntilGreater: "{{ __('Days until due must be greater than 0') }}",
+                selTrainMod: "{{ __('Please select training module') }}",
+                fillAllReq: "{{ __('Please fill all required fields!') }}"
+            };
+        </script>
+        {{-- All Alert's lang conversion of js file --}}
 
         <script src="{{ asset('js/campaigns.js') }}"></script>
 
@@ -581,9 +605,10 @@
                     data: {
                         campaignId: response.campaign_id
                     },
-                    success: function(res){
-                        if(res.status === 0){
-                            $("#gameReportStatus").html('<tr><td colspan="5" class="text-center">No data found</td></tr>');
+                    success: function(res) {
+                        if (res.status === 0) {
+                            $("#gameReportStatus").html(
+                                '<tr><td colspan="5" class="text-center">{{ __('No data found') }}</td></tr>');
                             return;
                         }
                         console.log(res);
@@ -606,8 +631,8 @@
                         </tr>
                         `;
                         $("#gameReportStatus").html(campaign);
-                       
-                        if(res.target_employees.length > 0){
+
+                        if (res.target_employees.length > 0) {
                             let targetEmployees = '';
                             res.target_employees.forEach((employee, index) => {
                                 targetEmployees += `
@@ -624,8 +649,9 @@
                                 `;
                             });
                             $("#gameReportsIndividual").html(targetEmployees);
-                        }else{
-                            $("#gameReportsIndividual").html('<tr><td colspan="6" class="text-center">No data found</td></tr>');
+                        } else {
+                            $("#gameReportsIndividual").html(
+                                '<tr><td colspan="6" class="text-center">{{ __('No data found') }}</td></tr>');
                         }
                     }
                 })
@@ -689,7 +715,7 @@
                             if (response.training_type == 'games') {
                                 $("#game_tab").show();
                                 showGameProgressReport(response);
-                            }else{
+                            } else {
                                 $("#training_tab").show();
                                 showTrainingReport(response);
                             }

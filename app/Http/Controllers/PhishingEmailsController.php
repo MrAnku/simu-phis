@@ -63,7 +63,7 @@ class PhishingEmailsController extends Controller
         if ($phishingEmail) {
             return response()->json(['status' => 1, 'data' => $phishingEmail]);
         } else {
-            return response()->json(['status' => 0, 'msg' => 'No records found!']);
+            return response()->json(['status' => 0, 'msg' => __('No records found!')]);
         }
     }
 
@@ -75,7 +75,7 @@ class PhishingEmailsController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -101,10 +101,10 @@ class PhishingEmailsController extends Controller
         if ($isUpdated) {
 
             log_action("Email template updated successfully");
-            return redirect()->back()->with('success', 'Email template updated successfully');
+            return redirect()->back()->with('success', __('Email template updated successfully'));
         } else {
             log_action("Failed to update email template");
-            return redirect()->back()->with('error', 'Failed to update email template');
+            return redirect()->back()->with('error', __('Failed to update email template'));
         }
     }
 
@@ -144,10 +144,10 @@ class PhishingEmailsController extends Controller
 
         if ($isDeleted) {
             log_action("Email Template deleted successfully");
-            return redirect()->back()->with('success', 'Email Template deleted successfully');
+            return redirect()->back()->with('success', __('Email Template deleted successfully'));
         } else {
             log_action("Failed to delete email template");
-            return redirect()->back()->with('error', 'Failed to delete email template');
+            return redirect()->back()->with('error', __('Failed to delete email template'));
         }
     }
 
@@ -159,7 +159,7 @@ class PhishingEmailsController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -212,14 +212,14 @@ class PhishingEmailsController extends Controller
             if ($isInserted) {
 
                 log_action("Email Template Added Successfully");
-                return redirect()->back()->with('success', 'Email Template Added Successfully!');
+                return redirect()->back()->with('success', __('Email Template Added Successfully!'));
             } else {
                 log_action("Failed to add email template");
-                return redirect()->back()->with('error', 'Failed to add Email Template.');
+                return redirect()->back()->with('error', __('Failed to add Email Template.'));
             }
         } catch (\Exception $e) {
             log_action("Failed to add email template");
-            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+            return redirect()->back()->with('error', __('Something went wrong: ') . $e->getMessage());
         }
     }
 
@@ -233,7 +233,7 @@ class PhishingEmailsController extends Controller
             ])->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' => 'You are an expert email template generator. Always provide valid HTML code.'],
+                    ['role' => 'system', 'content' => __('You are an expert email template generator. Always provide valid HTML code.')],
                     ['role' => 'user', 'content' => $prompt],
                 ],
                 'max_tokens' => 1500,
@@ -277,7 +277,7 @@ class PhishingEmailsController extends Controller
         
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->with('error', 'Invalid input detected.');
+                return redirect()->back()->with('error', __('Invalid input detected.'));
             }
         }
         array_walk_recursive($input, function (&$input) {
@@ -326,6 +326,6 @@ class PhishingEmailsController extends Controller
             'company_id' => $company_id,
         ]);
 
-        return response()->json(['status' => 1, 'msg' => 'Template saved successfully']);
+        return response()->json(['status' => 1, 'msg' => __('Template saved successfully')]);
     }
 }

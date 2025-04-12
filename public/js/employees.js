@@ -1,5 +1,4 @@
 //view users by group
-
 function viewUsersByGroup(groupid) {
     $.get({
         url: "/employees/viewUsers/" + groupid,
@@ -32,7 +31,7 @@ function viewUsersByGroup(groupid) {
                 if (!$.fn.DataTable.isDataTable(".employeesTable")) {
                     $("#allUsersByGroupTable").DataTable({
                         language: {
-                            searchPlaceholder: "Search...",
+                            searchPlaceholder: alertMsgs.search,
                             sSearch: "",
                         },
                         pageLength: 10,
@@ -41,7 +40,7 @@ function viewUsersByGroup(groupid) {
                 }
             } else {
                 var emptyRow =
-                    '<tr><td colspan="7" class="text-center">No employees available in this group!</td></tr>';
+                    '<tr><td colspan="7" class="text-center">' + alertMsgs.noEmp + '</td></tr>';
                 $(".addedUsers").html(emptyRow);
 
                 $(".groupid").val(groupid);
@@ -60,11 +59,11 @@ let selectedUsers = []; // Store selected user IDs
 function addFromAllEmp() {
     let groupid = document.getElementById("selectedGroupId").value;
     // Convert to integer
-    console.log("Converted Group ID:", groupid);
+    // console.log("Converted Group ID:", groupid);
 
-    console.log("Adding users to group:", groupid);
+    // console.log("Adding users to group:", groupid);
     if (selectedUsers.length === 0) {
-        alert("No users selected!");
+        alert(alertMsgs.noUsersSel);
         return;
     }
 
@@ -92,7 +91,7 @@ function addFromAllEmp() {
             }
         },
         error: function (xhr) {
-            console.log(xhr.responseJSON); // Log validation errors
+            // console.log(xhr.responseJSON); // Log validation errors
             alert("Error: " + xhr.responseText);
         },
     });
@@ -116,13 +115,13 @@ function AddUser(userId) {
     if (!selectedUsers.includes(userId)) {
         selectedUsers.push(userId);
     }
-    console.log("selectedUsers", selectedUsers);
+    // console.log("selectedUsers", selectedUsers);
     // updateUsers();
 }
 
 function RemoveUser(userId) {
     selectedUsers = selectedUsers.filter((id) => id !== userId);
-    console.log("selectedUsers", selectedUsers);
+    // console.log("selectedUsers", selectedUsers);
 
     // updateUsers();
 }
@@ -130,7 +129,7 @@ function viewUniqueEmails() {
     $.get({
         url: "/employees/viewUniqueEmails",
         success: function (res) {
-            console.log(res)
+            // console.log(res)
             if (res.status == 1) {
                 $(".allUniqueUsers").empty();
                 var userRows = "";
@@ -171,7 +170,7 @@ function viewUniqueEmails() {
 
                 // Handle checkbox selection
                 $(".user-checkbox").change(function () {
-                    console.log("bunty");
+                    // console.log("bunty");
                     var userId = $(this).data("id");
 
                     if ($(this).is(":checked")) {
@@ -196,7 +195,7 @@ function viewBlueUsersByGroup(groupid) {
         url: "/employees/viewBlueCollarUsers/" + groupid,
         success: function (res) {
             if (res.status == 1) {
-                console.log("res", res);
+                // console.log("res", res);
                 $(".addedBlueCollarUsers").empty();
                 var userRows = "";
                 $.each(res.data, function (index, value) {
@@ -289,7 +288,7 @@ $("#adduserPlanForm").submit(function (e) {
 
     if (!$("#usrWhatsapp").hasClass("is-invalid")) {
         var formData = $(this).serialize();
-        console.log("formData", formData);
+        // console.log("formData", formData);
         // return;
         // console.log(formData.usrWhatsapp);
         $.post({
@@ -350,13 +349,14 @@ $("#addbluecollaruserForm").submit(function (e) {
 //deleting employee group
 function deleteGroup(grpId) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteGroupText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -387,13 +387,14 @@ function deleteGroup(grpId) {
 //deleting employee group
 function deleteBlueCollarGroup(grpId) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteGroupText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -403,7 +404,7 @@ function deleteBlueCollarGroup(grpId) {
                     group_id: grpId,
                 },
                 success: function (response) {
-                    console.log("response", response);
+                    // console.log("response", response);
                     // console.log("deleted successfully")
                     // alert(response);
                     // window.location.reload()
@@ -424,13 +425,14 @@ function deleteBlueCollarGroup(grpId) {
 
 function deleteUser(usrId, grpId) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteUserText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -448,13 +450,14 @@ function deleteUser(usrId, grpId) {
 }
 function deletePlanUser(usrEmail) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteUserText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -464,8 +467,8 @@ function deletePlanUser(usrEmail) {
                 },
                 success: function (response) {
                     Swal.fire({
-                        title: "Deleted!",
-                        text: "Employee has been deleted successfully.",
+                        title: alertMsgs.deletedTitle,
+                        text: alertMsgs.deletedUserText,
                         icon: "success",
                         timer: 1500,
                         showConfirmButton: false,
@@ -474,7 +477,7 @@ function deletePlanUser(usrEmail) {
                     });
                 },
                 error: function () {
-                    Swal.fire("Error", "Something went wrong!", "error");
+                    Swal.fire(alertMsgs.error, alertMsgs.somethingWrong, "error");
                 },
             });
         }
@@ -483,13 +486,14 @@ function deletePlanUser(usrEmail) {
 
 function deleteBlueUser(usrId, grpId) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteUserText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -575,13 +579,14 @@ $("#otpSubmitForm").submit(function (e) {
 
 function deleteDomain(id) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "All employees will be deleted from Group whose email associated with this domain.",
+        title: alertMsgs.title,
+        text: alertMsgs.deleteDomainText,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#e6533c",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Delete",
+        confirmButtonText: alertMsgs.deleteBtnText,
+        cancelButtonText: alertMsgs.cancelBtnText
     }).then((result) => {
         if (result.isConfirmed) {
             $.post({
@@ -591,9 +596,9 @@ function deleteDomain(id) {
                 },
                 success: function (response) {
                     if (response.status == 1) {
-                        Swal.fire("Deleted!", response.msg, "success");
+                        Swal.fire(alertMsgs.deletedTitle, response.msg, "success");
                     } else {
-                        Swal.fire("Something went wrong!", "", "error");
+                        Swal.fire(alertMsgs.somethingWrong, "", "error");
                     }
 
                     setTimeout(() => {

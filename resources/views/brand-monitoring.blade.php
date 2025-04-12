@@ -95,7 +95,7 @@
         
         function shareResults() {
             navigator.clipboard.writeText(window.location.href.split('#')[0] + '#' + sid);
-            $('#status').html('Copied URL to clipboard!');
+            $('#status').html("{{ __('Copied URL to clipboard!') }}");
         }
         
         function fetchDomains() {
@@ -144,7 +144,7 @@
                 } else {
                     sid = $('#sid').val()
                     $('#status').html('Scanned <a href="/scans/' + sid + '/list">' + data['complete'] + '</a> permutations. Found ' + data['registered'] + ' registered: <a href="#" onclick="shareResults()">share it</a> or download as <a href="/scans/' + sid + '/csv">CSV</a> <a href="/scans/' + sid + '/json">JSON</a>');
-                    $('#scan').text('Scan').removeClass('btn-danger').addClass('btn-primary');
+                    $('#scan').text("{{ __('Scan') }}").removeClass('btn-danger').addClass('btn-primary');
                     $('#progress').parent().hide();
                 }
                 if (last_registered < data['registered']) {
@@ -153,7 +153,7 @@
                 }
             })
             .fail(function(){
-                $('#status').html('Ups! Something went wrong...');
+                $('#status').html("{{ __('Ups! Something went wrong...') }}");
             });
         }
         
@@ -163,9 +163,9 @@
                 return
             }
         
-            if ($('#scan').text() == 'Scan') {
+            if ($('#scan').text() == "{{ __('Scan') }}") {
                 last_registered = 0;
-                $('#scan').text('Scanning...');
+                $('#scan').text("{{ __('Scanning...') }}");
                 $.post({
                     url: '/scans',
                     data: JSON.stringify({'url': $('#url').val()}),
@@ -173,23 +173,23 @@
                     success: function(data) {
                         $('#sid').val(data['id']);
                         $('#url').val(data['domain']);
-                        $('#scan').text('Stop').removeClass('btn-primary').addClass('btn-danger');
+                        $('#scan').text("{{ __('Stop') }}").removeClass('btn-primary').addClass('btn-danger');
                         $('#progress').parent().show();
                         pollScan();
                     },
                     error: function(xhr, status, error) {
-                        $('#scan').text('Scan').removeClass('btn-danger').addClass('btn-primary');
-                        $('#status').html(xhr.responseJSON['message'] || 'Something went wrong');
+                        $('#scan').text("{{ __('Scan') }}").removeClass('btn-danger').addClass('btn-primary');
+                        $('#status').html(xhr.responseJSON['message'] || "{{ __('Something went wrong') }}");
                     },
                 });
             } else {
-                $('#scan').text('Stoping...');
+                $('#scan').text("{{ __('Stopping...') }}");
                 $.post({
                     url: '/scans/' + $('#sid').val() + '/stop',
                     contentType: 'application/json',
                 })
                 .always(function() {
-                    $('#scan').text('Scan').removeClass('btn-danger').addClass('btn-primary');
+                    $('#scan').text("{{ __('Scan') }}").removeClass('btn-danger').addClass('btn-primary');
                 });
             }
         }
