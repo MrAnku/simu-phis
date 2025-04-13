@@ -350,7 +350,7 @@
                                                             <td class="pad">
                                                                 <div align="center" class="alignment"
                                                                     style="line-height: 10px">
-                                                                    <div style="max-width: 69px">
+                                                                    <div style="max-width: 150px">
                                                                         <img alt="Logo" height="auto"
                                                                             src="{{asset('assets/images/simu-logo-dark.png')}}"
                                                                             style="
@@ -359,89 +359,14 @@
                                           border: 0;
                                           width: 100%;
                                         "
-                                                                            title="Logo" width="69" />
+                                                                            title="Logo" width="150" />
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                         </tr>
                                                     </table>
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="heading_block block-3" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-left: 10px;
-                                    padding-right: 10px;
-                                    padding-top: 10px;
-                                    text-align: center;
-                                    width: 100%;
-                                  ">
-                                                                <h3
-                                                                    style="
-                                      margin: 0;
-                                      color: #583de0;
-                                      direction: ltr;
-                                      font-family: Fira Sans,
-                                        Lucida Sans Unicode, Lucida Grande,
-                                        sans-serif;
-                                      font-size: 24px;
-                                      font-weight: 700;
-                                      letter-spacing: 2px;
-                                      line-height: 120%;
-                                      text-align: center;
-                                      margin-top: 0;
-                                      margin-bottom: 0;
-                                      mso-line-height-alt: 28.799999999999997px;
-                                    ">
-
-                                                                </h3>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                    <table border="0" cellpadding="0" cellspacing="0"
-                                                        class="heading_block block-4" role="presentation"
-                                                        style="
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                              "
-                                                        width="100%">
-                                                        <tr>
-                                                            <td class="pad"
-                                                                style="
-                                    padding-left: 10px;
-                                    padding-right: 10px;
-                                    text-align: center;
-                                    width: 100%;
-                                  ">
-                                                                <h1
-                                                                    style="
-                                      margin: 0;
-                                      color: #12141d;
-                                      direction: ltr;
-                                      font-family: 'Fira Sans',
-                                        'Lucida Sans Unicode', 'Lucida Grande',
-                                        sans-serif;
-                                      font-size: 70px;
-                                      font-weight: 600;
-                                      letter-spacing: 0px;
-                                      line-height: 120%;
-                                      text-align: center;
-                                      margin-top: 0;
-                                      margin-bottom: 0;
-                                      mso-line-height-alt: 100.8px;
-                                    ">
-                                                                    <span class="tinyMce-placeholder"
-                                                                        style="word-break: break-word">You were in
-                                                                        attack<br /></span>
-                                                                </h1>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
+                                                    
+                                                    
                                                     <table border="0" cellpadding="0" cellspacing="0"
                                                         class="paragraph_block block-5" role="presentation"
                                                         style="

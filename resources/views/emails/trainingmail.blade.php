@@ -355,7 +355,7 @@
                                                             <td class="pad">
                                                                 <div align="center" class="alignment"
                                                                     style="line-height: 10px">
-                                                                    <div style="max-width: 69px">
+                                                                    <div style="max-width: 150px">
                                                                         <img alt="Company Logo" height="auto"
                                                                             src="{{ $mailData['logo'] }}"
                                                                             style="
@@ -364,7 +364,7 @@
                                           border: 0;
                                           width: 100%;
                                         "
-                                                                            title="Logo" width="69" />
+                                                                            title="Logo" width="150" />
                                                                     </div>
                                                                 </div>
                                                             </td>
