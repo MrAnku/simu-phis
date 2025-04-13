@@ -365,6 +365,45 @@
                                                             </td>
                                                         </tr>
                                                     </table>
+
+                                                    <table border="0" cellpadding="0" cellspacing="0"
+                                                        class="heading_block block-4" role="presentation"
+                                                        style="
+                                mso-table-lspace: 0pt;
+                                mso-table-rspace: 0pt;
+                              "
+                                                        width="100%">
+                                                        <tr>
+                                                            <td class="pad"
+                                                                style="
+                                    padding-left: 10px;
+                                    padding-right: 10px;
+                                    text-align: center;
+                                    width: 100%;
+                                  ">
+                                                                <h1
+                                                                    style="
+                                      margin: 0;
+                                      color: #12141d;
+                                      direction: ltr;
+                                      font-family: 'Fira Sans',
+                                        'Lucida Sans Unicode', 'Lucida Grande',
+                                        sans-serif;
+                                      font-size: 70px;
+                                      font-weight: 600;
+                                      letter-spacing: 0px;
+                                      line-height: 120%;
+                                      text-align: center;
+                                      margin-top: 0;
+                                      margin-bottom: 0;
+                                      mso-line-height-alt: 100.8px;
+                                    ">
+                                                                    <span class="tinyMce-placeholder"
+                                                                        style="word-break: break-word">Session Successfully Reinitialized!<br /></span>
+                                                                </h1>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                     
                                                     
                                                     <table border="0" cellpadding="0" cellspacing="0"
@@ -398,10 +437,10 @@
                                       mso-line-height-alt: 26.4px;
                                     ">
                                                                     <p style="margin: 0">
-                                                                        Your training session has re-generated.
+                                                                        Your training session has been re-generated.
                                                                     </p>
                                                                     <p style="margin-top: 10px">
-                                                                        Kindly follow the link to start your training
+                                                                        Kindly click the link below to start your training.
                                                                     </p>
                                                                 </div>
                                                             </td>
