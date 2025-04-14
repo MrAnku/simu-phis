@@ -133,7 +133,7 @@
                                                         <span class="badge bg-success-transparent">Completed</span>
                                                     @endif
 
-                                                <th>{{ $camp->userGroupData->group_name }}</th>
+                                                <th>{{ $camp->userGroupData->group_name ?? '' }}</th>
                                                 <th>{{ $camp->created_at->format('d/m/Y h:i A') }}</th>
                                                 <th>
                                                     <button
