@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,25 @@ use Illuminate\Support\Facades\Storage;
 class TrainingModuleController extends Controller
 {
     //
+
+    public function allTrainingModule(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['status' => 0, 'msg' => 'Unauthorized'], 401);
+        }
+
+        // Correct: use get() instead of all()
+        $all_training_module = TrainingModule::->get();
+
+        return response()->json([
+            'status' => 1,
+            'all_training_module' => $all_training_module,
+        ]);
+    }
+
+
     public function index(Request $request)
     {
         $company_id = auth()->user()->company_id;

@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TrainingModuleController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
@@ -44,4 +45,5 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete', [SenderProfileController::class, 'deleteSenderProfile']);
         Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
     });
+    Route::get('/get-all-training-module', [TrainingModuleController::class, 'allTrainingModule']);
 });
