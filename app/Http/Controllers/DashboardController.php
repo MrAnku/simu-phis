@@ -132,7 +132,7 @@ class DashboardController extends Controller
                 ->count();
 
             $lastSixMonthsData[] = [
-                'month' => $monthName,
+                'month' => __($monthName),
                 'no_of_camps' => $noOfCampaigns
             ];
         }
@@ -385,7 +385,7 @@ class DashboardController extends Controller
 
         log_action("Employees limit upgrade request submitted");
 
-        return redirect()->back()->with('success', 'Upgrade request submitted');
+        return redirect()->back()->with('success', __('Upgrade request submitted'));
     }
 
     public function appLangChange($locale)

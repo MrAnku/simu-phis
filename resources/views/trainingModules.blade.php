@@ -25,7 +25,8 @@
                             gap: 10px;
                         ">
 
-                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="{{ __('Search training') }}">
+                    <input type="text" class="form-control" id="t_moduleSearch"
+                        placeholder="{{ __('Search training') }}">
                     <i class="bx bx-search fs-23"></i>
                 </div>
             </div>
@@ -46,7 +47,8 @@
                                         </span>
                                         <select class="form-select" id="training_type_select">
                                             <option value="static_training"
-                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>{{ __('Static/ AI Training') }}</option>
+                                                {{ request('type') == 'static_training' ? 'selected' : '' }}>
+                                                {{ __('Static/ AI Training') }}</option>
                                             <option value="gamified" {{ request('type') == 'gamified' ? 'selected' : '' }}>
                                                 {{ __('Gamified Training') }}</option>
                                             <option value="games" {{ request('type') == 'games' ? 'selected' : '' }}>
@@ -647,13 +649,13 @@
             function deleteTrainingModule(trainingid, filelocation) {
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "If this training is associated with any campaign or training assigned employees. Then the campaign and the assigned training will be deleted.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('If this training is associated with any campaign or training assigned employees. Then the campaign and the assigned training will be deleted.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -980,8 +982,9 @@
                         error = true;
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: 'Please fill all the fields in the question.',
+                            title: "{{ __('Oops...') }}",
+                            text: "{{ __('Please fill all the fields in the question.') }}",
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                         return;
                     }
@@ -1002,8 +1005,9 @@
 
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
-                        text: 'Please enter a valid video URL.',
+                        title: "{{ __('Oops...') }}",
+                        text: "{{ __('Please enter a valid video URL.') }}",
+                        confirmButtonText: "{{ __('OK') }}"
                     });
                     return;
                 }
@@ -1024,8 +1028,9 @@
                         allFilled = false;
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: `Please fill ${$(this).data('name')}.`,
+                            title: "{{ __('Oops...') }}",
+                            text:  "{{ __('Please fill') }} " + ` ${$(this).data('name')}.`,
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                         return;
                     }
@@ -1056,8 +1061,9 @@
                     if (!timePattern.test(input.value)) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: 'Please enter a valid time in MM:SS format.',
+                            title: "{{ __('Oops...') }}",
+                            text: "{{ __('Please enter a valid time in MM:SS format.') }}",
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                         input.value = '';
                         input.classList.add('is-invalid');
@@ -1070,8 +1076,9 @@
                     if (inputTimeInSeconds > videoDuration) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: 'Input time cannot be greater than video duration.',
+                            title: "{{ __('Oops...') }}",
+                            text: "{{ __('Input time cannot be greater than video duration.') }}",
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                         input.value = '';
                         input.classList.add('is-invalid');
@@ -1170,8 +1177,9 @@
                             allFilled = false;
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Oops...',
-                                text: `Please fill ${$(this).data('name')}.`,
+                                title: "{{ __('Oops...') }}",
+                                text: "{{ __('Please fill') }} " + ` ${$(this).data('name')}.`,
+                                confirmButtonText: "{{ __('OK') }}"
                             });
                             return;
                         }
@@ -1212,8 +1220,9 @@
                         error = true;
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: 'Please fill all the fields in the question.',
+                            title: "{{ __('Oops...') }}",
+                            text: "{{ __('Please fill all the fields in the question.') }}",
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                         return;
                     }
@@ -1234,8 +1243,9 @@
 
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
-                        text: 'Please enter a valid video URL.',
+                        title: "{{ __('Oops...') }}",
+                        text: "{{ __('Please enter a valid video URL.') }}",
+                        confirmButtonText: "{{ __('OK') }}"
                     });
                     return;
                 }

@@ -270,7 +270,7 @@
             function showAnotherModal(button) {
 
                 if (!shortcodeValidation()) {
-                    alert('Please add all the required shortcodes');
+                    alert("{{ __('Please add all the required shortcodes') }}");
                     return;
                 }
                 // Hide the current modal
@@ -289,7 +289,7 @@
 
             async function generateTemplate(btn) {
                 btn.disabled = true;
-                btn.innerHTML = 'Generating...';
+                btn.innerHTML = "{{ __('Generating...') }}";
                 const prompt = document.getElementById('prompt').value;
                 const response = await fetch('/generate-template', {
                     method: 'POST',
@@ -307,8 +307,9 @@
                 if (data.status === 0) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
+                        title: "{{ __('Oops...') }}",
                         text: data.msg,
+                        confirmButtonText: "{{ __('OK') }}"
                     })
                     return;
                 }
@@ -316,7 +317,7 @@
 
                     tinymce.activeEditor.setContent(data.html);
                     btn.disabled = false;
-                    btn.innerHTML = 'Generate Template';
+                    btn.innerHTML = "{{ __('Generate Template') }}";
                     $('#aiTempContainer').show();
                     $('#temp-suggestions').hide();
                 } else {
@@ -348,15 +349,17 @@
                 if (data.status === 1) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success',
+                        title: "{{ __('Success') }}",
                         text: data.msg,
+                        confirmButtonText: "{{ __('OK') }}"
                     });
                     window.location.reload();
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
+                        title: "{{ __('Oops...') }}",
                         text: data.msg,
+                        onfirmButtonText: "{{ __('OK') }}"
                     });
                 }
             }

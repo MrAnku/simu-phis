@@ -99,11 +99,11 @@
                 <ul class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end"
                     aria-labelledby="mainHeaderProfile">
                     <li><a class="dropdown-item d-flex" href="{{ route('settings.index') }}"><i
-                                class="ti ti-adjustments-horizontal fs-18 me-2 op-7"></i>Settings</a></li>
+                                class="ti ti-adjustments-horizontal fs-18 me-2 op-7"></i>{{ __('Settings') }}</a></li>
 
                     <!-- <li><a class="dropdown-item d-flex" href="chat.html"><i class="ti ti-headset fs-18 me-2 op-7"></i>Support</a></li> -->
                     <li><a class="dropdown-item d-flex" href="{{ route('logout') }}"><i
-                                class="ti ti-logout fs-18 me-2 op-7"></i>Log Out</a></li>
+                                class="ti ti-logout fs-18 me-2 op-7"></i>{{ __('Log Out') }}</a></li>
                 </ul>
             </div>
             <!-- End::header-element -->
@@ -121,16 +121,16 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-body p-4">
-                <label class="form-label fs-16">Select Language</label>
+                <label class="form-label fs-16">{{ __('Select Language') }}</label>
                 <select class="form-control" id="languageSelect" data-trigger>
-                    <option {{ Auth::user()->lang == "en" ? 'selected' : '' }} value="en">English (En)</option>
-                    <option {{ Auth::user()->lang == "ar" ? 'selected' : '' }} value="ar">عربي (AR)</option>
-                    <option {{ Auth::user()->lang == "ru" ? 'selected' : '' }} value="ru">Русский (RU)</option>
+                    <option {{ Auth::user()->lang == "en" ? 'selected' : '' }} value="en">{{ __('English (En)') }}</option>
+                    <option {{ Auth::user()->lang == "ar" ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}</option>
+                    <option {{ Auth::user()->lang == "ru" ? 'selected' : '' }} value="ru">{{ __('Русский (RU)') }}</option>
                 </select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="changeLanguage()">Save changes</button>
+                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                <button type="button" class="btn btn-primary" onclick="changeLanguage()">{{ __('Save changes') }}</button>
             </div>
         </div>
     </div>

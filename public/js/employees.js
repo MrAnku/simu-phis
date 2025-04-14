@@ -76,16 +76,24 @@ function addFromAllEmp() {
             groupid: groupid,
         },
         success: function (res) {
-            if(res.status == 0){
-                Swal.fire(res.msg, "", "error");
+            if (res.status == 0) {
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                });
             }
-            else{
+            else {
                 viewUsersByGroup(groupid);
                 // Reset selected users
                 selectedUsers = [];
                 // Reset checkboxes
                 $(".user-checkbox").prop("checked", false);
-                Swal.fire(res.msg, "", "success").then(() => {
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'success',
+                    confirmButtonText: alertMsgs.OK
+                }).then(() => {
                     window.location.reload();
                 });
             }
@@ -231,7 +239,7 @@ function viewBlueUsersByGroup(groupid) {
                 }
             } else {
                 var emptyRow =
-                    '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                    `<tr><td colspan="6" class="text-center">${alertMsgs.noEmp}</td></tr>`;
                 $(".addedBlueCollarUsers").html(emptyRow);
 
                 $(".groupid").val(groupid);
@@ -269,7 +277,11 @@ $("#adduserForm").submit(function (e) {
             success: function (res) {
                 if (res.status == 0) {
                     // alert(resJson.msg);
-                    Swal.fire(res.msg, "", "error");
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: alertMsgs.OK
+                    });
                 } else {
                     var params = new URLSearchParams(formData);
                     var groupid = params.get("groupid");
@@ -297,7 +309,11 @@ $("#adduserPlanForm").submit(function (e) {
             success: function (res) {
                 if (res.status == 0) {
                     // alert(resJson.msg);
-                    Swal.fire(res.msg, "", "error");
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: alertMsgs.OK
+                    });
                 } else {
                     addedPlanUser++;
                     const formDataObj = Object.fromEntries(new URLSearchParams(formData));
@@ -332,7 +348,11 @@ $("#addbluecollaruserForm").submit(function (e) {
             success: function (res) {
                 if (res.status == 0) {
                     // alert(resJson.msg);
-                    Swal.fire(res.msg, "", "error");
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: alertMsgs.OK
+                    });
                 } else {
                     var params = new URLSearchParams(formData);
                     var groupid = params.get("groupid");
@@ -370,11 +390,19 @@ function deleteGroup(grpId) {
                     // alert(response);
                     // window.location.reload()
                     if (response.status == 1) {
-                        Swal.fire(response.msg, "", "success").then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'success',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
                             window.location.href = window.location.href;
                         });
                     } else {
-                        Swal.fire(response.msg, "", "error").then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
                             window.location.href = window.location.href;
                         });
                     }
@@ -409,11 +437,19 @@ function deleteBlueCollarGroup(grpId) {
                     // alert(response);
                     // window.location.reload()
                     if (response.status == 1) {
-                        Swal.fire(response.msg, "", "success").then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'success',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
                             window.location.href = window.location.href;
                         });
                     } else {
-                        Swal.fire(response.msg, "", "error").then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
                             window.location.href = window.location.href;
                         });
                     }
@@ -477,7 +513,12 @@ function deletePlanUser(usrEmail) {
                     });
                 },
                 error: function () {
-                    Swal.fire(alertMsgs.error, alertMsgs.somethingWrong, "error");
+                    Swal.fire(
+                        {
+                            title: alertMsgs.somethingWrong,
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        });
                 },
             });
         }
@@ -529,11 +570,19 @@ $("#sendOtpForm").submit(function (e) {
             $("#otpSpinner").addClass("d-none");
             $("#sendOtpBtn").removeClass("d-none");
             if (response.status == 0) {
-                Swal.fire(response.msg, "", "error");
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                });
 
                 $("#enterOtpContainer").addClass("d-none");
             } else {
-                Swal.fire(response.msg, "", "success");
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'success',
+                    confirmButtonText: alertMsgs.OK
+                });
                 $("#enterOtpContainer").removeClass("d-none");
             }
             // console.log(response);
@@ -556,16 +605,21 @@ $("#otpSubmitForm").submit(function (e) {
             // alert(jsonres.msg);
             // window.location.reload()
             if (response.status == 1) {
-                Swal.fire(
-                    response.msg,
-                    "Now you can add email of employees of this domain",
-                    "success"
-                );
+                Swal.fire({
+                    title: response.msg,
+                    text: "Now you can add email of employees of this domain",
+                    icon: "success",
+                    confirmButtonText: alertMsgs.OK
+                });
                 setTimeout(() => {
                     window.location.href = window.location.href;
                 }, 2000);
             } else {
-                Swal.fire(response.msg, "", "error");
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                });
 
                 $("#otpSubmitSpinner").addClass("d-none");
                 $("#otpSubmitBtn").removeClass("d-none");
@@ -596,9 +650,18 @@ function deleteDomain(id) {
                 },
                 success: function (response) {
                     if (response.status == 1) {
-                        Swal.fire(alertMsgs.deletedTitle, response.msg, "success");
+                        Swal.fire({
+                            title: alertMsgs.deletedTitle,
+                            text: response.msg,
+                            icon: 'success',
+                            confirmButtonText: alertMsgs.OK
+                        });
                     } else {
-                        Swal.fire(alertMsgs.somethingWrong, "", "error");
+                        Swal.fire({
+                            title: alertMsgs.somethingWrong,
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        });
                     }
 
                     setTimeout(() => {

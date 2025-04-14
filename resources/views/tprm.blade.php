@@ -151,7 +151,8 @@
                                             <div class="row">
                                                 <div class="col-lg-6">
 
-                                                    <label for="input-label" class="form-label">{{ __('Campaign Name') }}<sup
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Campaign Name') }}<sup
                                                             class="text-danger">*</sup></label>
                                                     <input type="text" class="form-control required" id="camp_name"
                                                         placeholder="{{ __('Enter a unique campaign name') }}">
@@ -203,7 +204,8 @@
 
                                             <div class="d-flex justify-content-between">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Email Language') }}</label>
 
                                                     <select class="form-select" id="email_lang">
                                                         <option value="sq">Albanian</option>
@@ -255,7 +257,8 @@
 
                                                 <div>
 
-                                                    <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
+                                                    <label for="templateSearch"
+                                                        class="form-label">{{ __('Search') }}</label>
                                                     <input type="text" class="form-control" id="templateSearch"
                                                         placeholder="{{ __('Search template') }}">
 
@@ -324,7 +327,8 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will begin delivering emails within 1-3 minutes of submission."
-                                                        id="imediateLabelBtn" for="imediateBtn">{{ __('Deliver Immediately') }}
+                                                        id="imediateLabelBtn"
+                                                        for="imediateBtn">{{ __('Deliver Immediately') }}
                                                     </label>
                                                 </div>
                                                 <div class="checkb mx-1">
@@ -334,7 +338,8 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will deliver emails using a defined schedule over a period of hours and days (e.g. 9am-5pm Monday-Friday)."
-                                                        id="scheduleLabelBtn" for="ScheduleBtn">{{ __('Setup Schedule') }}</label>
+                                                        id="scheduleLabelBtn"
+                                                        for="ScheduleBtn">{{ __('Setup Schedule') }}</label>
                                                 </div>
 
                                                 <div class="checkb mx-1">
@@ -344,22 +349,25 @@
                                                     <label class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
                                                         data-bs-placement="top"
                                                         data-bs-original-title="Campaign will not deliver emails until an update to the schedule is made at a later date."
-                                                        id="scheduleLLabelBtn" for="ScheduleLBtn">{{ __('Schedule Later') }}
+                                                        id="scheduleLLabelBtn"
+                                                        for="ScheduleLBtn">{{ __('Schedule Later') }}
                                                         </i></label>
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                                                                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                                                                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                                                                                                                                                </div> -->
+                                                                                                                                                                                                                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                                                        <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                                                                    </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
                                                 <label
                                                     class="text-left control-label col-form-label font-italic mt-3 pt-0"><b>{{ __('Note:') }}</b>{{ __("We will capture employee interactions as long as a campaign remains active (isn't updated or deleted).") }}</label>
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule
-                                                        Date') }}<i class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
+                                                    <label for="inputEmail3"
+                                                        class="col-sm-4 col-form-label">{{ __('Schedule
+                                                                                                                Date') }}<i
+                                                            class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
                                                             data-bs-original-title="Select a particular date for shooting this campaign"></i>
                                                     </label>
@@ -379,14 +387,17 @@
                                                 </div>
 
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule (Between Times)') }} <i class='bx bx-info-circle p-2'
-                                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    <label for="inputEmail3"
+                                                        class="col-sm-4 col-form-label">{{ __('Schedule (Between Times)') }}
+                                                        <i class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
                                                             data-bs-original-title="We recommend scheduling campaigns between business hours to get the most ineraction (e.g. 9am - 5pm)"></i></label>
                                                     <div class="col-sm-8">
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="schTimeStart" name="appt"
                                                                 class="form-control" value="09:00" step="60">
-                                                            <label class="col-md-1 m-t-15" style="text-align:center"> {{ __('To') }}
+                                                            <label class="col-md-1 m-t-15" style="text-align:center">
+                                                                {{ __('To') }}
                                                             </label>
                                                             <input type="time" id="schTimeEnd" name="appt"
                                                                 class="form-control" value="17:00" step="60">
@@ -395,8 +406,10 @@
                                                 </div>
 
                                                 <div class="row mb-3">
-                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">{{ __('Schedule (Time Zone)') }} <i class='bx bx-info-circle p-2'
-                                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    <label for="inputEmail3"
+                                                        class="col-sm-4 col-form-label">{{ __('Schedule (Time Zone)') }}
+                                                        <i class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
                                                             data-bs-original-title="Select the timezone that best aligns with your business hours."></i></label>
                                                     <div class="col-sm-8">
                                                         <div class="form-group d-flex">
@@ -598,7 +611,8 @@
                                                     </div>
                                                     <div id="exp_after" class="d-none">
                                                         <div class="input-group">
-                                                            <div class="input-group-text text-muted"> {{ __('Expire After') }}</div>
+                                                            <div class="input-group-text text-muted">
+                                                                {{ __('Expire After') }}</div>
                                                             <input type="text"
                                                                 class="form-control flatpickr-input active"
                                                                 id="expire_after" placeholder="{{ __('Choose date') }}"
@@ -633,7 +647,8 @@
                                         <div class="form-card row">
                                             <div class="col-lg-6 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Campaign Name') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Campaign Name') }}</label>
                                                     <input type="text" class="form-control" id="revCampName" disabled
                                                         readonly>
                                                 </div>
@@ -647,63 +662,72 @@
                                             </div> --}}
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Employee Group') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Employee Group') }}</label>
                                                     <input type="text" class="form-control" id="revEmpGroup" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Email Language') }}</label>
                                                     <input type="text" class="form-control" id="revEmailLang" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Phishing Material') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Phishing Material') }}</label>
                                                     <input type="text" class="form-control" id="revPhishmat" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Training Language') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Training Language') }}</label>
                                                     <input type="text" class="form-control" id="revTrainingLang"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Training Module') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Training Module') }}</label>
                                                     <input type="text" class="form-control" id="revTrainingMod"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Campaign Delivery') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Campaign Delivery') }}</label>
                                                     <input type="text" class="form-control" id="revCampDelivery"
                                                         disabled readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('chedule Date') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('chedule Date') }}</label>
                                                     <input type="text" class="form-control" id="revBtwDays" disabled
                                                         readonly>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 mb-3" id="revBtwTime">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('chedule Between
-                                                        Times') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('chedule Between
+                                                                                                                Times') }}</label>
                                                     <div>
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="revSchTimeStart" name="appt"
                                                                 class="form-control" value="09:00" step="60"
                                                                 disabled readonly>
-                                                            <label class="col-md-1 m-t-15" style="text-align:center">{{ __('To')}}
+                                                            <label class="col-md-1 m-t-15"
+                                                                style="text-align:center">{{ __('To') }}
                                                             </label>
                                                             <input type="time" id="revSchTimeEnd" name="appt"
                                                                 class="form-control" value="17:00" step="60"
@@ -714,7 +738,8 @@
                                             </div>
                                             <div class="col-lg-4 mb-3">
                                                 <div>
-                                                    <label for="input-label" class="form-label">{{ __('Schedule Time Zone') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Schedule Time Zone') }}</label>
                                                     <input type="text" class="form-control" id="revSchTimeZone"
                                                         disabled readonly>
                                                 </div>
@@ -778,8 +803,9 @@
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training
-                                        Campaign') }}</a>
+                                        href="#training_campaign" aria-selected="false"
+                                        tabindex="-1">{{ __('Training
+                                                                                Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -920,19 +946,22 @@
                                 role="tabpanel" aria-labelledby="products-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vphishEmail" class="col-sm-6 col-form-label">{{ __('Phishing Email') }}</label>
+                                    <label for="vphishEmail"
+                                        class="col-sm-6 col-form-label">{{ __('Phishing Email') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vphishEmail" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vSub" class="col-sm-6 col-form-label">{{ __('Email Subject') }}</label>
+                                    <label for="vSub"
+                                        class="col-sm-6 col-form-label">{{ __('Email Subject') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vSub" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="inputEmail3" class="col-sm-6 col-form-label">{{ __('Employee Requirements') }}</label>
+                                    <label for="inputEmail3"
+                                        class="col-sm-6 col-form-label">{{ __('Employee Requirements') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="inputEmail3"
                                             value="Email Address | Name" disabled>
@@ -948,13 +977,15 @@
                                 aria-labelledby="sales-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vphishWeb" class="col-sm-6 col-form-label">{{ __('Phishing Website') }}</label>
+                                    <label for="vphishWeb"
+                                        class="col-sm-6 col-form-label">{{ __('Phishing Website') }}</label>
                                     <div class="col-sm-6">
                                         <input type="email" class="form-control" id="vphishWeb" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vPhishUrl" class="col-sm-6 col-form-label">{{ __('Website URL') }}</label>
+                                    <label for="vPhishUrl"
+                                        class="col-sm-6 col-form-label">{{ __('Website URL') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vPhishUrl" disabled>
                                     </div>
@@ -973,13 +1004,15 @@
                                 aria-labelledby="profit-tab" tabindex="0">
 
                                 <div class="row mb-3">
-                                    <label for="vsenderProf" class="col-sm-6 col-form-label">{{ __('Sender Profile') }}</label>
+                                    <label for="vsenderProf"
+                                        class="col-sm-6 col-form-label">{{ __('Sender Profile') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vsenderProf" disabled>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <label for="vDispName" class="col-sm-6 col-form-label">{{ __('Display Name & Address') }}</label>
+                                    <label for="vDispName"
+                                        class="col-sm-6 col-form-label">{{ __('Display Name & Address') }}</label>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control" id="vDispName" disabled>
                                     </div>
@@ -1030,8 +1063,8 @@
                                                     onclick="openDomainModal('{{ $domain->domain }}')">{{ __('Show/Add Email') }}</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                                                                                                                <i class="bx bx-x fs-25"></i>
-                                                                                                                                            </span> -->
+                                                                                                                                                    <i class="bx bx-x fs-25"></i>
+                                                                                                                                                </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1192,7 +1225,8 @@
                         <div class="input-group">
                             <input type="email" id="emailInput" class="form-control"
                                 placeholder="{{ __('Enter email address') }}">
-                            <button type="button" class="btn btn-primary" id="addEmailButton" onclick="addEmail()">{{ __('Add Email') }}</button>
+                            <button type="button" class="btn btn-primary" id="addEmailButton"
+                                onclick="addEmail()">{{ __('Add Email') }}</button>
                         </div>
                         <div id="emailWarning" class="text-danger mt-2" style="display: none;">
                             {{ __('Warning: Email domain does not match the provided domain.') }}
@@ -1205,8 +1239,10 @@
 
                 <!-- Modal Footer -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="submitDomainData()">{{ __('Save Changes') }}</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-primary"
+                        onclick="submitDomainData()">{{ __('Save Changes') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -1269,7 +1305,7 @@
 
             // Count the number of <li> elements inside the <ul>
             const liCount = ulElement.querySelectorAll('li').length;
-            
+
             if (liCount >= 5) {
                 return true;
             }
@@ -1281,11 +1317,12 @@
         function addEmail() {
 
             if (emailLimitExceed()) {
-                Swal.fire(
-                    "{{ __('Limit Exceeded') }}",
-                    "{{ __('You can only add 5 emails') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Limit Exceeded') }}",
+                    text: "{{ __('You can only add 5 emails') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
                 return;
             }
             const emailInput = document.getElementById('emailInput');
@@ -1407,11 +1444,12 @@
                     // Check if the response is HTML, indicating a redirect
                     if (typeof response === 'string' && response.includes('<html>')) {
                         // Assume success since controller redirected
-                        Swal.fire(
-                            "{{ __('Emails saved successfully!') }}",
-                            "{{ __('New emails added successfully.') }}",
-                            'success'
-                        );
+                        Swal.fire({
+                            title: "{{ __('Emails saved successfully!') }}",
+                            text: "{{ __('New emails added successfully.') }}",
+                            icon: 'success',
+                            confirmButtonText: "{{ __('OK') }}"
+                        });
 
                         // Redirect manually after showing success message
                         setTimeout(() => {
@@ -1420,17 +1458,19 @@
                     } else {
                         // Handle as JSON response if response contains a status
                         if (response.status === 1) {
-                            Swal.fire(
-                                "{{ __('Emails saved successfully!') }}",
-                                response.msg,
-                                'success'
-                            );
+                            Swal.fire({
+                                title: "{{ __('Emails saved successfully!') }}",
+                                text: response.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                         } else {
-                            Swal.fire(
-                                "{{ __('Something went wrong!') }}",
-                                response.msg || "{{ __('Unknown error occurred.') }}",
-                                'error'
-                            );
+                            Swal.fire({
+                                title: "{{ __('Something went wrong!') }}",
+                                text: response.msg || "{{ __('Unknown error occurred.') }}",
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                         }
                         setTimeout(() => {
                             window.location.href = window.location.href;
@@ -1439,11 +1479,12 @@
                 },
                 error: function(xhr, status, error) {
                     // console.error('AJAX error:', error);
-                    Swal.fire(
-                        "{{ __('Error!') }}",
-                        "{{ __('Could not complete the request.') }}",
-                        'error'
-                    );
+                    Swal.fire({
+                        title: "{{ __('Error!') }}",
+                        text: "{{ __('Could not complete the request.') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    });
                 }
             });
         }
@@ -1557,29 +1598,32 @@
             const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$/;
 
             if (domain == '') {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('Please Enter a domain') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('Please Enter a domain') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
                 return;
             }
 
             if (invalidPhpPattern.test(domain) || invalidTagsPattern.test(domain)) {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('Invalid input detected.') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('Invalid input detected.') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
                 return;
             }
 
             if (emailPattern.test(domain) || !domainPattern.test(domain)) {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('Please enter a valid domain') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('Please enter a valid domain') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
                 return;
             }
 
@@ -1588,17 +1632,19 @@
                 updateDomainList();
                 domainInput.value = ""; // Clear input after adding
             } else if (domains.includes(domain)) {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('This domain is already added.') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('This domain is already added.') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
             } else {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('Something went wrong.') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('Something went wrong.') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
             }
         }
 
@@ -1653,11 +1699,12 @@
 
                         // Show success or failure message based on backend response
                         if (data.status === 1) { // Change to check for status
-                            Swal.fire(
-                                "{{ __('Request Submitted') }}",
-                                `${data.msg}`,
-                                'success'
-                            ).then((result) => {
+                            Swal.fire({
+                                title: "{{ __('Request Submitted') }}",
+                                text: `${data.msg}`,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            }).then((result) => {
                                 if (result.isConfirmed) {
                                     location.reload();
                                 }
@@ -1667,29 +1714,32 @@
                             // Optionally close the modal if needed
                             $('#newDomainVerificationModal').modal('hide'); // Use jQuery for Bootstrap modal
                         } else if (data.status === 0) {
-                            Swal.fire(
-                                "{{ __('Oops!') }}",
-                                `${data.msg}`,
-                                'error'
-                            );
+                            Swal.fire({
+                                title: "{{ __('Oops!') }}",
+                                text: `${data.msg}`,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                             return;
 
                         } else {
-                            Swal.fire(
-                                "{{ __('Oops!') }}",
-                                `"{{ __('Unable to submit domains for verification') }}" ${data.msg}`,
-                                'error'
-                            );
+                            Swal.fire({
+                                title: "{{ __('Oops!') }}",
+                                text: `"{{ __('Unable to submit domains for verification') }}" ${data.msg}`,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
                             return;
                         }
                     })
                     .catch(error => {
                         // console.error("Error submitting domains:", error);
-                        Swal.fire(
-                            "{{ __('Oops!') }}",
-                            "{{ __('An error occurred while submitting domains. Please try again.') }}",
-                            'error'
-                        );
+                        Swal.fire({
+                            title: "{{ __('Oops!') }}",
+                            text: "{{ __('An error occurred while submitting domains. Please try again.') }}",
+                            icon: 'error',
+                            confirmButtonText: "{{ __('OK') }}"
+                        });
                         return;
 
                         // Reset the buttons in case of error
@@ -1697,11 +1747,12 @@
                         document.getElementById("sendOtpBtn").classList.remove("d-none");
                     });
             } else {
-                Swal.fire(
-                    "{{ __('Oops!') }}",
-                    "{{ __('Please add at least one domain.') }}",
-                    'error'
-                );
+                Swal.fire({
+                    title: "{{ __('Oops!') }}",
+                    text: "{{ __('Please add at least one domain.') }}",
+                    icon: 'error',
+                    confirmButtonText: "{{ __('OK') }}"
+                });
                 return;
             }
         }
@@ -1730,7 +1781,8 @@
                             <input type="text" class="form-control" id="domainEmailInput"
                                 placeholder="i.e. domain.com" />
                         </div>
-                        <button type="button" class="btn btn-secondary" onclick="addDomain()">{{ __('Add Domain') }}</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="addDomain()">{{ __('Add Domain') }}</button>
                     </form>
 
                     <!-- List of Added Domains -->
@@ -1742,7 +1794,8 @@
                     </div>
 
                     <!-- Submit Button and Spinner -->
-                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3" onclick="submitDomains()">{{ __('Submit Domains for Verification') }}</button>
+                    <button type="button" id="sendOtpBtn" class="btn btn-primary my-3"
+                        onclick="submitDomains()">{{ __('Submit Domains for Verification') }}</button>
                     <button class="btn btn-primary my-3 d-none" id="submitSpinner">
                         <span class="me-2">{{ __('Please wait...') }}</span>
                         <span class="loading"><i class="ri-loader-2-fill fs-16"></i></span>
@@ -1769,13 +1822,15 @@
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item" role="presentation" id="phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign" aria-selected="true">{{ __('Phishing
-                                        Campaign') }}</a>
+                                        href="#phishing_campaign"
+                                        aria-selected="true">{{ __('Phishing
+                                                                                Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#training_campaign" aria-selected="false" tabindex="-1">{{ __('Training
-                                        Campaign') }}</a>
+                                        href="#training_campaign" aria-selected="false"
+                                        tabindex="-1">{{ __('Training
+                                                                                Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -1889,16 +1944,17 @@
     @endpush
 
     @push('newscripts')
-
-         {{-- All Alert's lang conversion of js file --}}
-         <script>
+        {{-- All Alert's lang conversion of js file --}}
+        <script>
             const alertMsgs = {
-                title : "{{ __('Are you sure?') }}",
+                title: "{{ __('Are you sure?') }}",
                 deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
                 deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
                 deleteDomainText: "{{ __('All employees will be deleted whose email associated with this domain.') }}",
                 deleteBtnText: "{{ __('Delete') }}",
-                cancelBtnText: "{{ __('Cancel') }}"
+                cancelBtnText: "{{ __('Cancel') }}",
+                OK: "{{ __('OK') }}",
+                noEmp: "{{ __('No employees available in this group!') }}"
             };
         </script>
         {{-- All Alert's lang conversion of js file --}}
@@ -2199,19 +2255,19 @@
 
             function checkResponse(res) {
                 if (res.status == 1) {
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'success'
-                    ).then(function() {
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'success',
+                        confirmButtonText: "{{ __('OK') }}"
+                    }).then(function() {
                         window.location.href = window.location.href
                     })
                 } else {
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'error'
-                    ).then(function() {
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    }).then(function() {
                         window.location.href = window.location.href
                     })
                 }

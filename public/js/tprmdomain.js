@@ -39,7 +39,7 @@ function viewUsersByGroup(groupid) {
 
 
             } else {
-                var emptyRow = '<tr><td colspan="6" class="text-center">No employees available in this group!</td></tr>';
+                var emptyRow = `<tr><td colspan="6" class="text-center">${alertMsgs.noEmp}</td></tr>`;
                 $(".addedUsers").html(emptyRow);
 
                 $(".groupid").val(groupid);
@@ -79,11 +79,11 @@ $("#adduserForm").submit(function (e) {
             success: function (res) {
                 if (res.status == 0) {
                     // alert(resJson.msg);
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'error'
-                    )
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: alertMsgs.OK
+                    })
                 } else {
                     var params = new URLSearchParams(formData);
                     var groupid = params.get('groupid');
@@ -127,20 +127,20 @@ function deleteGroup(grpId) {
                     // alert(response);
                     // window.location.reload()
                     if (response.status == 1) {
-                        Swal.fire(
-                            response.msg,
-                            '',
-                            'success'
-                        ).then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'success',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
 
                             window.location.href = window.location.href;
                         })
                     } else {
-                        Swal.fire(
-                            response.msg,
-                            '',
-                            'error'
-                        ).then(() => {
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        }).then(() => {
 
                             window.location.href = window.location.href;
                         })
@@ -207,19 +207,20 @@ $("#sendOtpForm").submit(function (e) {
             $("#otpSpinner").addClass('d-none');
             $("#sendOtpBtn").removeClass('d-none');
             if (response.status == 0) {
-                Swal.fire(
-                    response.msg,
-                    '',
-                    'error'
-                )
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                }
+            )
 
                 $("#enterOtpContainer").addClass('d-none');
             } else {
-                Swal.fire(
-                    response.msg,
-                    '',
-                    'success'
-                )
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'success',
+                    confirmButtonText: alertMsgs.OK
+                })
                 $("#enterOtpContainer").removeClass('d-none');
             }
             // console.log(response);
@@ -244,21 +245,22 @@ $("#otpSubmitForm").submit(function (e) {
             // alert(jsonres.msg);
             // window.location.reload()
             if (response.status == 1) {
-                Swal.fire(
-                    response.msg,
-                    'Now you can add email of employees of this domain',
-                    'success'
-                )
+                Swal.fire({
+                    title: response.msg,
+                    text: "{{ __('Now you can add email of employees of this domain') }}",
+                    icon: 'success',
+                    confirmButtonText: alertMsgs.OK
+                })
                 setTimeout(() => {
 
                     window.location.href = window.location.href;
                 }, 2000);
             } else {
-                Swal.fire(
-                    response.msg,
-                    '',
-                    'error'
-                )
+                Swal.fire({
+                    title: response.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                })
 
                 $("#otpSubmitSpinner").addClass('d-none');
                 $("#otpSubmitBtn").removeClass('d-none');
@@ -295,17 +297,17 @@ function deleteDomain(id) {
                 success: function (response) {
 
                     if (response.status == 1) {
-                        Swal.fire(
-                            'Deleted!',
-                            response.msg,
-                            'success'
-                        )
+                        Swal.fire({
+                            title: "{{ __('Deleted!') }}",
+                            icon: 'success',
+                            confirmButtonText: alertMsgs.OK
+                        })
                     } else {
-                        Swal.fire(
-                            'Something went wrong!',
-                            '',
-                            'error'
-                        )
+                        Swal.fire({
+                            title: "{{ __('Something went wrong!') }}",
+                            icon: 'error',
+                            confirmButtonText: alertMsgs.OK
+                        })
                     }
 
                     setTimeout(() => {

@@ -74,7 +74,7 @@ $ArrayCount = [];
     $Arraydetails['Emp Compromised'] = $emp_compromised_reported ?? 0;
     $Arraydetails['Training Assigned'] =    $training_assigned ?? 0;
 $ArrayData_labels = [
-    ["labels" => "Payload Clicked"],
+    ["labels" => __('Payload Clicked')],
     ["labels" => "Emp Compromised"],
     ["labels" => "Training Assigned"],
 ];
@@ -105,7 +105,7 @@ $ArrayCount = [];
     $Arraydetails['Emp Compromised'] = $emp_compromised_reported ?? 0;
     $Arraydetails['Training Assigned'] =    $training_assigned ?? 0;
 $ArrayData_labels = [
-    ["labels" => "Payload Clicked"],
+    ["labels" => __('Payload Clicked')],
     ["labels" => "Emp Compromised"],
     ["labels" => "Training Assigned"],
 ];
@@ -208,14 +208,14 @@ $ArrayCount = [];
     $ArrayCount['array_count'] = $training_assigned + $payload_clicked + $emp_compromised;
 // return $Arraydetails;
     $ArrayData_labels = [
-        ["labels" => "Payload Clicked"],
+        ["labels" => __('Payload Clicked')],
         ["labels" => "Emp Compromised"],
         ["labels" => "Training Assigned"],
     ];
     $camp_live = CampaignLive::where('company_id', $companyId)->get();
 
 $label='Email';
-$title = "Full Report of Email Phishing Simulation";
+$title = __('Full Report of Email Phishing Simulation');
     return view('email-template', compact('Arraydetails', 'camp_live', 'ArrayData_labels', 'ArrayCount','label','title'));
 }
 
@@ -244,7 +244,7 @@ $ArrayCount = [];
     $Arraydetails['Training Assigned'] = $training_assigned ?? 0;
 $ArrayCount['array_count'] = $training_assigned + $payload_clicked + $emp_compromised;
     $ArrayData_labels = [
-        ["labels" => "Payload Clicked"],
+        ["labels" => __('Payload Clicked')],
         ["labels" => "Emp Compromised"],
         ["labels" => "Training Assigned"],
     ];

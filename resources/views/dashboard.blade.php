@@ -204,7 +204,7 @@
     </div>
 
     {{-- -------------------modals ------------ --}}
-    <x-modal id="upgradeModal" heading="Request for employees limit upgrade">
+    <x-modal id="upgradeModal" heading="{{ __('Request for employees limit upgrade') }}">
         <x-dashboard.upgrade-form :package="$package" />
     </x-modal>
 
@@ -252,10 +252,10 @@
                             type: 'doughnut',
                             data: {
                                 labels: [
-                                    'Emails Delivered',
-                                    'Emails Viewed',
-                                    'Training Assigned',
-                                    'Training Completed'
+                                    "{{ __('Emails Delivered') }}",
+                                    "{{ __('Emails Viewed') }}",
+                                    "{{ __('Training Assigned') }}",
+                                    "{{ __('Training Completed') }}"
                                 ],
                                 datasets: [{
                                     data: [
@@ -290,7 +290,7 @@
                         var data = {
                             labels: labels,
                             datasets: [{
-                                label: 'Campaigns ran in last 6 months',
+                                label: "{{ __('Campaigns ran in last 6 months') }}",
                                 backgroundColor: 'rgb(132, 90, 223)',
                                 borderColor: 'rgb(132, 90, 223)',
                                 data: lineChartData.map(function(data) {
@@ -335,10 +335,10 @@
                     success: function(response) {
                         var options = {
                             series: [{
-                                name: 'Link Clicked',
+                                name: "{{ __('Link Clicked') }}",
                                 data: response.link_clicked
                             }, {
-                                name: 'Emp Compromised',
+                                name: "{{ __('Emp Compromised') }}",
                                 data: response.emp_compromised
                             }],
                             chart: {
@@ -449,7 +449,7 @@
                             stroke: {
                                 lineCap: "round"
                             },
-                            labels: ["Payload Clicks"]
+                            labels: ["{{ __('Payload Clicks') }}"]
                         };
 
                         document.querySelector("#analytics-views").innerHTML = ""
@@ -503,7 +503,7 @@
                             stroke: {
                                 lineCap: "round"
                             },
-                            labels: ["Email Reported"]
+                            labels: ["{{ __('Email Reported') }}"]
                         };
 
                         document.querySelector("#analytics-views-2").innerHTML = ""

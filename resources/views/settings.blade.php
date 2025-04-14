@@ -1021,7 +1021,7 @@
 
             $("#updateProfileBtn").click(function(e) {
                 var clickedBtn = $(this);
-                clickedBtn.text("Please Wait...");
+                clickedBtn.text("{{ __('Please wait...') }}");
                 $.post({
                     url: '/settings/update-profile',
                     data: {
@@ -1035,18 +1035,18 @@
                         // alert(resJson.msg);
                         if (res.status == 1) {
                             clickedBtn.text("{{ __('Update Profile') }}");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'success'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         } else {
                             clickedBtn.text("{{ __('Update Profile') }}");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
 
                     }
@@ -1055,7 +1055,7 @@
 
             $("#updatePassBtn").click(function(e) {
                 var clickedBtn = $(this);
-                clickedBtn.text("Please Wait...");
+                clickedBtn.text("{{ __('Please wait...') }}");
                 $.post({
                     url: '/settings/update-password',
                     data: {
@@ -1067,18 +1067,18 @@
                     success: function(res) {
                         if (res.status == 1) {
                             clickedBtn.text("{{ __('Update Password') }}");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'success'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         } else {
                             clickedBtn.text("{{ __('Update Password') }}");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
                     }
                 })
@@ -1119,11 +1119,11 @@
                                 //     'success'
                                 // )
                             } else {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                             // console.log(res)
                         }
@@ -1138,17 +1138,17 @@
                         },
                         success: function(res) {
                             if (res.status == 1) {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             } else {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                         }
                     })
@@ -1158,7 +1158,7 @@
 
             $("#updateLang").click(function(e) {
                 var clickedBtn = $(this);
-                clickedBtn.text("Please Wait...");
+                clickedBtn.text("{{ __('Please wait...') }}");
                 $.post({
                     url: '/settings/update-lang',
                     data: {
@@ -1170,18 +1170,18 @@
                     success: function(res) {
                         if (res.status == 1) {
                             clickedBtn.text("Update");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'success'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         } else {
                             clickedBtn.text("Update");
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
                     }
                 })
@@ -1193,14 +1193,14 @@
 
                 if (redirectType == 'byoEducation' && redirect_url.value == '') {
                     // alert("Please enter the website url");
-                    Swal.fire(
-                        'Please enter the website url',
-                        '',
-                        'error'
-                    )
+                    Swal.fire({
+                                title: "{{ __('Please enter the website url') }}",
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                 } else {
 
-                    clickedBtn.text("Please Wait...");
+                    clickedBtn.text("{{ __('Please wait...') }}");
                     $.post({
                         url: '/settings/update-phish-edu',
                         data: {
@@ -1214,18 +1214,18 @@
 
                             if (res.status == 1) {
                                 clickedBtn.text("Update");
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             } else {
                                 clickedBtn.text("Update");
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                         }
                     })
@@ -1247,7 +1247,7 @@
                 var clickedBtn = $(this);
                 if ($.isNumeric(freqdays.value)) {
 
-                    clickedBtn.text("Please Wait...");
+                    clickedBtn.text("{{ __('Please wait...') }}");
                     $.post({
                         url: '/settings/update-train-freq',
                         data: {
@@ -1260,29 +1260,30 @@
 
                             if (res.status == 1) {
                                 clickedBtn.text("save");
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            }
+                        )
                             } else {
                                 clickedBtn.text("save");
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                             // window.location.href = window.location.href;
                         }
                     })
                 } else {
                     // alert("");
-                    Swal.fire(
-                        'Entered value is not a numeric value',
-                        '',
-                        'error'
-                    )
+                    Swal.fire({
+                                title: "{{ __('Entered value is not a numeric value') }}",
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                 }
             })
 
@@ -1300,17 +1301,17 @@
                         },
                         success: function(res) {
                             if (res.status == 1) {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             } else {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                         }
                     })
@@ -1324,17 +1325,17 @@
                         },
                         success: function(res) {
                             if (res.status == 1) {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'success'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            } )
                             } else {
-                                Swal.fire(
-                                    res.msg,
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             }
                         }
                     })
@@ -1343,13 +1344,14 @@
 
             function deactivateAcc() {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "After deactivation your services will be on hold. You have to contact to your service provider to reactivate your account",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('After deactivation your services will be on hold. You have to contact to your service provider to reactivate your account') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Deactivate'
+                    confirmButtonText: "{{ __('Deactivate') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({

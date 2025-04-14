@@ -365,13 +365,13 @@
                         scoreModal.style.display = "none";
                         overlay.style.display = "none";
                         modal.style.display = "none";
-                     
+
                     } else {
                         Swal.fire({
-                            title: "Error!",
+                            title: "{{ __('Error!') }}",
                             text: res.msg,
                             icon: "error",
-                            confirmButtonText: "OK"
+                            confirmButtonText: "{{ __('OK') }}"
                         });
                     }
 
@@ -396,13 +396,14 @@
 
         function confirmLanguage(lang, langCode) {
             Swal.fire({
-                title: "Are you sure?",
-                text: `This training will be changed to ${lang} language!`,
+                title: "{{ __('Are you sure?') }}",
+                text: `{{ __('This training will be changed to :lang language!', ['lang' => '${lang}']) }}`,
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Change Language!"
+                confirmButtonText: "{{ __('Yes, Change Language!') }}",
+                cancelButtonText: "{{ __('Cancel') }}"
             }).then((result) => {
                 if (result.isConfirmed) {
                     loadTrainingContent(langCode);

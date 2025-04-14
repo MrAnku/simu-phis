@@ -768,13 +768,13 @@
             function deleteETemplate(tempid, filelocation) {
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Deleting this template will delete the campaigns associated with this email template.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Deleting this template will delete the campaigns associated with this email template.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({

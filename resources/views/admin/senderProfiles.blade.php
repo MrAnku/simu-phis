@@ -285,13 +285,14 @@
         <script>
             function deleteSenderProfile(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Are you sure that you want to delete this Sender Profile?",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Are you sure that you want to delete this Sender Profile?') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -326,11 +327,11 @@
                             $('#editSenderProfileModal input[name="smtp_username"]').val(res.data.username);
                             $('#editSenderProfileModal input[name="smtp_password"]').val(res.data.password);
                         } else {
-                            Swal.fire(
-                                'Something went wrong!',
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: "{{ __('Something went wrong!') }}",
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                         }
                     }
                 })

@@ -389,8 +389,9 @@
                         if(res.status == 0){
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Oops...',
+                                title: "{{ __('Oops...') }}",
                                 text: res.msg,
+                                confirmButtonText: "{{ __('OK') }}"
                             })
                             return;
                         }

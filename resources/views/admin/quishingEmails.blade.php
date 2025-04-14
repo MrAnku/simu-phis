@@ -678,13 +678,13 @@
 
             function deleteETemplate(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "If this template is used in any campaign, it will be removed from the campaign as well.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('If this template is used in any campaign, it will be removed from the campaign as well.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -694,20 +694,22 @@
                             },
                             success: function(res) {
                                 if (res.success) {
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'Template has been deleted.',
-                                        'success'
-                                    )
+                                    Swal.fire({
+                                    title: "{{ __('Deleted!') }}",
+                                    text: "{{ __('Template has been deleted.') }}"
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                } )
                                     setTimeout(() => {
                                         location.reload();
                                     }, 1000);
                                 } else {
-                                    Swal.fire(
-                                        'Error!',
-                                        res.error,
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                    title: "{{ __('Error!') }}",
+                                    text: res.error,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                                 }
                             }
                         })

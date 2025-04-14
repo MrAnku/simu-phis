@@ -98,13 +98,14 @@
         <script>
             function deleteTrainingGame(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You want to delete!",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('You want to delete!') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -114,18 +115,20 @@
                             },
                             success: function(response) {
                                 if (response.status == 1) {
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'Data has been deleted.',
-                                        'success'
-                                    )
+                                    Swal.fire({
+                                    title: "{{ __('Deleted!') }}",
+                                    text: "{{ __('Data has been deleted.) }}",
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                                     location.reload();
                                 } else {
-                                    Swal.fire(
-                                        'Error!',
-                                        'Something went wrong.',
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                    title: "{{ __('Error!') }}",
+                                    text: "{{ __('Something went wrong!') }}",
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                } )
                                 }
                             }
                         })

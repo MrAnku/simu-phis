@@ -25,7 +25,7 @@
                                         <div class="flex-fill">
                                             <div class="d-flex align-items-center">
                                                 <div class="mt-sm-0 mt-2">
-                                                    <p class="mb-0 fs-14 fw-semibold">{{ ucfirst($os) }}</p>
+                                                    <p class="mb-0 fs-14 fw-semibold">{{ ucfirst(__($os)) }}</p>
                                                 </div>
                                                 <div class="ms-auto">
                                                     <span class="float-end fs-22 badge bg-light text-muted">{{ $count }}</span>

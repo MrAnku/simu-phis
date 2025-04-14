@@ -14,7 +14,8 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Across all employee groups (Total)') }}</span>
+                                    <span
+                                        class="fw-semibold text-muted d-block mb-2">{{ __('Across all employee groups (Total)') }}</span>
                                     <h5 class="fw-semibold mb-2">{{ $totalEmps }} {{ __('Employees') }}</h5>
 
                                 </div>
@@ -33,8 +34,10 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">{{ $verifiedDomains->count() }} {{ __('Used (500 Domains Max.)') }}</span>
-                                    <h5 class="fw-semibold mb-2">{{ $verifiedDomains->count() }} {{ __('Domains Verified') }}</h5>
+                                    <span class="fw-semibold text-muted d-block mb-2">{{ $verifiedDomains->count() }}
+                                        {{ __('Used (500 Domains Max.)') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $verifiedDomains->count() }}
+                                        {{ __('Domains Verified') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -52,8 +55,10 @@
                             <div class="d-flex align-items-top">
 
                                 <div class="flex-fill">
-                                    <span class="fw-semibold text-muted d-block mb-2">{{ __('Verification of ownership') }}</span>
-                                    <h5 class="fw-semibold mb-2">{{ $notVerifiedDomains->count() }} {{ __('Domains Pending') }}</h5>
+                                    <span
+                                        class="fw-semibold text-muted d-block mb-2">{{ __('Verification of ownership') }}</span>
+                                    <h5 class="fw-semibold mb-2">{{ $notVerifiedDomains->count() }}
+                                        {{ __('Domains Pending') }}</h5>
 
                                 </div>
                                 <div class="me-3">
@@ -112,7 +117,8 @@
                                                     </a>
                                                 </td>
                                                 {{-- <td>{{ $group }}</td> --}}
-                                                <td>{{ $group->users !== null ? count(json_decode($group->users, true)) : 0 }}</td>
+                                                <td>{{ $group->users !== null ? count(json_decode($group->users, true)) : 0 }}
+                                                </td>
                                                 <td><span class="badge bg-info">{{ $group->group_id }}</span></td>
 
 
@@ -203,11 +209,10 @@
     @endpush
 
     @push('newscripts')
-
-         {{-- All Alert's lang conversion of js file --}}
-         <script>
+        {{-- All Alert's lang conversion of js file --}}
+        <script>
             const alertMsgs = {
-                title : "{{ __('Are you sure?') }}",
+                title: "{{ __('Are you sure?') }}",
                 deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
                 deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
                 deleteDomainText: "{{ __('All employees will be deleted from Group whose email associated with this domain.') }}",
@@ -219,7 +224,8 @@
                 somethingWrong: "{{ __('Something went wrong!') }}",
                 error: "{{ __('Error') }}",
                 noEmp: "{{ __('No employees available in this group!') }}",
-                search: "{{ __('Search...') }}"
+                search: "{{ __('Search...') }}",
+                OK: "{{ __('OK') }}"
             };
         </script>
         {{-- All Alert's lang conversion of js file --}}
@@ -362,11 +368,11 @@
 
                         if (key == 'usrEmail') {
                             if (!isValidEmail(value)) {
-                                Swal.fire(
-                                    "Please enter a valid email!",
-                                    '',
-                                    'error'
-                                )
+                                Swal.fire({
+                                    title: "Please enter a valid email!",
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
 
                                 error = true;
                             }
@@ -397,11 +403,11 @@
                     success: function(res) {
                         if (res.status == 0) {
                             // alert(resJson.msg);
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
 
                             $(btn).html("Save");
                         } else {
@@ -444,11 +450,11 @@
                     fetchOutlookGroups(btn);
                     $("#outlookContainer").show();
                 } else {
-                    Swal.fire(
-                        "This provider is currently inactive in our system",
-                        '',
-                        'error'
-                    )
+                    Swal.fire({
+                        title: "{{ __('This provider is currently inactive in our system') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
                     btn.innerText = "Sync Directory";
                 }
 
@@ -535,11 +541,11 @@
                     success: function(res) {
                         // console.log(res);
                         if (res.status == 0) {
-                            Swal.fire(
-                                res.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             return;
                         }
                         let options = "";
@@ -565,11 +571,11 @@
                     type: "GET",
                     success: function(response) {
                         if (response.status == 0) {
-                            Swal.fire(
-                                response.msg,
-                                '',
-                                'error'
-                            )
+                            Swal.fire({
+                                title: response.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
                             return;
                         }
                         // console.log(response);
@@ -605,7 +611,7 @@
             function saveOutlookSyncedEmployees(btn) {
                 $(btn).html("Saving...").attr('disabled', true);
                 const groupId = $(".groupid").val();
-               
+
                 const employees = [];
                 $("#outlookEmps tbody tr").each(function(index, tr) {
                     const name = $(tr).find('.name').val();
@@ -637,22 +643,23 @@
                                     icon: 'error',
                                     title: 'Errors',
                                     html: response.msg.map(error => `<p>${error}</p>`).join(''),
+                                    confirmButtonText: "{{ __('OK') }}"
                                 });
                             } else {
-                                Swal.fire(
-                                    response.msg,
-                                    '',
-                                    'error'
-                                );
+                                Swal.fire({
+                                    title: response.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                });
                             }
                             $(btn).html("Save Employees").attr('disabled', false);
                             return;
                         }
-                        Swal.fire(
-                            response.msg,
-                            '',
-                            'success'
-                        )
+                        Swal.fire({
+                            title: response.msg,
+                            icon: 'success',
+                            confirmButtonText: "{{ __('OK') }}"
+                        })
                         $(btn).html("Save Employees").attr('disabled', false);
                     }
                 });

@@ -1,18 +1,18 @@
 function checkResponse(res) {
     if (res.status == 1) {
-        Swal.fire(
-            res.msg,
-            '',
-            'success'
-        ).then(function () {
+        Swal.fire({
+            title: res.msg,
+            icon: 'success',
+            confirmButtonText: alertMsgs.OK
+        }).then(function () {
             window.location.href = window.location.href
         })
     } else {
-        Swal.fire(
-            res.msg,
-            '',
-            'error'
-        ).then(function () {
+        Swal.fire({
+            title: res.msg,
+            icon: 'error',
+            confirmButtonText: alertMsgs.OK
+        } ).then(function () {
             window.location.href = window.location.href
         })
     }
@@ -93,7 +93,7 @@ function selectPhishingMaterial(checkbox) {
         selectedPhishingMaterial.push(checkbox.value);
 
         // Change the text inside the label
-        label.textContent = "Attack selected";
+        label.textContent = alertMsgs.attackSel;
 
         // Add the classes to the label
         label.classList.add('bg-primary', 'text-white');
@@ -125,7 +125,7 @@ function selectTrainingModule(checkbox) {
         selectedTrainings.push(checkbox.value);
 
         // Change the text inside the label
-        label.textContent = "Training selected";
+        label.textContent = alertMsgs.trainingSel;
 
         // Add the classes to the label
         label.classList.add('bg-primary', 'text-white');
@@ -619,7 +619,11 @@ function searchPhishingMaterial(searchValue) {
                 const htmlrows = prepareHtml(res.data);
                 $('#phishingEmailsCampModal').append(htmlrows);
             } else {
-                Swal.fire(res.msg, '', 'error');
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                });
             }
         }
     });
@@ -703,7 +707,7 @@ function completeAssignedTraining(btn, encodedTrainingId) {
 function removeAssignedTraining(btn, encodedTrainingId, trainingname, email) {
     Swal.fire({
         title: alertMsgs.title,
-        text: `This will remove the ${trainingname} training assigned to: ${email}`,
+        text: `{{ __('This will remove the :trainingname training assigned to :email', ['trainingname' => '${trainingname}', 'email' => '${email}']) }}`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e6533c',
@@ -747,11 +751,11 @@ function loadMorePhishingEmails(btn) {
         success: function (res) {
             // console.log(res)
             if (res.status !== 1) {
-                Swal.fire(
-                    res.msg,
-                    '',
-                    'error'
-                )
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                })
                 return;
             }
             if (res.data.length === 0) {
@@ -783,11 +787,11 @@ function loadMoreTrainings(btn) {
         success: function (res) {
             // console.log(res)
             if (res.status !== 1) {
-                Swal.fire(
-                    res.msg,
-                    '',
-                    'error'
-                )
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                })
                 return;
             }
             if (res.data.length === 0) {
@@ -890,7 +894,11 @@ function searchTrainingModule(searchValue) {
                 const htmlrows = prepareTrainingHtml(res.data);
                 $('#trainingModulesCampModal').append(htmlrows);
             } else {
-                Swal.fire(res.msg, '', 'error');
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                });
             }
         }
     });
@@ -948,11 +956,11 @@ function fetchTrainingByCategory(cat, type = 'static_training') {
         success: function (res) {
             // console.log(res)
             if (res.status !== 1) {
-                Swal.fire(
-                    res.msg,
-                    '',
-                    'error'
-                )
+                Swal.fire({
+                    title: res.msg,
+                    icon: 'error',
+                    confirmButtonText: alertMsgs.OK
+                } )
                 return;
             }
             if (res.data.length === 0) {

@@ -514,10 +514,10 @@
 
                     if (res.status === 0) {
                         Swal.fire({
-                            title: "Error!",
+                            title: "{{ __('Error!') }}",
                             text: res.msg,
                             icon: "error",
-                            confirmButtonText: "Ok"
+                            confirmButtonText: "{{ __('Ok') }}"
                         });
                         $("#preloader").hide();
                         return;
@@ -549,10 +549,10 @@
                     console.log(res);
                     if (res.status === 0) {
                         Swal.fire({
-                            title: "Error!",
+                            title: "{{ __('Error!') }}",
                             text: res.msg,
                             icon: "error",
-                            confirmButtonText: "Ok"
+                            confirmButtonText: "{{ __('Ok') }}"
                         });
                         $("#preloader").hide();
                         return;
@@ -585,12 +585,12 @@
         function confirmLanguage(lang, langCode) {
             Swal.fire({
                 title: "Are you sure?",
-                text: `This training will be changed to ${lang} language!`,
+                text: `{{ __('This training will be changed to :lang language!', ['lang' => '${lang}']) }}`,
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Change Language!"
+                confirmButtonText: "{{ __('Yes, Change Language!') }}"
             }).then((result) => {
                 if (result.isConfirmed) {
                     if (langCode !== 'en') {

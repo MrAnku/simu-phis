@@ -248,7 +248,7 @@
 
                 if (current_page == 'stepThree') {
                     if ($('input[name="training_module"]:checked').length === 0) {
-                        alert('Please select at least one training module');
+                        alert("{{ __('Please select at least one training module') }}");
                         return;
                     }
                     reviewForm();
@@ -396,7 +396,7 @@
                     selectedTrainings.push(checkbox.value);
 
                     // Change the text inside the label
-                    label.textContent = "Training selected";
+                    label.textContent = "{{ __('Training selected') }}";
 
                     // Add the classes to the label
                     label.classList.add('bg-primary', 'text-white');

@@ -56,7 +56,7 @@
                                                     </div>
 
                                                 </td>
-                                                
+
                                                 <td>{{ $request->agent_name }}</td>
                                                 <td>{{ $request->language ?? '' }}</td>
                                                 <td>
@@ -78,14 +78,14 @@
                                                         onclick="viewPrompt(`{{ base64_encode($request->id) }}`)"
                                                         class="btn btn-icon btn-primary-transparent rounded-pill btn-wave waves-effect waves-light">
                                                         <i class="ri-eye-line"></i> </button>
-                                                    
-                                                        
-                                                        <button
-                                                            onclick="deleteAgentRequest(`{{ base64_encode($request->id) }}`)"
-                                                            class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
-                                                            <i class="ri-delete-bin-line"></i>
-                                                        </button>
-                                                    
+
+
+                                                    <button
+                                                        onclick="deleteAgentRequest(`{{ base64_encode($request->id) }}`)"
+                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave waves-effect waves-light">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+
 
 
 
@@ -137,19 +137,17 @@
         <div class="my-2">
             <form action="{{ route('admin.aivishing.approveagent') }}" method="POST">
                 @csrf
-               
+
                 <div class="mb-3">
                     <label for="title" class="form-label">Agent Id<span class="text-danger">*</span></label>
-                    <input type="hidden" id="agent_name" name="agent_name"
-                        required>
-                    <input type="hidden" id="request_id" name="request_id"
-                        required>
+                    <input type="hidden" id="agent_name" name="agent_name" required>
+                    <input type="hidden" id="request_id" name="request_id" required>
                     <input type="text" class="form-control" name="agent_id" placeholder="Enter agent id" required>
                 </div>
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
-                
+
             </form>
         </div>
     </x-modal>
@@ -227,9 +225,8 @@
 
 
     @push('newscripts')
-
-    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
         <script>
             $('#allAgentsTable').DataTable({
                 language: {
@@ -246,15 +243,16 @@
                 $.get({
                     url: '/admin/ai-vishing/req-prompt/' + id,
                     success: function(data) {
-                         console.log(data);
+                        console.log(data);
                         $('#agent-name').val(data.agent_name);
                         $('#agent-lang').val(data.language);
                         $('#agent-prompt').val(data.prompt);
                         $('#agent_name').val(data.agent_name);
                         $('#request_id').val(data.id);
-                        if(data.status == 1){
+                        if (data.status == 1) {
                             $('#viewPromptModal button[type="submit"]').hide();
-                            $('#viewPromptModal input[name="agent_id"]').val(data.agent.agent_id).prop('disabled', true);
+                            $('#viewPromptModal input[name="agent_id"]').val(data.agent.agent_id).prop('disabled',
+                                true);
                         }
                         if (data.audio_file) {
                             // console.log("Audio file:", data.audio_file);
@@ -273,13 +271,13 @@
 
             function deleteAgent(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "If any campaign is using this agent, it will be deleted too!",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('If any campaign is using this agent, it will be deleted too!') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}",
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -290,20 +288,22 @@
                             },
                             success: function(data) {
                                 if (data.success) {
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'Agent has been deleted.',
-                                        'success'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Deleted') }}",
+                                        text: "{{ __('Agent has been deleted.') }}"
+                                        icon: 'success',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                     setTimeout(() => {
                                         location.reload();
                                     }, 1000);
                                 } else {
-                                    Swal.fire(
-                                        'Error!',
-                                        'Something went wrong.',
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Error!') }}",
+                                        text: "{{ __('Something went wrong.') }}"
+                                        icon: 'error',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                 }
                             }
                         })
@@ -313,13 +313,13 @@
 
             function deleteAgentRequest(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You want to delete!",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('You want to delete!') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -329,18 +329,20 @@
                             },
                             success: function(response) {
                                 if (response.success) {
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'Agent has been deleted.',
-                                        'success'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Deleted!') }}",
+                                        text: "{{ __('Agent has been deleted.') }}",
+                                        icon: 'success',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                     location.reload();
                                 } else {
-                                    Swal.fire(
-                                        'Error!',
-                                        'Something went wrong.',
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Error!') }}",
+                                        text: "{{ __('Something went wrong.') }}",
+                                        icon: 'error',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                 }
                             }
                         })
@@ -351,4 +353,4 @@
     @endpush
 
 
-    @endsection
+@endsection

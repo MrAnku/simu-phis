@@ -20,7 +20,8 @@
                 </div>
 
                 <div>
-                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3" onclick="syncTemps(this)">{{ __('Sync Templates') }}</button>
+                    <button class="btn btn-teal-light btn-border-start mx-2 mb-3"
+                        onclick="syncTemps(this)">{{ __('Sync Templates') }}</button>
 
                     <button class="btn btn-purple-light btn-border-start mb-3" data-bs-toggle="modal"
                         data-bs-target="#newtemplatesModal">{{ __('Request New Template') }}</button>
@@ -69,7 +70,8 @@
                                                     @if ($campaign->trainingData?->name !== null)
                                                         {{ $campaign->trainingData->name }}
                                                     @else
-                                                        <span class="text-muted"><small>{{ __('Simulated without training') }}</small></span>
+                                                        <span
+                                                            class="text-muted"><small>{{ __('Simulated without training') }}</small></span>
                                                     @endif
 
                                                 </td>
@@ -129,13 +131,15 @@
                             <label for="input-label" class="form-label">{{ __('Template name') }}<sup
                                     class="text-danger">*</sup></label>
                             <input type="text" name="temp_name" class="form-control" id="temp_name"
-                                placeholder="{{ __('Enter a unique name for your template i.e. alert_for_renewal') }}" required>
+                                placeholder="{{ __('Enter a unique name for your template i.e. alert_for_renewal') }}"
+                                required>
 
                         </div>
                         <div class="mb-3">
-                            <label for="temp_body" class="form-label">{{ __('Template Body') }}<sup class="text-danger">*</sup></label>
+                            <label for="temp_body" class="form-label">{{ __('Template Body') }}<sup
+                                    class="text-danger">*</sup></label>
                             <textarea class="form-control" name="temp_body" id="text-area" rows="5" style="height: 106px;"
-                                placeholder="Hi @{{ var }} .....your content......@{{ var }}....Please click the link below to get started @{{ var }}"
+                                placeholder="{{ __('Hi') }} @{{ var }} {{ __('.....your content......') }} @{{ var }}  .... {{ __('Please click the link below to get started') }}  @{{ var }}"
                                 required></textarea>
 
 
@@ -144,15 +148,15 @@
                             <ul>
                                 <li>
                                     <small>
-                                        Add <span class="text-secondary">@{{ var }}</span> for variable. For
-                                        example Hello <span class="text-secondary">@{{ var }}</span> {{ __('Thank you
-                                        for choosing our services.') }}
+                                        {{ __('Add') }} <span class="text-secondary">@{{ var }}</span> {{ __('for variable.') }} {{ __('For example Hello') }} <span class="text-secondary">@{{ var }}</span>
+                                        {{ __('Thank you for choosing our services.') }}
                                     </small>
                                 </li>
                                 <li>
                                     <small>
                                         {{ __('Please add minimum 3 and maximum 4 variables in which the') }} <span
-                                            class="text-secondary">{{ __('first and last variable will be reserved') }}</span> {{ __('for Employee name and campaign url.') }}
+                                            class="text-secondary">{{ __('first and last variable will be reserved') }}</span>
+                                        {{ __('for Employee name and campaign url.') }}
                                     </small>
                                 </li>
                             </ul>
@@ -161,7 +165,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Request Template') }}</button>
+                            <button type="submit"
+                                class="btn btn-primary mt-3 btn-wave waves-effect waves-light">{{ __('Request Template') }}</button>
                         </div>
                     </form>
                 </div>
@@ -181,8 +186,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="input-label" class="form-label">{{ __('Campaign name') }}<sup class="text-danger">*</sup></label>
-                        <input type="text" class="form-control" id="camp_name" placeholder="{{ __('Template name') }}" required>
+                        <label for="input-label" class="form-label">{{ __('Campaign name') }}<sup
+                                class="text-danger">*</sup></label>
+                        <input type="text" class="form-control" id="camp_name"
+                            placeholder="{{ __('Template name') }}" required>
 
                     </div>
                     <div class="mb-3">
@@ -741,19 +748,19 @@
 
             function checkResponse(res) {
                 if (res.status == 1) {
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'success'
-                    ).then(function() {
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'success',
+                        confirmButtonText: "{{ __('OK') }}"
+                    }).then(function() {
                         window.location.href = window.location.href
                     })
                 } else {
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'error'
-                    ).then(function() {
+                    Swal.fire({
+                        title: res.msg,
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    }).then(function() {
                         window.location.href = window.location.href
                     })
                 }
@@ -762,13 +769,13 @@
             function deleteCamp(campid) {
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "The campaign will be deleted with their report.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('The campaign will be deleted with their report.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -833,21 +840,21 @@
                     url: '/whatsapp-sync-templates',
                     success: function(res) {
                         if (res.success) {
-                            Swal.fire(
-                                res.success,
-                                '',
-                                'success'
-                            ).then(function() {
+                            Swal.fire({
+                                title: res.success,
+                                icon: 'success',
+                                confirmButtonText: "{{ __('OK') }}"
+                            }).then(function() {
                                 window.location.href = window.location.href
                             })
 
                         } else {
                             console.log(res);
-                            Swal.fire(
-                                res.error,
-                                '',
-                                'error'
-                            ).then(function() {
+                            Swal.fire({
+                                title: res.error,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            }).then(function() {
                                 window.location.href = window.location.href
                             })
                         }

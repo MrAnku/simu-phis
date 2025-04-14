@@ -282,7 +282,10 @@
                 daysUntiDue: "{{ __('Please enter days until due') }}",
                 daysUntilGreater: "{{ __('Days until due must be greater than 0') }}",
                 selTrainMod: "{{ __('Please select training module') }}",
-                fillAllReq: "{{ __('Please fill all required fields!') }}"
+                fillAllReq: "{{ __('Please fill all required fields!') }}",
+                attackSel : "{{ __('Attack selected') }}",
+                OK: "{{ __('OK') }}",
+                trainingSel: "{{ __('Training selected') }}"
             };
         </script>
         {{-- All Alert's lang conversion of js file --}}

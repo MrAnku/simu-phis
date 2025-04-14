@@ -139,23 +139,23 @@
             function approveCompany(btn, id) {
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "After approval the company will be able to login and shoot campaign.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('After approval the company will be able to login and shoot campaign.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Approve'
+                    confirmButtonText: "{{ __('Approve') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $(btn).html("Please Wait...")
+                        $(btn).html("{{ __('Please Wait...') }}")
                         $.post({
                             url: '/admin/companies/approve',
                             data: {
                                 "companyId": id
                             },
                             success: function(res) {
-                                $(btn).html("Approve")
+                                $(btn).html("{{ __('Approve') }}")
 
                                 checkResponse(res);
 
@@ -169,23 +169,23 @@
 
             function rejectCompany(btn, id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Are you sure for rejecting this company approval.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Are you sure for rejecting this company approval.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Reject'
+                    confirmButtonText: "{{ __('Reject') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $(btn).html("Please Wait...")
+                        $(btn).html("{{ __('Please Wait...') }}")
                         $.post({
                             url: '/admin/companies/reject',
                             data: {
                                 "companyId": id
                             },
                             success: function(res) {
-                                $(btn).html("Reject")
+                                $(btn).html("{{ __('Reject') }}")
 
                                 checkResponse(res);
 
@@ -231,19 +231,19 @@
         <script>
             function checkResponse(res) {
                 if (res.status == 1) {
-                    Swal.fire(
-                        res.msg,
-                        '',
-                        'success'
-                    ).then(function() {
+                    Swal.fire({
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                }).then(function() {
                         window.location.href = window.location.href
                     })
                 } else {
-                    Swal.fire(
-                        'Something went wrong...',
-                        '',
-                        'error'
-                    ).then(function() {
+                    Swal.fire({
+                                    title: "{{ __('Something went wrong!') }}",
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                }).then(function() {
                         window.location.href = window.location.href
                     })
                 }

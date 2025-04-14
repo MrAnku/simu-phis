@@ -331,8 +331,8 @@
         <script>
             function deleteWebsite(webId, filename) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Are you sure you want to delete this website?",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('Are you sure you want to delete this website?') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',

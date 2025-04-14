@@ -53,8 +53,9 @@
 
                                     <form method="GET" action="{{ route('quishing.emails') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="{{ __('Search Template...') }}" aria-label="Example text with button addon"
-                                            aria-describedby="button-addon1" value="{{ request('search') }}">
+                                            placeholder="{{ __('Search Template...') }}"
+                                            aria-label="Example text with button addon" aria-describedby="button-addon1"
+                                            value="{{ request('search') }}">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">
                                             <i class="ri-search-line"></i>
@@ -82,13 +83,17 @@
                                             <div class="card-body htmlPhishingGrid" id="qmailBody{{ $pemail->id }}">
 
                                                 @if ($pemail->difficulty == 'easy')
-                                                    <span class="badge bg-outline-success difficulty">{{ __('Easy') }}</span>
+                                                    <span
+                                                        class="badge bg-outline-success difficulty">{{ __('Easy') }}</span>
                                                 @elseif ($pemail->difficulty == 'medium')
-                                                    <span class="badge bg-outline-warning difficulty">{{ __('Medium') }}</span>
+                                                    <span
+                                                        class="badge bg-outline-warning difficulty">{{ __('Medium') }}</span>
                                                 @elseif ($pemail->difficulty == 'hard')
-                                                    <span class="badge bg-outline-danger difficulty">{{ __('Hard') }}</span>
+                                                    <span
+                                                        class="badge bg-outline-danger difficulty">{{ __('Hard') }}</span>
                                                 @else
-                                                    <span class="badge bg-outline-secondary difficulty">{{ __('Unknown') }}</span>
+                                                    <span
+                                                        class="badge bg-outline-secondary difficulty">{{ __('Unknown') }}</span>
                                                 @endif
 
 
@@ -208,13 +213,13 @@
 
             function deleteETemplate(id) {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "If this template is used in any campaign, it will be removed from the campaign as well.",
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('If this template is used in any campaign, it will be removed from the campaign as well.') }}",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonText: "{{ __('Yes, delete it!') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -224,20 +229,22 @@
                             },
                             success: function(res) {
                                 if (res.success) {
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'Template has been deleted.',
-                                        'success'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Deleted!') }}",
+                                        text: "{{ __('Template has been deleted.') }}",
+                                        icon: 'success',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                     setTimeout(() => {
                                         location.reload();
                                     }, 1000);
                                 } else {
-                                    Swal.fire(
-                                        'Error!',
-                                        res.error,
-                                        'error'
-                                    )
+                                    Swal.fire({
+                                        title: "{{ __('Error!') }}",
+                                        text: res.error,
+                                        icon: 'error',
+                                        confirmButtonText: "{{ __('OK') }}"
+                                    })
                                 }
                             }
                         })
