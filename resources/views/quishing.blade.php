@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Quishing - Phishing awareness training program')
+@section('title', __('Quishing') . ' - ' . __('Phishing awareness training program'))
 
 @section('main-content')
 

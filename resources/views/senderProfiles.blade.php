@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Sender Profiles - Phishing awareness training program')
+@section('title', __('Sender Profiles') . ' - ' . __('Phishing awareness training program'))
 
 @section('main-content')
 
@@ -45,7 +45,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($senderProfile->company_id == 'default')
-                                                        {{ $companyName . ' Managed' }}
+                                                        {{ __($companyName . ' Managed') }}
                                                     @else
                                                         {{ 'Custom' }}
                                                     @endif

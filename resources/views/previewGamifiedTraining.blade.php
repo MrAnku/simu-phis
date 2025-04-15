@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon">
-    <title>Gamified Training Preview</title>
+    <title>{{__('Gamified Training Preview')}}</title>
     <style>
         body {
             font-family: Arial, sans-serif;

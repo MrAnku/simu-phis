@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'WhatsApp Campaign- Phishing awareness training program')
+@section('title', __('WhatsApp Campaign') . ' - ' . __('Phishing awareness training program'))
 
 @section('main-content')
 
