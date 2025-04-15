@@ -833,7 +833,7 @@
                                         <p class="font-monospace mb-0">${element.call_id}</p>
                                     </td>
                                     <td>
-                                        <span class="badge bg-outline-${element.training_assigned == 1 ? 'success' : 'danger'}">${element.training_assigned == 1 ? 'Yes' : 'No'}</span>
+                                        <span class="badge bg-outline-${element.training_assigned == 1 ? 'success' : 'danger'}">${element.training_assigned == 1 ? "{{__('Yes')}}" : "{{__('No')}}"}</span>
                                     </td>
                                     <td>
                                         <span class="badge bg-${(element.status === 'waiting' || element.status === 'pending') ? 'warning' : 'success'}">${capitalizeFirstLetter(element.status)}</span>
