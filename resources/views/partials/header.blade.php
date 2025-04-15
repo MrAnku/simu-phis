@@ -120,11 +120,11 @@
 <div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('setGlobalLocale') }}" method="post">
+            <form action="{{ route('setGlobalLocale') }}" method="POST">
                 @csrf
                 <div class="modal-body p-4">
                     <label class="form-label fs-16">{{ __('Select Language') }}</label>
-                    <select class="form-control" id="languageSelect" name="language" data-trigger>
+                    <select class="form-control" name="language">
                         <option {{ Auth::user()->lang == "en" ? 'selected' : '' }} value="en">{{ __('English (En)') }}</option>
                         <option {{ Auth::user()->lang == "ar" ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}</option>
                         <option {{ Auth::user()->lang == "ru" ? 'selected' : '' }} value="ru">{{ __('Русский (RU)') }}</option>
