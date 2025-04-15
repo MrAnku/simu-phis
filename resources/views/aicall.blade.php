@@ -192,7 +192,7 @@
                 <h5 class="offcanvas-title" id="callDetailOffCanvasLabel1">{{ __('Call Detail') }}
                 </h5>
                 @if (app()->getLocale() !== 'en')
-                    <button onclick="translateCallDetail(this, '{{app()->getLocale()}}')" class="btn btn-sm btn-primary me-3">Translate in
+                    <button id="translateBtn" onclick="translateCallDetail(this, '{{app()->getLocale()}}')" class="btn btn-sm btn-primary me-3">Translate in
                         {{ strtoupper(app()->getLocale()) }}</button>
                 @endif
 
@@ -899,6 +899,9 @@
 
             function fetchCallDetail(callid, training) {
                 // console.log(callid)
+                if ($("#translateBtn").length) {
+                    $("#translateBtn").show();
+                }
                 $("#placeholder").show();
                 $.get({
                     url: "/ai-calling/fetch-call-report/" + callid,
@@ -1179,6 +1182,7 @@
                         if(res.status == 1){
                             $("#call_detail").html(res.html);
                             $(btn).text('Translate').removeClass('disabled');
+                            $(btn).hide();
                         }else{
                             Swal.fire({
                                 icon: 'error',
