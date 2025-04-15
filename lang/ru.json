@@ -999,5 +999,13 @@
     "TOTAL CAMPAIGNS": "ВСЕГО КАМПАНИЙ",
     "TOTAL TRAININGS": "ВСЕГО ОБУЧЕНИЙ",
     "Employee Security Score": "Оценка безопасности сотрудника",
-    "Secured from doing the malicious activity": "Защищён от вредоносной активности"
+    "Secured from doing the malicious activity": "Защищён от вредоносной активности",
+    "Employee": "Сотрудник",
+    "Mobile No.": "Мобильный номер",
+    "Call ID": "Идентификатор звонка",
+    "No data available in table": "Нет данных в таблице",
+    "Phishing Website": "Фишинговый сайт",
+    "Phishing Email": "Фишинговое письмо",
+    "Please add at least one training.": "Пожалуйста, добавьте хотя бы одно обучение."
+
 }

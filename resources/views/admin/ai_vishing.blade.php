@@ -297,7 +297,7 @@
                             success: function(data) {
                                 if (data.success) {
                                     Swal.fire({
-                                        title: "{{ __('Deleted') }}",
+                                        title: "{{ __('Deleted!') }}",
                                         text: "{{ __('Agent has been deleted.') }}"
                                         icon: 'success',
                                         confirmButtonText: "{{ __('OK') }}"

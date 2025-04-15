@@ -82,7 +82,7 @@
 
                                                     </td>
                                                     <td>
-                                                        {{ $campaign->trainingName->name ?? 'Only Phishing' }}
+                                                        {{ $campaign->trainingName->name ?? __('Only Phishing') }}
 
 
                                                     </td>
@@ -779,7 +779,8 @@
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Delete'
+                    confirmButtonText: "{{ __('Delete') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
@@ -808,12 +809,12 @@
                                     <th scope="row">${response.campaign_name}</th>
                                     <td>${response.emp_grp_name}</td>
                                     <td>${response.ai_agent_name}</td>
-                                    <td id="assigned_training_name">${response.training_name?.name ?? '<em>Only Phishing</em>'}</td>
+                                    <td id="assigned_training_name">${response.training_name?.name ?? '<em>{{ __('Only Phishing') }}</em>'}</td>
                                     <td>
                                         <span class="badge bg-outline-primary">${response.phone_no}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-${(response.status === 'pending') ? 'warning' : 'success'}">${capitalizeFirstLetter(response.status)}</span>
+                                        <span class="badge bg-${(response.status === 'pending') ? 'warning' : 'success'}">${(capitalizeFirstLetter(response.status))}</span>
                                     </td>
                                 </tr>`;
 

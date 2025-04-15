@@ -186,10 +186,10 @@
                                                                                 <td>
                                                                                     @if ($camp->status == 'running' || $camp->status == 'completed')
                                                                                         <span
-                                                                                            class="badge bg-success">{{ ucfirst($camp->status) }}</span>
+                                                                                            class="badge bg-success">{{ __(ucfirst($camp->status)) }}</span>
                                                                                     @else
                                                                                         <span
-                                                                                            class="badge bg-warning">{{ ucfirst($camp->status) }}</span>
+                                                                                            class="badge bg-warning">{{ __(ucfirst($camp->status)) }}</span>
                                                                                     @endif
                                                                                 </td>
                                                                                 <td>{{ $camp->scheduled_date }}</td>
@@ -633,10 +633,10 @@
                                                                                 <td>
                                                                                     @if ($ccamp->status == 'running' || $ccamp->status == 'completed')
                                                                                         <span
-                                                                                            class="badge bg-success">{{ ucfirst($ccamp->status) }}</span>
+                                                                                            class="badge bg-success">{{ __(ucfirst($ccamp->status)) }}</span>
                                                                                     @else
                                                                                         <span
-                                                                                            class="badge bg-warning">{{ ucfirst($ccamp->status) }}</span>
+                                                                                            class="badge bg-warning">{{ __(ucfirst($ccamp->status)) }}</span>
                                                                                     @endif
                                                                                 </td>
                                                                                 <td>{{ $ccamp->created_at }}</td>
@@ -648,7 +648,7 @@
                                                                                     {{ $ccamp->ai_agent_name }}
                                                                                 </td>
                                                                                 <td>
-                                                                                    {{ $ccamp->trainingName->name ?? 'Only Phishing' }}
+                                                                                    {{ $ccamp->trainingName->name ?? __('Only Phishing') }}
                                                                                     {{-- {{ $campaign->trainingName->name ?? 'Only Phishing' }} --}}
                                                                                 </td>
                                                                                 <td>
@@ -878,10 +878,10 @@
                                                                                 <td>
                                                                                     @if ($tccamps->status == 'running' || $tccamps->status == 'completed')
                                                                                         <span
-                                                                                            class="badge bg-success">{{ ucfirst($tccamps->status) }}</span>
+                                                                                            class="badge bg-success">{{ __(ucfirst($tccamps->status)) }}</span>
                                                                                     @else
                                                                                         <span
-                                                                                            class="badge bg-warning">{{ ucfirst($tccamps->status) }}</span>
+                                                                                            class="badge bg-warning">{{ __(ucfirst($tccamps->status)) }}</span>
                                                                                     @endif
                                                                                 </td>
                                                                                 <td>{{ $tccamps->launch_time }}</td>
@@ -893,7 +893,7 @@
                                                                                     {{ $tccamps->email_lang }}
                                                                                 </td>
                                                                                 <td>
-                                                                                    {{ $tccamps->tprm_report->campaign_name ?? 'Only Phishing' }}
+                                                                                    {{ $tccamps->tprm_report->campaign_name ?? __('Only Phishing') }}
                                                                                     {{-- {{ $campaign->trainingName->name ?? 'Only Phishing' }} --}}
                                                                                 </td>
                                                                                 {{-- <td>
@@ -2217,7 +2217,7 @@
                         <td>${response.camp_type}</td>
                         <td>
                             <span class="badge bg-primary-transparent">
-                                ${response.training_data?.name ?? "Only Phishing"}
+                                ${response.training_data?.name ?? {{ __('Only Phishing') }}}
                             </span>                            
                         </td>
                         <td>

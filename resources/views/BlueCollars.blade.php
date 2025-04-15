@@ -219,7 +219,7 @@
                 cancelBtnText: "{{ __('Cancel') }}",
                 noUsersSel: "{{ __('No users selected!') }}",
                 deletedUserText: "{{ __('Employee has been deleted successfully.') }}",
-                deletedTitle: "{{ __('Deleted') }}",
+                deletedTitle: "{{ __('Deleted!') }}",
                 somethingWrong: "{{ __('Something went wrong!') }}",
                 error: "{{ __('Error') }}",
                 noEmp: "{{ __('No employees available in this group!') }}",

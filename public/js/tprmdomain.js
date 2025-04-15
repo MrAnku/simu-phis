@@ -298,7 +298,7 @@ function deleteDomain(id) {
 
                     if (response.status == 1) {
                         Swal.fire({
-                            title: "{{ __('Deleted!') }}",
+                            title: alertMsgs.deleteBtnText,
                             icon: 'success',
                             confirmButtonText: alertMsgs.OK
                         })

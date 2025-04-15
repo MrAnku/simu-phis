@@ -1354,7 +1354,7 @@
 
             // Only show the "Remove" button for the most recently added email
             li.innerHTML +=
-                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')">Remove</button>`;
+                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')">{{ __('Remove') }}</button>`;
             emailList.appendChild(li);
 
             // Add the email to the recently added emails array
@@ -1401,7 +1401,7 @@
                         const removeButton = li.querySelector('.btn-danger');
                         if (!removeButton) {
                             li.innerHTML +=
-                                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')""{{ __('Remov') }}"</button>`;
+                                `<button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeEmail('${email}')""{{ __('Remove') }}"</button>`;
                         }
                     } else {
                         // Hide the "Remove" button for emails that are not the most recently added
@@ -1653,7 +1653,7 @@
             domainList.innerHTML = domains
                 .map((domain, index) => `<li class="list-group-item d-flex justify-content-between">
                                ${domain}
-                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">Remov') }}"</button>
+                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">{{ __('Remove') }}"</button>
                              </li>`)
                 .join("");
         }
@@ -1950,7 +1950,7 @@
                 deleteGroupText: "{{ __('If this group is assigned with any live campaign then the campaign will be deleted. Are you sure ?') }}",
                 deleteUserText: "{{ __('This user will be deleted from Live campaign or scheduled campaign. And if this user has assigned any training then the learning account will be deleted.') }}",
                 deleteDomainText: "{{ __('All employees will be deleted whose email associated with this domain.') }}",
-                deleteBtnText: "{{ __('Delete') }}",
+                deleteBtnText: "{{ __('Deleted!') }}",
                 cancelBtnText: "{{ __('Cancel') }}",
                 OK: "{{ __('OK') }}",
                 noEmp: "{{ __('No employees available in this group!') }}"
