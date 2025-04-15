@@ -157,8 +157,12 @@
 
                                 <div class="mt-3">
                                     <h5 class="text-lg-start fw-semibold mb-1">{{ __('What is AI Calling?') }}</h5>
-                                    <p class=" text-muted">{{ __('AI calling feature refers to the use of artificial intelligence to automate phone calls, either by generating human-like voice responses or conducting conversations with users. These systems can handle tasks like customer service, appointment scheduling, or even interactive voice response (IVR) systems, simulating real human interaction.') }}</p>
-                                    <p class=" text-muted">{{ __('In phishing, AI calling can be misused to carry out voice phishing (vishing) attacks. Fraudsters can use AI-generated calls to impersonate trusted entities (e.g., banks, government agencies) and deceive victims into providing sensitive information such as passwords, credit card details, or personal identification numbers, without the need for a human operator. The realism and scale of AI-powered calls make these attacks more convincing and harder to detect.') }}</p>
+                                    <p class=" text-muted">
+                                        {{ __('AI calling feature refers to the use of artificial intelligence to automate phone calls, either by generating human-like voice responses or conducting conversations with users. These systems can handle tasks like customer service, appointment scheduling, or even interactive voice response (IVR) systems, simulating real human interaction.') }}
+                                    </p>
+                                    <p class=" text-muted">
+                                        {{ __('In phishing, AI calling can be misused to carry out voice phishing (vishing) attacks. Fraudsters can use AI-generated calls to impersonate trusted entities (e.g., banks, government agencies) and deceive victims into providing sensitive information such as passwords, credit card details, or personal identification numbers, without the need for a human operator. The realism and scale of AI-powered calls make these attacks more convincing and harder to detect.') }}
+                                    </p>
                                 </div>
                                 <div class="mt-3">
 
@@ -184,8 +188,16 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="callDetailOffCanvas"
         aria-labelledby="callDetailOffCanvasLabel1">
         <div class="offcanvas-header border-bottom border-block-end-dashed">
-            <h5 class="offcanvas-title" id="callDetailOffCanvasLabel1">{{ __('Call Detail') }}
-            </h5>
+            <div class="d-flex justify-content-between w-100">
+                <h5 class="offcanvas-title" id="callDetailOffCanvasLabel1">{{ __('Call Detail') }}
+                </h5>
+                @if (app()->getLocale() !== 'en')
+                    <button onclick="translateCallDetail(this, '{{app()->getLocale()}}')" class="btn btn-sm btn-primary me-3">Translate in
+                        {{ strtoupper(app()->getLocale()) }}</button>
+                @endif
+
+            </div>
+
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-3">
@@ -340,7 +352,8 @@
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="phone-tab" data-bs-toggle="tab" data-bs-target="#phone"
                                         type="button" role="tab" aria-controls="shipped-tab"
-                                        aria-selected="false"><i class="ri-phone-line me-2 align-middle"></i>{{ __('AI Agent & Phone') }}</button>
+                                        aria-selected="false"><i
+                                            class="ri-phone-line me-2 align-middle"></i>{{ __('AI Agent & Phone') }}</button>
                                 </li>
 
                             </ul>
@@ -355,14 +368,17 @@
                                             <div class="row">
                                                 <div class="col-lg-6">
                                                     <div class="input-group mb-3">
-                                                        <span class="input-group-text" id="basic-addon1">{{ __('Campaign Name') }}</span>
+                                                        <span class="input-group-text"
+                                                            id="basic-addon1">{{ __('Campaign Name') }}</span>
                                                         <input type="text" class="form-control" id="campaignName"
-                                                            name="camp_name" placeholder="{{ __('Enter Campaign name') }}">
+                                                            name="camp_name"
+                                                            placeholder="{{ __('Enter Campaign name') }}">
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-6">
                                                     <div class="input-group mb-3">
-                                                        <label class="input-group-text" for="emp_group">{{ __('Employee Group') }}</label>
+                                                        <label class="input-group-text"
+                                                            for="emp_group">{{ __('Employee Group') }}</label>
                                                         <select class="form-select" id="emp_group" name="emp_group">
                                                             <option value="" selected>{{ __('Choose...') }}</option>
                                                             @forelse ($empGroups as $empGroup)
@@ -399,14 +415,16 @@
                                                 </div>
                                             </div>
                                             <div class="text-center" id="notemsg" style="display: none;">
-                                                <p class="mb-0"><em>{{ __('This Campaign will be triggered without training.') }}</em>
+                                                <p class="mb-0">
+                                                    <em>{{ __('This Campaign will be triggered without training.') }}</em>
                                                 </p>
                                             </div>
                                             <div id="training_grids">
                                                 <div class="d-flex justify-content-between pb-1">
                                                     <div class="d-flex gap-2">
                                                         <div>
-                                                            <label for="input-label" class="form-label">{{ __('Language') }}</label>
+                                                            <label for="input-label"
+                                                                class="form-label">{{ __('Language') }}</label>
 
                                                             <select class="form-select" name="training_lang"
                                                                 id="training_lang">
@@ -417,11 +435,13 @@
                                                                 <option value="bg">{{ __('Bulgarian') }}</option>
                                                                 <option value="ca">{{ __('Catalan') }}</option>
                                                                 <option value="zh">{{ __('Chinese') }}</option>
-                                                                <option value="zt">{{ __('Chinese (traditional)') }}</option>
+                                                                <option value="zt">{{ __('Chinese (traditional)') }}
+                                                                </option>
                                                                 <option value="cs">{{ __('Czech') }}</option>
                                                                 <option value="da">{{ __('Danish') }}</option>
                                                                 <option value="nl">{{ __('Dutch') }}</option>
-                                                                <option value="en" selected="">{{ __('English') }}</option>
+                                                                <option value="en" selected="">{{ __('English') }}
+                                                                </option>
                                                                 <option value="eo">{{ __('Esperanto') }}</option>
                                                                 <option value="et">{{ __('Estonian') }}</option>
                                                                 <option value="fi">{{ __('Finnish') }}</option>
@@ -457,13 +477,16 @@
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label for="input-label" class="form-label">{{ __('Training Type') }}</label>
+                                                            <label for="input-label"
+                                                                class="form-label">{{ __('Training Type') }}</label>
 
                                                             <select class="form-select" name="training_type"
                                                                 id="training_type">
-                                                                
-                                                                <option value="static_training">{{ __('Static Training') }}</option>
-                                                                <option value="ai_training">{{ __('AI Training') }}</option>
+
+                                                                <option value="static_training">
+                                                                    {{ __('Static Training') }}</option>
+                                                                <option value="ai_training">{{ __('AI Training') }}
+                                                                </option>
                                                             </select>
                                                         </div>
 
@@ -471,7 +494,8 @@
 
                                                     <div>
 
-                                                        <label for="t_moduleSearch" class="form-label">{{ __('Search') }}</label>
+                                                        <label for="t_moduleSearch"
+                                                            class="form-label">{{ __('Search') }}</label>
                                                         <input type="text" class="form-control" id="t_moduleSearch"
                                                             placeholder="{{ __('Search template') }}">
 
@@ -539,9 +563,11 @@
                                             <div class="row">
                                                 <div class="col-lg-6">
                                                     <div class="input-group mb-3">
-                                                        <label class="input-group-text" for="ai_agents">{{ __('AI Agent') }}</label>
+                                                        <label class="input-group-text"
+                                                            for="ai_agents">{{ __('AI Agent') }}</label>
                                                         <select class="form-select" id="ai_agent" name="ai_agent">
-                                                            <option value="" selected>{{ __('Choose...') }}</option>
+                                                            <option value="" selected>{{ __('Choose...') }}
+                                                            </option>
                                                             @forelse ($agents as $agent)
                                                                 <option value="{{ $agent['agent_id'] }}">
                                                                     {{ $agent['agent_name'] }}</option>
@@ -556,9 +582,11 @@
                                                 </div>
                                                 <div class="col-lg-6">
                                                     <div class="input-group mb-3">
-                                                        <label class="input-group-text" for="ai_phones">{{ __('Phone Number') }}</label>
+                                                        <label class="input-group-text"
+                                                            for="ai_phones">{{ __('Phone Number') }}</label>
                                                         <select class="form-select" id="ai_phones" name="ai_phone">
-                                                            <option value="" selected>{{ __('Choose...') }}</option>
+                                                            <option value="" selected>{{ __('Choose...') }}
+                                                            </option>
                                                             @forelse ($phone_numbers as $phone_number)
                                                                 <option value="{{ $phone_number['phone_number'] }}">
                                                                     {{ $phone_number['phone_number'] }}</option>
@@ -606,21 +634,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-               
+
                 <div class="modal-body">
 
                     <div class="card-body">
-                        <form method="post" enctype="multipart/form-data" action="{{ route('ai.calling.agent.req') }}">
+                        <form method="post" enctype="multipart/form-data"
+                            action="{{ route('ai.calling.agent.req') }}">
                             @csrf
                             <div class="mb-3">
-                                <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Enter agent name') }} <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="agent-name" name="agent_name" placeholder="{{ __('Enter agent name') }}">
+                                <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Enter agent name') }}
+                                    <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="agent-name" name="agent_name"
+                                    placeholder="{{ __('Enter agent name') }}">
                             </div>
                             <div class="mb-3">
-                                <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Language') }} <span class="text-danger">*</span></label>
+                                <label for="agent-name" class="form-label fs-14 text-dark">{{ __('Language') }} <span
+                                        class="text-danger">*</span></label>
                                 <select name="language" id="language" class="form-select">
                                     <option value="English (UK)">{{ __('English (UK)') }}</option>
-                                    <option value="Multilingual (English and Spanish)">{{ __('Multilingual (English and Spanish)') }}</option>
+                                    <option value="Multilingual (English and Spanish)">
+                                        {{ __('Multilingual (English and Spanish)') }}</option>
                                     <option value="Spanish (Latin America)">{{ __('Spanish (Latin America)') }}</option>
                                     <option value="Spanish (Spain)">{{ __('Spanish (Spain)') }}</option>
                                     <option value="English (India)">{{ __('English (India)') }}</option>
@@ -639,34 +672,38 @@
                                     <option value="Turkish">{{ __('Turkish') }}</option>
                                     <option value="Vietnamese">{{ __('Vietnamese') }}</option>
                                     <option value="Romanian">{{ __('Romanian') }}</option>
-                                    
+
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="agent-prompt" class="form-label fs-14 text-dark">{{ __('Enter prompt') }} <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5" placeholder="{{ __('Enter the prompt/instruction for the AI agent to interact with or ask something from your employees.') }}"></textarea>
+                                <label for="agent-prompt" class="form-label fs-14 text-dark">{{ __('Enter prompt') }}
+                                    <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="agent_prompt" id="agent-prompt" rows="5"
+                                    placeholder="{{ __('Enter the prompt/instruction for the AI agent to interact with or ask something from your employees.') }}"></textarea>
                                 <small class="text-muted mt-2">{{ __('Kindly type your prompt in english.') }}</small>
                             </div>
                             <div class="mb-3 d-flex justify-content-center">
                                 <div class="form-check form-check-md form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch"
-                                        id="enable-deepfake">
-                                    <label class="form-check-label" for="enable-deepfake">{{ __('Enable Deepfake (optional)') }}</label>
+                                    <input class="form-check-input" type="checkbox" role="switch" id="enable-deepfake">
+                                    <label class="form-check-label"
+                                        for="enable-deepfake">{{ __('Enable Deepfake (optional)') }}</label>
                                 </div>
                                 <div>
                                     <small class="text-muted"></small>
                                 </div>
                             </div>
                             <div class="mb-3" style="display: none;" id="deepfake-audio">
-                                <label for="formFileSm" class="form-label">{{ __('Select your voice audio (.mp3|.aac|.wav)') }}</label>
-                                <input class="form-control form-control-sm" id="formFileSm" name="deepfake_audio" type="file">
+                                <label for="formFileSm"
+                                    class="form-label">{{ __('Select your voice audio (.mp3|.aac|.wav)') }}</label>
+                                <input class="form-control form-control-sm" id="formFileSm" name="deepfake_audio"
+                                    type="file">
                             </div>
                             <div class="mb-3 text-end">
                                 <button type="submit" class="btn btn-primary btn-wave">{{ __('Submit') }}</button>
                             </div>
                         </form>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -833,7 +870,7 @@
                                         <p class="font-monospace mb-0">${element.call_id}</p>
                                     </td>
                                     <td>
-                                        <span class="badge bg-outline-${element.training_assigned == 1 ? 'success' : 'danger'}">${element.training_assigned == 1 ? "{{__('Yes')}}" : "{{__('No')}}"}</span>
+                                        <span class="badge bg-outline-${element.training_assigned == 1 ? 'success' : 'danger'}">${element.training_assigned == 1 ? "{{ __('Yes') }}" : "{{ __('No') }}"}</span>
                                     </td>
                                     <td>
                                         <span class="badge bg-${(element.status === 'waiting' || element.status === 'pending') ? 'warning' : 'success'}">${capitalizeFirstLetter(element.status)}</span>
@@ -867,12 +904,12 @@
                     url: "/ai-calling/fetch-call-report/" + callid,
                     success: function(res) {
                         let fell_in_simulation = false;
-                        if(res.transcript_with_tool_calls){
-                            
+                        if (res.transcript_with_tool_calls) {
+
                             res.transcript_with_tool_calls.forEach(element => {
-                                if(element.role == 'tool_call_invocation'){
+                                if (element.role == 'tool_call_invocation') {
                                     const func = JSON.parse(element.arguments);
-                                    if(func.fell_for_simulation){
+                                    if (func.fell_for_simulation) {
                                         fell_in_simulation = true;
                                     }
                                 }
@@ -907,8 +944,8 @@
                 <div>
 
                     ${(res.call_status == 'ended' && !fell_in_simulation) ? `<audio id="recording_audio" controls='' class='h-11 w-[258px]'
-                                                                                                                src='${res.recording_url}'>Your
-                                                                                                                browser does not support the audio element.</audio>` : ''}
+                                                                                                                        src='${res.recording_url}'>Your
+                                                                                                                        browser does not support the audio element.</audio>` : ''}
                 
                     
                 </div>
@@ -1126,6 +1163,33 @@
                     $("#deepfake-audio").slideUp();
                 }
             });
+        </script>
+        <script>
+            function translateCallDetail(btn, lang) {
+                $(btn).text('Translating...').addClass('disabled');
+                const html = $('#call_detail').html();
+                $.post({
+                    url: '/ai-calling/translate-call-detail',
+                    data: {
+                        html,
+                        lang
+                    },
+                    success: function(res) {
+
+                        if(res.status == 1){
+                            $("#call_detail").html(res.html);
+                            $(btn).text('Translate').removeClass('disabled');
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: "{{ __('Error') }}",
+                                text: "{{ __('Something went wrong:') }}",
+                            })
+                            $(btn).text('Translate').removeClass('disabled');
+                        }
+                    }
+                })
+            }
         </script>
     @endpush
 

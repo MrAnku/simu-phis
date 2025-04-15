@@ -361,4 +361,49 @@ class AicallController extends Controller
 
         return response()->json(['status' => 1, 'msg' => __('msg logged')]);
     }
+
+    public function translateCallDetail(Request $request){
+        try {
+            $prompt = "Translate the following HTML content into " . langName($request->lang) . " language. Ensure the structure and tags of the HTML remain intact while translating the text content:\n\n" . $request->html;
+
+            $response = Http::withOptions(['verify' => false])->withHeaders([
+                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'You are an expert HTML translator. Always ensure the HTML structure remains intact while translating.'],
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 1500,
+                'temperature' => 0.7,
+            ]);
+
+            if ($response->failed()) {
+
+                log_action("Failed to translate Ai call detail in {$request->lang} language");
+
+                return response()->json([
+                    'status' => 0,
+                    'msg' => $response->body(),
+                ]);
+            }
+
+            $translatedJson = $response['choices'][0]['message']['content'];
+
+            log_action("AI Call detail translated in {$request->lang} language");
+
+            return response()->json([
+                'status' => 1,
+                'html' => $translatedJson,
+            ]);
+        } catch (\Exception $e) {
+
+            log_action("Failed to translate JSON data", 'learner', 'learner');
+
+            return response()->json([
+                'status' => 0,
+                'msg' => $e->getMessage(),
+            ]);
+        }
+    }
 }

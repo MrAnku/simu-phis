@@ -403,6 +403,7 @@ Route::middleware([
         Route::get('/ai-calling/get-agents', [AicallController::class, 'getAgents'])->name('ai.call.get.agents');
         Route::get('/ai-calling/fetch-call-report/{callid}', [AicallController::class, 'fetchCallReport'])->name('ai.call.fetch.call.report');
         Route::post('/ai-calling/agent-req', [AicallController::class, 'agentRequest'])->name('ai.calling.agent.req');
+        Route::post('/ai-calling/translate-call-detail', [AicallController::class, 'translateCallDetail'])->name('ai.calling.translate.call.detail');
 
 
 
