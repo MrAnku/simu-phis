@@ -77,15 +77,6 @@ Route::post('/learner/create-password', [CreatePassController::class, 'storePass
 Route::domain('learn.simuphish.com')->group(function () {
     // Route::post('/learner/login-without-password', [LearnerAuthController::class, 'loginWithoutPassword'])->name('learner.loginWithoutPassword');
 
-
-
-
-
-
-
-
-
-
     Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
         ->name('learner.training.dashboard');
     Route::post('/renew-token', [LearnerDashController::class, 'renewToken']);
@@ -104,20 +95,13 @@ Route::domain('learn.simuphish.com')->group(function () {
 
 
     // Route::middleware([SetLocale::class])->group(function () {
-        Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
+    Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
 
-        // Language change route
-        Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
-        // Language change route
+    // Language change route
+    Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
+    // Language change route
 
     // });
-
-
-
-
-
-
-
 
     Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
 
@@ -242,7 +226,7 @@ Route::middleware([
         Route::post('/dash/reqNewLimit', [DashboardController::class, 'reqNewLimit'])->name('reqNewLimit');
 
         // Language change route
-        Route::post('/lang', [DashboardController::class, 'appLangChange'])->name('setGlobalLocale');
+        Route::post('/set-global-locale', [DashboardController::class, 'appLangChange'])->name('setGlobalLocale');
         // Language change route
 
         //campaigns page routes------------------------------------------------------
