@@ -15,7 +15,7 @@ class SingleEmpController extends Controller
         $employee = Users::with(['campaigns', 'assignedTrainings', 'whatsappCamps', 'aiCalls'])->where('id', $id)->where('company_id', $companyId)->first();
 
         if(!$employee) {
-            return redirect()->back()->with('error', 'Employee not found');
+            return redirect()->back()->with('error', __('Employee not found'));
         }
 
         // return $employee->campaigns?->sum('payload_clicked');

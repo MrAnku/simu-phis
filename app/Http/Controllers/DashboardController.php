@@ -388,11 +388,11 @@ class DashboardController extends Controller
         return redirect()->back()->with('success', __('Upgrade request submitted'));
     }
 
-    public function appLangChange($locale)
+    public function appLangChange(Request $request)
     {
-        if (in_array($locale, ['en', 'ar', 'ru'])) {
-            session(['locale' => $locale]);
-            Company::where('company_id', Auth::user()->company_id)->update(['lang' => $locale]);
+        if (in_array($request->language, ['en', 'ar', 'ru'])) {
+            session(['locale' => $request->language]);
+            Company::where('company_id', Auth::user()->company_id)->update(['lang' => $request->language]);
         }
         return redirect()->back();
     }

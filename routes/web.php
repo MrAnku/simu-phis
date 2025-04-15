@@ -242,7 +242,7 @@ Route::middleware([
         Route::post('/dash/reqNewLimit', [DashboardController::class, 'reqNewLimit'])->name('reqNewLimit');
 
         // Language change route
-        Route::get('lang/{locale}', [DashboardController::class, 'appLangChange']);
+        Route::post('/lang', [DashboardController::class, 'appLangChange'])->name('setGlobalLocale');
         // Language change route
 
         //campaigns page routes------------------------------------------------------

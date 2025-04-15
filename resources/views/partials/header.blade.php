@@ -120,27 +120,30 @@
 <div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-body p-4">
-                <label class="form-label fs-16">{{ __('Select Language') }}</label>
-                <select class="form-control" id="languageSelect" data-trigger>
-                    <option {{ Auth::user()->lang == "en" ? 'selected' : '' }} value="en">{{ __('English (En)') }}</option>
-                    <option {{ Auth::user()->lang == "ar" ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}</option>
-                    <option {{ Auth::user()->lang == "ru" ? 'selected' : '' }} value="ru">{{ __('Русский (RU)') }}</option>
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">{{ __('Close') }}</button>
-                <button type="button" class="btn btn-primary" onclick="changeLanguage()">{{ __('Save changes') }}</button>
-            </div>
+            <form action="{{ route('setGlobalLocale') }}" method="post">
+                @csrf
+                <div class="modal-body p-4">
+                    <label class="form-label fs-16">{{ __('Select Language') }}</label>
+                    <select class="form-control" id="languageSelect" name="language" data-trigger>
+                        <option {{ Auth::user()->lang == "en" ? 'selected' : '' }} value="en">{{ __('English (En)') }}</option>
+                        <option {{ Auth::user()->lang == "ar" ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}</option>
+                        <option {{ Auth::user()->lang == "ru" ? 'selected' : '' }} value="ru">{{ __('Русский (RU)') }}</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save changes') }}</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 <!--Country Modal Popup-->
 
     
-<script>
+{{-- <script>
     function changeLanguage() {
         const locale = document.getElementById('languageSelect').value;
         window.location.href = '/lang/' + locale;
     }
-</script>
+</script> --}}

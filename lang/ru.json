@@ -984,5 +984,20 @@
     "Oops! That was not the correct answer. Try again!": "Упс! Это неправильный ответ. Попробуйте ещё раз!",
     "Your Score": "Ваш результат",
     "Training content is loading...": "Загрузка обучающего материала...",
-    "AI is generating your questions...": "ИИ генерирует ваши вопросы..."
+    "AI is generating your questions...": "ИИ генерирует ваши вопросы...",
+    "Email Campaign": "Email-кампания",
+    "WhatsApp Campaign": "Кампания в WhatsApp",
+    "Date": "Дата",
+    "Employee Score": "Оценка сотрудника",
+    "Simulation without training": "Симуляция без обучения",
+    "Waiting": "Ожидает",
+    "No Campaigns": "Нет кампаний",
+    "Employee Info": "Информация о сотруднике",
+    "SENT CALLS": "ОТПРАВЛЕННЫЕ ЗВОНКИ",
+    "RESPONDED CALLS": "ОТВЕЧЕННЫЕ ЗВОНКИ",
+    "LINK CLICKS": "Переходы по ссылкам",
+    "TOTAL CAMPAIGNS": "ВСЕГО КАМПАНИЙ",
+    "TOTAL TRAININGS": "ВСЕГО ОБУЧЕНИЙ",
+    "Employee Security Score": "Оценка безопасности сотрудника",
+    "Secured from doing the malicious activity": "Защищён от вредоносной активности"
 }

@@ -1,7 +1,7 @@
 <div class="card custom-card shadow">
     <div class="card-header justify-content-between">
         <div class="card-title">
-            Campaigns
+            {{ __('Campaigns') }}
         </div>
     </div>
     <div class="card-body pb-3 px-2">
@@ -9,11 +9,11 @@
             <table class="table table-bordered text-nowrap w-100">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Employee Score</th>
-                        <th>Training</th>
-                        <th>Status</th>
+                        <th>{{ __('Name') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Employee Score') }}</th>
+                        <th>{{ __('Training') }}</th>
+                        <th>{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,23 +41,23 @@
                                         class="badge bg-primary-transparent">{{ $campaign->training->name ?? '' }}</span>
                                 @else
                                     <span class="badge bg-dark-transparent">
-                                        Simulation without training
+                                        {{ __('Simulation without training') }}
                                     </span>
                                 @endif
                             </td>
                             <td>
                                 @if ($campaign->camp->status == 'pending')
-                                    <span class="badge bg-warning">Pending</span>
+                                    <span class="badge bg-warning">{{ __('Pending') }}</span>
                                 @elseif($campaign->camp->status == 'running')
-                                    <span class="badge bg-success">Running</span>
+                                    <span class="badge bg-success">{{ __('Running') }}</span>
                                 @else
-                                    <span class="badge bg-success">Completed</span>
+                                    <span class="badge bg-success">{{ __('Completed') }}</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No Campaigns</td>
+                            <td colspan="5" class="text-center">{{ __('No Campaigns') }}</td>
                         </tr>
                     @endforelse
 

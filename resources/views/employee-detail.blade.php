@@ -12,16 +12,16 @@
                     <li class="nav-item" role="presentation" onclick="toggleCallCounts('hide')">
                         <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page" href="#ecamp"
                             aria-selected="true">
-                            Email Campaign
+                            {{ __('Email Campaign') }}
                         </a>
                     </li>
                     <li class="nav-item" role="presentation" onclick="toggleCallCounts('hide')">
                         <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#wcamp"
-                            aria-selected="false" tabindex="-1">WhatsApp Campaign</a>
+                            aria-selected="false" tabindex="-1">{{ __('WhatsApp Campaign') }}</a>
                     </li>
                     <li class="nav-item" role="presentation" onclick="toggleCallCounts('show')">
                         <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#aicamp"
-                            aria-selected="false" tabindex="-1">AI Vishing</a>
+                            aria-selected="false" tabindex="-1">{{ __('AI Vishing') }}</a>
                     </li>
                 </ul>
                 <div class="tab-content">

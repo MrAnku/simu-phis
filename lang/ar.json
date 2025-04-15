@@ -984,6 +984,21 @@
   "Oops! That was not the correct answer. Try again!": "عذرًا! هذه ليست الإجابة الصحيحة. حاول مرة أخرى!",
   "Your Score": "درجتك",
   "Training content is loading...": "يتم تحميل محتوى التدريب...",
-   "AI is generating your questions...": "يتم الآن إنشاء أسئلتك بواسطة الذكاء الاصطناعي..."
+   "AI is generating your questions...": "يتم الآن إنشاء أسئلتك بواسطة الذكاء الاصطناعي...",
+   "Email Campaign": "حملة بريد إلكتروني",
+   "WhatsApp Campaign": "حملة واتساب",
+   "Date": "التاريخ",
+   "Employee Score": "درجة الموظف",
+   "Simulation without training": "محاكاة بدون تدريب",
+   "Waiting": "بانتظار",
+   "No Campaigns": "لا توجد حملات",
+   "Employee Info": "معلومات الموظف",
+   "SENT CALLS": "المكالمات المرسلة",
+   "RESPONDED CALLS": "المكالمات المجابة",
+   "LINK CLICKS": "نقرات الروابط",
+   "TOTAL CAMPAIGNS": "إجمالي الحملات",
+   "TOTAL TRAININGS": "إجمالي التدريبات",
+   "Employee Security Score": "درجة أمان الموظف",
+   "Secured from doing the malicious activity": "تم تأمينه من القيام بنشاط ضار"
    
 }

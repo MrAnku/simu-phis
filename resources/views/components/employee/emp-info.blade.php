@@ -1,7 +1,7 @@
 <div class="card custom-card shadow">
     <div class="card-header">
         <div class="card-title">
-            Employee Info
+            {{ __('Employee Info') }}
         </div>
     </div>
     <div class="card-body p-0">
@@ -27,7 +27,7 @@
                     </span>
                 </div>
                 <div>
-                    <span class="fw-semibold text-default">Name : </span>
+                    <span class="fw-semibold text-default">{{ __('Name') }} : </span>
                     {{ $employee->user_name }}
                 </div>
             </div>
@@ -40,7 +40,7 @@
                     </span>
                 </div>
                 <div>
-                    <span class="fw-semibold text-default">Email : </span>
+                    <span class="fw-semibold text-default">{{ __('Email') }} : </span>
                     {{ $employee->user_email }}
                 </div>
             </div>
@@ -53,7 +53,7 @@
                     </span>
                 </div>
                 <div>
-                    <span class="fw-semibold text-default">WhatsApp : </span>{{ $employee->whatsapp ?? '--' }}
+                    <span class="fw-semibold text-default">{{ __('WhatsApp') }} : </span>{{ $employee->whatsapp ?? '--' }}
                 </div>
             </div>
             </p>
@@ -65,7 +65,7 @@
                     </span>
                 </div>
                 <div>
-                    <span class="fw-semibold text-default">Job Title : </span>{{ $employee->job_title ?? '--' }}
+                    <span class="fw-semibold text-default">{{ __('Job Title') }} : </span>{{ $employee->job_title ?? '--' }}
                 </div>
             </div>
             </p>
@@ -94,7 +94,7 @@
                                     </h5>
 
                                 </div>
-                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">SENT CALLS</p>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">{{ __('SENT CALLS') }}</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                                     </h5>
 
                                 </div>
-                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">RESPONDED CALLS</p>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">{{ __('RESPONDED CALLS') }}</p>
                             </div>
                         </div>
                     </div>
@@ -142,7 +142,7 @@
                                     </h5>
 
                                 </div>
-                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">LINK CLICKS</p>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">{{ __('LINK CLICKS') }}</p>
                             </div>
                         </div>
                     </div>
@@ -165,7 +165,7 @@
                                     </h5>
 
                                 </div>
-                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">TOTAL CAMPAIGNS</p>
+                                <p class="mb-0 fs-10 op-7 text-muted fw-semibold">{{ __('TOTAL CAMPAIGNS') }}</p>
                             </div>
                         </div>
                     </div>
@@ -188,7 +188,7 @@
 
                                 </div>
                                 <p class="mb-0 fs-10 op-7 text-muted fw-semibold">
-                                    TOTAL TRAININGS</p>
+                                    {{ __('TOTAL TRAININGS') }}</p>
                             </div>
                         </div>
                     </div>
