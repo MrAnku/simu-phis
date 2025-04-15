@@ -31,8 +31,16 @@ function viewUsersByGroup(groupid) {
                 if (!$.fn.DataTable.isDataTable(".employeesTable")) {
                     $("#allUsersByGroupTable").DataTable({
                         language: {
+                            lengthMenu: alertMsgs.Show + " _MENU_ " + alertMsgs.entries,
+                            info: alertMsgs.Showing + " _START_ " + alertMsgs.to + " _END_ " + alertMsgs.of + " _TOTAL_ " + alertMsgs.entries,
+                            infoEmpty: alertMsgs.Showing + " 0 " + alertMsgs.to + " 0 " + alertMsgs.of + " 0 " + alertMsgs.entries,
+                            infoFiltered: "(" + "{{ __('filtered from') }}" + " _MAX_ " + "{{ __('total entries') }}" + ")",
                             searchPlaceholder: alertMsgs.search,
-                            sSearch: "",
+                            sSearch: '',
+                            paginate: {
+                                next: alertMsgs.Next,
+                                previous: alertMsgs.Previous
+                            },
                         },
                         pageLength: 10,
                         // scrollX: true
@@ -230,8 +238,16 @@ function viewBlueUsersByGroup(groupid) {
                 if (!$.fn.DataTable.isDataTable(".employeesTable")) {
                     $("#allUsersByGroupTable").DataTable({
                         language: {
-                            searchPlaceholder: "Search...",
-                            sSearch: "",
+                            lengthMenu: alertMsgs.Show + " _MENU_ " + alertMsgs.entries,
+                            info: alertMsgs.Showing + " _START_ " + alertMsgs.to + " _END_ " + alertMsgs.of + " _TOTAL_ " + alertMsgs.entries,
+                            infoEmpty: alertMsgs.Showing + " 0 " + alertMsgs.to + " 0 " + alertMsgs.of + " 0 " + alertMsgs.entries,
+                            infoFiltered: "(" + "{{ __('filtered from') }}" + " _MAX_ " + "{{ __('total entries') }}" + ")",
+                            searchPlaceholder: alertMsgs.search,
+                            sSearch: '',
+                            paginate: {
+                                next: alertMsgs.Next,
+                                previous: alertMsgs.Previous
+                            },
                         },
                         pageLength: 10,
                         // scrollX: true

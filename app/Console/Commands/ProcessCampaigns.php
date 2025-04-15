@@ -357,10 +357,10 @@ class ProcessCampaigns extends Command
 
         Mail::to($campaign->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
 
-        NewLearnerPassword::create([
-          'email' => $campaign->user_email,
-          'token' => $token
-        ]);
+        // NewLearnerPassword::create([
+        //   'email' => $campaign->user_email,
+        //   'token' => $token
+        // ]);
 
         $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 
@@ -411,10 +411,10 @@ class ProcessCampaigns extends Command
 
       Mail::to($campaign->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
 
-      NewLearnerPassword::create([
-        'email' => $campaign->user_email,
-        'token' => $token
-      ]);
+      // NewLearnerPassword::create([
+      //   'email' => $campaign->user_email,
+      //   'token' => $token
+      // ]);
 
       $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 

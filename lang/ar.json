@@ -940,5 +940,20 @@
     ".....your content......": ".....محتواك......",
     "Full Report of Email Phishing Simulation": "التقرير الكامل لمحاكاة التصيد بالبريد الإلكتروني",
     "Generating...": "جارٍ الإنشاء...",
-    "Please add all the required shortcodes": "يرجى إضافة جميع الرموز القصيرة المطلوبة"
+    "Please add all the required shortcodes": "يرجى إضافة جميع الرموز القصيرة المطلوبة",
+    "Show": "عرض",
+    "entries": "مدخلات",
+    "Showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "entries_plural": "مدخلات",
+     "Trainings Assigned": "الدورات المعينة",
+  "Trainings Type": "نوع الدورات",
+  "Copy": "نسخ",
+  "CSV": "CSV",
+  "Excel": "إكسل",
+  "PDF": "PDF",
+  "Print": "طباعة",
+  "SI": "الرقم التسلسلي",
+   "results": "النتائج"
 }

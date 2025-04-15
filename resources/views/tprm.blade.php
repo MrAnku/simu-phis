@@ -355,9 +355,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                                                                                                                                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                                                                                                                                        <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                                                                                                                                                    </div> -->
+                                                                                                                                                                                                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                                                                <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                                                                            </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -366,7 +366,7 @@
                                                 <div class="row mb-3">
                                                     <label for="inputEmail3"
                                                         class="col-sm-4 col-form-label">{{ __('Schedule
-                                                                                                                Date') }}<i
+                                                                                                                                                                                                                                Date') }}<i
                                                             class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
                                                             data-bs-original-title="Select a particular date for shooting this campaign"></i>
@@ -720,7 +720,7 @@
                                                 <div>
                                                     <label for="input-label"
                                                         class="form-label">{{ __('chedule Between
-                                                                                                                Times') }}</label>
+                                                                                                                                                                                                                                Times') }}</label>
                                                     <div>
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="revSchTimeStart" name="appt"
@@ -804,8 +804,7 @@
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#training_campaign" aria-selected="false"
-                                        tabindex="-1">{{ __('Training
-                                                                                Campaign') }}</a>
+                                        tabindex="-1">{{ __('Training Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -1063,8 +1062,8 @@
                                                     onclick="openDomainModal('{{ $domain->domain }}')">{{ __('Show/Add Email') }}</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                                                                                                                    <i class="bx bx-x fs-25"></i>
-                                                                                                                                                </span> -->
+                                                                                                                                                            <i class="bx bx-x fs-25"></i>
+                                                                                                                                                        </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1824,13 +1823,13 @@
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#phishing_campaign"
                                         aria-selected="true">{{ __('Phishing
-                                                                                Campaign') }}</a>
+                                                                                                                                                                Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#training_campaign" aria-selected="false"
                                         tabindex="-1">{{ __('Training
-                                                                                Campaign') }}</a>
+                                                                                                                                                                Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -1980,8 +1979,16 @@
         <script>
             $('#allGroupsTable').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true
@@ -1989,8 +1996,16 @@
 
             $('#domainVerificationTable').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true
@@ -2157,12 +2172,38 @@
 
                                 $('#file-export').DataTable({
                                     dom: 'Bfrtip',
-                                    buttons: [
-                                        'copy', 'csv', 'excel', 'pdf', 'print'
+                                    buttons: [{
+                                            extend: 'copy',
+                                            text: "{{ __('Copy') }}"
+                                        },
+                                        {
+                                            extend: 'csv',
+                                            text: "{{ __('CSV') }}"
+                                        },
+                                        {
+                                            extend: 'excel',
+                                            text: "{{ __('Excel') }}"
+                                        },
+                                        {
+                                            extend: 'pdf',
+                                            text: "{{ __('PDF') }}"
+                                        },
+                                        {
+                                            extend: 'print',
+                                            text: "{{ __('Print') }}"
+                                        }
                                     ],
                                     language: {
+                                        lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                                        info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                                        infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                                        infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                                         searchPlaceholder: "{{ __('Search...') }}",
                                         sSearch: '',
+                                        paginate: {
+                                            next: "{{ __('Next') }}",
+                                            previous: "{{ __('Previous') }}"
+                                        },
                                     },
                                 });
                             }
@@ -2211,8 +2252,16 @@
 
             $('#datatable-basic').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true
@@ -2760,8 +2809,16 @@
 
             $('#datatable-basic').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true

@@ -143,7 +143,7 @@
                                                             </small>
                                                         @else
                                                             <span
-                                                                class="badge bg-info-transparent">{{ $campaign->launch_type }}</span>
+                                                                class="badge bg-info-transparent">{{ __($campaign->launch_type) }}</span>
                                                         @endif
 
 
@@ -154,7 +154,7 @@
                                                     <div>
                                                         <small class="text-muted">
                                                             @if ($campaign->email_freq == 'one')
-                                                                Once
+                                                                {{ __('Once') }}
                                                             @else
                                                                 {{ $campaign->email_freq }}
                                                             @endif
@@ -499,11 +499,11 @@
 
                 let status = '';
                 if (res.status === 'completed') {
-                    status = '<span class="badge bg-success">Completed</span>';
+                    status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                 } else if (res.status === 'pending') {
-                    status = '<span class="badge bg-warning">Pending</span>';
+                    status = '<span class="badge bg-warning">{{ __('Pending') }}</span>';
                 } else {
-                    status = '<span class="badge bg-success">Running</span>';
+                    status = '<span class="badge bg-success">{{ __('Running') }}</span>';
                 }
 
                 let rowHtml = `
@@ -576,11 +576,11 @@
 
                 let status = '';
                 if (res.status === 'completed') {
-                    status = '<span class="badge bg-success">Completed</span>';
+                    status = '<span class="badge bg-success">{{ __('Completed') }}</span>';
                 } else if (res.status === 'pending') {
-                    status = '<span class="badge bg-warning">Pending</span>';
+                    status = '<span class="badge bg-warning">{{ __('Pending') }}</span>';
                 } else {
-                    status = '<span class="badge bg-success">Running</span>';
+                    status = '<span class="badge bg-success">{{ __('Running') }}</span>';
                 }
 
                 let rowHtml = `
@@ -590,8 +590,8 @@
                                     <td>${res.camp_live.length}</td>
                                     <td>${res.camp_report.training_assigned}</td>
                                     <td>${res.training_type == 'static_training' ? 
-                                        '<span class="badge bg-info">Static Training</span>' : 
-                                        '<span class="badge bg-info">AI Training</span>'}</td>
+                                        '<span class="badge bg-info">{{ __('Static Training') }}</span>' : 
+                                        '<span class="badge bg-info">{{ __('AI Training') }}</span>'}</td>
                                     <td>${res.camp_report.training_lang}</td>
                                     <td>${res.camp_report.training_completed}</td>
                                 </tr>
@@ -739,8 +739,16 @@
 
             $('#datatable-basic').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true

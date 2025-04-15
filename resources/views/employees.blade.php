@@ -225,7 +225,14 @@
                 error: "{{ __('Error') }}",
                 noEmp: "{{ __('No employees available in this group!') }}",
                 search: "{{ __('Search...') }}",
-                OK: "{{ __('OK') }}"
+                OK: "{{ __('OK') }}",
+                Show: "{{ __('Show') }}",
+                entries: "{{ __('entries') }}",
+                Showing: "{{ __('Showing') }}",
+                to: "{{ __('to') }}",
+                of: "{{ __('of') }}",
+                Next: "{{ __('Next') }}",
+                Previous: "{{ __('Previous') }}"
             };
         </script>
         {{-- All Alert's lang conversion of js file --}}
@@ -246,8 +253,16 @@
         <script>
             $('#allGroupsTable').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true
@@ -255,8 +270,16 @@
 
             $('#domainVerificationTable').DataTable({
                 language: {
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
                     searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true

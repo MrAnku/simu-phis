@@ -939,7 +939,21 @@
     "Please click the link below to get started": "Пожалуйста, нажмите на ссылку ниже, чтобы начать",
     ".....your content......": ".....ваше содержимое......",
     "Full Report of Email Phishing Simulation": "Полный отчет о симуляции фишинга по электронной почте",
-  "Generating...": "Создание...",
-  "Please add all the required shortcodes": "Пожалуйста, добавьте все необходимые шорткоды"
-
+    "Generating...": "Создание...",
+    "Please add all the required shortcodes": "Пожалуйста, добавьте все необходимые шорткоды",
+    "Show": "Показать",
+    "entries": "записей",
+    "Showing": "Показаны",
+    "to": "по",
+    "of": "из",
+    "entries_plural": "записей",
+    "Trainings Assigned": "Назначенные тренинги",
+    "Trainings Type": "Тип тренингов",
+    "Copy": "Копировать",
+    "CSV": "CSV",
+    "Excel": "Excel",
+    "PDF": "PDF",
+    "Print": "Печать",
+    "SI": "№",
+    "results": "Результаты"
 }

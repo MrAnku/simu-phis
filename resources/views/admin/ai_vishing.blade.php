@@ -230,8 +230,16 @@
         <script>
             $('#allAgentsTable').DataTable({
                 language: {
-                    searchPlaceholder: 'Search...',
+                    lengthMenu: "{{ __('Show') }} _MENU_ {{ __('entries') }}",
+                    info: "{{ __('Showing') }} _START_ {{ __('to') }} _END_ {{ __('of') }} _TOTAL_ {{ __('entries') }}",
+                    infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+                    infoFiltered: "({{ __('filtered from') }} _MAX_ {{ __('total entries') }})",
+                    searchPlaceholder: "{{ __('Search...') }}",
                     sSearch: '',
+                    paginate: {
+                        next: "{{ __('Next') }}",
+                        previous: "{{ __('Previous') }}"
+                    },
                 },
                 "pageLength": 10,
                 // scrollX: true
