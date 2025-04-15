@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Learner;
 
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
+use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
-use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\LearnerSessionRegenerateMail;
 
 class LearnerDashController extends Controller
 {
@@ -404,5 +405,14 @@ class LearnerDashController extends Controller
         }
 
         return view('learning.gamified-training', compact('training', 'id', 'lang'));
+    }
+
+    public function appLangChange($locale)
+    {
+        // return $locale;
+        if (in_array($locale, ['en', 'ar', 'ru'])) {
+            session(['locale' => $locale]);
+        }
+        return redirect()->back();
     }
 }

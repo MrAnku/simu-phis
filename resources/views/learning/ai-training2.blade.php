@@ -7,8 +7,7 @@
             <div id="preloader" class="text-center">
                 <img src="{{ asset('learner/assets/images/preloader.svg') }}" alt="preloader" width="200">
                 <div class="d-flex justify-content-center align-items-center">
-                    <h1 class="bg-white rounded-pill px-4 py-4" style="font-size: 21px; width: fit-content;">AI is generating
-                        your questions...</h1>
+                    <h1 class="bg-white rounded-pill px-4 py-4" style="font-size: 21px; width: fit-content;">{{ __('AI is generating your questions...') }}</h1>
                 </div>
 
             </div>
@@ -22,7 +21,7 @@
                 {{-- <button type="button" class="f_btn prev_btn text-white rounded-pill text-uppercase" id="prevBtn"
                         onclick="nextPrev(-1)"><span><i class="fas fa-arrow-left"></i></span> Last Question</button> --}}
                 <button type="button" class="f_btn nextBtn text-white rounded-pill text-uppercase" id="nextBtn"
-                    onclick="nextPrev(1)" style="font-size: 15px; display: none;">Next Question</button>
+                    onclick="nextPrev(1)" style="font-size: 15px; display: none;">{{ __('Next Question') }}</button>
             </div>
 
         </div>
@@ -38,21 +37,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="quizPopupModalLabel"> Description</h1>
+                    <h1 class="modal-title fs-5" id="quizPopupModalLabel"> {{ __('Description') }}</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="correctAnswerContent" style="display: none;">
-                        <h3 class="text-success">Correct Answer!</h3>
-                        <p>Well done! You have selected the correct answer.</p>
+                        <h3 class="text-success">{{ __('Correct Answer!') }}</h3>
+                        <p>{{ __('Well done! You have selected the correct answer.') }}</p>
                     </div>
                     <div id="wrongAnswerContent" style="display: none;">
-                        <h3 class="text-danger">Wrong Answer!</h3>
-                        <p>Oops! That was not the correct answer. Try again!</p>
+                        <h3 class="text-danger">{{ __('Wrong Answer!') }}</h3>
+                        <p>{{ __('Oops! That was not the correct answer. Try again!') }}</p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
 
                 </div>
             </div>
@@ -63,14 +62,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="quizPopupModalLabel"> Your Score</h1>
+                    <h1 class="modal-title fs-5" id="quizPopupModalLabel"> {{ __('Your Score') }}</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
 
                 </div>
             </div>

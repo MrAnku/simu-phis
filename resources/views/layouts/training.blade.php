@@ -1,5 +1,12 @@
+@php
+if(session('locale')){
+    App::setLocale(session('locale'));    
+}
+@endphp
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr" data-nav-layout="vertical"
+    data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
 
 <head>
     <meta charset="UTF-8">
