@@ -18,9 +18,9 @@
                         </div>
                         <div class="flex-fill">
                             <p class="fw-semibold mb-0">{{ $camp->campaign_name }}</p>
-                            <span class="text-muted fs-12">{{ $camp->campaign_type }}</span>
+                            <span class="text-muted fs-12">{{ __($camp->campaign_type) }}</span>
                         </div>
-                        <div class="fw-semibold fs-15">{{ $camp->status }}</div>
+                        <div class="fw-semibold fs-15">{{ __(ucfirst($camp->status)) }}</div>
                     </div>
                 </li>
             @empty

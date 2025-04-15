@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ App::setLocale(session('locale')) }}" dir="ltr" data-nav-layout="vertical"
+<html lang="{{ App::getLocale() }}" dir="ltr" data-nav-layout="vertical"
     data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
 
 <head>
@@ -276,7 +276,7 @@
             </div>
             <div
                 style="color: white; font-weight:600; margin-left: 10px;text-align: center; text-transform: capitalize;">
-                {{ $title }}</div>
+                {{ __("Full Report of Email Phishing Simulation") }}</div>
         </div>
 
 
@@ -345,7 +345,7 @@
                                 <img style="width: 20px;height: 15px;" src="{{ asset('images/folder.png') }}"
                                     alt="">
                                 <div style="margin-left: 20px; " class="total_user">
-                                    {{ ucfirst(str_replace('_', ' ', $key)) }}
+                                    {{ __(ucfirst(str_replace('_', ' ', $key))) }}
                                     <!-- Converts "email_reported" to "Email Reported" -->
                                 </div>
                             </div>
