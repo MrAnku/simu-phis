@@ -46,4 +46,5 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
     });
     Route::get('/get-all-training-module', [TrainingModuleController::class, 'allTrainingModule']);
+    Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining']);
 });

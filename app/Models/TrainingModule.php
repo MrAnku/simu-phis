@@ -13,14 +13,24 @@ class TrainingModule extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'name', 
-        'estimated_time', 
-        'cover_image', 
+        'name',
+        'estimated_time',
+        'cover_image',
         'passing_score',
-        'category', 
-        'training_type', 
-        'json_quiz', 
-        'module_language', 
+        'category',
+        'training_type',
+        'core_behaviour',
+        'content_type',
+        'language',
+        'security',
+        'role',
+        'duration',
+        'tags',
+        'program_resources',
+        'estimated_time',
+        'industry',
+        'json_quiz',
+        'module_language',
         'company_id'
     ];
 }

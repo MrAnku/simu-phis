@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -23,7 +24,7 @@ class TrainingModuleController extends Controller
         }
 
         // Correct: use get() instead of all()
-        $all_training_module = TrainingModule::->get();
+        $all_training_module = TrainingModule::get();
 
         return response()->json([
             'status' => 1,
@@ -69,16 +70,26 @@ class TrainingModuleController extends Controller
     }
 
 
-    public function addTraining(Request $request)
+    public function addTraining(Request $request): JsonResponse
     {
         $request->validate([
             'moduleName' => 'required|string|max:255',
-            'mPassingScore' => 'required|numeric|min:0|max:100',
-            'mCompTime' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
+            'training_type' => 'required|string|max:255',
+            'core_behaviour' => 'nullable|string|max:255',
+            'content_type' => 'nullable|string|max:255',
+            'language' => 'nullable|string|max:255',
+            'security' => 'nullable|string|max:255',
+            'role' => 'nullable|string|max:255',
+            'industry' => 'nullable|string|max:255',
+            'duration' => 'nullable|string|max:255',
+            'tags' => 'nullable|string|max:255',
+            'program_resources' => 'nullable|string|max:255',
+            'mCompTime' => 'required|string|max:255',
+            'mPassingScore' => 'required|numeric|min:0|max:100',
             'jsonData' => 'required|json',
             'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
-            'mModuleLang' => 'nullable|string|max:5',
+            'mModuleLang' => 'required|string|max:255',
         ]);
 
         $moduleName = $request->input('moduleName');
@@ -88,7 +99,7 @@ class TrainingModuleController extends Controller
         $mCompTime = $request->input('mCompTime');
         $jsonData = $request->input('jsonData');
 
-        $companyId = auth()->user()->company_id;
+        try {
 
         // Handling cover file
         if ($request->hasFile('mCoverFile')) {
@@ -110,17 +121,32 @@ class TrainingModuleController extends Controller
             'category' => $request->input('category'),
             'json_quiz' => $jsonData,
             'module_language' => $mModuleLang,
-            'company_id' => $companyId,
+            'company_id' => Auth::user()->company_id,
         ]);
 
-        if ($trainingModule->save()) {
-            log_action("New training added {$moduleName}");
-            return redirect()->back()->with('success', __('Training Added Successfully'));
-        } else {
-            log_action("Failed to add Training");
-            return redirect()->back()->with('error', __('Failed to add Training'));
+            if ($trainingModule->save()) {
+                log_action("New training added {$moduleName}");
+                return response()->json([
+                    'status' => true,
+                    'message' => __('Training Added Successfully'),
+                    'data' => $trainingModule
+                ], 201);
+            } else {
+                log_action("Failed to add Training");
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Failed to add Training')
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Something went wrong'),
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function addGamifiedTraining(Request $request)
     {
