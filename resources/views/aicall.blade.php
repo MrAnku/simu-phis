@@ -192,7 +192,8 @@
                 <h5 class="offcanvas-title" id="callDetailOffCanvasLabel1">{{ __('Call Detail') }}
                 </h5>
                 @if (app()->getLocale() !== 'en')
-                    <button id="translateBtn" onclick="translateCallDetail(this, '{{app()->getLocale()}}')" class="btn btn-sm btn-primary me-3">Translate in
+                    <button id="translateBtn" onclick="translateCallDetail(this, '{{ app()->getLocale() }}')"
+                        class="btn btn-sm btn-primary me-3">Translate in
                         {{ strtoupper(app()->getLocale()) }}</button>
                 @endif
 
@@ -344,16 +345,21 @@
                                             class="ri-mail-send-line me-2 align-middle"></i>{{ __('Campaign Detail') }}</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
+                                  
                                     <button class="nav-link" id="phishing-tab" data-bs-toggle="tab"
                                         data-bs-target="#phishing" type="button" role="tab"
-                                        aria-controls="confirmed-tab" aria-selected="false"><i
-                                            class="ri-presentation-line me-2 align-middle"></i>{{ __('Phishing & Training') }}</button>
+                                        aria-controls="confirmed-tab" aria-selected="false" disabled tabindex="-1">
+                                        <i class="ri-presentation-line me-2 align-middle"></i>{{ __('Phishing & Training') }}
+                                    </button>
+
                                 </li>
                                 <li class="nav-item" role="presentation">
+
                                     <button class="nav-link" id="phone-tab" data-bs-toggle="tab" data-bs-target="#phone"
-                                        type="button" role="tab" aria-controls="shipped-tab"
-                                        aria-selected="false"><i
-                                            class="ri-phone-line me-2 align-middle"></i>{{ __('AI Agent & Phone') }}</button>
+                                        type="button" role="tab" aria-controls="shipped-tab" aria-selected="false"
+                                        disabled tabindex="-1">
+                                        <i class="ri-phone-line me-2 align-middle"></i>{{ __('AI Agent & Phone') }}
+                                    </button>
                                 </li>
 
                             </ul>
@@ -947,8 +953,8 @@
                 <div>
 
                     ${(res.call_status == 'ended' && !fell_in_simulation) ? `<audio id="recording_audio" controls='' class='h-11 w-[258px]'
-                                                                                                                        src='${res.recording_url}'>Your
-                                                                                                                        browser does not support the audio element.</audio>` : ''}
+                                                                                                                                                                                src='${res.recording_url}'>Your
+                                                                                                                                                                                browser does not support the audio element.</audio>` : ''}
                 
                     
                 </div>
@@ -1044,15 +1050,15 @@
                 const campaignName = document.getElementById("campaignName").value;
                 const emp_group = document.getElementById("emp_group").value;
                 if (campaignName == '') {
-                    alert("Please Enter Campaign Name");
+                    alert("{{ __('Please Enter Campaign Name') }}");
                     return;
                 }
                 if (!emp_group) {
-                    alert("Please Select Employee Group");
+                    alert("{{ __('Please Select Employee Group') }}");
                     return;
                 }
-
-                document.getElementById("phishing-tab").click()
+                $('#phishing-tab').removeAttr('disabled').attr('tabindex', '0');
+                new bootstrap.Tab(document.getElementById('phishing-tab')).show();
             }
 
             document.getElementById("phone-trigger").onclick = () => {
@@ -1072,17 +1078,12 @@
                     });
 
                     if (!isChecked) {
-                        alert("Please select training.");
+                        alert("{{ __('Please select training') }}.");
                         return;
                     }
-
-
                 }
-
-
-
-
-                document.getElementById("phone-tab").click()
+                $('#phone-tab').removeAttr('disabled').attr('tabindex', '0');
+                new bootstrap.Tab(document.getElementById('phone-tab')).show();
             }
 
             document.getElementById("back-to-campaign").onclick = () => {
@@ -1098,12 +1099,12 @@
                 const ai_agent = document.getElementById("ai_agent").value;
                 const ai_phones = document.getElementById("ai_phones").value;
                 if (!ai_agent) {
-                    alert("Please Select AI Agent");
+                    alert("{{ __('Please Select AI Agent') }}");
                     return;
                 }
 
                 if (!ai_phones) {
-                    alert("Please Select Phone Number");
+                    alert("{{ __('Please Select Phone Number') }}");
                     return;
                 }
 
@@ -1179,11 +1180,11 @@
                     },
                     success: function(res) {
 
-                        if(res.status == 1){
+                        if (res.status == 1) {
                             $("#call_detail").html(res.html);
                             $(btn).text('Translate').removeClass('disabled');
                             $(btn).hide();
-                        }else{
+                        } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: "{{ __('Error') }}",

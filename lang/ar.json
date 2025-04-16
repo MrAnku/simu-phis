@@ -1031,5 +1031,10 @@
     "Variable": "متغير",
     "This variable is reserved": "هذا المتغير محجوز.",
     "enter value": "أدخل القيمة",
-    "Campaign URL": "رابط الحملة"
+    "Campaign URL": "رابط الحملة",
+    "Please Enter Campaign Name": "يرجى إدخال اسم الحملة",
+    "Please Select Employee Group": "يرجى اختيار مجموعة الموظفين",
+    "Please select training": "يرجى اختيار التدريب",
+    "Please Select AI Agent": "يرجى اختيار وكيل الذكاء الاصطناعي",
+    "Please Select Phone Number": "يرجى اختيار رقم الهاتف"
 }

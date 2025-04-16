@@ -1030,5 +1030,10 @@
     "Variable": "Переменная",
     "This variable is reserved": "Эта переменная зарезервирована.",
     "enter value": "введите значение",
-    "Campaign URL": "URL кампании"
+    "Campaign URL": "URL кампании",
+    "Please Enter Campaign Name": "Пожалуйста, введите название кампании",
+    "Please Select Employee Group": "Пожалуйста, выберите группу сотрудников",
+    "Please select training": "Пожалуйста, выберите обучение",
+    "Please Select AI Agent": "Пожалуйста, выберите ИИ-агента",
+    "Please Select Phone Number": "Пожалуйста, выберите номер телефона"
 }
