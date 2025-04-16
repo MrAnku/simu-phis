@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\TrainingModuleController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
@@ -46,5 +47,9 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
     });
     Route::get('/get-all-training-module', [TrainingModuleController::class, 'allTrainingModule']);
+    Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingModuleById']);
+
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining']);
+    Route::post('/support/load-conversations', [SupportController::class, 'loadConversations']);
+    Route::post('/support/submit-reply', [SupportController::class, 'submitReply']);
 });

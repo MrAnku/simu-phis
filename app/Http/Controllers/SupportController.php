@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class SupportController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $company_id = Auth::user()->company_id;
         $closedTickets = CpTickets::with('conversations')->where('status', 0)->where('company_id', $company_id)->get();
         $openTickets = CpTickets::with('conversations')->where('status', 1)->where('company_id', $company_id)->get();
@@ -42,7 +43,7 @@ class SupportController extends Controller
         $sub = $request->input('sub');
         $priority = $request->input('priority');
         $msg = $request->input('msg');
-        
+
         $ticket_no = rand(10000, 99999);
         $status = '1';
         $created_at = now();
@@ -75,33 +76,100 @@ class SupportController extends Controller
 
     public function loadConversations(Request $request)
     {
-        $request->validate([
-            'tkt_id' => 'required|integer',
-        ]);
+        try {
+            // Validation
+            $validated = $request->validate([
+                'tkt_id' => 'required|integer',
+            ]);
 
-        $tkt_id = $request->input('tkt_id');
-        $company_id = Auth::user()->company_id;
+            $tkt_id = $validated['tkt_id'];
+            $company_id = Auth::user()->company_id;
 
-        $conversations = DB::table('cp-tkts_conversations')
-            ->where('company_id', $company_id)
-            ->where('tkt_id', $tkt_id)
-            ->get();
+            // Fetch conversations
+            $conversations = DB::table('cp-tkts_conversations')
+                ->where('company_id', $company_id)
+                ->where('tkt_id', $tkt_id)
+                ->get();
 
-        return response()->json($conversations);
+            // API response format
+            return response()->json([
+                'success' => true,
+                'message' => 'Conversations fetched successfully.',
+                'data' => $conversations
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function submitReply(Request $request)
     {
-        $request->validate([
-            'tkt_id' => 'required|integer',
-            'msg' => 'required|string',
-        ]);
+        try {
+            // Validation
+            $validated = $request->validate([
+                'tkt_id' => 'required|integer',
+                'msg' => 'required|string',
+            ]);
 
-        $input = $request->all();
-        foreach ($input as $key => $value) {
-            if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json(['status'=> 0, 'msg' => __('Invalid input detected.')]);
+            // Sanitize all inputs (against HTML/PHP tags)
+            foreach ($validated as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Invalid input detected due to tags.'),
+                    ], 400);
+                }
             }
+
+            array_walk_recursive($validated, function (&$input) {
+                $input = strip_tags($input);
+            });
+
+            // Extract sanitized values
+            $tkt_id = $validated['tkt_id'];
+            $msg = $validated['msg'];
+            $today = now();
+            $company_id = Auth::user()->company_id;
+
+            // Insert reply
+            DB::table('cp-tkts_conversations')->insert([
+                'tkt_id' => $tkt_id,
+                'person' => 'company',
+                'msg' => $msg,
+                'date' => $today,
+                'company_id' => $company_id,
+            ]);
+
+            // Log action
+            log_action("Company replied in raised ticket");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reply submitted successfully.'
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while submitting the reply.',
+                'error' => $e->getMessage()
+            ], 500);
         }
         array_walk_recursive($input, function (&$input) {
             $input = strip_tags($input);
@@ -123,6 +191,6 @@ class SupportController extends Controller
 
         log_action("Company replied in raised ticket");
 
-        return response()->json(['status'=> 1, 'msg' => __('Reply submitted successfully')]);
+        return response()->json(['status' => 1, 'msg' => __('Reply submitted successfully')]);
     }
 }
