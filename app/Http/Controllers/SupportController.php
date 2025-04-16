@@ -12,10 +12,24 @@ class SupportController extends Controller
     public function index()
     {
         $company_id = Auth::user()->company_id;
-        $closedTickets = CpTickets::with('conversations')->where('status', 0)->where('company_id', $company_id)->get();
-        $openTickets = CpTickets::with('conversations')->where('status', 1)->where('company_id', $company_id)->get();
-        return view('support', compact('closedTickets', 'openTickets'));
+
+        $closedTickets = CpTickets::with('conversations')
+            ->where('status', 0)
+            ->where('company_id', $company_id)
+            ->get();
+
+        $openTickets = CpTickets::with('conversations')
+            ->where('status', 1)
+            ->where('company_id', $company_id)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'closedTickets' => $closedTickets,
+            'openTickets' => $openTickets
+        ]);
     }
+
 
     public function createTicket(Request $request)
     {

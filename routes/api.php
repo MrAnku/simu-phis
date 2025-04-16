@@ -51,6 +51,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining']);
     Route::prefix('support')->group(function () {
+        Route::get('/', [SupportController::class, 'index']);
         Route::post('/load-conversations', [SupportController::class, 'loadConversations']);
         Route::post('/submit-reply', [SupportController::class, 'submitReply']);
         Route::post('/create-ticket', [SupportController::class, 'createTicket']);
