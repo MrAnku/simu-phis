@@ -247,9 +247,9 @@
                                     </li>
 
                                     <li
-                                        class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('human-risk-management') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('dark-web-monitoring') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('human-risk-management') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">{{ __('Threat Monitoring') }}</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -259,21 +259,21 @@
                                                 <a href="javascript:void(0)">{{ __('Threat Monitoring') }}</a>
                                             </li>
 
-                                            <li class="slide {{ Request::is('brand-monitoring') ? 'active' : '' }}">
+                                            {{-- <li class="slide {{ Request::is('brand-monitoring') ? 'active' : '' }}">
                                                 <a href="{{ route('brand.monitoring') }}"
                                                     class="side-menu__item {{ Request::is('brand-monitoring') ? 'active' : '' }}">
                                                     <i class="bx bx-line-chart side-menu__icon"></i>
                                                     <span class="side-menu__label">{{ __('Brand Monitoring') }}</span>
                                                 </a>
-                                            </li>
+                                            </li> --}}
 
                                             <li
-                                                class="slide {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
-                                                <a href="{{ route('dark.web.monitoring') }}"
-                                                    class="side-menu__item {{ Request::is('dark-web-monitoring') ? 'active' : '' }}">
+                                                class="slide {{ Request::is('human-risk-management') ? 'active' : '' }}">
+                                                <a href="{{ route('human.risk.management') }}"
+                                                    class="side-menu__item {{ Request::is('human-risk-management') ? 'active' : '' }}">
                                                     <i class="bx bx-globe side-menu__icon"></i>
                                                     <span
-                                                        class="side-menu__label">{{ __('Darkweb Monitoring') }}</span>
+                                                        class="side-menu__label">{{ __('Human Risk Management') }}</span>
                                                 </a>
                                             </li>
 

@@ -462,7 +462,7 @@ Route::middleware([
         Route::get('/scans/{sid}/json', [BrandMonitoringController::class, 'downloadJSON']);
 
         //dark web monitoring routes -----------------------------------------
-        Route::get('/dark-web-monitoring', [DarkWebMonitoringController::class, 'index'])->name('dark.web.monitoring');
+        Route::get('/human-risk-management', [DarkWebMonitoringController::class, 'index'])->name('human.risk.management');
 
         ///settings route-----------------------------------------------------
 
