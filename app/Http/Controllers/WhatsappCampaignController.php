@@ -90,7 +90,7 @@ class WhatsappCampaignController extends Controller
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $config->access_token
-            ])->get('https://graph.facebook.com/v22.0/' . $config->business_id . '/message_templates');
+            ])->withoutVerifying()->get('https://graph.facebook.com/v22.0/' . $config->business_id . '/message_templates');
 
             if ($response->successful()) {
                 $responseData = $response->json();
@@ -104,13 +104,10 @@ class WhatsappCampaignController extends Controller
                 ]);
                 return response()->json(['success' => __('Templates synced successfully')]);
             } else {
-                $responseData = $response->json();
-                if (isset($responseData['error'])) {
-                    return response()->json(['error' => $responseData['error']['message']]);
-                }
+                return response()->json(['error' => $response->body()]);
             }
         } catch (\Throwable $th) {
-            return $response->json(['error' => __('Something went wrong')]);
+            return response()->json(['error' => __('An error occurred while syncing templates') . ':' . $th->getMessage()]);
         }
     }
 
@@ -118,6 +115,13 @@ class WhatsappCampaignController extends Controller
     public function submitCampaign(Request $request)
     {
         //xss check start
+        $request->validate([
+            'camp_name' => 'required',
+            // 'template_name' => 'required',
+            'user_group' => 'required',
+            'campType' => 'required',
+            'empType' => 'required',
+        ]);
 
         $input = $request->only('camp_name');
         foreach ($input as $key => $value) {

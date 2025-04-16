@@ -285,7 +285,8 @@
                 fillAllReq: "{{ __('Please fill all required fields!') }}",
                 attackSel : "{{ __('Attack selected') }}",
                 OK: "{{ __('OK') }}",
-                trainingSel: "{{ __('Training selected') }}"
+                trainingSel: "{{ __('Training selected') }}",
+                campDel : "{{ __('Campaign deleted successfully') }}"
             };
         </script>
         {{-- All Alert's lang conversion of js file --}}

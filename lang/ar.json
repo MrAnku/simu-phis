@@ -1023,5 +1023,13 @@
     "Phishing Website": "موقع تصيد",
     "Phishing Email": "بريد تصيد",
     "Please add at least one training.": "يرجى إضافة تدريب واحد على الأقل.",
-    "Human Risk Intelligence": "ذكاء المخاطر البشرية"
+    "Human Risk Intelligence": "ذكاء المخاطر البشرية",
+    "An error occurred while syncing templates": "حدث خطأ أثناء مزامنة القوالب",
+    "Please fill required fields": "يرجى ملء الحقول المطلوبة",
+    "Please fill temporary variables": "يرجى ملء المتغيرات المؤقتة",
+    "Please select a valid template which has variable": "يرجى اختيار قالب صالح يحتوي على متغير",
+    "Variable": "متغير",
+    "This variable is reserved": "هذا المتغير محجوز.",
+    "enter value": "أدخل القيمة",
+    "Campaign URL": "رابط الحملة"
 }

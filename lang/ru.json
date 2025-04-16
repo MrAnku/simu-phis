@@ -1022,5 +1022,13 @@
     "Phishing Website": "Фишинговый сайт",
     "Phishing Email": "Фишинговое письмо",
     "Please add at least one training.": "Пожалуйста, добавьте хотя бы одно обучение.",
-    "Human Risk Intelligence": "Аналитика человеческих рисков"
+    "Human Risk Intelligence": "Аналитика человеческих рисков",
+    "An error occurred while syncing templates": "Произошла ошибка при синхронизации шаблонов",
+    "Please fill required fields": "Пожалуйста, заполните обязательные поля",
+    "Please fill temporary variables": "Пожалуйста, заполните временные переменные",
+    "Please select a valid template which has variables": "Пожалуйста, выберите действительный шаблон, который имеет переменные",
+    "Variable": "Переменная",
+    "This variable is reserved": "Эта переменная зарезервирована.",
+    "enter value": "введите значение",
+    "Campaign URL": "URL кампании"
 }

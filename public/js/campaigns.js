@@ -71,9 +71,17 @@ function deletecampaign(campid) {
                     campid: campid
                 },
                 success: function (res) {
+                    Swal.fire({
+                        title: alertMsgs.campDel,
+                        icon: 'success',
+                        confirmButtonText: alertMsgs.OK
+                    }).then(function () {
+                        // console.log(res)
+                        window.location.href = window.location.href;
+                    });
 
                     // console.log(res)
-                    window.location.href = window.location.href;
+                    // window.location.href = window.location.href;
                 }
             })
         }

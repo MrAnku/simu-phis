@@ -148,7 +148,9 @@
                             <ul>
                                 <li>
                                     <small>
-                                        {{ __('Add') }} <span class="text-secondary">@{{ var }}</span> {{ __('for variable.') }} {{ __('For example Hello') }} <span class="text-secondary">@{{ var }}</span>
+                                        {{ __('Add') }} <span class="text-secondary">@{{ var }}</span>
+                                        {{ __('for variable.') }} {{ __('For example Hello') }} <span
+                                            class="text-secondary">@{{ var }}</span>
                                         {{ __('Thank you for choosing our services.') }}
                                     </small>
                                 </li>
@@ -189,7 +191,7 @@
                         <label for="input-label" class="form-label">{{ __('Campaign name') }}<sup
                                 class="text-danger">*</sup></label>
                         <input type="text" class="form-control" id="camp_name"
-                            placeholder="{{ __('Template name') }}" required>
+                            placeholder="{{ __('Campaign name') }}" required>
 
                     </div>
                     <div class="mb-3">
@@ -198,16 +200,16 @@
                         <select class="form-select" aria-label="Default select example" name="whatsapp_template"
                             id="whatsapp_template" required>
                             <option value="">{{ __('Choose Template') }}</option>
-                            @forelse ($templates as $template)
+                            @foreach ($templates as $template)
                                 <option value="{{ $template['name'] }}" data-cat="{{ $template['category'] }}"
                                     data-lang="{{ $template['language'] }}"
                                     data-msg="{{ json_encode($template['components']) }}">
                                     {{ $template['name'] }} -
                                     {{ $template['status'] }}
                                 </option>
-                            @empty
-                                <option value="">{{ __('No templates available') }}</option>
-                            @endforelse
+                                {{-- @empty
+                                <option value="">{{ __('No templates available') }}</option> --}}
+                            @endforeach
 
                         </select>
 
@@ -356,12 +358,12 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th scope="col">{{ __('Employee name') }}</th>
+                                    <th scope="col">{{ __('Employee Name') }}</th>
                                     <th scope="col">{{ __('WhatsApp No.') }}</th>
                                     <th scope="col">{{ __('Template Name') }}</th>
                                     <th scope="col">{{ __('Status') }}</th>
                                     <th scope="col">{{ __('Link Clicked') }}</th>
-                                    <th scope="col">{{ __('Employee Compromise') }}</th>
+                                    <th scope="col">{{ __('Employee Compromised') }}</th>
                                     <th scope="col">{{ __('Training Assigned') }}</th>
                                     <th scope="col">{{ __('Date') }}</th>
                                 </tr>
@@ -641,26 +643,26 @@
                             matches.forEach((varib, index) => {
                                 if (index === 0) {
                                     var input = `<div class="col-lg-4">
-                                        <label class="form-label">Variable ${varib}</label>
+                                        <label class="form-label">{{ __('Variable') }} ${varib}</label>
                                         <input type="text" class="form-control form-control-sm" name="name_variable"
-                                            value="Employee name" disabled>
-                                            <small class="mb-3">This variable is reserved</small>
+                                            value="{{ __('Employee Name') }}" disabled>
+                                            <small class="mb-3">{{ __('This variable is reserved') }}</small>
                                     </div>`;
                                     inputs += input;
 
                                 } else if (index === matches.length - 1) {
                                     var input = `<div class="col-lg-4">
-                                        <label class="form-label">Variable ${varib}</label>
+                                        <label class="form-label">{{ __('Variable') }} ${varib}</label>
                                         <input type="text" class="form-control form-control-sm" name="url_variable"
-                                            value="Campaign URL" disabled>
-                                            <small class="mb-3">This variable is reserved</small>
+                                            value="{{ __('Campaign URL') }}" disabled>
+                                            <small class="mb-3">{{ __('This variable is reserved') }}</small>
                                     </div>`;
                                     inputs += input;
                                 } else {
                                     var input = `<div class="col-lg-4">
-                                        <label class="form-label">Variable ${varib}</label>
+                                        <label class="form-label">{{ __('Variable') }} ${varib}</label>
                                         <input type="text" class="form-control form-control-sm" name="temp_variable"
-                                            placeholder="enter value">
+                                            placeholder="{{ __('enter value') }}">
                                     </div>`;
                                     inputs += input;
                                 }
@@ -697,7 +699,38 @@
                 var componentsArray = [];
                 var valuesArray = [];
 
-                // console.log(inputs.length);
+                if($("#whatsapp_template").val() == "hello_world"){
+                    Swal.fire({
+                        title: "{{ __('Please select a valid template which has variable') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
+                    return;
+                }
+
+                var hasEmpty = false;
+
+                inputs.each(function() {
+                    if ($(this).val().trim() === "") {
+                        hasEmpty = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmpty) {
+                    Swal.fire({
+                        title: "{{ __('Please fill temporary variables') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    });
+                    return;
+                }
+
+
+
+
+
+
                 if (inputs.length !== 0) {
                     // Iterate over the inputs and collect their values
                     inputs.each(function() {
@@ -735,12 +768,22 @@
                 }
                 console.log("final", finalBody);
 
+                if (camp_name.value == '' || fetchGroup.value == '' || campType.value == '' || groupType.value == '' || training
+                    .value == '' || training_type.value == '' || $("#whatsapp_template").val() == '') {
+                    Swal.fire({
+                        title: "{{ __('Please fill required fields') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
+                    return;
+                }
+
                 // console.log(finalBody);
                 $.post({
                     url: '/whatsapp-submit-campaign',
                     data: finalBody,
                     success: function(res) {
-                        console.log("check", res);
+                        // console.log("check", res);
                         checkResponse(res)
                     }
                 })
@@ -775,7 +818,8 @@
                     showCancelButton: true,
                     confirmButtonColor: '#e6533c',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: "{{ __('Delete') }}"
+                    confirmButtonText: "{{ __('Delete') }}",
+                    cancelButtonText: "{{ __('Cancel') }}"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
