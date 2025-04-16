@@ -50,6 +50,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingModuleById']);
 
     Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining']);
-    Route::post('/support/load-conversations', [SupportController::class, 'loadConversations']);
-    Route::post('/support/submit-reply', [SupportController::class, 'submitReply']);
+    Route::prefix('support')->group(function () {
+        Route::post('/load-conversations', [SupportController::class, 'loadConversations']);
+        Route::post('/submit-reply', [SupportController::class, 'submitReply']);
+        Route::post('/create-ticket', [SupportController::class, 'createTicket']);
+    });
 });
