@@ -569,6 +569,7 @@ function deleteBlueUser(usrId, grpId) {
 }
 
 $("#newDomainVerificationModalBtn").click(function () {
+    $("#domainVerificationModal").modal("hide"); // Hide the first modal
     $("#newDomainVerificationModal").modal("show"); // Show the second modal
 });
 

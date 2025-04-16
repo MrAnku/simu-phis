@@ -434,52 +434,52 @@
 
                                                             <select class="form-select" name="training_lang"
                                                                 id="training_lang">
-                                                                <option value="sq">{{ __('Albanian') }}</option>
-                                                                <option value="ar">{{ __('Arabic') }}</option>
-                                                                <option value="az">{{ __('Azerbaijani') }}</option>
-                                                                <option value="bn">{{ __('Bengali') }}</option>
-                                                                <option value="bg">{{ __('Bulgarian') }}</option>
-                                                                <option value="ca">{{ __('Catalan') }}</option>
-                                                                <option value="zh">{{ __('Chinese') }}</option>
-                                                                <option value="zt">{{ __('Chinese (traditional)') }}
+                                                                <option value="sq">Albanian</option>
+                                                                <option value="ar">Arabic</option>
+                                                                <option value="az">Azerbaijani</option>
+                                                                <option value="bn">Bengali</option>
+                                                                <option value="bg">Bulgarian</option>
+                                                                <option value="ca">Catalan</option>
+                                                                <option value="zh">Chinese</option>
+                                                                <option value="zt">Chinese (traditional)
                                                                 </option>
-                                                                <option value="cs">{{ __('Czech') }}</option>
-                                                                <option value="da">{{ __('Danish') }}</option>
-                                                                <option value="nl">{{ __('Dutch') }}</option>
-                                                                <option value="en" selected="">{{ __('English') }}
+                                                                <option value="cs">Czech</option>
+                                                                <option value="da">Danish</option>
+                                                                <option value="nl">Dutch</option>
+                                                                <option value="en" selected="">English
                                                                 </option>
-                                                                <option value="eo">{{ __('Esperanto') }}</option>
-                                                                <option value="et">{{ __('Estonian') }}</option>
-                                                                <option value="fi">{{ __('Finnish') }}</option>
-                                                                <option value="fr">{{ __('French') }}</option>
-                                                                <option value="de">{{ __('German') }}</option>
-                                                                <option value="el">{{ __('Greek') }}</option>
-                                                                <option value="he">{{ __('Hebrew') }}</option>
-                                                                <option value="hi">{{ __('Hindi') }}</option>
-                                                                <option value="hu">{{ __('Hungarian') }}</option>
-                                                                <option value="id">{{ __('Indonesian') }}</option>
-                                                                <option value="ga">{{ __('Irish') }}</option>
-                                                                <option value="it">{{ __('Italian') }}</option>
-                                                                <option value="ja">{{ __('Japanese') }}</option>
-                                                                <option value="ko">{{ __('Korean') }}</option>
-                                                                <option value="lv">{{ __('Latvian') }}</option>
-                                                                <option value="lt">{{ __('Lithuanian') }}</option>
-                                                                <option value="ms">{{ __('Malay') }}</option>
-                                                                <option value="nb">{{ __('Norwegian') }}</option>
-                                                                <option value="fa">{{ __('Persian') }}</option>
-                                                                <option value="pl">{{ __('Polish') }}</option>
-                                                                <option value="pt">{{ __('Portuguese') }}</option>
-                                                                <option value="ro">{{ __('Romanian') }}</option>
-                                                                <option value="ru">{{ __('Russian') }}</option>
-                                                                <option value="sk">{{ __('Slovak') }}</option>
-                                                                <option value="sl">{{ __('Slovenian') }}</option>
-                                                                <option value="es">{{ __('Spanish') }}</option>
-                                                                <option value="sv">{{ __('Swedish') }}</option>
-                                                                <option value="tl">{{ __('Tagalog') }}</option>
-                                                                <option value="th">{{ __('Thai') }}</option>
-                                                                <option value="tr">{{ __('Turkish') }}</option>
-                                                                <option value="uk">{{ __('Ukranian') }}</option>
-                                                                <option value="ur">{{ __('Urdu') }}</option>
+                                                                <option value="eo">Esperanto</option>
+                                                                <option value="et">Estonian</option>
+                                                                <option value="fi">Finnish</option>
+                                                                <option value="fr">French</option>
+                                                                <option value="de">German</option>
+                                                                <option value="el">Greek</option>
+                                                                <option value="he">Hebrew</option>
+                                                                <option value="hi">Hindi</option>
+                                                                <option value="hu">Hungarian</option>
+                                                                <option value="id">Indonesian</option>
+                                                                <option value="ga">Irish</option>
+                                                                <option value="it">Italian</option>
+                                                                <option value="ja">Japanese</option>
+                                                                <option value="ko">Korean</option>
+                                                                <option value="lv">Latvian</option>
+                                                                <option value="lt">Lithuanian</option>
+                                                                <option value="ms">Malay</option>
+                                                                <option value="nb">Norwegian</option>
+                                                                <option value="fa">Persian</option>
+                                                                <option value="pl">Polish</option>
+                                                                <option value="pt">Portuguese</option>
+                                                                <option value="ro">Romanian</option>
+                                                                <option value="ru">Russian</option>
+                                                                <option value="sk">Slovak</option>
+                                                                <option value="sl">Slovenian</option>
+                                                                <option value="es">Spanish</option>
+                                                                <option value="sv">Swedish</option>
+                                                                <option value="tl">Tagalog</option>
+                                                                <option value="th">Thai</option>
+                                                                <option value="tr">Turkish</option>
+                                                                <option value="uk">Ukranian</option>
+                                                                <option value="ur">Urdu</option>
                                                             </select>
                                                         </div>
                                                         <div>
@@ -801,6 +801,14 @@
     @endpush
 
     @push('newscripts')
+    <script>
+        const statusTranslations = {
+            pending: "{{ __('Pending') }}",
+            completed: "{{ __('Completed') }}",
+            failed: "{{ __('Failed') }}"
+        };
+    </script>
+    
         <script>
             $('#emp_group').change(function() {
                 var emp_group = $('#emp_group option:selected').text().trim();
@@ -857,7 +865,7 @@
                                         <span class="badge bg-outline-primary">${response.phone_no}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-${(response.status === 'pending') ? 'warning' : 'success'}">${(capitalizeFirstLetter(response.status))}</span>
+                                        <span class="badge bg-${(response.status === 'pending') ? 'warning' : 'success'}">${statusTranslations[response.status] ?? response.status}</span>
                                     </td>
                                 </tr>`;
 

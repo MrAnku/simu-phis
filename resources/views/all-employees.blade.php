@@ -387,7 +387,7 @@
                         if (key == 'usrEmail') {
                             if (!isValidEmail(value)) {
                                 Swal.fire({
-                                    title: "Please enter a valid email!",
+                                    title: "{{ __('Please enter a valid email!') }}",
                                     icon: 'error',
                                     confirmButtonText: "{{ __('OK') }}"
                                 })
