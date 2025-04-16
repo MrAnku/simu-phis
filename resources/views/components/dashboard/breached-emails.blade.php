@@ -1,7 +1,7 @@
 <div class="card custom-card">
     <div class="card-header">
         <div class="card-title">
-            {{ __('Dark Web Activity (5 Most Recent Breaches)') }}
+            {{ __('Human Risk Intelligence (5 Most Recent Breaches)') }}
         </div>
     </div>
     <div class="card-body">

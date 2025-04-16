@@ -47,7 +47,7 @@
     "Phishing Simulation": "Симуляция фишинга",
     "Recent Campaigns": "Последние кампании",
     "Employee compromised": "Сотрудник скомпрометирован",
-    "Dark Web Activity (5 Most Recent Breaches)": "Активность в даркнете (5 последних утечек)",
+    "Human Risk Intelligence (5 Most Recent Breaches)": "Аналитика человеческих рисков (5 последних утечек)",
     "Browser Usage": "Использование браузера",
     "OS Usage": "Использование ОС",
     "% of total used": "% от общего количества использованных",
@@ -1022,6 +1022,5 @@
     "Phishing Website": "Фишинговый сайт",
     "Phishing Email": "Фишинговое письмо",
     "Please add at least one training.": "Пожалуйста, добавьте хотя бы одно обучение.",
-     "Human Risk Management": "Управление человеческими рисками"
-
+    "Human Risk Intelligence": "Аналитика человеческих рисков"
 }

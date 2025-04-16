@@ -56,7 +56,7 @@
     "Campaign Report of AI Vishing Simulation": "تقرير الحملة لمحاكاة التصيد الصوتي باستخدام الذكاء الاصطناعي",
     "Campaign ID not found in session.": "لم يتم العثور على معرف الحملة في الجلسة.",
     "Campaign not found.": "لم يتم العثور على الحملة.",
-    "Dark Web Activity (5 Most Recent Breaches)": "نشاط الويب المظلم (أحدث 5 خروقات)",
+    "Human Risk Intelligence (5 Most Recent Breaches)": "ذكاء المخاطر البشرية (أحدث 5 خروقات)",
     "Browser Usage": "استخدام المتصفح",
     "OS Usage": "استخدام نظام التشغيل",
     "% of total used": "% من إجمالي المستخدمة",
@@ -1023,6 +1023,5 @@
     "Phishing Website": "موقع تصيد",
     "Phishing Email": "بريد تصيد",
     "Please add at least one training.": "يرجى إضافة تدريب واحد على الأقل.",
-    "Human Risk Management": "إدارة المخاطر البشرية"
-
+    "Human Risk Intelligence": "ذكاء المخاطر البشرية"
 }

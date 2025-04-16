@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('Human Risk Management') . ' - ' . __('Phishing awareness training program'))
+@section('title', __('Human Risk Intelligence') . ' - ' . __('Phishing awareness training program'))
 
 @section('main-content')
 
@@ -12,7 +12,7 @@
                     <div class="card custom-card">
                         <div class="card-header">
                             <div class="card-title">
-                                {{ __('Human Risk Management') }}
+                                {{ __('Human Risk Intelligence') }}
                             </div>
                         </div>
                         <div class="card-body">

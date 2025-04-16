@@ -247,9 +247,9 @@
                                     </li>
 
                                     <li
-                                        class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('human-risk-management') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('brand-monitoring') || Request::is('human-risk-intelligence') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('human-risk-management') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('brand-monitoring') || Request::is('human-risk-intelligence') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">{{ __('Threat Monitoring') }}</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -268,12 +268,12 @@
                                             </li> --}}
 
                                             <li
-                                                class="slide {{ Request::is('human-risk-management') ? 'active' : '' }}">
-                                                <a href="{{ route('human.risk.management') }}"
-                                                    class="side-menu__item {{ Request::is('human-risk-management') ? 'active' : '' }}">
+                                                class="slide {{ Request::is('human-risk-intelligence') ? 'active' : '' }}">
+                                                <a href="{{ route('human.risk.intelligence') }}"
+                                                    class="side-menu__item {{ Request::is('human-risk-intelligence') ? 'active' : '' }}">
                                                     <i class="bx bx-globe side-menu__icon"></i>
                                                     <span
-                                                        class="side-menu__label">{{ __('Human Risk Management') }}</span>
+                                                        class="side-menu__label">{{ __('Human Risk Intelligence') }}</span>
                                                 </a>
                                             </li>
 
