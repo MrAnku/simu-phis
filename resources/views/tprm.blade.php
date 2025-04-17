@@ -1653,7 +1653,7 @@
             domainList.innerHTML = domains
                 .map((domain, index) => `<li class="list-group-item d-flex justify-content-between">
                                ${domain}
-                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">{{ __('Remove') }}"</button>
+                               <button class="btn btn-sm btn-danger" onclick="removeDomain(${index})">{{ __('Remove') }}</button>
                              </li>`)
                 .join("");
         }
@@ -1822,14 +1822,12 @@
                                 <li class="nav-item" role="presentation" id="phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#phishing_campaign"
-                                        aria-selected="true">{{ __('Phishing
-                                                                                                                                                                Campaign') }}</a>
+                                        aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
                                         href="#training_campaign" aria-selected="false"
-                                        tabindex="-1">{{ __('Training
-                                                                                                                                                                Campaign') }}</a>
+                                        tabindex="-1">{{ __('Training Campaign') }}</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
