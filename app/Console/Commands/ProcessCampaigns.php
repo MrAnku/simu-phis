@@ -58,28 +58,31 @@ class ProcessCampaigns extends Command
 
   private function processScheduledCampaigns()
   {
-    $companies = DB::table('company')->get();
+    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
 
-    foreach ($companies as $company) {
+    if (!$companies) {
+      return;
+    }
+      foreach ($companies as $company) {
 
-      $campaigns = Campaign::where('status', 'pending')
-        ->where('company_id', $company->company_id)
-        ->get();
-
-      if ($campaigns) {
-        foreach ($campaigns as $campaign) {
-          $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-          $currentDateTime = Carbon::now();
-
-          if ($launchTime->lessThan($currentDateTime)) {
-
-            $this->makeCampaignLive($campaign->campaign_id);
-
-            $campaign->update(['status' => 'running']);
+        $campaigns = Campaign::where('status', 'pending')
+          ->where('company_id', $company->company_id)
+          ->get();
+  
+        if ($campaigns) {
+          foreach ($campaigns as $campaign) {
+            $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
+            $currentDateTime = Carbon::now();
+  
+            if ($launchTime->lessThan($currentDateTime)) {
+  
+              $this->makeCampaignLive($campaign->campaign_id);
+  
+              $campaign->update(['status' => 'running']);
+            }
           }
         }
       }
-    }
   }
 
   private function makeCampaignLive($campaignid)
@@ -130,93 +133,96 @@ class ProcessCampaigns extends Command
 
   private function sendCampaignLiveEmails()
   {
-    $companies = DB::table('company')->get();
+    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
 
-    foreach ($companies as $company) {
-      $company_id = $company->company_id;
-
-      $campaigns = CampaignLive::where('sent', 0)
-        ->where('company_id', $company_id)
-        ->take(5)
-        ->get();
-
-      foreach ($campaigns as $campaign) {
-
-        if ($campaign->phishing_material == null) {
-
-          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-
-          if ($all_camp->training_assignment == 'all') {
-
-            $trainings = json_decode($all_camp->training_module, true);
-            $this->sendTraining($campaign, $trainings);
-          } else {
-            $this->sendTraining($campaign);
-          }
-        }
-
-        if ($campaign->phishing_material) {
-          $phishingMaterial = DB::table('phishing_emails')->find($campaign->phishing_material);
-
-          if ($phishingMaterial) {
-            $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
-            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
-
-            if ($senderProfile && $websiteColumns) {
-
-              $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
-
-              $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
-
-              $mailBody = file_get_contents($mailBody);
-
-              $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-              $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
-
-
-
-              if ($campaign->email_lang !== 'en') {
-                $templateBodyPath = public_path('translated_temp/translated_file.html');
-                // Ensure the directory exists
-                if (!File::exists(dirname($templateBodyPath))) {
-                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
-                }
-                // Put the file in the public directory
-                File::put($templateBodyPath, $mailBody);
-                $mailBody = $this->changeEmailLang($templateBodyPath, $campaign->email_lang);
-              }
-
-              $mailData = [
-                'email' => $campaign->user_email,
-                'from_name' => $senderProfile->from_name,
-                'email_subject' => $phishingMaterial->email_subject,
-                'mailBody' => $mailBody,
-                'from_email' => $senderProfile->from_email,
-                'sendMailHost' => $senderProfile->host,
-                'sendMailUserName' => $senderProfile->username,
-                'sendMailPassword' => $senderProfile->password,
-              ];
-
-              if ($this->sendMail($mailData)) {
-
-                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                echo "Email sent to: " . $campaign->user_email . "\n";
-              } else {
-                echo "Email not sent to: " . $campaign->user_email . "\n";
-              }
-
-              $campaign->update(['sent' => 1]);
-
-              CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('emails_delivered');
+    if (!$companies) {
+      return;
+    }
+      foreach ($companies as $company) {
+        $company_id = $company->company_id;
+  
+        $campaigns = CampaignLive::where('sent', 0)
+          ->where('company_id', $company_id)
+          ->take(5)
+          ->get();
+  
+        foreach ($campaigns as $campaign) {
+  
+          if ($campaign->phishing_material == null) {
+  
+            $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+  
+            if ($all_camp->training_assignment == 'all') {
+  
+              $trainings = json_decode($all_camp->training_module, true);
+              $this->sendTraining($campaign, $trainings);
             } else {
-              echo "sender profile or website is not associated";
+              $this->sendTraining($campaign);
+            }
+          }
+  
+          if ($campaign->phishing_material) {
+            $phishingMaterial = DB::table('phishing_emails')->find($campaign->phishing_material);
+  
+            if ($phishingMaterial) {
+              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+              $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
+  
+              if ($senderProfile && $websiteColumns) {
+  
+                $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
+  
+                $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
+  
+                $mailBody = file_get_contents($mailBody);
+  
+                $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
+                $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+                $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+  
+  
+  
+                if ($campaign->email_lang !== 'en') {
+                  $templateBodyPath = public_path('translated_temp/translated_file.html');
+                  // Ensure the directory exists
+                  if (!File::exists(dirname($templateBodyPath))) {
+                    File::makeDirectory(dirname($templateBodyPath), 0755, true);
+                  }
+                  // Put the file in the public directory
+                  File::put($templateBodyPath, $mailBody);
+                  $mailBody = $this->changeEmailLang($templateBodyPath, $campaign->email_lang);
+                }
+  
+                $mailData = [
+                  'email' => $campaign->user_email,
+                  'from_name' => $senderProfile->from_name,
+                  'email_subject' => $phishingMaterial->email_subject,
+                  'mailBody' => $mailBody,
+                  'from_email' => $senderProfile->from_email,
+                  'sendMailHost' => $senderProfile->host,
+                  'sendMailUserName' => $senderProfile->username,
+                  'sendMailPassword' => $senderProfile->password,
+                ];
+  
+                if ($this->sendMail($mailData)) {
+  
+                  $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+  
+                  echo "Email sent to: " . $campaign->user_email . "\n";
+                } else {
+                  echo "Email not sent to: " . $campaign->user_email . "\n";
+                }
+  
+                $campaign->update(['sent' => 1]);
+  
+                CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('emails_delivered');
+              } else {
+                echo "sender profile or website is not associated";
+              }
             }
           }
         }
       }
-    }
   }
 
   private function generateWebsiteUrl($websiteColumns, $campaign)
@@ -614,7 +620,14 @@ class ProcessCampaigns extends Command
 
   private function checkWhitelabeled($company_id)
   {
-    $company = Company::with('partner')->where('company_id', $company_id)->first();
+    $company = Company::with('partner')
+                    ->where('company_id', $company_id)
+                    ->where('approved', true)
+                    ->where('service_status', true)
+                    ->first();
+    if(!$company){
+      return;
+    }
 
     $partner_id = $company->partner->partner_id;
     $company_email = $company->email;

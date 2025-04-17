@@ -35,7 +35,11 @@ class ProcessWhatsappCampaign extends Command
     public function handle()
     {
         //getting companies
-        $companies = Company::where('service_status', 1)->get();
+        $companies = Company::where('service_status', 1)->where('approved', true)->get();
+
+        if (!$companies) {
+            return;
+          }
 
         foreach ($companies as $company) {
             $campaigns = WhatsAppCampaignUser::where('status', 'pending')->where('company_id', $company->company_id)->take(5)->get();

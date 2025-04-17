@@ -44,8 +44,11 @@ class ProcessTprmCampaigns extends Command
 
   private function tprocessScheduledCampaigns()
   {
-    $companies = DB::table('company')->get();
+    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
 
+    if (!$companies) {
+      return;
+    }
     foreach ($companies as $company) {
       $company_id = $company->company_id;
 
@@ -71,7 +74,10 @@ class ProcessTprmCampaigns extends Command
 
   private function tsendCampaignEmails()
   {
-    $companies = DB::table('company')->get();
+    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
+    if (!$companies) {
+      return;
+    }
     echo "Fetched " . count($companies) . " companies.\n";
 
     foreach ($companies as $company) {
@@ -183,8 +189,6 @@ class ProcessTprmCampaigns extends Command
             echo "No phishing material found for the campaign.\n";
           }
         }
-
-       
       }
     }
   }

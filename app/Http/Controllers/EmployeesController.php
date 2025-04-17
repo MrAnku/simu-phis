@@ -740,10 +740,10 @@ class EmployeesController extends Controller
         $companyId = Auth::user()->company_id;
 
         $request->validate([
-            'ldap_host' => 'required|min:5|max:50',
-            'ldap_dn' => 'required|min:5|max:50',
-            'ldap_admin' => 'required|min:5|max:50',
-            'ldap_pass' => 'required|min:5|max:50',
+            'ldap_host' => 'required|min:5|max:50|regex:/^[^<>]*$/',
+            'ldap_dn' => 'required|min:5|max:50|regex:/^[^<>]*$/',
+            'ldap_admin' => 'required|min:5|max:50|regex:/^[^<>]*$/',
+            'ldap_pass' => 'required|min:5|max:50|regex:/^[^<>]*$/',
         ]);
 
         DB::table('ldap_ad_config')

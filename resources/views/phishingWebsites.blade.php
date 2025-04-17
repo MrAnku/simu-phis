@@ -13,10 +13,10 @@
                         data-bs-target="#newWebsiteModal">{{ __('New Website') }}</button>
                 </div>
 
-                <div>
+                {{-- <div>
                     <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
                         data-bs-target="#generateWebsiteModal">{{ __('Gen4 AI Builder') }}</button>
-                </div>
+                </div> --}}
 
 
 

@@ -342,7 +342,7 @@ class ProcessAiCampaigns extends Command
 
     private function checkWhitelabeled($company_id)
     {
-        $company = Company::with('partner')->where('company_id', $company_id)->first();
+        $company = Company::with('partner')->where('company_id', $company_id)->where('approved', true)->where('service_status', true)->first();
 
         $partner_id = $company->partner->partner_id;
         $company_email = $company->email;
