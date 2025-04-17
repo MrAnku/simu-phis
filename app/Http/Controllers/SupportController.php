@@ -45,9 +45,10 @@ class SupportController extends Controller
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return redirect()->back()->withErrors(['error' => __('Invalid input detected.')]);
+                return response()->json(['error' => 'Invalid input detected.'], 422);
             }
         }
+
         array_walk_recursive($input, function (&$input) {
             $input = strip_tags($input);
         });
@@ -86,8 +87,13 @@ class SupportController extends Controller
 
         log_action("{$email} created support ticket");
 
-        return redirect()->back()->with(['success' => __('Ticket created successfully')]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket created successfully',
+            'ticket_no' => $ticket_no
+        ], 201);
     }
+
 
     public function loadConversations(Request $request)
     {
