@@ -136,15 +136,11 @@ class SupportController extends Controller
 
     public function submitReply(Request $request)
     {
-        // Validate request input
-        $validator = Validator::make($request->all(), [
+        // Auto validation - will throw 422 error automatically if fails
+        $request->validate([
             'tkt_id' => 'required|integer',
             'msg' => 'required|string',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['status' => 0, 'msg' => $validator->errors()->first()], 422);
-        }
 
         $input = $request->only(['tkt_id', 'msg']);
 
@@ -153,7 +149,7 @@ class SupportController extends Controller
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
                 return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')], 400);
             }
-            $input[$key] = strip_tags($value); // Strip tags from input
+            $input[$key] = strip_tags($value);
         }
 
         try {
@@ -165,7 +161,6 @@ class SupportController extends Controller
                 'company_id' => Auth::user()->company_id,
             ]);
 
-            // Log custom action
             log_action("Company replied in raised ticket");
 
             return response()->json(['status' => 1, 'msg' => __('Reply submitted successfully')]);
@@ -173,4 +168,41 @@ class SupportController extends Controller
             return response()->json(['status' => 0, 'msg' => 'Something went wrong.'], 500);
         }
     }
+
+
+    // public function submitReply(Request $request)
+    // {
+    //     $request->validate([
+    //         'tkt_id' => 'required|integer',
+    //         'msg' => 'required|string',
+    //     ]);
+
+    //     $input = $request->all();
+    //     foreach ($input as $key => $value) {
+    //         if (preg_match('/<[^>]*>|<\?php/', $value)) {
+    //             return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
+    //         }
+    //     }
+    //     array_walk_recursive($input, function (&$input) {
+    //         $input = strip_tags($input);
+    //     });
+    //     $request->merge($input);
+
+    //     $tkt_id = $request->input('tkt_id');
+    //     $msg = $request->input('msg');
+    //     $today = now();
+    //     $company_id = Auth::user()->company_id;
+
+    //     DB::table('cp-tkts_conversations')->insert([
+    //         'tkt_id' => $tkt_id,
+    //         'person' => 'company',
+    //         'msg' => $msg,
+    //         'date' => $today,
+    //         'company_id' => $company_id,
+    //     ]);
+
+    //     log_action("Company replied in raised ticket");
+
+    //     return response()->json(['status' => 1, 'msg' => __('Reply submitted successfully')]);
+    // }
 }
