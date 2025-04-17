@@ -16,6 +16,7 @@ use App\Models\TrainingModule;
 use App\Models\TprmCampaignLive;
 use App\Models\TpmrVerifiedDomain;
 use App\Models\TprmCampaignReport;
+use App\Models\TprmRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\TrainingAssignedUser;
@@ -99,6 +100,12 @@ class TprmController extends Controller
         // return $allDomains;
         // $allDomainsDownload = TpmrVerifiedDomain::where('company_id', $companyId)->get();
 
+        $companyId = Auth::user()->company_id;
+
+        $company = TprmRequest::where('company_id', $companyId)->first();
+
+        // $company = DB::table('ai_call_reqs')->where('company_id', $companyId)->first();
+
         return view('tprm', compact(
             'allCamps',
             'usersGroups',
@@ -111,7 +118,8 @@ class TprmController extends Controller
             'totalEmps',
             'verifiedDomains',
             'notVerifiedDomains',
-            'allDomains'
+            'allDomains',
+            'company'
         ));
     }
     public function test()
@@ -1039,5 +1047,21 @@ class TprmController extends Controller
         $emails = TprmUsers::where('user_email', 'like', '%' . $domain)->where('company_id', $companyId)->pluck('user_email');
 
         return response()->json($emails); // Return emails as JSON response
+    }
+
+    public function submitReq(Request $request)
+    {
+
+        $companyId = Auth::user()->company_id;
+        $partnerId = Auth::user()->partner_id;
+
+        TprmRequest::create([
+            'company_id' => $companyId,
+            'partner_id' => $partnerId,
+            'status' => 0
+        ]);
+
+        log_action('Request submitted for TPRM vishing simulation');
+        return redirect()->back()->with('success', __('Your request has been submitted successfully.'));
     }
 }

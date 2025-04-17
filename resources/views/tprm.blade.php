@@ -6,102 +6,211 @@
 
     <div class="main-content app-content">
         <div class="container-fluid mt-4">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <button type="button" class="btn btn-primary mb-3 me-2" data-bs-toggle="modal"
-                        data-bs-target="#newCampModal">
-                        {{ __('New Campaign') }}
-                    </button>
-                    <button type="button" class="btn btn-success mb-3 me-2" data-bs-toggle="modal"
-                        data-bs-target="#newdomainVerificationModal">
-                        {{ __('Show/Add Email') }}
-                    </button>
-                </div>
+            @if ($company && $company->status == 0)
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">{{ __('TPRM') }}</div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="text-warning">
+                                    {{ __('Your request is in pending state. We will update you soon.') }}
+                                </h5>
 
-                <div>
-                    @if (!$allCamps->isEmpty())
-                        <button type="button" class="btn btn-danger mb-3 me-2" data-bs-toggle="modal"
-                            data-bs-target="#domainDownloadModal">
-                            {{ __('Download Scoring') }}
-                        </button>
-                    @endif
 
-                    <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
-                        data-bs-target="#domainVerificationModal">
-                        {{ __('Domain Verification') }}
-                    </button>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-xl-12">
-                    <div class="card custom-card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                {{ __('Manage Campaign') }}
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>{{ __('Campaign Name') }}</th>
-                                            <th>{{ __('Domain') }}</th>
-                                            <th>{{ __('Campaign Type') }}</th>
-                                            <th>{{ __('Action') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($allCamps as $index => $campaign)
-                                            <tr>
-                                                <td>{{ $index + 1 }}</td>
-                                                <td>
-                                                    @if ($campaign->status != 'Not Scheduled')
-                                                        <a href="#" class="text-primary"
-                                                            onclick="fetchCampaignDetails('{{ e($campaign->campaign_id) }}')"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#campaignReportModal">{{ e($campaign->campaign_name) }}</a>
-                                                    @else
-                                                        {{ e($campaign->campaign_name) }}
-                                                    @endif
-                                                </td>
-                                                <td>{{ $campaign->users_group_name }}</td>
-
-                                                <td>
-                                                    <span
-                                                        class="badge bg-secondary-transparent">{{ $campaign->campaign_type }}</span>
-
-                                                </td>
-
-                                                <td>
-                                                    <button
-                                                        class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
-                                                        title="Delete"
-                                                        onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
-                                                        <i class="ri-delete-bin-line"></i>
-                                                    </button>
+                    </div>
 
 
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center">{{ __('No Campaigns') }}</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                </div>
+            @elseif ($company && $company->status == 1)
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-primary mb-3 me-2" data-bs-toggle="modal"
+                            data-bs-target="#newCampModal">
+                            {{ __('New Campaign') }}
+                        </button>
+                        <button type="button" class="btn btn-success mb-3 me-2" data-bs-toggle="modal"
+                            data-bs-target="#newdomainVerificationModal">
+                            {{ __('Show/Add Email') }}
+                        </button>
+                    </div>
+
+                    <div>
+                        @if (!$allCamps->isEmpty())
+                            <button type="button" class="btn btn-danger mb-3 me-2" data-bs-toggle="modal"
+                                data-bs-target="#domainDownloadModal">
+                                {{ __('Download Scoring') }}
+                            </button>
+                        @endif
+
+                        <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal"
+                            data-bs-target="#domainVerificationModal">
+                            {{ __('Domain Verification') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    {{ __('Manage Campaign') }}
+                                </div>
                             </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ __('Campaign Name') }}</th>
+                                                <th>{{ __('Domain') }}</th>
+                                                <th>{{ __('Campaign Type') }}</th>
+                                                <th>{{ __('Action') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($allCamps as $index => $campaign)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>
+                                                        @if ($campaign->status != 'Not Scheduled')
+                                                            <a href="#" class="text-primary"
+                                                                onclick="fetchCampaignDetails('{{ e($campaign->campaign_id) }}')"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#campaignReportModal">{{ e($campaign->campaign_name) }}</a>
+                                                        @else
+                                                            {{ e($campaign->campaign_name) }}
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $campaign->users_group_name }}</td>
 
-                            <div class="mt-4">
-                                {{ $allCamps->links() }}
+                                                    <td>
+                                                        <span
+                                                            class="badge bg-secondary-transparent">{{ $campaign->campaign_type }}</span>
+
+                                                    </td>
+
+                                                    <td>
+                                                        <button
+                                                            class="btn btn-icon btn-danger-transparent rounded-pill btn-wave"
+                                                            title="Delete"
+                                                            onclick="deletecampaign('{{ e($campaign->campaign_id) }}')">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+
+
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center">{{ __('No Campaigns') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="mt-4">
+                                    {{ $allCamps->links() }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @else
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">{{ __('TPRM') }}</div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="text-warning">
+                                    {{ __('TPRM feature is not enabled in your account. Please contact your service provider to enable this feature.') }}
+                                </h5>
+
+
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Introduction') }}</h5>
+                                    <p class=" text-muted">
+                                        {{ __('simUphish is a Human Risk Management platform that provides phishing simulations and cybersecurity awareness training. Our Third-Party Risk Management (TPRM) functionality enables our clients to extend training and simulated phishing campaigns to their external vendors, suppliers, and other third-party partners.') }}
+                                    </p>
+                                    <p class=" text-muted">
+                                        {{ __('Before enabling this functionality, we require your organization’s formal consent to ensure that all external engagements are conducted ethically, securely, and with your approval.') }}
+                                    </p>
+                                </div>
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Scope of TPRM Functionality') }}</h5>
+                                    <p class=" text-muted">{{ __('By enabling TPRM, SimUphish will') }}:</p>
+                                    <ul class=" text-muted">
+                                        <li>{{ __('Allow authorized users within your organization to initiate phishing simulations and awareness training campaigns targeting third-party domains (i.e., vendors/suppliers)') }}.</li>
+                                        <li>{{ __('Send simulated phishing emails and cybersecurity training content to the email addresses of verified external partners') }}.</li>
+                                        <li>{{ __('Collect and report training engagement metrics such as email opens, link clicks, and course completions for internal use') }}.</li>
+                                    </ul>
+                                    <p class=" text-muted">
+                                        {{ __('Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis') }}.
+                                    </p>
+                                </div>
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Verification Before Use') }}</h5>
+                                    <p class=" text-muted">
+                                        {{ __('simUphish will not activate campaigns to any third-party domain until your team submits the following to verify legitimacy') }}:
+                                    </p>
+                                    <ul class=" text-muted">
+                                        <li>{{ __('A contract, purchase order, or agreement with the external party') }}.</li>
+                                        <li>{{ __('A recent communication trail or invoice proving the active vendor relationship') }}.
+                                        </li>
+                                    </ul>
+                                    <p class=" text-muted">
+                                        {{ __('Verification is required once per domain and is processed within 2–4 business days') }}.
+                                    </p>
+                                </div>
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Data Privacy & Security') }}</h5>
+                                    <ul class=" text-muted">
+                                        <li>{{ __('simUphish collects only minimal metadata (such as email address, open/click status, and training progress)') }}.</li>
+                                        <li>{{ __('All data is encrypted at rest and in transit, stored securely, and accessed only by authorized personnel') }}.</li>
+                                        <li>{{ __('We comply with GDPR, ISO 27001, UK Data Protection Act, and other global privacy standards') }}.</li>
+                                        <li>{{ __('Data from third-party vendors will never be used outside the scope of the simulation and training campaign') }}.</li>
+                                    </ul>
+                                </div>
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Client Responsibilities') }}</h5>
+                                    <p class=" text-muted">
+                                        {{ __('By enabling TPRM, your organization agrees to') }}:
+                                    </p>
+                                    <ul class=" text-muted">
+                                        <li>{{ __('Use the functionality only for risk evaluation, training, and awareness — not for punitive or non-consensual targeting') }}.</li>
+                                        <li>{{ __('Ensure any legal, ethical, or contractual obligations toward third-party contacts are met before adding their domains') }}.</li>
+                                        <li>{{ __('Notify simUphish immediately if a domain should be removed from future campaigns') }}.</li>
+                                    </ul>
+                                </div>
+                                <div class="mt-3">
+                                    <h5 class="text-lg-start fw-semibold mb-1">{{ __('Consent Duration and Revocation') }}
+                                    </h5>
+                                    <ul class=" text-muted">
+                                        <li>{{ __('This consent is valid indefinitely from the date of acceptance unless explicitly withdrawn') }}.</li>
+                                        <li>{{ __('Your organization may revoke consent at any time by emailing contact@simuphish.com with a written request') }}.</li>
+                                        <li>{{ __('Once revoked, no further training or simulations will be sent to third-party domains, and all related activity will be paused or discontinued') }}.</li>
+                                    </ul>
+                                </div>
+                                <div class="mt-3">
+
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModalScrollable2"
+                                        class="btn btn-primary btn-wave">{{ __('Request for TPRM Feature') }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            @endif
 
 
         </div>
@@ -114,6 +223,45 @@
 
 
     {{-- --------------------- modals ---------------------- --}}
+
+    {{-- Request TPRM modal --}}
+
+    <div class="modal fade" id="exampleModalScrollable2" tabindex="-1" aria-labelledby="exampleModalScrollable2"
+        data-bs-keyboard="false" aria-hidden="true">
+        <!-- Scrollable modal -->
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="staticBackdropLabel2">{{ __('Request for TPRM') }}
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('tprm.sub.req') }}" method="post">
+                    @csrf
+                    <div class="modal-body">
+                        <p>
+                            {{ __('By selecting “I Agree”, you confirm that') }}:
+                        </p>
+                        <ul>
+                            <li>{{ __('You have the authority to enable TPRM functionality within your organization') }}.</li>
+                            <li>{{ __('You understand and accept the scope, privacy standards, and responsibilities outlined above') }}.</li>
+                            <li>{{ __('You consent to simUphish enabling the TPRM module for your account') }}.</li>
+                        </ul>
+                        <input class="form-check-input" name="terms" type="checkbox" value="" id="checkebox-md"
+                            required>
+                        <label class="form-check-label" for="checkebox-md">
+                            {{ __('I Agree') }}
+                        </label>
+                        <p>{{ __('For questions or support, please contact contact@simuphish.com') }}.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">{{ __('Send Request') }}</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
 
     <!-- new campaign modal -->
     <div class="modal fade" id="newCampModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
@@ -161,7 +309,8 @@
 
                                                 <div class="col-lg-6 ">
 
-                                                    <label for="input-label" class="form-label">{{ __('Domains') }}</label>
+                                                    <label for="input-label"
+                                                        class="form-label">{{ __('Domains') }}</label>
                                                     <select class="form-control required" id="users_group">
                                                         @foreach ($usersGroups as $group)
                                                             <option value="{{ $group->group_id }}">
@@ -355,9 +504,9 @@
                                                 </div>
 
                                                 <!-- <div class="input-group d-none" id="dateTimeSelector">
-                                                                                                                                                                                                                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
-                                                                                                                                                                                                                                <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
-                                                                                                                                                                                                                            </div> -->
+                                                                                                                                                                                                                                    <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                                                                                                                                                                                                                    <input type="text" class="form-control datetime required" id="launch_time" name="launch_time" placeholder="Choose date with time">
+                                                                                                                                                                                                                                </div> -->
 
                                             </div>
                                             <div id="dvSchedule2" class="d-none">
@@ -366,7 +515,7 @@
                                                 <div class="row mb-3">
                                                     <label for="inputEmail3"
                                                         class="col-sm-4 col-form-label">{{ __('Schedule
-                                                                                                                                                                                                                                Date') }}<i
+                                                                                                                                                                                                                                                                                        Date') }}<i
                                                             class='bx bx-info-circle p-2' data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
                                                             data-bs-original-title="Select a particular date for shooting this campaign"></i>
@@ -720,7 +869,7 @@
                                                 <div>
                                                     <label for="input-label"
                                                         class="form-label">{{ __('chedule Between
-                                                                                                                                                                                                                                Times') }}</label>
+                                                                                                                                                                                                                                                                                        Times') }}</label>
                                                     <div>
                                                         <div class="form-group d-flex">
                                                             <input type="time" id="revSchTimeStart" name="appt"
@@ -1062,8 +1211,8 @@
                                                     onclick="openDomainModal('{{ $domain->domain }}')">{{ __('Show/Add Email') }}</button>
                                             @endif
                                             <!-- <span role="button" onclick="deleteDomain(`{{ $domain->domain }}`)">
-                                                                                                                                                            <i class="bx bx-x fs-25"></i>
-                                                                                                                                                        </span> -->
+                                                                                                                                                                <i class="bx bx-x fs-25"></i>
+                                                                                                                                                            </span> -->
                                         </td>
                                     </tr>
                                 @empty
@@ -1821,8 +1970,7 @@
                             <ul class="nav nav-pills nav-style-3 mb-3" role="tablist">
                                 <li class="nav-item" role="presentation" id="phishing_tab">
                                     <a class="nav-link active" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#phishing_campaign"
-                                        aria-selected="true">{{ __('Phishing Campaign') }}</a>
+                                        href="#phishing_campaign" aria-selected="true">{{ __('Phishing Campaign') }}</a>
                                 </li>
                                 <li class="nav-item" role="presentation" id="training_tab">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"

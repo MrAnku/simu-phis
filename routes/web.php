@@ -345,6 +345,9 @@ Route::middleware([
         //---------------------TPRM routes----------------------//
         Route::get('/tprm', [TprmController::class, 'index'])->name('campaign.tprm');
 
+        Route::post('/tprm/submit-req', [TprmController::class, 'submitReq'])->name('tprm.sub.req');
+
+
         Route::post('/submit-domains', [TprmController::class, 'submitdomains'])->name('submit-domains');
         Route::get('/test', [TprmController::class, 'test'])->name('test');
         Route::post('/tprm/otp-verify', [TprmController::class, 'verifyOtp'])->name('domain.otpverify.tprm');
