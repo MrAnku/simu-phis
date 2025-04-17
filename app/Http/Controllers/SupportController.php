@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CpTickets;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -129,82 +130,41 @@ class SupportController extends Controller
 
     public function submitReply(Request $request)
     {
-        try {
-            // Validation
-            $validated = $request->validate([
-                'tkt_id' => 'required|integer',
-                'msg' => 'required|string',
-            ]);
-
-            // Sanitize all inputs (against HTML/PHP tags)
-            foreach ($validated as $key => $value) {
-                if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('Invalid input detected due to tags.'),
-                    ], 400);
-                }
-            }
-
-            array_walk_recursive($validated, function (&$input) {
-                $input = strip_tags($input);
-            });
-
-            // Extract sanitized values
-            $tkt_id = $validated['tkt_id'];
-            $msg = $validated['msg'];
-            $today = now();
-            $company_id = Auth::user()->company_id;
-
-            // Insert reply
-            DB::table('cp-tkts_conversations')->insert([
-                'tkt_id' => $tkt_id,
-                'person' => 'company',
-                'msg' => $msg,
-                'date' => $today,
-                'company_id' => $company_id,
-            ]);
-
-            // Log action
-            log_action("Company replied in raised ticket");
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Reply submitted successfully.'
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong while submitting the reply.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-        array_walk_recursive($input, function (&$input) {
-            $input = strip_tags($input);
-        });
-        $request->merge($input);
-
-        $tkt_id = $request->input('tkt_id');
-        $msg = $request->input('msg');
-        $today = now();
-        $company_id = Auth::user()->company_id;
-
-        DB::table('cp-tkts_conversations')->insert([
-            'tkt_id' => $tkt_id,
-            'person' => 'company',
-            'msg' => $msg,
-            'date' => $today,
-            'company_id' => $company_id,
+        // Validate request input
+        $validator = Validator::make($request->all(), [
+            'tkt_id' => 'required|integer',
+            'msg' => 'required|string',
         ]);
 
-        log_action("Company replied in raised ticket");
+        if ($validator->fails()) {
+            return response()->json(['status' => 0, 'msg' => $validator->errors()->first()], 422);
+        }
 
-        return response()->json(['status' => 1, 'msg' => __('Reply submitted successfully')]);
+        $input = $request->only(['tkt_id', 'msg']);
+
+        // Security check: prevent HTML and PHP tags
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')], 400);
+            }
+            $input[$key] = strip_tags($value); // Strip tags from input
+        }
+
+        try {
+            DB::table('cp-tkts_conversations')->insert([
+                'tkt_id' => $input['tkt_id'],
+                'person' => 'company',
+                'msg' => $input['msg'],
+                'date' => now(),
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            // Log custom action
+            log_action("Company replied in raised ticket");
+
+            return response()->json(['status' => 1, 'msg' => __('Reply submitted successfully')]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'msg' => 'Something went wrong.'], 500);
+        }
     }
 }
