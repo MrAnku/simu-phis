@@ -280,39 +280,78 @@ class SettingsController extends Controller
             'totp_code' => 'required|string',
         ]);
 
-        // Get the authenticated user's company ID
-        $companyId = Auth::user()->company_id;
+        try {
+            $user = Auth::user();
 
-        // Retrieve user settings for the company
-        $user_settings = Settings::where('company_id', $companyId)->first();
+            if (!$user) {
+                return response()->json(['status' => 0, 'msg' => 'Unauthorized'], 401);
+            }
 
-        if (!$user_settings) {
-            return response()->json(['status' => 0, 'msg' => __('User settings not found')]);
-        }
+            // Get user settings for the company
+            $user_settings = Settings::where('company_id', $user->company_id)->first();
 
-        // Decrypt the stored MFA secret
-        $db_secret = decrypt($user_settings->mfa_secret);
+            if (!$user_settings || !$user_settings->mfa_secret) {
+                return response()->json(['status' => 0, 'msg' => __('MFA settings not found')], 404);
+            }
 
-        // Initialize Google2FA
-        $google2fa = new Google2FA();
+            // Decrypt stored MFA secret
+            $db_secret = decrypt($user_settings->mfa_secret);
 
-        // Verify the provided TOTP code against the stored secret
-        $valid = $google2fa->verifyKey($db_secret, $request->totp_code);
+            // Initialize Google2FA
+            $google2fa = new Google2FA();
 
-        if ($valid) {
-            // Update user settings to enable MFA
-            $user_settings->mfa = 1;
-            $user_settings->save();
-
-            log_action("Multi-Factor Authentication is enabled");
-            return redirect()->route('settings.index')->with(['success' => __('Multi Factor Authentication is enabled')]);
-
-            // return response()->json(['status' => 1, 'msg' => 'Multi Factor Authentication is enabled']);
-        } else {
-            log_action("Entered invalid TOTP code to enable MFA");
-            return redirect()->route('settings.index')->with(['error' => __('Invalid TOTP code')]);
+            // return $google2fa;
+            // Verify TOTP code
+            if ($google2fa->verifyKey($db_secret, $request->totp_code)) {
+                $user_settings->mfa = 1;
+                $user_settings->save();
+                return response()->json(['status' => 1, 'msg' => __('Multi-Factor Authentication enabled')]);
+            }
+            return response()->json(['status' => 0, 'msg' => __('Invalid TOTP code')], 400);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'msg' => __('Something went wrong, please try again')], 500);
         }
     }
+
+    // public function verifyMFA(Request $request)
+    // {
+    //     $request->validate([
+    //         'totp_code' => 'required|string',
+    //     ]);
+
+    //     // Get the authenticated user's company ID
+    //     $companyId = auth()->user()->company_id;
+
+    //     // Retrieve user settings for the company
+    //     $user_settings = Settings::where('company_id', $companyId)->first();
+
+    //     if (!$user_settings) {
+    //         return response()->json(['status' => 0, 'msg' => __('User settings not found')]);
+    //     }
+
+    //     // Decrypt the stored MFA secret
+    //     $db_secret = decrypt($user_settings->mfa_secret);
+
+    //     // Initialize Google2FA
+    //     $google2fa = new Google2FA();
+
+    //     // Verify the provided TOTP code against the stored secret
+    //     $valid = $google2fa->verifyKey($db_secret, $request->totp_code);
+
+    //     if ($valid) {
+    //         // Update user settings to enable MFA
+    //         $user_settings->mfa = 1;
+    //         $user_settings->save();
+
+    //         log_action("Multi-Factor Authentication is enabled");
+    //         return redirect()->route('settings.index')->with(['success' => __('Multi Factor Authentication is enabled')]);
+
+    //         // return response()->json(['status' => 1, 'msg' => 'Multi Factor Authentication is enabled']);
+    //     } else {
+    //         log_action("Entered invalid TOTP code to enable MFA");
+    //         return redirect()->route('settings.index')->with(['error' => __('Invalid TOTP code')]);
+    //     }
+    // }
 
 
     public function updateLang(Request $request)
