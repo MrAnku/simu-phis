@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\ApiBlueCollarController;
+use App\Http\Controllers\Api\ApiEmployeesController;
+use App\Http\Controllers\Api\ApiOutlookAdController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -55,5 +58,18 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/load-conversations', [SupportController::class, 'loadConversations']);
         Route::post('/submit-reply', [SupportController::class, 'submitReply']);
         Route::post('/create-ticket', [SupportController::class, 'createTicket']);
+    });
+
+    Route::prefix('employees')->group(function(){
+        Route::get('/', [ApiEmployeesController::class, 'index']);
+        Route::get('/all-employees', [ApiEmployeesController::class, 'allEmployee'])->name('all-employees');
+        Route::get('/blue-collar-employees', [ApiBlueCollarController::class, 'index'])->name('bluecollar.employees');
+        Route::get('/normalemployees', [ApiEmployeesController::class, 'index'])->name('normal.employees');
+        Route::get('/employee/{base_encode_id}', [ApiEmployeesController::class, 'employeeDetail'])->name('employee.detail');
+        Route::get('/login-with-microsoft', [ApiOutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
+        Route::get('/microsoft-ad-callback', [ApiOutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
+        Route::get('/fetch-outlook-groups', [ApiOutlookAdController::class, 'fetchGroups'])->name('fetch.outlook.groups');
+        Route::get('/fetch-outlook-emps/{groupId}', [ApiOutlookAdController::class, 'fetchEmps'])->name('fetch.outlook.emps');
+        Route::post('/save-outlook-employees', [ApiOutlookAdController::class, 'saveOutlookEmps'])->name('save.outlook.emps');
     });
 });
