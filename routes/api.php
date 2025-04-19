@@ -49,10 +49,18 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete', [SenderProfileController::class, 'deleteSenderProfile']);
         Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
     });
-    Route::get('/get-all-training-module', [TrainingModuleController::class, 'allTrainingModule']);
-    Route::get('/get-training-module/{id}', [TrainingModuleController::class, 'getTrainingModuleById']);
-
-    Route::post('/add-training-module', [TrainingModuleController::class, 'addTraining']);
+    Route::prefix('training-module')->group(function () {
+        Route::get('/get-all', [TrainingModuleController::class, 'allTrainingModule']);
+        Route::get('/getby/{id}', [TrainingModuleController::class, 'getTrainingById']);
+        Route::put('/update', [TrainingModuleController::class, 'updateTrainingModule']);
+        Route::delete('/delete', [TrainingModuleController::class, 'deleteTraining']);
+        Route::get('/training-modules', [TrainingModuleController::class, 'index']);
+        Route::post('/add', [TrainingModuleController::class, 'addTraining']);
+        Route::get('/previewby/{trainingid}', [TrainingModuleController::class, 'trainingPreview']);
+        Route::get('/preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent']);
+        Route::post('/add-gamified-training', [TrainingModuleController::class, 'addGamifiedTraining']);
+        Route::put('/update-gamified-training', [TrainingModuleController::class, 'updateGamifiedTraining']);
+    });
     Route::prefix('support')->group(function () {
         Route::get('/', [SupportController::class, 'index']);
         Route::post('/load-conversations', [SupportController::class, 'loadConversations']);
@@ -60,7 +68,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/create-ticket', [SupportController::class, 'createTicket']);
     });
 
-    Route::prefix('employees')->group(function(){
+    Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
         Route::get('/all-employees', [ApiEmployeesController::class, 'allEmployee'])->name('all-employees');
         Route::get('/blue-collar-employees', [ApiBlueCollarController::class, 'index'])->name('bluecollar.employees');
