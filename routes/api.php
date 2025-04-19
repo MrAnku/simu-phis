@@ -3,11 +3,13 @@
 use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
+use App\Http\Controllers\Api\ApiReportingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MFAController;
+use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SupportController;
@@ -67,7 +69,17 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/submit-reply', [SupportController::class, 'submitReply']);
         Route::post('/create-ticket', [SupportController::class, 'createTicket']);
     });
-
+    Route::prefix('reporting')->group(function () {
+        Route::get('/', [ApiReportingController::class, 'index']);
+        Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
+        Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
+        Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
+        Route::get('/fetch-campaign-report/{campaignId}', [ApiReportingController::class, 'fetchCampaignReport']);
+        Route::get('/whatsappfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
+        Route::get('/aicallingfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
+        Route::get('/tprmfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
+        Route::get('/fetch-camp-report-by-users/{campaignId}', [ApiReportingController::class, 'fetchCampReportByUsers']);
+    });
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
         Route::get('/all-employees', [ApiEmployeesController::class, 'allEmployee'])->name('all-employees');

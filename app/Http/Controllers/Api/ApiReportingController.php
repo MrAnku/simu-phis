@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use App\Models\Users;
 use App\Models\TprmUsers;
@@ -20,126 +21,125 @@ use App\Models\WhatsAppCampaignUser;
 use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
 
-class ReportingController extends Controller
+class ApiReportingController extends Controller
 {
     //
     public function index()
     {
-        $companyId = Auth::user()->company_id;
+        try {
+            $companyId = Auth::user()->company_id;
 
-        $camps = CampaignReport::where('company_id', $companyId)->get();
+            $camps = CampaignReport::where('company_id', $companyId)->get();
+            $emails_delivered = $camps->sum('emails_delivered');
+            $training_assigned = $camps->sum('training_assigned');
 
-        $emails_delivered = $camps->sum('emails_delivered');
-        $training_assigned = $camps->sum('training_assigned');
+            $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')
+                ->where('company_id', $companyId)->get();
 
-        $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')->where('company_id', $companyId)->get();
-        $tprmcamps = TprmCampaignReport::where('company_id', $companyId)->get();
+            $tprmcamps = TprmCampaignReport::where('company_id', $companyId)->get();
+            $tprm_campaigns = TprmCampaign::with('tprmReport')
+                ->where('company_id', $companyId)->get();
 
-        // return  $tprmcamps;
-        $tprm_campaigns = TprmCampaign::with('tprmReport')->where('company_id', $companyId)->get();
+            $tprmemails_delivered = $tprmcamps->sum('emails_delivered');
+            $tprmemails_reported = $tprmcamps->sum('email_reported');
+            $emp_compromised_reported = $tprmcamps->sum('emp_compromised');
+            $payloads_clicked_reported = $tprmcamps->sum('payloads_clicked');
 
-        // return $tprm_campaigns;
+            Session::forget('campaign_details');
 
-        $tprmemails_delivered =  $tprmcamps->sum('emails_delivered');
-        $tprmemails_reported =  $tprmcamps->sum('email_reported');
-        $emp_compromised_reported =  $tprmcamps->sum('emp_compromised');
-        $payloads_clicked_reported =  $tprmcamps->sum('payloads_clicked');
-        Session::forget('campaign_details'); // Removes old session data
-        $Arraydetails = [];
-        // Assign values safely, ensuring no undefined property errors
-        $Arraydetails[' Emails Delivered'] = $tprmemails_delivered ?? 0;
-        $Arraydetails['TPRM Email Report'] =    $tprmemails_reported ?? 0;
-        $Arraydetails['Emp Compromised'] = $emp_compromised_reported ?? 0;
-        $Arraydetails['Payload Clicked'] = $payloads_clicked_reported ?? 0;
-        // return $tprmemails_delivered;
-        // return $tprm_campaigns;
+            $Arraydetails = [
+                'Emails Delivered' => $tprmemails_delivered ?? 0,
+                'TPRM Email Report' => $tprmemails_reported ?? 0,
+                'Emp Compromised' => $emp_compromised_reported ?? 0,
+                'Payload Clicked' => $payloads_clicked_reported ?? 0
+            ];
 
-        Session::put('campaign_details', $Arraydetails); // Stores new data in session
+            $ai_calls = AiCallCampaign::with('individualCamps')
+                ->where('company_id', $companyId)->get();
 
-        Session::forget('training_campaign_details'); // Clears the session data
+            $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
 
+            $wcamps = WhatsappCampaign::where('company_id', $companyId)->get();
+            $ccamps = AiCallCampaign::with('individualCamps')
+                ->where('company_id', $companyId)->get();
 
+            $msg_delivered = WhatsAppCampaignUser::where('company_id', $companyId)
+                ->where('status', 'sent')->count();
 
-        $ai_calls = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
-        $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
+            $call_delivered = $ccamps->where('status', 'completed')->count();
 
-        $wcamps = WhatsappCampaign::where('company_id', $companyId)->get();
-        $ccamps = AiCallCampaign::with('individualCamps')->where('company_id', $companyId)->get();
+            $wtraining_assigned = DB::table('whatsapp_camp_users')
+                ->where('company_id', $companyId)->sum('training_assigned');
 
-        $msg_delivered = WhatsAppCampaignUser::where('company_id', $companyId)->where('status', 'sent')->count();
-        $call_delivered = $ccamps->where('status', 'completed')->count();
+            $ctraining_assigned = $ccamps->sum('training_assigned');
 
-        $wtraining_assigned = DB::table('whatsapp_camp_users')->where('company_id', $companyId)->sum('training_assigned');
-        $ctraining_assigned = $ccamps->sum('training_assigned');
-
-        return view('reporting', compact('camps', 'emails_delivered', 'training_assigned', 'msg_delivered', 'whatsapp_campaigns', 'wcamps', 'wtraining_assigned', 'call_delivered', 'ccamps', 'ctraining_assigned', 'ai_calls', 'ai_calls_individual', 'tprm_campaigns', 'tprmemails_delivered', 'tprmemails_reported', 'emp_compromised_reported', 'payloads_clicked_reported'));
+            return response()->json([
+                'status' => true,
+                'message' => __('Campaign data fetched successfully'),
+                'data' => [
+                    'campaign_reports' => $camps,
+                    'emails_delivered' => $emails_delivered,
+                    'training_assigned' => $training_assigned,
+                    'msg_delivered' => $msg_delivered,
+                    'whatsapp_campaigns' => $whatsapp_campaigns,
+                    'wcamps' => $wcamps,
+                    'wtraining_assigned' => $wtraining_assigned,
+                    'call_delivered' => $call_delivered,
+                    'ccamps' => $ccamps,
+                    'ctraining_assigned' => $ctraining_assigned,
+                    'ai_calls' => $ai_calls,
+                    'ai_calls_individual' => $ai_calls_individual,
+                    'tprm_campaigns' => $tprm_campaigns,
+                    'tprm_stats' => $Arraydetails
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
+
+
 
     public function getChartData()
     {
-        $companyId = Auth::user()->company_id;
-        $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
-        $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
-
-        $data = DB::table('campaign_live')
-            ->select(DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) as date'), DB::raw('SUM(mail_open) as mail_open'), DB::raw('SUM(payload_clicked) as payload_clicked'), DB::raw('SUM(emp_compromised) as emp_compromised'), DB::raw('SUM(email_reported) as email_reported'))
-            ->whereBetween(DB::raw('STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")'), [$startDate, $endDate])
-            ->where('company_id', $companyId)
-            ->groupBy(DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p"))'))
-            ->orderBy('date', 'asc')
-            ->get();
-
-        // Initialize dates array for the last 12 days
-        $dates = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
-        }
-
-        $formattedData = [
-            'dates' => $dates,
-            'mail_open' => array_fill(0, 12, 0),
-            'payload_clicked' => array_fill(0, 12, 0),
-            'employee_compromised' => array_fill(0, 12, 0),
-            'email_reported' => array_fill(0, 12, 0),
-        ];
-
-        foreach ($data as $item) {
-            $index = array_search($item->date, $formattedData['dates']);
-            if ($index !== false) {
-                $formattedData['mail_open'][$index] = (int) $item->mail_open;
-                $formattedData['payload_clicked'][$index] = (int) $item->payload_clicked;
-                $formattedData['employee_compromised'][$index] = (int) $item->emp_compromised;
-                $formattedData['email_reported'][$index] = (int) $item->email_reported;
-            }
-        }
-
-        return response()->json($formattedData);
-    }
-    public function wgetChartData()
-    {
         try {
             $companyId = Auth::user()->company_id;
+
             $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
             $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
 
-            // Database query
-            $data = DB::table('whatsapp_camp_users')
-                ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(link_clicked) as mail_open'), DB::raw('SUM(training_assigned) as payload_clicked'), DB::raw('SUM(emp_compromised) as emp_compromised'), DB::raw("SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as email_reported"))
-                ->whereBetween('created_at', [$startDate, $endDate])
+            $data = DB::table('campaign_live')
+                ->select(
+                    DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) as date'),
+                    DB::raw('SUM(mail_open) as mail_open'),
+                    DB::raw('SUM(payload_clicked) as payload_clicked'),
+                    DB::raw('SUM(emp_compromised) as emp_compromised'),
+                    DB::raw('SUM(email_reported) as email_reported')
+                )
+                ->whereBetween(DB::raw('STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")'), [$startDate, $endDate])
                 ->where('company_id', $companyId)
-                ->groupBy(DB::raw('DATE(created_at)'))
+                ->groupBy(DB::raw('DATE(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p"))'))
                 ->orderBy('date', 'asc')
                 ->get();
 
-            // Initialize dates array for the last 12 days
+
             $dates = [];
             for ($i = 11; $i >= 0; $i--) {
                 $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
             }
 
-            // Prepare formatted data
             $formattedData = [
                 'dates' => $dates,
                 'mail_open' => array_fill(0, 12, 0),
@@ -148,7 +148,6 @@ class ReportingController extends Controller
                 'email_reported' => array_fill(0, 12, 0),
             ];
 
-            // Populate formatted data
             foreach ($data as $item) {
                 $index = array_search($item->date, $formattedData['dates']);
                 if ($index !== false) {
@@ -159,194 +158,442 @@ class ReportingController extends Controller
                 }
             }
 
-            // return $formattedData;
-
-            return response()->json($formattedData);
+            return response()->json([
+                'status' => true,
+                'message' => __('Chart data fetched successfully.'),
+                'data' => $formattedData,
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred'], 500);
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
+
+    public function wgetChartData()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
+            $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
+
+            $data = DB::table('whatsapp_camp_users')
+                ->select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('SUM(link_clicked) as mail_open'),
+                    DB::raw('SUM(training_assigned) as payload_clicked'),
+                    DB::raw('SUM(emp_compromised) as emp_compromised'),
+                    DB::raw("SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as email_reported")
+                )
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where('company_id', $companyId)
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->orderBy('date', 'asc')
+                ->get();
+
+            // Last 12 days
+            $dates = [];
+            for ($i = 11; $i >= 0; $i--) {
+                $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
+            }
+
+            $formattedData = [
+                'dates' => $dates,
+                'mail_open' => array_fill(0, 12, 0),
+                'payload_clicked' => array_fill(0, 12, 0),
+                'employee_compromised' => array_fill(0, 12, 0),
+                'email_reported' => array_fill(0, 12, 0),
+            ];
+
+            foreach ($data as $item) {
+                $index = array_search($item->date, $formattedData['dates']);
+                if ($index !== false) {
+                    $formattedData['mail_open'][$index] = (int) $item->mail_open;
+                    $formattedData['payload_clicked'][$index] = (int) $item->payload_clicked;
+                    $formattedData['employee_compromised'][$index] = (int) $item->emp_compromised;
+                    $formattedData['email_reported'][$index] = (int) $item->email_reported;
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('WhatsApp chart data fetched successfully.'),
+                'data' => $formattedData
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function cgetChartData()
     {
-        $companyId = Auth::user()->company_id;
-        $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
-        $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
+        try {
+            $companyId = Auth::user()->company_id;
+            $startDate = Carbon::now()->subDays(11)->startOfDay()->format('Y-m-d H:i:s');
+            $endDate = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
 
-        $data = DB::table('ai_call_camp_live')
-            ->select(DB::raw('DATE(STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p")) as date'), DB::raw('SUM(mail_open) as mail_open'), DB::raw('SUM(payload_clicked) as payload_clicked'), DB::raw('SUM(emp_compromised) as emp_compromised'), DB::raw('SUM(training_assigned) as email_reported'))
-            ->whereBetween(DB::raw('STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p")'), [$startDate, $endDate])
-            ->where('company_id', $companyId)
-            ->groupBy(DB::raw('DATE(STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p"))'))
-            ->orderBy('date', 'asc')
-            ->get();
+            $data = DB::table('ai_call_camp_live')
+                ->select(
+                    DB::raw('DATE(STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p")) as date'),
+                    DB::raw('SUM(mail_open) as mail_open'),
+                    DB::raw('SUM(payload_clicked) as payload_clicked'),
+                    DB::raw('SUM(emp_compromised) as emp_compromised'),
+                    DB::raw('SUM(training_assigned) as email_reported')
+                )
+                ->whereBetween(DB::raw('STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p")'), [$startDate, $endDate])
+                ->where('company_id', $companyId)
+                ->groupBy(DB::raw('DATE(STR_TO_DATE(created_at, "%m/%d/%Y %h:%i %p"))'))
+                ->orderBy('date', 'asc')
+                ->get();
 
-        // Initialize dates array for the last 12 days
-        $dates = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
-        }
-
-        $formattedData = [
-            'dates' => $dates,
-            'mail_open' => array_fill(0, 12, 0),
-            'payload_clicked' => array_fill(0, 12, 0),
-            'employee_compromised' => array_fill(0, 12, 0),
-            'email_reported' => array_fill(0, 12, 0),
-        ];
-
-        foreach ($data as $item) {
-            $index = array_search($item->date, $formattedData['dates']);
-            if ($index !== false) {
-                $formattedData['mail_open'][$index] = (int) $item->mail_open;
-                $formattedData['payload_clicked'][$index] = (int) $item->payload_clicked;
-                $formattedData['employee_compromised'][$index] = (int) $item->emp_compromised;
-                $formattedData['email_reported'][$index] = (int) $item->email_reported;
+            $dates = [];
+            for ($i = 11; $i >= 0; $i--) {
+                $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
             }
-        }
 
-        return response()->json($formattedData);
+            $formattedData = [
+                'dates' => $dates,
+                'mail_open' => array_fill(0, 12, 0),
+                'payload_clicked' => array_fill(0, 12, 0),
+                'employee_compromised' => array_fill(0, 12, 0),
+                'email_reported' => array_fill(0, 12, 0),
+            ];
+
+            foreach ($data as $item) {
+                $index = array_search($item->date, $formattedData['dates']);
+                if ($index !== false) {
+                    $formattedData['mail_open'][$index] = (int) $item->mail_open;
+                    $formattedData['payload_clicked'][$index] = (int) $item->payload_clicked;
+                    $formattedData['employee_compromised'][$index] = (int) $item->emp_compromised;
+                    $formattedData['email_reported'][$index] = (int) $item->email_reported;
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Call campaign chart data fetched successfully.'),
+                'data' => $formattedData
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function fetchCampaignReport(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            // Fetch campaignId from route parameter
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
 
-        // Fetch campaign report
-        $reportRow = CampaignReport::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            // Ensure the user is authenticated
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Unauthorized user.')
+                ], 401);
+            }
 
-        // Fetch user group ID
-        $userGroup = Campaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            $companyId = $user->company_id;
 
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+            // Fetch campaign report
+            $reportRow = CampaignReport::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-            // Prepare the response
-            $response = [
-                'campaign_name' => $reportRow->campaign_name,
-                'campaign_type' => $reportRow->campaign_type,
-                'emails_delivered' => $reportRow->emails_delivered,
-                'emails_viewed' => $reportRow->emails_viewed,
-                'payloads_clicked' => $reportRow->payloads_clicked,
-                'emp_compromised' => $reportRow->emp_compromised,
-                'email_reported' => $reportRow->email_reported,
-                'status' => $reportRow->status,
-                'no_of_users' => $no_of_users,
-            ];
+            // Fetch user group ID
+            $userGroup = Campaign::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-            return response()->json($response);
-        } else {
-            return response()->json(['error' => 'Campaign report or user group not found'], 404);
+            if ($reportRow && $userGroup) {
+                // Count the number of users in the group
+                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+
+                // Prepare the response
+                $response = [
+                    'campaign_name' => $reportRow->campaign_name,
+                    'campaign_type' => $reportRow->campaign_type,
+                    'emails_delivered' => $reportRow->emails_delivered,
+                    'emails_viewed' => $reportRow->emails_viewed,
+                    'payloads_clicked' => $reportRow->payloads_clicked,
+                    'emp_compromised' => $reportRow->emp_compromised,
+                    'email_reported' => $reportRow->email_reported,
+                    'status' => $reportRow->status,
+                    'no_of_users' => $no_of_users,
+                ];
+
+                return response()->json([
+                    'status' => true,
+                    'message' => __('Campaign report fetched successfully.'),
+                    'data' => $response
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign report or user group not found.')
+                ], 404);
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
-
 
 
     public function whatsappfetchCampaignReport(Request $request)
     {
-        $campaignId = $request->campaignId;
-        $company_id = Auth::user()->company_id;
-        $camp_detail = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->where('camp_id', $campaignId)->first();
-        return response()->json($camp_detail);
+        try {
+            $campaignId = $request->route('campaignId');
+
+            // Check if campaignId exists
+            if (!$campaignId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
+            // $campaignId = $request->campaignId;
+            $company_id = Auth::user()->company_id;
+
+            $camp_detail = WhatsappCampaign::with('trainingData')
+                ->where('company_id', $company_id)
+                ->where('camp_id', $campaignId)
+                ->first();
+
+            if ($camp_detail) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Campaign details fetched successfully.'),
+                    'data' => $camp_detail
+                ], 200); // OK
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found.'),
+                    'data' => null
+                ], 404); // Not Found
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
+
     public function tprmfetchCampaignReport(Request $request)
     {
+        try {
+            $campId = $request->route('campaignId');
 
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            $companyId = Auth::user()->company_id;
 
-        // Fetch campaign report
-        $reportRow = TprmCampaignReport::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            // Step 2: Fetch report and user group
+            $reportRow = TprmCampaignReport::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-        // Fetch user group ID
-        $userGroup = TprmCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            $userGroup = TprmCampaign::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+            // Step 3: Check if both exist
+            if ($reportRow && $userGroup) {
+                // Step 4: Count users
+                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
 
-            // Prepare the response
-            $response = [
-                'campaign_name' => $reportRow->campaign_name,
-                'campaign_type' => $reportRow->campaign_type,
-                'emails_delivered' => $reportRow->emails_delivered,
-                'emails_viewed' => $reportRow->emails_viewed,
-                'payloads_clicked' => $reportRow->payloads_clicked,
-                'emp_compromised' => $reportRow->emp_compromised,
-                'email_reported' => $reportRow->email_reported,
-                'status' => $reportRow->status,
-                'no_of_users' => $no_of_users,
-            ];
+                // Step 5: Prepare response
+                $response = [
+                    'campaign_name' => $reportRow->campaign_name,
+                    'campaign_type' => $reportRow->campaign_type,
+                    'emails_delivered' => $reportRow->emails_delivered,
+                    'emails_viewed' => $reportRow->emails_viewed,
+                    'payloads_clicked' => $reportRow->payloads_clicked,
+                    'emp_compromised' => $reportRow->emp_compromised,
+                    'email_reported' => $reportRow->email_reported,
+                    'status' => $reportRow->status,
+                    'no_of_users' => $no_of_users,
+                ];
 
-            $Arraydetails = [];
-            $Arraydetails['emails_delivered'] = $reportRow->emails_delivered ?? 10;
-            $Arraydetails['emails_viewed'] = $reportRow->emails_viewed ?? 10;
-            $Arraydetails['email_reported'] = $reportRow->email_reported ?? 10;
-            $Arraydetails['emp_compromised'] =  $reportRow->emp_compromised ?? 10;
+                // Step 6: Store details in session
+                $Arraydetails = [
+                    'emails_delivered' => $reportRow->emails_delivered ?? 10,
+                    'emails_viewed' => $reportRow->emails_viewed ?? 10,
+                    'email_reported' => $reportRow->email_reported ?? 10,
+                    'emp_compromised' => $reportRow->emp_compromised ?? 10,
+                ];
 
+                Session::put('campaign_details', $Arraydetails);
 
-            Session::put('campaign_details', $Arraydetails); // Stores new data in session
-
-            return response()->json($response);
-        } else {
-            return response()->json(['error' => 'Campaign report or user group not found'], 404);
+                // Step 7: Return success response
+                return response()->json([
+                    'success' => true,
+                    'message' => __('TPRM campaign report fetched successfully.'),
+                    'data' => $response
+                ], 200);
+            } else {
+                // Not found
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign report or user group not found.'),
+                    'data' => null
+                ], 404);
+            }
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            // Validation failed
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation failed.'),
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
+
     public function aicallingfetchCampaignReport(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            // Validate request
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
 
-        // Fetch campaign report
-        $reportRow = AiCallCampLive::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            $companyId = Auth::user()->company_id;
 
-        // Fetch user group ID
-        $userGroup = AiCallCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            // Fetch campaign report
+            $reportRow = AiCallCampLive::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+            // Fetch user group ID
+            $userGroup = AiCallCampaign::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-            // Prepare the response
-            $response = [
-                'campaign_name' => $userGroup->campaign_name,
-                'campaign_type' => 'Phishing & Training',
-                'created_at' => $userGroup->created_at,
-                'ai_agent' => $userGroup->ai_agent,
-                'ai_agent_name' => $userGroup->ai_agent_name,
-                'phone_no' => $userGroup->phone_no,
+            if ($reportRow && $userGroup) {
+                // Count users
+                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
 
-                'status' => $userGroup->status,
-                'no_of_users' => $no_of_users,
-            ];
+                // Prepare response
+                $response = [
+                    'campaign_name' => $userGroup->campaign_name,
+                    'campaign_type' => 'Phishing & Training',
+                    'created_at' => $userGroup->created_at,
+                    'ai_agent' => $userGroup->ai_agent,
+                    'ai_agent_name' => $userGroup->ai_agent_name,
+                    'phone_no' => $userGroup->phone_no,
+                    'status' => $userGroup->status,
+                    'no_of_users' => $no_of_users,
+                ];
 
-            return response()->json($response);
-        } else {
-            return response()->json(['error' => 'Campaign report or user group not found'], 404);
+                return response()->json([
+                    'success' => true,
+                    'message' => __('AI Calling campaign report fetched successfully.'),
+                    'data' => $response
+                ], 200); // OK
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign report or user group not found.'),
+                    'data' => null
+                ], 404); // Not Found
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function tfetchCampaignReport(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
+        // Check if campaignId exists
+        if (!$campId) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Campaign ID is required.')
+            ], 400);
+        }
+
         $companyId = Auth::user()->company_id;
 
         // Fetch campaign report
@@ -380,70 +627,72 @@ class ReportingController extends Controller
 
     public function fetchCampReportByUsers(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            // Step 1: Validate input
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
 
-        $allUsers = CampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+            $campId = $request->input('campaignId');
+            $companyId = Auth::user()->company_id;
 
-        if ($allUsers->isEmpty()) {
+            // Step 2: Fetch users based on campaign and company
+            $allUsers = CampaignLive::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
+
+            // Step 3: Check if no records found
+            if ($allUsers->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No records found',
+                    'data' => []
+                ], 404);
+            }
+
+            // Step 4: Prepare the HTML response for users
+
+
+            // Step 5: Return success response with HTML data
             return response()->json([
-                'html' => '
-                    <tr>
-                        <td colspan="7" class="text-center"> No records found</td>
-                    </tr>',
-            ]);
+                'success' => true,
+                'message' => 'User report fetched successfully.',
+                'data' =>  $allUsers,
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
-
-        $responseHtml = '';
-        foreach ($allUsers as $userReport) {
-            $isSent = $userReport->sent == '1' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
-            $isViewed = $userReport->mail_open == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isPayloadClicked = $userReport->payload_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isEmailReported = $userReport->email_reported == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-
-            $responseHtml .=
-                '<tr>
-                <td>' .
-                $userReport->user_name .
-                '</td>
-                <td>' .
-                $userReport->user_email .
-                '</td>
-                <td>' .
-                $isSent .
-                '</td>
-                <td>' .
-                $isViewed .
-                '</td>
-                <td>' .
-                $isPayloadClicked .
-                '</td>
-                <td>' .
-                $isEmailCompromised .
-                '</td>
-                <td>' .
-                $isEmailReported .
-                '</td>
-            </tr>';
-        }
-
-        // return $responseHtml;
-        return response()->json(['html' => $responseHtml]);
     }
+
 
 
     public function tprmfetchCampReportByUsers(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
+        // Check if campaignId exists
+        if (!$campId) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Campaign ID is required.')
+            ], 400);
+        }
+
+
         $companyId = Auth::user()->company_id;
 
         $allUsers = TprmCampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
@@ -498,11 +747,17 @@ class ReportingController extends Controller
     public function whatsappfetchCampReportByUsers(Request $request)
     {
         try {
-            $request->validate([
-                'campaignId' => 'required|string',
-            ]);
+            $campId = $request->route('campaignId');
 
-            $campId = $request->input('campaignId');
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
+
+
             $user = Auth::user();
 
             if (!$user) {
