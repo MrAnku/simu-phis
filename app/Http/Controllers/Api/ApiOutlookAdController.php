@@ -128,13 +128,14 @@ class ApiOutlookAdController extends Controller
         ], 200);
     }
 
-    public function fetchEmps($groupId)
+    public function fetchEmps(Request $request)
     {
-        $company_id = Auth::user()->company_id;
+        $groupId = $request->route('groupId');
         // Validate group ID
         if (!$groupId) {
             return response()->json(['success' => false, 'message' => __('Group ID is required')], 400);
         }
+        $company_id = Auth::user()->company_id;
 
         $groupId = htmlspecialchars($groupId); // Sanitize input
 
@@ -145,8 +146,6 @@ class ApiOutlookAdController extends Controller
                 'message' => __('You are not authorized to Sync Outlook AD Users')
             ], 403);
         }
-
-
         // Define API URL
         $apiUrl = env('MS_GRAPH_API_URL') . "groups/{$groupId}/members";
 
@@ -243,6 +242,6 @@ class ApiOutlookAdController extends Controller
         if (count($errors) > 0) {
             return response()->json(['success' => false, 'message' => $errors], 422);
         }
-        return response()->json(['success' => true, 'message' => __('Employees saved successfully')], 200);
+        return response()->json(['success' => true, 'message' => __('Employees saved successfully')], 201);
     }
 }
