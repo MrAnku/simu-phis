@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
+use App\Http\Controllers\Api\ApiPhishingEmailsController;
 use App\Http\Controllers\Api\ApiReportingController;
 use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
@@ -116,11 +117,33 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
         Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
         Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
-        Route::get('/fetch-campaign-report/{campaignId}', [ApiReportingController::class, 'fetchCampaignReport']);
-        Route::get('/whatsappfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
-        Route::get('/aicallingfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
-        Route::get('/tprmfetch-campaign-report/{campaignId}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
-        Route::get('/fetch-camp-report-by-users/{campaignId}', [ApiReportingController::class, 'fetchCampReportByUsers']);
+        Route::get('/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'fetchCampaignReport']);
+        Route::get('/whatsappfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
+        Route::get('/aicallingfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
+        Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
+        Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
+
+        // 1
+        Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
+        // 2
+        Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
+        // 3 
+        Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
+        // 4 
+        Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
+        // 5 
+        Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
+        // 6 
+        Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
+
+        // 7 
+        Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
+
+        // 8 
+        Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
+
+        // 9 
+        Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
     });
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
@@ -166,5 +189,23 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
+    });
+    Route::prefix('phishing-emails')->group(function () {
+        //    10 
+        Route::get('/', [ApiPhishingEmailsController::class, 'index']);
+        //    11 ho gya test
+        Route::post('/get-template-by-id/{id?}', [ApiPhishingEmailsController::class, 'getTemplateById']);
+        //    12 ho gya test
+        Route::get('/search-email-template', [ApiPhishingEmailsController::class, 'searchPhishingEmails']);
+        // 13 ho gya test
+        Route::post('/add-email-template', [ApiPhishingEmailsController::class, 'addEmailTemplate']);
+        // 14 ho gya test
+        Route::post('/generate-template', [ApiPhishingEmailsController::class, 'generateTemplate']);
+        // 15 ho gya test
+        Route::post('/save-ai-phish-template', [ApiPhishingEmailsController::class, 'saveAIPhishTemplate']);
+        // 16 ho gya test
+        Route::post('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
+        // 17 ho gya test
+        Route::post('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
     });
 });

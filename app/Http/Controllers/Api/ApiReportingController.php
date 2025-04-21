@@ -168,6 +168,11 @@ class ApiReportingController extends Controller
                 'status' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -232,6 +237,11 @@ class ApiReportingController extends Controller
                 'status' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -290,6 +300,11 @@ class ApiReportingController extends Controller
                 'message' => __('Call campaign chart data fetched successfully.'),
                 'data' => $formattedData
             ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -419,6 +434,11 @@ class ApiReportingController extends Controller
                 'status' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -499,6 +519,11 @@ class ApiReportingController extends Controller
                 'success' => false,
                 'message' => __('Validation failed.'),
                 'errors' => $ve->errors()
+            ], 422);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
@@ -651,7 +676,7 @@ class ApiReportingController extends Controller
             if ($allUsers->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No records found',
+                    'message' => __('No records found'),
                     'data' => []
                 ], 404);
             }
@@ -662,7 +687,7 @@ class ApiReportingController extends Controller
             // Step 5: Return success response with HTML data
             return response()->json([
                 'success' => true,
-                'message' => 'User report fetched successfully.',
+                'message' => __('User report fetched successfully.'),
                 'data' =>  $allUsers,
             ], 200);
         } catch (ValidationException $e) {
@@ -682,67 +707,64 @@ class ApiReportingController extends Controller
 
     public function tprmfetchCampReportByUsers(Request $request)
     {
-        $campId = $request->route('campaignId');
+        try {
+            $campId = $request->route('campaignId');
 
-        // Check if campaignId exists
-        if (!$campId) {
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
+
+            $campId = $request->input('campaignId');
+            $companyId = Auth::user()->company_id;
+
+            $allUsers = TprmCampaignLive::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
+
+            if ($allUsers->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('No records found'),
+                    'data' => []
+                ], 404);
+            }
+
+            $data = [];
+
+            foreach ($allUsers as $userReport) {
+                $data[] = [
+                    'name' => $userReport->user_name,
+                    'email' => $userReport->user_email,
+                    'sent_status' => $userReport->sent == '1' ? 'Success' : 'Pending',
+                    'viewed' => $userReport->mail_open == '1' ? 'Yes' : 'No',
+                    'payload_clicked' => $userReport->payload_clicked == '1' ? 'Yes' : 'No',
+                    'email_compromised' => $userReport->emp_compromised == '1' ? 'Yes' : 'No',
+                    'email_reported' => $userReport->email_reported == '1' ? 'Yes' : 'No',
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Campaign user report fetched successfully'),
+                'data' => $data
+            ], 200);
+        } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => __('Campaign ID is required.')
-            ], 400);
-        }
-
-
-        $companyId = Auth::user()->company_id;
-
-        $allUsers = TprmCampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
-
-        if ($allUsers->isEmpty()) {
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
             return response()->json([
-                'html' => '
-                    <tr>
-                        <td colspan="7" class="text-center"> No records found</td>
-                    </tr>',
-            ]);
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
-
-        $responseHtml = '';
-        foreach ($allUsers as $userReport) {
-            $isSent = $userReport->sent == '1' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
-            $isViewed = $userReport->mail_open == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isPayloadClicked = $userReport->payload_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-            $isEmailReported = $userReport->email_reported == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-
-            $responseHtml .=
-                '<tr>
-                <td>' .
-                $userReport->user_name .
-                '</td>
-                <td>' .
-                $userReport->user_email .
-                '</td>
-                <td>' .
-                $isSent .
-                '</td>
-                <td>' .
-                $isViewed .
-                '</td>
-                <td>' .
-                $isPayloadClicked .
-                '</td>
-                <td>' .
-                $isEmailCompromised .
-                '</td>
-                <td>' .
-                $isEmailReported .
-                '</td>
-            </tr>';
-        }
-
-        // return $responseHtml;
-        return response()->json(['html' => $responseHtml]);
     }
+
 
     public function whatsappfetchCampReportByUsers(Request $request)
     {
@@ -761,114 +783,96 @@ class ApiReportingController extends Controller
             $user = Auth::user();
 
             if (!$user) {
-                return response()->json(['error' => 'User not authenticated'], 401);
+                return response()->json([
+                    'status' =>  false,
+                    'message' => 'User not authenticated'
+
+                ], 401);
             }
 
             $companyId = $user->company_id;
 
             $allUsers = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->get();
 
-            if ($allUsers->isEmpty()) {
-                return response()->json([
-                    'html' => '
-                    <tr>
-                        <td colspan="7" class="text-center"> No records found</td>
-                    </tr>',
-                ]);
-            }
-
-            $responseHtml = '';
-            foreach ($allUsers as $userReport) {
-                $isSent = $userReport->status == 'sent' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
-                $link_clicked = $userReport->link_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-
-                $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                $training_assigned = $userReport->training_assigned == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-
-                $responseHtml .=
-                    '<tr>
-                <td>' .
-                    $userReport->user_name .
-                    '</td>
-                <td>' .
-                    $userReport->user_whatsapp .
-                    '</td>
-                <td>' .
-                    $isSent .
-                    '</td>
-                <td>' .
-                    $link_clicked .
-                    '</td>
-                
-                <td>' .
-                    $isEmailCompromised .
-                    '</td>
-                <td>' .
-                    $training_assigned .
-                    '</td>
-            </tr>';
-            }
-
-            return response()->json(['html' => $responseHtml]);
+            return response()->json([
+                'status' => true,
+                'message' => 'WhatsApp campaign report fetched successfully',
+                'data' =>  $allUsers
+            ], 200);
+            // return response()->json(['html' => $responseHtml]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An unexpected error occurred'], 500);
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
 
     public function aicallingfetchCampReportByUsers(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // $campId = $request->input('campaignId');
+            $companyId = Auth::user()->company_id;
 
-        $allUsers = AiCallCampLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+            $allUsers = AiCallCampLive::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
 
-        if ($allUsers->isEmpty()) {
+            if ($allUsers->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No records found',
+                    'data' => []
+                ], 404);
+            }
+
+            $data = [];
+
+            foreach ($allUsers as $userReport) {
+                $data[] = [
+                    'employee_name' => $userReport->employee_name,
+                    'mobile' => $userReport->to_mobile,
+                    'call_time' => $userReport->created_at,
+                    'email' => $userReport->employee_email,
+                    'status' => $userReport->status == 'completed' ? 'Completed' : ucfirst($userReport->status),
+                    'training_assigned' => $userReport->training_assigned == '1' ? 'Yes' : 'No',
+                ];
+            }
+
             return response()->json([
-                'html' => '
-                    <tr>
-                        <td colspan="7" class="text-center"> No records found</td>
-                    </tr>',
-            ]);
+                'status' => true,
+                'message' => 'AI calling campaign report fetched successfully',
+                'data' => $data
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $responseHtml = '';
-        foreach ($allUsers as $userReport) {
-            $isSent = $userReport->status == 'completed' ? '<span class="badge bg-success-transparent">Completed</span>' : '<span class="badge bg-warning-transparent">' . $userReport->status . '</span>';
-            $isViewed = $userReport->created_at;
-            $isPayloadClicked = $userReport->employee_email;
-            // $isEmailCompromised = $userReport->emp_compromised;
-            $isEmailReported = $userReport->training_assigned == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-
-            $responseHtml .=
-                '<tr>
-                <td>' .
-                $userReport->employee_name .
-                '</td>
-                <td>' .
-                $userReport->to_mobile .
-                '</td>
-                
-                <td>' .
-                $isViewed .
-                '</td>
-                <td>' .
-                $isPayloadClicked .
-                '</td>
-                <td>' .
-                $isSent .
-                '</td>
-                <td>' .
-                $isEmailReported .
-                '</td>
-            </tr>';
-        }
-
-        return response()->json(['html' => $responseHtml]);
     }
+
 
     public function tfetchCampReportByUsers(Request $request)
     {
@@ -938,408 +942,448 @@ class ApiReportingController extends Controller
 
     public function fetchCampTrainingDetails(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            $campId = $request->route('campaignId');
 
-        // Fetch campaign report
-        $reportRow = CampaignReport::where('campaign_id', $campId)->where('company_id', $companyId)->first();
-
-        // Fetch user group ID
-        $userGroup = Campaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
-
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
-
-            // Determine training assigned and completed status
-            $isAssigned = (int) $reportRow->training_assigned > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-            $isCompleted = (int) $reportRow->training_completed > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-
-            // Determine campaign status
-            if ($reportRow->status == 'completed') {
-                $status = '<span class="badge bg-success">Completed</span>';
-            } elseif ($reportRow->status == 'pending') {
-                $status = '<span class="badge bg-warning">Pending</span>';
-            } else {
-                $status = '<span class="badge bg-success">Running</span>';
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
             }
 
-            $responseHtml =
-                '<tr>
-                <th scope="row">' .
-                $reportRow->campaign_name .
-                '</th>
-                <td>' .
-                $status .
-                '</td>
-                <td>' .
-                $no_of_users .
-                '</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_assigned .
-                '</span>
-                        ' .
-                $isAssigned .
-                '
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_completed .
-                '</span>
-                        ' .
-                $isCompleted .
-                '
-                    </div>
-                </td>
-            </tr>';
+            $companyId = Auth::user()->company_id;
 
-            return response()->json(['html' => $responseHtml]);
-        } else {
+            // Fetch campaign report
+            $reportRow = CampaignReport::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            // Fetch user group ID
+            $userGroup = Campaign::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if ($reportRow && $userGroup) {
+                // Count users
+                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+
+                // Prepare status flags
+                $isAssigned = (int) $reportRow->training_assigned > 0 ? true : false;
+                $isCompleted = (int) $reportRow->training_completed > 0 ? true : false;
+
+                // Campaign status
+                $status = $reportRow->status ?? 'unknown';
+
+                // Prepare JSON response
+                return response()->json([
+                    'status' => true,
+                    'message' => __('Training details fetched successfully'),
+                    'data' => [
+                        'campaign_name' => $reportRow->campaign_name,
+                        'campaign_status' => ucfirst($status),
+                        'total_users' => $no_of_users,
+                        'training_assigned_count' => (int) $reportRow->training_assigned,
+                        'training_completed_count' => (int) $reportRow->training_completed,
+                        'training_assigned' => $isAssigned ? 'Yes' : 'No',
+                        'training_completed' => $isCompleted ? 'Yes' : 'No',
+                    ]
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No records found',
+                    'data' => []
+                ], 404);
+            }
+        } catch (ValidationException $e) {
             return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="5" class="text-center"> No records found</td>
-                </tr>',
-            ]);
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function whatsappfetchCampTrainingDetails(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
-
-        // Fetch campaign report data
-        $reportRow = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->first();
-
-        // Fetch user group data
-        $userGroup = WhatsappCampaign::where('camp_id', $campId)->where('company_id', $companyId)->first();
-
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = WhatsappCampaign::where('user_group', $userGroup->users_group)->count();
-
-            // Determine training assigned and completed status
-            $isAssigned = (int) $reportRow->training_assigned > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-            $isCompleted = (int) $reportRow->training_completed > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-
-            // Determine campaign status
-            if ($reportRow->status == 'completed') {
-                $status = '<span class="badge bg-success">Completed</span>';
-            } elseif ($reportRow->status == 'pending') {
-                $status = '<span class="badge bg-warning">Pending</span>';
-            } else {
-                $status = '<span class="badge bg-success">Running</span>';
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
             }
+            $companyId = Auth::user()->company_id;
 
-            $responseHtml =
-                '<tr>
-                <th scope="row">' .
-                $reportRow->camp_name .
-                '</th>
-                <td>' .
-                $status .
-                '</td>
-                <td>' .
-                $no_of_users .
-                '</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_assigned .
-                '</span>
-                        ' .
-                $isAssigned .
-                '
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_completed .
-                '</span>
-                        ' .
-                $isCompleted .
-                '
-                    </div>
-                </td>
-            </tr>';
+            // Fetch campaign report data
+            $reportRow = WhatsAppCampaignUser::where('camp_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-            return response()->json(['html' => $responseHtml]);
-        } else {
+            // Fetch user group data
+            $userGroup = WhatsappCampaign::where('camp_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if ($reportRow && $userGroup) {
+                // Count number of users in the group
+                $no_of_users = WhatsappCampaign::where('user_group', $userGroup->users_group)->count();
+
+                $isAssigned = (int) $reportRow->training_assigned > 0;
+                $isCompleted = (int) $reportRow->training_completed > 0;
+
+                $status = match ($reportRow->status) {
+                    'completed' => 'Completed',
+                    'pending' => 'Pending',
+                    default => 'Running',
+                };
+
+                return response()->json([
+                    'status' => true,
+                    'message' => __('WhatsApp campaign training details fetched successfully'),
+                    'data' => [
+                        'campaign_name' => $reportRow->camp_name,
+                        'campaign_status' => $status,
+                        'total_users' => $no_of_users,
+                        'training_assigned_count' => (int) $reportRow->training_assigned,
+                        'training_completed_count' => (int) $reportRow->training_completed,
+                        'training_assigned' => $isAssigned ? 'Yes' : 'No',
+                        'training_completed' => $isCompleted ? 'Yes' : 'No',
+                    ]
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No records found',
+                    'data' => []
+                ], 404);
+            }
+        } catch (ValidationException $e) {
             return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="5" class="text-center"> No records found</td>
-                </tr>',
-            ]);
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function aicallingfetchCampTrainingDetails(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
-
-        // Fetch campaign report
-        $reportRow = AiCallCampLive::where('campaign_id', $campId)->where('company_id', $companyId)->first();
-
-        // Fetch user group ID
-        $userGroup = AiCallCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
-
-        if ($reportRow && $userGroup) {
-            // Count the number of users in the group
-            $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
-
-            // Determine training assigned and completed status
-            $isAssigned = (int) $reportRow->training_assigned > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-            $isCompleted = (int) $reportRow->training_completed > 0 ? '<i class="bx bx-check-circle text-success fs-25"></i>' : '<i class="bx bx-check-circle text-danger fs-25"></i>';
-
-            // Determine campaign status
-            if ($reportRow->status == 'completed') {
-                $status = '<span class="badge bg-success">Completed</span>';
-            } elseif ($reportRow->status == 'pending') {
-                $status = '<span class="badge bg-warning">Pending</span>';
-            } else {
-                $status = '<span class="badge bg-success">Running</span>';
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
             }
+            $companyId = Auth::user()->company_id;
 
-            $responseHtml =
-                '<tr>
-                <th scope="row">' .
-                $reportRow->campaign_name .
-                '</th>
-                <td>' .
-                $status .
-                '</td>
-                <td>' .
-                $no_of_users .
-                '</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_assigned .
-                '</span>
-                        ' .
-                $isAssigned .
-                '
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <span class="mx-1">' .
-                $reportRow->training_completed .
-                '</span>
-                        ' .
-                $isCompleted .
-                '
-                    </div>
-                </td>
-            </tr>';
+            // Fetch campaign report
+            $reportRow = AiCallCampLive::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
 
-            return response()->json(['html' => $responseHtml]);
-        } else {
+            // Fetch user group
+            $userGroup = AiCallCampaign::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if ($reportRow && $userGroup) {
+                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
+
+                $isAssigned = (int) $reportRow->training_assigned > 0 ? true : false;
+                $isCompleted = (int) $reportRow->training_completed > 0 ? true : false;
+
+                $status = match ($reportRow->status) {
+                    'completed' => 'Completed',
+                    'pending' => 'Pending',
+                    default => 'Running',
+                };
+
+                return response()->json([
+                    'status' => true,
+                    'message' => __('AI Campaign training details fetched successfully'),
+                    'data' => [
+                        'campaign_name' => $reportRow->campaign_name,
+                        'campaign_status' => $status,
+                        'total_users' => $no_of_users,
+                        'training_assigned_count' => (int) $reportRow->training_assigned,
+                        'training_completed_count' => (int) $reportRow->training_completed,
+                        'training_assigned' => $isAssigned ? 'Yes' : 'No',
+                        'training_completed' => $isCompleted ? 'Yes' : 'No',
+                    ]
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('No records found'),
+                    'data' => []
+                ], 404);
+            }
+        } catch (ValidationException $e) {
             return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="5" class="text-center"> No records found</td>
-                </tr>',
-            ]);
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function fetchCampTrainingDetailsIndividual(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
+            $companyId = Auth::user()->company_id;
 
-        // Fetch assigned training users
-        $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+            // Fetch assigned training users
+            $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
 
-        if ($assignedUsers->isEmpty()) {
-            return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="7" class="text-center"> No records found</td>
-                </tr>',
-            ]);
-        }
-
-        $responseHtml = '';
-        foreach ($assignedUsers as $assignedUser) {
-            $trainingDetail = TrainingModule::find($assignedUser->training);
-
-            $today = new \DateTime(date('Y-m-d'));
-            $dueDate = new \DateTime($assignedUser->training_due_date);
-
-            if ($assignedUser->completed == 1) {
-                $status = "<span class='text-success'><strong>Training Completed</strong></span>";
-            } else {
-                if ($dueDate > $today) {
-                    $status = "<span class='text-success'><strong>In training period</strong></span>";
-                } else {
-                    $days_difference = $today->diff($dueDate)->days;
-                    $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
-                }
+            if ($assignedUsers->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('No records found'),
+                    'data' => []
+                ], 404);
             }
 
+            $data = [];
 
-            $responseHtml .=
-                '
-                <tr>
-                    <td>' . $assignedUser->user_email . '</td>
-                    <td>' . $trainingDetail->name . '</td>
-                    <td>' . $assignedUser->assigned_date . '</td>
-                    <td>' . $assignedUser->personal_best . '%</td>
-                    <td>' . $trainingDetail->passing_score . '%</td>
-                    <td>' . $status . '</td>
-                </tr>';
+            foreach ($assignedUsers as $assignedUser) {
+                $trainingDetail = TrainingModule::find($assignedUser->training);
+                if (!$trainingDetail) {
+                    continue;
+                }
+
+                $today = new \DateTime(date('Y-m-d'));
+                $dueDate = new \DateTime($assignedUser->training_due_date);
+
+                if ($assignedUser->completed == 1) {
+                    $statusText = 'Training Completed';
+                    $statusClass = 'success';
+                } else {
+                    if ($dueDate > $today) {
+                        $statusText = 'In training period';
+                        $statusClass = 'success';
+                    } else {
+                        $days_difference = $today->diff($dueDate)->days;
+                        $statusText = 'Overdue - ' . $days_difference . ' Days';
+                        $statusClass = 'danger';
+                    }
+                }
+
+                $data[] = [
+                    'email' => $assignedUser->user_email,
+                    'training_name' => $trainingDetail->name,
+                    'assigned_date' => $assignedUser->assigned_date,
+                    'personal_best' => $assignedUser->personal_best . '%',
+                    'passing_score' => $trainingDetail->passing_score . '%',
+                    'status_text' => $statusText,
+                    'status_class' => $statusClass,
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Training assignment details fetched successfully'),
+                'data' => $data
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['html' => $responseHtml]);
     }
+
 
     public function whatsappfetchCampTrainingDetailsIndividual(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
+            }
+            $companyId = Auth::user()->company_id;
 
-        // Fetch assigned training users
-        $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+            $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
 
-        if ($assignedUsers->isEmpty()) {
-            return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="6" class="text-center"> No records found</td>
-                </tr>',
-            ]);
-        }
-
-        $responseHtml = '';
-        foreach ($assignedUsers as $assignedUser) {
-            $trainingDetail = TrainingModule::find($assignedUser->training);
-
-            $today = new \DateTime(date('Y-m-d'));
-            $dueDate = new \DateTime($assignedUser->training_due_date);
-
-            if ($dueDate > $today) {
-                $status = "<span class='text-success'><strong>In training period</strong></span>";
-            } else {
-                $days_difference = $today->diff($dueDate)->days;
-                $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
+            if ($assignedUsers->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('No records found'),
+                    'data' => []
+                ], 404);
             }
 
-            $responseHtml .=
-                '
-                <tr>
-                    <td>' .
-                $assignedUser->user_email .
-                '</td>
-                    <td>' .
-                $trainingDetail->name .
-                '</td>
-                    <td>' .
-                $assignedUser->assigned_date .
-                '</td>
-                    <td>' .
-                $assignedUser->personal_best .
-                '%</td>
-                    <td>' .
-                $trainingDetail->passing_score .
-                '%</td>
-                    <td>' .
-                $status .
-                '</td>
-                </tr>';
-        }
+            $data = [];
+            $today = new \DateTime(date('Y-m-d'));
 
-        return response()->json(['html' => $responseHtml]);
+            foreach ($assignedUsers as $assignedUser) {
+                $trainingDetail = TrainingModule::find($assignedUser->training);
+                if (!$trainingDetail) {
+                    continue;
+                }
+
+                $dueDate = new \DateTime($assignedUser->training_due_date);
+
+                if ($dueDate > $today) {
+                    $statusText = 'In training period';
+                    $statusClass = 'success';
+                } else {
+                    $days_difference = $today->diff($dueDate)->days;
+                    $statusText = 'Overdue - ' . $days_difference . ' Days';
+                    $statusClass = 'danger';
+                }
+
+                $data[] = [
+                    'email' => $assignedUser->user_email,
+                    'training_name' => $trainingDetail->name,
+                    'assigned_date' => $assignedUser->assigned_date,
+                    'personal_best' => $assignedUser->personal_best . '%',
+                    'passing_score' => $trainingDetail->passing_score . '%',
+                    'status_text' => $statusText,
+                    'status_class' => $statusClass,
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('WhatsApp training assignment details fetched successfully'),
+                'data' => $data
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function aicallingfetchCampTrainingDetailsIndividual(Request $request)
     {
-        $request->validate([
-            'campaignId' => 'required|string',
-        ]);
+        try {
+            $campId = $request->route('campaignId');
 
-        $campId = $request->input('campaignId');
-        $companyId = Auth::user()->company_id;
-
-        // Fetch assigned training users
-        $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)->where('company_id', $companyId)->get();
-
-        if ($assignedUsers->isEmpty()) {
-            return response()->json([
-                'html' => '
-                <tr>
-                    <td colspan="6" class="text-center"> No records found</td>
-                </tr>',
-            ]);
-        }
-
-        $responseHtml = '';
-        foreach ($assignedUsers as $assignedUser) {
-            $trainingDetail = TrainingModule::find($assignedUser->training);
-
-            $today = new \DateTime(date('Y-m-d'));
-            $dueDate = new \DateTime($assignedUser->training_due_date);
-
-            if ($dueDate > $today) {
-                $status = "<span class='text-success'><strong>In training period</strong></span>";
-            } else {
-                $days_difference = $today->diff($dueDate)->days;
-                $status = "<span class='text-danger'><strong>Overdue - " . $days_difference . ' Days</strong></span>';
+            // Check if campaignId exists
+            if (!$campId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Campaign ID is required.')
+                ], 400);
             }
 
-            $responseHtml .=
-                '
-                <tr>
-                    <td>' .
-                $assignedUser->user_email .
-                '</td>
-                    <td>' .
-                $trainingDetail->name .
-                '</td>
-                    <td>' .
-                $assignedUser->assigned_date .
-                '</td>
-                    <td>' .
-                $assignedUser->personal_best .
-                '%</td>
-                    <td>' .
-                $trainingDetail->passing_score .
-                '%</td>
-                    <td>' .
-                $status .
-                '</td>
-                </tr>';
-        }
+            $companyId = Auth::user()->company_id;
 
-        return response()->json(['html' => $responseHtml]);
+            $assignedUsers = TrainingAssignedUser::where('campaign_id', $campId)
+                ->where('company_id', $companyId)
+                ->get();
+
+            if ($assignedUsers->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('No records found'),
+                    'data' => []
+                ], 404);
+            }
+
+            $data = [];
+            $today = new \DateTime(date('Y-m-d'));
+
+            foreach ($assignedUsers as $assignedUser) {
+                $trainingDetail = TrainingModule::find($assignedUser->training);
+                if (!$trainingDetail) {
+                    continue;
+                }
+
+                $dueDate = new \DateTime($assignedUser->training_due_date);
+
+                if ($dueDate > $today) {
+                    $statusText = 'In training period';
+                    $statusClass = 'success';
+                } else {
+                    $days_difference = $today->diff($dueDate)->days;
+                    $statusText = 'Overdue - ' . $days_difference . ' Days';
+                    $statusClass = 'danger';
+                }
+
+                $data[] = [
+                    'email' => $assignedUser->user_email,
+                    'training_name' => $trainingDetail->name,
+                    'assigned_date' => $assignedUser->assigned_date,
+                    'personal_best' => $assignedUser->personal_best . '%',
+                    'passing_score' => $trainingDetail->passing_score . '%',
+                    'status_text' => $statusText,
+                    'status_class' => $statusClass,
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('AI training assignment details fetched successfully'),
+                'data' => $data
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 }
