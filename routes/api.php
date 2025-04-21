@@ -7,14 +7,17 @@ use App\Http\Controllers\Api\ApiReportingController;
 use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TrainingModuleController;
+use App\Http\Controllers\Api\ApiCampaignController;
+use App\Http\Controllers\Api\ApiPhishingEmailsController;
+use App\Http\Controllers\Api\ApiTrainingModuleController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
@@ -32,6 +35,28 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-package-data', [DashboardController::class, 'getPackage']);
     Route::get('/get-line-chart-2-data', [DashboardController::class, 'getLineChartData2']);
     // });
+
+    //campaign routes
+    Route::prefix('email-campaign')->group(function () {
+        Route::get('/', [ApiCampaignController::class, 'index']);
+        Route::post('/create', [ApiCampaignController::class, 'createCampaign']);
+        Route::delete('/delete/{campaign_id}', [ApiCampaignController::class, 'deleteCampaign']);
+        Route::get('/detail/{campaign_id}', [ApiCampaignController::class, 'fetchCampaignDetail']);
+        Route::get('/game-detail/{campaign_id}', [ApiCampaignController::class, 'fetchGameDetail']);
+        Route::post('/relaunch/{campaign_id}', [ApiCampaignController::class, 'relaunchCampaign']);
+        Route::get('/fetch-phish-data', [ApiCampaignController::class, 'fetchPhishData']);
+        Route::post('/reschedule/{campaign_id?}', [ApiCampaignController::class, 'rescheduleCampaign']);
+        Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
+    });
+
+    // Phishing Material routes
+    Route::prefix('phishing-material')->group(function () {
+        Route::get('/', [ApiPhishingEmailsController::class, 'index']);
+        Route::get('/search', [ApiPhishingEmailsController::class, 'searchPhishingMaterial']);
+    });
+
+   
+    
 
     // Settings routes
     Route::prefix('settings')->group(function () {
