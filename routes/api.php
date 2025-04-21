@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiReportingController;
+use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -113,5 +114,16 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/update-ldap-config', [ApiEmployeesController::class, 'updateLdapConfig']);
         Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
+    });
+
+    Route::prefix('ai-calling')->group(function () {
+        Route::get('/', [ApiAiCallController::class, 'index']);
+        Route::post('/submit-req', [ApiAiCallController::class, 'submitReq']);
+        Route::post('/create-campaign', [ApiAiCallController::class, 'createCampaign']);
+        Route::get('/view-campaign/{id?}', [ApiAiCallController::class, 'viewCampaign']);
+        Route::delete('/delete-campaign/{id?}', [ApiAiCallController::class, 'deleteCampaign']);
+        Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
+        Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
+        Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
     });
 });

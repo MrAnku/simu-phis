@@ -413,6 +413,8 @@ Route::middleware([
         //Ai Calling routes ----------------------------------------------------------------------
         Route::get('/ai-calling', [AicallController::class, 'index'])->name('ai.calling');
         Route::post('/ai-calling/submit-req', [AicallController::class, 'submitReq'])->name('ai.calling.sub.req');
+
+        
         Route::post('/ai-calling/create-campaign', [AicallController::class, 'createCampaign'])->name('ai.call.create.campaign');
         Route::get('/ai-calling/view-campaign/{id}', [AicallController::class, 'viewCampaign'])->name('ai.call.view.campaign');
         Route::post('/ai-calling/delete-campaign', [AicallController::class, 'deleteCampaign'])->name('ai.call.delete.campaign');
