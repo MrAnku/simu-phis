@@ -91,9 +91,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/fetch-outlook-groups', [ApiOutlookAdController::class, 'fetchGroups']);
         Route::get('/fetch-outlook-emps/{groupId?}', [ApiOutlookAdController::class, 'fetchEmps']);
         Route::post('/save-outlook-employees', [ApiOutlookAdController::class, 'saveOutlookEmps']);
-
-
-        // Today
         Route::post('/send-domain-verify-otp', [ApiEmployeesController::class, 'sendDomainVerifyOtp']);
         Route::post('/otp-verify', [ApiEmployeesController::class, 'verifyOtp']);
         Route::delete('/delete-domain/{domain?}', [ApiEmployeesController::class, 'deleteDomain']);
@@ -104,30 +101,17 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-emp-from-all-emp', [ApiEmployeesController::class, 'addEmpFromAllEmp']);
         Route::get('/view-blue-collar-users/{groupId?}', [ApiBlueCollarController::class, 'viewBlueCollarUsers']);
         Route::delete('/delete-user/{user_id?}', [ApiEmployeesController::class, 'deleteUser']);
-        // ==================================================================================
-
-
-
-
-
-        // Route::post('/employees/delete-emp-by-email', [EmployeesController::class, 'deleteUserByEmail'])->name('employee.deleteUserByEmail');
-        // Route::post('/employees/deleteBlueUser', [BluecolarController::class, 'deleteBlueUser'])->name('employee.deleteUser');
-        // Route::post('employees/update-whatsapp-number', [EmployeesController::class, 'updateWhatsapp'])->name('employee.updatewhatsapp');
-        // Route::post('/employees/addUser', [EmployeesController::class, 'addUser'])->name('employee.addUser');
-        // Route::post('/employees/addPlanUser', [EmployeesController::class, 'addPlanUser'])->name('employee.addPlanUser');
-        // Route::post('/employees/addBlueCollarUser', [BluecolarController::class, 'addBlueCollarUser'])->name('employee.addUser');
-        // Route::post('/employees/importCsv', [EmployeesController::class, 'importCsv'])->name('employee.importCsv');
-        // Route::post('/employees/deleteGroup', [EmployeesController::class, 'deleteGroup'])->name('employee.deleteGroup');
-        // Route::post('/employees/deleteBlueGroup', [BluecolarController::class, 'deleteBlueGroup'])->name('employee.deleteBlueGroup');
-
-        // Route::get('/employees/check-ldap-ad-config', [EmployeesController::class, 'checkAdConfig'])->name('employee.check.ldap.ad.config');
-
-        // Route::post('/employees/save-ldap-config', [EmployeesController::class, 'saveLdapConfig'])->name('employee.save.ldap.config');
-
-        // Route::post('/employees/add-ldap-config', [EmployeesController::class, 'addLdapConfig'])->name('employee.add.ldap.config');
-
-        // Route::get('/employees/sync-ldap-directory', [EmployeesController::class, 'syncLdap'])->name('employee.sync.ldap');
-
-
+        Route::delete('/delete-emp-by-email', [ApiEmployeesController::class, 'deleteUserByEmail']);
+        Route::delete('/delete-blue-user/{user_id?}', [ApiBlueCollarController::class, 'deleteBlueUser']);
+        Route::post('/add-user', [ApiEmployeesController::class, 'addUser']);
+        Route::post('/add-plan-user', [ApiEmployeesController::class, 'addPlanUser']);
+        Route::post('/add-blue-collar-user', [ApiBlueCollarController::class, 'addBlueCollarUser']);
+        Route::post('/import-csv', [ApiEmployeesController::class, 'importCsv']);
+        Route::delete('/delete-group/{groupId?}', [ApiEmployeesController::class, 'deleteGroup']);
+        Route::delete('/delete-blue-group/{group_id?}', [ApiBlueCollarController::class, 'deleteBlueGroup']);
+        Route::get('/check-ldap-ad-config', [ApiEmployeesController::class, 'checkAdConfig']);
+        Route::put('/update-ldap-config', [ApiEmployeesController::class, 'updateLdapConfig']);
+        Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
+        Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
     });
 });
