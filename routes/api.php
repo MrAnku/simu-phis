@@ -8,15 +8,16 @@ use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
+use App\Http\Controllers\SupportController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SupportController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
+use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
@@ -36,7 +37,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-line-chart-2-data', [DashboardController::class, 'getLineChartData2']);
     // });
 
-    //campaign routes
+    //email campaign routes
     Route::prefix('email-campaign')->group(function () {
         Route::get('/', [ApiCampaignController::class, 'index']);
         Route::post('/create', [ApiCampaignController::class, 'createCampaign']);
@@ -49,6 +50,19 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
         Route::put('/complete-training/{encodedTrainingId?}', [ApiCampaignController::class, 'completeTraining']);
         Route::delete('/remove-training/{encodedTrainingId?}', [ApiCampaignController::class, 'removeTraining']);
+    });
+
+    //whatsapp campaign routes
+    Route::prefix('whatsapp-campaign')->group(function () {
+        Route::get('/', [ApiWhatsappCampaignController::class, 'index']);
+        Route::post('/save-config', [ApiWhatsappCampaignController::class, 'saveConfig']);
+        Route::put('/update-config', [ApiWhatsappCampaignController::class, 'updateConfig']);
+        Route::get('/sync-templates', [ApiWhatsappCampaignController::class, 'syncTemplates']);
+        Route::post('/create-campaign', [ApiWhatsappCampaignController::class, 'createCampaign']);
+        Route::delete('/delete-campaign/{campaign_id?}', [ApiWhatsappCampaignController::class, 'deleteCampaign']);
+        Route::get('/campaign-detail/{campaign_id?}', [ApiWhatsappCampaignController::class, 'fetchCampaign']);
+        Route::get('/group-employees/{employee_type?}', [ApiWhatsappCampaignController::class, 'groupUsers']);
+        Route::post('/new-template', [ApiWhatsappCampaignController::class, 'newTemplate']);
     });
 
     // Phishing Material routes

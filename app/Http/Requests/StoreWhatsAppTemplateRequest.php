@@ -22,8 +22,8 @@ class StoreWhatsAppTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'temp_name' => 'required|string|max:255',
-            'temp_body' => ['required', 'string', 'max:5000', function ($attribute, $value, $fail) {
+            'template_name' => 'required|string|max:255',
+            'template_body' => ['required', 'string', 'max:5000', function ($attribute, $value, $fail) {
                 $count = substr_count($value, '{{var}}');
                 if ($count !== 3) {
                     $fail(__('The Template Body must contain exactly 3 instances of {{var}}.'));
@@ -35,12 +35,12 @@ class StoreWhatsAppTemplateRequest extends FormRequest
     public function messages()
     {
         return [
-            'temp_name.required' => 'Template name is required.',
-            'temp_name.string' => 'Template name must be a string.',
-            'temp_name.max' => 'Template name must not exceed 255 characters.',
-            'temp_body.required' => 'Template body is required.',
-            'temp_body.string' => 'Template body must be a string.',
-            'temp_body.max' => 'Template body must not exceed 5000 characters.',
+            'template_name.required' => 'Template name is required.',
+            'template_name.string' => 'Template name must be a string.',
+            'template_name.max' => 'Template name must not exceed 255 characters.',
+            'template_body.required' => 'Template body is required.',
+            'template_body.string' => 'Template body must be a string.',
+            'template_body.max' => 'Template body must not exceed 5000 characters.',
         ];
     }
 }
