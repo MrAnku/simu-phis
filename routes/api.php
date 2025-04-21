@@ -47,6 +47,8 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/fetch-phish-data', [ApiCampaignController::class, 'fetchPhishData']);
         Route::post('/reschedule/{campaign_id?}', [ApiCampaignController::class, 'rescheduleCampaign']);
         Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
+        Route::put('/complete-training/{encodedTrainingId?}', [ApiCampaignController::class, 'completeTraining']);
+        Route::delete('/remove-training/{encodedTrainingId?}', [ApiCampaignController::class, 'removeTraining']);
     });
 
     // Phishing Material routes

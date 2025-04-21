@@ -851,7 +851,7 @@ class ApiCampaignController extends Controller
 
 
             Mail::to($email)->send(new TrainingAssignedEmail(
-                $mailData, 
+                $mailData,
                 $this->getTrainingNamesArray($email)
             ));
 
@@ -883,5 +883,85 @@ class ApiCampaignController extends Controller
         }
 
         return $trainingNames;
+    }
+
+    public function completeTraining(Request $request)
+    {
+        try {
+            $encodedTrainingId = $request->route('encodedTrainingId');
+            if (!$encodedTrainingId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Encoded training ID is required')
+                ], 422);
+            }
+            $training_id = base64_decode($encodedTrainingId);
+
+            $trainingAssigned = TrainingAssignedUser::find($training_id);
+
+            if (!$trainingAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training not found')
+                ], 404);
+            }
+
+            $trainingAssigned->update([
+                'completed' => 1,
+                'personal_best' => 100,
+                'completion_date' => now()
+            ]);
+
+            $reportUpdate = CampaignReport::where('campaign_id', $trainingAssigned->campaign_id)->increment('training_completed');
+
+            log_action("Training marked as completed to {$trainingAssigned->user_email}");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training marked as completed successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function removeTraining(Request $request)
+    {
+        try {
+            $encodedTrainingId = $request->route('encodedTrainingId');
+            if (!$encodedTrainingId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Encoded training ID is required')
+                ], 422);
+            }
+            $training_id = base64_decode($encodedTrainingId);
+
+            $trainingAssigned = TrainingAssignedUser::find($training_id);
+
+            if (!$trainingAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training not found')
+                ], 404);
+            }
+
+            $trainingAssigned->delete();
+
+            log_action("Training removed for {$trainingAssigned->user_email}");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training removed successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 }
