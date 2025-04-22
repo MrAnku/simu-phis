@@ -20,14 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
+            'jwt.auth' => JWTAuthMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
             '/ai-calling/log-call-detail',
             '/outlook-phish-report'
-        ]);
-        $middleware->alias([
-            'jwt.auth' => JWTAuthMiddleware::class,
         ]);
         $middleware->append(CorsMiddleware::class);
     })

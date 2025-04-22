@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiBlueCollarController;
+// use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
@@ -18,6 +19,8 @@ use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
+use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -25,9 +28,31 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
 Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
+
+// Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
+
+
+// Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
+//     function () {
+//         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
+//     }
+// );
+
+// Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(
+//     function () {
+//         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
+//     }
+// );
+
+
 Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::middleware('auth:api')->group(function () {
+    // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
+    //     function () {
+    //         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
+    //     }
+    // );
     // Dashboard routes
     // Route::prefix('dashboard')->group(function () {
     Route::get('/get-pie-data', [DashboardController::class, 'getPieData']);
@@ -60,7 +85,6 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
-        
     });
 
     //whatsapp campaign routes
@@ -81,10 +105,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [ApiPhishingEmailsController::class, 'index']);
         Route::get('/search', [ApiPhishingEmailsController::class, 'searchPhishingMaterial']);
     });
-
-   
-    
-
     // Settings routes
     Route::prefix('settings')->group(function () {
         Route::get('/', [SettingsController::class, 'index']);
@@ -223,5 +243,13 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
         Route::post('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
         Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
+    });
+    Route::prefix('phishing-website')->group(function () {
+        Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
+        Route::post('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
+        Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
+        Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
+        Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
+        Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
     });
 });
