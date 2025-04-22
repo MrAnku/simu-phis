@@ -18,6 +18,7 @@ use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
+use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -52,6 +53,15 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
         Route::put('/complete-training/{encodedTrainingId?}', [ApiCampaignController::class, 'completeTraining']);
         Route::delete('/remove-training/{encodedTrainingId?}', [ApiCampaignController::class, 'removeTraining']);
+    });
+
+    //quishing campaign routes
+    Route::prefix('quishing-campaign')->group(function () {
+        Route::get('/', [ApiQuishingController::class, 'index']);
+        Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
+        Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
+        Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
+        
     });
 
     //whatsapp campaign routes
