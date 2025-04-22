@@ -19,6 +19,7 @@ use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
+use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
@@ -252,4 +253,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
     });
+
+    Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
 });
