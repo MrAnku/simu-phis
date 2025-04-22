@@ -17,7 +17,6 @@ use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
-use App\Http\Controllers\Api\ApiPhishingEmailsController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
