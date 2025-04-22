@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
+use App\Http\Controllers\Api\ApiQuishingEmailController;
 use App\Http\Controllers\Api\ApiReportingController;
 use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
@@ -207,5 +208,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
         // 17 ho gya test
         Route::post('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
+    });
+    Route::prefix('quishing-emails')->group(function () {
+        Route::get('/', [ApiQuishingEmailController::class, 'index']);
+        Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
+        Route::post('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
+        Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
     });
 });
