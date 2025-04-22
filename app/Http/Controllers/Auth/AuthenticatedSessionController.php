@@ -20,7 +20,10 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
         }
         $cookie = cookie('jwt', $token, 60*24);
         $user = Auth::user();
@@ -55,9 +58,15 @@ class AuthenticatedSessionController extends Controller
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
             $cookie = cookie('jwt', null, -1);
-            return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully logged out'
+                ])->withCookie($cookie);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Failed to logout'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to logout',
+            ], 500);
         }
     }
 
