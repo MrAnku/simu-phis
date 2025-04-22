@@ -22,6 +22,7 @@ class AuthenticatedSessionController extends Controller
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
+        $cookie = cookie('jwt', $token, 60*24);
         $user = Auth::user();
         $company_settings = Settings::where('company_id', $user->company_id)->first();
         if ($company_settings->mfa == 1) {
@@ -33,7 +34,7 @@ class AuthenticatedSessionController extends Controller
                 'token' => $token,
                 'company' => $user,
                 "success" => false
-            ]);
+            ])->withCookie($cookie);
             // throw ValidationException::withMessages([
             //     'mfa' => 'Multi-factor authentication is required.',
             // ])->redirectTo(route('mfa.enter'));
@@ -43,7 +44,7 @@ class AuthenticatedSessionController extends Controller
             'company' => Auth::user(),
             "success" => true,
             "MFA" => false,
-        ]);
+        ])->withCookie($cookie);
     }
 
     /**
@@ -53,7 +54,8 @@ class AuthenticatedSessionController extends Controller
     {
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
-            return response()->json(['message' => 'Successfully logged out']);
+            $cookie = cookie('jwt', null, -1);
+            return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Failed to logout'], 500);
         }
