@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\AiAgentRequest;
 use App\Models\AiCallAgent;
 use App\Models\AiCallCampaign;
@@ -9,7 +11,6 @@ use App\Models\AiCallCampLive;
 use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;

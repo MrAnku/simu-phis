@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApiAiCallController;
 use App\Http\Controllers\Api\ApiBlueCollarController;
 // use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
@@ -7,7 +8,6 @@ use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
 use App\Http\Controllers\Api\ApiReportingController;
-use App\Http\Controllers\ApiAiCallController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\Api\ApiSupportController;
+use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -256,4 +257,32 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
     });
     Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
+
+    Route::prefix('tprm')->group(function(){
+        Route::get('/', [ApiTprmController::class, 'index']);
+        Route::post('/submit-req', [ApiTprmController::class, 'submitReq']);
+        Route::post('/submit-domains', [ApiTprmController::class, 'submitdomains']);
+
+        Route::get('/test', [ApiTprmController::class, 'test']);
+
+        Route::delete('/delete-domain', [ApiTprmController::class, 'deleteDomain']);
+
+        //-----------------TPRM routes for champaingns-------------//
+
+        Route::get('/campaigns', [ApiTprmController::class, 'index']);
+        Route::post('/campaigns/create', [ApiTprmController::class, 'createCampaign']);
+        Route::delete('/delete-campaign/{campId?}', [ApiTprmController::class, 'deleteCampaign']);
+        Route::post('/campaigns/relaunch/{campId?}', [ApiTprmController::class, 'relaunchCampaign']);
+        Route::get('/campaigns/fetch-phish-data', [ApiTprmController::class, 'fetchPhishData']);
+        Route::post('/campaigns/reschedule', [ApiTprmController::class, 'rescheduleCampaign']);
+        // Route::post('/treporting/fetch-campaign-report', [ReportingController::class, 'tfetchCampaignReport'])->name('tprmcampaign.fetchCampaignReport');
+        // Route::post('/tfetch-camp-report-by-users', [ReportingController::class, 'tfetchCampReportByUsers'])->name('tprmcampaign.fetchCampReportByUsers');
+        // Route::get('/test-route', function () {
+        //     return 'Test route reached!';
+        // });
+        // Route::post('/tprmcampaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
+        // Route::post('/tprmcampaigns/tprmnewGroup', [ApiTprmController::class, 'tprmnewGroup']);
+        // Route::post('/tprmcampaigns/emailtprmnewGroup', [ApiTprmController::class, 'emailtprmnewGroup']);
+        // Route::get('/tprmcampaigns/emails/{domain}', [ApiTprmController::class, 'getEmailsByDomain']);
+    });
 });
