@@ -262,27 +262,15 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [ApiTprmController::class, 'index']);
         Route::post('/submit-req', [ApiTprmController::class, 'submitReq']);
         Route::post('/submit-domains', [ApiTprmController::class, 'submitdomains']);
-
-        Route::get('/test', [ApiTprmController::class, 'test']);
-
         Route::delete('/delete-domain', [ApiTprmController::class, 'deleteDomain']);
-
-        //-----------------TPRM routes for champaingns-------------//
-
-        Route::get('/campaigns', [ApiTprmController::class, 'index']);
         Route::post('/campaigns/create', [ApiTprmController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campId?}', [ApiTprmController::class, 'deleteCampaign']);
         Route::post('/campaigns/relaunch/{campId?}', [ApiTprmController::class, 'relaunchCampaign']);
         Route::get('/campaigns/fetch-phish-data', [ApiTprmController::class, 'fetchPhishData']);
-        Route::post('/campaigns/reschedule', [ApiTprmController::class, 'rescheduleCampaign']);
-        // Route::post('/treporting/fetch-campaign-report', [ReportingController::class, 'tfetchCampaignReport'])->name('tprmcampaign.fetchCampaignReport');
-        // Route::post('/tfetch-camp-report-by-users', [ReportingController::class, 'tfetchCampReportByUsers'])->name('tprmcampaign.fetchCampReportByUsers');
-        // Route::get('/test-route', function () {
-        //     return 'Test route reached!';
-        // });
-        // Route::post('/tprmcampaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
-        // Route::post('/tprmcampaigns/tprmnewGroup', [ApiTprmController::class, 'tprmnewGroup']);
-        // Route::post('/tprmcampaigns/emailtprmnewGroup', [ApiTprmController::class, 'emailtprmnewGroup']);
-        // Route::get('/tprmcampaigns/emails/{domain}', [ApiTprmController::class, 'getEmailsByDomain']);
+        Route::post('/treporting/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tfetchCampaignReport']);
+        Route::post('/tfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tfetchCampReportByUsers']);
+        Route::post('/campaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
+        Route::post('/campaigns/addGroupUser', [ApiTprmController::class, 'addGroupUser']);
+        Route::get('/campaigns/get-emails-by-domain/{domain?}', [ApiTprmController::class, 'getEmailsByDomain']);
     });
 });

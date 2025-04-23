@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\DomainEmail;
 use App\Models\PhishingEmail;
 use App\Models\TpmrVerifiedDomain;
 use App\Models\TprmCampaign;
@@ -12,12 +13,13 @@ use App\Models\TprmCampaignReport;
 use App\Models\TprmRequest;
 use App\Models\TprmUsers;
 use App\Models\TprmUsersGroup;
-use App\Models\TrainingModule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class ApiTprmController extends Controller
 {
@@ -557,132 +559,254 @@ class ApiTprmController extends Controller
     public function fetchPhishData(Request $request)
     {
         try {
-            $website = $request->input('website_id');
-            $senderProfile = $request->input('senderProfile_id');
+            $website = $request->query('website', null);
+            $senderProfile = $request->query('senderProfile', null);
 
             $phishData = [];
 
-            // Fetch website data
-            $websiteData = DB::table('phishing_websites')->where('id', $website)->first();
-            if ($websiteData) {
-                $phishData['website_name'] = $websiteData->name;
-                $phishData['website_url'] = $websiteData->domain;
-                $phishData['website_file'] = $websiteData->file;
-            } else {
-                $phishData['website_name'] = "";
-                $phishData['website_url'] = "";
-                $phishData['website_file'] = "";
+            if ($website == null && $senderProfile == null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Invalid request')
+                ], 422);
+            }
+            if ($website) {
+                // Fetch website data
+                $websiteData = DB::table('phishing_websites')->where('id', $website)->first();
+                if ($websiteData) {
+                    $phishData['website_name'] = $websiteData->name;
+                    $phishData['website_url'] = $websiteData->domain;
+                    $phishData['website_file'] = "/storage/uploads/phishingMaterial/phishing_websites/" . $websiteData->file;
+                } else {
+                    $phishData['website_name'] = "";
+                    $phishData['website_url'] = "";
+                    $phishData['website_file'] = "";
+                }
             }
 
-            // Fetch sender profile data
-            $senderData = DB::table('senderprofile')->where('id', $senderProfile)->first();
-            if ($senderData) {
-                $phishData['senderProfile'] = $senderData->profile_name;
-                $phishData['displayName'] = $senderData->from_name;
-                $phishData['address'] = $senderData->from_email;
-            } else {
-                $phishData['senderProfile'] = "";
-                $phishData['displayName'] = "";
-                $phishData['address'] = "";
+            if ($senderProfile) {
+                // Fetch sender profile data
+                $senderData = DB::table('senderprofile')->where('id', $senderProfile)->first();
+                if ($senderData) {
+                    $phishData['senderProfile'] = $senderData->profile_name;
+                    $phishData['displayName'] = $senderData->from_name;
+                    $phishData['address'] = $senderData->from_email;
+                } else {
+                    $phishData['senderProfile'] = "";
+                    $phishData['displayName'] = "";
+                    $phishData['address'] = "";
+                }
             }
 
-            return response()->json(['success' => true, 'data' => $phishData, 'message' => 'Phishing Data fetched successfully'], 200);
+            return response()->json([
+                'success' => true,
+                'message' => __('Phishing data retrieved successfully'),
+                'data' => $phishData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchEmail(Request $request)
+    {
+        try {
+            $token = $this->getAccessToken();
+
+            // Check if access token was retrieved successfully
+            if (empty($token)) {
+                return response()->json(['success' => false, 'message' => __('Failed to retrieve access token.'),], 422);
+            }
+
+            // Prepare the API request parameters
+            $params = [
+                'access_token' => $token,
+                'domain'       => $request->domain,
+                'type'         => 'all',
+                'limit'        => 10,
+                'lastId'       => 0,
+            ];
+
+            // Make the API request using Laravel's HTTP client
+            $response = Http::timeout(30) // Set a timeout to prevent hanging
+                ->withOptions(['verify' => false])
+                ->get('https://api.snov.io/v2/domain-emails-with-info', $params);
+
+            // Log the raw response for debugging
+            Log::info('Raw API response:', ['response' => $response->body(), 'status' => $response->status()]);
+
+            // Handle unsuccessful HTTP responses
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message'  => __('Failed to fetch data from API.'),
+                ], $response->status());
+            }
+
+            // Decode the JSON response
+            $res = $response->json();
+
+            // Check if the response contains data
+            if (isset($res['data']) && is_array($res['data'])) {
+                // Save the fetched emails to the database
+                foreach ($res['data'] as $emailData) {
+                    DomainEmail::create([
+                        'domain' => $res['meta']['domain'] ?? 'N/A', // Default if domain is not present
+                        'email'  => $emailData['email'] ?? 'N/A',    // Default if email is not present
+                        'status' => $emailData['status'] ?? 'N/A',   // Default if status is not present
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Emails fetched and saved successfully!',
+                    'data' => [
+                        'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
+                        'emails'  => $res['data']
+                    ],
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No emails found for this domain.',
+                    'data' => [
+                        'domain'  => $res['meta']['domain'] ?? 'Unknown', // Add a default value
+                        'emails'  => []
+                    ],
+                ], 422);
+            }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
-    public function rescheduleCampaign(Request $request)
+    public function getAccessToken()
     {
         try {
-            $companyId = Auth::user()->company_id;
-
-            $request->validate([
-                'rschType' => 'required',
-                'campid' => 'required'
+            $response = Http::asForm()->withOptions(['verify' => false])->post('https://api.snov.io/v1/oauth/access_token', [
+                'grant_type'    => 'client_credentials',
+                'client_id'     => '8bd9fa3d70268f7d3594b5349c4c9230',  // Replace with your client ID
+                'client_secret' => 'fc7b92d3dc94798f9044193fc4b21400'   // Replace with your client secret
             ]);
 
-            if ($request->rschType == 'immediately') {
+            // Check for a successful response
+            if ($response->successful()) {
+                $data = $response->json();
 
-                $launchTime = Carbon::now()->format("m/d/Y g:i A");
-                $email_freq = $request->emailFreq;
-                $expire_after = $request->rexpire_after;
+                // Debug: Print the entire response for troubleshooting
+                // print_r($data); // This will display the response structure
 
-                $campaign = $this->makeCampaignLive($request->campid, $launchTime, $email_freq, $expire_after);
-
-                $isreportexist = TprmCampaignReport::where('campaign_id', $campaign->campaign_id)->first();
-
-                if (!$isreportexist) {
-                    TprmCampaignReport::create([
-                        'campaign_id' => $campaign->campaign_id,
-                        'campaign_name' => $campaign->campaign_name,
-                        'campaign_type' => $campaign->campaign_type,
-                        'status' => 'running',
-                        'email_lang' => $campaign->email_lang,
-                        'training_lang' => $campaign->training_lang,
-                        'scheduled_date' => $launchTime,
-                        'company_id' => $companyId,
-                    ]);
+                // Check if the access_token exists and return it, otherwise handle the error
+                if (isset($data['access_token'])) {
+                    return $data['access_token'];
                 } else {
-                    TprmCampaignReport::where('campaign_id', $campaign->campaign_id)->update([
-                        'scheduled_date' => $launchTime,
-                        'status' => 'running'
-                    ]);
+                    // Handle the case where the access token is not available
+                    return $data; // or you can throw an exception or handle it accordingly
                 }
+            } else {
+                // Handle an unsuccessful response
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to fetch access token.')
+                ], $response->status());
             }
-            return response()->json(['success' => true, 'message' => __('Campaign rescheduled successfully')], 200);
-        }catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
-    private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
+    public function addGroupUser(Request $request)
     {
         try {
+            $request->validate([
+                'domainName' => 'required|string',
+                'emails' => 'required|array',
+            ]);
+
+            // Process the request if validation passes
+            $domainName = $request->input('domainName');
+            $emails = $request->input('emails');
             $companyId = Auth::user()->company_id;
-            // Retrieve the campaign instance
-            $campaign = TprmCampaign::where('id', $campaignid)->first();
+            $message = null;
 
-            // Retrieve the users in the specified group
-            $users = TprmUsers::where('group_id', $campaign->users_group)->get();
+            $domainVerified = TpmrVerifiedDomain::where('domain', $domainName)
+                ->where('company_id', $companyId)
+                ->where(['verified' => 1])->first();
 
-            // Check if users exist in the group
-            if ($users->isEmpty()) {
-                return response()->json(['success' => false, 'message' => __('No employees available in this group GroupID:') . $campaign->users_group], 422);
-            } else {
-                // Iterate through the users and create CampaignLive entries
-                foreach ($users as $user) {
-                    TprmCampaignLive::create([
-                        'campaign_id' => $campaign->campaign_id,
-                        'campaign_name' => $campaign->campaign_name,
-                        'user_id' => $user->id,
-                        'user_name' => $user->user_name,
-                        'user_email' => $user->user_email,
-                        'training_module' => $campaign->training_module,
-                        'training_lang' => $campaign->training_lang,
-                        'launch_time' => $campaign->launch_time,
-                        'phishing_material' => $campaign->phishing_material,
-                        'email_lang' => $campaign->email_lang,
-                        'sent' => '0',
-                        'company_id' => $campaign->company_id,
+            if ($domainVerified) {
+                $existingGroup = TprmUsersGroup::where('group_name', $domainName)->where('company_id', $companyId)->first();
+
+                if (!$existingGroup) {
+                    $tprmGroup = TprmUsersGroup::create([
+                        'group_id' => generateRandom(6),
+                        'group_name' => $domainName,
+                        'users' => null,
+                        'company_id' => $companyId,
                     ]);
+                    $message = __('New group Created');
                 }
 
-                // Update the campaign status to 'running'
-                $campaign->update([
-                    'status' => 'running',
-                    'launch_type' => 'immediately',
-                    'launch_time' => $launch_time,
-                    'email_freq' => $email_freq,
-                    'expire_after' => $expire_after
+                if (count($emails) > 5) {
+                    return response()->json(['success' => false, 'message' => __('You can add only 5 emails at a time')], 422);
+                }
+                foreach ($emails as $userEmail) {
+                    $emailDomain = explode('@', $userEmail)[1];
 
-                ]);
+                    if ($emailDomain != $domainName) {
+                        return response()->json(['success' => false, 'message' => __('Email domain does not match the group domain')], 422);
+                    }
+                    $emailDomainVerified = TpmrVerifiedDomain::where('domain', $emailDomain)
+                        ->where('company_id', $companyId)
+                        ->where(['verified' => 1])->first();
+
+                    if (!$emailDomainVerified) {
+                        return response()->json(['success' => false, 'message' => __('Domain: ') . $emailDomain . ' ' .  __('is not verified')], 422);
+                    }
+
+                    $emailExists = TprmUsers::where('user_email', $userEmail)->where('company_id', $companyId)->first();
+                    if ($emailExists) {
+                        return response()->json(['success' => false, 'message' => __('Email: ') . ' ' . $emailExists->user_email . ' ' . __('already exists')], 422);
+                    }
+                    $tprmUsers = new TprmUsers();
+                    $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
+                    $tprmUsers->user_name = explode('@', $userEmail)[0];
+                    $tprmUsers->user_email = $userEmail;
+                    $tprmUsers->company_id = $companyId;
+                    $tprmUsers->save();
+                }
+                if (!$message) {
+                    return response()->json(['success' => true, 'message' => __('Uesrs added to group successfully')], 200);
+                } else {
+                    return response()->json(['success' => true, 'message' => $message . ' ' . __('and users added to that group successfully')], 200);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => __('Domain is not verified')], 422);
+            }
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function getEmailsByDomain(Request $request)
+    {
+        try {
+            if(!$request->route('domain')){
+                return response()->json(['success' => false, 'message' => __('Domain is required')], 422);
+            }
+            $companyId = Auth::user()->company_id;
+            // Fetch emails from the database based on the domain
+            $emails = TprmUsers::where('user_email', 'like', '%' . $request->route('domain'))->where('company_id', $companyId)->pluck('user_email');
+
+            if(!$emails){
+                return response()->json(['success' => false, 'message' => __('No emails found for this domain')], 404);
             }
 
-            return $campaign;
+            return response()->json(['success' => true, 'data' => $emails, 'message' => __('Emails fetched by domain successfully')]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
