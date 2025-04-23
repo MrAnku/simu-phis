@@ -26,8 +26,8 @@ class ApiPhishingEmailsController extends Controller
 
             $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                 ->where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->paginate(10);
+                ->orWhere('company_id', 'default')->get();
+
 
             $senderProfiles = SenderProfile::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')

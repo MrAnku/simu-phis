@@ -24,8 +24,7 @@ class ApiPhishingWebsitesController extends Controller
             $company_id = Auth::user()->company_id;
 
             $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->paginate(10);
+                ->orWhere('company_id', 'default');
 
             // Update each item with a generated URL
             $updatedData = collect($phishingWebsites->items())->map(function ($item) {
@@ -40,14 +39,14 @@ class ApiPhishingWebsitesController extends Controller
             $phishingWebsites->setCollection($updatedData);
 
             return response()->json([
-                'status' => true,
-                'message' => 'Phishing websites fetched successfully.',
+                'success' => true,
+                'message' => __('Phishing websites fetched successfully.'),
                 'data' => $phishingWebsites,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Failed to fetch phishing websites.',
+                'success' => false,
+                'message' => __('Failed to fetch phishing websites.'),
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -63,7 +62,7 @@ class ApiPhishingWebsitesController extends Controller
 
         $webid = $request->input('websiteid');
         $filename = $request->input('filename');
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         try {
             $deleted = false;
@@ -93,20 +92,20 @@ class ApiPhishingWebsitesController extends Controller
                 log_action("Phishing website (ID: $webid) deleted by company $company_id");
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('Phishing website deleted successfully.')
                 ], 200);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Phishing website not found for the given ID.')
                 ], 404);
             }
         } catch (\Exception $e) {
             Log::error("Error deleting phishing website [ID: $webid]: " . $e->getMessage());
             return response()->json([
-                'status' => false,
-                'message' => 'Failed to delete phishing website.',
+                'success' => false,
+                'message' => __('Failed to delete phishing website.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -123,7 +122,7 @@ class ApiPhishingWebsitesController extends Controller
             ]);
 
             $searchTerm = $request->query('search'); // ✅ Query param se value lena
-            $company_id = auth()->user()->company_id;
+            $company_id = Auth::user()->company_id;
 
             $phishingWebsites = PhishingWebsite::where(function ($query) use ($company_id) {
                 $query->where('company_id', $company_id)
@@ -135,14 +134,14 @@ class ApiPhishingWebsitesController extends Controller
                 ->paginate(10);
 
             return response()->json([
-                'status' => true,
-                'message' => 'Search results fetched successfully.',
+                'success' => true,
+                'message' => __('Search results fetched successfully.'),
                 'data' => $phishingWebsites
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Something went wrong.',
+                'success' => false,
+                'message' => __('Something went wrong.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -159,8 +158,8 @@ class ApiPhishingWebsitesController extends Controller
             foreach ($input as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
-                        'status' => false,
-                        'message' => 'Invalid input detected (XSS).'
+                        'success' => false,
+                        'message' => __('Invalid input detected (XSS).')
                     ], 400);
                 }
             }
@@ -183,7 +182,7 @@ class ApiPhishingWebsitesController extends Controller
             $domain    = $request->input('domain');
             $fullDomain = $subdomain ? $subdomain . '.' . $domain : $domain;
 
-            $company_id = auth()->user()->company_id;
+            $company_id = Auth::user()->company_id;
 
             // Step 4: File Handling
             $file = $request->file('webFile');
@@ -215,19 +214,19 @@ HTML;
             log_action("New phishing website is added");
 
             return response()->json([
-                'status' => true,
-                'message' => 'New phishing website is added.',
+                'success' => true,
+                'message' => __('New phishing website is added.'),
                 'data' => $phishingWebsite
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Something went wrong while adding website.',
+                'success' => false,
+                'message' => __('Something went wrong while adding website.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -268,8 +267,8 @@ HTML;
             // Check if API request failed
             if ($response->failed()) {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'OpenAI API call failed.',
+                    'success' => false,
+                    'message' => __('OpenAI API call failed.'),
                     'error' => $response->body()
                 ], 502);
             }
@@ -279,8 +278,8 @@ HTML;
             // Ensure valid response structure
             if (!isset($responseData['choices'][0]['message']['content'])) {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid response from OpenAI API.',
+                    'success' => false,
+                    'message' => __('Invalid response from OpenAI API.'),
                     'data' => $responseData,
                 ], 500);
             }
@@ -292,8 +291,8 @@ HTML;
             // Load template file
             if (!Storage::disk('public')->exists('login_template.html')) {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'Template file not found.',
+                    'success' => false,
+                    'message' => __('Template file not found.'),
                 ], 500);
             }
 
@@ -310,22 +309,22 @@ HTML;
             Storage::disk('public')->put($directory . '/index.html', $finalContent);
 
             return response()->json([
-                'status' => true,
-                'message' => 'Website generated successfully.',
+                'success' => true,
+                'message' => __('Website generated successfully.'),
                 'url' => Storage::url($directory . '/index.html'),
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return validation errors in JSON format
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first(),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             // General exception handler
             return response()->json([
-                'status' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -342,7 +341,7 @@ HTML;
         ]);
 
         try {
-            $company_id = auth()->user()->company_id;
+            $company_id = Auth::user()->company_id;
 
             $webName = $validated['webName'];
             $domain = $validated['domain'];
@@ -373,7 +372,7 @@ HTML;
                 log_action("AI generated phishing website added");
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('Website saved successfully.'),
                     'data' => [
                         'file' => $newFileName,
@@ -382,21 +381,21 @@ HTML;
                 ], 201);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Source file not found.')
                 ], 404);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return validation errors
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Validation failed.'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Throwable $e) {
             // Catch all other errors
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('An error occurred.'),
                 'error' => $e->getMessage()
             ], 500);

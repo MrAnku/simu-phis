@@ -38,16 +38,14 @@ class ApiQuishingEmailController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })
-                    ->paginate(10);
+                    })->get();
             } else {
                 // All QshTemplates if no search
                 $quishingEmails = QshTemplate::with('senderProfile')
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })
-                    ->paginate(10);
+                    })->get();
             }
 
             return response()->json([

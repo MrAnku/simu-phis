@@ -21,14 +21,14 @@ class ApiQuishingController extends Controller
     {
         try {
             $company_id = Auth::user()->company_id;
-            $campaigns = QuishingCamp::with('userGroupData')->where('company_id', $company_id)->paginate(10);
+            $campaigns = QuishingCamp::with('userGroupData')->where('company_id', $company_id)->orWhere('company_id', 'default')->get();
 
             $campLive = QuishingLiveCamp::where('company_id', $company_id)
                 ->get();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Quishing campaign data retrieved successfully',
+                'message' => __('Quishing campaign data retrieved successfully'),
                 'data' => [
                     'campaigns' => $campaigns,
                     'total_sent' => $campLive->where('sent', '1')->count(),
@@ -38,7 +38,7 @@ class ApiQuishingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while retrieving data',
+                'message' => __('An error occurred while retrieving data'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -53,7 +53,7 @@ class ApiQuishingController extends Controller
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Invalid input detected',
+                        'message' => __('Invalid input detected'),
                     ], 422);
                 }
             }
@@ -66,7 +66,7 @@ class ApiQuishingController extends Controller
             if (!$users) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No users found in the selected group',
+                    'message' => __('No users found in the selected group'),
                 ], 422);
             }
             $campaign_id = Str::random(6);
@@ -109,7 +109,7 @@ class ApiQuishingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Quishing campaign created successfully',
+                'message' => __('Quishing campaign created successfully'),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -178,7 +178,7 @@ class ApiQuishingController extends Controller
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
             $campaign->trainingAssigned = $trainingAssigned;
-            
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign details retrieved successfully'),

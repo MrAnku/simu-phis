@@ -78,7 +78,7 @@ class ApiReportingController extends Controller
             $ctraining_assigned = $ccamps->sum('training_assigned');
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Campaign data fetched successfully'),
                 'data' => [
                     'campaign_reports' => $camps,
@@ -99,12 +99,12 @@ class ApiReportingController extends Controller
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -159,23 +159,23 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Chart data fetched successfully.'),
                 'data' => $formattedData,
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -228,23 +228,23 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('WhatsApp chart data fetched successfully.'),
                 'data' => $formattedData
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -296,23 +296,23 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Call campaign chart data fetched successfully.'),
                 'data' => $formattedData
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -328,7 +328,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -337,7 +337,7 @@ class ApiReportingController extends Controller
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Unauthorized user.')
                 ], 401);
             }
@@ -372,24 +372,24 @@ class ApiReportingController extends Controller
                 ];
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('Campaign report fetched successfully.'),
                     'data' => $response
                 ]);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign report or user group not found.')
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -404,7 +404,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campaignId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -431,17 +431,17 @@ class ApiReportingController extends Controller
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -455,7 +455,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -522,17 +522,17 @@ class ApiReportingController extends Controller
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -548,7 +548,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -595,12 +595,12 @@ class ApiReportingController extends Controller
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -614,7 +614,7 @@ class ApiReportingController extends Controller
         // Check if campaignId exists
         if (!$campId) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Campaign ID is required.')
             ], 400);
         }
@@ -659,7 +659,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -692,12 +692,12 @@ class ApiReportingController extends Controller
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -713,7 +713,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -727,7 +727,7 @@ class ApiReportingController extends Controller
 
             if ($allUsers->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('No records found'),
                     'data' => []
                 ], 404);
@@ -748,18 +748,18 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Campaign user report fetched successfully'),
                 'data' => $data
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -774,7 +774,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -784,7 +784,7 @@ class ApiReportingController extends Controller
 
             if (!$user) {
                 return response()->json([
-                    'status' =>  false,
+                    'success' => false,
                     'message' => 'User not authenticated'
 
                 ], 401);
@@ -795,19 +795,19 @@ class ApiReportingController extends Controller
             $allUsers = WhatsAppCampaignUser::where('camp_id', $campId)->where('company_id', $companyId)->get();
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => 'WhatsApp campaign report fetched successfully',
                 'data' =>  $allUsers
             ], 200);
             // return response()->json(['html' => $responseHtml]);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -820,7 +820,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -834,7 +834,7 @@ class ApiReportingController extends Controller
 
             if ($allUsers->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'No records found',
                     'data' => []
                 ], 404);
@@ -854,19 +854,18 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => 'AI calling campaign report fetched successfully',
                 'data' => $data
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $e->errors()
+                'success' => false,
+                'message' => 'Error: ' . $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => 'Something went wrong',
                 'error' => $e->getMessage()
             ], 500);
@@ -949,7 +948,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -979,7 +978,7 @@ class ApiReportingController extends Controller
 
                 // Prepare JSON response
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('Training details fetched successfully'),
                     'data' => [
                         'campaign_name' => $reportRow->campaign_name,
@@ -993,19 +992,19 @@ class ApiReportingController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'No records found',
                     'data' => []
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -1020,7 +1019,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -1050,7 +1049,7 @@ class ApiReportingController extends Controller
                 };
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('WhatsApp campaign training details fetched successfully'),
                     'data' => [
                         'campaign_name' => $reportRow->camp_name,
@@ -1064,19 +1063,19 @@ class ApiReportingController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'No records found',
                     'data' => []
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -1091,7 +1090,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -1120,7 +1119,7 @@ class ApiReportingController extends Controller
                 };
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('AI Campaign training details fetched successfully'),
                     'data' => [
                         'campaign_name' => $reportRow->campaign_name,
@@ -1134,19 +1133,19 @@ class ApiReportingController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('No records found'),
                     'data' => []
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -1161,7 +1160,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -1174,7 +1173,7 @@ class ApiReportingController extends Controller
 
             if ($assignedUsers->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('No records found'),
                     'data' => []
                 ], 404);
@@ -1217,18 +1216,18 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Training assignment details fetched successfully'),
                 'data' => $data
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -1243,7 +1242,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -1255,7 +1254,7 @@ class ApiReportingController extends Controller
 
             if ($assignedUsers->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('No records found'),
                     'data' => []
                 ], 404);
@@ -1293,18 +1292,18 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('WhatsApp training assignment details fetched successfully'),
                 'data' => $data
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -1319,7 +1318,7 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
@@ -1332,7 +1331,7 @@ class ApiReportingController extends Controller
 
             if ($assignedUsers->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('No records found'),
                     'data' => []
                 ], 404);
@@ -1370,18 +1369,18 @@ class ApiReportingController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('AI training assignment details fetched successfully'),
                 'data' => $data
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }

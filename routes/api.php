@@ -21,7 +21,10 @@ use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiSenderProfileController;
+use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
+use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -108,40 +111,40 @@ Route::middleware('auth:api')->group(function () {
     });
     // Settings routes
     Route::prefix('settings')->group(function () {
-        Route::get('/', [SettingsController::class, 'index']);
-        Route::post('/update-profile', [SettingsController::class, 'updateProfile']);
-        Route::post('/update-password', [SettingsController::class, 'updatePassword']);
-        Route::post('/acc-dectivate', [SettingsController::class, 'deactivateAccount']);
-        Route::post('/update-lang', [SettingsController::class, 'updateLang']);
-        Route::put('/update-phish-edu', [SettingsController::class, 'updatePhishingEdu']);
-        Route::post('/update-train-freq', [SettingsController::class, 'updateTrainFreq']);
-        Route::post('/update-reporting', [SettingsController::class, 'updateReporting']);
-        Route::post('/update-mfa', [SettingsController::class, 'updateMFA']);
-        Route::post('/verify-mfa', [SettingsController::class, 'verifyMFA']);
+        Route::get('/', [ApiSettingsController::class, 'index']);
+        Route::post('/update-profile', [ApiSettingsController::class, 'updateProfile']);
+        Route::post('/update-password', [ApiSettingsController::class, 'updatePassword']);
+        Route::post('/acc-dectivate', [ApiSettingsController::class, 'deactivateAccount']);
+        Route::post('/update-lang', [ApiSettingsController::class, 'updateLang']);
+        Route::put('/update-phish-edu', [ApiSettingsController::class, 'updatePhishingEdu']);
+        Route::post('/update-train-freq', [ApiSettingsController::class, 'updateTrainFreq']);
+        Route::post('/update-reporting', [ApiSettingsController::class, 'updateReporting']);
+        Route::post('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
+        Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
     });
     Route::prefix('sender-profiles')->group(function () {
-        Route::get('/', [SenderProfileController::class, 'index']);
-        Route::post('/add', [SenderProfileController::class, 'addSenderProfile']);
-        Route::delete('/delete', [SenderProfileController::class, 'deleteSenderProfile']);
-        Route::post('/update/{id}', [SenderProfileController::class, 'updateSenderProfile']);
+        Route::get('/', [ApiSenderProfileController::class, 'index']);
+        Route::post('/add', [ApiSenderProfileController::class, 'addSenderProfile']);
+        Route::delete('/delete', [ApiSenderProfileController::class, 'deleteSenderProfile']);
+        Route::post('/update/{id}', [ApiSenderProfileController::class, 'updateSenderProfile']);
     });
     Route::prefix('training-module')->group(function () {
-        Route::get('/get-all', [TrainingModuleController::class, 'allTrainingModule']);
-        Route::get('/getby/{id}', [TrainingModuleController::class, 'getTrainingById']);
-        Route::put('/update', [TrainingModuleController::class, 'updateTrainingModule']);
-        Route::delete('/delete', [TrainingModuleController::class, 'deleteTraining']);
-        Route::get('/training-modules', [TrainingModuleController::class, 'index']);
-        Route::post('/add', [TrainingModuleController::class, 'addTraining']);
-        Route::get('/previewby/{trainingid}', [TrainingModuleController::class, 'trainingPreview']);
-        Route::get('/preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent']);
-        Route::post('/add-gamified-training', [TrainingModuleController::class, 'addGamifiedTraining']);
-        Route::put('/update-gamified-training', [TrainingModuleController::class, 'updateGamifiedTraining']);
+        Route::get('/get-all', [ApiTrainingModuleController::class, 'allTrainingModule']);
+        Route::get('/getby/{id}', [ApiTrainingModuleController::class, 'getTrainingById']);
+        Route::put('/update', [ApiTrainingModuleController::class, 'updateTrainingModule']);
+        Route::delete('/delete', [ApiTrainingModuleController::class, 'deleteTraining']);
+        Route::get('/training-modules', [ApiTrainingModuleController::class, 'index']);
+        Route::post('/add', [ApiTrainingModuleController::class, 'addTraining']);
+        Route::get('/previewby/{trainingid}', [ApiTrainingModuleController::class, 'trainingPreview']);
+        Route::get('/preview-content/{trainingid}/{lang}', [ApiTrainingModuleController::class, 'loadPreviewTrainingContent']);
+        Route::post('/add-gamified-training', [ApiTrainingModuleController::class, 'addGamifiedTraining']);
+        Route::put('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
     });
     Route::prefix('support')->group(function () {
-        Route::get('/', [SupportController::class, 'index']);
-        Route::post('/load-conversations', [SupportController::class, 'loadConversations']);
-        Route::post('/submit-reply', [SupportController::class, 'submitReply']);
-        Route::post('/create-ticket', [SupportController::class, 'createTicket']);
+        Route::get('/', [ApiSupportController::class, 'index']);
+        Route::post('/load-conversations', [ApiSupportController::class, 'loadConversations']);
+        Route::post('/submit-reply', [ApiSupportController::class, 'submitReply']);
+        Route::post('/create-ticket', [ApiSupportController::class, 'createTicket']);
     });
     Route::prefix('reporting')->group(function () {
         Route::get('/', [ApiReportingController::class, 'index']);
@@ -210,7 +213,6 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
     });
-
     Route::prefix('ai-calling')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'index']);
         Route::post('/submit-req', [ApiAiCallController::class, 'submitReq']);
@@ -253,6 +255,5 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
     });
-
     Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
 });
