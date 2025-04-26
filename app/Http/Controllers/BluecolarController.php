@@ -226,11 +226,11 @@ class BluecolarController extends Controller
 
             if ($campaigns->isNotEmpty()) {
                 foreach ($campaigns as $campaign) {
-                    WhatsappCampaign::where('campaign_id', $campaign->campaign_id)
+                    WhatsappCampaign::where('camp_id', $campaign->camp_id)
                         ->where('company_id', $companyId)
                         ->delete();
 
-                    WhatsAppCampaignUser::where('campaign_id', $campaign->campaign_id)
+                    WhatsAppCampaignUser::where('camp_id', $campaign->camp_id)
                         ->where('company_id', $companyId)
                         ->delete();
                 }
