@@ -71,11 +71,9 @@
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
                                                     <button type="button"
-                                                        onclick="viewInTemplate(
-                                                        `{{ $pemail->senderProfile->profile_name ?? 'N/A' }}`,
+                                                        onclick="viewInTemplate(`{{ $pemail->senderProfile->profile_name ?? 'N/A' }}`,
                                                         `{{ $pemail->senderProfile->from_email ?? 'N/A' }}`,
-                                                        `{{ $pemail->email_subject }}`,`qmailBody{{ $pemail->id }}`
-                                                        )"
+                                                        `{{ $pemail->email_subject }}`,`qmailBody{{ $pemail->id }}`)"
                                                         data-bs-toggle="modal" data-bs-target="#viewQuishingmailModal"
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">View</button>
 
@@ -696,7 +694,7 @@
                                 if (res.success) {
                                     Swal.fire({
                                     title: "{{ __('Deleted!') }}",
-                                    text: "{{ __('Template has been deleted.') }}"
+                                    text: "{{ __('Template has been deleted.') }}",
                                     icon: 'success',
                                     confirmButtonText: "{{ __('OK') }}"
                                 } )
