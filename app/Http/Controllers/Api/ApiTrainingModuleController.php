@@ -135,7 +135,7 @@ class ApiTrainingModuleController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __("Error: ") .  $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
@@ -199,7 +199,7 @@ class ApiTrainingModuleController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -218,7 +218,7 @@ class ApiTrainingModuleController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error') . $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
@@ -426,7 +426,7 @@ class ApiTrainingModuleController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
@@ -503,7 +503,7 @@ class ApiTrainingModuleController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
@@ -711,7 +711,7 @@ class ApiTrainingModuleController extends Controller
             }
             $translatedJson = $response['choices'][0]['message']['content'];
             return response()->json([
-                'status' => 1,
+                'success' => true,
                 'jsonData' => json_decode($translatedJson, true),
             ]);
         } catch (\Exception $e) {
