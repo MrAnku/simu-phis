@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Email;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Services\TrainingAssignedService;
 
 class ProcessCampaigns extends Command
 {
@@ -63,26 +64,26 @@ class ProcessCampaigns extends Command
     if (!$companies) {
       return;
     }
-      foreach ($companies as $company) {
+    foreach ($companies as $company) {
 
-        $campaigns = Campaign::where('status', 'pending')
-          ->where('company_id', $company->company_id)
-          ->get();
-  
-        if ($campaigns) {
-          foreach ($campaigns as $campaign) {
-            $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-            $currentDateTime = Carbon::now();
-  
-            if ($launchTime->lessThan($currentDateTime)) {
-  
-              $this->makeCampaignLive($campaign->campaign_id);
-  
-              $campaign->update(['status' => 'running']);
-            }
+      $campaigns = Campaign::where('status', 'pending')
+        ->where('company_id', $company->company_id)
+        ->get();
+
+      if ($campaigns) {
+        foreach ($campaigns as $campaign) {
+          $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
+          $currentDateTime = Carbon::now();
+
+          if ($launchTime->lessThan($currentDateTime)) {
+
+            $this->makeCampaignLive($campaign->campaign_id);
+
+            $campaign->update(['status' => 'running']);
           }
         }
       }
+    }
   }
 
   private function makeCampaignLive($campaignid)
@@ -138,91 +139,91 @@ class ProcessCampaigns extends Command
     if (!$companies) {
       return;
     }
-      foreach ($companies as $company) {
-        $company_id = $company->company_id;
-  
-        $campaigns = CampaignLive::where('sent', 0)
-          ->where('company_id', $company_id)
-          ->take(5)
-          ->get();
-  
-        foreach ($campaigns as $campaign) {
-  
-          if ($campaign->phishing_material == null) {
-  
-            $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-  
-            if ($all_camp->training_assignment == 'all') {
-  
-              $trainings = json_decode($all_camp->training_module, true);
-              $this->sendTraining($campaign, $trainings);
-            } else {
-              $this->sendTraining($campaign);
-            }
+    foreach ($companies as $company) {
+      $company_id = $company->company_id;
+
+      $campaigns = CampaignLive::where('sent', 0)
+        ->where('company_id', $company_id)
+        ->take(5)
+        ->get();
+
+      foreach ($campaigns as $campaign) {
+
+        if ($campaign->phishing_material == null) {
+
+          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+          if ($all_camp->training_assignment == 'all') {
+
+            $trainings = json_decode($all_camp->training_module, true);
+            $this->sendTraining($campaign, $trainings);
+          } else {
+            $this->sendTraining($campaign);
           }
-  
-          if ($campaign->phishing_material) {
-            $phishingMaterial = DB::table('phishing_emails')->find($campaign->phishing_material);
-  
-            if ($phishingMaterial) {
-              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
-              $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
-  
-              if ($senderProfile && $websiteColumns) {
-  
-                $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
-  
-                $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
-  
-                $mailBody = file_get_contents($mailBody);
-  
-                $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-                $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-                $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
-  
-  
-  
-                if ($campaign->email_lang !== 'en') {
-                  $templateBodyPath = public_path('translated_temp/translated_file.html');
-                  // Ensure the directory exists
-                  if (!File::exists(dirname($templateBodyPath))) {
-                    File::makeDirectory(dirname($templateBodyPath), 0755, true);
-                  }
-                  // Put the file in the public directory
-                  File::put($templateBodyPath, $mailBody);
-                  $mailBody = $this->changeEmailLang($templateBodyPath, $campaign->email_lang);
+        }
+
+        if ($campaign->phishing_material) {
+          $phishingMaterial = DB::table('phishing_emails')->find($campaign->phishing_material);
+
+          if ($phishingMaterial) {
+            $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
+
+            if ($senderProfile && $websiteColumns) {
+
+              $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
+
+              $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
+
+              $mailBody = file_get_contents($mailBody);
+
+              $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
+              $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+
+
+
+              if ($campaign->email_lang !== 'en') {
+                $templateBodyPath = public_path('translated_temp/translated_file.html');
+                // Ensure the directory exists
+                if (!File::exists(dirname($templateBodyPath))) {
+                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
                 }
-  
-                $mailData = [
-                  'email' => $campaign->user_email,
-                  'from_name' => $senderProfile->from_name,
-                  'email_subject' => $phishingMaterial->email_subject,
-                  'mailBody' => $mailBody,
-                  'from_email' => $senderProfile->from_email,
-                  'sendMailHost' => $senderProfile->host,
-                  'sendMailUserName' => $senderProfile->username,
-                  'sendMailPassword' => $senderProfile->password,
-                ];
-  
-                if ($this->sendMail($mailData)) {
-  
-                  $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-  
-                  echo "Email sent to: " . $campaign->user_email . "\n";
-                } else {
-                  echo "Email not sent to: " . $campaign->user_email . "\n";
-                }
-  
-                $campaign->update(['sent' => 1]);
-  
-                CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('emails_delivered');
-              } else {
-                echo "sender profile or website is not associated";
+                // Put the file in the public directory
+                File::put($templateBodyPath, $mailBody);
+                $mailBody = $this->changeEmailLang($templateBodyPath, $campaign->email_lang);
               }
+
+              $mailData = [
+                'email' => $campaign->user_email,
+                'from_name' => $senderProfile->from_name,
+                'email_subject' => $phishingMaterial->email_subject,
+                'mailBody' => $mailBody,
+                'from_email' => $senderProfile->from_email,
+                'sendMailHost' => $senderProfile->host,
+                'sendMailUserName' => $senderProfile->username,
+                'sendMailPassword' => $senderProfile->password,
+              ];
+
+              if ($this->sendMail($mailData)) {
+
+                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                echo "Email sent to: " . $campaign->user_email . "\n";
+              } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+              }
+
+              $campaign->update(['sent' => 1]);
+
+              CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('emails_delivered');
+            } else {
+              echo "sender profile or website is not associated";
             }
           }
         }
       }
+    }
   }
 
   private function generateWebsiteUrl($websiteColumns, $campaign)
@@ -254,6 +255,20 @@ class ProcessCampaigns extends Command
 
   private function sendTraining($campaign, $trainings = null)
   {
+    $trainingAssign = new TrainingAssignedService();
+    $campData = [
+      'campaign_id' => $campaign->campaign_id,
+      'user_id' => $campaign->user_id,
+      'user_name' => $campaign->user_name,
+      'user_email' => $campaign->user_email,
+      'training' => $training ?? $campaign->training_module,
+      'training_lang' => $campaign->training_lang,
+      'training_type' => $campaign->training_type,
+      'assigned_date' => now()->toDateString(),
+      'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+      'company_id' => $campaign->company_id
+    ];
+
     if ($trainings !== null) {
       $lastIndex = array_key_last($trainings);
       foreach ($trainings as $trainingIndex => $training) {
@@ -264,17 +279,59 @@ class ProcessCampaigns extends Command
           ->first();
 
         if ($checkAssignedUser) {
-          $this->sendCredentials($campaign, $trainings, $trainingIndex, $lastIndex);
-        } else {
-          // Check if user login already exists
-          $checkLoginExist = DB::table('user_login')
-            ->where('login_username', $campaign->user_email)
-            ->first();
+          $sentTrainingMail = $trainingAssign->sendTrainingEmail($campaign, $trainings, $trainingIndex, $lastIndex);
+          if ($sentTrainingMail['status'] == 1) {
+            // Update campaign_live table
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            echo $sentTrainingMail['msg'] . "\n";
 
-          if ($checkLoginExist) {
-            $this->assignAnotherTraining($checkLoginExist, $campaign, $training, $trainings, $trainingIndex, $lastIndex);
           } else {
-            $this->assignNewTraining($campaign, $training, $trainings, $trainingIndex, $lastIndex);
+            // Check if user login already exists
+
+            $checkLoginExist = DB::table('learnerloginsession')->where('email', $campaign->user_email)->first();
+
+            if ($checkLoginExist) {
+
+              $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($checkLoginExist, $campData, $training, $trainings, $trainingIndex, $lastIndex);
+
+              if($assignedAnotherTraining['status'] != 1){
+                echo $assignedAnotherTraining['msg'] . "\n";
+              }
+
+              $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+
+              $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
+                  ->update([
+                      'training_assigned' => DB::raw('training_assigned + 1'),
+                      'emails_delivered' => DB::raw('emails_delivered + 1'),
+                  ]);
+
+              if ($report_updated) {
+                  echo "Training assigned and report updated";
+              } else {
+                  echo "Training assigned but report not updated";
+              }
+
+            } else {
+              $assignedNewTraining = $trainingAssign->assignNewTraining($campData, $training, $trainings, $trainingIndex, $lastIndex);
+
+              if($assignedNewTraining['status'] != 1){
+                echo $assignedNewTraining['msg'] . "\n";
+              }
+
+              $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+      
+              CampaignReport::where('campaign_id', $campaign->campaign_id)
+                  ->update([
+                      'training_assigned' => DB::raw('training_assigned + 1'),
+                      'emails_delivered' => DB::raw('emails_delivered + 1'),
+                  ]);
+              return [
+                  'status' => 1,
+                  'msg' => 'Training assigned and report updated'
+              ];
+
+            }
           }
         }
       }
@@ -288,7 +345,13 @@ class ProcessCampaigns extends Command
       ->first();
 
     if ($checkAssignedUser) {
-      $this->sendCredentials($campaign);
+      $sentTrainingMail = $trainingAssign->sendTrainingEmail($campaign);
+
+      if ($sentTrainingMail['status'] == 1) {
+        $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+        echo $sentTrainingMail['msg'] . "\n";
+      }
+
     } else {
       // Check if user login already exists
       $checkLoginExist = DB::table('user_login')
@@ -296,362 +359,46 @@ class ProcessCampaigns extends Command
         ->first();
 
       if ($checkLoginExist) {
-        $this->assignAnotherTraining($checkLoginExist, $campaign);
-      } else {
-        $this->assignNewTraining($campaign);
-      }
-    }
-  }
+        $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($checkLoginExist, $campData);
 
-  private function assignNewTraining($campaign, $training = null, $trainings = null, $trainingIndex = null, $lastIndex = null)
-  {
-    DB::table('training_assigned_users')
-      ->insert([
-        'campaign_id' => $campaign->campaign_id,
-        'user_id' => $campaign->user_id,
-        'user_name' => $campaign->user_name,
-        'user_email' => $campaign->user_email,
-        'training' => $training ?? $campaign->training_module,
-        'training_lang' => $campaign->training_lang,
-        'training_type' => $campaign->training_type,
-        'assigned_date' => now()->toDateString(),
-        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        'company_id' => $campaign->company_id
-      ]);
-
-    echo "New training assigned successfully \n";
-
-    if ($trainingIndex !== null) {
-
-      if ($trainingIndex === $lastIndex) {
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
-        });
-
-        $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-
-        // $token = substr(encrypt($campaign->user_email), 0, 200);
-        $token = encrypt($campaign->user_email);
-        // $token = Hash::make($campaign->user_email);
-
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-        DB::table('learnerloginsession')
-          ->insert([
-            'token' => $token,
-            'email' => $campaign->user_email,
-            'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-            'created_at' => now(), // Ensure ordering works properly
-          ]);
-
-        $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
-
-        $mailData = [
-          'user_name' => $campaign->user_name,
-          // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
-          'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-          'password_create_link' => $learning_dashboard_link,
-          'company_name' => $learnSiteAndLogo['company_name'],
-          'company_email' => $learnSiteAndLogo['company_email'],
-          'learning_site' => $learning_dashboard_link,
-          'logo' => $learnSiteAndLogo['logo']
-        ];
-
-        Mail::to($campaign->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
-
-        // NewLearnerPassword::create([
-        //   'email' => $campaign->user_email,
-        //   'token' => $token
-        // ]);
+        if($assignedAnotherTraining['status'] != 1){
+          echo $assignedAnotherTraining['msg'] . "\n";
+        }
 
         $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 
-        CampaignReport::where('campaign_id', $campaign->campaign_id)
-          ->update([
-            'training_assigned' => DB::raw('training_assigned + 1'),
-            'emails_delivered' => DB::raw('emails_delivered + 1'),
-          ]);
-
-        echo "Training assigned and report updated \n";
-      }
-      return;
-    } else {
-      $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-      $trainingNames = $allAssignedTrainings->map(function ($training) {
-        if ($training->training_type == 'games') {
-          return $training->trainingGame->name;
-        }
-        return $training->trainingData->name;
-      });
-
-      $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-
-      $token = encrypt($campaign->user_email);
-      // $token = Hash::make($campaign->user_email);
-
-      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-      DB::table('learnerloginsession')
-        ->insert([
-          'token' => $token,
-          'email' => $campaign->user_email,
-          "expiry" => now()->addHours(24), // Ensure it expires in 24 hours
-          'created_at' => now(), // Ensure ordering works properly
-        ]);
-
-      $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
-
-      $mailData = [
-        'user_name' => $campaign->user_name,
-        // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
-        'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-        'password_create_link' => $learning_dashboard_link,
-        'company_name' => $learnSiteAndLogo['company_name'],
-        'company_email' => $learnSiteAndLogo['company_email'],
-        'learning_site' => $learnSiteAndLogo['learn_domain'],
-        'logo' => $learnSiteAndLogo['logo']
-      ];
-
-      Mail::to($campaign->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
-
-      // NewLearnerPassword::create([
-      //   'email' => $campaign->user_email,
-      //   'token' => $token
-      // ]);
-
-      $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-      CampaignReport::where('campaign_id', $campaign->campaign_id)
-        ->update([
-          'training_assigned' => DB::raw('training_assigned + 1'),
-          'emails_delivered' => DB::raw('emails_delivered + 1'),
-        ]);
-
-      echo "Training assigned and report updated \n";
-    }
-  }
-
-  private function assignAnotherTraining($userLogin, $campaign, $training = null, $trainings = null, $trainingIndex = null, $lastIndex = null)
-  {
-
-    // Insert into training_assigned_users table
-    $current_date = now()->toDateString();
-    $days_until_due = now()->addDays($campaign->days_until_due)->toDateString();
-    $res2 = DB::table('training_assigned_users')
-      ->insert([
-        'campaign_id' => $campaign->campaign_id,
-        'user_id' => $campaign->user_id,
-        'user_name' => $campaign->user_name,
-        'user_email' => $campaign->user_email,
-        'training' => $training ?? $campaign->training_module,
-        'training_lang' => $campaign->training_lang,
-        'training_type' => $campaign->training_type,
-        'assigned_date' => $current_date,
-        'training_due_date' => $days_until_due,
-        'company_id' => $campaign->company_id
-      ]);
-
-    if ($res2) {
-      // echo "user created successfully";
-
-      $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-      $token = encrypt($campaign->user_email);
-      // $token = Hash::make($campaign->user_email);
-      $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-      DB::table('learnerloginsession')
-        ->insert([
-          'token' => $token,
-          'email' => $campaign->user_email,
-          'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-          'created_at' => now(), // Ensure ordering works properly
-        ]);
-      $mailData = [
-        'user_name' => $campaign->user_name,
-        // 'training_name' => $this->trainingModuleName($training ?? $campaign->training_module),
-        'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-        // 'login_email' => $userLogin->login_username,
-        // 'login_pass' => $userLogin->login_password,
-        'company_name' => $learnSiteAndLogo['company_name'],
-        'company_email' => $learnSiteAndLogo['company_email'],
-        // 'learning_site' => $learnSiteAndLogo['learn_domain'],
-        'learning_site' =>  $learning_dashboard_link,
-        'logo' => $learnSiteAndLogo['logo']
-      ];
-
-      if ($trainingIndex !== null) {
-
-        if ($trainingIndex === $lastIndex) {
-          $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-
-          $trainingNames = $allAssignedTrainings->map(function ($training) {
-            if ($training->training_type == 'games') {
-              return $training->trainingGame->name;
-            }
-            return $training->trainingData->name;
-          });
-
-          $isMailSent = Mail::to($userLogin->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-          if ($isMailSent) {
-            // Update campaign_live table
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-            $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
-              ->update([
+        $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
+            ->update([
                 'training_assigned' => DB::raw('training_assigned + 1'),
                 'emails_delivered' => DB::raw('emails_delivered + 1'),
-              ]);
-
-            if ($report_updated) {
-              echo "Training assigned and report updated";
-            } else {
-              echo "Training assigned but report not updated";
-            }
-          } else {
-            echo "Training not sent";
-          }
-        }
-        return;
-      } else {
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name; // Return the name from trainingGame
-          }
-          return $training->trainingData->name; // Return the name from trainingData
-        });
-
-        $isMailSent = Mail::to($userLogin->login_username)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-        if ($isMailSent) {
-          // Update campaign_live table
-          $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-          $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
-            ->update([
-              'training_assigned' => DB::raw('training_assigned + 1'),
-              'emails_delivered' => DB::raw('emails_delivered + 1'),
             ]);
 
-          if ($report_updated) {
+        if ($report_updated) {
             echo "Training assigned and report updated";
-          } else {
-            echo "Training assigned but report not updated";
-          }
         } else {
-          echo "Training not sent";
+            echo "Training assigned but report not updated";
         }
-      }
-    } else {
-      echo "Failed to create user";
-    }
-  }
 
-  private function sendCredentials($campaign, $trainings = null, $trainingIndex = null, $lastIndex = null)
-  {
-    // Fetch user credentials
-    $userCredentials = DB::table('user_login')
-      ->where('login_username', $campaign->user_email)
-      ->first();
+      } else {
+        $assignedNewTraining = $trainingAssign->assignNewTraining($campData);
 
-    $learnSiteAndLogo = $this->checkWhitelabeled($campaign->company_id);
-    $token = encrypt($campaign->user_email);
-    // $token = Hash::make($campaign->user_email);
-    $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-    DB::table('learnerloginsession')
-      ->insert([
-        'token' => $token,
-        'email' => $campaign->user_email,
-        'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-        'created_at' => now(), // Ensure ordering works properly
-      ]);
-    $mailData = [
-      'user_name' => $campaign->user_name,
-      // 'training_name' => $this->trainingModuleName($campaign->training_module),
-      'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
-      // 'login_email' => $userCredentials->login_username,
-      // 'login_pass' => $userCredentials->login_password,
-      'company_name' => $learnSiteAndLogo['company_name'],
-      'company_email' => $learnSiteAndLogo['company_email'],
-      // 'learning_site' => $learnSiteAndLogo['learn_domain'],
-      'learning_site' =>  $learning_dashboard_link,
-      'logo' => $learnSiteAndLogo['logo']
-    ];
-
-    if ($trainingIndex !== null) {
-      if ($trainingIndex === $lastIndex) {
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-          if ($training->training_type == 'games') {
-            return $training->trainingGame->name;
-          }
-          return $training->trainingData->name;
-        });
-
-        $isMailSent = Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-        if ($isMailSent) {
+        if($assignedNewTraining['status'] == 1){
           $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+
+          CampaignReport::where('campaign_id', $campaign->campaign_id)
+              ->update([
+                  'training_assigned' => DB::raw('training_assigned + 1'),
+                  'emails_delivered' => DB::raw('emails_delivered + 1'),
+              ]);
+          return [
+              'status' => 1,
+              'msg' => 'Training assigned and report updated'
+          ];
+        }else{
+          echo $assignedNewTraining['msg'] . "\n";
         }
       }
-      return;
-    } else {
-      $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
-
-      $trainingNames = $allAssignedTrainings->map(function ($training) {
-        if ($training->training_type == 'games') {
-          return $training->trainingGame->name;
-        }
-        return $training->trainingData->name;
-      });
-
-      $isMailSent = Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-      if ($isMailSent) {
-        $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-      }
     }
-  }
-
-  private function checkWhitelabeled($company_id)
-  {
-    $company = Company::with('partner')
-                    ->where('company_id', $company_id)
-                    ->where('approved', true)
-                    ->where('service_status', true)
-                    ->first();
-    if(!$company){
-      return;
-    }
-
-    $partner_id = $company->partner->partner_id;
-    $company_email = $company->email;
-
-    $isWhitelabled = DB::table('white_labelled_partner')
-      ->where('partner_id', $partner_id)
-      ->where('approved_by_admin', 1)
-      ->first();
-
-    if ($isWhitelabled) {
-      return [
-        'company_email' => $company_email,
-        'learn_domain' => $isWhitelabled->learn_domain,
-        'company_name' => $isWhitelabled->company_name,
-        'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
-      ];
-    }
-
-    return [
-      'company_email' => env('MAIL_FROM_ADDRESS'),
-      'learn_domain' => 'learn.simuphish.com',
-      'company_name' => 'simUphish',
-      'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
-    ];
   }
 
   private function trainingModuleName($moduleid)
@@ -897,7 +644,7 @@ class ProcessCampaigns extends Command
 
   private function freqTrainingReminder($assignedUser)
   {
-    $learnSiteAndLogo = $this->checkWhitelabeled($assignedUser->company_id);
+    $learnSiteAndLogo = checkWhitelabeled($assignedUser->company_id);
 
     $mailData = [
       'user_name' => $assignedUser->user_name,
