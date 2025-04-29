@@ -12,6 +12,7 @@ use App\Models\BreachedEmail;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\CampaignReport;
+use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
 use App\Models\QuishingLiveCamp;
 use App\Models\WhatsappCampaign;
@@ -235,7 +236,11 @@ class EmployeeService
             ->where('company_id', Auth::user()->company_id)
             ->exists();
 
-        if (!$userExists) {
+        $deletedEmployee = DeletedEmployee::where('email', $email)
+            ->where('company_id', Auth::user()->company_id)
+            ->exists();
+
+        if (!$userExists && !$deletedEmployee) {
             Auth::user()->increment('usedemployees');
         }
     }

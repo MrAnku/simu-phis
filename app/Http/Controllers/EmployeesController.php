@@ -12,6 +12,7 @@ use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\BreachedEmail;
 use App\Models\CampaignReport;
+use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
 use App\Models\OutlookAdToken;
 use App\Models\QuishingCamp;
@@ -428,9 +429,17 @@ class EmployeesController extends Controller
         foreach ($users as $user) {
             try {
                 $employee->deleteEmployeeById($user->id);
+
             } catch (\Exception $e) {
                 return response()->json(['status' => 0, 'msg' => __('Failed to delete employee')]);
             }
+        }
+        $emailExists = DeletedEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
+        if (!$emailExists) {
+            DeletedEmployee::create([
+                'email' => $user_email,
+                'company_id' => Auth::user()->company_id,
+            ]);
         }
         return response()->json(['status' => 1, 'msg' => __('Employee deleted successfully')]);
     }
@@ -688,7 +697,7 @@ class EmployeesController extends Controller
                             $employee->addEmployeeInGroup($grpId, $addedEmployee['user_id']);
                         }
                     }
-                }else{
+                } else {
                     $addedEmployee = $employee->addEmployee(
                         $name,
                         $email,
