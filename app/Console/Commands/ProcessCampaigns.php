@@ -279,7 +279,7 @@ class ProcessCampaigns extends Command
           ->first();
 
         if ($checkAssignedUser) {
-          $sentTrainingMail = $trainingAssign->sendTrainingEmail($campaign, $trainings, $trainingIndex, $lastIndex);
+          $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData, $trainings, $trainingIndex, $lastIndex);
           if ($sentTrainingMail['status'] == 1) {
             // Update campaign_live table
             $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -345,7 +345,7 @@ class ProcessCampaigns extends Command
       ->first();
 
     if ($checkAssignedUser) {
-      $sentTrainingMail = $trainingAssign->sendTrainingEmail($campaign);
+      $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData);
 
       if ($sentTrainingMail['status'] == 1) {
         $campaign->update(['sent' => 1, 'training_assigned' => 1]);

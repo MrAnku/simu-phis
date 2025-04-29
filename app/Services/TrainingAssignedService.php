@@ -12,27 +12,26 @@ use Illuminate\Support\Facades\Mail;
 class TrainingAssignedService
 {
 
-    public function sendTrainingEmail($campaign, $trainings = null, $trainingIndex = null, $lastIndex = null)
+    public function sendTrainingEmail($campData, $trainings = null, $trainingIndex = null, $lastIndex = null)
     {
         // Fetch user credentials
-        $userCredentials = DB::table('user_login')
-            ->where('login_username', $campaign->user_email)
+        $userCredentials = DB::table('learnerloginsession')
+            ->where('email', $campData['user_email'])
             ->first();
 
-        $learnSiteAndLogo = checkWhitelabeled($campaign->company_id);
-        $token = encrypt($campaign->user_email);
-        // $token = Hash::make($campaign->user_email);
+        $learnSiteAndLogo = checkWhitelabeled($campData['company_id']);
+        $token = encrypt($campData['user_email']);
+        // $token = Hash::make($campData['user_email']);
         $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
         DB::table('learnerloginsession')
             ->insert([
                 'token' => $token,
-                'email' => $campaign->user_email,
+                'email' => $campData['user_email'],
                 'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
                 'created_at' => now(), // Ensure ordering works properly
             ]);
         $mailData = [
-            'user_name' => $campaign->user_name,
-            'training_name' => $campaign->training_type == 'games' ? $campaign->game->name : $campaign->training->name,
+            'user_name' => $campData['user_name'],
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
             'learning_site' =>  $learning_dashboard_link,
@@ -41,7 +40,7 @@ class TrainingAssignedService
 
         if ($trainingIndex !== null) {
             if ($trainingIndex === $lastIndex) {
-                $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+                $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
 
                 $trainingNames = $allAssignedTrainings->map(function ($training) {
                     if ($training->training_type == 'games') {
@@ -50,7 +49,7 @@ class TrainingAssignedService
                     return $training->trainingData->name;
                 });
 
-                $isMailSent = Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+                $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
                 if ($isMailSent) {
                     return [
@@ -61,7 +60,7 @@ class TrainingAssignedService
             }
             return;
         } else {
-            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign->user_email)->get();
+            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
 
             $trainingNames = $allAssignedTrainings->map(function ($training) {
                 if ($training->training_type == 'games') {
@@ -70,7 +69,7 @@ class TrainingAssignedService
                 return $training->trainingData->name;
             });
 
-            $isMailSent = Mail::to($campaign->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
+            $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
             if ($isMailSent) {
                 return [
