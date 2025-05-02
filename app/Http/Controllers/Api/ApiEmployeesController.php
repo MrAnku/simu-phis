@@ -36,6 +36,7 @@ class ApiEmployeesController extends Controller
                 'success' => true,
                 'data' => [
                     'total_employees' => $totalEmps,
+                    'groups' => $groups,
                     'verified_domains' => $verifiedDomains,
                     'not_verified_domains' => $notVerifiedDomains,
                     'all_domains' => $allDomains,
