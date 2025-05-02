@@ -50,7 +50,7 @@ class ApiSenderProfileController extends Controller
     public function deleteSenderProfile(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'senderProfileId' => 'required|integer|exists:sender_profiles,id',
+            'senderProfileId' => 'required|integer|exists:senderprofile,id',
         ]);
 
         if ($validator->fails()) {
@@ -79,7 +79,7 @@ class ApiSenderProfileController extends Controller
 
             if ($isDeleted) {
                 PhishingEmail::where('senderProfile', $senderProfileId)
-                    ->where('company_id', $companyId)
+                    ->where('company_id', $companyId) // this should be treated as a string
                     ->update(['senderProfile' => 0]);
 
                 log_action("Sender profile deleted successfully");
