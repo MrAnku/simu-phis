@@ -22,7 +22,7 @@ class ApiEmployeesController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-            $groups = UsersGroup::where('company_id', $companyId)->get();
+            $groups = UsersGroup::withCount('users')->where('company_id', $companyId)->get();
 
             $totalEmps = Users::where('company_id', $companyId)->pluck('user_email')->unique()->count();
             $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
