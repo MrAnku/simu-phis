@@ -152,7 +152,7 @@ class ProcessAiCampaigns extends Command
             'training_lang' => $campaign->training_lang,
             'training_type' => $campaign->training_type,
             'assigned_date' => now()->toDateString(),
-            'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+            'training_due_date' => now()->addDays(14)->toDateString(),
             'company_id' => $campaign->company_id
         ];
 

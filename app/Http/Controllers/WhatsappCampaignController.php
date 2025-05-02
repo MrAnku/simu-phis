@@ -24,6 +24,7 @@ use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarGroup;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\TrainingAssignedUser;
+use App\Services\TrainingAssignedService;
 
 class WhatsappCampaignController extends Controller
 {
@@ -296,9 +297,6 @@ class WhatsappCampaignController extends Controller
         }
     }
 
-
-
-
     public function updatePayload(Request $request)
     {
 
@@ -423,10 +421,33 @@ class WhatsappCampaignController extends Controller
             ->where('training', $campaign_user->training)
             ->first();
 
+        $trainingAssign = new TrainingAssignedService();
+        $campData = [
+            'campaign_id' => $campaign_user->camp_id,
+            'user_id' => $campaign_user->user_id,
+            'user_name' => $campaign_user->user_name,
+            'user_email' => $campaign_user->user_email,
+            'training' => $campaign_user->training,
+            'training_lang' => $campaign_user->template_language,
+            'training_type' => $campaign_user->training_type,
+            'assigned_date' => now()->toDateString(),
+            'training_due_date' => now()->addDays(14)->toDateString(),
+            'company_id' => $campaign_user->company_id
+        ];
+
         if ($already_have_this_training) {
 
             //this training is already assigned then send reminder about this training
-            return $this->sendTrainingReminder($campaign_user, $training);
+            $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData);
+
+            if ($sentTrainingMail['status'] == 1) {
+                // Update campaign_live table
+                DB::table('whatsapp_camp_users')
+                    ->where('camp_id', $campaign_user->camp_id)
+                    ->update(['training_assigned' => 1]);
+
+                echo $sentTrainingMail['msg'] . "\n";
+            }
         } else {
             // Check if user login already exists
             $user_have_login = DB::table('user_login')
@@ -437,84 +458,27 @@ class WhatsappCampaignController extends Controller
 
                 //this user have login assign another training
 
-                return $this->assignAnotherTraining($campaign_user, $training, $user_have_login);
+                $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($user_have_login, $campData);
+                if ($assignedAnotherTraining['status'] != 1) {
+                    echo $assignedAnotherTraining['msg'] . "\n";
+                }
+
+                // Update campaign_live table
+                DB::table('whatsapp_camp_users')
+                    ->where('id', $campaign_user->id)
+                    ->update(['training_assigned' => 1]);
             } else {
                 // This user don't have any login details assign training first time
-
-                return $this->assignFirstTraining($campaign_user, $training);
+                $assignedNewTraining = $trainingAssign->assignNewTraining($campData);
+                if ($assignedNewTraining['status'] == 1) {
+                    DB::table('whatsapp_camp_users')
+                        ->where('camp_id', $campaign_user->camp_id)
+                        ->update(['training_assigned' => 1]);
+                }
             }
         }
     }
 
-
-    private function assignFirstTraining($campaign_user, $training)
-    {
-
-        $training_assigned = DB::table('training_assigned_users')
-            ->insert([
-                'campaign_id' => $campaign_user->camp_id,
-                'user_id' => $campaign_user->user_id,
-                'user_name' => $campaign_user->user_name,
-                'user_email' => $campaign_user->user_email,
-                'training' => $campaign_user->training,
-                'training_lang' => 'en',
-                'training_type' => $campaign_user->training_type,
-                'assigned_date' => now()->toDateString(),
-                'training_due_date' => now()->addDays(14)->toDateString(),
-                'company_id' => $campaign_user->company_id
-            ]);
-        if (!$training_assigned) {
-            return response()->json(['error' => __('Failed to assign training')]);
-        }
-
-        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
-        $token = encrypt($campaign_user->user_email);
-
-        $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
-        $token = encrypt($campaign_user->user_email);
-        // $token = Hash::make($campaign->user_email);
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-        DB::table('learnerloginsession')
-            ->insert([
-                'token' => $token,
-                'email' => $campaign_user->user_email,
-                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-                'created_at' => now(), // Ensure ordering works properly
-            ]);
-        $mailData = [
-            'user_name' => $campaign_user->user_name,
-            'training_name' => $training->name,
-            'password_create_link' => $learning_dashboard_link,
-            'company_name' => $learnSiteAndLogo['company_name'],
-            'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learning_dashboard_link,
-            'logo' => $learnSiteAndLogo['logo']
-        ];
-
-        log_action("WhatsApp simulation | Training {$training->name} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
-
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
-
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-            if ($training->training_type == 'games') {
-                return $training->trainingGame->name;
-            }
-            return $training->trainingData->name;
-        });
-
-        Mail::to($campaign_user->user_email)->send(new AssignTrainingWithPassResetLink($mailData, $trainingNames));
-
-        NewLearnerPassword::create([
-            'email' => $campaign_user->user_email,
-            'token' => $token
-        ]);
-
-        DB::table('whatsapp_camp_users')
-            ->where('id', $campaign_user->id)
-            ->update(['training_assigned' => 1]);
-
-        return response()->json(['success' => __('First assigned successfully')]);
-    }
     private function whatsappAssignFirstTraining($campaign_user, $training)
     {
         $training_assigned = DB::table('blue_collar_training_users')
@@ -537,7 +501,7 @@ class WhatsappCampaignController extends Controller
             return response()->json(['error' => __('Failed to assign training')]);
         }
 
-        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
+        $learnSiteAndLogo = checkWhitelabeled($campaign_user->company_id);
         $token = encrypt($campaign_user->user_email);
         $passwordGenLink = env('APP_URL') . '/learner/create-password/' . $token;
 
@@ -588,124 +552,6 @@ class WhatsappCampaignController extends Controller
         return response()->json(['success' => __('Training assigned and WhatsApp notification sent')]);
     }
 
-    private function assignAnotherTraining($campaign_user, $training, $user_have_login)
-    {
-
-        // Insert into training_assigned_users table
-
-        $res2 = DB::table('training_assigned_users')
-            ->insert([
-                'campaign_id' => $campaign_user->camp_id,
-                'user_id' => $campaign_user->user_id,
-                'user_name' => $campaign_user->user_name,
-                'user_email' => $campaign_user->user_email,
-                'training' => $campaign_user->training,
-                'training_lang' => 'en',
-                'training_type' => $campaign_user->training_type,
-                'assigned_date' => now()->toDateString(),
-                'training_due_date' => now()->addDays(14)->toDateString(),
-                'company_id' => $campaign_user->company_id
-            ]);
-
-        if ($res2) {
-            // echo "user created successfully";
-
-            $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
-            $token = encrypt($campaign_user->user_email);
-            // $token = Hash::make($campaign->user_email);
-            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-            DB::table('learnerloginsession')
-                ->insert([
-                    'token' => $token,
-                    'email' => $campaign_user->user_email,
-                    'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-                    'created_at' => now(), // Ensure ordering works properly
-                ]);
-            $mailData = [
-                'user_name' => $campaign_user->user_name,
-                'training_name' => $training->name,
-                'login_email' => $user_have_login->login_username,
-                'login_pass' => $user_have_login->login_password,
-                'company_name' => $learnSiteAndLogo['company_name'],
-                'company_email' => $learnSiteAndLogo['company_email'],
-                'learning_site' =>  $learning_dashboard_link,
-                'logo' => $learnSiteAndLogo['logo']
-            ];
-
-            log_action("WhatsApp simulation | Training {$campaign_user->training} assigned to {$campaign_user->user_email}.", 'employee', 'employee');
-
-            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
-
-            $trainingNames = $allAssignedTrainings->map(function ($training) {
-                if ($training->training_type == 'games') {
-                    return $training->trainingGame->name;
-                }
-                return $training->trainingData->name;
-            });
-
-            Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-            // Update campaign_live table
-            DB::table('whatsapp_camp_users')
-                ->where('id', $campaign_user->id)
-                ->update(['training_assigned' => 1]);
-
-            return response()->json(['success' => __('Another training has assigned successfully')]);
-        } else {
-
-            log_action("WhatsApp simulation | Failed to assign training", 'employee', 'employee');
-
-            return response()->json(['error' => __('Failed to assign another training')]);
-        }
-    }
-
-    private function sendTrainingReminder($campaign_user, $training)
-    {
-        // Fetch user credentials
-        $userCredentials = DB::table('user_login')
-            ->where('login_username', $campaign_user->user_email)
-            ->first();
-
-        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
-
-        $token = encrypt($campaign_user->user_email);
-        // $token = Hash::make($campaign->user_email);
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-        DB::table('learnerloginsession')
-            ->insert([
-                'token' => $token,
-                'email' => $campaign_user->user_email,
-                'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
-                'created_at' => now(), // Ensure ordering works properly
-            ]);
-        $mailData = [
-            'user_name' => $campaign_user->user_name,
-            'training_name' => $training->name,
-            // 'login_email' => $userCredentials->login_username,
-            // 'login_pass' => $userCredentials->login_password,
-            'company_name' => $learnSiteAndLogo['company_name'],
-            'company_email' => $learnSiteAndLogo['company_email'],
-            'learning_site' => $learning_dashboard_link,
-            'logo' => $learnSiteAndLogo['logo']
-        ];
-
-        log_action("WhatsApp simulation | Training {$training->name} already assigned to {$campaign_user->user_email}, Reminder Sent.", 'employee', 'employee');
-
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campaign_user->user_email)->get();
-
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-            if ($training->training_type == 'games') {
-                return $training->trainingGame->name;
-            }
-            return $training->trainingData->name;
-        });
-
-        Mail::to($campaign_user->user_email)->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-        return response()->json(['success' => __('Training reminder has sent')]);
-    }
-
-
     private function whatsappSendTrainingReminder($campaign_user, $training, $already_have_this_training)
     {
         // return $already_have_this_training->id;
@@ -714,7 +560,7 @@ class WhatsappCampaignController extends Controller
             ->where('login_username', $campaign_user->user_email)
             ->first();
 
-        $learnSiteAndLogo = $this->checkWhitelabeled($campaign_user->company_id);
+        $learnSiteAndLogo = checkWhitelabeled($campaign_user->company_id);
         // return $learnSiteAndLogo;
         log_action("WhatsApp simulation | Training {$training->name} already assigned to {$campaign_user->user_email}, Reminder Sent.", 'employee', 'employee');
 
@@ -769,35 +615,5 @@ class WhatsappCampaignController extends Controller
                 'response' => $whatsapp_response->body()
             ], 500);
         }
-    }
-
-    // Function to check if the campaign is whitelabeled
-    private function checkWhitelabeled($company_id)
-    {
-        $company = Company::with('partner')->where('company_id', $company_id)->first();
-
-        $partner_id = $company->partner->partner_id;
-        $company_email = $company->email;
-
-        $isWhitelabled = DB::table('white_labelled_partner')
-            ->where('partner_id', $partner_id)
-            ->where('approved_by_admin', 1)
-            ->first();
-
-        if ($isWhitelabled) {
-            return [
-                'company_email' => $company_email,
-                'learn_domain' => $isWhitelabled->learn_domain,
-                'company_name' => $isWhitelabled->company_name,
-                'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
-            ];
-        }
-
-        return [
-            'company_email' => env('MAIL_FROM_ADDRESS'),
-            'learn_domain' => 'learn.simuphish.com',
-            'company_name' => 'simUphish',
-            'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png'
-        ];
     }
 }

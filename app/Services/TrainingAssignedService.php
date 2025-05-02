@@ -90,7 +90,7 @@ class TrainingAssignedService
         if (!$res2) {
             return [
                 'status' => 0,
-                'msg' => 'Failed to create user'
+                'msg' => 'Failed to assign another training'
             ];
         }
 
