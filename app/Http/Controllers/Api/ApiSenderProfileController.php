@@ -215,7 +215,7 @@ class ApiSenderProfileController extends Controller
     }
 
 
-    public function updateSenderProfile(Request $request)
+    public function updateSenderProfile(Request $request, $id)
     {
         try {
             // XSS check start
@@ -233,11 +233,11 @@ class ApiSenderProfileController extends Controller
             array_walk_recursive($input, function (&$input) {
                 $input = strip_tags($input);
             });
+
             $request->merge($input);
             // XSS check end
 
             $validated = $request->validate([
-                'profile_id' => 'required|integer',
                 'pName' => 'required|string|max:255',
                 'from_name' => 'required|string|max:255',
                 'from_email' => 'required|email|max:255',
@@ -248,8 +248,11 @@ class ApiSenderProfileController extends Controller
 
             $companyId = Auth::user()->company_id;
 
-            $senderProfile = SenderProfile::where('id', $validated['profile_id'])
-                ->where('company_id', $companyId)
+            $senderProfile = SenderProfile::where('id', $id)
+                ->where(function ($query) use ($companyId) {
+                    $query->where('company_id', $companyId)
+                        ->orWhere('company_id', 'default');
+                })
                 ->first();
 
             if (!$senderProfile) {
@@ -280,7 +283,8 @@ class ApiSenderProfileController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->errors(),
+                'message' => __('Error: '),
+                'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             log_action("Exception during sender profile update: " . $e->getMessage());
