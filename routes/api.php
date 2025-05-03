@@ -219,7 +219,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/submit-req', [ApiAiCallController::class, 'submitReq']);
         Route::post('/create-campaign', [ApiAiCallController::class, 'createCampaign']);
         Route::get('/view-campaign/{id?}', [ApiAiCallController::class, 'viewCampaign']);
-        Route::delete('/delete-campaign/{id?}', [ApiAiCallController::class, 'deleteCampaign']);
+        Route::delete('/delete-campaign/{campaign_id?}', [ApiAiCallController::class, 'deleteCampaign']);
         Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
@@ -258,7 +258,7 @@ Route::middleware('auth:api')->group(function () {
     });
     Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
 
-    Route::prefix('tprm')->group(function(){
+    Route::prefix('tprm')->group(function () {
         Route::get('/', [ApiTprmController::class, 'index']);
         Route::post('/submit-req', [ApiTprmController::class, 'submitReq']);
         Route::post('/submit-domains', [ApiTprmController::class, 'submitdomains']);

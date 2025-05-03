@@ -251,14 +251,14 @@ class ApiAiCallController extends Controller
     public function deleteCampaign(Request $request)
     {
         try {
-            if (!$request->route('id')) {
+            if (!$request->route('campaign_id')) {
                 return response()->json(['success' => false, 'message' => __('Campaign ID is required')], 422);
             }
-            $campaignid = base64_decode($request->route('id'));
-            $camp = AiCallCampaign::find($campaignid);
+            $campaignid = $request->route('campaign_id');
+            $camp = AiCallCampaign::where('campaign_id', $campaignid)->first();
             if ($camp) {
                 $camp->delete();
-                AiCallCampLive::where('campaign_id', $camp->campaign_id)->delete();
+                AiCallCampLive::where('campaign_id', $campaignid)->delete();
 
                 log_action('AI Vishing campaign deleted');
                 return response()->json(['success' => true, 'message' => __('Campaign Deleted')], 200);
