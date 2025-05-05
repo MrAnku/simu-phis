@@ -218,7 +218,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'index']);
         Route::post('/submit-req', [ApiAiCallController::class, 'submitReq']);
         Route::post('/create-campaign', [ApiAiCallController::class, 'createCampaign']);
-        Route::get('/view-campaign/{id?}', [ApiAiCallController::class, 'viewCampaign']);
+        Route::get('/view-campaign/{campaign_id?}', [ApiAiCallController::class, 'viewCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiAiCallController::class, 'deleteCampaign']);
         Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);

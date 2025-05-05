@@ -235,18 +235,39 @@ class ApiAiCallController extends Controller
     public function viewCampaign(Request $request)
     {
         try {
-            if (!$request->route('id')) {
-                return response()->json(['success' => false, 'message' => __('Campaign ID is required')], 422);
+            $id = $request->route('campaign_id');
+
+            if (!$id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required')
+                ], 422);
             }
-            $id = base64_decode($request->route('id'));
-            $campaign = AiCallCampaign::with(['individualCamps', 'trainingName'])->find($id);
+
+            $campaign = AiCallCampaign::with(['individualCamps', 'trainingName'])
+                ->where('campaign_id', $id)
+                ->first();
+
             if ($campaign) {
-                return response()->json(['success' => true, 'data' => [$campaign], 'message' => __('Campaign details fetched successfully')], 200);
+                return response()->json([
+                    'success' => true,
+                    'data' => $campaign,
+                    'message' => __('Campaign details fetched successfully')
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found')
+                ], 404);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function deleteCampaign(Request $request)
     {
