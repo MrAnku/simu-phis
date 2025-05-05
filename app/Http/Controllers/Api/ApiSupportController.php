@@ -84,11 +84,13 @@ class ApiSupportController extends Controller
                 'priority' => $validated['priority'],
                 'subject' => $validated['sub'],
                 'msg' => $validated['msg'],
-                'success' => true,
                 'cp_tkt_no' => $ticket_no,
                 'company_id' => $company_id,
+                'status' => '1', // ✅ Add this line
                 'created_at' => $created_at,
             ]);
+
+
 
             // Insert initial conversation
             DB::table('cp-tkts_conversations')->insert([
