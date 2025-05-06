@@ -4,6 +4,8 @@
 
 use App\Models\Log;
 use App\Models\Company;
+use App\Models\SiemLog;
+use App\Models\SiemProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -262,6 +264,16 @@ if (!function_exists('log_action')) {
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+
+        if(Auth::guard('company')->check()){
+            $siemExists = SiemProvider::where('company_id', Auth::user()->company_id)->where('status', 1)->first();
+            if ($siemExists) {
+                SiemLog::create([
+                    'log_msg' => $details,
+                    'company_id' => Auth::user()->company_id,
+                ]);
+            }
+        }
     }
 }
 

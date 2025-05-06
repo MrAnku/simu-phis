@@ -81,4 +81,8 @@ class Company extends Authenticatable
         return $this->hasMany(QuishingLiveCamp::class, 'company_id', 'company_id');
     }
 
+    public function siemConfig(){
+        return $this->hasOne(SiemProvider::class, 'company_id', 'company_id');
+    }
+
 }
