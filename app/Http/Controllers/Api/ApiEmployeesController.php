@@ -305,8 +305,12 @@ class ApiEmployeesController extends Controller
                 ->where('company_id', $companyId)
                 ->first();
 
-            if (!$group || $group->users == null) {
-                return response()->json(['success' => false, 'message' => __('No Employees Found')], 404);
+            if (!$group) {
+                return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
+            }
+
+            if($group->users == null){
+                return response()->json(['success' => true, 'data' => [], 'message' => __('No Employees Found')]);
             }
 
             $userIdsArray = json_decode($group->users, true);
