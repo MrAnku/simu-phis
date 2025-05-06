@@ -30,7 +30,7 @@ class WhatsappCampaignController extends Controller
 {
     public function index()
     {
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
         $config = CompanyWhatsappConfig::where('company_id', $company_id)->first();
         if (!$config) {
             return view('whatsapp-unavailable');
@@ -58,7 +58,7 @@ class WhatsappCampaignController extends Controller
             'business_id' => 'required|numeric',
         ]);
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
         $validated['company_id'] = $company_id;
 
         CompanyWhatsappConfig::create($validated);
@@ -74,7 +74,7 @@ class WhatsappCampaignController extends Controller
             'business_id' => 'required|numeric',
         ]);
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         CompanyWhatsappTemplate::where('company_id', $company_id)->delete();
 
@@ -85,7 +85,7 @@ class WhatsappCampaignController extends Controller
 
     public function syncTemplates()
     {
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
         $config = CompanyWhatsappConfig::where('company_id', $company_id)->first();
 
         try {
@@ -137,7 +137,7 @@ class WhatsappCampaignController extends Controller
 
         //xss check end
 
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         $new_campaign = new WhatsappCampaign();
 
@@ -261,7 +261,7 @@ class WhatsappCampaignController extends Controller
 
     public function fetchCampaign(Request $request)
     {
-        $company_id = auth()->user()->company_id;
+        $company_id = Auth::user()->company_id;
 
         $campaign = DB::table('whatsapp_camp_users')->where('camp_id', $request->campid)->where('company_id', $company_id)->get();
 
@@ -352,8 +352,8 @@ class WhatsappCampaignController extends Controller
 
         //xss check end
 
-        $company_id = auth()->user()->company_id;
-        $partner_id = auth()->user()->partner_id;
+        $company_id = Auth::user()->company_id;
+        $partner_id = Auth::user()->partner_id;
 
         // Validation has already been performed at this point
         $validated = $request->validated();
@@ -376,7 +376,6 @@ class WhatsappCampaignController extends Controller
     {
         $cid = base64_decode($request->cid);
 
-
         $campaign_user = DB::table('whatsapp_camp_users')
             ->where('id', $cid)
             ->first();
@@ -395,6 +394,8 @@ class WhatsappCampaignController extends Controller
             return response()->json(['error' => __('Training not found')]);
         }
 
+        // Blue caller employee training
+        
         if ($campaign_user->employee_type == "Bluecollar") {
             $already_have_this_training = DB::table('blue_collar_training_users')
                 ->where('user_id', $campaign_user->user_id)
@@ -413,69 +414,55 @@ class WhatsappCampaignController extends Controller
             }
         }
 
-        //training exists or not
+        // Normal employee training 
 
-        // Check if training is already assigned to the user
-        $already_have_this_training = DB::table('training_assigned_users')
-            ->where('user_email', $campaign_user->user_email)
+        $trainingAssignedService = new TrainingAssignedService();
+
+        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign_user->user_email)
             ->where('training', $campaign_user->training)
             ->first();
 
-        $trainingAssign = new TrainingAssignedService();
+        if (!$assignedTraining) {
+            //call assignNewTraining method from service method
+            $campData = [
+                'campaign_id' => $campaign_user->camp_id,
+                'user_id' => $campaign_user->user_id,
+                'user_name' => $campaign_user->user_name,
+                'user_email' => $campaign_user->user_email,
+                'training' => $campaign_user->training,
+                'training_lang' => $campaign_user->template_language,
+                'training_type' => $campaign_user->training_type,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays(14)->toDateString(),
+                'company_id' => $campaign_user->company_id
+            ];
+
+            $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+            if ($trainingAssigned['status'] == true) {
+                echo $trainingAssigned['msg'];
+            } else {
+                echo 'Failed to assign training to ' . $campaign_user->user_email;
+            }
+        }
+
+        //send mail to user
         $campData = [
-            'campaign_id' => $campaign_user->camp_id,
-            'user_id' => $campaign_user->user_id,
             'user_name' => $campaign_user->user_name,
             'user_email' => $campaign_user->user_email,
-            'training' => $campaign_user->training,
-            'training_lang' => $campaign_user->template_language,
-            'training_type' => $campaign_user->training_type,
-            'assigned_date' => now()->toDateString(),
-            'training_due_date' => now()->addDays(14)->toDateString(),
             'company_id' => $campaign_user->company_id
         ];
+        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
 
-        if ($already_have_this_training) {
+        if ($isMailSent['status'] == true) {
+            echo $isMailSent['msg'];
 
-            //this training is already assigned then send reminder about this training
-            $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData);
-
-            if ($sentTrainingMail['status'] == 1) {
-                // Update campaign_live table
-                DB::table('whatsapp_camp_users')
-                    ->where('camp_id', $campaign_user->camp_id)
-                    ->update(['training_assigned' => 1]);
-
-                echo $sentTrainingMail['msg'] . "\n";
-            }
+             // Update campaign_live table
+             DB::table('whatsapp_camp_users')
+             ->where('camp_id', $campaign_user->camp_id)
+             ->update(['training_assigned' => 1]);
         } else {
-            // Check if user login already exists
-            $user_have_login = DB::table('user_login')
-                ->where('login_username', $campaign_user->user_email)
-                ->first();
-
-            if ($user_have_login) {
-
-                //this user have login assign another training
-
-                $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($user_have_login, $campData);
-                if ($assignedAnotherTraining['status'] != 1) {
-                    echo $assignedAnotherTraining['msg'] . "\n";
-                }
-
-                // Update campaign_live table
-                DB::table('whatsapp_camp_users')
-                    ->where('id', $campaign_user->id)
-                    ->update(['training_assigned' => 1]);
-            } else {
-                // This user don't have any login details assign training first time
-                $assignedNewTraining = $trainingAssign->assignNewTraining($campData);
-                if ($assignedNewTraining['status'] == 1) {
-                    DB::table('whatsapp_camp_users')
-                        ->where('camp_id', $campaign_user->camp_id)
-                        ->update(['training_assigned' => 1]);
-                }
-            }
+            echo 'Failed to send mail to ' . $campaign_user->user_email;
         }
     }
 

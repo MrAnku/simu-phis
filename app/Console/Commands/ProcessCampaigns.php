@@ -152,13 +152,15 @@ class ProcessCampaigns extends Command
         if ($campaign->phishing_material == null) {
 
           $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-
+        
           if ($all_camp->training_assignment == 'all') {
 
             $trainings = json_decode($all_camp->training_module, true);
-            $this->sendTraining($campaign, $trainings);
+            $this->assignTraining($campaign, $trainings);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
           } else {
-            $this->sendTraining($campaign);
+            $this->assignTraining($campaign);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
           }
         }
 
@@ -180,8 +182,6 @@ class ProcessCampaigns extends Command
               $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
               $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
               $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
-
-
 
               if ($campaign->email_lang !== 'en') {
                 $templateBodyPath = public_path('translated_temp/translated_file.html');
@@ -253,158 +253,111 @@ class ProcessCampaigns extends Command
     return $websiteFilePath;
   }
 
-  private function sendTraining($campaign, $trainings = null)
+  private function assignTraining($campaign, $trainings = null)
   {
-    $trainingAssign = new TrainingAssignedService();
-    $campData = [
-      'campaign_id' => $campaign->campaign_id,
-      'user_id' => $campaign->user_id,
-      'user_name' => $campaign->user_name,
-      'user_email' => $campaign->user_email,
-      'training' => $training ?? $campaign->training_module,
-      'training_lang' => $campaign->training_lang,
-      'training_type' => $campaign->training_type,
-      'assigned_date' => now()->toDateString(),
-      'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-      'company_id' => $campaign->company_id
-    ];
-
     if ($trainings !== null) {
-      $lastIndex = array_key_last($trainings);
-      foreach ($trainings as $trainingIndex => $training) {
-        // Check if training is already assigned to the user
-        $checkAssignedUser = DB::table('training_assigned_users')
-          ->where('user_email', $campaign->user_email)
-          ->where('training', $training)
-          ->first();
-
-        if ($checkAssignedUser) {
-          $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData, $trainings, $trainingIndex, $lastIndex);
-          if ($sentTrainingMail['status'] == 1) {
-            // Update campaign_live table
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            echo $sentTrainingMail['msg'] . "\n";
-
-          } else {
-            // Check if user login already exists
-
-            $checkLoginExist = DB::table('learnerloginsession')->where('email', $campaign->user_email)->first();
-
-            if ($checkLoginExist) {
-
-              $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($checkLoginExist, $campData, $training, $trainings, $trainingIndex, $lastIndex);
-
-              if($assignedAnotherTraining['status'] != 1){
-                echo $assignedAnotherTraining['msg'] . "\n";
-              }
-
-              $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-              $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
-                  ->update([
-                      'training_assigned' => DB::raw('training_assigned + 1'),
-                      'emails_delivered' => DB::raw('emails_delivered + 1'),
-                  ]);
-
-              if ($report_updated) {
-                  echo "Training assigned and report updated";
-              } else {
-                  echo "Training assigned but report not updated";
-              }
-
-            } else {
-              $assignedNewTraining = $trainingAssign->assignNewTraining($campData, $training, $trainings, $trainingIndex, $lastIndex);
-
-              if($assignedNewTraining['status'] != 1){
-                echo $assignedNewTraining['msg'] . "\n";
-              }
-
-              $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-      
-              CampaignReport::where('campaign_id', $campaign->campaign_id)
-                  ->update([
-                      'training_assigned' => DB::raw('training_assigned + 1'),
-                      'emails_delivered' => DB::raw('emails_delivered + 1'),
-                  ]);
-              return [
-                  'status' => 1,
-                  'msg' => 'Training assigned and report updated'
-              ];
-
-            }
-          }
-        }
-      }
-
-      return;
-    }
-    // Check if training is already assigned to the user
-    $checkAssignedUser = DB::table('training_assigned_users')
-      ->where('user_email', $campaign->user_email)
-      ->where('training', $campaign->training_module)
-      ->first();
-
-    if ($checkAssignedUser) {
-      $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData);
-
-      if ($sentTrainingMail['status'] == 1) {
-        $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-        echo $sentTrainingMail['msg'] . "\n";
-      }
-
+      $this->assignAllTrainings($campaign, $trainings);
     } else {
-      // Check if user login already exists
-      $checkLoginExist = DB::table('user_login')
-        ->where('login_username', $campaign->user_email)
-        ->first();
-
-      if ($checkLoginExist) {
-        $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($checkLoginExist, $campData);
-
-        if($assignedAnotherTraining['status'] != 1){
-          echo $assignedAnotherTraining['msg'] . "\n";
-        }
-
-        $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-        $report_updated = CampaignReport::where('campaign_id', $campaign->campaign_id)
-            ->update([
-                'training_assigned' => DB::raw('training_assigned + 1'),
-                'emails_delivered' => DB::raw('emails_delivered + 1'),
-            ]);
-
-        if ($report_updated) {
-            echo "Training assigned and report updated";
-        } else {
-            echo "Training assigned but report not updated";
-        }
-
-      } else {
-        $assignedNewTraining = $trainingAssign->assignNewTraining($campData);
-
-        if($assignedNewTraining['status'] == 1){
-          $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-          CampaignReport::where('campaign_id', $campaign->campaign_id)
-              ->update([
-                  'training_assigned' => DB::raw('training_assigned + 1'),
-                  'emails_delivered' => DB::raw('emails_delivered + 1'),
-              ]);
-          return [
-              'status' => 1,
-              'msg' => 'Training assigned and report updated'
-          ];
-        }else{
-          echo $assignedNewTraining['msg'] . "\n";
-        }
-      }
+      $this->assignSingleTraining($campaign);
     }
   }
 
-  private function trainingModuleName($moduleid)
+  private function assignAllTrainings($campaign, $trainings)
   {
-    $training = TrainingModule::find($moduleid);
-    return $training->name;
+    $trainingAssignedService = new TrainingAssignedService();
+
+    foreach ($trainings as $training) {
+
+      //check if this training is already assigned to this user
+      $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
+        ->where('training', $training)
+        ->first();
+
+      if (!$assignedTraining) {
+        //call assignNewTraining from service method
+        $campData = [
+          'campaign_id' => $campaign->campaign_id,
+          'user_id' => $campaign->user_id,
+          'user_name' => $campaign->user_name,
+          'user_email' => $campaign->user_email,
+          'training' => $training,
+          'training_lang' => $campaign->training_lang,
+          'training_type' => $campaign->training_type,
+          'assigned_date' => now()->toDateString(),
+          'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+          'company_id' => $campaign->company_id
+        ];
+
+        $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+        if ($trainingAssigned['status'] == true) {
+          echo $trainingAssigned['msg'];
+        } else {
+          echo 'Failed to assign training to ' . $campaign->user_email;
+        }
+      }
+    }
+
+    //send mail to user
+    $campData = [
+      'user_name' => $campaign->user_name,
+      'user_email' => $campaign->user_email,
+      'company_id' => $campaign->company_id
+    ];
+    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+    if ($isMailSent['status'] == true) {
+      echo $isMailSent['msg'];
+    } else {
+      echo 'Failed to send mail to ' . $campaign->user_email;
+    }
+  }
+
+  private function assignSingleTraining($campaign)
+  {
+    $trainingAssignedService = new TrainingAssignedService();
+
+    $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
+      ->where('training', $campaign->training_module)
+      ->first();
+
+    if (!$assignedTraining) {
+      //call assignNewTraining from service method
+      $campData = [
+        'campaign_id' => $campaign->campaign_id,
+        'user_id' => $campaign->user_id,
+        'user_name' => $campaign->user_name,
+        'user_email' => $campaign->user_email,
+        'training' => $campaign->training_module,
+        'training_lang' => $campaign->training_lang,
+        'training_type' => $campaign->training_type,
+        'assigned_date' => now()->toDateString(),
+        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+        'company_id' => $campaign->company_id
+      ];
+
+      $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+      if ($trainingAssigned['status'] == true) {
+        echo $trainingAssigned['msg'];
+      } else {
+        echo 'Failed to assign training to ' . $campaign->user_email;
+      }
+    }
+
+    //send mail to user
+    $campData = [
+      'user_name' => $campaign->user_name,
+      'user_email' => $campaign->user_email,
+      'company_id' => $campaign->company_id
+    ];
+    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+    if ($isMailSent['status'] == true) {
+      echo $isMailSent['msg'];
+    } else {
+      echo 'Failed to send mail to ' . $campaign->user_email;
+    }
   }
 
   private function updateRunningCampaigns()
@@ -519,49 +472,6 @@ class ProcessCampaigns extends Command
       return false;
     }
   }
-
-  // private function changeEmailLang($tempBodyFile, $email_lang)
-  // {
-  //   $apiKey = env('OPENAI_API_KEY');
-  //   $apiEndpoint = "https://api.openai.com/v1/engines/davinci-codex/completions";
-
-  //   $fileContent = file_get_contents($tempBodyFile);
-
-  //   $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
-
-  //   $requestBody = [
-  //     "prompt" => $prompt,
-  //     "max_tokens" => 1000,
-  //     "temperature" => 0.7,
-  //   ];
-
-  //   $headers = [
-  //     "Content-Type: application/json",
-  //     "Authorization: Bearer {$apiKey}",
-  //   ];
-
-  //   $curl = curl_init();
-
-  //   curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
-  //   curl_setopt($curl, CURLOPT_POST, true);
-  //   curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($requestBody));
-  //   curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-  //   curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-
-  //   $response = curl_exec($curl);
-
-  //   if (curl_errno($curl)) {
-  //     return null;
-  //   }
-
-  //   curl_close($curl);
-
-  //   $responseData = json_decode($response, true);
-
-  //   $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
-
-  //   return $translatedMailBody;
-  // }
 
   public function changeEmailLang($tempBodyFile, $email_lang)
   {

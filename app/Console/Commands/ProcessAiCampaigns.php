@@ -99,7 +99,8 @@ class ProcessAiCampaigns extends Command
 
                             if ($existingRow->training !== null) {
 
-                                $this->sendTrainingAi($existingRow);
+                            $this->assignTraining($existingRow);
+                            $existingRow->update(['training_assigned' => 1]);
                             }
                         }
 
@@ -140,53 +141,50 @@ class ProcessAiCampaigns extends Command
         }
     }
 
-    private function sendTrainingAi($campaign)
+    private function assignTraining($campaign)
     {
-        $trainingAssign = new TrainingAssignedService();
-        $campData = [
-            'campaign_id' => $campaign->campaign_id,
-            'user_id' => $campaign->user_id,
-            'user_name' => $campaign->employee_name,
-            'user_email' => $campaign->employee_email,
-            'training' => $campaign->training,
-            'training_lang' => $campaign->training_lang,
-            'training_type' => $campaign->training_type,
-            'assigned_date' => now()->toDateString(),
-            'training_due_date' => now()->addDays(14)->toDateString(),
-            'company_id' => $campaign->company_id
-        ];
+        $trainingAssignedService = new TrainingAssignedService();
 
-        // Check if training is already assigned to the user
-        $checkAssignedUser = DB::table('training_assigned_users')
-            ->where('user_email', $campaign->employee_email)
+        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->employee_email)
             ->where('training', $campaign->training)
             ->first();
 
-        if ($checkAssignedUser) {
-            $sentTrainingMail = $trainingAssign->sendTrainingEmail($campData);
-            if ($sentTrainingMail['status'] == 1) {
-                echo "Training reminder sent to " . $campaign->employee_email . "\n";
-            }
-        } else {
-            // Check if user login already exists
-            $checkLoginExist = DB::table('user_login')
-            ->where('login_username', $campaign->user_email)
-            ->first();
+        if (!$assignedTraining) {
+            //call assignNewTraining from service method
+            $campData = [
+                'campaign_id' => $campaign->campaign_id,
+                'user_id' => $campaign->user_id,
+                'user_name' => $campaign->employee_name,
+                'user_email' => $campaign->employee_email,
+                'training' => $campaign->training,
+                'training_lang' => $campaign->training_lang,
+                'training_type' => $campaign->training_type,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                'company_id' => $campaign->company_id
+            ];
 
-            if ($checkLoginExist) {
-                $assignedAnotherTraining = $trainingAssign->assignAnotherTraining($checkLoginExist, $campData);
-                
-                if ($assignedAnotherTraining['status'] != 1) {
-                    echo $assignedAnotherTraining['msg'] . "\n";
-                }
-                
-                echo "Another training assigned to " . $campaign->employee_email . "\n";
+            $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+            if ($trainingAssigned['status'] == true) {
+                echo $trainingAssigned['msg'];
             } else {
-                $assignedNewTraining = $trainingAssign->assignNewTraining($campData);
-                if($assignedNewTraining['status'] == 1){
-                    echo "First training assigned to " . $campaign->employee_email . "\n";
-                }
+                echo 'Failed to assign training to ' . $campaign->employee_email;
             }
+        }
+
+        //send mail to user
+        $campData = [
+            'user_name' => $campaign->employee_name,
+            'user_email' => $campaign->employee_email,
+            'company_id' => $campaign->company_id
+        ];
+        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+        if ($isMailSent['status'] == true) {
+            echo $isMailSent['msg'];
+        } else {
+            echo 'Failed to send mail to ' . $campaign->employee_email;
         }
     }
 }

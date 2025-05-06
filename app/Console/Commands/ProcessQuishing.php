@@ -44,12 +44,12 @@ class ProcessQuishing extends Command
         //get all pending quishing campaigns
         $companies = Company::where('service_status', 1)->where('approved', true)->get();
 
-        if(!$companies){
+        if (!$companies) {
             return;
         }
         foreach ($companies as $company) {
             $quishingCampaigns = $company->quishingLiveCamps()->where('sent', '0')->get();
-            if(!$quishingCampaigns){
+            if (!$quishingCampaigns) {
                 continue;
             }
             foreach ($quishingCampaigns as $campaign) {
@@ -67,13 +67,12 @@ class ProcessQuishing extends Command
 
                     //send mail
                     $mailSent = $this->sendMail($mailData);
-                    if($mailSent){
+                    if ($mailSent) {
                         echo "Mail sent to {$campaign->user_email} \n";
                         $campaign->sent = '1';
                         $campaign->save();
                     }
                 }
-                
             }
         }
 
@@ -195,103 +194,53 @@ class ProcessQuishing extends Command
         $qrCodeUrl = asset('qrcodes/' . $fileName . '?eid=' . $campLiveId);
 
         return $qrCodeUrl;
-
-        // Send Email
-        // Mail::to($email)->send(new QuishingMail($qrCodeUrl));
-
-        // echo "Email sent successfully!";
     }
-    // private function changeEmailLang($tempBodyFile, $email_lang)
-    // {
-    //     // API endpoint
-    //     $apiEndpoint = "http://65.21.191.199/translate_file";
-
-    //     // Create a CURLFile object with the public path
-    //     $file = new \CURLFile($tempBodyFile);
-
-    //     // Request body
-    //     $requestBody = [
-    //         "source" => "en",
-    //         "target" => $email_lang,
-    //         "file" => $file
-    //     ];
-
-    //     // Initialize cURL session
-    //     $curl = curl_init();
-
-    //     // Set cURL options
-    //     curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
-    //     curl_setopt($curl, CURLOPT_POST, true);
-    //     curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody); // Use CURLOPT_POSTFIELDS directly
-    //     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-    //     // Execute cURL request
-    //     $response = curl_exec($curl);
-
-    //     // Check for errors
-    //     if (curl_errno($curl)) {
-    //         // echo 'cURL error: ' . curl_error($curl);
-    //         // exit;
-    //         return null; // or handle error as needed
-    //     }
-
-    //     // Close cURL session
-    //     curl_close($curl);
-
-    //     // Decode the JSON response
-    //     $responseData = json_decode($response, true);
-
-    //     // Retrieve the translated mail body content
-    //     $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
-
-    //     return $translatedMailBody;
-    // }
 
     public function changeEmailLang($tempBodyFile, $email_lang)
-  {
-    $apiKey = env('OPENAI_API_KEY');
-    $apiEndpoint = "https://api.openai.com/v1/completions";
-    // $file = public_path($tempBodyFile);
-    $fileContent = file_get_contents($tempBodyFile);
+    {
+        $apiKey = env('OPENAI_API_KEY');
+        $apiEndpoint = "https://api.openai.com/v1/completions";
+        // $file = public_path($tempBodyFile);
+        $fileContent = file_get_contents($tempBodyFile);
 
-    // return response($fileContent, 200)->header('Content-Type', 'text/html');
+        // return response($fileContent, 200)->header('Content-Type', 'text/html');
 
-    $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
+        $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
 
-    $requestBody = [
-      'model' => 'gpt-3.5-turbo-instruct',
-      'prompt' => $prompt,
-      'max_tokens' => 1500,
-      'temperature' => 0.7,
-    ];
+        $requestBody = [
+            'model' => 'gpt-3.5-turbo-instruct',
+            'prompt' => $prompt,
+            'max_tokens' => 1500,
+            'temperature' => 0.7,
+        ];
 
-    $response = Http::withHeaders([
-      'Content-Type' => 'application/json',
-      'Authorization' => 'Bearer ' . $apiKey,
-    ])->post($apiEndpoint, $requestBody);
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $apiKey,
+        ])->post($apiEndpoint, $requestBody);
 
-    if ($response->failed()) {
-      echo 'Failed to fetch translation' . json_encode($response->body());
-      return $fileContent;
+        if ($response->failed()) {
+            echo 'Failed to fetch translation' . json_encode($response->body());
+            return $fileContent;
+        }
+        $responseData = $response->json();
+        $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
+
+        return $translatedMailBody;
     }
-    $responseData = $response->json();
-    $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
 
-    return $translatedMailBody;
-  }
-
-    private function checkCompletedCampaigns(){
+    private function checkCompletedCampaigns()
+    {
         $campaigns = QuishingCamp::where('status', 'running')->get();
-        if(!$campaigns){
+        if (!$campaigns) {
             return;
         }
         foreach ($campaigns as $campaign) {
             $campaignLive = $campaign->campLive()->where('sent', '0')->count();
-            if($campaignLive == 0){
+            if ($campaignLive == 0) {
                 $campaign->status = 'completed';
                 $campaign->save();
             }
-            
         }
     }
 }
