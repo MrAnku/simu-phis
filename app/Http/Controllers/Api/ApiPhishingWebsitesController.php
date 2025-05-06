@@ -23,11 +23,13 @@ class ApiPhishingWebsitesController extends Controller
         try {
             $company_id = Auth::user()->company_id;
 
+            // Get all phishing websites related to the company or default ones
             $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-                ->orWhere('company_id', 'default');
+                ->orWhere('company_id', 'default')
+                ->get(); // Fetch results as a collection
 
-            // Update each item with a generated URL
-            $updatedData = collect($phishingWebsites->items())->map(function ($item) {
+            // Generate dynamic URLs for each website
+            $updatedData = $phishingWebsites->map(function ($item) {
                 $item->url = 'http://' . Str::random(6) . '.' . $item->domain . '/' . Str::random(10)
                     . '?v=r&c=' . Str::random(10)
                     . '&p=' . $item->id
@@ -35,13 +37,10 @@ class ApiPhishingWebsitesController extends Controller
                 return $item;
             });
 
-            // Replace paginated items with updated ones
-            $phishingWebsites->setCollection($updatedData);
-
             return response()->json([
                 'success' => true,
                 'message' => __('Phishing websites fetched successfully.'),
-                'data' => $phishingWebsites,
+                'data' => $updatedData,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -51,6 +50,7 @@ class ApiPhishingWebsitesController extends Controller
             ], 500);
         }
     }
+
 
 
     public function deleteWebsite(Request $request): JsonResponse
