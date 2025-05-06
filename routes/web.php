@@ -479,6 +479,7 @@ Route::middleware([
         Route::post('/settings/update-train-freq', [SettingsController::class, 'updateTrainFreq'])->name('settings.update.train.freq');
         Route::post('/settings/update-reporting', [SettingsController::class, 'updateReporting'])->name('settings.update.reporting');
         Route::post('/settings/acc-dectivate', [SettingsController::class, 'deactivateAccount'])->name('settings.acc.deactivate');
+        Route::post('/settings/update-siem', [SettingsController::class, 'updateSiem'])->name('settings.update.siem');
 
         //
         Route::get('/auth-user', function () {

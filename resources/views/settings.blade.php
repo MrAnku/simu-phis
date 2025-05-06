@@ -26,8 +26,9 @@
                 <div class="col-xl-4">
                     <div class="card custom-card">
                         <div class="platform-info">
-                            
-                                <img src="{{$companyLogoDark}}" alt="logo" class="desktop-logo" width="250" style="margin-bottom: 20px;">
+
+                            <img src="{{ $companyLogoDark }}" alt="logo" class="desktop-logo" width="250"
+                                style="margin-bottom: 20px;">
 
                             <h5>{{ __('Platform Super Admin') }}</h5>
                             <p>{{ $all_settings->email }}</p>
@@ -58,14 +59,15 @@
                                 </li>
                                 <li class="nav-item m-1" role="presentation">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#platformManage" aria-selected="false" tabindex="-1">{{ __('Platform Management') }}</a>
+                                        href="#platformManage" aria-selected="false"
+                                        tabindex="-1">{{ __('Platform Management') }}</a>
                                 </li>
-                                <!-- <li class="nav-item m-1" role="presentation">
-                                                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#subManage" aria-selected="false" tabindex="-1">Subscription management</a>
-                                                                        </li>
-                                                                        <li class="nav-item m-1" role="presentation">
-                                                                            <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page" href="#custManage" aria-selected="false" tabindex="-1">Customer Management</a>
-                                                                        </li> -->
+                                <li class="nav-item m-1" role="presentation">
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#siem" aria-selected="false"
+                                        tabindex="-1">{{ __('SIEM Integration') }}</a>
+                                </li>
+
                             </ul>
                         </div>
                         <div class="card-body">
@@ -77,15 +79,18 @@
                                             <div class="col-xl-12">
                                                 <label for="first-name" class="form-label">{{ __('Full Name') }}</label>
                                                 <input type="text" class="form-control" id="fullName"
-                                                    value="{{ $all_settings->full_name }}" placeholder="{{ __('Full Name') }}" disabled>
+                                                    value="{{ $all_settings->full_name }}"
+                                                    placeholder="{{ __('Full Name') }}" disabled>
                                             </div>
 
                                         </div>
                                         <div class="row gy-4 mb-4">
                                             <div class="col-xl-12">
-                                                <label for="email-address" class="form-label">{{ __('Email Address') }}</label>
+                                                <label for="email-address"
+                                                    class="form-label">{{ __('Email Address') }}</label>
                                                 <input type="email" class="form-control" id="emailAdd"
-                                                    value="{{ $all_settings->email }}" placeholder="{{ __('Company Email') }}" disabled>
+                                                    value="{{ $all_settings->email }}"
+                                                    placeholder="{{ __('Company Email') }}" disabled>
                                             </div>
 
                                         </div>
@@ -93,7 +98,8 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">{{ __('Company Name:') }}</label>
+                                                <label for="Contact-Details"
+                                                    class="form-label">{{ __('Company Name:') }}</label>
                                                 <input type="text" class="form-control" id="compName"
                                                     value="{{ $all_settings->company_name }}" id="Contact-Details"
                                                     placeholder="{{ __('Company name') }}" disabled>
@@ -365,129 +371,217 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">{{ __('Time Zone') }}</label>
+                                                <label for="Contact-Details"
+                                                    class="form-label">{{ __('Time Zone') }}</label>
                                                 <select class="form-control form-control-line" id="timeZoneInput">
-                                                    <option value="Etc/Greenwich">(GMT+00:00) {{ __('Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London') }}</option>
-                                                    <option value="Etc/GMT+12">(GMT-12:00) {{ __('International Date Line West') }}
+                                                    <option value="Etc/Greenwich">(GMT+00:00)
+                                                        {{ __('Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London') }}
                                                     </option>
-                                                    <option value="Pacific/Midway">(GMT-11:00) {{ __('Midway Island, Samoa') }}
+                                                    <option value="Etc/GMT+12">(GMT-12:00)
+                                                        {{ __('International Date Line West') }}
                                                     </option>
-                                                    <option value="Pacific/Honolulu">(GMT-10:00) {{ __('Hawaii') }}</option>
+                                                    <option value="Pacific/Midway">(GMT-11:00)
+                                                        {{ __('Midway Island, Samoa') }}
+                                                    </option>
+                                                    <option value="Pacific/Honolulu">(GMT-10:00) {{ __('Hawaii') }}
+                                                    </option>
                                                     <option value="US/Alaska">(GMT-09:00) {{ __('Alaska') }}</option>
-                                                    <option value="America/Los_Angeles">(GMT-08:00) {{ __('Pacific Time') }} (US &amp;
+                                                    <option value="America/Los_Angeles">(GMT-08:00)
+                                                        {{ __('Pacific Time') }} (US &amp;
                                                         Canada)</option>
-                                                    <option value="America/Tijuana">(GMT-08:00) {{ __('Tijuana, Baja California') }}
+                                                    <option value="America/Tijuana">(GMT-08:00)
+                                                        {{ __('Tijuana, Baja California') }}
                                                     </option>
                                                     <option value="US/Arizona">(GMT-07:00) {{ __('Arizona') }}</option>
-                                                    <option value="America/Chihuahua">(GMT-07:00) {{ __('Chihuahua, La Paz,
-                                                        Mazatlan') }}</option>
-                                                    <option value="US/Mountain">(GMT-07:00) {{ __('Mountain Time') }} (US &amp; Canada)
+                                                    <option value="America/Chihuahua">(GMT-07:00)
+                                                        {{ __('Chihuahua, La Paz,
+                                                                                                                                                                                                                                                                                        Mazatlan') }}
                                                     </option>
-                                                    <option value="America/Managua">(GMT-06:00) {{ __('Central America') }}</option>
-                                                    <option value="US/Central">(GMT-06:00) {{ __('Central Time') }} (US &amp; Canada)
+                                                    <option value="US/Mountain">(GMT-07:00) {{ __('Mountain Time') }} (US
+                                                        &amp; Canada)
                                                     </option>
-                                                    <option value="America/Mexico_City">(GMT-06:00) {{ __('Guadalajara, Mexico
-                                                        City, Monterrey') }}</option>
-                                                    <option value="Canada/Saskatchewan">(GMT-06:00) {{ __('Saskatchewan') }}</option>
-                                                    <option value="America/Bogota">(GMT-05:00) {{ __('Bogota, Lima, Quito, Rio
-                                                        Branco') }}</option>
-                                                    <option value="US/Eastern">(GMT-05:00) {{ __('Eastern Time') }} (US &amp; Canada)
+                                                    <option value="America/Managua">(GMT-06:00)
+                                                        {{ __('Central America') }}</option>
+                                                    <option value="US/Central">(GMT-06:00) {{ __('Central Time') }} (US
+                                                        &amp; Canada)
                                                     </option>
-                                                    <option value="US/East-Indiana">(GMT-05:00) {{ __('Indiana (East)') }}</option>
-                                                    <option value="Canada/Atlantic">(GMT-04:00) {{ __('Atlantic Time (Canada)') }}
+                                                    <option value="America/Mexico_City">(GMT-06:00)
+                                                        {{ __('Guadalajara, Mexico
+                                                                                                                                                                                                                                                                                        City, Monterrey') }}
                                                     </option>
-                                                    <option value="America/Caracas">(GMT-04:00) {{ __('Caracas, La Paz') }}</option>
-                                                    <option value="America/Manaus">(GMT-04:00) {{ __('Manaus') }}</option>
-                                                    <option value="America/Santiago">(GMT-04:00) {{ __('Santiago') }}</option>
-                                                    <option value="Canada/Newfoundland">(GMT-03:30) {{ __('Newfoundland') }}</option>
-                                                    <option value="America/Sao_Paulo">(GMT-03:00) {{ __('Brasilia') }}</option>
-                                                    <option value="America/Argentina/Buenos_Aires">(GMT-03:00) {{ __('Buenos
-                                                        Aires, Georgetown') }}</option>
-                                                    <option value="America/Godthab">(GMT-03:00) {{ __('Greenland') }}</option>
-                                                    <option value="America/Montevideo">(GMT-03:00) {{ __('Montevideo') }}</option>
-                                                    <option value="America/Noronha">(GMT-02:00) {{ __('Mid-Atlantic') }}</option>
-                                                    <option value="Atlantic/Cape_Verde">(GMT-01:00) {{ __('Cape Verde Is.') }}</option>
-                                                    <option value="Atlantic/Azores">(GMT-01:00) {{ __('Azores') }}</option>
-                                                    <option value="Africa/Casablanca">(GMT+00:00) {{ __('Casablanca, Monrovia,
-                                                        Reykjavik') }}</option>
-                                                    <option value="Etc/Greenwich">(GMT+00:00) {{ __('Greenwich Mean Time : Dublin,
-                                                        Edinburgh, Lisbon, London') }}</option>
-                                                    <option value="Europe/Amsterdam">(GMT+01:00) {{ __('Amsterdam, Berlin, Bern,
-                                                        Rome, Stockholm, Vienna') }}</option>
-                                                    <option value="Europe/Belgrade">(GMT+01:00) {{ __('Belgrade, Bratislava,
-                                                        Budapest, Ljubljana, Prague') }}</option>
-                                                    <option value="Europe/Brussels">(GMT+01:00) {{ __('Brussels, Copenhagen,
-                                                        Madrid, Paris') }}</option>
-                                                    <option value="Europe/Sarajevo">(GMT+01:00) {{ __('Sarajevo, Skopje, Warsaw,
-                                                        Zagreb') }}</option>
-                                                    <option value="Africa/Lagos">(GMT+01:00) {{ __('West Central Africa') }}</option>
+                                                    <option value="Canada/Saskatchewan">(GMT-06:00)
+                                                        {{ __('Saskatchewan') }}</option>
+                                                    <option value="America/Bogota">(GMT-05:00)
+                                                        {{ __('Bogota, Lima, Quito, Rio
+                                                                                                                                                                                                                                                                                        Branco') }}
+                                                    </option>
+                                                    <option value="US/Eastern">(GMT-05:00) {{ __('Eastern Time') }} (US
+                                                        &amp; Canada)
+                                                    </option>
+                                                    <option value="US/East-Indiana">(GMT-05:00) {{ __('Indiana (East)') }}
+                                                    </option>
+                                                    <option value="Canada/Atlantic">(GMT-04:00)
+                                                        {{ __('Atlantic Time (Canada)') }}
+                                                    </option>
+                                                    <option value="America/Caracas">(GMT-04:00)
+                                                        {{ __('Caracas, La Paz') }}</option>
+                                                    <option value="America/Manaus">(GMT-04:00) {{ __('Manaus') }}
+                                                    </option>
+                                                    <option value="America/Santiago">(GMT-04:00) {{ __('Santiago') }}
+                                                    </option>
+                                                    <option value="Canada/Newfoundland">(GMT-03:30)
+                                                        {{ __('Newfoundland') }}</option>
+                                                    <option value="America/Sao_Paulo">(GMT-03:00) {{ __('Brasilia') }}
+                                                    </option>
+                                                    <option value="America/Argentina/Buenos_Aires">(GMT-03:00)
+                                                        {{ __('Buenos
+                                                                                                                                                                                                                                                                                        Aires, Georgetown') }}
+                                                    </option>
+                                                    <option value="America/Godthab">(GMT-03:00) {{ __('Greenland') }}
+                                                    </option>
+                                                    <option value="America/Montevideo">(GMT-03:00) {{ __('Montevideo') }}
+                                                    </option>
+                                                    <option value="America/Noronha">(GMT-02:00) {{ __('Mid-Atlantic') }}
+                                                    </option>
+                                                    <option value="Atlantic/Cape_Verde">(GMT-01:00)
+                                                        {{ __('Cape Verde Is.') }}</option>
+                                                    <option value="Atlantic/Azores">(GMT-01:00) {{ __('Azores') }}
+                                                    </option>
+                                                    <option value="Africa/Casablanca">(GMT+00:00)
+                                                        {{ __('Casablanca, Monrovia,
+                                                                                                                                                                                                                                                                                        Reykjavik') }}
+                                                    </option>
+                                                    <option value="Etc/Greenwich">(GMT+00:00)
+                                                        {{ __('Greenwich Mean Time : Dublin,
+                                                                                                                                                                                                                                                                                        Edinburgh, Lisbon, London') }}
+                                                    </option>
+                                                    <option value="Europe/Amsterdam">(GMT+01:00)
+                                                        {{ __('Amsterdam, Berlin, Bern,
+                                                                                                                                                                                                                                                                                        Rome, Stockholm, Vienna') }}
+                                                    </option>
+                                                    <option value="Europe/Belgrade">(GMT+01:00)
+                                                        {{ __('Belgrade, Bratislava,
+                                                                                                                                                                                                                                                                                        Budapest, Ljubljana, Prague') }}
+                                                    </option>
+                                                    <option value="Europe/Brussels">(GMT+01:00)
+                                                        {{ __('Brussels, Copenhagen,
+                                                                                                                                                                                                                                                                                        Madrid, Paris') }}
+                                                    </option>
+                                                    <option value="Europe/Sarajevo">(GMT+01:00)
+                                                        {{ __('Sarajevo, Skopje, Warsaw,
+                                                                                                                                                                                                                                                                                        Zagreb') }}
+                                                    </option>
+                                                    <option value="Africa/Lagos">(GMT+01:00)
+                                                        {{ __('West Central Africa') }}</option>
                                                     <option value="Asia/Amman">(GMT+02:00) {{ __('Amman') }}</option>
-                                                    <option value="Europe/Athens">(GMT+02:00) {{ __('Athens, Bucharest, Istanbul') }}
+                                                    <option value="Europe/Athens">(GMT+02:00)
+                                                        {{ __('Athens, Bucharest, Istanbul') }}
                                                     </option>
                                                     <option value="Asia/Beirut">(GMT+02:00) {{ __('Beirut') }}</option>
                                                     <option value="Africa/Cairo">(GMT+02:00) {{ __('Cairo') }}</option>
-                                                    <option value="Africa/Harare">(GMT+02:00) {{ __('Harare, Pretoria') }}</option>
-                                                    <option value="Europe/Helsinki">(GMT+02:00) {{ __('Helsinki, Kyiv, Riga,
-                                                        Sofia, Tallinn, Vilnius') }}</option>
-                                                    <option value="Asia/Jerusalem">(GMT+02:00) {{ __('Jerusalem') }}</option>
-                                                    <option value="Europe/Minsk">(GMT+02:00) {{ __('Minsk') }}</option>
-                                                    <option value="Africa/Windhoek">(GMT+02:00) {{ __('Windhoek') }}</option>
-                                                    <option value="Asia/Kuwait">(GMT+03:00) {{ __('Kuwait, Riyadh, Baghdad') }}
+                                                    <option value="Africa/Harare">(GMT+02:00) {{ __('Harare, Pretoria') }}
                                                     </option>
-                                                    <option value="Europe/Moscow">(GMT+03:00) {{ __('Moscow, St. Petersburg,
-                                                        Volgograd') }}</option>
-                                                    <option value="Africa/Nairobi">(GMT+03:00) {{ __('Nairobi') }}</option>
+                                                    <option value="Europe/Helsinki">(GMT+02:00)
+                                                        {{ __('Helsinki, Kyiv, Riga,
+                                                                                                                                                                                                                                                                                        Sofia, Tallinn, Vilnius') }}
+                                                    </option>
+                                                    <option value="Asia/Jerusalem">(GMT+02:00) {{ __('Jerusalem') }}
+                                                    </option>
+                                                    <option value="Europe/Minsk">(GMT+02:00) {{ __('Minsk') }}</option>
+                                                    <option value="Africa/Windhoek">(GMT+02:00) {{ __('Windhoek') }}
+                                                    </option>
+                                                    <option value="Asia/Kuwait">(GMT+03:00)
+                                                        {{ __('Kuwait, Riyadh, Baghdad') }}
+                                                    </option>
+                                                    <option value="Europe/Moscow">(GMT+03:00)
+                                                        {{ __('Moscow, St. Petersburg,
+                                                                                                                                                                                                                                                                                        Volgograd') }}
+                                                    </option>
+                                                    <option value="Africa/Nairobi">(GMT+03:00) {{ __('Nairobi') }}
+                                                    </option>
                                                     <option value="Asia/Tbilisi">(GMT+03:00) {{ __('Tbilisi') }}</option>
                                                     <option value="Asia/Tehran">(GMT+03:30) {{ __('Tehran') }}</option>
-                                                    <option value="Asia/Muscat">(GMT+04:00) {{ __('Abu Dhabi, Muscat') }}</option>
+                                                    <option value="Asia/Muscat">(GMT+04:00) {{ __('Abu Dhabi, Muscat') }}
+                                                    </option>
                                                     <option value="Asia/Baku">(GMT+04:00) {{ __('Baku') }}</option>
                                                     <option value="Asia/Yerevan">(GMT+04:00) {{ __('Yerevan') }}</option>
                                                     <option value="Asia/Kabul">(GMT+04:30) {{ __('Kabul') }}</option>
-                                                    <option value="Asia/Yekaterinburg">(GMT+05:00) {{ __('Yekaterinburg') }}</option>
-                                                    <option value="Asia/Karachi">(GMT+05:00) {{ __('Islamabad, Karachi, Tashkent') }}
+                                                    <option value="Asia/Yekaterinburg">(GMT+05:00)
+                                                        {{ __('Yekaterinburg') }}</option>
+                                                    <option value="Asia/Karachi">(GMT+05:00)
+                                                        {{ __('Islamabad, Karachi, Tashkent') }}
                                                     </option>
-                                                    <option value="Asia/Calcutta">(GMT+05:30) {{ __('Chennai, Kolkata, Mumbai, New
-                                                        Delhi') }}</option>
-                                                    <option value="Asia/Calcutta">(GMT+05:30) {{ __('Sri Jayawardenapura') }}</option>
-                                                    <option value="Asia/Katmandu">(GMT+05:45) {{ __('Kathmandu') }}</option>
-                                                    <option value="Asia/Almaty">(GMT+06:00) {{ __('Almaty, Novosibirsk') }}</option>
-                                                    <option value="Asia/Dhaka">(GMT+06:00) {{ __('Astana, Dhaka') }}</option>
-                                                    <option value="Asia/Rangoon">(GMT+06:30) {{ __('Yangon (Rangoon)') }}</option>
-                                                    <option value="Asia/Bangkok">(GMT+07:00) {{ __('Bangkok, Hanoi, Jakarta') }}
+                                                    <option value="Asia/Calcutta">(GMT+05:30)
+                                                        {{ __('Chennai, Kolkata, Mumbai, New
+                                                                                                                                                                                                                                                                                        Delhi') }}
                                                     </option>
-                                                    <option value="Asia/Krasnoyarsk">(GMT+07:00) {{ __('Krasnoyarsk') }}</option>
-                                                    <option value="Asia/Hong_Kong">(GMT+08:00) {{ __('Beijing, Chongqing, Hong
-                                                        Kong, Urumqi') }}</option>
-                                                    <option value="Asia/Kuala_Lumpur">(GMT+08:00) {{ __('Kuala Lumpur, Singapore') }}
+                                                    <option value="Asia/Calcutta">(GMT+05:30)
+                                                        {{ __('Sri Jayawardenapura') }}</option>
+                                                    <option value="Asia/Katmandu">(GMT+05:45) {{ __('Kathmandu') }}
                                                     </option>
-                                                    <option value="Asia/Irkutsk">(GMT+08:00) {{ __('Irkutsk, Ulaan Bataar') }}</option>
-                                                    <option value="Australia/Perth">(GMT+08:00) {{ __('Perth') }}</option>
+                                                    <option value="Asia/Almaty">(GMT+06:00)
+                                                        {{ __('Almaty, Novosibirsk') }}</option>
+                                                    <option value="Asia/Dhaka">(GMT+06:00) {{ __('Astana, Dhaka') }}
+                                                    </option>
+                                                    <option value="Asia/Rangoon">(GMT+06:30) {{ __('Yangon (Rangoon)') }}
+                                                    </option>
+                                                    <option value="Asia/Bangkok">(GMT+07:00)
+                                                        {{ __('Bangkok, Hanoi, Jakarta') }}
+                                                    </option>
+                                                    <option value="Asia/Krasnoyarsk">(GMT+07:00) {{ __('Krasnoyarsk') }}
+                                                    </option>
+                                                    <option value="Asia/Hong_Kong">(GMT+08:00)
+                                                        {{ __('Beijing, Chongqing, Hong
+                                                                                                                                                                                                                                                                                        Kong, Urumqi') }}
+                                                    </option>
+                                                    <option value="Asia/Kuala_Lumpur">(GMT+08:00)
+                                                        {{ __('Kuala Lumpur, Singapore') }}
+                                                    </option>
+                                                    <option value="Asia/Irkutsk">(GMT+08:00)
+                                                        {{ __('Irkutsk, Ulaan Bataar') }}</option>
+                                                    <option value="Australia/Perth">(GMT+08:00) {{ __('Perth') }}
+                                                    </option>
                                                     <option value="Asia/Taipei">(GMT+08:00) {{ __('Taipei') }}</option>
-                                                    <option value="Asia/Tokyo">(GMT+09:00) {{ __('Osaka, Sapporo, Tokyo') }}</option>
+                                                    <option value="Asia/Tokyo">(GMT+09:00)
+                                                        {{ __('Osaka, Sapporo, Tokyo') }}</option>
                                                     <option value="Asia/Seoul">(GMT+09:00) {{ __('Seoul') }}</option>
                                                     <option value="Asia/Yakutsk">(GMT+09:00) {{ __('Yakutsk') }}</option>
-                                                    <option value="Australia/Adelaide">(GMT+09:30) {{ __('Adelaide') }}</option>
-                                                    <option value="Australia/Darwin">(GMT+09:30) {{ __('Darwin') }}</option>
-                                                    <option value="Australia/Brisbane">(GMT+10:00) {{ __('Brisbane') }}</option>
-                                                    <option value="Australia/Canberra">(GMT+10:00) {{ __('Canberra, Melbourne,
-                                                        Sydney') }}</option>
-                                                    <option value="Australia/Hobart">(GMT+10:00) {{ __('Hobart') }}</option>
-                                                    <option value="Pacific/Guam">(GMT+10:00) {{ __('Guam, Port Moresby') }}</option>
-                                                    <option value="Asia/Vladivostok">(GMT+10:00) {{ __('Vladivostok') }}</option>
-                                                    <option value="Asia/Magadan">(GMT+11:00) {{ __('Magadan, Solomon Is., New
-                                                        Caledonia') }}</option>
-                                                    <option value="Pacific/Auckland">(GMT+12:00) {{ __('Auckland, Wellington') }}
+                                                    <option value="Australia/Adelaide">(GMT+09:30) {{ __('Adelaide') }}
                                                     </option>
-                                                    <option value="Pacific/Fiji">(GMT+12:00) {{ __('Fiji, Kamchatka, Marshall Is.') }}
+                                                    <option value="Australia/Darwin">(GMT+09:30) {{ __('Darwin') }}
                                                     </option>
-                                                    <option value="Pacific/Tongatapu">(GMT+13:00) {{ __("Nuku'alofa") }}</option>
+                                                    <option value="Australia/Brisbane">(GMT+10:00) {{ __('Brisbane') }}
+                                                    </option>
+                                                    <option value="Australia/Canberra">(GMT+10:00)
+                                                        {{ __('Canberra, Melbourne,
+                                                                                                                                                                                                                                                                                        Sydney') }}
+                                                    </option>
+                                                    <option value="Australia/Hobart">(GMT+10:00) {{ __('Hobart') }}
+                                                    </option>
+                                                    <option value="Pacific/Guam">(GMT+10:00)
+                                                        {{ __('Guam, Port Moresby') }}</option>
+                                                    <option value="Asia/Vladivostok">(GMT+10:00) {{ __('Vladivostok') }}
+                                                    </option>
+                                                    <option value="Asia/Magadan">(GMT+11:00)
+                                                        {{ __('Magadan, Solomon Is., New
+                                                                                                                                                                                                                                                                                        Caledonia') }}
+                                                    </option>
+                                                    <option value="Pacific/Auckland">(GMT+12:00)
+                                                        {{ __('Auckland, Wellington') }}
+                                                    </option>
+                                                    <option value="Pacific/Fiji">(GMT+12:00)
+                                                        {{ __('Fiji, Kamchatka, Marshall Is.') }}
+                                                    </option>
+                                                    <option value="Pacific/Tongatapu">(GMT+13:00) {{ __("Nuku'alofa") }}
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">{{ __('Date Format') }}</label>
+                                                <label for="Contact-Details"
+                                                    class="form-label">{{ __('Date Format') }}</label>
                                                 <select class="form-control form-control-line" id="dateFormatInput">
                                                     <option value="dd/MM/yyyy">dd/mm/yyyy</option>
                                                     <option value="MM/dd/yyyy">mm/dd/yyyy</option>
@@ -515,26 +609,38 @@
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#chgPassAccor">
                                                     <div class="accordion-body">
                                                         <div>
-                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Reset Password') }}</p>
-                                                            <p class="fs-12 text-muted">{{ __('Password should be min of') }} <b
-                                                                    class="text-success">8 {{ __('digits') }}<sup>*</sup></b>{{ __(',atleast') }}
-                                                                <b class="text-success">{{ __('One Capital letter') }}<sup>*</sup></b>
-                                                                {{ __('and') }} <b class="text-success">{{ __('One Special Character') }}<sup>*</sup></b> {{ __('included.') }}
-                                                            </p> 
+                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Reset Password') }}
+                                                            </p>
+                                                            <p class="fs-12 text-muted">
+                                                                {{ __('Password should be min of') }} <b
+                                                                    class="text-success">8
+                                                                    {{ __('digits') }}<sup>*</sup></b>{{ __(',atleast') }}
+                                                                <b
+                                                                    class="text-success">{{ __('One Capital letter') }}<sup>*</sup></b>
+                                                                {{ __('and') }} <b
+                                                                    class="text-success">{{ __('One Special Character') }}<sup>*</sup></b>
+                                                                {{ __('included.') }}
+                                                            </p>
                                                             <div class="mb-2">
-                                                                <label for="current-password" class="form-label">{{ __('Current Password') }}</label>
+                                                                <label for="current-password"
+                                                                    class="form-label">{{ __('Current Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="currentPassword" placeholder="{{ __('Current Password') }}">
+                                                                    id="currentPassword"
+                                                                    placeholder="{{ __('Current Password') }}">
                                                             </div>
                                                             <div class="mb-2">
-                                                                <label for="new-password" class="form-label">{{ __('New Password') }}</label>
+                                                                <label for="new-password"
+                                                                    class="form-label">{{ __('New Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="newPassword" placeholder="{{ __('New Password') }}">
+                                                                    id="newPassword"
+                                                                    placeholder="{{ __('New Password') }}">
                                                             </div>
                                                             <div class="mb-0">
-                                                                <label for="confirm-password" class="form-label">{{ __('Confirm Password') }}</label>
+                                                                <label for="confirm-password"
+                                                                    class="form-label">{{ __('Confirm Password') }}</label>
                                                                 <input type="password" class="form-control"
-                                                                    id="confirmPassword" placeholder="{{ __('Confirm Password') }}">
+                                                                    id="confirmPassword"
+                                                                    placeholder="{{ __('Confirm Password') }}">
                                                             </div>
                                                             <div class="card-footer p-2 text-end">
                                                                 <button class="btn btn-primary m-1" id="updatePassBtn">
@@ -559,7 +665,8 @@
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#mfaAccor">
                                                     <div class="accordion-body">
                                                         <div class="d-flex justify-content-between">
-                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Enable Multi-Factor Authentication on your Account?') }}
+                                                            <p class="fs-14 mb-1 fw-semibold">
+                                                                {{ __('Enable Multi-Factor Authentication on your Account?') }}
                                                                 <i class="bx bx-info-circle p-2" data-bs-toggle="tooltip"
                                                                     data-bs-placement="top"
                                                                     data-bs-original-title="MFA is provided by a timed-based one-time password (TOTP) utilising Google Authenticator. You will be prompted to setup MFA during your next login."
@@ -590,7 +697,8 @@
                                                     aria-labelledby="headingPrimaryOne" data-bs-parent="#AccDeactivation">
                                                     <div class="accordion-body">
                                                         <div class="d-flex justify-content-between">
-                                                            <p class="fs-14 mb-1 fw-semibold">{{ __('Deactivate your Account?') }}
+                                                            <p class="fs-14 mb-1 fw-semibold">
+                                                                {{ __('Deactivate your Account?') }}
                                                                 <i class="bx bx-info-circle p-2" data-bs-toggle="tooltip"
                                                                     data-bs-placement="top"
                                                                     data-bs-original-title="The team will be notified to deactivate this account. Deactivation may take up to 24 hours."
@@ -623,7 +731,8 @@
                                                 <div class="accordion-body">
                                                     <div>
                                                         <div class="input-group mb-3">
-                                                            <label class="input-group-text" for="defaultLnag">{{ __('Default Language (Phishing Emails)') }}</label>
+                                                            <label class="input-group-text"
+                                                                for="defaultLnag">{{ __('Default Language (Phishing Emails)') }}</label>
                                                             <select class="form-select" id="default_phish_lang">
                                                                 <option value="sq">Albanian</option>
                                                                 <option value="ar">Arabic</option>
@@ -796,7 +905,8 @@
                                                 aria-labelledby="headingPhishEdu" data-bs-parent="#phishEdu">
                                                 <div class="accordion-body">
                                                     <div>
-                                                        <h6>{{ __('If an employee falls victim to a phishing website, what action should be taken?') }}</h6>
+                                                        <h6>{{ __('If an employee falls victim to a phishing website, what action should be taken?') }}
+                                                        </h6>
                                                         <span>{{ __('Note: This setting configures the default selection for new campaigns. This setting can be modified on a campaign-by-campaign basis.') }}</span>
                                                         <div class="my-3">
                                                             <div class="form-check">
@@ -804,7 +914,8 @@
                                                                     name="phish_redirect" value="simuEducation"
                                                                     id="simuEducation">
                                                                 <label class="form-check-label" for="simuEducation">
-                                                                    {{ __('Redirect to the') }} {{ $companyName }} {{ __('education website') }}
+                                                                    {{ __('Redirect to the') }} {{ $companyName }}
+                                                                    {{ __('education website') }}
                                                                 </label>
                                                             </div>
                                                             <div class="form-check">
@@ -855,7 +966,8 @@
                                                     <div class="my-3">
                                                         <div class="d-flex justify-content-between">
 
-                                                            <h6>{{ __('Enable employees to report phishing via Gmail, Office 365 and Outlook?') }}</h6>
+                                                            <h6>{{ __('Enable employees to report phishing via Gmail, Office 365 and Outlook?') }}
+                                                            </h6>
                                                             <div
                                                                 class="custom-toggle-switch d-flex align-items-center mb-4">
                                                                 <input id="reportngVia" name="reportVia"
@@ -891,7 +1003,8 @@
                                                             <h6>{{ __('Deliver Training Assignment Reminders?') }}</h6>
                                                         </div>
                                                         <div class="d-flex">
-                                                            <label for="freqdays" class="mx-3">{{ __('Frequency Days') }}</label>
+                                                            <label for="freqdays"
+                                                                class="mx-3">{{ __('Frequency Days') }}</label>
                                                             <input type="number" class="form-control" id="freqdays"
                                                                 style="width:70px;" min="0" max="30">
                                                             <button type="button"
@@ -905,12 +1018,57 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="tab-pane p-0" id="subManage" role="tabpanel">
+                                <div class="tab-pane p-0" id="siem" role="tabpanel">
+                                    <div class="p-sm-3 p-0">
+                                        <div class="row gy-4 mb-4">
+
+                                            <div class="col-xl-12">
+                                                <label for="provider" class="form-label">{{ __('Provider') }}</label>
+                                                <select id="provider" class="form-control form-control-line">
+                                                    <option value="splunk"
+                                                        @if ($all_settings->siemSettings?->provider_name == 'splunk') selected @endif>
+                                                        {{ __('Splunk') }}
+                                                    </option>
+                                                    <option value="webhook"
+                                                        @if ($all_settings->siemSettings?->provider_name == 'webhook') selected @endif>
+                                                        {{ __('webhook.site') }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row gy-4 mb-4">
+
+                                            <div class="col-xl-12">
+                                                <label for="provider" class="form-label">{{ __('URL') }}</label>
+                                                <input type="text" value="{{$all_settings->siemSettings?->url}}" class="form-control" id="provider_url"
+                                                    placeholder="https://log.provider.com">
+                                            </div>
+                                            
+                                            <div class="col-xl-12" id="tokenField" @if ($all_settings->siemSettings?->provider_name == 'webhook') style="display: none;" @endif>
+                                                <label for="authToken"
+                                                    class="form-label">{{ __('Authorization Token') }}</label>
+                                                <input type="password" value="{{$all_settings->siemSettings?->token ?? ''}}" class="form-control" id="auth_token"
+                                                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="d-flex gap-4">
+                                            <label class="form-label mb-3">{{ __('Enabled') }}</label>
+                                            <div class="custom-toggle-switch d-flex align-items-center mb-4">
+                                                <input id="seimStatus" name="seimStatus" type="checkbox" @if ($all_settings->siemSettings?->status == 1) checked @endif>
+                                                <label for="seimStatus" class="label-success"></label>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer mb-3" style="margin-bottom: 53px !important;">
+                                            <div class="float-end">
+                                                <button class="btn btn-primary m-1" id="saveSiem">
+                                                    {{ __('Save') }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </div>
-                                <div class="tab-pane" id="custManage" role="tabpanel">
 
-                                </div>
                             </div>
                         </div>
 
@@ -924,8 +1082,7 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -936,7 +1093,7 @@
                     <div>
                         <div class="my-5 d-flex justify-content-center" style="margin-bottom: 1rem !important;">
                             <img src="" alt="mfa_qr" id="mfa_qr" width="200">
-                           
+
                         </div>
                         <div class="card custom-card">
                             <div class="card-body p-5">
@@ -946,16 +1103,18 @@
                                     @csrf
                                     <div class="row gy-3">
                                         <div class="col-xl-12">
-                                            <input type="text" class="form-control form-control-lg" name="totp_code" placeholder="xxxxxx">
+                                            <input type="text" class="form-control form-control-lg" name="totp_code"
+                                                placeholder="xxxxxx">
                                             <input type="hidden" name="secret" value="" id="mfa_secret">
                                         </div>
                                         <div class="col-xl-12 d-grid mt-2">
-                                            <button type="submit" name="verifyMfaCode" class="btn btn-lg btn-primary">{{ __('Verify') }}</button>
+                                            <button type="submit" name="verifyMfaCode"
+                                                class="btn btn-lg btn-primary">{{ __('Verify') }}</button>
                                         </div>
                                     </div>
                                 </form>
-        
-                               
+
+
                             </div>
                         </div>
                     </div>
@@ -1120,10 +1279,10 @@
                                 // )
                             } else {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                             // console.log(res)
                         }
@@ -1139,16 +1298,16 @@
                         success: function(res) {
                             if (res.status == 1) {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'success',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             } else {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                         }
                     })
@@ -1194,10 +1353,10 @@
                 if (redirectType == 'byoEducation' && redirect_url.value == '') {
                     // alert("Please enter the website url");
                     Swal.fire({
-                                title: "{{ __('Please enter the website url') }}",
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                        title: "{{ __('Please enter the website url') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
                 } else {
 
                     clickedBtn.text("{{ __('Please wait...') }}");
@@ -1215,17 +1374,17 @@
                             if (res.status == 1) {
                                 clickedBtn.text("Update");
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'success',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             } else {
                                 clickedBtn.text("Update");
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                         }
                     })
@@ -1261,18 +1420,17 @@
                             if (res.status == 1) {
                                 clickedBtn.text("save");
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'success',
-                                confirmButtonText: "{{ __('OK') }}"
-                            }
-                        )
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             } else {
                                 clickedBtn.text("save");
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                             // window.location.href = window.location.href;
                         }
@@ -1280,10 +1438,10 @@
                 } else {
                     // alert("");
                     Swal.fire({
-                                title: "{{ __('Entered value is not a numeric value') }}",
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                        title: "{{ __('Entered value is not a numeric value') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
                 }
             })
 
@@ -1302,16 +1460,16 @@
                         success: function(res) {
                             if (res.status == 1) {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'success',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             } else {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                         }
                     })
@@ -1326,16 +1484,16 @@
                         success: function(res) {
                             if (res.status == 1) {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'success',
-                                confirmButtonText: "{{ __('OK') }}"
-                            } )
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             } else {
                                 Swal.fire({
-                                title: res.msg,
-                                icon: 'error',
-                                confirmButtonText: "{{ __('OK') }}"
-                            })
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
                             }
                         }
                     })
@@ -1362,13 +1520,84 @@
                             success: function(res) {
                                 // var resJson = JSON.parse(res);
                                 // alert(resJson.msg);
-                                window.location.href = "{{route('logout')}}";
+                                window.location.href = "{{ route('logout') }}";
                             }
                         })
                     }
                 })
-               
+
             }
+        </script>
+
+        <script>
+            $(document).ready(function() {
+                $('#provider').change(function() {
+                    var selectedValue = $(this).val();
+                    if (selectedValue == 'webhook') {
+                        $('#tokenField input').val('');
+                        $('#tokenField').hide();
+                    } else {
+                        $('#tokenField input').val('');
+                        $('#tokenField').show();
+                    }
+                });
+            });
+
+            $('#provider_url').on('input', function() {
+                var inputValue = $(this).val();
+                if (inputValue.endsWith('/')) {
+                    $(this).addClass('is-invalid').removeClass('is-valid');
+                } else {
+                    $(this).addClass('is-valid').removeClass('is-invalid');
+                }
+            });
+
+            $('#saveSiem').click(function(e) {
+                e.preventDefault();
+                var provider = $('#provider').val();
+                var provider_url = $('#provider_url').val();
+                var auth_token = $('#auth_token').val();
+                var status = $('#seimStatus').is(':checked') ? 1 : 0;
+                
+                if ((provider == 'webhook' || provider == 'splunk') && provider_url.endsWith('/')) {
+                    Swal.fire({
+                        title: "{{ __('Please enter a valid URL') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
+                } else if (provider == 'splunk' && auth_token == '') {
+                    Swal.fire({
+                        title: "{{ __('Please enter the authorization token') }}",
+                        icon: 'error',
+                        confirmButtonText: "{{ __('OK') }}"
+                    })
+                } else {
+                    $.post({
+                        url: '/settings/update-siem',
+                        data: {
+                            'provider': provider,
+                            'provider_url': provider_url,
+                            'auth_token': auth_token,
+                            'status': status
+                        },
+                        success: function(res) {
+                            if (res.status == 1) {
+                                Swal.fire({
+                                    title: res.msg,
+                                    icon: 'success',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
+                            } else {
+                                Swal.fire({
+                                    title: res.msg,
+                                    icon: 'error',
+                                    confirmButtonText: "{{ __('OK') }}"
+                                })
+                            }
+                        }
+                    })
+                }
+            });
         </script>
     @endpush
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\Company;
 use App\Models\Settings;
+use App\Models\SiemProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,15 +18,23 @@ use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\ErrorCorrectionLevel;
+use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
 {
     //
     public function index()
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
         $all_settings = Company::where('company_id', $companyId)->with('company_settings')->first();
+
+        $siemSettings = SiemProvider::where('company_id', $companyId)->first();
+        if ($siemSettings) {
+            $all_settings->siemSettings = $siemSettings;
+        } else {
+            $all_settings->siemSettings = null;
+        }
 
         return view('settings', compact('all_settings'));
     }
@@ -33,7 +42,7 @@ class SettingsController extends Controller
     public function updateProfile(Request $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -53,7 +62,7 @@ class SettingsController extends Controller
             'dateFormat' => 'required|string|max:255',
         ]);
 
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
         // Update the company settings
         $isUpdated = DB::table('company_settings')
@@ -77,7 +86,7 @@ class SettingsController extends Controller
     public function updatePassword(UpdatePasswordRequest $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -228,7 +237,7 @@ class SettingsController extends Controller
         ]);
 
         // Get the authenticated user's company ID
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
         // Retrieve user settings for the company
         $user_settings = Settings::where('company_id', $companyId)->first();
@@ -265,7 +274,7 @@ class SettingsController extends Controller
     public function updateLang(Request $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -306,7 +315,7 @@ class SettingsController extends Controller
     public function updatePhishingEdu(Request $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -344,7 +353,7 @@ class SettingsController extends Controller
     public function updateTrainFreq(Request $request)
     {
         //xss check start
-        
+
         $input = $request->all();
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -357,7 +366,7 @@ class SettingsController extends Controller
         $request->merge($input);
 
         //xss check end
-        
+
         $days = $request->input('days');
 
         $company_id = Auth::user()->company_id; // Assuming company_id is stored in session or retrieved from Auth
@@ -391,7 +400,6 @@ class SettingsController extends Controller
                 'status' => 1,
                 'msg' => __('Phish Reporting using Gmail, Outlook and Office365 is ') . ($status == '1' ? __("enabled") : __("disabled")) . '!'
             ]);
-            
         } else {
             log_action('Failed to ' . ($status == '1' ? "enable" : "disable") . ' Phish Reporting');
             return response()->json([
@@ -399,7 +407,6 @@ class SettingsController extends Controller
                 'msg' => __('Failed to ') . ($status == '1' ? __("enable") : __("disable")) . __('Phish Reporting'),
                 'error' => DB::connection()->getPdo()->errorInfo()
             ]);
-            
         }
     }
 
@@ -418,6 +425,59 @@ class SettingsController extends Controller
         } else {
             log_action("Failed to deactivate account");
             return response()->json(['status' => 0, 'msg' => __('Failed to deactivate account')]);
+        }
+    }
+
+    public function updateSiem(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider' => 'required|string|in:webhook,splunk',
+                'provider_url' => 'required|string',
+                'auth_token' => 'nullable|string',
+            ]);
+
+            //xss check start
+
+            $input = $request->all();
+
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json(['status' => 0, 'msg' => __('Invalid input detected.')]);
+                }
+            }
+            array_walk_recursive($input, function (&$input) {
+                $input = strip_tags($input);
+            });
+            $request->merge($input);
+            //xss check end
+
+            $companyId = Auth::user()->company_id;
+            $siemSettings = SiemProvider::where('company_id', $companyId)->first();
+            if ($siemSettings) {
+                $siemSettings->update([
+                    'provider_name' => $request->input('provider'),
+                    'url' => $request->input('provider_url'),
+                    'status' => $request->input('status'),
+                    'token' => $request->input('provider') == 'webhook' ? null : $request->input('auth_token'),
+                ]);
+                return response()->json(['status' => 1, 'msg' => __('SIEM settings updated')]);
+            } else {
+                SiemProvider::create([
+                    'company_id' => $companyId,
+                    'provider_name' => $request->input('provider'),
+                    'url' => $request->input('provider_url'),
+                    'status' => $request->input('status'),
+                    'token' => $request->input('provider') == 'webhook' ? null : $request->input('auth_token'),
+                ]);
+
+                return response()->json(['status' => 1, 'msg' => __('SIEM settings created')]);
+            }
+
+        } catch (ValidationException $e) {
+            return response()->json(['status' => 0, 'msg' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 0, 'msg' => $e->getMessage()]);
         }
     }
 }
