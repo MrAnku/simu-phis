@@ -101,8 +101,20 @@ class SyncLogs extends Command
     {
         $url = $siemConfig->url;
 
+        if($siemConfig->token == null){
+            $headers = [
+                'Content-Type' => 'application/json'
+            ];
+        } else {
+            $headers = [
+                'Authorization' =>  'Bearer ' . $siemConfig->token,
+                'Content-Type' => 'application/json'
+            ];
+        }
+       
+
         try {
-            $response = Http::withoutVerifying()->post($url, $logsArray);
+            $response = Http::withHeaders($headers)->withoutVerifying()->post($url, $logsArray);
 
             if ($response->failed()) {
                 echo 'Failed to send logs to Webhook: ' . json_encode($response->body());

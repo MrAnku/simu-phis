@@ -1031,19 +1031,19 @@
                                                     </option>
                                                     <option value="webhook"
                                                         @if ($all_settings->siemSettings?->provider_name == 'webhook') selected @endif>
-                                                        {{ __('webhook.site') }}</option>
+                                                        {{ __('Webhook') }}</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="provider" class="form-label">{{ __('URL') }}</label>
+                                                <label for="provider" class="form-label">{{ __('URL') }}<sup class="text-danger">*</sup></label>
                                                 <input type="text" value="{{$all_settings->siemSettings?->url}}" class="form-control" id="provider_url"
                                                     placeholder="https://log.provider.com">
                                             </div>
                                             
-                                            <div class="col-xl-12" id="tokenField" @if ($all_settings->siemSettings?->provider_name == 'webhook') style="display: none;" @endif>
+                                            <div class="col-xl-12" id="tokenField">
                                                 <label for="authToken"
                                                     class="form-label">{{ __('Authorization Token') }}</label>
                                                 <input type="password" value="{{$all_settings->siemSettings?->token ?? ''}}" class="form-control" id="auth_token"
@@ -1530,18 +1530,18 @@
         </script>
 
         <script>
-            $(document).ready(function() {
-                $('#provider').change(function() {
-                    var selectedValue = $(this).val();
-                    if (selectedValue == 'webhook') {
-                        $('#tokenField input').val('');
-                        $('#tokenField').hide();
-                    } else {
-                        $('#tokenField input').val('');
-                        $('#tokenField').show();
-                    }
-                });
-            });
+            // $(document).ready(function() {
+            //     $('#provider').change(function() {
+            //         var selectedValue = $(this).val();
+            //         if (selectedValue == 'webhook') {
+            //             $('#tokenField input').val('');
+            //             $('#tokenField').hide();
+            //         } else {
+            //             $('#tokenField input').val('');
+            //             $('#tokenField').show();
+            //         }
+            //     });
+            // });
 
             $('#provider_url').on('input', function() {
                 var inputValue = $(this).val();

@@ -459,7 +459,7 @@ class SettingsController extends Controller
                     'provider_name' => $request->input('provider'),
                     'url' => $request->input('provider_url'),
                     'status' => $request->input('status'),
-                    'token' => $request->input('provider') == 'webhook' ? null : $request->input('auth_token'),
+                    'token' => $request->input('auth_token') == '' ? null : $request->input('auth_token'),
                 ]);
                 return response()->json(['status' => 1, 'msg' => __('SIEM settings updated')]);
             } else {
@@ -468,7 +468,7 @@ class SettingsController extends Controller
                     'provider_name' => $request->input('provider'),
                     'url' => $request->input('provider_url'),
                     'status' => $request->input('status'),
-                    'token' => $request->input('provider') == 'webhook' ? null : $request->input('auth_token'),
+                    'token' => $request->input('auth_token') == '' ? null : $request->input('auth_token'),
                 ]);
 
                 return response()->json(['status' => 1, 'msg' => __('SIEM settings created')]);
