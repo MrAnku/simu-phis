@@ -346,11 +346,13 @@ class DashboardController extends Controller
             // Fetch data from all_campaigns by converting launch_time to date
             $allCampaignsCount = DB::table('all_campaigns')
                 ->whereDate(DB::raw("STR_TO_DATE(launch_time, '%m/%d/%Y %h:%i %p')"), $date->format('Y-m-d'))
+                ->where('company_id', Auth::user()->company_id)
                 ->count();
 
             // Fetch data from whatsapp_campaigns where created_at matches the current date
             $whatsappCampaignsCount = DB::table('whatsapp_campaigns')
                 ->whereDate('created_at', $date->format('Y-m-d'))
+                ->where('company_id', Auth::user()->company_id)
                 ->count();
 
             // Add the results to the data array
