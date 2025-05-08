@@ -408,7 +408,7 @@ class ApiEmployeesController extends Controller
             $request->validate([
                 'user_email' => 'required'
             ]);
-            $user_email = base64_decode($request->input('user_email'));
+            $user_email = $request->input('user_email');
             $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
             if ($users->isEmpty()) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
