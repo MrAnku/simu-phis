@@ -110,9 +110,9 @@ class ApiBlueCollarController extends Controller
             $users = BlueCollarEmployee::where('group_id', $groupId)->where('company_id', $companyId)->get();
 
             if (!$users->isEmpty()) {
-                return response()->json(['success' => true, 'data' => $users]);
+                return response()->json(['success' => true, 'data' => $users, 'message' => __('Employees retrieved successfully')]);
             } else {
-                return response()->json(['success' => false, 'message' => __('No Employees Found')], 404);
+                return response()->json(['success' => true, 'data' => [], 'message' => __('No employees found')]);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
