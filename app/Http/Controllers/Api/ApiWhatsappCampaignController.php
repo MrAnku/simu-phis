@@ -37,7 +37,7 @@ class ApiWhatsappCampaignController extends Controller
             }
 
             $campaigns = WhatsappCampaign::with('trainingData')->where('company_id', $company_id)->orderBy('id', 'desc')
-                ->paginate(10);
+                ->get();
             $trainings = TrainingModule::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')->get();
 
