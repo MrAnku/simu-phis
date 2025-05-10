@@ -28,10 +28,10 @@
                             <div>
                                 <div class="input-group mb-3">
 
-                                    <form method="GET" action="{{ route('quishing.emails') }}" class="d-flex gap-2">
+                                    <form method="GET" action="{{ route('smishing.temps') }}" class="d-flex gap-2">
                                         <input type="text" class="form-control" name="search"
                                             placeholder="{{ __('Search Template...') }}"
-                                            aria-label="Example text with button addon" aria-describedby="button-addon1"
+                                            
                                             value="{{ request('search') }}">
                                         <button class="btn btn-icon btn-primary-transparent rounded-pill btn-wave"
                                             type="submit">
@@ -54,7 +54,7 @@
                                                 <div class="d-flex align-items-center w-100">
 
                                                     <div class="">
-                                                        <div class="fs-15 fw-semibold">{{ $template->name }}</div>
+                                                        <div class="fs-15 fw-semibold template_name">{{ $template->name }}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -75,11 +75,14 @@
                                                         class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('Send Test SMS') }}</button>
 
                                                     @if ($template->company_id == Auth::user()->company_id)
-                                                        <button type="button" data-bs-toggle="modal"
-                                                            data-bs-target="#editEtemplateModal"
+                                                        <button type="button"
+                                                        onclick="setTemValues(this, '{{ $template->category }}', '{{ $template->id }}')"
+                                                        data-bs-toggle="modal"
+                                                            data-bs-target="#editTemp"
                                                             class="btn mx-1 btn-outline-primary btn-wave waves-effect waves-light">{{ __('Edit') }}</button>
 
                                                         <button type="button"
+                                                            onclick="deleteTemp('{{ $template->id }}')"
                                                             class="btn mx-1 btn-outline-danger btn-wave waves-effect waves-light">{{ __('Delete') }}</button>
                                                     @endif
 
@@ -110,7 +113,7 @@
 
     <x-modal id="newSmishingTempModal" heading="{{ __('Add New Smishing Template') }}">
 
-        <form action="{{ route('smishing.temp.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('smishing.temp.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="template_name"
@@ -153,6 +156,50 @@
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
             </div>
+        </form>
+    </x-modal>
+
+
+    <x-modal id="editTemp" heading="{{ __('Edit Smishing Template') }}">
+
+        <div>
+            <form action="{{ route('smishing.temp.update') }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="edit_template_name" class="form-label required">{{ __('Template Name') }}</label>
+                    <input type="text" class="form-control" id="edit_template_name" name="template_name" placeholder="{{ __('Template Name') }}" required>
+                    <input type="hidden" name="template_id" id="template_id" value="">
+                </div>
+                <div class="mb-3">
+                    <label for="edit_template_body" class="form-label required">{{ __('Template Body') }}</label>
+                    <div class="mb-3">
+                        <small class="text-muted">{{ __('Please use the shortcodes') }} <span
+                                class="text-danger">@{{ user_name }}</span> {{ __('and') }} <span class="text-danger">@{{ redirect_url }}</span> {{ __('in your template body.') }}</small>
+                    </div>
+                    <textarea class="form-control" id="edit_template_body" name="template_body" rows="3" placeholder="Hello @{{ user_name }}, your OTP is 543679. Click @{{ redirect_url }} to verify." required></textarea>
+    
+                </div>
+    
+                <div class="mb-3">
+                    <label for="edit_template_category" class="form-label required">{{ __('Template Category') }}</label>
+                    <select class="form-select" id="edit_template_category" name="category" required>
+                        <option value="financial">{{ __('Financial') }}</option>
+                        <option value="matrimonial">{{ __('Matrimonial') }}</option>
+                        <option value="promotional">{{ __('Promotional') }}</option>
+                        <option value="educational">{{ __('Educational') }}</option>
+                        <option value="healthcare">{{ __('Healthcare') }}</option>
+                        <option value="entertainment">{{ __('Entertainment') }}</option>
+                        <option value="ecommerce">{{ __('E-commerce') }}</option>
+                        <option value="others">{{ __('Others') }}</option>
+                    </select>
+                </div>
+    
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                </div>
+            </form>
+        </div>
+        
     </x-modal>
 
 
@@ -297,6 +344,65 @@
                     }
                 });
             }
+
+            function setTemValues(btn, category, templateId){
+
+                const preview = $(btn).parent().parent().prev().html();
+                const temp_name = $(btn).parent().parent().prev().prev().find('.template_name').text().trim();
+                $('#template_id').val(templateId);
+                const smsBody = $(preview).find('.sms-body').text().trim();
+                $('#edit_template_body').val(smsBody);
+                $('#edit_template_name').val(temp_name);
+                $('#edit_template_category').val(category);
+
+            }
+
+            function deleteTemp(templateId) {
+                Swal.fire({
+                    title: "{{ __('Are you sure?') }}",
+                    text: "{{ __('If this template is used in live campaign then the campaign will be deleted.') }}",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: "{{ __('Yes, delete it!') }}"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/smishing-template/delete",
+                            type: "POST",
+                            data: {
+                                template_id: templateId
+                            },
+                            success: function(response) {
+                                if (response.status == 'success') {
+                                    Swal.fire(
+                                        "{{ __('Deleted!') }}",
+                                        response.message,
+                                        'success'
+                                    ).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        "{{ __('Error!') }}",
+                                        response.message,
+                                        'error'
+                                    );
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire(
+                                    "{{ __('Error!') }}",
+                                    xhr.responseJSON.message,
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                })
+            }
+
         </script>
     @endpush
 

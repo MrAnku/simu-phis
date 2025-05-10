@@ -415,6 +415,8 @@ Route::middleware([
         //smishing templates routes---------------------------------
         Route::get('/smishing-templates', [SmishingTemplateController::class, 'index'])->name('smishing.temps');
         Route::post('/smishing-template/add', [SmishingTemplateController::class, 'storeTemplate'])->name('smishing.temp.store');
+        Route::post('/smishing-template/update', [SmishingTemplateController::class, 'updateTemplate'])->name('smishing.temp.update');
+        Route::post('/smishing-template/delete', [SmishingTemplateController::class, 'deleteTemplate'])->name('smishing.temp.delete');
         Route::post('/smishing-template/send-test-sms', [SmishingTemplateController::class, 'testSms'])->name('smishing.temp.testsms');
 
 
