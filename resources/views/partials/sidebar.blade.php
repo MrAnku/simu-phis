@@ -16,6 +16,10 @@
     .app-sidebar .slide-menu.child3 .side-menu__item.active {
         background-color: #8584841a;
     }
+
+    .app-sidebar .slide-menu.child1 .side-menu__item:before, .app-sidebar .slide-menu.child2 .side-menu__item:before, .app-sidebar .slide-menu.child3 .side-menu__item:before {
+        display: none;
+    }
 </style>
 <aside class="app-sidebar sticky" id="sidebar">
 
@@ -105,9 +109,17 @@
 
 
                                     <li
-                                        class="slide has-sub {{ Request::is('campaigns') || Request::is('whatsapp-campaign') || Request::is('quishing') ? 'open' : '' }}">
+                                        class="slide has-sub {{ 
+                                        Request::is('campaigns') || 
+                                        Request::is('whatsapp-campaign') || 
+                                        Request::is('smishing') || 
+                                        Request::is('quishing') ? 'open' : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('campaigns') || Request::is('whatsapp-campaign') || Request::is('quishing') ? 'active' : '' }}">
+                                            class="side-menu__item {{ 
+                                            Request::is('campaigns') || 
+                                            Request::is('whatsapp-campaign') ||
+                                            Request::is('smishing') ||
+                                            Request::is('quishing') ? 'active' : '' }}">
                                             <i class="bx bx-mail-send side-menu__icon"></i>
                                             <span class="side-menu__label">{{ __('Campaigns') }}</span>
                                             <i class="fe fe-chevron-right side-menu__angle"></i>
@@ -140,6 +152,17 @@
                                                     class="side-menu__item {{ Request::is('whatsapp-campaign') ? 'active' : '' }}">
                                                     <i class="bx bxl-whatsapp side-menu__icon"></i>
                                                     <span class="side-menu__label">{{ __('WA Campaigns') }}</span>
+                                                </a>
+                                            </li>
+                                            <li class="slide {{ Request::is('smishing') ? 'active' : '' }}">
+                                                <a href="{{ route('smishing.index') }}"
+                                                    class="side-menu__item {{ Request::is('smishing') ? 'active' : '' }}">
+                                                    
+                                                    <i class="bx bx-comment-dots side-menu__icon"></i>
+                                                    <span class="side-menu__label">{{ __('Smishing') }}
+                                                        <span
+                                                            class="badge bg-secondary-transparent ms-2">{{ __('New') }}</span>
+                                                    </span>
                                                 </a>
                                             </li>
 

@@ -52,6 +52,7 @@ use App\Http\Controllers\Admin\AdminQuishingEmailController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\BluecolarController;
+use App\Http\Controllers\SmishingController;
 use App\Http\Controllers\SmishingTemplateController;
 use App\Http\Controllers\TestController;
 use App\Http\Middleware\SetLocale;
@@ -380,6 +381,9 @@ Route::middleware([
         Route::post('/quishing/create-campaign', [QuishingController::class, 'createCampaign'])->name('quishing.create.camp');
         Route::post('/quishing/delete-campaign', [QuishingController::class, 'deleteCampaign'])->name('quishing.delete.camp');
         Route::post('/quishing/fetch-campaign-details', [QuishingController::class, 'fetchCampDetail'])->name('quishing.fetch.camp');
+
+        //smishing campaign routes---------------------------------
+        Route::get('/smishing', [SmishingController::class, 'index'])->name('smishing.index');
 
 
         //Ai Calling routes ----------------------------------------------------------------------
