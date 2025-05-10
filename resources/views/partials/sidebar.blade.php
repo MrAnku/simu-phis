@@ -5,6 +5,17 @@
         display: inline-block;
         width: 100%;
     }
+
+    .app-sidebar .slide-menu.child1 .side-menu__item,
+    .app-sidebar .slide-menu.child2 .side-menu__item {
+        padding: .45rem .5rem;
+    }
+
+    .app-sidebar .slide-menu.child1 .side-menu__item.active,
+    .app-sidebar .slide-menu.child2 .side-menu__item.active,
+    .app-sidebar .slide-menu.child3 .side-menu__item.active {
+        background-color: #8584841a;
+    }
 </style>
 <aside class="app-sidebar sticky" id="sidebar">
 
@@ -134,6 +145,8 @@
 
 
 
+
+
                                         </ul>
                                     </li>
 
@@ -191,9 +204,21 @@
 
 
                                     <li
-                                        class="slide has-sub {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'open' : '' }}">
+                                        class="slide has-sub {{ Request::is('phishing-emails') ||
+                                        Request::is('phishing-websites') ||
+                                        Request::is('quishing-emails') ||
+                                        Request::is('smishing-templates') ||
+                                        Request::is('sender-profiles')
+                                            ? 'open'
+                                            : '' }}">
                                         <a href="javascript:void(0);"
-                                            class="side-menu__item {{ Request::is('phishing-emails') || Request::is('phishing-websites') || Request::is('quishing-emails') || Request::is('sender-profiles') ? 'active' : '' }}">
+                                            class="side-menu__item {{ Request::is('phishing-emails') ||
+                                            Request::is('phishing-websites') ||
+                                            Request::is('smishing-templates') ||
+                                            Request::is('quishing-emails') ||
+                                            Request::is('sender-profiles')
+                                                ? 'active'
+                                                : '' }}">
 
 
                                             <i class="bx bx-mail-send side-menu__icon"></i>
@@ -212,6 +237,16 @@
                                                     <span class="side-menu__label">{{ __('Phishing Emails') }}</span>
                                                 </a>
                                             </li>
+
+                                            <li class="slide {{ Request::is('smishing-templates') ? 'active' : '' }}">
+                                                <a href="{{ route('smishing.temps') }}"
+                                                    class="side-menu__item {{ Request::is('smishing-templates') ? 'active' : '' }}">
+                                                    <i class='bx bx-message-detail side-menu__icon'></i>
+                                                    <span
+                                                        class="side-menu__label">{{ __('Smishing Templates') }}</span>
+                                                </a>
+                                            </li>
+
                                             <li class="slide {{ Request::is('quishing-emails') ? 'active' : '' }}">
                                                 <a href="{{ route('quishing.emails') }}"
                                                     class="side-menu__item {{ Request::is('quishing-emails') ? 'active' : '' }}">

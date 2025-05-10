@@ -52,6 +52,7 @@ use App\Http\Controllers\Admin\AdminQuishingEmailController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\BluecolarController;
+use App\Http\Controllers\SmishingTemplateController;
 use App\Http\Controllers\TestController;
 use App\Http\Middleware\SetLocale;
 
@@ -410,6 +411,11 @@ Route::middleware([
         Route::post('/quishing-emails/add-temp', [QuishingEmailController::class, 'addTemplate'])->name('quishing.emails.add');
         Route::post('/quishing-emails/delete-temp', [QuishingEmailController::class, 'deleteTemplate'])->name('quishing.emails.delete');
         Route::post('/quishing-emails/update-temp', [QuishingEmailController::class, 'updateTemplate'])->name('quishing.emails.update');
+
+        //smishing templates routes---------------------------------
+        Route::get('/smishing-templates', [SmishingTemplateController::class, 'index'])->name('smishing.temps');
+        Route::post('/smishing-template/add', [SmishingTemplateController::class, 'storeTemplate'])->name('smishing.temp.store');
+        Route::post('/smishing-template/send-test-sms', [SmishingTemplateController::class, 'testSms'])->name('smishing.temp.testsms');
 
 
         //phishing websites routes-----------------------------------------
