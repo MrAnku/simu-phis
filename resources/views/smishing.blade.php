@@ -181,10 +181,7 @@
 
     <!-- new campaign modal -->
     <x-modal id="newCampModal" size="modal-xl" heading="{{ __('New Smishing Campaign') }}">
-        <x-smishing.new-campaign 
-        :templates="$templates" 
-        :websites="$phishingWebsites" 
-        :trainingModules="$trainingModules" />
+        <x-smishing.new-campaign :templates="$templates" :websites="$phishingWebsites" :trainingModules="$trainingModules" />
     </x-modal>
 
     <!-- campaign report modal -->
@@ -313,12 +310,12 @@
                 }
                 if (current_page == 'stepThree') {
                     $('#web-mat').attr('disabled', false);
-                        $('#web-mat').click();
+                    $('#web-mat').click();
                 }
                 if (current_page == 'stepWebsite') {
                     // if (campType == 'smishing-training') {
-                        $('#quish-mat').attr('disabled', false);
-                        $('#quish-mat').click();
+                    $('#quish-mat').attr('disabled', false);
+                    $('#quish-mat').click();
                     // }
                     // if (campType == 'training') {
                     //     $('#camp-name').click();
@@ -471,9 +468,11 @@
                 // Log the updated checkedValues array
                 console.log(selectedTrainings);
             }
+
             function selectWebsite(input) {
                 $(input).next().text("{{ __('Website selected') }}");
             }
+
             function deselectWebsite(input) {
                 $(input).next().text("{{ __('Select') }}");
             }
@@ -495,16 +494,15 @@
                     training_category: $('#training_cat').val(),
                 }
 
-                console.log(campaignData);
-                return;
+
 
                 $.post({
-                    url: '/quishing/create-campaign',
+                    url: '/smishing/create-campaign',
                     data: campaignData,
                     success: function(res) {
-                        if (res.status === 1) {
+                        if (res.success) {
                             Swal.fire({
-                                title: res.msg,
+                                title: res.message,
                                 icon: 'success',
                                 confirmButtonText: "{{ __('OK') }}"
                             }).then(() => {
@@ -513,11 +511,18 @@
                             });
                         } else {
                             Swal.fire({
-                                title: res.msg,
+                                title: res.message,
                                 icon: 'error',
                                 confirmButtonText: "{{ __('OK') }}"
                             })
                         }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            title: xhr.responseJSON.message,
+                            icon: 'error',
+                            confirmButtonText: "{{ __('OK') }}"
+                        })
                     }
                 })
 
@@ -697,7 +702,7 @@
 
             // Event listener for input field change
             $('#templateSearch').on('input', function() {
-                var searchValue = $(this).val().toLowerCase(); 
+                var searchValue = $(this).val().toLowerCase();
 
                 clearTimeout($.data(this, 'timer'));
                 if (searchValue.length > 2) {
@@ -748,7 +753,7 @@
                 let html = '';
                 data.forEach(email => {
 
-                html += `<div class="col-lg-6 email_templates border my-2">
+                    html += `<div class="col-lg-6 email_templates border my-2">
                 <div class="card custom-card">
                     <div class="card-header">
                         <div class="d-flex align-items-center w-100">

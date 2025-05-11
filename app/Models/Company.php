@@ -85,4 +85,8 @@ class Company extends Authenticatable
         return $this->hasOne(SiemProvider::class, 'company_id', 'company_id');
     }
 
+    public function smishingLiveCamps(){
+        return $this->hasMany(SmishingLiveCampaign::class, 'company_id', 'company_id');
+    }
+
 }

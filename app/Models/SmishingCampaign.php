@@ -23,4 +23,9 @@ class SmishingCampaign extends Model
         'status',
         'company_id',
     ];
+
+    public function campLive()
+    {
+        return $this->hasMany(SmishingLiveCampaign::class, 'campaign_id', 'campaign_id');
+    }
 }

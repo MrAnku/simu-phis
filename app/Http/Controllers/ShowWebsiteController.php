@@ -2,27 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Users;
 use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
 use Illuminate\Support\Str;
 use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
+use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\PhishingWebsite;
+use App\Models\QuishingLiveCamp;
+use App\Models\SmishingCampaign;
 use \App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\SmishingLiveCampaign;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\AssignTrainingWithPassResetLink;
-use App\Models\QuishingCamp;
-use App\Models\QuishingLiveCamp;
-use App\Models\TrainingAssignedUser;
 use App\Services\TrainingAssignedService;
+use App\Mail\AssignTrainingWithPassResetLink;
 
 class ShowWebsiteController extends Controller
 {
@@ -118,24 +121,14 @@ class ShowWebsiteController extends Controller
     {
         $campid = $request->input('campid');
         $qsh = $request->input('qsh');
+        $smi = $request->input('smi');
         if ($qsh == 1) {
             $campDetail = QuishingLiveCamp::find($campid);
-            if ($campDetail) {
-                $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
-
-                if ($companySetting) {
-                    $arr = [
-                        'redirect' => $companySetting->phish_redirect,
-                        'redirect_url' => $companySetting->phish_redirect_url
-                    ];
-                    return response()->json($arr);
-                }
-            }
+        } else if ($smi == 1) {
+            $campDetail = SmishingLiveCampaign::find($campid);
+        } else {
+            $campDetail = CampaignLive::find($campid);
         }
-
-
-        $campDetail = CampaignLive::find($campid);
-
         if ($campDetail) {
             $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
 
@@ -173,42 +166,79 @@ class ShowWebsiteController extends Controller
         return response()->json(['error' => 'Campaign or Company Setting not found'], 404);
     }
 
+    private function assignTrainingByQuishing($campid)
+    {
+        $campaign = QuishingLiveCamp::where('id', $campid)->first();
+        if (!$campaign) {
+            return response()->json(['error' => 'Invalid campaign or user']);
+        }
+        if ($campaign->training_module == null) {
+            return response()->json(['error' => 'No training module assigned']);
+        }
+
+        //checking assignment
+        $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
+
+        if ($all_camp->training_assignment == 'all') {
+            $trainings = json_decode($all_camp->training_module, true);
+            $this->assignAllTrainings($campaign, $trainings);
+
+            // Update campaign_live table
+            $campaign->update(['sent' => '1', 'training_assigned' => '1']);
+        } else {
+            $this->assignSingleTraining($campaign);
+
+            // Update campaign_live table
+            $campaign->update(['sent' => '1', 'training_assigned' => '1']);
+        }
+    }
+
+    private function assignTrainingBySmishing($campid)
+    {
+        $campaign = SmishingLiveCampaign::where('id', $campid)->first();
+        if (!$campaign) {
+            return response()->json(['error' => 'Invalid campaign or user']);
+        }
+        if ($campaign->training_module == null) {
+            return response()->json(['error' => 'No training module assigned']);
+        }
+
+        //checking assignment
+        $all_camp = SmishingCampaign::where('campaign_id', $campaign->campaign_id)->first();
+
+        if ($all_camp->training_assignment == 'all') {
+            $trainings = json_decode($all_camp->training_module, true);
+            $this->assignAllTrainings($campaign, $trainings, true);
+
+            // Update campaign_live table
+            $campaign->update(['training_assigned' => 1]);
+        } else {
+            $this->assignSingleTraining($campaign, true);
+
+            // Update campaign_live table
+            $campaign->update(['training_assigned' => 1]);
+        }
+    }
+
     public function assignTraining(Request $request)
     {
         if ($request->has('assignTraining')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
+            $smi = $request->input('smi');
 
             // Quishing Campaign
             if ($qsh == 1) {
-                $campaign = QuishingLiveCamp::where('id', $campid)->first();
-                if (!$campaign) {
-                    return response()->json(['error' => 'Invalid campaign or user']);
-                }
-                if ($campaign->training_module == null) {
-                    return response()->json(['error' => 'No training module assigned']);
-                }
-
-                //checking assignment
-                $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
-
-                if ($all_camp->training_assignment == 'all') {
-                    $trainings = json_decode($all_camp->training_module, true);
-                    $this->assignAllTrainings($campaign, $trainings);
-
-                    // Update campaign_live table
-                    $campaign->update(['sent' => '1', 'training_assigned' => '1']);
-                } else {
-                    $this->assignSingleTraining($campaign);
-
-                    // Update campaign_live table
-                    $campaign->update(['sent' => '1', 'training_assigned' => '1']);
-                }
+                $this->assignTrainingByQuishing($campid);
+                return;
+            }
+            if ($smi == 1) {
+                $this->assignTrainingBySmishing($campid);
                 return;
             }
 
-            // =====================================================
+            // =======================================
             // Email Campaign 
             $campaign = CampaignLive::where('id', $campid)->first();
 
@@ -247,14 +277,20 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function assignAllTrainings($campaign, $trainings)
+    private function assignAllTrainings($campaign, $trainings, $smishing = false)
     {
         $trainingAssignedService = new TrainingAssignedService();
+
+        if ($smishing) {
+            $user_email = Users::find($campaign->user_id)->user_email;
+        } else {
+            $user_email = $campaign->user_email;
+        }
 
         foreach ($trainings as $training) {
 
             //check if this training is already assigned to this user
-            $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
+            $assignedTraining = TrainingAssignedUser::where('user_email', $user_email)
                 ->where('training', $training)
                 ->first();
 
@@ -264,7 +300,7 @@ class ShowWebsiteController extends Controller
                     'campaign_id' => $campaign->campaign_id,
                     'user_id' => $campaign->user_id,
                     'user_name' => $campaign->user_name,
-                    'user_email' => $campaign->user_email,
+                    'user_email' => $user_email,
                     'training' => $training,
                     'training_lang' => $campaign->training_lang,
                     'training_type' => $campaign->training_type,
@@ -278,7 +314,7 @@ class ShowWebsiteController extends Controller
                 if ($trainingAssigned['status'] == true) {
                     echo $trainingAssigned['msg'];
                 } else {
-                    echo 'Failed to assign training to ' . $campaign->user_email;
+                    echo 'Failed to assign training to ' . $user_email;
                 }
             }
         }
@@ -286,7 +322,7 @@ class ShowWebsiteController extends Controller
         //send mail to user
         $campData = [
             'user_name' => $campaign->user_name,
-            'user_email' => $campaign->user_email,
+            'user_email' => $user_email,
             'company_id' => $campaign->company_id
         ];
         $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
@@ -295,15 +331,22 @@ class ShowWebsiteController extends Controller
 
             echo $isMailSent['msg'];
         } else {
-            echo 'Failed to send mail to ' . $campaign->user_email;
+            echo 'Failed to send mail to ' . $user_email;
         }
     }
 
-    private function assignSingleTraining($campaign)
+    private function assignSingleTraining($campaign, $smishing = false)
+
     {
         $trainingAssignedService = new TrainingAssignedService();
 
-        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
+        if ($smishing) {
+            $user_email = Users::find($campaign->user_id)->user_email;
+        } else {
+            $user_email = $campaign->user_email;
+        }
+
+        $assignedTraining = TrainingAssignedUser::where('user_email', $user_email)
             ->where('training', $campaign->training_module)
             ->first();
 
@@ -313,7 +356,7 @@ class ShowWebsiteController extends Controller
                 'campaign_id' => $campaign->campaign_id,
                 'user_id' => $campaign->user_id,
                 'user_name' => $campaign->user_name,
-                'user_email' => $campaign->user_email,
+                'user_email' => $user_email,
                 'training' => $campaign->training_module,
                 'training_lang' => $campaign->training_lang,
                 'training_type' => $campaign->training_type,
@@ -327,14 +370,14 @@ class ShowWebsiteController extends Controller
             if ($trainingAssigned['status'] == true) {
                 echo $trainingAssigned['msg'];
             } else {
-                echo 'Failed to assign training to ' . $campaign->user_email;
+                echo 'Failed to assign training to ' . $user_email;
             }
         }
 
         //send mail to user
         $campData = [
             'user_name' => $campaign->user_name,
-            'user_email' => $campaign->user_email,
+            'user_email' => $user_email,
             'company_id' => $campaign->company_id
         ];
         $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
@@ -342,7 +385,7 @@ class ShowWebsiteController extends Controller
         if ($isMailSent['status'] == true) {
             echo $isMailSent['msg'];
         } else {
-            echo 'Failed to send mail to ' . $campaign->user_email;
+            echo 'Failed to send mail to ' . $user_email;
         }
     }
 
@@ -352,11 +395,21 @@ class ShowWebsiteController extends Controller
             $campid = $request->input('campid');
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
+            $smi = $request->input('smi');
 
             if ($qsh == 1) {
                 $campaign = QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->first();
                 if ($campaign) {
                     $campaign->update(['compromised' => '1']);
+                }
+
+                return;
+            }
+
+            if ($smi == 1) {
+                $campaign = SmishingLiveCampaign::where('id', $campid)->where('compromised', 0)->first();
+                if ($campaign) {
+                    $campaign->update(['compromised' => 1]);
                 }
 
                 return;
@@ -479,9 +532,14 @@ class ShowWebsiteController extends Controller
             $campid = $request->input('campid');
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
+            $smi = $request->input('smi');
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
+                return;
+            }
+            if ($smi == 1) {
+                SmishingLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
                 return;
             }
 

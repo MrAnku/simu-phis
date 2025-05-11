@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Plivo\RestClient;
+use App\Models\Company;
+use Illuminate\Support\Str;
+use App\Models\PhishingWebsite;
+use Illuminate\Console\Command;
+use App\Models\SmishingCampaign;
+use App\Models\SmishingTemplate;
+
+class ProcessSmishing extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:process-smishing';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        //get all pending quishing campaigns
+        $companies = Company::where('service_status', 1)->where('approved', true)->get();
+
+        if ($companies->isEmpty()) {
+            return;
+        }
+        foreach ($companies as $company) {
+            $smishingCampaigns = $company->smishingLiveCamps()->where('sent', 0)->get();
+            if ($smishingCampaigns->isEmpty()) {
+                continue;
+            }
+            foreach ($smishingCampaigns as $campaign) {
+                try {
+
+                    $client = new RestClient(
+                        env('PLIVO_AUTH_ID'),
+                        env('PLIVO_AUTH_TOKEN')
+                    );
+
+                    $website = PhishingWebsite::find($campaign->website_id);
+
+                    if(!$website){
+                        echo "Website not found \n";
+                        continue;
+                    }
+
+                    $redirectUrl = $this->getWebsiteUrl($website, $campaign);
+
+                    $template = SmishingTemplate::find($campaign->template_id);
+                    if(!$template){
+                        echo "SMS Template not found \n";
+                        continue;
+                    }
+
+                    $finalTemplate = str_replace(
+                        ['{{user_name}}', '{{redirect_url}}'],
+                        [$campaign->user_name, $redirectUrl],
+                        $template->message
+                    );
+        
+                    $client->messages->create(
+                        [
+                            "src" => env('PLIVO_MOBILE_NUMBER'),
+                            "dst" => "+" . $campaign->user_phone,
+                            "text"  => $finalTemplate
+                        ]
+                    );
+
+                    echo "SMS sent to {$campaign->user_phone} \n";
+                    $campaign->sent = 1;
+                    $campaign->save();
+
+                }  catch (\Plivo\Exceptions\PlivoRestException $e) {
+                    // Handle the Plivo exception
+                    echo "Failed to send SMS: " . $e->getMessage() . "\n";
+
+                } catch (\Exception $e) {
+                    // Handle the exception
+                    echo "An error occurred: " . $e->getMessage() . "\n";
+                }
+                
+            }
+        }
+
+        $this->checkCompletedCampaigns();
+    }
+
+    private function getWebsiteUrl($phishingWebsite, $campaign)
+    {
+        // Generate random parts
+        $randomString1 = Str::random(6);
+        $randomString2 = Str::random(10);
+        $slugName = Str::slug($phishingWebsite->name);
+
+        // Construct the base URL
+        $baseUrl = "https://{$randomString1}.{$phishingWebsite->domain}/{$randomString2}";
+
+        // Define query parameters
+        $params = [
+            'v' => 'r',
+            'c' => Str::random(10),
+            'p' => $phishingWebsite->id,
+            'l' => $slugName,
+            'token' => $campaign->id,
+            'usrid' => $campaign->user_id,
+            'smi' => base64_encode($campaign->id)
+        ];
+
+        // Build query string and final URL
+        $queryString = http_build_query($params);
+        $websiteFilePath = $baseUrl . '?' . $queryString;
+
+        return $websiteFilePath;
+    }
+
+    private function checkCompletedCampaigns()
+    {
+        $campaigns = SmishingCampaign::where('status', 'running')->get();
+        if ($campaigns->isEmpty()) {
+            return;
+        }
+        foreach ($campaigns as $campaign) {
+            $campaignLive = $campaign->campLive()->where('sent', 0)->count();
+            if ($campaignLive == 0) {
+                $campaign->status = 'completed';
+                $campaign->save();
+            }
+        }
+    }
+}
