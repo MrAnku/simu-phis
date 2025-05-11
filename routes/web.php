@@ -384,7 +384,7 @@ Route::middleware([
 
         //smishing campaign routes---------------------------------
         Route::get('/smishing', [SmishingController::class, 'index'])->name('smishing.index');
-        Route::post('/smishing/create-campaign', [SmishingController::class, 'createCampaign'])->name('smishing.index');
+        Route::post('/smishing/create-campaign', [SmishingController::class, 'createCampaign'])->name('smishing.create.camp');
 
 
         //Ai Calling routes ----------------------------------------------------------------------

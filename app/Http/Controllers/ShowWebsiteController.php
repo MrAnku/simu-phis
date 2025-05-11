@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Users;
+use Plivo\RestClient;
 use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Services\TrainingAssignedService;
 use App\Mail\AssignTrainingWithPassResetLink;
+use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
 {
@@ -235,6 +237,7 @@ class ShowWebsiteController extends Controller
             }
             if ($smi == 1) {
                 $this->assignTrainingBySmishing($campid);
+                $this->sendTrainingSms($campid);
                 return;
             }
 
@@ -389,6 +392,90 @@ class ShowWebsiteController extends Controller
         }
     }
 
+    private function sendAlertSms($campaign)
+    {
+        try {
+            $client = new RestClient(
+                env('PLIVO_AUTH_ID'),
+                env('PLIVO_AUTH_TOKEN')
+            );
+            if ($campaign->training_module == null) {
+                $msgBody = "Oops! You were in attack! Don't worry this is just for test. This simulation is part of our ongoing efforts to improve cybersecurity awareness. Thank you for your cooperation.";
+            } else {
+                $msgBody = "Oops! You were in attack! This simulation is part of our ongoing efforts to improve cybersecurity awareness. Please complete the training sent to your email to enhance your awareness and security. Thank you for your cooperation.";
+            }
+
+
+            $response = $client->messages->create(
+                [
+                    "src" => env('PLIVO_MOBILE_NUMBER'),
+                    "dst" => $campaign->user_phone,
+                    "text"  => $msgBody
+                ]
+            );
+            return response()->json([
+                'status' => 'success',
+                'message' => __('SMS sent successfully'),
+                'response' => $response
+            ]);
+        } catch (\Plivo\Exceptions\PlivoRestException $e) {
+            // Handle the Plivo exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to send SMS: ' . $e->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    private function sendTrainingSms($campid)
+    {
+        $campaign = SmishingLiveCampaign::where('id', $campid)->first();
+        if (!$campaign) {
+            return response()->json(['error' => 'Invalid campaign or user']);
+        }
+
+
+        try {
+            $client = new RestClient(
+                env('PLIVO_AUTH_ID'),
+                env('PLIVO_AUTH_TOKEN')
+            );
+
+            $msgBody = "Training assigned! Please check your email for the training. This simulation is part of our ongoing efforts to improve cybersecurity awareness. Thank you for your cooperation.";
+
+            $response = $client->messages->create(
+                [
+                    "src" => env('PLIVO_MOBILE_NUMBER'),
+                    "dst" => $campaign->user_phone,
+                    "text"  => $msgBody
+                ]
+            );
+            return response()->json([
+                'status' => 'success',
+                'message' => __('SMS sent successfully'),
+                'response' => $response
+            ]);
+        } catch (\Plivo\Exceptions\PlivoRestException $e) {
+            // Handle the Plivo exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to send SMS: ' . $e->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function handleCompromisedEmail(Request $request)
     {
         if ($request->has('emailCompromised')) {
@@ -410,7 +497,10 @@ class ShowWebsiteController extends Controller
                 $campaign = SmishingLiveCampaign::where('id', $campid)->where('compromised', 0)->first();
                 if ($campaign) {
                     $campaign->update(['compromised' => 1]);
+
+                    $this->sendAlertSms($campaign);
                 }
+
 
                 return;
             }
