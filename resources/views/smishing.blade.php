@@ -312,23 +312,17 @@
                     $('#camp-name').click();
                 }
                 if (current_page == 'stepThree') {
-                    if (campType == 'smishing-training') {
-                        $('#training-mod').attr('disabled', false);
-                        $('#training-mod').click();
-                    }
-                    if (campType == 'smishing') {
-                        $('#quish-mat').attr('disabled', false);
-                        $('#quish-mat').click();
-                    }
+                    $('#web-mat').attr('disabled', false);
+                        $('#web-mat').click();
                 }
                 if (current_page == 'stepWebsite') {
-                    if (campType == 'smishing-training') {
+                    // if (campType == 'smishing-training') {
                         $('#quish-mat').attr('disabled', false);
                         $('#quish-mat').click();
-                    }
-                    if (campType == 'training') {
-                        $('#camp-name').click();
-                    }
+                    // }
+                    // if (campType == 'training') {
+                    //     $('#camp-name').click();
+                    // }
                 }
                 if (current_page == 'stepFour') {
                     if (campType == 'smishing-training') {
@@ -492,6 +486,7 @@
                     employee_group: $('#users_group').val(),
                     smishing_materials: selectedPhishingMaterial,
                     smishing_language: $('#quishing_lang').val(),
+                    phishing_website: $('input[name="website"]:checked').val(),
                     training_modules: selectedTrainings,
                     training_language: $('#training_lang').val(),
                     days_until_due: $('#days_until_due').val(),
