@@ -129,11 +129,11 @@
                     required">{{ __('Template Body') }}</label>
                 <div class="mb-3">
                     <small class="text-muted">{{ __('Please use the shortcodes') }} <span
-                            class="text-danger">@{{ user_name }}</span> {{ __('and') }} <span
-                            class="text-danger">@{{ redirect_url }}</span> {{ __('in your template body.') }}</small>
+                            class="text-danger">@{{user_name}}</span> {{ __('and') }} <span
+                            class="text-danger">@{{redirect_url}}</span> {{ __('in your template body.') }}</small>
                 </div>
                 <textarea class="form-control" id="template_body" name="template_body" rows="3"
-                    placeholder="Hello @{{ user_name }}, your OTP is 543679. Click @{{ redirect_url }} to verify." required></textarea>
+                    placeholder="Hello @{{user_name}}, your OTP is 543679. Click @{{redirect_url}} to verify." required></textarea>
 
             </div>
 
