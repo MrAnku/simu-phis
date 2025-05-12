@@ -13,10 +13,10 @@
     <div class="form-card">
 
         <div class="d-flex justify-content-between">
-            <div>
+            {{-- <div>
                 <label for="input-label" class="form-label">{{ __('Email Language') }}</label>
                 <x-language-select id="quishing_lang"/>
-            </div>
+            </div> --}}
 
             <div>
 
