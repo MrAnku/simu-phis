@@ -32,8 +32,10 @@ class SmishingController extends Controller
             ->where('compromised', 1)
             ->count();
 
-        $trainingModules = TrainingModule::where('company_id', Auth::user()->company_id)
-            ->orWhere('company_id', 'default')
+        $trainingModules = TrainingModule::where(function ($query) {
+            $query->where('company_id', Auth::user()->company_id)
+                ->orWhere('company_id', 'default');
+        })->where('training_type', 'static_training')
             ->take(10)
             ->get();
         $phishingWebsites = PhishingWebsite::where('company_id', Auth::user()->company_id)
