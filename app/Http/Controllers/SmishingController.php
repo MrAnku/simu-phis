@@ -11,6 +11,7 @@ use App\Models\PhishingWebsite;
 use App\Models\SmishingCampaign;
 use App\Models\SmishingTemplate;
 use App\Models\SmishingLiveCampaign;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Dotenv\Exception\ValidationException;
 
@@ -233,5 +234,19 @@ class SmishingController extends Controller
         SmishingLiveCampaign::where('campaign_id', $campaign_id)->delete();
 
         return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
+    }
+
+    public function fetchCampDetail(Request $request)
+    {
+        $campaign_id = $request->campid;
+        $campaign = SmishingCampaign::with('campLive')->where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->first();
+        if (!$campaign) {
+            return response()->json(['status' => 0, 'msg' => 'Campaign not found.']);
+        }
+        $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+        $campaign->trainingAssigned = $trainingAssigned;
+        return response()->json(['status' => 1, 'data' => $campaign]);
     }
 }

@@ -390,6 +390,7 @@ Route::middleware([
         Route::post('/smishing/search-template', [SmishingController::class, 'searchTemplate'])->name('smishing.temp.search');
         Route::post('/smishing/search-website', [SmishingController::class, 'searchWebsite'])->name('smishing.website.search');
         Route::post('/smishing/delete-campaign', [SmishingController::class, 'deleteCampaign'])->name('smishing.delete.camp');
+        Route::post('/smishing/fetch-campaign-details', [SmishingController::class, 'fetchCampDetail'])->name('smishing.fetch.camp');
 
 
         //Ai Calling routes ----------------------------------------------------------------------

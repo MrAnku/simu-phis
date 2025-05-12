@@ -184,19 +184,19 @@
         <x-smishing.new-campaign :templates="$templates" :websites="$phishingWebsites" :trainingModules="$trainingModules" />
     </x-modal>
 
-    <!-- campaign report modal -->
-    {{-- <x-modal id="campaignReportModal" size="modal-fullscreen" heading="{{ __('Campaign Report') }}">
-        <x-quish-camp.campaign-report-modal />
+
+    <x-modal id="campaignReportModal" size="modal-fullscreen" heading="{{ __('Campaign Report') }}">
+        <x-smishing.campaign-report />
     </x-modal>
 
     <!-- view material modal -->
-    <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="{{ __('Phishing Material') }}">
+    {{-- <x-modal id="viewMaterialModal" size="modal-dialog-centered modal-lg" heading="{{ __('Phishing Material') }}">
         hello3
-    </x-modal>
+    </x-modal> --}}
 
 
     <!-- re-schedule campaign modal -->
-    <x-modal id="reschedulemodal" size="modal-lg" heading="{{ __('Re-Schedule Campaign') }}">
+    {{-- <x-modal id="reschedulemodal" size="modal-lg" heading="{{ __('Re-Schedule Campaign') }}">
         hello4
     </x-modal>  --}}
 
@@ -205,6 +205,12 @@
 
     @push('newcss')
         <style>
+            .stickyBtn {
+                position: sticky;
+                top: 10px;
+                z-index: 999999;
+            }
+
             .phone-frame {
                 width: 100%;
                 overflow-y: scroll;
@@ -717,7 +723,7 @@
                     firstTenWebsites = $('#phishingWebsitesTab').html();
                     searchedWebsiteOnce = true;
                 }
-                
+
                 clearTimeout($.data(this, 'timer'));
                 if (searchValue.length > 2) {
                     var wait = setTimeout(function() {
@@ -730,11 +736,11 @@
                 }
             });
 
-           
+
 
             function searchWebsite(searchValue) {
-               
-              
+
+
                 // Loop through each template card
                 $.post({
                     url: '/smishing/search-website',
@@ -744,7 +750,7 @@
                     success: function(res) {
                         if (res.status === 1) {
                             // Clear existing results
-                           
+
                             $('#phishingWebsitesTab').empty()
                             // Append new results
                             const htmlrows = prepareWebsiteHtml(res.data);
@@ -900,6 +906,7 @@
                 })
             }
             let phishWebsitesPage = 2;
+
             function loadMoreWebsites(btn) {
                 btn.disabled = true;
                 btn.innerText = "{{ __('Loading...') }}"
@@ -1030,8 +1037,8 @@
             });
 
             //reporting script
-            function fetchCampaignDetails(campId, isQuishing) {
-                if (isQuishing) {
+            function fetchCampaignDetails(campId, isSmishing) {
+                if (isSmishing) {
                     $(".smishing-training-detail").hide();
 
                 } else {
@@ -1039,7 +1046,7 @@
                 }
 
                 $.post({
-                    url: '/quishing/fetch-campaign-details',
+                    url: '/smishing/fetch-campaign-details',
                     data: {
                         campid: campId
                     },
@@ -1082,42 +1089,31 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.sent === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.sent === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                            <span class="mx-1">${data.camp_live.filter(item => item.sent === 1).length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.sent === 1).length === 0 ? 'danger' : 'success'} fs-25"></i>
                                         </div>
 
                                         
                                         
                                     </td>
+                                    
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.mail_open === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.mail_open === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
-                                        </div>
-                                        
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.qr_scanned === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.qr_scanned === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                            <span class="mx-1">${data.camp_live.filter(item => item.payload_clicked === 1).length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.payload_clicked === 1).length === 0 ? 'danger' : 'success'} fs-25"></i>
                                         </div>
                                         
                                         
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.compromised === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.compromised === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                            <span class="mx-1">${data.camp_live.filter(item => item.compromised === 1).length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.compromised === 1).length === 0 ? 'danger' : 'success'} fs-25"></i>
                                         </div>
 
                                        
                                     </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.email_reported === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.email_reported === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
-                                        </div>
-                                    </td>
+                                    
                                 </tr>`;
 
                 $('#qcampdetail').html('');
@@ -1131,28 +1127,21 @@
                                     <td>
                                         ${user.user_name}
                                     </td>
-                                    <td>${user.user_email}</td>
+                                    <td>+${user.user_phone}</td>
                                     <td>
-                                        <span class="badge bg-${user.sent == '1' ? 'success' : 'warning'}-transparent">${user.sent == '1' ? 'Sent' : 'Pending'}</span>
+                                        <span class="badge bg-${user.sent == 1 ? 'success' : 'warning'}-transparent">${user.sent == 1 ? 'Sent' : 'Pending'}</span>
                                         
                                     </td>
+                                   
                                     <td>
-                                        <span class="badge bg-${user.mail_open == '1' ? 'success' : 'danger'}-transparent">${user.mail_open == '1' ? 'Yes' : 'No'}</span>
-                                        
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-${user.qr_scanned == '1' ? 'success' : 'danger'}-transparent">${user.qr_scanned == '1' ? 'Yes' : 'No'}</span>
+                                        <span class="badge bg-${user.payload_clicked == 1 ? 'success' : 'danger'}-transparent">${user.payload_clicked == 1 ? 'Yes' : 'No'}</span>
                                     </td>
                                     <td>
 
-                                        <span class="badge bg-${user.compromised == '1' ? 'success' : 'danger'}-transparent">${user.compromised == '1' ? 'Yes' : 'No'}</span>
+                                        <span class="badge bg-${user.compromised == 1 ? 'success' : 'danger'}-transparent">${user.compromised == 1 ? 'Yes' : 'No'}</span>
                                     
                                     </td>
-                                    <td>
-                                        <span class="badge bg-${user.email_reported == '1' ? 'success' : 'danger'}-transparent">${user.email_reported == '1' ? 'Yes' : 'No'}</span>
-
-                                        
-                                    </td>
+                                    
                                 </tr>`;
 
 
@@ -1179,8 +1168,8 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.camp_live.filter(item => item.training_assigned === "1").length}</span>
-                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.training_assigned === "1").length === 0 ? 'danger' : 'success'} fs-25"></i>
+                                            <span class="mx-1">${data.camp_live.filter(item => item.training_assigned === 1).length}</span>
+                                            <i class="bx bx-check-circle text-${data.camp_live.filter(item => item.training_assigned === 1).length === 0 ? 'danger' : 'success'} fs-25"></i>
                                         </div>
 
                                         
@@ -1197,7 +1186,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="mx-1">${data.trainingData ? data.trainingData.filter(item => item.completed === "1").length : 0}</span>
+                                            <span class="mx-1">${data.trainingData ? data.trainingData.filter(item => item.completed === 1).length : 0}</span>
                                             <i class="bx bx-check-circle text-${data.trainingData ? 'success' : 'danger'} fs-25"></i>
                                         </div>
 

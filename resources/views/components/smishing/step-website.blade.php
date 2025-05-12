@@ -1,5 +1,5 @@
 <fieldset class="included" style="display: block; opacity: 1;">
-    <div class="text-center py-2">
+    <div class="text-center py-2 stickyBtn">
         <button type="button" class="btn btn-dark label-btn label-end stickyBtn rounded-pill previous" onclick="showPrevious('stepWebsite')">
             {{ __('Previous') }}
             <i class="ri-arrow-left-line label-btn-icon ms-2 rounded-pill"></i>
