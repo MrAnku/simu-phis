@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('campaign_name');
             $table->string('campaign_type');
             $table->string('users_group');
-            $table->foreignId('template_id')->constrained('smishing_templates')->onDelete('cascade');
+            $table->longText('template_id');
             $table->string('template_lang');
             $table->string('website_id');
             $table->json('training_module')->nullable();
