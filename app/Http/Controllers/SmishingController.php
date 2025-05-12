@@ -22,6 +22,7 @@ class SmishingController extends Controller
             ->get();
         $templates = SmishingTemplate::where('company_id', Auth::user()->company_id)
             ->orWhere('company_id', 'default')
+            ->take(10)
             ->get();
         $totalSentCampaigns = SmishingLiveCampaign::where('company_id', Auth::user()->company_id)
             ->where('sent', 1)
@@ -32,9 +33,11 @@ class SmishingController extends Controller
 
         $trainingModules = TrainingModule::where('company_id', Auth::user()->company_id)
             ->orWhere('company_id', 'default')
+            ->take(10)
             ->get();
         $phishingWebsites = PhishingWebsite::where('company_id', Auth::user()->company_id)
             ->orWhere('company_id', 'default')
+            ->take(10)
             ->get();
 
         return view('smishing', compact(
@@ -158,5 +161,77 @@ class SmishingController extends Controller
             'status' => 1,
             'msg' => 'Campaign created successfully.',
         ];
+    }
+
+    public function showMoreTemps(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $companyId = Auth::user()->company_id;
+
+        $templates = SmishingTemplate::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->skip(($page - 1) * 10)
+            ->take(10)
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $templates]);
+    }
+
+    public function showMoreWebsites(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $companyId = Auth::user()->company_id;
+
+        $websites = PhishingWebsite::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->skip(($page - 1) * 10)
+            ->take(10)
+            ->get();
+
+        return response()->json(['status' => 1, 'data' => $websites]);
+    }
+
+    public function searchTemplate(Request $request)
+    {
+        $searchTerm = $request->input('search');
+        $companyId = Auth::user()->company_id;
+
+        $templates = SmishingTemplate::where(function ($query) use ($companyId) {
+            $query->where('company_id', $companyId)
+                ->orWhere('company_id', 'default');
+        })->where(function ($query) use ($searchTerm) {
+            $query->where('name', 'LIKE', "%{$searchTerm}%");
+        })->get();
+
+        return response()->json(['status' => 1, 'data' => $templates]);
+    }
+
+    public function searchWebsite(Request $request)
+    {
+        $searchTerm = $request->input('search');
+        $companyId = Auth::user()->company_id;
+
+        $websites = PhishingWebsite::where(function ($query) use ($companyId) {
+            $query->where('company_id', $companyId)
+                ->orWhere('company_id', 'default');
+        })->where(function ($query) use ($searchTerm) {
+            $query->where('name', 'LIKE', "%{$searchTerm}%");
+        })->get();
+
+        return response()->json(['status' => 1, 'data' => $websites]);
+    }
+
+    public function deleteCampaign(Request $request)
+    {
+        $campaign_id = base64_decode($request->campid);
+        $campaign = SmishingCampaign::where('campaign_id', $campaign_id)->first();
+        if (!$campaign) {
+            return response()->json(['status' => 0, 'msg' => 'Campaign not found.']);
+        }
+
+        $campaign->delete();
+        SmishingLiveCampaign::where('campaign_id', $campaign_id)->delete();
+
+        return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
     }
 }

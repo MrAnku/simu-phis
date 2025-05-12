@@ -272,13 +272,18 @@
 
                 }
                 if (current_page == 'stepTwo') {
+
+                    if ($('input[name="quish_material"]:checked').length === 0) {
+                        alert('Please select at least one smishing material');
+                        return;
+                    }
                     $('#web-mat').attr('disabled', false);
                     $('#web-mat').click();
                 }
 
                 if (current_page == 'stepWebsite') {
-                    if ($('input[name="quish_material"]:checked').length === 0) {
-                        alert('Please select at least one smishing material');
+                    if ($('input[name="website"]:checked').length === 0) {
+                        alert('Please select the website where the user will be redirected after clicking the link');
                         return;
                     }
                     if (campType == 'smishing-training') {
@@ -650,6 +655,7 @@
                 })
             }
 
+            //searching training module logic start
 
             $('#t_moduleSearch').on('input', function() {
                 var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
@@ -699,6 +705,63 @@
                 });
             }
 
+            //searching training module logic end
+
+
+            //searching website logic start
+            let searchedWebsiteOnce = false;
+            let firstTenWebsites = '';
+            $('#t_websiteSearch').on('input', function() {
+                var searchValue = $(this).val().toLowerCase(); // Get the search value and convert it to lowercase
+                if (!searchedWebsiteOnce) {
+                    firstTenWebsites = $('#phishingWebsitesTab').html();
+                    searchedWebsiteOnce = true;
+                }
+                
+                clearTimeout($.data(this, 'timer'));
+                if (searchValue.length > 2) {
+                    var wait = setTimeout(function() {
+                        // Call the search function here
+                        searchWebsite(searchValue);
+                    }, 2000);
+                    $(this).data('timer', wait);
+                } else {
+                    $('#phishingWebsitesTab').html(firstTenWebsites);
+                }
+            });
+
+           
+
+            function searchWebsite(searchValue) {
+               
+              
+                // Loop through each template card
+                $.post({
+                    url: '/smishing/search-website',
+                    data: {
+                        search: searchValue
+                    },
+                    success: function(res) {
+                        if (res.status === 1) {
+                            // Clear existing results
+                           
+                            $('#phishingWebsitesTab').empty()
+                            // Append new results
+                            const htmlrows = prepareWebsiteHtml(res.data);
+                            $('#phishingWebsitesTab').html(htmlrows);
+                        } else {
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            });
+                        }
+                    }
+                });
+            }
+
+            //searching website logic end
+
 
             // Event listener for input field change
             $('#templateSearch').on('input', function() {
@@ -713,7 +776,7 @@
                     $(this).data('timer', wait);
                 } else {
                     if (phishing_materials_before_search !== '') {
-                        $('#phishingEmailsCampModal').html(phishing_materials_before_search)
+                        $('#templateCampModal').html(phishing_materials_before_search)
                         phishing_materials_before_search = '';
                     }
                 }
@@ -722,22 +785,22 @@
             let phishing_materials_before_search = ''
 
             function searchPhishingMaterial(searchValue) {
-                $('#phishEmailSearchSpinner').show();
-                phishing_materials_before_search = $('#phishingEmailsCampModal').html();
+                $('#templateSearchSpinner').show();
+                phishing_materials_before_search = $('#templateCampModal').html();
                 // Loop through each template card
                 $.post({
-                    url: '/quishing/search-quishing-material',
+                    url: '/smishing/search-template',
                     data: {
                         search: searchValue
                     },
                     success: function(res) {
                         if (res.status === 1) {
                             // Clear existing results
-                            $('#phishEmailSearchSpinner').hide();
-                            $('#phishingEmailsCampModal').empty()
+                            $('#templateSearchSpinner').hide();
+                            $('#templateCampModal').empty()
                             // Append new results
                             const htmlrows = prepareHtml(res.data);
-                            $('#phishingEmailsCampModal').append(htmlrows);
+                            $('#templateCampModal').append(htmlrows);
                         } else {
                             Swal.fire({
                                 title: res.msg,
@@ -753,62 +816,64 @@
                 let html = '';
                 data.forEach(email => {
 
-                    html += `<div class="col-lg-6 email_templates border my-2">
-                <div class="card custom-card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center w-100">
-                            <div class="">
-                                <div class="fs-15 fw-semibold">${email.name}</div>
-                                    ${email.company_id == 'default' ? '(Default)' : ''}</div>
+                    html += `<div class="col-lg-6 email_templates">
+                    <div class="card custom-card border my-2">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center w-100">
+                                <div class="">
+                                    <div class="fs-15 fw-semibold">
+                                        ${email.name} ${email.company_id == 'default' ? '(Default)' : ''}
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body htmlPhishingGrid" style="background: white;">
-                        <iframe class="phishing-iframe" src="/${email.file.replace("public", "storage")}" style="width: 100%;
-                                height: 300px;
-                            "></iframe>
-                    </div>
-                    <div class="card-footer">
-                        <div class="d-flex justify-content-center">
-                            <div>
-                                <button type="button"
-                                    onclick="showMaterialDetails(this, '${email.name}', '${email.email_subject}', '${email.website}', '${email.sender_profile}')"
-                                    class="btn btn-outline-primary btn-wave waves-effect waves-light mx-2">
-                                    View
-                                </button>
+                        <div class="card-body htmlPhishingGrid" style="background: white;">
+                            <div class="card-body sms-preview-col">
+                                <div class="phone-frame">
+                                    <div class="status-bar"> 10:40 AM </div>
+                                    <div class="sms-header">5858587</div>
+                                    <div class="sms-body">
+                                        ${email.message}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="fs-semibold fs-14">
-                                <input 
-                                    type="checkbox" 
-                                    name="quish_material" 
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-center">
+                                
+                                <div class="fs-semibold fs-14">
+                                    <input type="checkbox" 
+                                    name="quish_material"    
                                     class="btn-check"
                                     onclick="selectPhishingMaterial(this)" 
-                                    data-name="${email.name}" 
+                                    data-name="${email.name}"
                                     id="pm${email.id}" 
-                                    value="${email.id}"
-                                >
-                                <label class="btn btn-outline-primary mb-3" for="pm${email.id}">Select this attack</label>
+                                    value="${email.id}">
 
+                                    <label class="btn btn-outline-primary mb-3" for="pm${email.id}">{{ __('Select this attack') }}</label>
+
+
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
 
                 });
 
                 return html;
             }
 
-            let phishing_emails_page = 2;
+            let smsTemplatesPage = 2;
 
-            function loadMoreQuishingEmails(btn) {
+            function loadMoreTemplates(btn) {
                 btn.disabled = true;
                 btn.innerText = "{{ __('Loading...') }}"
                 $.post({
-                    url: '/quishing/show-more-quishing-emails',
+                    url: '/smishing/show-more-templates',
                     data: {
-                        page: phishing_emails_page
+                        page: smsTemplatesPage
                     },
                     success: function(res) {
                         // console.log(res)
@@ -823,16 +888,97 @@
                         if (res.data.length === 0) {
 
                             btn.disabled = true;
-                            btn.innerText = "{{ __('No more phishing materials') }}";
+                            btn.innerText = "{{ __('No more templates') }}";
                             return;
                         }
                         const htmlrows = prepareHtml(res.data);
-                        $('#phishingEmailsCampModal').append(htmlrows);
+                        $('#templateCampModal').append(htmlrows);
                         btn.disabled = false;
                         btn.innerText = 'Show More';
-                        phishing_emails_page++;
+                        smsTemplatesPage++;
                     }
                 })
+            }
+            let phishWebsitesPage = 2;
+            function loadMoreWebsites(btn) {
+                btn.disabled = true;
+                btn.innerText = "{{ __('Loading...') }}"
+                $.post({
+                    url: '/smishing/show-more-websites',
+                    data: {
+                        page: phishWebsitesPage
+                    },
+                    success: function(res) {
+                        // console.log(res)
+                        if (res.status !== 1) {
+                            Swal.fire({
+                                title: res.msg,
+                                icon: 'error',
+                                confirmButtonText: "{{ __('OK') }}"
+                            })
+                            return;
+                        }
+                        if (res.data.length === 0) {
+
+                            btn.disabled = true;
+                            btn.innerText = "{{ __('No more websites') }}";
+                            return;
+                        }
+                        const htmlrows = prepareWebsiteHtml(res.data);
+                        $('#phishingWebsitesTab').append(htmlrows);
+                        btn.disabled = false;
+                        btn.innerText = 'Show More';
+                        phishWebsitesPage++;
+                    }
+                })
+            }
+
+            function prepareWebsiteHtml(data) {
+                let html = '';
+                data.forEach(website => {
+
+                    html += `<div class="col-lg-6 t_modules">
+                    <div class="card custom-card border">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center w-100">
+                                <div class="">
+                                    <div class="fs-15 fw-semibold"> ${website.name}
+                                        ${website.company_id == 'default' ? '(Default)' : '' }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body htmlPhishingGrid" style="
+                        height: 300px;
+                    ">
+                            <iframe style="
+                            width: 100%;
+                            height: 100%;
+                        " class="phishing-iframe" src="/storage/uploads/phishingMaterial/phishing_websites/${website.file}"></iframe>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-center">
+                                <div class="fs-semibold fs-14">
+                                    <input 
+                                    type="radio" 
+                                    name="website" 
+                                    onclick="selectWebsite(this)"
+                                    onblur="deselectWebsite(this)"
+                                    data-name="${website.name}"
+                                    value="${website.id}" 
+                                    class="btn-check " 
+                                    id="website${website.id}">
+                                    
+                                    <label class="btn btn-outline-primary mb-3" for="website${website.id}">{{ __('Select Website') }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                });
+
+                return html;
             }
 
             function deleteCampaign(id) {
@@ -848,7 +994,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.post({
-                            url: '/quishing/delete-campaign',
+                            url: '/smishing/delete-campaign',
                             data: {
                                 campid: id
                             },

@@ -12,20 +12,20 @@
 
     <div class="form-card">
 
-        <div class="d-flex gap-2 justify-content-between">
+        <div class="d-flex gap-2 justify-content-end">
            
     
             <div>
                 <div class="input-group input-group-sm mb-3">
                     <span class="input-group-text">{{ __('Search:') }} </span>
-                    <input type="text" class="form-control" id="t_moduleSearch" placeholder="{{ __('Search website') }}">
+                    <input type="text" class="form-control" id="t_websiteSearch" placeholder="{{ __('Search website') }}">
                 </div>
     
                
             </div>
         </div>
     
-        <div class="row" id="trainingModulesCampModal">
+        <div class="row" id="phishingWebsitesTab">
             @forelse ($websites as $module)
                 @php
                     $template = asset('storage/uploads/phishingMaterial/phishing_websites/' . $module->file);
@@ -69,12 +69,12 @@
                     </div>
                 </div>
             @empty
-                <p>{{ __('No training modules available.') }}</p>
+                <p>{{ __('No websites available.') }}</p>
             @endforelse
     
         </div>
         <div class="d-flex justify-content-center">
-            <button type="button" onclick="loadMoreTrainings(this)" class="btn btn-primary btn-sm btn-wave">{{ __('Show More') }}</button>
+            <button type="button" onclick="loadMoreWebsites(this)" class="btn btn-primary btn-sm btn-wave">{{ __('Show More') }}</button>
         </div>
     </div>
 </fieldset>

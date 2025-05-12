@@ -440,6 +440,10 @@ class ShowWebsiteController extends Controller
             return response()->json(['error' => 'Invalid campaign or user']);
         }
 
+        if ($campaign->training_module == null) {
+            return response()->json(['error' => 'No training module assigned']);
+        }
+
 
         try {
             $client = new RestClient(

@@ -385,6 +385,11 @@ Route::middleware([
         //smishing campaign routes---------------------------------
         Route::get('/smishing', [SmishingController::class, 'index'])->name('smishing.index');
         Route::post('/smishing/create-campaign', [SmishingController::class, 'createCampaign'])->name('smishing.create.camp');
+        Route::post('/smishing/show-more-templates', [SmishingController::class, 'showMoreTemps'])->name('smishing.show.more.temps');
+        Route::post('/smishing/show-more-websites', [SmishingController::class, 'showMoreWebsites'])->name('smishing.show.more.websites');
+        Route::post('/smishing/search-template', [SmishingController::class, 'searchTemplate'])->name('smishing.temp.search');
+        Route::post('/smishing/search-website', [SmishingController::class, 'searchWebsite'])->name('smishing.website.search');
+        Route::post('/smishing/delete-campaign', [SmishingController::class, 'deleteCampaign'])->name('smishing.delete.camp');
 
 
         //Ai Calling routes ----------------------------------------------------------------------

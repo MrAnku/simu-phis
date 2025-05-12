@@ -23,7 +23,7 @@
                 <label for="templateSearch" class="form-label">{{ __('Search') }}</label>
                 <div class="d-flex gap-2 align-items-center">
                     <input type="text" class="form-control" id="templateSearch" placeholder="{{ __('Search template') }}">
-                    <div class="spinner-border spinner-border-sm me-4" role="status" id="phishEmailSearchSpinner" style="display: none;">
+                    <div class="spinner-border spinner-border-sm me-4" role="status" id="templateSearchSpinner" style="display: none;">
                         <span class="visually-hidden">{{ __('Loading...') }}</span>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div class="row" id="phishingEmailsCampModal">
+        <div class="row" id="templateCampModal">
             @forelse($templates as $template)
                 <div class="col-lg-6 email_templates">
                     <div class="card custom-card border my-2">
@@ -79,7 +79,7 @@
             @empty
                 <div class="col-lg-12">
                     <div>
-                        {{ __('No smishing emails found.') }}
+                        {{ __('No smishing template found.') }}
                     </div>
                 </div>
             @endforelse
@@ -87,7 +87,7 @@
 
         </div>
         <div class="d-flex justify-content-center mt-2">
-            <button type="button" onclick="loadMoreQuishingEmails(this)"
+            <button type="button" onclick="loadMoreTemplates(this)"
                 class="btn btn-primary btn-sm btn-wave waves-effect waves-light">{{ __('Show More') }}</button>
         </div>
     </div>

@@ -28,4 +28,9 @@ class SmishingCampaign extends Model
     {
         return $this->hasMany(SmishingLiveCampaign::class, 'campaign_id', 'campaign_id');
     }
+
+    public function userGroupData()
+    {
+        return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
+    }
 }
