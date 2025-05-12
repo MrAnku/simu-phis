@@ -149,6 +149,7 @@ class SmishingController extends Controller
                 'user_name' => $user->user_name,
                 'user_phone' => $user->whatsapp,
                 'template_id' => is_array($templateArray) ? $templateArray[array_rand($templateArray)] : null,
+                'template_lang' => $campaign->template_lang,
                 'website_id' => $campaign->website_id,
                 'training_module' => ($campaign->campaign_type === 'smishing')
                     ? null

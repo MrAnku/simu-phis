@@ -358,7 +358,7 @@
                     "{{ __('Campaign Type') }}": $('#campaign_type option:selected').text().trim(),
                     "{{ __('Employee Group') }}": $('#users_group option:selected').text().trim(),
                     "{{ __('Smishing Materials') }}": phishingMaterials,
-                    
+                    "{{ __('Smishing Language') }}": $('#smishing_lang option:selected').text().trim(),
                     "{{ __('Phishing Website') }}": $('input[name="website"]:checked').data('name'),
                     "{{ __('Training Modules') }}": trainingModules,
                     "{{ __('Training Language') }}": $('#training_lang option:selected').text().trim(),
@@ -495,7 +495,7 @@
                     campaign_type: $('#campaign_type').val(),
                     employee_group: $('#users_group').val(),
                     smishing_materials: selectedPhishingMaterial,
-                    smishing_language: 'en',
+                    smishing_language: $('#smishing_lang option:selected').val(),
                     phishing_website: $('input[name="website"]:checked').val(),
                     training_modules: selectedTrainings,
                     training_language: $('#training_lang').val(),

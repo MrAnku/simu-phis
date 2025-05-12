@@ -14,6 +14,7 @@ class SmishingLiveCampaign extends Model
         'user_name',
         'user_phone',
         'template_id',
+        'template_lang',
         'website_id',
         'training_module',
         'days_until_due',

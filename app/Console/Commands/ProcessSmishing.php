@@ -9,6 +9,7 @@ use App\Models\PhishingWebsite;
 use Illuminate\Console\Command;
 use App\Models\SmishingCampaign;
 use App\Models\SmishingTemplate;
+use Illuminate\Support\Facades\Http;
 
 class ProcessSmishing extends Command
 {
@@ -42,6 +43,7 @@ class ProcessSmishing extends Command
             if ($smishingCampaigns->isEmpty()) {
                 continue;
             }
+            $translatedSmsBody = null;
             foreach ($smishingCampaigns as $campaign) {
                 try {
 
@@ -65,11 +67,26 @@ class ProcessSmishing extends Command
                         continue;
                     }
 
-                    $finalTemplate = str_replace(
-                        ['{{user_name}}', '{{redirect_url}}'],
-                        [$campaign->user_name, $redirectUrl],
-                        $template->message
-                    );
+                    if($translatedSmsBody == null && 
+                    $campaign->template_lang !== 'en'){
+                        $translatedSmsBody = $this->changeSmsLang($template->message, $campaign->template_lang);
+                    }
+
+                    if($translatedSmsBody !== null){
+                        $finalTemplate = str_replace(
+                            ['{{user_name}}', '{{redirect_url}}'],
+                            [$campaign->user_name, $redirectUrl],
+                            $translatedSmsBody
+                        );
+                    }else{
+                        $finalTemplate = str_replace(
+                            ['{{user_name}}', '{{redirect_url}}'],
+                            [$campaign->user_name, $redirectUrl],
+                            $template->message
+                        );
+                    }
+
+                    
         
                     $client->messages->create(
                         [
@@ -96,6 +113,35 @@ class ProcessSmishing extends Command
         }
 
         $this->checkCompletedCampaigns();
+    }
+
+    public function changeSmsLang($smsBody, $lang)
+    {
+        $apiKey = env('OPENAI_API_KEY');
+        $apiEndpoint = "https://api.openai.com/v1/completions";
+
+        $prompt = "Translate the following text content to {$lang}:\n\n{$smsBody}";
+
+        $requestBody = [
+            'model' => 'gpt-3.5-turbo-instruct',
+            'prompt' => $prompt,
+            'max_tokens' => 1500,
+            'temperature' => 0.7,
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $apiKey,
+        ])->post($apiEndpoint, $requestBody);
+
+        if ($response->failed()) {
+            echo 'Failed to fetch translation' . json_encode($response->body());
+            return $smsBody;
+        }
+        $responseData = $response->json();
+        $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
+
+        return $translatedMailBody;
     }
 
     private function getWebsiteUrl($phishingWebsite, $campaign)
