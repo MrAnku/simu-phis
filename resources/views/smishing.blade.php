@@ -495,7 +495,7 @@
                     campaign_type: $('#campaign_type').val(),
                     employee_group: $('#users_group').val(),
                     smishing_materials: selectedPhishingMaterial,
-                    smishing_language: $('#quishing_lang').val(),
+                    smishing_language: 'en',
                     phishing_website: $('input[name="website"]:checked').val(),
                     training_modules: selectedTrainings,
                     training_language: $('#training_lang').val(),
