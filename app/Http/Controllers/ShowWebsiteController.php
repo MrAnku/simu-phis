@@ -99,7 +99,7 @@ class ShowWebsiteController extends Controller
 
     public function loadjs()
     {
-        $filePath = public_path("assets/t/gz.js");
+        $filePath = public_path("js/gz.js");
         $content = File::get($filePath);
 
         // Replace the placeholder with JavaScript code that sets up AJAX headers
