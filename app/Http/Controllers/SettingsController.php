@@ -6,6 +6,7 @@ use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\Company;
 use App\Models\Settings;
 use App\Models\SiemProvider;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,9 @@ class SettingsController extends Controller
             $all_settings->siemSettings = null;
         }
 
-        return view('settings', compact('all_settings'));
+        $whiteLabel = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->first();
+
+        return view('settings', compact('all_settings', 'whiteLabel'));
     }
 
     public function updateProfile(Request $request)

@@ -67,6 +67,10 @@
                                         href="#siem" aria-selected="false"
                                         tabindex="-1">{{ __('SIEM Integration') }}</a>
                                 </li>
+                                <li class="nav-item m-1" role="presentation">
+                                    <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
+                                        href="#whiteLabel" aria-selected="false" tabindex="-1">{{ __('White Label') }}</a>
+                                </li>
 
                             </ul>
                         </div>
@@ -109,7 +113,8 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="Contact-Details" class="form-label">{{ __('Country') }}</label>
+                                                <label for="Contact-Details"
+                                                    class="form-label">{{ __('Country') }}</label>
                                                 <select id="countryInput" class="form-control form-control-line">
                                                     <option value="">{{ __('Select country') }}</option>
                                                     <option value="AF">Afghanistan</option>
@@ -395,7 +400,7 @@
                                                     <option value="US/Arizona">(GMT-07:00) {{ __('Arizona') }}</option>
                                                     <option value="America/Chihuahua">(GMT-07:00)
                                                         {{ __('Chihuahua, La Paz,
-                                                                                                                                                                                                                                                                                        Mazatlan') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Mazatlan') }}
                                                     </option>
                                                     <option value="US/Mountain">(GMT-07:00) {{ __('Mountain Time') }} (US
                                                         &amp; Canada)
@@ -407,13 +412,13 @@
                                                     </option>
                                                     <option value="America/Mexico_City">(GMT-06:00)
                                                         {{ __('Guadalajara, Mexico
-                                                                                                                                                                                                                                                                                        City, Monterrey') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        City, Monterrey') }}
                                                     </option>
                                                     <option value="Canada/Saskatchewan">(GMT-06:00)
                                                         {{ __('Saskatchewan') }}</option>
                                                     <option value="America/Bogota">(GMT-05:00)
                                                         {{ __('Bogota, Lima, Quito, Rio
-                                                                                                                                                                                                                                                                                        Branco') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Branco') }}
                                                     </option>
                                                     <option value="US/Eastern">(GMT-05:00) {{ __('Eastern Time') }} (US
                                                         &amp; Canada)
@@ -435,7 +440,7 @@
                                                     </option>
                                                     <option value="America/Argentina/Buenos_Aires">(GMT-03:00)
                                                         {{ __('Buenos
-                                                                                                                                                                                                                                                                                        Aires, Georgetown') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Aires, Georgetown') }}
                                                     </option>
                                                     <option value="America/Godthab">(GMT-03:00) {{ __('Greenland') }}
                                                     </option>
@@ -449,27 +454,27 @@
                                                     </option>
                                                     <option value="Africa/Casablanca">(GMT+00:00)
                                                         {{ __('Casablanca, Monrovia,
-                                                                                                                                                                                                                                                                                        Reykjavik') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Reykjavik') }}
                                                     </option>
                                                     <option value="Etc/Greenwich">(GMT+00:00)
                                                         {{ __('Greenwich Mean Time : Dublin,
-                                                                                                                                                                                                                                                                                        Edinburgh, Lisbon, London') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Edinburgh, Lisbon, London') }}
                                                     </option>
                                                     <option value="Europe/Amsterdam">(GMT+01:00)
                                                         {{ __('Amsterdam, Berlin, Bern,
-                                                                                                                                                                                                                                                                                        Rome, Stockholm, Vienna') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Rome, Stockholm, Vienna') }}
                                                     </option>
                                                     <option value="Europe/Belgrade">(GMT+01:00)
                                                         {{ __('Belgrade, Bratislava,
-                                                                                                                                                                                                                                                                                        Budapest, Ljubljana, Prague') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Budapest, Ljubljana, Prague') }}
                                                     </option>
                                                     <option value="Europe/Brussels">(GMT+01:00)
                                                         {{ __('Brussels, Copenhagen,
-                                                                                                                                                                                                                                                                                        Madrid, Paris') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Madrid, Paris') }}
                                                     </option>
                                                     <option value="Europe/Sarajevo">(GMT+01:00)
                                                         {{ __('Sarajevo, Skopje, Warsaw,
-                                                                                                                                                                                                                                                                                        Zagreb') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Zagreb') }}
                                                     </option>
                                                     <option value="Africa/Lagos">(GMT+01:00)
                                                         {{ __('West Central Africa') }}</option>
@@ -483,7 +488,7 @@
                                                     </option>
                                                     <option value="Europe/Helsinki">(GMT+02:00)
                                                         {{ __('Helsinki, Kyiv, Riga,
-                                                                                                                                                                                                                                                                                        Sofia, Tallinn, Vilnius') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Sofia, Tallinn, Vilnius') }}
                                                     </option>
                                                     <option value="Asia/Jerusalem">(GMT+02:00) {{ __('Jerusalem') }}
                                                     </option>
@@ -495,7 +500,7 @@
                                                     </option>
                                                     <option value="Europe/Moscow">(GMT+03:00)
                                                         {{ __('Moscow, St. Petersburg,
-                                                                                                                                                                                                                                                                                        Volgograd') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Volgograd') }}
                                                     </option>
                                                     <option value="Africa/Nairobi">(GMT+03:00) {{ __('Nairobi') }}
                                                     </option>
@@ -513,7 +518,7 @@
                                                     </option>
                                                     <option value="Asia/Calcutta">(GMT+05:30)
                                                         {{ __('Chennai, Kolkata, Mumbai, New
-                                                                                                                                                                                                                                                                                        Delhi') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Delhi') }}
                                                     </option>
                                                     <option value="Asia/Calcutta">(GMT+05:30)
                                                         {{ __('Sri Jayawardenapura') }}</option>
@@ -532,7 +537,7 @@
                                                     </option>
                                                     <option value="Asia/Hong_Kong">(GMT+08:00)
                                                         {{ __('Beijing, Chongqing, Hong
-                                                                                                                                                                                                                                                                                        Kong, Urumqi') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Kong, Urumqi') }}
                                                     </option>
                                                     <option value="Asia/Kuala_Lumpur">(GMT+08:00)
                                                         {{ __('Kuala Lumpur, Singapore') }}
@@ -554,7 +559,7 @@
                                                     </option>
                                                     <option value="Australia/Canberra">(GMT+10:00)
                                                         {{ __('Canberra, Melbourne,
-                                                                                                                                                                                                                                                                                        Sydney') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Sydney') }}
                                                     </option>
                                                     <option value="Australia/Hobart">(GMT+10:00) {{ __('Hobart') }}
                                                     </option>
@@ -564,7 +569,7 @@
                                                     </option>
                                                     <option value="Asia/Magadan">(GMT+11:00)
                                                         {{ __('Magadan, Solomon Is., New
-                                                                                                                                                                                                                                                                                        Caledonia') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Caledonia') }}
                                                     </option>
                                                     <option value="Pacific/Auckland">(GMT+12:00)
                                                         {{ __('Auckland, Wellington') }}
@@ -977,8 +982,6 @@
                                                             </div>
                                                         </div>
 
-
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -1038,23 +1041,28 @@
                                         <div class="row gy-4 mb-4">
 
                                             <div class="col-xl-12">
-                                                <label for="provider" class="form-label">{{ __('URL') }}<sup class="text-danger">*</sup></label>
-                                                <input type="text" value="{{$all_settings->siemSettings?->url}}" class="form-control" id="provider_url"
+                                                <label for="provider" class="form-label">{{ __('URL') }}<sup
+                                                        class="text-danger">*</sup></label>
+                                                <input type="text" value="{{ $all_settings->siemSettings?->url }}"
+                                                    class="form-control" id="provider_url"
                                                     placeholder="https://log.provider.com">
                                             </div>
-                                            
+
                                             <div class="col-xl-12" id="tokenField">
                                                 <label for="authToken"
                                                     class="form-label">{{ __('Authorization Token') }}</label>
-                                                <input type="password" value="{{$all_settings->siemSettings?->token ?? ''}}" class="form-control" id="auth_token"
+                                                <input type="password"
+                                                    value="{{ $all_settings->siemSettings?->token ?? '' }}"
+                                                    class="form-control" id="auth_token"
                                                     placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
                                             </div>
-                                            
+
                                         </div>
                                         <div class="d-flex gap-4">
                                             <label class="form-label mb-3">{{ __('Enabled') }}</label>
                                             <div class="custom-toggle-switch d-flex align-items-center mb-4">
-                                                <input id="seimStatus" name="seimStatus" type="checkbox" @if ($all_settings->siemSettings?->status == 1) checked @endif>
+                                                <input id="seimStatus" name="seimStatus" type="checkbox"
+                                                    @if ($all_settings->siemSettings?->status == 1) checked @endif>
                                                 <label for="seimStatus" class="label-success"></label>
                                             </div>
                                         </div>
@@ -1066,6 +1074,203 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                </div>
+
+                                <div class="tab-pane p-0" id="whiteLabel" role="tabpanel">
+                                    @if ($whiteLabel)
+                                        @if ($whiteLabel->approved_by_partner == 1)
+                                            <p class="text-primary m-4 fw-3">Your White Label Request is approved by partner</p>
+                                        @else
+                                            <p class="text-primary m-4 fw-3">Your White Label Request is submitted</p>
+                                        @endif
+                                    @else
+                                        <div class="card custom-card">
+                                            <div class="card-body">
+                                                <ul class="nav nav-tabs justify-content-center mb-5 tab-style-3"
+                                                    id="myTab2" role="tablist">
+                                                    <li class="nav-item me-0" role="presentation">
+                                                        <button class="nav-link active home py-1" id="company-tab"
+                                                            data-bs-toggle="tab" data-bs-target="#company-tab-pane"
+                                                            type="button" role="tab"
+                                                            aria-controls="company-tab-pane"
+                                                            aria-selected="true">Company</button>
+                                                    </li>
+                                                    <li class="nav-item me-0" role="presentation">
+                                                        <button class="nav-link about py-1" id="logo-tab"
+                                                            data-bs-toggle="tab" data-bs-target="#logo-tab-pane"
+                                                            type="button" role="tab" aria-controls="logo-tab-pane"
+                                                            aria-selected="false">Logo</button>
+                                                    </li>
+                                                    <li class="nav-item me-0" role="presentation">
+                                                        <button class="nav-link services py-1" id="smtp-tab"
+                                                            data-bs-toggle="tab" data-bs-target="#smtp-tab-pane"
+                                                            type="button" role="tab" aria-controls="smtp-tab-pane"
+                                                            aria-selected="false">SMTP</button>
+                                                    </li>
+                                                </ul>
+
+                                                <form action="{{ route('save.white.label') }}" method="post"
+                                                    enctype="multipart/form-data">
+                                                    @csrf
+                                                    <div class="tab-content" id="myTabContent1">
+                                                        <div class="tab-pane fade show active text-muted"
+                                                            id="company-tab-pane" role="tabpanel"
+                                                            aria-labelledby="company-tab" tabindex="0">
+
+                                                            <div class="row gy-4 mb-4">
+                                                                <div class="col-xl-12">
+                                                                    <label for="company_name"
+                                                                        class="form-label">{{ __('Company Name') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="company_name" id="company_name"
+                                                                        placeholder="SimUphish">
+                                                                </div>
+                                                                <div class="col-xl-12">
+                                                                    <label for="company_email"
+                                                                        class="form-label">{{ __('Company Email') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="mail" class="form-control"
+                                                                        name="company_email" id="company_email"
+                                                                        placeholder="xyz@gmail.com">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="domain"
+                                                                        class="form-label">{{ __('Domain') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="domain" id="domain"
+                                                                        placeholder="xyz.com">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="learn_domain"
+                                                                        class="form-label">{{ __('Learn Domain') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="learn_domain" id="learn_domain"
+                                                                        placeholder="learn.simpuphish.com">
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="tab-pane fade text-muted" id="logo-tab-pane"
+                                                            role="tabpanel" aria-labelledby="logo-tab" tabindex="0">
+
+                                                            <div class="row gy-4 mb-4">
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="dark_logo"
+                                                                        class="form-label">{{ __('Dark Logo') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="file" class="form-control"
+                                                                        name="dark_logo" id="dark_logo">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="light_logo"
+                                                                        class="form-label">{{ __('Light Logo') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="file" class="form-control"
+                                                                        name="light_logo" id="light_logo">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="favicon"
+                                                                        class="form-label">{{ __('Favicon') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="file" class="form-control"
+                                                                        name="favicon" id="favicon">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade text-muted" id="smtp-tab-pane"
+                                                            role="tabpanel" aria-labelledby="smtp-tab" tabindex="0">
+
+                                                            <div class="row gy-4 mb-4">
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="smtp_host"
+                                                                        class="form-label">{{ __('SMTP Host') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        id="smtp_host" name="smtp_host"
+                                                                        placeholder="">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="smtp_port"
+                                                                        class="form-label">{{ __('SMTP Port') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="smtp_port" name="smtp_port"
+                                                                        id="smtp_port" placeholder="">
+                                                                </div>
+
+                                                                <div class="col-xl-12">
+                                                                    <label for="smtp_username"
+                                                                        class="form-label">{{ __('SMTP Username') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="smtp_username" id="smtp_username"
+                                                                        placeholder="">
+                                                                </div>
+                                                                <div class="col-xl-12">
+                                                                    <label for="smtp_password"
+                                                                        class="form-label">{{ __('SMTP Password') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="password" class="form-control"
+                                                                        name="smtp_password" id="smtp_password"
+                                                                        placeholder="">
+                                                                </div>
+                                                                <div class="col-xl-12">
+                                                                    <label for="smtp_encryption"
+                                                                        class="form-label">{{ __('SMTP Encryption') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="smtp_encryption" id="smtp_encryption"
+                                                                        placeholder="">
+                                                                </div>
+                                                                <div class="col-xl-12">
+                                                                    <label for="from_address"
+                                                                        class="form-label">{{ __('From Address') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="from_address" id="from_address"
+                                                                        placeholder="">
+                                                                </div>
+                                                                <div class="col-xl-12">
+                                                                    <label for="from_name"
+                                                                        class="form-label">{{ __('From Name') }}<sup
+                                                                            class="text-danger">*</sup></label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="from_name" id="from_name"
+                                                                        placeholder="">
+                                                                </div>
+                                                                <div class="card-footer">
+                                                                    <div class="float-end">
+                                                                        <button class="btn btn-primary m-1"
+                                                                            id="saveWhiteLabel">
+                                                                            {{ __('Save') }}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+
+
+                                                    </div>
+
+
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @endif
 
                                 </div>
 
@@ -1082,7 +1287,8 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
+    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1103,8 +1309,8 @@
                                     @csrf
                                     <div class="row gy-3">
                                         <div class="col-xl-12">
-                                            <input type="text" class="form-control form-control-lg" name="totp_code"
-                                                placeholder="xxxxxx">
+                                            <input type="text" class="form-control form-control-lg"
+                                                name="totp_code" placeholder="xxxxxx">
                                             <input type="hidden" name="secret" value="" id="mfa_secret">
                                         </div>
                                         <div class="col-xl-12 d-grid mt-2">
@@ -1558,7 +1764,7 @@
                 var provider_url = $('#provider_url').val();
                 var auth_token = $('#auth_token').val();
                 var status = $('#seimStatus').is(':checked') ? 1 : 0;
-                
+
                 if ((provider == 'webhook' || provider == 'splunk') && provider_url.endsWith('/')) {
                     Swal.fire({
                         title: "{{ __('Please enter a valid URL') }}",

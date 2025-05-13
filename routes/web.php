@@ -36,7 +36,7 @@ use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Admin\AiVishingController;
 use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Admin\AdminLoginController;
-use App\Http\Controllers\Admin\WhiteLabelController;
+use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\PhishingWebsitesController;
 use App\Http\Controllers\WhatsappCampaignController;
 use App\Http\Controllers\DarkWebMonitoringController;
@@ -500,6 +500,9 @@ Route::middleware([
         Route::post('/settings/acc-dectivate', [SettingsController::class, 'deactivateAccount'])->name('settings.acc.deactivate');
         Route::post('/settings/update-siem', [SettingsController::class, 'updateSiem'])->name('settings.update.siem');
 
+        // White Label routes
+        Route::post('/save-white-label', [WhiteLabelController::class, 'saveWhiteLabel'])->name('save.white.label');
+
         //
         Route::get('/auth-user', function () {
             $companyid = Auth::user()->company_id;
@@ -596,10 +599,10 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/whatsapp/approve', [WhatsAppController::class, 'approveNumberChange'])->name('admin.whatsappnumber.change');
 
     //-----------------whitelabel requests route--------------//
-    Route::get('admin/whitelabel-req', [WhiteLabelController::class, 'index'])->name('admin.whitelabel');
-    Route::post('admin/approve-whitelabel', [WhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
-    Route::post('admin/stop-whitelabel', [WhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
-    Route::post('admin/reject-whitelabel', [WhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
+    // Route::get('admin/whitelabel-req', [WhiteLabelController::class, 'index'])->name('admin.whitelabel');
+    // Route::post('admin/approve-whitelabel', [WhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
+    // Route::post('admin/stop-whitelabel', [WhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
+    // Route::post('admin/reject-whitelabel', [WhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
     //-----------------whitelabel requests route--------------//
 
     //----------------phishing emails route ----------------------//
