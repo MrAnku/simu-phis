@@ -138,6 +138,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add', [ApiTrainingModuleController::class, 'addTraining']);
         Route::get('/previewby/{trainingid}', [ApiTrainingModuleController::class, 'trainingPreview']);
         Route::get('/preview-content/{trainingid}/{lang}', [ApiTrainingModuleController::class, 'loadPreviewTrainingContent']);
+        Route::get('/games', [ApiTrainingModuleController::class, 'getGames']);
         Route::post('/add-gamified-training', [ApiTrainingModuleController::class, 'addGamifiedTraining']);
         Route::put('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
     });

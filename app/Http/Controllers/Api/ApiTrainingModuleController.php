@@ -721,4 +721,30 @@ class ApiTrainingModuleController extends Controller
             ]);
         }
     }
+
+    public function getGames()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $games = TrainingGame::where('company_id', $companyId)
+                ->orWhere('company_id', 'default')
+                ->get()
+                ->map(function ($game) {
+                    $game->cover_image = 'storage/uploads/trainingGame/' . $game->cover_image;
+                    return $game;
+                });
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Games fetched successfully'),
+                'data' => $games
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
 }
