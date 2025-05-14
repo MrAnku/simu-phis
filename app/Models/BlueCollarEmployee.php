@@ -19,7 +19,6 @@ class BlueCollarEmployee extends Model
     use HasFactory;
 
     protected $table = 'blue_collar_employees';
-    public $timestamps = false;
 
     protected $fillable = [
         'group_id',

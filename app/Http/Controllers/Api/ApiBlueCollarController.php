@@ -175,10 +175,10 @@ class ApiBlueCollarController extends Controller
             $companyId = Auth::user()->company_id;
 
             // Checking the limit of employees
-            if (Auth::user()->usedemployees >= Auth::user()->employees) {
-                log_action("Employee limit has exceeded");
-                return response()->json(['success' => false, 'message' => __('mployee limit has been reached')]);
-            }
+            // if (Auth::user()->usedemployees >= Auth::user()->employees) {
+            //     log_action("Employee limit has exceeded");
+            //     return response()->json(['success' => false, 'message' => __('mployee limit has been reached')]);
+            // }
 
             //checking if the email is unique
             $user = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)->exists();
@@ -196,7 +196,7 @@ class ApiBlueCollarController extends Controller
                     'company_id' => $companyId,
                 ]
             );
-            Auth::user()->increment('usedemployees');
+            // Auth::user()->increment('usedemployees');
 
             return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
         } catch (\Exception $e) {

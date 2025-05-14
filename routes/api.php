@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
+use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
@@ -98,7 +99,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/save-config', [ApiWhatsappCampaignController::class, 'saveConfig']);
         Route::put('/update-config', [ApiWhatsappCampaignController::class, 'updateConfig']);
         Route::get('/sync-templates', [ApiWhatsappCampaignController::class, 'syncTemplates']);
-        Route::post('/create-campaign', [ApiWhatsappCampaignController::class, 'createCampaign']);
+        Route::post('/create-campaign', [ApiWaCampaignController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiWhatsappCampaignController::class, 'deleteCampaign']);
         Route::get('/campaign-detail/{campaign_id?}', [ApiWhatsappCampaignController::class, 'fetchCampaign']);
         Route::get('/group-employees/{employee_type?}', [ApiWhatsappCampaignController::class, 'groupUsers']);
