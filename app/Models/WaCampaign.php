@@ -25,4 +25,8 @@ class WaCampaign extends Model
         'variables',
         'company_id',
     ];
+
+    public function trainingData(){
+        return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
+    }
 }

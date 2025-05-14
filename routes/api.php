@@ -28,7 +28,6 @@ use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
-use App\Http\Controllers\Api\ApiWhatsappCampaignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
@@ -95,15 +94,15 @@ Route::middleware('auth:api')->group(function () {
 
     //whatsapp campaign routes
     Route::prefix('whatsapp-campaign')->group(function () {
-        Route::get('/', [ApiWhatsappCampaignController::class, 'index']);
-        Route::post('/save-config', [ApiWhatsappCampaignController::class, 'saveConfig']);
-        Route::put('/update-config', [ApiWhatsappCampaignController::class, 'updateConfig']);
-        Route::get('/sync-templates', [ApiWhatsappCampaignController::class, 'syncTemplates']);
+        Route::get('/', [ApiWaCampaignController::class, 'index']);
+        Route::post('/save-config', [ApiWaCampaignController::class, 'saveConfig']);
+        Route::put('/update-config', [ApiWaCampaignController::class, 'updateConfig']);
+        Route::get('/sync-templates', [ApiWaCampaignController::class, 'syncTemplates']);
         Route::post('/create-campaign', [ApiWaCampaignController::class, 'createCampaign']);
-        Route::delete('/delete-campaign/{campaign_id?}', [ApiWhatsappCampaignController::class, 'deleteCampaign']);
-        Route::get('/campaign-detail/{campaign_id?}', [ApiWhatsappCampaignController::class, 'fetchCampaign']);
-        Route::get('/group-employees/{employee_type?}', [ApiWhatsappCampaignController::class, 'groupUsers']);
-        Route::post('/new-template', [ApiWhatsappCampaignController::class, 'newTemplate']);
+        Route::delete('/delete-campaign/{campaign_id?}', [ApiWaCampaignController::class, 'deleteCampaign']);
+        Route::get('/campaign-detail/{campaign_id?}', [ApiWaCampaignController::class, 'fetchCampaign']);
+        Route::get('/group-employees/{employee_type?}', [ApiWaCampaignController::class, 'groupUsers']);
+        Route::post('/new-template', [ApiWaCampaignController::class, 'newTemplate']);
     });
 
     // Phishing Material routes
