@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\WhiteLabelledCompany;
 use App\Models\WhiteLabelledSmtp;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class WhiteLabelController extends Controller
 {
@@ -16,9 +17,9 @@ class WhiteLabelController extends Controller
             'company_email' => 'required|email',
             'domain' => 'required|string',
             'learn_domain' => 'required|string',
-            'dark_logo' => 'required|image|mimes:jpeg,png,jpg',
-            'light_logo' => 'required|image|mimes:jpeg,png,jpg',
-            'favicon' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'dark_logo' => 'required|mimes:png',
+            'light_logo' => 'required|mimes:png',
+            'favicon' => 'required|mimes:png',
             'smtp_host' => 'required|string|max:255',
             'smtp_port' => 'required|integer',
             'smtp_username' => 'required|string|max:255',
@@ -28,17 +29,27 @@ class WhiteLabelController extends Controller
             'from_name' => 'required|string|max:255',
         ]);
 
+        $companyId = Auth::user()->company_id;
+
+        $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $request->file('dark_logo')->getClientOriginalName(), 's3');
+        $darkLogoUrl = Storage::disk('s3')->url($darkLogoPath);
+
+        $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $request->file('light_logo')->getClientOriginalName(), 's3');
+        $lightLogoUrl = Storage::disk('s3')->url($lightLogoPath);
+
+        $faviconLogoPath = $request->file('favicon')->storeAs("whiteLabel/{$companyId}", $request->file('favicon')->getClientOriginalName(), 's3');
+        $faviconLogoUrl = Storage::disk('s3')->url($faviconLogoPath);
+
         $isCreatedWhitLabel = WhiteLabelledCompany::create([
             'company_id' => Auth::user()->company_id,
+            'partner_id' => Auth::user()->partner_id,
             'company_email' => $request->company_email,
             'domain' => $request->domain,
             'learn_domain' => $request->learn_domain,
-            'dark_logo' => $request->dark_logo,
-            'light_logo' => $request->light_logo,
-            'favicon' => $request->favicon,
+            'dark_logo' => $darkLogoUrl,
+            'light_logo' => $lightLogoUrl,
+            'favicon' => $faviconLogoUrl,
             'company_name' => $request->company_name,
-            'approved_by_partner' => 0,
-            'date' => now(),
         ]);
 
         if ($isCreatedWhitLabel) {

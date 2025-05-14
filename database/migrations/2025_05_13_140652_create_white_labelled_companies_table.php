@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('white_labelled_companies', function (Blueprint $table) {
             $table->id();
             $table->string('company_id');
+            $table->string('partner_id');
             $table->string('company_email');
             $table->string('domain');
             $table->string('learn_domain');
@@ -21,8 +22,8 @@ return new class extends Migration
             $table->string('light_logo');
             $table->string('favicon');
             $table->string('company_name');
-            $table->integer('approved_by_partner')->default(0);
-            $table->timestamp('date');
+            $table->boolean('approved_by_partner')->default(0);
+            $table->boolean('service_status')->default(0);
             $table->timestamps();
         });
     }

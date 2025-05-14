@@ -10,6 +10,7 @@ class WhiteLabelledCompany extends Model
     use HasFactory;
     protected $fillable = [
         'company_id',
+        'partner_id',
         'company_email',
         'domain',
         'learn_domain',
@@ -18,6 +19,6 @@ class WhiteLabelledCompany extends Model
         'favicon',
         'company_name',
         'approved_by_partner',
-        'date',
+        'service_status',
     ];
 }
