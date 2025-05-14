@@ -1079,7 +1079,7 @@
 
                                 <div class="tab-pane p-0" id="whiteLabel" role="tabpanel">
                                     @if ($whiteLabel)
-                                        @if ($whiteLabel->approved_by_partner == 1 && $whiteLabel->service_status == 1)
+                                        @if ($whiteLabel->approved_by_partner == 1)
                                             <p class="text-primary m-4 fw-3">Your White Label Request is approved by partner</p>
                                         @else
                                             <p class="text-primary m-4 fw-3">Your White Label Request is submitted</p>
