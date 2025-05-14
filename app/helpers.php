@@ -6,6 +6,7 @@ use App\Models\Log;
 use App\Models\Company;
 use App\Models\SiemLog;
 use App\Models\SiemProvider;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -286,9 +287,10 @@ if (!function_exists('checkWhitelabeled')) {
         $partner_id = $company->partner->partner_id;
         $company_email = $company->email;
 
-        $isWhitelabled = DB::table('white_labelled_partner')
-            ->where('partner_id', $partner_id)
-            ->where('approved_by_admin', 1)
+
+        
+        $isWhitelabled = WhiteLabelledCompany::where('partner_id', $partner_id)
+            ->where('approved_by_partner', 1)
             ->first();
 
         if ($isWhitelabled) {
@@ -296,7 +298,7 @@ if (!function_exists('checkWhitelabeled')) {
                 'company_email' => $company_email,
                 'learn_domain' => $isWhitelabled->learn_domain,
                 'company_name' => $isWhitelabled->company_name,
-                'logo' => env('APP_URL') . '/storage/uploads/whitelabeled/' . $isWhitelabled->dark_logo
+                'logo' => $isWhitelabled->dark_logo
             ];
         }
 

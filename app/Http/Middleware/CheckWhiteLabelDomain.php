@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\WhiteLabelledCompany;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,15 +19,14 @@ class CheckWhiteLabelDomain
     {
         $host = $request->getHost();
 
-        $companyBranding = DB::table('white_labelled_partner')
-            ->where('domain', $host)
-            ->where('approved_by_admin', 1)
+        $companyBranding = WhiteLabelledCompany::where('domain', $host)
+            ->where('approved_by_partner', 1)
             ->first();
 
         if ($companyBranding) {
-            $companyLogoDark = "/storage/uploads/whitelabeled/" . $companyBranding->dark_logo;
-            $companyLogoLight = "/storage/uploads/whitelabeled/" . $companyBranding->light_logo;
-            $companyFavicon = "/storage/uploads/whitelabeled/" . $companyBranding->favicon;
+            $companyLogoDark = $companyBranding->dark_logo;
+            $companyLogoLight = $companyBranding->light_logo;
+            $companyFavicon = $companyBranding->favicon;
             $companyName = $companyBranding->company_name;
             $companyDomain = "https://" . $companyBranding->domain . "/";
             $companyLearnDomain = "https://" . $companyBranding->learn_domain . "/";
