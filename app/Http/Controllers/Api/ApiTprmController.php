@@ -260,95 +260,109 @@ class ApiTprmController extends Controller
             if (!$domain) {
                 return response()->json(['success' => false, 'message' => __('Domain is required')], 404);
             }
-            $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
-                ->where('company_id', Auth::user()->company_id)->first();
+            TpmrVerifiedDomain::where('domain', $domain)->where('company_id', Auth::user()->company_id)->delete();
 
-            if (!$tprmUserGroup) {
-                return response()->json(['success' => false, 'message' => __('Domain not found')], 404);
+            $groupExist = TprmUsersGroup::where('group_name', $domain)->first();
+            if($groupExist){
+                TprmUsers::where('group_id', $groupExist->group_id)->delete();
+                $campExist = TprmCampaign::where('users_group', $groupExist->group_id)->first();
+                if($campExist){
+                    TprmCampaignLive::where('campaign_id', $campExist->campaign_id)->delete();
+                    TprmCampaignReport::where('campaign_id', $campExist->campaign_id)->delete();
+                    $campExist->delete();
+                }
+                $groupExist->delete();
             }
 
-            if ($tprmUserGroup) {
-                $group_id = $tprmUserGroup->group_id;
-                $tprmUserGroup->delete();
+            return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
+            // $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
+            //     ->where('company_id', Auth::user()->company_id)->first();
 
-                $tprmUsers = TprmUsers::where('group_id', $group_id)->get();
+            // if (!$tprmUserGroup) {
+            //     return response()->json(['success' => false, 'message' => __('Domain not found')], 404);
+            // }
 
-                foreach ($tprmUsers as $tprmUser) {
-                    $tprmUser->delete();
-                }
-                $tprmCampaign = TprmCampaign::where('users_group', $group_id)->first();
+            // if ($tprmUserGroup) {
+            //     $group_id = $tprmUserGroup->group_id;
+            //     $tprmUserGroup->delete();
 
-                if ($tprmCampaign) {
+            //     $tprmUsers = TprmUsers::where('group_id', $group_id)->get();
 
-                    $tprmCampaignId = $tprmCampaign->campaign_id;
-                    $tprmCampaign->delete();
-                    $TprmLiveCampaigns = TprmCampaignLive::where('campaign_id', $tprmCampaignId)->get();
+            //     foreach ($tprmUsers as $tprmUser) {
+            //         $tprmUser->delete();
+            //     }
+            //     $tprmCampaign = TprmCampaign::where('users_group', $group_id)->first();
 
-                    foreach ($TprmLiveCampaigns as $TprmLiveCampaign) {
-                        $TprmLiveCampaign->delete();
-                    }
-                }
-            }
+            //     if ($tprmCampaign) {
 
-            DB::beginTransaction();
+            //         $tprmCampaignId = $tprmCampaign->campaign_id;
+            //         $tprmCampaign->delete();
+            //         $TprmLiveCampaigns = TprmCampaignLive::where('campaign_id', $tprmCampaignId)->get();
 
-            try {
-                // 1. Delete users associated with the domain
-                $users = TprmUsers::where('user_email', 'LIKE', '%' . $domain)->get();
-                foreach ($users as $user) {
+            //         foreach ($TprmLiveCampaigns as $TprmLiveCampaign) {
+            //             $TprmLiveCampaign->delete();
+            //         }
+            //     }
+            // }
 
-                    // Delete user-related data
-                    DB::table('user_login')->where('user_id', $user->id)->delete();
-                    // Delete the user record itself
-                    $user->delete();
-                }
+            // DB::beginTransaction();
 
-                // 2. Delete user groups associated with the domain (use `group_name` instead of `domain`)
-                $userGroups = TprmUsersGroup::where('group_name', $domain)->get();
-                foreach ($userGroups as $group) {
-                    $groupId = $group->group_id;
-                    $companyId = Auth::user()->company_id;
+            // try {
+            //     // 1. Delete users associated with the domain
+            //     $users = TprmUsers::where('user_email', 'LIKE', '%' . $domain)->get();
+            //     foreach ($users as $user) {
+
+            //         // Delete user-related data
+            //         DB::table('user_login')->where('user_id', $user->id)->delete();
+            //         // Delete the user record itself
+            //         $user->delete();
+            //     }
+
+            //     // 2. Delete user groups associated with the domain (use `group_name` instead of `domain`)
+            //     $userGroups = TprmUsersGroup::where('group_name', $domain)->get();
+            //     foreach ($userGroups as $group) {
+            //         $groupId = $group->group_id;
+            //         $companyId = Auth::user()->company_id;
 
 
-                    // Delete all users in the group
-                    TprmUsers::where('group_id', $groupId)->delete();
+            //         // Delete all users in the group
+            //         TprmUsers::where('group_id', $groupId)->delete();
 
-                    // Delete the group itself
-                    $group->delete();
+            //         // Delete the group itself
+            //         $group->delete();
 
-                    // 3. Delete campaigns associated with this user group
-                    $campaigns = TprmCampaign::where('users_group', $groupId)
-                        ->where('company_id', $companyId)
-                        ->get();
+            //         // 3. Delete campaigns associated with this user group
+            //         $campaigns = TprmCampaign::where('users_group', $groupId)
+            //             ->where('company_id', $companyId)
+            //             ->get();
 
-                    foreach ($campaigns as $campaign) {
-                        $campaignId = $campaign->campaign_id;
+            //         foreach ($campaigns as $campaign) {
+            //             $campaignId = $campaign->campaign_id;
 
-                        // Delete campaign records from all associated tables
-                        TprmCampaign::where('campaign_id', $campaignId)
-                            ->where('company_id', $companyId)
-                            ->delete();
-                        TprmCampaignLive::where('campaign_id', $campaignId)
-                            ->where('company_id', $companyId)
-                            ->delete();
-                        TprmCampaignReport::where('campaign_id', $campaignId)
-                            ->where('company_id', $companyId)
-                            ->delete();
-                    }
-                }
+            //             // Delete campaign records from all associated tables
+            //             TprmCampaign::where('campaign_id', $campaignId)
+            //                 ->where('company_id', $companyId)
+            //                 ->delete();
+            //             TprmCampaignLive::where('campaign_id', $campaignId)
+            //                 ->where('company_id', $companyId)
+            //                 ->delete();
+            //             TprmCampaignReport::where('campaign_id', $campaignId)
+            //                 ->where('company_id', $companyId)
+            //                 ->delete();
+            //         }
+            //     }
 
-                // 4. Finally, delete the domain itself
-                TpmrVerifiedDomain::where('domain', $domain)->delete();
+            //     // 4. Finally, delete the domain itself
+            //     TpmrVerifiedDomain::where('domain', $domain)->delete();
 
-                // Commit the transaction if all deletions are successful
-                DB::commit();
+            //     // Commit the transaction if all deletions are successful
+            //     DB::commit();
 
-                return response()->json(['success' => true, 'message' => __('Domain and associated data deleted successfully')], 200);
-            } catch (\Exception $e) {
-                // Rollback the transaction if an error occurs
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => __('An error occurred: ') . $e->getMessage()], 500);
-            }
+            //     return response()->json(['success' => true, 'message' => __('Domain and associated data deleted successfully')], 200);
+        } catch (\Exception $e) {
+            // Rollback the transaction if an error occurs
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => __('An error occurred: ') . $e->getMessage()], 500);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
@@ -795,14 +809,14 @@ class ApiTprmController extends Controller
     public function getEmailsByDomain(Request $request)
     {
         try {
-            if(!$request->route('domain')){
+            if (!$request->route('domain')) {
                 return response()->json(['success' => false, 'message' => __('Domain is required')], 422);
             }
             $companyId = Auth::user()->company_id;
             // Fetch emails from the database based on the domain
             $emails = TprmUsers::where('user_email', 'like', '%' . $request->route('domain'))->where('company_id', $companyId)->pluck('user_email');
 
-            if(!$emails){
+            if (!$emails) {
                 return response()->json(['success' => false, 'message' => __('No emails found for this domain')], 404);
             }
 
