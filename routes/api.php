@@ -268,8 +268,8 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete-campaign/{campId?}', [ApiTprmController::class, 'deleteCampaign']);
         Route::post('/campaigns/relaunch/{campId?}', [ApiTprmController::class, 'relaunchCampaign']);
         Route::get('/campaigns/fetch-phish-data', [ApiTprmController::class, 'fetchPhishData']);
-        Route::post('/treporting/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tfetchCampaignReport']);
-        Route::post('/tfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tfetchCampReportByUsers']);
+        Route::get('/treporting/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tfetchCampaignReport']);
+        Route::get('/tfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tfetchCampReportByUsers']);
         Route::post('/campaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
         Route::post('/campaigns/addGroupUser', [ApiTprmController::class, 'addGroupUser']);
         Route::get('/campaigns/get-emails-by-domain/{domain?}', [ApiTprmController::class, 'getEmailsByDomain']);

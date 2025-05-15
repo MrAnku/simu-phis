@@ -645,7 +645,12 @@ class ApiReportingController extends Controller
                     'no_of_users' => $no_of_users,
                 ];
 
-                return response()->json($response);
+                return response()->json([
+                    'success' => true,
+                    'message' => __('TPRM campaign report fetched successfully.'),
+                    'data' => $response
+                ], 200); 
+                
             } else {
                 return response()->json(['success' => false, [], 'message' => __('Campaign report or user group not found')], 404);
             }
@@ -897,50 +902,16 @@ class ApiReportingController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'data' => 
-                        ['html' => '
-                        <tr>
-                            <td colspan="7" class="text-center"> No records found</td>
-                        </tr>'],
                     'message' => __('No records found'),
                 ], 422);
             }
 
-            $responseHtml = '';
-            foreach ($allUsers as $userReport) {
-                $isSent = $userReport->sent == '1' ? '<span class="badge bg-success-transparent">Success</span>' : '<span class="badge bg-warning-transparent">Pending</span>';
-                $isViewed = $userReport->mail_open == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                $isPayloadClicked = $userReport->payload_clicked == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                $isEmailCompromised = $userReport->emp_compromised == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
-                $isEmailReported = $userReport->email_reported == '1' ? '<span class="badge bg-success-transparent">Yes</span>' : '<span class="badge bg-danger-transparent">No</span>';
 
-                $responseHtml .=
-                    '<tr>
-                <td>' .
-                    $userReport->user_name .
-                    '</td>
-                <td>' .
-                    $userReport->user_email .
-                    '</td>
-                <td>' .
-                    $isSent .
-                    '</td>
-                <td>' .
-                    $isViewed .
-                    '</td>
-                <td>' .
-                    $isPayloadClicked .
-                    '</td>
-                <td>' .
-                    $isEmailCompromised .
-                    '</td>
-                <td>' .
-                    $isEmailReported .
-                    '</td>
-            </tr>';
-            }
-
-            return response()->json(['success' => true, 'data' => ['html' => $responseHtml], 'message' => __('Campaign user report fetched successfully')], 200);
+            return response()->json([
+                'success' => true, 
+                'data' => $allUsers, 
+                'message' => __('Campaign user report fetched successfully')
+            ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
