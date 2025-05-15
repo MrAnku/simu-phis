@@ -7,6 +7,7 @@ use App\Models\Users;
 use App\Models\Company;
 use App\Models\TprmUsers;
 use App\Models\DomainEmail;
+use App\Models\TprmRequest;
 use Illuminate\Support\Str;
 use App\Models\TprmCampaign;
 use Illuminate\Http\Request;
@@ -14,12 +15,13 @@ use App\Models\PhishingEmail;
 use App\Models\TprmUsersGroup;
 use App\Models\TrainingModule;
 use App\Models\TprmCampaignLive;
+use App\Models\WhiteLabelledSmtp;
 use App\Models\TpmrVerifiedDomain;
 use App\Models\TprmCampaignReport;
-use App\Models\TprmRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\TrainingAssignedUser;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -157,7 +159,7 @@ class TprmController extends Controller
         }
 
         // Get the company ID of the authenticated user
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
         // Retrieve the partner ID from the Company table using the correct primary key
         $partnerId = Company::where('company_id', $companyId)->value('partner_id');
@@ -184,7 +186,7 @@ class TprmController extends Controller
 
             if ($domainExists) {
                 return response()->json(['status' => 0, 'msg' => __('Domain already exists')]);
-            }else if ($verifiedDomain) {
+            } else if ($verifiedDomain) {
                 return response()->json(['status' => 0, 'msg' => __('Domain already verified by another company')]);
             } else {
                 // Generate a temporary code for the new domain and save it
@@ -221,6 +223,22 @@ class TprmController extends Controller
 
     private function domainVerificationMail($email, $code)
     {
+        $iswhitelabelled = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+        if ($iswhitelabelled) {
+            $smtp =  WhiteLabelledSmtp::where('company_id', Auth::user()->company_id)
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+        }
+
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
             $message->to($email)->subject('Domain Verification');
         });
@@ -230,7 +248,7 @@ class TprmController extends Controller
     public function verifyOtp(Request $request)
     {
         $verificationCode = $request->input('emailOTP');
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
 
         $verifiedDomain = TpmrVerifiedDomain::where('temp_code', $verificationCode)
             ->where('company_id', $companyId)
@@ -252,27 +270,27 @@ class TprmController extends Controller
         $domain = $request->vDomainId;
 
         $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
-                            ->where('company_id', Auth()->user()->company_id)->first();
+            ->where('company_id', Auth::user()->company_id)->first();
 
-        if($tprmUserGroup){
+        if ($tprmUserGroup) {
             $group_id = $tprmUserGroup->group_id;
             $tprmUserGroup->delete();
 
             $tprmUsers = TprmUsers::where('group_id', $group_id)->get();
 
-            foreach($tprmUsers as $tprmUser){
+            foreach ($tprmUsers as $tprmUser) {
                 $tprmUser->delete();
             }
 
             $tprmCampaign = TprmCampaign::where('users_group', $group_id)->first();
 
-            if($tprmCampaign){
+            if ($tprmCampaign) {
 
                 $tprmCampaignId = $tprmCampaign->campaign_id;
                 $tprmCampaign->delete();
                 $TprmLiveCampaigns = TprmCampaignLive::where('campaign_id', $tprmCampaignId)->get();
-                
-                foreach($TprmLiveCampaigns as $TprmLiveCampaign){
+
+                foreach ($TprmLiveCampaigns as $TprmLiveCampaign) {
                     $TprmLiveCampaign->delete();
                 }
             }
@@ -352,7 +370,7 @@ class TprmController extends Controller
     {
         $grpName = $request->input('usrGroupName');
         $grpId = generateRandom(6);
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
 
         TprmUsersGroup::create([
             'group_id' => $grpId,
@@ -366,7 +384,7 @@ class TprmController extends Controller
 
     public function viewUsers($groupid)
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
         $users = TprmUsers::where('group_id', $groupid)->where('company_id', $companyId)->get();
 
         if (!$users->isEmpty()) {
@@ -444,7 +462,7 @@ class TprmController extends Controller
         $timeZone = $request->input('schTimeZone');
         $frequency = $request->input('emailFreq');
         $expAfter = $request->input('expire_after');
-        $companyId = auth()->user()->company_id; // Assuming the company ID is retrieved from the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming the company ID is retrieved from the authenticated user
 
 
         $phishingEmail = PhishingEmail::where('id', $phishMaterial)
@@ -883,7 +901,7 @@ class TprmController extends Controller
         // Process the request if validation passes
         $domainName = $request->input('domainName'); // Get the domainName from the request
         $emails = $request->input('emails'); // Get the emails from the request
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
 
 
@@ -971,7 +989,7 @@ class TprmController extends Controller
         // Process the request if validation passes
         $domainName = $request->input('domainName'); // Get the domainName from the request
         $emails = $request->input('emails'); // Get the emails from the request
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
 
 
         // Check if the combination of domain name and company ID already exists
@@ -1042,7 +1060,7 @@ class TprmController extends Controller
 
     public function getEmailsByDomain($domain)
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
         // Fetch emails from the database based on the domain
         $emails = TprmUsers::where('user_email', 'like', '%' . $domain)->where('company_id', $companyId)->pluck('user_email');
 

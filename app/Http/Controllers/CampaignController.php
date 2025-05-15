@@ -8,15 +8,17 @@ use App\Models\Campaign;
 use App\Models\UsersGroup;
 use Illuminate\Support\Str;
 use App\Models\CampaignLive;
+use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\CampaignReport;
 use App\Models\TrainingModule;
+use App\Models\EmailCampActivity;
+use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
-use App\Models\EmailCampActivity;
 use App\Models\TrainingAssignedUser;
-use App\Models\TrainingGame;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -729,7 +731,7 @@ class CampaignController extends Controller
         }
 
 
-        $learnSiteAndLogo = checkWhitelabeled(auth()->user()->company_id);
+        $learnSiteAndLogo = checkWhitelabeled(Auth::user()->company_id);
 
         $mailData = [
             'user_name' => $assignedTraining->user_name,
@@ -742,7 +744,21 @@ class CampaignController extends Controller
             'logo' => $learnSiteAndLogo['logo']
         ];
 
-
+         $iswhitelabelled = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+        if ($iswhitelabelled) {
+            $smtp =  WhiteLabelledSmtp::where('company_id', Auth::user()->company_id)
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+        }
 
         Mail::to($userCredentials->login_username)->send(new TrainingAssignedEmail($mailData));
 

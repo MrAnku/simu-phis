@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AiCallCampaign;
-use App\Models\AiCallCampLive;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\Campaign;
+use App\Models\UserLogin;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
+use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
 use App\Models\BreachedEmail;
+use App\Models\AiCallCampaign;
+use App\Models\AiCallCampLive;
 use App\Models\CampaignReport;
-use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
 use App\Models\OutlookAdToken;
-use App\Models\QuishingCamp;
+use App\Models\DeletedEmployee;
 use App\Models\QuishingLiveCamp;
+use App\Models\WhatsappCampaign;
+use App\Models\WhiteLabelledSmtp;
+use App\Services\EmployeeService;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
-use App\Models\UserLogin;
-use App\Models\WhatsappCampaign;
 use App\Models\WhatsAppCampaignUser;
-use App\Services\EmployeeService;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -168,7 +170,7 @@ class EmployeesController extends Controller
             return response()->json(['status' => 0, 'msg' => __('This email provider is not allowed.')]);
         }
 
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
         $verifiedDomain = DomainVerified::where('domain', $domain)
             ->first();
 
@@ -201,6 +203,22 @@ class EmployeesController extends Controller
 
     private function domainVerificationMail($email, $code)
     {
+        $iswhitelabelled = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+        if ($iswhitelabelled) {
+            $smtp =  WhiteLabelledSmtp::where('company_id', Auth::user()->company_id)
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+        }
+
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
             $message->to($email)->subject('Domain Verification');
         });
@@ -225,7 +243,7 @@ class EmployeesController extends Controller
         //xss check end
 
         $verificationCode = $request->input('emailOTP');
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
 
         $verifiedDomain = DomainVerified::where('temp_code', $verificationCode)
             ->where('company_id', $companyId)
@@ -275,7 +293,7 @@ class EmployeesController extends Controller
 
         $grpName = $request->input('usrGroupName');
         $grpId = generateRandom(6);
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
 
         UsersGroup::create([
             'group_id' => $grpId,
@@ -303,7 +321,7 @@ class EmployeesController extends Controller
 
         $grpName = $request->input('usrGroupName');
         $grpId = generateRandom(6);
-        $companyId = auth()->user()->company_id; // Assuming company_id is stored in the authenticated user
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
 
         UsersGroup::create([
             'group_id' => $grpId,
@@ -319,7 +337,7 @@ class EmployeesController extends Controller
 
     public function viewUsers($groupid)
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
         $group = UsersGroup::where('group_id', $groupid)
             ->where('company_id', $companyId)
             ->first();
@@ -349,7 +367,7 @@ class EmployeesController extends Controller
     }
     public function viewUniqueEmails()
     {
-        $companyId = auth()->user()->company_id;
+        $companyId = Auth::user()->company_id;
         $users = Users::where('company_id', $companyId)
             ->whereIn('id', function ($query) {
                 $query->selectRaw('MAX(id)')
@@ -429,7 +447,6 @@ class EmployeesController extends Controller
         foreach ($users as $user) {
             try {
                 $employee->deleteEmployeeById($user->id);
-
             } catch (\Exception $e) {
                 return response()->json(['status' => 0, 'msg' => __('Failed to delete employee')]);
             }

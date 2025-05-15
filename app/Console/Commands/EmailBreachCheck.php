@@ -2,15 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\BreachAlertAdminMail;
-use App\Mail\BreachAlertEmployeeMail;
-use App\Mail\BreachMail;
 use App\Models\Users;
 use App\Models\Company;
+use App\Mail\BreachMail;
 use App\Models\BreachedEmail;
 use Illuminate\Console\Command;
+use App\Models\WhiteLabelledSmtp;
+use App\Mail\BreachAlertAdminMail;
+use App\Models\WhiteLabelledCompany;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\BreachAlertEmployeeMail;
 
 class EmailBreachCheck extends Command
 {
@@ -38,27 +41,26 @@ class EmailBreachCheck extends Command
 
         //check if any user scanner for breach more than 30 days ago
         $this->scanOldUsers();
-
     }
 
     private function scanNewUsers()
     {
         //scan new employees
         $employees = Users::where('breach_scan_date', null)
-        ->whereIn('id', function ($query) {
-            $query->selectRaw('MAX(id)')
-                ->from('users')
-                ->groupBy('user_email');
-        })
-        ->take(7)
-        ->get();
-        if($employees->isEmpty()){ 
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('users')
+                    ->groupBy('user_email');
+            })
+            ->take(7)
+            ->get();
+        if ($employees->isEmpty()) {
             return;
         }
 
         foreach ($employees as $employee) {
 
-            
+
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
@@ -79,34 +81,51 @@ class EmailBreachCheck extends Command
                 echo "Breach found for " . $employee->user_email . "\n";
 
                 $company = Company::where('company_id', $employee->company_id)->first();
-                  // send Email Notification
-                try{
+
+                $iswhitelabelled = WhiteLabelledCompany::where('company_id', $employee->company_id)
+                    ->where('approved_by_partner', 1)
+                    ->where('service_status', 1)
+                    ->first();
+                if ($iswhitelabelled) {
+                    $smtp =  WhiteLabelledSmtp::where('company_id', $employee->company_id)
+                        ->first();
+                    config([
+                        'mail.mailers.smtp.host' => $smtp->smtp_host,
+                        'mail.mailers.smtp.username' => $smtp->smtp_username,
+                        'mail.mailers.smtp.password' => $smtp->smtp_password,
+                        'mail.from.address' => $smtp->from_address,
+                        'mail.from.name' => $smtp->from_name,
+                    ]);
+                }
+
+                // send Email Notification
+                try {
                     Mail::to($employee->user_email)->send(new BreachAlertEmployeeMail($employee, $breachData));
                     echo "Breach Alert sent successfully to " . $employee->user_email . "\n";
 
                     Mail::to($company->email)->send(new BreachAlertAdminMail($company, $employee,  $breachData));
                     echo "Breach Alert sent successfully to " . $company->email . "\n";
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     echo "Failed to send email. Error: " . $e->getMessage() . "\n";
                 }
-            }else{
+            } else {
                 $employee->breach_scan_date = now();
                 $employee->save();
                 echo "No breach found for " . $employee->user_email . "\n";
             }
-
         }
     }
 
-    private function scanOldUsers(){
+    private function scanOldUsers()
+    {
         //scan old employees
         $employees = Users::where('breach_scan_date', '<', now()->subDays(10))->take(7)->get();
-        if($employees->isEmpty()){ 
+        if ($employees->isEmpty()) {
             return;
         }
         foreach ($employees as $employee) {
 
-           
+
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
@@ -135,13 +154,11 @@ class EmailBreachCheck extends Command
                     echo "Breach found for " . $employee->user_email . "\n";
                 }
                 $employee->save();
-                
-            }else{
+            } else {
                 $employee->breach_scan_date = now();
                 $employee->save();
                 echo "No breach found for " . $employee->user_email . "\n";
             }
-
         }
     }
 }
