@@ -4,6 +4,8 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use App\Models\WhiteLabelledCompany;
+use App\Models\WhiteLabelledSmtp;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Queue\SerializesModels;
@@ -24,6 +26,8 @@ class TrainingAssignedEmail extends Mailable
     {
         $this->mailData = $mailData;
         $this->trainingNames = $trainingNames;
+
+        
     }
 
     /**
@@ -32,7 +36,7 @@ class TrainingAssignedEmail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->mailData['company_name'] . ' Training';
-        $fromName = $this->mailData['company_name']; 
+        $fromName = $this->mailData['company_name'];
         $fromEmail = $this->mailData['company_email'];
         return new Envelope(
             subject: $subject,

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class WhiteLabelledCompany extends Model
 {
     use HasFactory;
+
+    public $table = 'white_labelled_companies';
+
     protected $fillable = [
         'company_id',
         'partner_id',

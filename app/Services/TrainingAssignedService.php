@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
-use App\Mail\AssignTrainingWithPassResetLink;
-use App\Mail\TrainingAssignedEmail;
 use App\Models\CampaignReport;
-use App\Models\TrainingAssignedUser;
+use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
+use App\Mail\TrainingAssignedEmail;
+use App\Models\TrainingAssignedUser;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\AssignTrainingWithPassResetLink;
 
 class TrainingAssignedService
 {
@@ -29,7 +31,8 @@ class TrainingAssignedService
             'company_name' => $learnSiteAndLogo['company_name'],
             'company_email' => $learnSiteAndLogo['company_email'],
             'learning_site' =>  $learning_dashboard_link,
-            'logo' => $learnSiteAndLogo['logo']
+            'logo' => $learnSiteAndLogo['logo'],
+            'company_id' => $campData['company_id'],
         ];
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
@@ -40,6 +43,24 @@ class TrainingAssignedService
             }
             return $training->trainingData->name;
         });
+
+        $iswhitelabelled = WhiteLabelledCompany::where('company_id', $campData['company_id'])
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+        if ($iswhitelabelled) {
+           $smtp =  WhiteLabelledSmtp::where('company_id', $campData['company_id'])
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+        }
+
+        
 
         $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 

@@ -9,6 +9,8 @@ class WhiteLabelledSmtp extends Model
 {
     use HasFactory;
 
+    public $table = 'white_labelled_smtps';
+
     protected $fillable = [
         'smtp_host',
         'smtp_port',
