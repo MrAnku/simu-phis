@@ -157,8 +157,8 @@ class ApiCampaignController extends Controller
 
     private function handleImmediateLaunch($data, $campId, $companyId)
     {
-        $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
-        $launchTimeFormatted = $scheduledDate->format("m/d/Y g:i A");
+        // $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
+        $launchTimeFormatted = Carbon::now()->format("m/d/Y g:i A");
 
         $groupExists = UsersGroup::where('group_id', $data['users_group'])->exists();
         if (!$groupExists) {
