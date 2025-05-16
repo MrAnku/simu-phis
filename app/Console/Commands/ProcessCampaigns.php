@@ -482,7 +482,7 @@ class ProcessCampaigns extends Command
 
     // return response($fileContent, 200)->header('Content-Type', 'text/html');
 
-    $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
+    $prompt = "Translate the following email content to ".langName($email_lang)." language:\n\n{$fileContent}";
 
     $requestBody = [
       'model' => 'gpt-3.5-turbo-instruct',
