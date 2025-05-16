@@ -374,7 +374,7 @@ class ProcessTprmCampaigns extends Command
       ],
       [
         "role" => "user",
-        "content" => "Translate the following email content to " . langName($email_lang) . " language:\n\n{$emailBody}"
+        "content" => "Translate the following email content to " . langName($email_lang) . " language and return the same html in translated version:\n\n{$emailBody}"
       ]
     ];
 

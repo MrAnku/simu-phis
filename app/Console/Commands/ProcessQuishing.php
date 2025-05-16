@@ -203,15 +203,15 @@ class ProcessQuishing extends Command
         // }
 
         $messages = [
-            [
-                "role" => "system",
-                "content" => "You are a professional email translator."
-            ],
-            [
-                "role" => "user",
-                "content" => "Translate the following email content to " . langName($email_lang) . " language:\n\n{$emailBody}"
-            ]
-        ];
+      [
+        "role" => "system",
+        "content" => "You are a professional email translator."
+      ],
+      [
+        "role" => "user",
+        "content" => "Translate the following email content to " . langName($email_lang) . " language and return the same html in translated version:\n\n{$emailBody}"
+      ]
+    ];
 
         $requestBody = [
             'model' => 'gpt-3.5-turbo',
