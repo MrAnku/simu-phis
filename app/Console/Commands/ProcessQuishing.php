@@ -89,15 +89,10 @@ class ProcessQuishing extends Command
         $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         $mailBody = str_replace('{{qr_code}}', '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">', $mailBody);
 
+
         if ($campaign->quishing_lang !== 'en') {
-            $templateBodyPath = public_path('translated_temp/translated_file.html');
-            // Ensure the directory exists
-            if (!File::exists(dirname($templateBodyPath))) {
-                File::makeDirectory(dirname($templateBodyPath), 0755, true);
-            }
-            // Put the file in the public directory
-            File::put($templateBodyPath, $mailBody);
-            $mailBody = $this->changeEmailLang($templateBodyPath, $campaign->email_lang);
+
+            $mailBody = $this->changeEmailLang($mailBody, $campaign->quishing_lang);
         }
 
         $mailData = [
@@ -196,20 +191,31 @@ class ProcessQuishing extends Command
         return $qrCodeUrl;
     }
 
-    public function changeEmailLang($tempBodyFile, $email_lang)
+    public function changeEmailLang($emailBody, $email_lang)
     {
         $apiKey = env('OPENAI_API_KEY');
-        $apiEndpoint = "https://api.openai.com/v1/completions";
-        // $file = public_path($tempBodyFile);
-        $fileContent = file_get_contents($tempBodyFile);
+        $apiEndpoint = "https://api.openai.com/v1/chat/completions";
+        // $fileContent = file_get_contents($tempBodyFile);
 
-        // return response($fileContent, 200)->header('Content-Type', 'text/html');
+        // Optional: Trim content if it’s too long to prevent token limit issues
+        // if (strlen($fileContent) > 10000) {
+        //     $fileContent = substr($fileContent, 0, 10000);
+        // }
 
-        $prompt = "Translate the following email content to {$email_lang}:\n\n{$fileContent}";
+        $messages = [
+            [
+                "role" => "system",
+                "content" => "You are a professional email translator."
+            ],
+            [
+                "role" => "user",
+                "content" => "Translate the following email content to " . langName($email_lang) . " language:\n\n{$emailBody}"
+            ]
+        ];
 
         $requestBody = [
-            'model' => 'gpt-3.5-turbo-instruct',
-            'prompt' => $prompt,
+            'model' => 'gpt-3.5-turbo',
+            'messages' => $messages,
             'max_tokens' => 1500,
             'temperature' => 0.7,
         ];
@@ -217,14 +223,16 @@ class ProcessQuishing extends Command
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $apiKey,
-        ])->post($apiEndpoint, $requestBody);
+        ])->timeout(60) // Avoid curl timeout error
+            ->post($apiEndpoint, $requestBody);
 
         if ($response->failed()) {
-            echo 'Failed to fetch translation' . json_encode($response->body());
-            return $fileContent;
+            echo 'Failed to fetch translation: ' . $response->body();
+            return $emailBody;
         }
+
         $responseData = $response->json();
-        $translatedMailBody = $responseData['choices'][0]['text'] ?? null;
+        $translatedMailBody = $responseData['choices'][0]['message']['content'] ?? null;
 
         return $translatedMailBody;
     }

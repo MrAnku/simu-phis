@@ -150,16 +150,9 @@ class ProcessTprmCampaigns extends Command
               $mailBody = str_replace('{{user_name}}', $user_Name, $mailBody);
               $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/ttrackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
 
-              if ($email_lang !== 'en') {
-                $templateBodyPath = public_path('translated_temp/translated_file.html');
-                // Ensure the directory exists
-                if (!File::exists(dirname($templateBodyPath))) {
-                  File::makeDirectory(dirname($templateBodyPath), 0755, true);
-                }
-                // Put the file in the public directory
-                File::put($templateBodyPath, $mailBody);
-                $mailBody = $this->changeEmailLang($templateBodyPath, $email_lang);
-                echo "Email language translated to: " . $email_lang . "\n";
+              if ($campaign->email_lang !== 'en') {
+
+                $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
               }
 
               $mailData = [
@@ -363,48 +356,48 @@ class ProcessTprmCampaigns extends Command
     }
   }
 
-  private function changeEmailLang($tempBodyFile, $email_lang)
+  public function changeEmailLang($emailBody, $email_lang)
   {
-    // API endpoint
-    $apiEndpoint = "http://65.21.191.199/translate_file";
+    $apiKey = env('OPENAI_API_KEY');
+    $apiEndpoint = "https://api.openai.com/v1/chat/completions";
+    // $fileContent = file_get_contents($tempBodyFile);
 
-    // Create a CURLFile object with the public path
-    $file = new \CURLFile($tempBodyFile);
+    // Optional: Trim content if it’s too long to prevent token limit issues
+    // if (strlen($fileContent) > 10000) {
+    //     $fileContent = substr($fileContent, 0, 10000);
+    // }
 
-    // Request body
-    $requestBody = [
-      "source" => "en",
-      "target" => $email_lang,
-      "file" => $file
+    $messages = [
+      [
+        "role" => "system",
+        "content" => "You are a professional email translator."
+      ],
+      [
+        "role" => "user",
+        "content" => "Translate the following email content to " . langName($email_lang) . " language:\n\n{$emailBody}"
+      ]
     ];
 
-    // Initialize cURL session
-    $curl = curl_init();
+    $requestBody = [
+      'model' => 'gpt-3.5-turbo',
+      'messages' => $messages,
+      'max_tokens' => 1500,
+      'temperature' => 0.7,
+    ];
 
-    // Set cURL options
-    curl_setopt($curl, CURLOPT_URL, $apiEndpoint);
-    curl_setopt($curl, CURLOPT_POST, true);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody); // Use CURLOPT_POSTFIELDS directly
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $response = Http::withHeaders([
+      'Content-Type' => 'application/json',
+      'Authorization' => 'Bearer ' . $apiKey,
+    ])->timeout(60) // Avoid curl timeout error
+      ->post($apiEndpoint, $requestBody);
 
-    // Execute cURL request
-    $response = curl_exec($curl);
-
-    // Check for errors
-    if (curl_errno($curl)) {
-      // echo 'cURL error: ' . curl_error($curl);
-      // exit;
-      return null; // or handle error as needed
+    if ($response->failed()) {
+      echo 'Failed to fetch translation: ' . $response->body();
+      return $emailBody;
     }
 
-    // Close cURL session
-    curl_close($curl);
-
-    // Decode the JSON response
-    $responseData = json_decode($response, true);
-
-    // Retrieve the translated mail body content
-    $translatedMailBody = file_get_contents($responseData['translatedFileUrl']);
+    $responseData = $response->json();
+    $translatedMailBody = $responseData['choices'][0]['message']['content'] ?? null;
 
     return $translatedMailBody;
   }
