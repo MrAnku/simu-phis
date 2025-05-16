@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to Simuphish</title>
+    <title>Welcome to {{ $companyName }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,10 +49,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="simUphish Logo">
+            <img src="{{ $companyLogoDark }}" alt="simUphish Logo">
         </div>
         <div class="content">
-            <h1>Welcome to simUphish!</h1>
+            <h1>Welcome to {{ $companyName }}!</h1>
             <p>Dear {{ $deal->first_name }},</p>
             <p>We are thrilled to have you on board. Your account has been successfully created. Below are your login details:</p>
             <p><strong>Email:</strong> {{ $deal->email }}</p>
@@ -63,10 +63,10 @@
             <a href="{{ url('/login') }}" class="button">Log In</a>
             <p>If you have any questions or need assistance, feel free to contact our support team.</p>
             <p>Best regards,</p>
-            <p>The {{env('APP_NAME')}} Team</p>
+            <p>The {{ $companyName }} Team</p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} {{env('APP_NAME')}}. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.</p>
         </div>
     </div>
 </body>

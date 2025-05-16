@@ -49,7 +49,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="{{env('APP_NAME')}} Logo">
+            <img src="{{ $companyLogoDark }}" alt="{{ $companyName }} Logo">
         </div>
         <div class="content">
             <h1>Password Reset Request</h1>
@@ -59,7 +59,7 @@
             <p>If you did not request a password reset, please ignore this email.</p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} {{env('APP_NAME')}}. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.</p>
         </div>
     </div>
 </body>

@@ -19,9 +19,14 @@ class CheckWhiteLabelDomain
     {
         $host = $request->getHost();
 
-        $companyBranding = WhiteLabelledCompany::where('domain', $host)
+        $companyBranding = WhiteLabelledCompany::where(function ($query) use ($host) {
+            $query->where('domain', $host)
+                ->orWhere('learn_domain', $host);
+        })
             ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
             ->first();
+
 
         if ($companyBranding) {
             $companyLogoDark = $companyBranding->dark_logo;
@@ -49,7 +54,7 @@ class CheckWhiteLabelDomain
             'companyLearnDomain' => $companyLearnDomain
         ]);
 
-        
+
         return $next($request);
     }
 }

@@ -6,11 +6,12 @@ use App\Models\Log;
 use App\Models\Company;
 use App\Models\SiemLog;
 use App\Models\SiemProvider;
-use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\DB;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Request;
 
 if (!function_exists('isActiveRoute')) {
     function isActiveRoute($route, $output = 'active')
@@ -105,7 +106,7 @@ if (!function_exists('translateQuizUsingAi')) {
 
         if ($response->failed()) {
             // return 'Failed to fetch translation' . json_encode($response->body());
-             return $quiz;
+            return $quiz;
         }
         $responseData = $response->json();
         $translatedJsonQuiz = $responseData['choices'][0]['message']['content'] ?? null;
@@ -114,7 +115,8 @@ if (!function_exists('translateQuizUsingAi')) {
     }
 }
 if (!function_exists('changeTranslatedQuizVideoUrl')) {
-    function changeTranslatedQuizVideoUrl($quizArray, $targetLang){
+    function changeTranslatedQuizVideoUrl($quizArray, $targetLang)
+    {
         $newArray = [];
         foreach ($quizArray as $quizObject) {
             foreach ($quizObject as $key => $value) {
@@ -266,7 +268,7 @@ if (!function_exists('log_action')) {
             'user_agent' => request()->userAgent(),
         ]);
 
-        if(Auth::guard('company')->check()){
+        if (Auth::guard('company')->check()) {
             $siemExists = SiemProvider::where('company_id', Auth::user()->company_id)->where('status', 1)->first();
             if ($siemExists) {
                 SiemLog::create([
@@ -288,7 +290,7 @@ if (!function_exists('checkWhitelabeled')) {
         $company_email = $company->email;
 
 
-        
+
         $isWhitelabled = WhiteLabelledCompany::where('partner_id', $partner_id)
             ->where('approved_by_partner', 1)
             ->first();
@@ -365,5 +367,23 @@ if (!function_exists('langName')) {
         ];
 
         return $languages[$langCode];
+    }
+}
+
+if (!function_exists('learnDomain')) {
+
+    function learnDomain()
+    {
+        $host = request()->getHost();
+
+        $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)->first();
+
+        if($companyBranding){
+            $domain = $companyBranding->learn_domain;
+        }else{
+            $domain = 'learn.simuphish.com';
+        }
+
+        return $domain;
     }
 }

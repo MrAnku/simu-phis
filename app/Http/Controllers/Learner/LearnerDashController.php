@@ -6,13 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LearnerSessionRegenerateMail;
+use Illuminate\Support\Facades\Session;
 
 class LearnerDashController extends Controller
 {
@@ -63,7 +66,6 @@ class LearnerDashController extends Controller
             return view('learning.login', ['msg' => 'Your training session has expired!']); // Stop execution
         }
 
-
         // Decrypt the email
         $userEmail = decrypt($session->token);
 
@@ -85,6 +87,8 @@ class LearnerDashController extends Controller
             ->where('completed', 1)
             ->where('personal_best', 100)
             ->count();
+
+        Session::put('token', $token);
 
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
     }
@@ -141,8 +145,29 @@ class LearnerDashController extends Controller
         // Encrypt email to generate token
         $token = encrypt($request->email);
 
-        // Construct learning dashboard link
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        // Check white label and Construct learning dashboard link
+        $trainingAssignedUser = TrainingAssignedUser::where('user_email', $request->email)->first();
+
+        $whiteLabelled = WhiteLabelledCompany::where('company_id', $trainingAssignedUser->company_id)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+
+        if ($whiteLabelled) {
+            $learning_dashboard_link = $whiteLabelled->learn_domain . '/training-dashboard/' . $token;
+
+            $smtp =  WhiteLabelledSmtp::where('company_id', $trainingAssignedUser->company_id)
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+        } else {
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        }
 
         // Insert new record into the database
         $inserted = DB::table('learnerloginsession')->insert([

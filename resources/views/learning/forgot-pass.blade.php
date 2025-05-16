@@ -5,9 +5,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Forgot Password | simUphish Learning</title>
+    <title>Forgot Password | {{ $companyName }} Learning</title>
 
-    <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon" />
+    <link rel="icon" href="{{ $companyFavicon }}" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -39,7 +39,7 @@
             <div class="text-center mb-4">
                 <a href="." class="navbar-brand navbar-brand-autodark">
                     {{-- <img src="" width="150" alt="Logo" class="navbar-brand-image"> --}}
-                    <img src="/assets/images/simu-logo-dark.png" alt="logo" class="navbar-brand-image">
+                    <img src="{{ $companyLogoDark }}" alt="logo" class="navbar-brand-image">
                 </a>
             </div>
             <div class="card card-md">

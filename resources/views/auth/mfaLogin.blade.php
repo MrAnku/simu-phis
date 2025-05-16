@@ -8,10 +8,10 @@
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> Enter Code - simUphish </title>
+    <title> Enter Code - {{ $companyName }} </title>
     
     <!-- Favicon -->
-    <link rel="icon" href="/assets/images/brand-logos/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ $companyFavicon }}" type="image/x-icon">
 
     <!-- Main Theme Js -->
     <script src="/assets/js/authentication-main.js"></script>
@@ -44,9 +44,9 @@
             <div class="col-lg-5">
                 <div class="my-5 d-flex justify-content-center">
                     <a href="index.html">
-                        <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="logo" class="desktop-logo"
+                        <img src="{{ $companyLogoDark }}" alt="logo" class="desktop-logo"
                             width="200">
-                        <img src="{{ asset('assets/images/simu-logo.png') }}" alt="logo" class="desktop-dark">
+                        <img src="{{ $companyLogoLight }}" alt="logo" class="desktop-dark">
                     </a>
                 </div>
                 <div class="card custom-card">

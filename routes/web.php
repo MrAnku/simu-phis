@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\DB;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TprmController;
 use App\Http\Controllers\AicallController;
 use App\Http\Controllers\DarkWebMonitoring;
@@ -13,8 +16,10 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\QuishingController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SmishingController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\BluecolarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\OutlookAdController;
@@ -23,12 +28,14 @@ use App\Http\Controllers\SingleEmpController;
 use App\Http\Controllers\AiTrainingController;
 use App\Http\Controllers\PublicInfoController;
 use App\Http\Controllers\TestUploadController;
+use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\ShowWebsiteController;
 use App\Http\Controllers\ScrumPackageController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DealRegController;
 use App\Http\Controllers\Admin\EncycloController;
 use App\Http\Controllers\Admin\PartnerController;
+use App\Http\Controllers\QuishingEmailController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\PhishingEmailsController;
@@ -36,26 +43,20 @@ use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Admin\AiVishingController;
 use App\Http\Controllers\BrandMonitoringController;
 use App\Http\Controllers\Admin\AdminLoginController;
-use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\PhishingWebsitesController;
+use App\Http\Controllers\SmishingTemplateController;
 use App\Http\Controllers\WhatsappCampaignController;
 use App\Http\Controllers\DarkWebMonitoringController;
 use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\Admin\AdminPhishingEmailController;
+use App\Http\Controllers\Admin\AdminQuishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
-use App\Http\Controllers\Admin\AdminQuishingEmailController;
-use App\Http\Controllers\Admin\AdminTrainingGameController;
-use App\Http\Controllers\QuishingEmailController;
-use App\Http\Controllers\BluecolarController;
-use App\Http\Controllers\SmishingController;
-use App\Http\Controllers\SmishingTemplateController;
-use App\Http\Controllers\TestController;
-use App\Http\Middleware\SetLocale;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -74,53 +75,68 @@ Route::post('/learner/create-password', [CreatePassController::class, 'storePass
 
 
 
+Route::domain(learnDomain())->group(function () {
+
+    Route::middleware(['checkWhiteLabel'])->group(function () {
+
+        // Route::post('/learner/login-without-password', [LearnerAuthController::class, 'loginWithoutPassword'])->name('learner.loginWithoutPassword');
+
+        Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
+
+        //  Route::post('/renew-token', [LearnerDashController::class, 'renewToken']);
+        Route::post('/create-new-token', [LearnerDashController::class, 'createNewToken']);
+
+        Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
+            ->name('learner.training.dashboard');
 
 
-Route::domain('learn.simuphish.com')->group(function () {
-    // Route::post('/learner/login-without-password', [LearnerAuthController::class, 'loginWithoutPassword'])->name('learner.loginWithoutPassword');
+        Route::middleware(['isLearnerLoggedIn'])->group(function () {
 
-    Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
-        ->name('learner.training.dashboard');
-    Route::post('/renew-token', [LearnerDashController::class, 'renewToken']);
-    Route::post('/create-new-token', [LearnerDashController::class, 'createNewToken']);
+            Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
 
+            Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
 
-    Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
-    Route::post('/login', [LearnerAuthController::class, 'login'])->name('learner.login');
-    Route::get('/forgot-password', [LearnerAuthController::class, 'forgotPass'])->name('learner.forgot.pass');
-    Route::post('/forgot-password', [LearnerAuthController::class, 'forgotPassStore'])->name('learner.forgot.store');
+            Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
+            Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
 
-    Route::get('/create-password/{token}', [LearnerAuthController::class, 'createPassPage'])->name('learner.create.pass');
-    Route::post('/create-password/store', [LearnerAuthController::class, 'storePassword'])->name('learner.store.pass');
+            Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
+            Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
 
-    // Route::middleware('isLearnerLoggedIn')->group(function () {
+            Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
 
+            Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+            Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
+        });
 
-    // Route::middleware([SetLocale::class])->group(function () {
-    Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
-
-    // Language change route
-    Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
-    // Language change route
-
-    // });
-
-    Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
-
-    Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
-    Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
-
-    Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
-    Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
-
-    Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
+        // Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
 
 
 
-    Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
-    Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
-    Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
-    // });
+        // Route::post('/login', [LearnerAuthController::class, 'login'])->name('learner.login');
+        // Route::get('/forgot-password', [LearnerAuthController::class, 'forgotPass'])->name('learner.forgot.pass');
+        // Route::post('/forgot-password', [LearnerAuthController::class, 'forgotPassStore'])->name('learner.forgot.store');
+
+        // Route::get('/create-password/{token}', [LearnerAuthController::class, 'createPassPage'])->name('learner.create.pass');
+        // Route::post('/create-password/store', [LearnerAuthController::class, 'storePassword'])->name('learner.store.pass');
+
+        // Route::middleware(['isLearnerLoggedIn'])->group(function () {
+
+        // Route::middleware('isLearnerLoggedIn')->group(function () {
+
+
+        // Route::middleware([SetLocale::class])->group(function () {
+        // Route::get('/dashboard', [LearnerDashController::class, 'index'])->name('learner.dashboard');
+
+        // Language change route
+
+        // Language change route
+
+        // });
+
+
+        // });
+        // });
+    });
 });
 
 //  ========================== Game Training Routes ===================================

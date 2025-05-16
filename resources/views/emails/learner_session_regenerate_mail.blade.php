@@ -352,7 +352,7 @@
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 150px">
                                                                         <img alt="Logo" height="auto"
-                                                                            src="{{asset('assets/images/simu-logo-dark.png')}}"
+                                                                            src="{{ $companyLogoDark }}"
                                                                             style="
                                           display: block;
                                           height: auto;
@@ -1731,7 +1731,7 @@
                                                                                 target="_blank"><img align="center"
                                                                                     alt="simUphish Logo" class="icon"
                                                                                     height="auto"
-                                                                                    src="{{asset('assets/images/simu-icon.png')}}"
+                                                                                    src="{{ $companyFavicon }}"
                                                                                     style="
                                               display: block;
                                               height: auto;
@@ -1757,7 +1757,7 @@
                                             text-decoration: none;
                                           "
                                                                                 target="_blank">Copyright © 2025
-                                                                                simpUphish | All rights reserved</a>
+                                                                                {{ $companyName }} | All rights reserved</a>
                                                                         </td>
                                                                     </tr>
                                                                 </table>

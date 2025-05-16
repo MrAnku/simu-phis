@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>
-        Learning | simUphish
+        Learning | {{ $companyName }}
     </title>
 
     <!-- CSS files -->
@@ -18,7 +18,7 @@
     <link href="/dist/css/demo.min.css?1685973381" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.min.css" rel="stylesheet">
 
-    <link rel="icon" href="{{ asset('assets') }}/images/simu-icon.png" type="image/x-icon">
+    <link rel="icon" href="{{ $companyFavicon }}" type="image/x-icon">
     <style>
         @import url("https://rsms.me/inter/inter.css");
 
@@ -78,7 +78,7 @@
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href="{{ route('learner.dashboard') }}">
-                        <img src="/assets/images/simu-logo-dark.png" alt="" class="navbar-brand-image"
+                        <img src="{{ $companyLogoDark }}" alt="" class="navbar-brand-image"
                             style="width: 181px; height: auto;" />
                     </a>
                 </h1>
@@ -162,8 +162,8 @@
                         <div class="col-12 col-lg-auto mt-3 mt-lg-0">
                             <ul class="list-inline list-inline-dots mb-0">
                                 <li class="list-inline-item">
-                                    Copyright &copy; 2024
-                                    <a href="." class="link-secondary">simUphish</a>. All rights
+                                    Copyright &copy; {{ date('Y') }}
+                                    <a href="." class="link-secondary">{{ $companyName }}</a>. All rights
                                     reserved.
                                 </li>
                             </ul>
