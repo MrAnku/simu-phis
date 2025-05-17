@@ -69,7 +69,7 @@
                                 </li>
                                 <li class="nav-item m-1" role="presentation">
                                     <a class="nav-link" data-bs-toggle="tab" role="tab" aria-current="page"
-                                        href="#whiteLabel" aria-selected="false" tabindex="-1">{{ __('White Label') }}</a>
+                                        href="#whiteLabel" aria-selected="false" tabindex="-1">{{ __('White Labelling') }}</a>
                                 </li>
 
                             </ul>
@@ -400,7 +400,7 @@
                                                     <option value="US/Arizona">(GMT-07:00) {{ __('Arizona') }}</option>
                                                     <option value="America/Chihuahua">(GMT-07:00)
                                                         {{ __('Chihuahua, La Paz,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Mazatlan') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Mazatlan') }}
                                                     </option>
                                                     <option value="US/Mountain">(GMT-07:00) {{ __('Mountain Time') }} (US
                                                         &amp; Canada)
@@ -412,13 +412,13 @@
                                                     </option>
                                                     <option value="America/Mexico_City">(GMT-06:00)
                                                         {{ __('Guadalajara, Mexico
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        City, Monterrey') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                City, Monterrey') }}
                                                     </option>
                                                     <option value="Canada/Saskatchewan">(GMT-06:00)
                                                         {{ __('Saskatchewan') }}</option>
                                                     <option value="America/Bogota">(GMT-05:00)
                                                         {{ __('Bogota, Lima, Quito, Rio
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Branco') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Branco') }}
                                                     </option>
                                                     <option value="US/Eastern">(GMT-05:00) {{ __('Eastern Time') }} (US
                                                         &amp; Canada)
@@ -440,7 +440,7 @@
                                                     </option>
                                                     <option value="America/Argentina/Buenos_Aires">(GMT-03:00)
                                                         {{ __('Buenos
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Aires, Georgetown') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Aires, Georgetown') }}
                                                     </option>
                                                     <option value="America/Godthab">(GMT-03:00) {{ __('Greenland') }}
                                                     </option>
@@ -454,27 +454,27 @@
                                                     </option>
                                                     <option value="Africa/Casablanca">(GMT+00:00)
                                                         {{ __('Casablanca, Monrovia,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Reykjavik') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Reykjavik') }}
                                                     </option>
                                                     <option value="Etc/Greenwich">(GMT+00:00)
                                                         {{ __('Greenwich Mean Time : Dublin,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Edinburgh, Lisbon, London') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Edinburgh, Lisbon, London') }}
                                                     </option>
                                                     <option value="Europe/Amsterdam">(GMT+01:00)
                                                         {{ __('Amsterdam, Berlin, Bern,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Rome, Stockholm, Vienna') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Rome, Stockholm, Vienna') }}
                                                     </option>
                                                     <option value="Europe/Belgrade">(GMT+01:00)
                                                         {{ __('Belgrade, Bratislava,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Budapest, Ljubljana, Prague') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Budapest, Ljubljana, Prague') }}
                                                     </option>
                                                     <option value="Europe/Brussels">(GMT+01:00)
                                                         {{ __('Brussels, Copenhagen,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Madrid, Paris') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Madrid, Paris') }}
                                                     </option>
                                                     <option value="Europe/Sarajevo">(GMT+01:00)
                                                         {{ __('Sarajevo, Skopje, Warsaw,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Zagreb') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Zagreb') }}
                                                     </option>
                                                     <option value="Africa/Lagos">(GMT+01:00)
                                                         {{ __('West Central Africa') }}</option>
@@ -488,7 +488,7 @@
                                                     </option>
                                                     <option value="Europe/Helsinki">(GMT+02:00)
                                                         {{ __('Helsinki, Kyiv, Riga,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Sofia, Tallinn, Vilnius') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Sofia, Tallinn, Vilnius') }}
                                                     </option>
                                                     <option value="Asia/Jerusalem">(GMT+02:00) {{ __('Jerusalem') }}
                                                     </option>
@@ -500,7 +500,7 @@
                                                     </option>
                                                     <option value="Europe/Moscow">(GMT+03:00)
                                                         {{ __('Moscow, St. Petersburg,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Volgograd') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Volgograd') }}
                                                     </option>
                                                     <option value="Africa/Nairobi">(GMT+03:00) {{ __('Nairobi') }}
                                                     </option>
@@ -518,7 +518,7 @@
                                                     </option>
                                                     <option value="Asia/Calcutta">(GMT+05:30)
                                                         {{ __('Chennai, Kolkata, Mumbai, New
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Delhi') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Delhi') }}
                                                     </option>
                                                     <option value="Asia/Calcutta">(GMT+05:30)
                                                         {{ __('Sri Jayawardenapura') }}</option>
@@ -537,7 +537,7 @@
                                                     </option>
                                                     <option value="Asia/Hong_Kong">(GMT+08:00)
                                                         {{ __('Beijing, Chongqing, Hong
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Kong, Urumqi') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Kong, Urumqi') }}
                                                     </option>
                                                     <option value="Asia/Kuala_Lumpur">(GMT+08:00)
                                                         {{ __('Kuala Lumpur, Singapore') }}
@@ -559,7 +559,7 @@
                                                     </option>
                                                     <option value="Australia/Canberra">(GMT+10:00)
                                                         {{ __('Canberra, Melbourne,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Sydney') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Sydney') }}
                                                     </option>
                                                     <option value="Australia/Hobart">(GMT+10:00) {{ __('Hobart') }}
                                                     </option>
@@ -569,7 +569,7 @@
                                                     </option>
                                                     <option value="Asia/Magadan">(GMT+11:00)
                                                         {{ __('Magadan, Solomon Is., New
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Caledonia') }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Caledonia') }}
                                                     </option>
                                                     <option value="Pacific/Auckland">(GMT+12:00)
                                                         {{ __('Auckland, Wellington') }}
@@ -1080,7 +1080,8 @@
                                 <div class="tab-pane p-0" id="whiteLabel" role="tabpanel">
                                     @if ($whiteLabel)
                                         @if ($whiteLabel->approved_by_partner == 1)
-                                            <p class="text-primary m-4 fw-3">Your White Label Request is approved by partner</p>
+                                            <p class="text-primary m-4 fw-3">Your White Label Request is approved by
+                                                partner</p>
                                         @else
                                             <p class="text-primary m-4 fw-3">Your White Label Request is submitted</p>
                                         @endif
@@ -1153,6 +1154,15 @@
                                                                         name="learn_domain" id="learn_domain"
                                                                         placeholder="learn.simpuphish.com">
                                                                 </div>
+                                                                <div class="card-footer">
+                                                                    <div class="float-end">
+
+                                                                        <button type="button"
+                                                                            class="btn btn-primary mt-2" id="prevLogoTab">
+                                                                            Next
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
 
                                                             </div>
                                                         </div>
@@ -1184,6 +1194,18 @@
                                                                             class="text-danger">*</sup></label>
                                                                     <input type="file" class="form-control"
                                                                         name="favicon" id="favicon">
+                                                                </div>
+                                                                <div class="card-footer">
+                                                                    <div class="float-end">
+                                                                        <button type="button"
+                                                                            class="btn btn-primary mt-2" id="toCompanyTab">
+                                                                            {{ __('Previous') }}
+                                                                        </button>
+                                                                          <button type="button"
+                                                                            class="btn btn-primary mt-2" id="toSmtpTab">
+                                                                            {{ __('Next') }}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1252,6 +1274,10 @@
                                                                 </div>
                                                                 <div class="card-footer">
                                                                     <div class="float-end">
+                                                                         <button type="button"
+                                                                            class="btn btn-primary mt-2" id="toLogoTab">
+                                                                            {{ __('Previous') }}
+                                                                        </button>
                                                                         <button class="btn btn-primary m-1"
                                                                             id="saveWhiteLabel">
                                                                             {{ __('Save') }}
@@ -1383,6 +1409,25 @@
             }
 
 
+            document.getElementById('toLogoTab').addEventListener('click', function() {
+                const logoTab = new bootstrap.Tab(document.querySelector('#logo-tab'));
+                logoTab.show();
+            });
+
+            document.getElementById('toCompanyTab').addEventListener('click', function() {
+                const companyTab = new bootstrap.Tab(document.querySelector('#company-tab'));
+                companyTab.show();
+            });
+
+            document.getElementById('toSmtpTab').addEventListener('click', function() {
+                const smtpTab = new bootstrap.Tab(document.querySelector('#smtp-tab'));
+                smtpTab.show();
+            });
+
+            document.getElementById('prevLogoTab').addEventListener('click', function() {
+                 const logoTab = new bootstrap.Tab(document.querySelector('#logo-tab'));
+                logoTab.show();
+            });
 
             $("#updateProfileBtn").click(function(e) {
                 var clickedBtn = $(this);

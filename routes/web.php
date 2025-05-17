@@ -70,8 +70,8 @@ Route::post('/company/create-password', [CreatePassController::class, 'storeComp
 
 //---------------learning portal routes------------//
 
-Route::get('/learner/create-password/{token}', [CreatePassController::class, 'createPasswordPage'])->name('learner.create.password');
-Route::post('/learner/create-password', [CreatePassController::class, 'storePassword'])->name('learner.store.password');
+// Route::get('/learner/create-password/{token}', [CreatePassController::class, 'createPasswordPage'])->name('learner.create.password');
+// Route::post('/learner/create-password', [CreatePassController::class, 'storePassword'])->name('learner.store.password');
 
 
 

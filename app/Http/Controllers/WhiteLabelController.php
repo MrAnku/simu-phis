@@ -29,6 +29,21 @@ class WhiteLabelController extends Controller
             'from_name' => 'required|string|max:255',
         ]);
 
+        $domainExists = WhiteLabelledCompany::where('domain', $request->domain)->exists();
+        if($domainExists) {
+            return redirect()->back()->with('error', 'Domain already added by another company.');
+        }
+
+        $learnDomainExists = WhiteLabelledCompany::where('learn_domain', $request->learn_domain)->exists();
+        if($learnDomainExists) {
+            return redirect()->back()->with('error', 'Learn domain already added by another company.');
+        }
+
+        $smtpUsernameExists = WhiteLabelledSmtp::where('smtp_username', $request->smtp_username)->exists();
+        if($smtpUsernameExists) {
+            return redirect()->back()->with('error', 'SMTP username already added by another company.');
+        }
+
         $companyId = Auth::user()->company_id;
 
         $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $request->file('dark_logo')->getClientOriginalName(), 's3');

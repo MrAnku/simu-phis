@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Password</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="{{ $companyFavicon }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/simu-icon.png') }}">
 </head>
 <body>
     <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
         <!-- Logo Section -->
         <div class="mb-4">
-            <img src="{{ $companyLogoDark }}" alt="Company Logo" class="img-fluid" style="max-width: 200px;">
+             <img src="{{asset('assets/images/simu-logo-dark.png')}}" alt="Company Logo" class="img-fluid" style="max-width: 200px;">
         </div>
 
         <!-- Form Section -->
