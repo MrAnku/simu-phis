@@ -871,7 +871,7 @@
                                                                     <div align="right" class="alignment"
                                                                         style="line-height: 10px">
                                                                         <div style="max-width: 57.5px">
-                                                                            <a href="http://learn.simuphish.com/"
+                                                                            <a href="https://learn.simuphish.com/"
                                                                                 style="outline: none" tabindex="-1"
                                                                                 target="_blank"><img
                                                                                     alt="a white arrow in a blue circle"
@@ -1099,8 +1099,10 @@
                                             color: #ffffff;
                                             text-decoration: none;
                                           "
-                                                                                target="_blank">Copyright © 2025
-                                                                                simUphish | All rights reserved</a>
+                                                                                target="_blank">Copyright ©
+                                                                                {{ date('Y') }}
+                                                                                {{ $mailData['company_name'] }} | All rights
+                                                                                reserved</a>
                                                                         </td>
                                                                     </tr>
                                                                 </table>
