@@ -1278,7 +1278,7 @@
                                                                             class="btn btn-primary mt-2" id="toLogoTab">
                                                                             {{ __('Previous') }}
                                                                         </button>
-                                                                        <button class="btn btn-primary m-1"
+                                                                        <button class="btn btn-primary mt-2"
                                                                             id="saveWhiteLabel">
                                                                             {{ __('Save') }}
                                                                         </button>
