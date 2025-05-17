@@ -11,6 +11,7 @@ use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Request;
 
 if (!function_exists('isActiveRoute')) {
@@ -374,16 +375,17 @@ if (!function_exists('learnDomain')) {
 
     function learnDomain()
     {
-        $host = request()->getHost();
+        if (Schema::hasTable('white_labelled_companies')) {
+            $host = request()->getHost();
+            $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)->first();
 
-        $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)->first();
+            if ($companyBranding) {
+                $domain = $companyBranding->learn_domain;
+            } else {
+                $domain = 'learn.simuphish.com';
+            }
 
-        if($companyBranding){
-            $domain = $companyBranding->learn_domain;
-        }else{
-            $domain = 'learn.simuphish.com';
+            return $domain;
         }
-
-        return $domain;
     }
 }
