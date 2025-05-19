@@ -184,7 +184,7 @@ class ProcessCampaigns extends Command
               $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
 
               if ($campaign->email_lang !== 'en') {
-               
+
                 $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
               }
 
@@ -469,38 +469,19 @@ class ProcessCampaigns extends Command
 
   public function changeEmailLang($emailBody, $email_lang)
   {
-    $apiKey = env('OPENAI_API_KEY');
-    $apiEndpoint = "https://api.openai.com/v1/chat/completions";
-    // $fileContent = file_get_contents($tempBodyFile);
+    $tempFile = tmpfile();
+    fwrite($tempFile, $emailBody);
+    $meta = stream_get_meta_data($tempFile);
+    $tempFilePath = $meta['uri'];
 
-    // Optional: Trim content if it’s too long to prevent token limit issues
-    // if (strlen($fileContent) > 10000) {
-    //     $fileContent = substr($fileContent, 0, 10000);
-    // }
+    $response = Http::withoutVerifying()
+      ->attach('file', file_get_contents($tempFilePath), 'email.html')
+      ->post('https://translate.sparrow.host/translate_file', [
+        'source' => 'en',
+        'target' => $email_lang,
+      ]);
 
-    $messages = [
-      [
-        "role" => "system",
-        "content" => "You are a professional email translator."
-      ],
-      [
-        "role" => "user",
-        "content" => "Translate the following email content to " . langName($email_lang) . " language and return the same html in translated version:\n\n{$emailBody}"
-      ]
-    ];
-
-    $requestBody = [
-      'model' => 'gpt-3.5-turbo',
-      'messages' => $messages,
-      'max_tokens' => 1500,
-      'temperature' => 0.7,
-    ];
-
-    $response = Http::withHeaders([
-      'Content-Type' => 'application/json',
-      'Authorization' => 'Bearer ' . $apiKey,
-    ])->timeout(60) // Avoid curl timeout error
-      ->post($apiEndpoint, $requestBody);
+    fclose($tempFile);
 
     if ($response->failed()) {
       echo 'Failed to fetch translation: ' . $response->body();
@@ -508,11 +489,23 @@ class ProcessCampaigns extends Command
     }
 
     $responseData = $response->json();
-    $translatedMailBody = $responseData['choices'][0]['message']['content'] ?? null;
+    $translatedUrl = $responseData['translatedFileUrl'] ?? null;
 
-    return $translatedMailBody;
+    if (!$translatedUrl) {
+      echo 'No translated URL found in response.';
+      return $emailBody;
+    }
+
+    $translatedContent = Http::withoutVerifying()
+      ->get($translatedUrl);
+
+    if ($translatedContent->failed()) {
+      echo 'Failed to download translated content.';
+      return $emailBody;
+    }
+
+    return $translatedContent->body();
   }
-
 
   private function sendReminderMail()
   {
