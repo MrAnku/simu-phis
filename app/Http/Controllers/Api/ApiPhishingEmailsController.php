@@ -26,24 +26,24 @@ class ApiPhishingEmailsController extends Controller
 
             $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                 ->where('company_id', $company_id)
-                ->orWhere('company_id', 'default')->get();
+                ->orWhere('company_id', 'default')->paginate(10);
 
 
-            $senderProfiles = SenderProfile::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->get();
+            // $senderProfiles = SenderProfile::where('company_id', $company_id)
+            //     ->orWhere('company_id', 'default')
+            //     ->get();
 
-            $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->get();
+            // $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
+            //     ->orWhere('company_id', 'default')
+            //     ->get();
 
             return response()->json([
                 'status' => true,
                 'message' => __('Phishing data fetched successfully.'),
                 'data' => [
                     'phishingEmails' => $phishingEmails,
-                    'senderProfiles' => $senderProfiles,
-                    'phishingWebsites' => $phishingWebsites,
+                    // 'senderProfiles' => $senderProfiles,
+                    // 'phishingWebsites' => $phishingWebsites,
                 ]
             ], 200);
         } catch (ValidationException $e) {
