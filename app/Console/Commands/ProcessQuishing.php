@@ -199,6 +199,7 @@ class ProcessQuishing extends Command
         $tempFilePath = $meta['uri'];
 
         $response = Http::withoutVerifying()
+            ->timeout(60)
             ->attach('file', file_get_contents($tempFilePath), 'email.html')
             ->post('https://translate.sparrow.host/translate_file', [
                 'source' => 'en',
@@ -220,15 +221,12 @@ class ProcessQuishing extends Command
             return $emailBody;
         }
 
-        $translatedContent = Http::withoutVerifying()
-            ->get($translatedUrl);
+        $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
 
-        if ($translatedContent->failed()) {
-            echo 'Failed to download translated content.';
-            return $emailBody;
-        }
+        $translatedContent = file_get_contents($translatedUrl);
 
-        return $translatedContent->body();
+
+        return $translatedContent;
     }
 
     private function checkCompletedCampaigns()
