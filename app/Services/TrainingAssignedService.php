@@ -2,14 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\CampaignReport;
 use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\AssignTrainingWithPassResetLink;
 
 class TrainingAssignedService
 {
@@ -17,8 +15,29 @@ class TrainingAssignedService
     {
         $learnSiteAndLogo = checkWhitelabeled($campData['company_id']);
         $token = encrypt($campData['user_email']);
-        // $token = Hash::make($campData['user_email']);
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+
+        $iswhitelabelled = WhiteLabelledCompany::where('company_id', $campData['company_id'])
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+        if ($iswhitelabelled) {
+            $smtp =  WhiteLabelledSmtp::where('company_id', $campData['company_id'])
+                ->first();
+            config([
+                'mail.mailers.smtp.host' => $smtp->smtp_host,
+                'mail.mailers.smtp.username' => $smtp->smtp_username,
+                'mail.mailers.smtp.password' => $smtp->smtp_password,
+                'mail.from.address' => $smtp->from_address,
+                'mail.from.name' => $smtp->from_name,
+            ]);
+
+            $learning_dashboard_link = $iswhitelabelled->learn_domain . '/training-dashboard/' . $token;
+            $learn_domain = $iswhitelabelled->learn_domain;
+        } else {
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+            $learn_domain = 'https://learn.simuphish.com/';
+        }
+
         DB::table('learnerloginsession')
             ->insert([
                 'token' => $token,
@@ -33,6 +52,7 @@ class TrainingAssignedService
             'learning_site' =>  $learning_dashboard_link,
             'logo' => $learnSiteAndLogo['logo'],
             'company_id' => $campData['company_id'],
+            'learn_domain' => $learn_domain,
         ];
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
@@ -43,24 +63,6 @@ class TrainingAssignedService
             }
             return $training->trainingData->name;
         });
-
-        $iswhitelabelled = WhiteLabelledCompany::where('company_id', $campData['company_id'])
-            ->where('approved_by_partner', 1)
-            ->where('service_status', 1)
-            ->first();
-        if ($iswhitelabelled) {
-           $smtp =  WhiteLabelledSmtp::where('company_id', $campData['company_id'])
-                ->first();
-            config([
-                'mail.mailers.smtp.host' => $smtp->smtp_host,
-                'mail.mailers.smtp.username' => $smtp->smtp_username,
-                'mail.mailers.smtp.password' => $smtp->smtp_password,
-                'mail.from.address' => $smtp->from_address,
-                'mail.from.name' => $smtp->from_name,
-            ]);
-        }
-
-        
 
         $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
