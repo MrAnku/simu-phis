@@ -154,7 +154,7 @@
                                                     <span class="side-menu__label">{{ __('WA Campaigns') }}</span>
                                                 </a>
                                             </li>
-                                            <li class="slide {{ Request::is('smishing') ? 'active' : '' }}">
+                                            {{-- <li class="slide {{ Request::is('smishing') ? 'active' : '' }}">
                                                 <a href="{{ route('smishing.index') }}"
                                                     class="side-menu__item {{ Request::is('smishing') ? 'active' : '' }}">
                                                     
@@ -164,7 +164,7 @@
                                                             class="badge bg-secondary-transparent ms-2">{{ __('New') }}</span>
                                                     </span>
                                                 </a>
-                                            </li>
+                                            </li> --}}
 
 
 
@@ -261,14 +261,14 @@
                                                 </a>
                                             </li>
 
-                                            <li class="slide {{ Request::is('smishing-templates') ? 'active' : '' }}">
+                                            {{-- <li class="slide {{ Request::is('smishing-templates') ? 'active' : '' }}">
                                                 <a href="{{ route('smishing.temps') }}"
                                                     class="side-menu__item {{ Request::is('smishing-templates') ? 'active' : '' }}">
                                                     <i class='bx bx-message-detail side-menu__icon'></i>
                                                     <span
                                                         class="side-menu__label">{{ __('Smishing Templates') }}</span>
                                                 </a>
-                                            </li>
+                                            </li> --}}
 
                                             <li class="slide {{ Request::is('quishing-emails') ? 'active' : '' }}">
                                                 <a href="{{ route('quishing.emails') }}"
