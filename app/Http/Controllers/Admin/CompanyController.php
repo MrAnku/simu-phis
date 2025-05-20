@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Mail\Admin\MailAfterCompanyApproval;
+use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
@@ -26,6 +28,10 @@ class CompanyController extends Controller
         $company->service_status = 1;
         $company->approve_date = $today;
         $company->save();
+
+        if($company->after_approval_mail !== null){
+            $issent = Mail::to($company->email)->send(new MailAfterCompanyApproval($company->after_approval_mail));
+        }
 
         // Optionally, send an email or perform other actions
 
