@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\WhiteLabel;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\Admin\PartnerStopWhitelabelMail;
-use App\Mail\Admin\PartnerRejectWhitelabelMail;
-use App\Mail\Admin\PartnerApproveWhitelabelMail;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
-class WhiteLabelController extends Controller
+class AdminWhiteLabelController extends Controller
 {
-    public function index()
+     public function index()
     {
         $allpartners = WhiteLabel::all();
 

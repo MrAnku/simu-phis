@@ -57,6 +57,7 @@ use App\Http\Controllers\Admin\AdminQuishingEmailController;
 use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
+use App\Http\Controllers\Admin\AdminWhiteLabelController;
 
 Route::middleware([CorsMiddleware::class])->get('/public-info', function () {
     return response()->json(['message' => 'This is public information.']);
@@ -615,10 +616,10 @@ Route::middleware(['isAdminLoggedIn'])->group(function () {
     Route::post('admin/whatsapp/approve', [WhatsAppController::class, 'approveNumberChange'])->name('admin.whatsappnumber.change');
 
     //-----------------whitelabel requests route--------------//
-    // Route::get('admin/whitelabel-req', [WhiteLabelController::class, 'index'])->name('admin.whitelabel');
-    // Route::post('admin/approve-whitelabel', [WhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
-    // Route::post('admin/stop-whitelabel', [WhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
-    // Route::post('admin/reject-whitelabel', [WhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
+    Route::get('admin/whitelabel-req', [AdminWhiteLabelController::class, 'index'])->name('admin.whitelabel');
+    Route::post('admin/approve-whitelabel', [AdminWhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
+    Route::post('admin/stop-whitelabel', [AdminWhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
+    Route::post('admin/reject-whitelabel', [AdminWhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
     //-----------------whitelabel requests route--------------//
 
     //----------------phishing emails route ----------------------//
