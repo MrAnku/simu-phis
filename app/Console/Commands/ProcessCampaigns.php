@@ -475,6 +475,7 @@ class ProcessCampaigns extends Command
     $tempFilePath = $meta['uri'];
 
     $response = Http::withoutVerifying()
+     ->timeout(60)
       ->attach('file', file_get_contents($tempFilePath), 'email.html')
       ->post('https://translate.sparrow.host/translate_file', [
         'source' => 'en',
@@ -495,16 +496,13 @@ class ProcessCampaigns extends Command
       echo 'No translated URL found in response.';
       return $emailBody;
     }
+    
+    $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
 
-    $translatedContent = Http::withoutVerifying()
-      ->get($translatedUrl);
+    $translatedContent = file_get_contents($translatedUrl);
 
-    if ($translatedContent->failed()) {
-      echo 'Failed to download translated content.';
-      return $emailBody;
-    }
-
-    return $translatedContent->body();
+    
+    return $translatedContent;
   }
 
   private function sendReminderMail()
