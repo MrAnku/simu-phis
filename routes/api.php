@@ -24,6 +24,8 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
+use App\Http\Controllers\Api\ApiSmishingController;
+use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
@@ -273,5 +275,26 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/campaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
         Route::post('/campaigns/addGroupUser', [ApiTprmController::class, 'addGroupUser']);
         Route::get('/campaigns/get-emails-by-domain/{domain?}', [ApiTprmController::class, 'getEmailsByDomain']);
+    });
+
+    //smishing campaign routes---------------------------------
+    Route::prefix('smishing')->group(function () {
+        Route::get('/', [ApiSmishingController::class, 'index']);
+        Route::post('/create-campaign', [ApiSmishingController::class, 'createCampaign']);
+        Route::get('/fetch-more-templates', [ApiSmishingController::class, 'fetchMoreTemps']);
+        Route::get('/fetch-more-websites', [ApiSmishingController::class, 'fetchMoreWebsites']);
+        Route::get('/search-template', [ApiSmishingController::class, 'searchTemplate']);
+        Route::get('/search-website', [ApiSmishingController::class, 'searchWebsite']);
+        Route::delete('/delete-campaign/{campId?}', [ApiSmishingController::class, 'deleteCampaign']);
+        Route::get('/fetch-campaign-details/{campId?}', [ApiSmishingController::class, 'fetchCampDetail']);
+    });
+
+    //smishing templates routes---------------------------------
+    Route::prefix('smishing-templates')->group(function () {
+        Route::get('/', [ApiSmishingTemplateController::class, 'index']);
+        Route::post('/add-template', [ApiSmishingTemplateController::class, 'storeTemplate']);
+        Route::put('/update-template', [ApiSmishingTemplateController::class, 'updateTemplate']);
+        Route::delete('/delete-template', [ApiSmishingTemplateController::class, 'deleteTemplate']);
+        Route::post('/send-test-sms', [ApiSmishingTemplateController::class, 'testSms']);
     });
 });

@@ -112,7 +112,8 @@ class SmishingTemplateController extends Controller
         }
     }
 
-    public function updateTemplate(Request $request){
+    public function updateTemplate(Request $request)
+    {
         $request->validate([
 
             'template_name' => function ($attribute, $value, $fail) {
@@ -132,21 +133,22 @@ class SmishingTemplateController extends Controller
         ]);
 
         SmishingTemplate::where('id', $request->input('template_id'))
-        ->update([
-            'name' => $request->input('template_name'),
-            'message' => $request->input('template_body'),
-            'category' => $request->input('category')
-            
-        ]);
+            ->update([
+                'name' => $request->input('template_name'),
+                'message' => $request->input('template_body'),
+                'category' => $request->input('category')
+
+            ]);
         return redirect()->back()->with('success', __('Template updated successfully.'));
     }
 
-    public function deleteTemplate(Request $request){
+    public function deleteTemplate(Request $request)
+    {
         try {
             $request->validate([
                 'template_id' => 'required|exists:smishing_templates,id',
             ]);
-    
+
             SmishingTemplate::where('id', $request->input('template_id'))->delete();
             return response()->json([
                 'status' => 'success',
