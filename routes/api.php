@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
+use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
@@ -52,7 +53,7 @@ Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middle
 // );
 
 
-Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
+Route::middleware('auth:api')->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::middleware('auth:api')->group(function () {
     // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
@@ -62,13 +63,13 @@ Route::middleware('auth:api')->group(function () {
     // );
     // Dashboard routes
     // Route::prefix('dashboard')->group(function () {
-    Route::get('/get-pie-data', [DashboardController::class, 'getPieData']);
-    Route::get('/get-line-chart-data', [DashboardController::class, 'getLineChartData']);
-    Route::get('/get-whats-chart-data', [DashboardController::class, 'whatsappReport']);
-    Route::get('/get-payload-click-data', [DashboardController::class, 'getPayloadClickData']);
-    Route::get('/get-email-reported-data', [DashboardController::class, 'getEmailReportedData']);
-    Route::get('/get-package-data', [DashboardController::class, 'getPackage']);
-    Route::get('/get-line-chart-2-data', [DashboardController::class, 'getLineChartData2']);
+    Route::get('/get-pie-data', [ApiDashboardController::class, 'getPieData']);
+    Route::get('/get-line-chart-data', [ApiDashboardController::class, 'getLineChartData']);
+    Route::get('/get-whats-chart-data', [ApiDashboardController::class, 'whatsappReport']);
+    Route::get('/get-payload-click-data', [ApiDashboardController::class, 'getPayloadClickData']);
+    Route::get('/get-email-reported-data', [ApiDashboardController::class, 'getEmailReportedData']);
+    Route::get('/get-package-data', [ApiDashboardController::class, 'getPackage']);
+    Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
     // });
 
     //email campaign routes
@@ -297,4 +298,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete-template', [ApiSmishingTemplateController::class, 'deleteTemplate']);
         Route::post('/send-test-sms', [ApiSmishingTemplateController::class, 'testSms']);
     });
+
+    // White Label routes
+    Route::post('/save-white-label', [ApiWhiteLabelController::class, 'saveWhiteLabel']);
 });

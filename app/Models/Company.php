@@ -91,16 +91,23 @@ class Company extends Authenticatable implements JWTSubject
         return $this->getKey();
     }
 
-    public function siemConfig(){
+    public function siemConfig()
+    {
         return $this->hasOne(SiemProvider::class, 'company_id', 'company_id');
     }
 
-    public function smishingLiveCamps(){
+    public function smishingLiveCamps()
+    {
         return $this->hasMany(SmishingLiveCampaign::class, 'company_id', 'company_id');
     }
 
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function company_whiteLabel()
+    {
+        return $this->hasOne(WhiteLabelledCompany::class, 'company_id', 'company_id');
     }
 }
