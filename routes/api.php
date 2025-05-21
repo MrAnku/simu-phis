@@ -231,7 +231,7 @@ Route::middleware('auth:api')->group(function () {
         //    10 
         Route::get('/', [ApiPhishingEmailsController::class, 'index']);
         //    11 ho gya test
-        Route::post('/get-template-by-id/{id?}', [ApiPhishingEmailsController::class, 'getTemplateById']);
+        Route::get('/get-template-by-id/{id?}', [ApiPhishingEmailsController::class, 'getTemplateById']);
         //    12 ho gya test
         Route::get('/search-email-template', [ApiPhishingEmailsController::class, 'searchPhishingEmails']);
         // 13 ho gya test
@@ -241,9 +241,9 @@ Route::middleware('auth:api')->group(function () {
         // 15 ho gya test
         Route::post('/save-ai-phish-template', [ApiPhishingEmailsController::class, 'saveAIPhishTemplate']);
         // 16 ho gya test
-        Route::post('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
+        Route::put('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
         // 17 ho gya test
-        Route::post('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
+        Route::delete('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
     });
     Route::prefix('quishing-emails')->group(function () {
         Route::get('/', [ApiQuishingEmailController::class, 'index']);
