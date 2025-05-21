@@ -25,12 +25,15 @@ class ApiQuishingController extends Controller
 
             $campLive = QuishingLiveCamp::where('company_id', $company_id)
                 ->get();
+            $qshTemplate = QshTemplate::where('company_id', $company_id)
+                ->get();
 
             return response()->json([
                 'success' => true,
                 'message' => __('Quishing campaign data retrieved successfully'),
                 'data' => [
                     'campaigns' => $campaigns,
+                    'qshTemplate' => $qshTemplate,
                     'total_sent' => $campLive->where('sent', '1')->count(),
                     'total_opened' => $campLive->where('mail_open', '1')->count(),
                 ]

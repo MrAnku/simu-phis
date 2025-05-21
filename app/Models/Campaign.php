@@ -35,33 +35,35 @@ class Campaign extends Model
         'company_id'
     ];
 
-    public function campLive(){
+    public function campLive()
+    {
         return $this->hasMany(CampaignLive::class, 'campaign_id', 'campaign_id');
     }
 
-    public function campReport(){
+    public function campReport()
+    {
         return $this->hasOne(CampaignReport::class, 'campaign_id', 'campaign_id');
     }
 
-
-
-
-
-    public function trainingAssignedUsers(){
+    public function trainingAssignedUsers()
+    {
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
     }
 
-    public function campaignActivity(){
+    public function campaignActivity()
+    {
         return $this->hasMany(EmailCampActivity::class, 'campaign_id', 'campaign_id');
     }
 
-    
 
-    public function noOfUsers(){
+
+    public function noOfUsers()
+    {
         return $this->hasMany(Users::class, 'group_id', 'users_group');
     }
 
-    public function usersGroup(){
+    public function usersGroup()
+    {
         return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
     }
 }

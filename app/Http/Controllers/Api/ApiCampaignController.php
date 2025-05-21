@@ -408,7 +408,7 @@ class ApiCampaignController extends Controller
             $campid = $request->route('campaign_id');
             $companyId = Auth::user()->company_id;
 
-            $campaign = Campaign::with(['campLive', 'campaignActivity', 'campReport', 'trainingAssignedUsers'])->where('campaign_id', $campid)
+            $campaign = Campaign::with(['campLive', 'campaignActivity', 'campReport', 'trainingAssignedUsers.trainingData'])->where('campaign_id', $campid)
                 ->where('company_id', $companyId)
                 ->first();
 
