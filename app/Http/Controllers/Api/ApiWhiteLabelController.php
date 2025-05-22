@@ -99,6 +99,7 @@ class ApiWhiteLabelController extends Controller
                     'company_id' => Auth::user()->company_id,
                 ]);
 
+                log_action("White label created for company : " . Auth::user()->company_name);
                 return response()->json([
                     'status' => 'success',
                     'message' => __('White label created successfully.')

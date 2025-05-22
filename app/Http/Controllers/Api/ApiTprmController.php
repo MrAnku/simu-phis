@@ -112,7 +112,7 @@ class ApiTprmController extends Controller
                 'status' => 0
             ]);
 
-            log_action('Request submitted for TPRM vishing simulation');
+            log_action('Request submitted for TPRM vishing simulation for company : ' . Auth::user()->company_name);
             return response()->json(['success' => true, 'message' => __('Your request has been submitted successfully.')], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -233,6 +233,7 @@ class ApiTprmController extends Controller
                     ]
                 ], 422);
             }
+            log_action("New domain : {$requested['domain']} verification requested");
             return response()->json([
                 'success' => true,
                 'data' => ['requested' => $requested],
@@ -263,10 +264,10 @@ class ApiTprmController extends Controller
             TpmrVerifiedDomain::where('domain', $domain)->where('company_id', Auth::user()->company_id)->delete();
 
             $groupExist = TprmUsersGroup::where('group_name', $domain)->first();
-            if($groupExist){
+            if ($groupExist) {
                 TprmUsers::where('group_id', $groupExist->group_id)->delete();
                 $campExist = TprmCampaign::where('users_group', $groupExist->group_id)->first();
-                if($campExist){
+                if ($campExist) {
                     TprmCampaignLive::where('campaign_id', $campExist->campaign_id)->delete();
                     TprmCampaignReport::where('campaign_id', $campExist->campaign_id)->delete();
                     $campExist->delete();
@@ -274,6 +275,7 @@ class ApiTprmController extends Controller
                 $groupExist->delete();
             }
 
+            log_action("Domain deleted : {$domain}");
             return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
             // $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
             //     ->where('company_id', Auth::user()->company_id)->first();
@@ -465,6 +467,8 @@ class ApiTprmController extends Controller
                 'company_id' => $companyId,
             ]);
 
+            log_action("TPRM Campaign created and running : {$campName}");
+
             return response()->json(['success' => true, 'message' => __('Campaign created and running!')], 201);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
@@ -498,6 +502,8 @@ class ApiTprmController extends Controller
             // Check if any records were deleted
             if ($res1 || $res2 || $res3) {
                 DB::commit();
+                log_action("TPRM Campaign deleted : {$campaign->campaign_name}");
+
                 return response()->json(['success' => true, 'message' => __('Campaign deleted successfully.')], 200);
             } else {
                 DB::rollBack();
@@ -564,6 +570,8 @@ class ApiTprmController extends Controller
                     'company_id' => $company_id,
                 ]);
             }
+            log_action("TPRM Campaign relaunched : {$campaign->campaign_name}");
+
             return response()->json(['success' => true, 'message' => __('Campaign relaunched successfully!')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -792,8 +800,10 @@ class ApiTprmController extends Controller
                     $tprmUsers->save();
                 }
                 if (!$message) {
-                    return response()->json(['success' => true, 'message' => __('Uesrs added to group successfully')], 200);
+                    log_action("Users added to group : {$domainName}");
+                    return response()->json(['success' => true, 'message' => __('Users added to group successfully')], 200);
                 } else {
+                    log_action("Users added to group : {$domainName}");
                     return response()->json(['success' => true, 'message' => $message . ' ' . __('and users added to that group successfully')], 200);
                 }
             } else {

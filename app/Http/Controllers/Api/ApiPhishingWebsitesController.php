@@ -202,7 +202,7 @@ HTML;
             $phishingWebsite->company_id = $company_id;
             $phishingWebsite->save();
 
-            log_action("New phishing website is added");
+            log_action("New phishing website is added : {$validated['webName']}");
 
             return response()->json([
                 'success' => true,

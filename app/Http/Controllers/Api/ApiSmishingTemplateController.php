@@ -70,6 +70,7 @@ class ApiSmishingTemplateController extends Controller
                 'category' => $request->input('category'),
                 'company_id' => Auth::user()->company_id,
             ]);
+            log_action("Smishing Template created : {$request->input('template_name')}");
             return response()->json([
                 'success' => true,
                 'message' => 'Template created successfully.'
@@ -108,6 +109,7 @@ class ApiSmishingTemplateController extends Controller
                     "text"  => $request->input('template_text')
                 ]
             );
+            log_action("Smishing SMS sent to : {$request->input('mobile_no')}");
             return response()->json([
                 'status' => 'success',
                 'message' => __('SMS sent successfully'),
@@ -169,6 +171,7 @@ class ApiSmishingTemplateController extends Controller
                     'message' => 'Failed to update template'
                 ], 422);
             }
+            log_action("Smishing Template updated : {$request->input('template_name')}");
             return response()->json([
                 'success' => true,
                 'message' => __('Template updated successfully.')
@@ -195,7 +198,10 @@ class ApiSmishingTemplateController extends Controller
                 'template_id' => 'required|exists:smishing_templates,id',
             ]);
 
-            SmishingTemplate::where('id', $request->input('template_id'))->delete();
+            $smishingTemplate = SmishingTemplate::where('id', $request->input('template_id'))->first();
+            $smishingTemplate->delete();
+
+            log_action("Smishing Template deleted : {$smishingTemplate->name}");
             return response()->json([
                 'status' => 'success',
                 'message' => __('Template deleted successfully.')

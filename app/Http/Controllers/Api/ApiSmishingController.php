@@ -113,6 +113,8 @@ class ApiSmishingController extends Controller
                 ]);
             }
 
+            log_action("Smishing Campaign Created : {$request->campaign_name}");
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -309,6 +311,7 @@ class ApiSmishingController extends Controller
             $campaign->delete();
             SmishingLiveCampaign::where('campaign_id', $campaign_id)->delete();
 
+            log_action("Smishing Campaign deleted : {$campaign->campaign_name}");
             return response()->json(['success' => true, 'message' => __('Campaign deleted successfully')], 200);
         } catch (\Exception $e) {
             return response()->json([

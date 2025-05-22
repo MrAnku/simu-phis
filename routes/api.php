@@ -126,12 +126,14 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
     });
+
     Route::prefix('sender-profiles')->group(function () {
         Route::get('/', [ApiSenderProfileController::class, 'index']);
         Route::post('/add', [ApiSenderProfileController::class, 'addSenderProfile']);
         Route::delete('/delete', [ApiSenderProfileController::class, 'deleteSenderProfile']);
         Route::post('/update/{id}', [ApiSenderProfileController::class, 'updateSenderProfile']);
     });
+
     Route::prefix('training-module')->group(function () {
         Route::get('/get-all', [ApiTrainingModuleController::class, 'allTrainingModule']);
         Route::get('/getby/{id}', [ApiTrainingModuleController::class, 'getTrainingById']);
@@ -145,12 +147,14 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-gamified-training', [ApiTrainingModuleController::class, 'addGamifiedTraining']);
         Route::put('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
     });
+
     Route::prefix('support')->group(function () {
         Route::get('/', [ApiSupportController::class, 'index']);
         Route::post('/load-conversations', [ApiSupportController::class, 'loadConversations']);
         Route::post('/submit-reply', [ApiSupportController::class, 'submitReply']);
         Route::post('/create-ticket', [ApiSupportController::class, 'createTicket']);
     });
+
     Route::prefix('reporting')->group(function () {
         Route::get('/', [ApiReportingController::class, 'index']);
         Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
@@ -162,28 +166,25 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
         Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
 
-        // 1
         Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
-        // 2
+     
         Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
-        // 3 
+       
         Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
-        // 4 
+       
         Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
-        // 5 
+        
         Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
-        // 6 
+       
         Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
 
-        // 7 
         Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
 
-        // 8 
         Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
 
-        // 9 
         Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
     });
+
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
         Route::get('/all-employees', [ApiEmployeesController::class, 'allEmployee']);
@@ -218,6 +219,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
     });
+
     Route::prefix('ai-calling')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'index']);
         Route::post('/submit-req', [ApiAiCallController::class, 'submitReq']);
@@ -228,30 +230,25 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
     });
+
     Route::prefix('phishing-emails')->group(function () {
-        //    10 
         Route::get('/', [ApiPhishingEmailsController::class, 'index']);
-        //    11 ho gya test
         Route::get('/get-template-by-id/{id?}', [ApiPhishingEmailsController::class, 'getTemplateById']);
-        //    12 ho gya test
         Route::get('/search-email-template', [ApiPhishingEmailsController::class, 'searchPhishingEmails']);
-        // 13 ho gya test
         Route::post('/add-email-template', [ApiPhishingEmailsController::class, 'addEmailTemplate']);
-        // 14 ho gya test
         Route::post('/generate-template', [ApiPhishingEmailsController::class, 'generateTemplate']);
-        // 15 ho gya test
         Route::post('/save-ai-phish-template', [ApiPhishingEmailsController::class, 'saveAIPhishTemplate']);
-        // 16 ho gya test
         Route::put('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
-        // 17 ho gya test
         Route::delete('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
     });
+
     Route::prefix('quishing-emails')->group(function () {
         Route::get('/', [ApiQuishingEmailController::class, 'index']);
         Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
         Route::post('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
         Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
     });
+
     Route::prefix('phishing-website')->group(function () {
         Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
         Route::post('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
@@ -260,8 +257,9 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
     });
-    Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
 
+    Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
+    
     Route::prefix('tprm')->group(function () {
         Route::get('/', [ApiTprmController::class, 'index']);
         Route::post('/submit-req', [ApiTprmController::class, 'submitReq']);
