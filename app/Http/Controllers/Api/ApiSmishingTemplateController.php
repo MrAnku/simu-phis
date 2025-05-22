@@ -171,7 +171,7 @@ class ApiSmishingTemplateController extends Controller
                     'message' => 'Failed to update template'
                 ], 422);
             }
-            log_action("Smishing Template updated : {$request->input('template_name')}");
+            log_action("Smishing Template updated to {$request->input('template_name')}");
             return response()->json([
                 'success' => true,
                 'message' => __('Template updated successfully.')
