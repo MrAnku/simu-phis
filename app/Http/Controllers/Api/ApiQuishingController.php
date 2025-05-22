@@ -121,6 +121,8 @@ class ApiQuishingController extends Controller
                 ]);
             }
 
+            log_action("Quishing Campaign Created : {$request->campaign_name}");
+
             return response()->json([
                 'success' => true,
                 'message' => __('Quishing campaign created successfully'),
@@ -161,6 +163,8 @@ class ApiQuishingController extends Controller
             $campaign->delete();
             QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 
+            log_action("Quishing Campaign deleted : {$campaign->campaign_name}");
+            
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign deleted successfully'),

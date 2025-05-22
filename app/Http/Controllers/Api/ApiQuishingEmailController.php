@@ -121,6 +121,7 @@ class ApiQuishingEmailController extends Controller
                 'company_id' => Auth::user()->company_id,
             ]);
 
+            log_action("Template added : {$request->template_name}");
             return response()->json([
                 'status' => true,
                 'message' => __('Template added successfully.')
@@ -166,8 +167,11 @@ class ApiQuishingEmailController extends Controller
             // Delete file from storage
             Storage::delete($template->file);
 
+
             // Delete record from database
             $template->delete();
+
+             log_action("Template deleted : {$template->name}");
 
             return response()->json([
                 'status' => true,
@@ -218,6 +222,7 @@ class ApiQuishingEmailController extends Controller
             ]);
 
             if ($updated) {
+                log_action("Template updated : {$template->name}");
                 return response()->json([
                     'status' => true,
                     'message' => __('Template updated successfully.')

@@ -173,7 +173,7 @@ class ApiEmployeesController extends Controller
                 $this->domainVerificationMail($verifyEmail, $genCode);
             }
 
-            log_action("Domain verification mail sent");
+            log_action("Domain verification mail sent: {$verifyEmail}");
             return response()->json(['success' => true, 'message' => __('Verification email sent')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -215,7 +215,7 @@ class ApiEmployeesController extends Controller
                 $verifiedDomain->verified = '1';
                 $verifiedDomain->save();
 
-                log_action("Domain verified successfully");
+                log_action("Domain verified successfully : {$verifiedDomain->domain}");
 
                 return response()->json(['success' => true, 'message' => __('Domain verified successfully')], 200);
             } else {
@@ -309,7 +309,7 @@ class ApiEmployeesController extends Controller
                 return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
             }
 
-            if($group->users == null){
+            if ($group->users == null) {
                 return response()->json(['success' => true, 'data' => [], 'message' => __('No Employees Found')]);
             }
 
@@ -377,6 +377,8 @@ class ApiEmployeesController extends Controller
                     }
                 }
             }
+            $UsersGroup = UsersGroup::where('group_id', $request->groupId)->first();
+            log_action("Employee(s) added to the group : {$UsersGroup->group_name}");
             return response()->json(['success' => true, 'message' => __('Employee(s) successfully added to the group')], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -396,6 +398,7 @@ class ApiEmployeesController extends Controller
         $employee = new EmployeeService();
         try {
             $employee->deleteEmployeeById($user_id);
+            log_action("Employee deleted : {$isUserExists->user_name}");
             return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -421,6 +424,9 @@ class ApiEmployeesController extends Controller
                     return response()->json(['success' => false, 'message' => __('Failed to delete employee')]);
                 }
             }
+            $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
+
+            log_action("Employee deleted : {$user->user_name}");
             return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
@@ -483,7 +489,7 @@ class ApiEmployeesController extends Controller
                 if ($addedInGroup['status'] == 0) {
                     return response()->json(['success' => false, 'message' => $addedInGroup['msg']]);
                 }
-
+                log_action("Employee Added");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
                 return response()->json(['success' => false, 'message' => $addedEmployee['msg']]);
@@ -541,7 +547,7 @@ class ApiEmployeesController extends Controller
                 !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null
             );
             if ($addedEmployee['status'] == 1) {
-
+                log_action("Employee Added : { $request->usrName}");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
                 return response()->json(['success' => false, 'message' => $addedEmployee['msg']]);
@@ -651,6 +657,9 @@ class ApiEmployeesController extends Controller
             $employee = new EmployeeService();
             $deleted = $employee->deleteGroup($grpId);
             if ($deleted['status'] == 1) {
+                $group = UsersGroup::where('group_id', $grpId)->first();
+
+                log_action("Employee Group deleted : {$group->group_name}");
                 return response()->json(['success' => true, 'msg' => $deleted['msg']], 200);
             } else {
                 return response()->json(['success' => false, 'msg' => $deleted['msg']], 404);

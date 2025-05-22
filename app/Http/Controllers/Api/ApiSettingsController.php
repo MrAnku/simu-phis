@@ -250,6 +250,8 @@ class ApiSettingsController extends Controller
                     ->update(['mfa_secret' => encrypt($secretKey)]);
 
                 if ($isUpdated) {
+                    log_action("Multi-Factor Authentication is enabled");
+
                     return response()->json([
                         'success' => true,
                         'QR_Image' => $QR_Image,
@@ -360,9 +362,6 @@ class ApiSettingsController extends Controller
             ], 500);
         }
     }
-
-
-
 
     public function updateLang(Request $request)
     {

@@ -406,6 +406,7 @@ class ApiAiCallController extends Controller
                 'status' => 0
             ]);
 
+            log_action("New agent request submitted for AI Vishing : {$request->agent_name}");
             return response()->json(['success' => true, 'message' => __('New agent request submitted successfully.')], 201);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);

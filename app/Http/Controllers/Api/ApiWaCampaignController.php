@@ -167,6 +167,8 @@ class ApiWaCampaignController extends Controller
                 ]);
             }
 
+            log_action("Whatsapp Campaign Created");
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign created successfully'),
@@ -204,6 +206,8 @@ class ApiWaCampaignController extends Controller
                 'company_id' => Auth::user()->company_id,
             ]);
 
+            log_action("Whatsapp Campaign created : {$validated['campaign_name']}");
+            
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign created successfully'),
@@ -310,6 +314,7 @@ class ApiWaCampaignController extends Controller
                 CompanyWhatsappConfig::create($validated);
             }
 
+            log_action('Whatsapp Configuration saved');
 
             return response()->json([
                 'success' => true,
@@ -349,6 +354,9 @@ class ApiWaCampaignController extends Controller
                     'message' => __('Configuration not found!'),
                 ], 422);
             }
+
+            log_action("Whatsapp Configuration Updated");
+            
             return response()->json([
                 'success' => true,
                 'message' => __('Configuration updated successfully!'),
@@ -523,7 +531,5 @@ class ApiWaCampaignController extends Controller
                 'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
-    }
-
-    
+    }    
 }

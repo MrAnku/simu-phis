@@ -242,6 +242,7 @@ class ApiOutlookAdController extends Controller
         if (count($errors) > 0) {
             return response()->json(['success' => false, 'message' => $errors], 422);
         }
+        log_action("Employees from the Outlook AD saved");
         return response()->json(['success' => true, 'message' => __('Employees saved successfully')], 201);
     }
 }

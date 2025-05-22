@@ -50,6 +50,7 @@ class ApiCampaignController extends Controller
                 ->limit(10)
                 ->get();
 
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign data retrieved successfully.'),
@@ -73,7 +74,6 @@ class ApiCampaignController extends Controller
     public function createCampaign(Request $request)
     {
         try {
-
             //xss check start
             $input = $request->all();
             foreach ($input as $key => $value) {
@@ -471,7 +471,6 @@ class ApiCampaignController extends Controller
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
 
-
             return response()->json([
                 'success' => true,
                 'message' => __('Game details retrieved successfully'),
@@ -811,6 +810,7 @@ class ApiCampaignController extends Controller
 
         ]);
 
+        log_action("Email Campaign running");
         return ['status' => 1, 'campaign' => $campaign];
     }
 

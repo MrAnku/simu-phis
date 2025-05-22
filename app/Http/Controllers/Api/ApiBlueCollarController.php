@@ -128,7 +128,10 @@ class ApiBlueCollarController extends Controller
             $user = BlueCollarEmployee::find($request->route('user_id'));
 
             if ($user) {
+
                 $user->delete();
+
+                  log_action("Blue Collar User deleted : {$user->user_name}");
 
                 return response()->json(['success' => true, 'message' => __('User deleted successfully')], 200);
             } else {
@@ -198,6 +201,7 @@ class ApiBlueCollarController extends Controller
             );
             // Auth::user()->increment('usedemployees');
 
+            log_action("Blue Collar User added : {$request->usrName}");
             return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
@@ -221,6 +225,9 @@ class ApiBlueCollarController extends Controller
             if (!$group) {
                 return response()->json(['success' => false, 'message' => __('Group not found')], 404);
             }
+
+            log_action("Blue Collar group deleted : {$group->group_name}");
+
             BlueCollarGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)
                 ->delete();
@@ -256,11 +263,10 @@ class ApiBlueCollarController extends Controller
             BlueCollarEmployee::where('group_id', $grpId)->delete();
 
             DB::commit();
-            log_action("Employee group deleted");
-            return response()->json(['success' => true, 'message' => __('Employee group deleted successfully')], 200);
+            return response()->json(['success' => true, 'message' => __('Blue Collar group deleted successfully')], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            log_action("An error occurred while deleting the employee group");
+            log_action("An error occurred while deleting the Blue Collar group");
             return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
         }
     }

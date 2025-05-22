@@ -387,6 +387,8 @@ class ApiPhishingEmailsController extends Controller
                 "message" => __("Successfully fetch message")
             ]);
         } catch (\Exception $e) {
+
+            log_action("Some Error Occured while generating AI Email Template on topic of prompt: {$prompt} : " . $e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => __('Error: ') . $e->getMessage()
