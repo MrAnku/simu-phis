@@ -18,17 +18,17 @@ class ApiQuishingEmailController extends Controller
         try {
             $company_id = Auth::user()->company_id;
 
-            // Fetch Sender Profiles
-            $senderProfiles = SenderProfile::where(function ($query) use ($company_id) {
-                $query->where('company_id', $company_id)
-                    ->orWhere('company_id', 'default');
-            })->get();
+            // // Fetch Sender Profiles
+            // $senderProfiles = SenderProfile::where(function ($query) use ($company_id) {
+            //     $query->where('company_id', $company_id)
+            //         ->orWhere('company_id', 'default');
+            // })->get();
 
-            // Fetch Phishing Websites
-            $phishingWebsites = PhishingWebsite::where(function ($query) use ($company_id) {
-                $query->where('company_id', $company_id)
-                    ->orWhere('company_id', 'default');
-            })->get();
+            // // Fetch Phishing Websites
+            // $phishingWebsites = PhishingWebsite::where(function ($query) use ($company_id) {
+            //     $query->where('company_id', $company_id)
+            //         ->orWhere('company_id', 'default');
+            // })->get();
 
             // Handle Search
             if ($request->has('search')) {
@@ -45,13 +45,11 @@ class ApiQuishingEmailController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->get();
+                    })->paginate(10);
             }
 
             return response()->json([
                 'status' => true,
-                'sender_profiles' => $senderProfiles,
-                'phishing_websites' => $phishingWebsites,
                 'quishing_emails' => $quishingEmails,
             ], 200);
         } catch (\Exception $e) {
