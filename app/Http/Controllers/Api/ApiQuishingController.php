@@ -50,7 +50,7 @@ class ApiQuishingController extends Controller
     public function createCampaign(Request $request)
     {
         try {
-            //xss attack
+            // XSS attack prevention
             $campData = $request->except(['quishing_materials', 'training_modules']);
             foreach ($campData as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -60,53 +60,64 @@ class ApiQuishingController extends Controller
                     ], 422);
                 }
             }
-            //xss attack
+
+            // Decode JSON arrays from JS frontend
+            $trainingModules = json_decode($request->training_modules, true);
+            $quishingMaterials = json_decode($request->quishing_materials, true);
 
             $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
             $userIds = json_decode($userIdsJson, true);
             $users = Users::whereIn('id', $userIds)->get();
 
-            if (!$users) {
+            if (!$users || $users->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('No users found in the selected group'),
                 ], 422);
             }
+
             $campaign_id = Str::random(6);
+
             QuishingCamp::create([
-                'campaign_id' => $campaign_id,
-                'campaign_name' => $request->campaign_name,
-                'campaign_type' => $request->campaign_type,
-                'users_group' => $request->employee_group,
+                'campaign_id'        => $campaign_id,
+                'campaign_name'      => $request->campaign_name,
+                'campaign_type'      => $request->campaign_type,
+                'users_group'        => $request->employee_group,
 
-                'training_module' => $request->campaign_type == 'quishing' ? null : json_encode($request->training_modules),
+                'training_module'    => $request->campaign_type === 'quishing' ? null : json_encode($trainingModules),
+                'training_assignment' => $request->campaign_type === 'quishing' ? null : $request->training_assignment,
+                'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
+                'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
+                'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
 
-                'training_assignment' => $request->campaign_type == 'quishing' ? null : $request->training_assignment,
-
-                'days_until_due' => $request->campaign_type == 'quishing' ? null : $request->days_until_due,
-                'training_lang' => $request->campaign_type == 'quishing' ? null : $request->training_language,
-                'training_type' => $request->campaign_type == 'quishing' ? null : $request->training_type,
-                'quishing_material' => !empty($request->quishing_materials) ? json_encode($request->quishing_materials) : null,
-                'quishing_lang' => $request->quishing_language ?? null,
-                'status' => 'running',
-                'company_id' => Auth::user()->company_id,
+                'quishing_material'  => !empty($quishingMaterials) ? json_encode($quishingMaterials) : null,
+                'quishing_lang'      => $request->quishing_language ?? null,
+                'status'             => 'running',
+                'company_id'         => Auth::user()->company_id,
             ]);
 
             foreach ($users as $user) {
                 QuishingLiveCamp::create([
-                    'campaign_id' => $campaign_id,
-                    'campaign_name' => $request->campaign_name,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => $request->campaign_type == 'quishing' ? null : $request->training_modules[array_rand($request->training_modules)],
+                    'campaign_id'        => $campaign_id,
+                    'campaign_name'      => $request->campaign_name,
+                    'user_id'            => $user->id,
+                    'user_name'          => $user->user_name,
+                    'user_email'         => $user->user_email,
 
-                    'days_until_due' => $request->campaign_type == 'quishing' ? null : $request->days_until_due,
-                    'training_lang' => $request->campaign_type == 'quishing' ? null : $request->training_language,
-                    'training_type' => $request->campaign_type == 'quishing' ? null : $request->training_type,
-                    'quishing_material' => !empty($request->quishing_materials) ? $request->quishing_materials[array_rand($request->quishing_materials)] : null,
-                    'quishing_lang' => $request->quishing_language ?? null,
-                    'company_id' => Auth::user()->company_id
+                    'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules)
+                        ? null
+                        : $trainingModules[array_rand($trainingModules)],
+
+                    'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
+                    'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
+                    'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
+
+                    'quishing_material'  => $request->campaign_type === 'quishing' && !empty($quishingMaterials)
+                        ? $quishingMaterials[array_rand($quishingMaterials)]
+                        : null,
+
+                    'quishing_lang'      => $request->quishing_language ?? null,
+                    'company_id'         => Auth::user()->company_id,
                 ]);
             }
 
@@ -120,12 +131,14 @@ class ApiQuishingController extends Controller
                 'message' => __('Error: ') . $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Campaign creation failed: ' . $e->getMessage()); // 🔍 For debugging
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
+
 
     public function deleteCampaign(Request $request)
     {
