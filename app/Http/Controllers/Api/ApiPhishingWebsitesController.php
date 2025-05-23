@@ -42,6 +42,30 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
+    public function getAll(): JsonResponse
+    {
+        try {
+            $company_id = Auth::user()->company_id;
+
+            // Get all phishing websites related to the company or default ones
+            $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
+                ->orWhere('company_id', 'default')
+                ->get(); // Fetch results as a collection
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Phishing websites fetched successfully.'),
+                'data' => $phishingWebsites,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Failed to fetch phishing websites.'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 
     public function deleteWebsite(Request $request): JsonResponse

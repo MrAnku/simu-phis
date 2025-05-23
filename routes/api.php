@@ -250,6 +250,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('phishing-website')->group(function () {
+        Route::get('/all', [ApiPhishingWebsitesController::class, 'getAll']);
         Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
         Route::post('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
         Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
