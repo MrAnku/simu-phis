@@ -97,7 +97,7 @@
                                                 @endif
 
 
-                                                <iframe class="phishing-iframe" src="{{ Storage::url($pemail->file) }}"
+                                                <iframe class="phishing-iframe" src="{{ env('CLOUDFRONT_URL') . $pemail->file }}"
                                                     style="
                                                     width: 100%;
                                                     height: 300px;

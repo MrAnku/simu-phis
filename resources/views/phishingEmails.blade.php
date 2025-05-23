@@ -93,7 +93,7 @@
 
 
                                                 <iframe class="phishing-iframe"
-                                                    src="{{ Storage::url($pemail->mailBodyFilePath) }}"></iframe>
+                                                    src="{{ env('CLOUDFRONT_URL') . $pemail->mailBodyFilePath }}"></iframe>
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">

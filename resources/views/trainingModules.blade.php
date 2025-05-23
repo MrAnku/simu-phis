@@ -91,7 +91,7 @@
                                             </div>
                                             <div class="card-body htmlPhishingGrid">
                                                 <img class="trainingCoverImg"
-                                                    src="{{ request('type') == 'games' ? Storage::url('uploads/trainingGame/' . $trainingModule->cover_image) : Storage::url('uploads/trainingModule/' . $trainingModule->cover_image) }}" />
+                                                    src="{{ request('type') == 'games' ? env('CLOUDFRONT_URL') . $trainingModule->cover_image : env('CLOUDFRONT_URL') . $trainingModule->cover_image }}" />
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">

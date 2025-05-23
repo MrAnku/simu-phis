@@ -62,7 +62,7 @@
                                             </div>
                                             <div class="card-body htmlPhishingGrid">
                                                 <iframe sandbox="allow-same-origin allow-forms" class="phishing-iframe"
-                                                    src="{{ Storage::url('uploads/phishingMaterial/phishing_websites/' . $phishingWebsite->file) }}"></iframe>
+                                                    src="{{ env('CLOUDFRONT_URL') .$phishingWebsite->file }}"></iframe>
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-center">
