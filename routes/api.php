@@ -245,14 +245,14 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('quishing-emails')->group(function () {
         Route::get('/', [ApiQuishingEmailController::class, 'index']);
         Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
-        Route::post('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
-        Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
+        Route::delete('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
+        Route::put('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
     });
 
     Route::prefix('phishing-website')->group(function () {
         Route::get('/all', [ApiPhishingWebsitesController::class, 'getAll']);
         Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
-        Route::post('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
+        Route::delete('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
         Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
