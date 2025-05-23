@@ -82,9 +82,7 @@ class ProcessQuishing extends Command
     private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)
     {
 
-        $mailBody = Storage::path($quishingMaterial->file);
-
-        $mailBody = file_get_contents($mailBody);
+        $mailBody = Storage::disk('s3')->get($quishingMaterial->file);
 
         $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         $mailBody = str_replace('{{qr_code}}', '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">', $mailBody);

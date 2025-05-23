@@ -14,13 +14,13 @@ class QuishingEmailController extends Controller
     public function index(Request $request)
     {
         $company_id = Auth::user()->company_id;
-        
+
         $senderProfiles = SenderProfile::where('company_id', $company_id)->orWhere('company_id', 'default')
             ->get();
 
         $phishingWebsites = PhishingWebsite::where('company_id', $company_id)->orWhere('company_id', 'default')
             ->get();
-            
+
         if ($request->has('search')) {
             $search = $request->search;
             $quishingEmails = QshTemplate::where('name', 'like', "%$search%")
@@ -39,7 +39,8 @@ class QuishingEmailController extends Controller
         return view('quishing-email', compact('quishingEmails', 'senderProfiles', 'phishingWebsites'));
     }
 
-    public function addTemplate(Request $request){
+    public function addTemplate(Request $request)
+    {
 
         //-----xss check start-----------------------------
         $input = $request->only('template_name', 'template_subject');
@@ -70,36 +71,41 @@ class QuishingEmailController extends Controller
             return back()->withErrors(['template_file' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')]);
         }
 
-        $fileName = uniqid() . '.' . $request->file('template_file')->getClientOriginalExtension();
-        $filePath = $request->file('template_file')->storeAs('public/uploads/quishing_templates', $fileName);
+        $randomName = generateRandom(32);
+        $extension = $request->file('template_file')->getClientOriginalExtension();
+        $newFilename = $randomName . '.' . $extension;
+
+        $filePath = $request->file('template_file')->storeAs('/uploads/quishing_templates', $newFilename, 's3');
 
         QshTemplate::create([
             'name' => $request->template_name,
             'email_subject' => $request->template_subject,
             'difficulty' => $request->difficulty,
-
-            'file' => $filePath,
+            'file' => "/" . $filePath,
             'website' => $request->associated_website,
             'sender_profile' => $request->sender_profile,
             'company_id' => Auth::user()->company_id,
         ]);
 
         return redirect()->route('quishing.emails')->with('success', __('Template added successfully.'));
-
     }
 
-    public function deleteTemplate(Request $request){
+    public function deleteTemplate(Request $request)
+    {
         $id = base64_decode($request->id);
         $template = QshTemplate::where('id', $id)->where('company_id', Auth::user()->company_id)->first();
         if ($template) {
             $template->delete();
-            Storage::delete($template->file);
+
+            // Delete the file from S3
+            Storage::disk('s3')->delete($template->file);
             return response()->json(['success' => __('Template deleted successfully.')]);
         }
         return response()->json(['error' => __('Template not found.')]);
     }
 
-    public function updateTemplate(Request $request){
+    public function updateTemplate(Request $request)
+    {
         $request->validate([
             'template_id' => 'required',
             'website' => 'required|numeric',
@@ -118,6 +124,5 @@ class QuishingEmailController extends Controller
             return redirect()->back()->with('success', __('Template updated successfully.'));
         }
         return redirect()->back()->withErrors(['error' => __('Failed to update template.')]);
-
     }
 }

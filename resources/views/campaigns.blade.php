@@ -288,6 +288,7 @@
                 trainingSel: "{{ __('Training selected') }}",
                 campDel : "{{ __('Campaign deleted successfully') }}"
             };
+             const CLOUDFRONT_URL = "{{ env('CLOUDFRONT_URL') }}";
         </script>
         {{-- All Alert's lang conversion of js file --}}
 

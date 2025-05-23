@@ -919,10 +919,16 @@ function prepareTrainingHtml(data) {
     data.forEach(training => {
         const notGameTraining = training.training_type && training.training_type != 'games';
 
-        // Set the image path based on whether it's a game training or not
-        const imagePath = notGameTraining
-            ? `/storage/uploads/trainingModule/${training.cover_image}`
-            : `/storage/uploads/trainingGame/${training.cover_image ? training.cover_image : 'default.jpg'}`;
+        // // Set the image path based on whether it's a game training or not
+        // const imagePath = notGameTraining
+        //     ? `/storage/uploads/trainingModule/${training.cover_image}`
+        //     : `/storage/uploads/trainingGame/${training.cover_image ? training.cover_image : 'default.jpg'}`;
+
+        // const CLOUDFRONT_URL = "{{ env('CLOUDFRONT_URL') }}";
+
+    const imagePath = notGameTraining
+        ? `${CLOUDFRONT_URL}${training.cover_image}`
+        : `${CLOUDFRONT_URL}${training.cover_image ? training.cover_image : 'default.jpg'}`;
 
         html += `<div class="col-lg-6 t_modules">
                 <div class="card custom-card">

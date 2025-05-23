@@ -25,8 +25,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Email;
-use App\Mail\AssignTrainingWithPassResetLink;
+use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
+use App\Mail\AssignTrainingWithPassResetLink;
 
 class ProcessCampaigns extends Command
 {
@@ -175,9 +176,8 @@ class ProcessCampaigns extends Command
 
               $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
 
-              $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
-
-              $mailBody = file_get_contents($mailBody);
+                // Use Storage facade to get the mail body from S3
+                $mailBody = Storage::disk('s3')->get($phishingMaterial->mailBodyFilePath);
 
               $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
               $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);

@@ -19,7 +19,7 @@ class TrainingModuleController extends Controller
         if ($request->has('type') || $request->has('category')) {
             $selectedType = $request->input('type');
             $selectedCategory = $request->input('category');
-            
+
             if ($selectedType == 'games') {
 
                 $trainings = TrainingGame::where(function ($query) use ($company_id) {
@@ -28,20 +28,19 @@ class TrainingModuleController extends Controller
                 })->paginate(10);
             } else {
                 $trainings = TrainingModule::where('training_type', $selectedType)
-                        ->where('category', $selectedCategory)
+                    ->where('category', $selectedCategory)
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
                     })->paginate(10);
             }
-        } 
-        else {
-        $trainings = TrainingModule::where(function ($query) use ($company_id) {
-            $query->where('company_id', $company_id)
-                ->orWhere('company_id', 'default');
-        })->where('training_type', 'static_training')
-        ->where('category', 'international')
-        ->paginate(10);
+        } else {
+            $trainings = TrainingModule::where(function ($query) use ($company_id) {
+                $query->where('company_id', $company_id)
+                    ->orWhere('company_id', 'default');
+            })->where('training_type', 'static_training')
+                ->where('category', 'international')
+                ->paginate(10);
         }
 
         $trainings->appends($request->except('page'));
@@ -74,14 +73,19 @@ class TrainingModuleController extends Controller
         // Handling cover file
         if ($request->hasFile('mCoverFile')) {
             $file = $request->file('mCoverFile');
-            $mCoverFile = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/uploads/trainingModule', $mCoverFile);
+
+            // Generate a random name for the file
+            $randomName = generateRandom(32);
+            $extension = $file->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
         }
 
         $trainingModule = new TrainingModule([
             'name' => $moduleName,
             'estimated_time' => $mCompTime,
-            'cover_image' => $mCoverFile,
+            'cover_image' => "/" . $filePath,
             'passing_score' => $mPassingScore,
             'category' => $request->input('category'),
             'json_quiz' => $jsonData,
@@ -116,14 +120,19 @@ class TrainingModuleController extends Controller
         // Handling cover file
         if ($request->hasFile('cover_file')) {
             $file = $request->file('cover_file');
-            $cover_file = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/uploads/trainingModule', $cover_file);
+
+            // Generate a random name for the file
+            $randomName = generateRandom(32);
+            $extension = $file->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
         }
 
         $trainingModule = new TrainingModule([
             'name' => $request->module_name,
             'estimated_time' => $request->completion_time,
-            'cover_image' => $cover_file,
+            'cover_image' => "/" . $filePath,
             'passing_score' => $request->passing_score,
             'category' => $request->category,
             'training_type' => 'gamified',
@@ -320,13 +329,13 @@ class TrainingModuleController extends Controller
         }
 
         DB::table('training_assigned_users')->where('training', $trainingId)->where('company_id', $company_id)->delete();
-        $isDeletedFromTrainingModules = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->delete();
+        $trainingModule = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->first();
+        $isDeletedFromTrainingModules = $trainingModule->delete();
 
         if ($isDeletedFromTrainingModules && $coverImage != 'defaultTraining.jpg') {
-            $coverFile = 'uploads/trainingModule/' . $coverImage;
-            if (Storage::exists($coverFile)) {
-                Storage::delete($coverFile);
-            }
+
+            // Delete the file from S3
+            Storage::disk('s3')->delete($trainingModule->cover_image);
         }
 
         if ($isDeletedFromTrainingModules) {

@@ -37,7 +37,9 @@ class PhishingWebsitesController extends Controller
 
         DB::transaction(function () use ($webid, $filename) {
             // Delete from phishing_websites
-            $isDeleted = PhishingWebsite::where('id', $webid)->delete();
+            $phishingWebsite = PhishingWebsite::where('id', $webid)->first();
+            $isDeleted = $phishingWebsite->delete();
+
 
             $company_id = auth()->user()->company_id;
 
@@ -48,11 +50,8 @@ class PhishingWebsitesController extends Controller
                     ->update(['website' => '0']);
             }
 
-            // Delete the file
-            $webfilepath = 'uploads/phishingMaterial/phishing_websites/' . $filename;
-            if (Storage::disk('public')->exists($webfilepath)) {
-                Storage::disk('public')->delete($webfilepath);
-            }
+            // Delete the file from S3
+            Storage::disk('s3')->delete($phishingWebsite->file);
         });
         log_action("Phishing website deleted successfully");
         return redirect()->back()->with('success', __('Phishing website deleted successfully.'));
@@ -76,9 +75,9 @@ class PhishingWebsitesController extends Controller
     public function addPhishingWebsite(Request $request)
     {
         //xss check start
-        
+
         $input = $request->only('webName', 'subdomain', 'domain');
-        
+
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
                 return redirect()->back()->with('error', __('Invalid input detected.'));
@@ -104,25 +103,27 @@ class PhishingWebsitesController extends Controller
 
         // Handle file
         $file = $request->file('webFile');
+
         $randomName = generateRandom(32); // Generate random name
         $extension = $file->getClientOriginalExtension();
         $newFilename = $randomName . '.' . $extension;
-        $targetDir = 'uploads/phishingMaterial/phishing_websites/' . $newFilename;
 
-        // Store the file
-        $file->storeAs('uploads/phishingMaterial/phishing_websites', $newFilename, 'public');
+        // Read the uploaded file content
+        $htmlContent = file_get_contents($file->getRealPath());
 
-        // Injecting tracking code
-        $htmlContent = Storage::disk('public')->get($targetDir);
+        // Inject tracking code
         $injectedCode = '<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
     <script src="js/gz.js"></script>';
-        $modifiedContent = str_replace('</html>', '</html>' . $injectedCode, $htmlContent);
-        Storage::disk('public')->put($targetDir, $modifiedContent);
+        $modifiedContent = str_replace('</html>', $injectedCode . '</html>', $htmlContent);
+
+        // Store the modified file in S3
+        $targetDir = '/uploads/phishingMaterial/phishing_websites/' . $newFilename;
+        Storage::disk('s3')->put($targetDir, $modifiedContent);
 
         // Insert into database
         $phishingWebsite = new PhishingWebsite();
         $phishingWebsite->name = $request->input('webName');
-        $phishingWebsite->file = $newFilename;
+        $phishingWebsite->file = $targetDir;
         $phishingWebsite->domain = $domain;
         $phishingWebsite->company_id = $company_id;
         $phishingWebsite->save();

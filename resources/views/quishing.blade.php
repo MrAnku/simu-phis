@@ -461,6 +461,8 @@
         <script>
             function prepareTrainingHtml(data) {
                 let html = '';
+                let cloudFrontUrl  = '{{ env('CLOUDFRONT_URL') }}';
+                
                 data.forEach(training => {
                     html += `<div class="col-lg-6 t_modules">
                 <div class="card custom-card border">
@@ -472,7 +474,7 @@
                         </div>
                     </div>
                     <div class="card-body htmlPhishingGrid">
-                        <img class="trainingCoverImg" src="/storage/uploads/trainingModule/${training.cover_image}" style="width: 100%;"/>
+                        <img class="trainingCoverImg" src="${cloudFrontUrl}${training.cover_image}" style="width: 100%;"/>
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-center">

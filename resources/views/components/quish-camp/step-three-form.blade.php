@@ -72,9 +72,6 @@
     
         <div class="row" id="trainingModulesCampModal">
             @forelse ($trainingModules as $module)
-                @php
-                    $coverImgPath = asset('storage/uploads/trainingModule/' . $module->cover_image);
-                @endphp
                 <div class="col-lg-6 t_modules">
                     <div class="card custom-card border">
                         <div class="card-header">
@@ -86,7 +83,7 @@
                             </div>
                         </div>
                         <div class="card-body htmlPhishingGrid">
-                            <img class="trainingCoverImg" src="{{ $coverImgPath }}" style="
+                            <img class="trainingCoverImg" src="{{ env('CLOUDFRONT_URL') . $module->cover_image }}" style="
                             width: 100%;
                         "/>
                         </div>

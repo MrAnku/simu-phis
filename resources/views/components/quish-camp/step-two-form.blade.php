@@ -46,7 +46,7 @@
                             </div>
                         </div>
                         <div class="card-body htmlPhishingGrid" style="background: white;">
-                            <iframe class="phishing-iframe" src="{{ Storage::url($email->file) }}"
+                            <iframe class="phishing-iframe" src="{{ env('CLOUDFRONT_URL') . $email->file }}"
                                 style="width: 100%;
                                 height: 300px;
                             "></iframe>

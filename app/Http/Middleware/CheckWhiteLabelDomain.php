@@ -27,11 +27,13 @@ class CheckWhiteLabelDomain
             ->where('service_status', 1)
             ->first();
 
+        $cloudFrontUrl = env('CLOUDFRONT_URL');
+
 
         if ($companyBranding) {
-            $companyLogoDark = $companyBranding->dark_logo;
-            $companyLogoLight = $companyBranding->light_logo;
-            $companyFavicon = $companyBranding->favicon;
+            $companyLogoDark = $cloudFrontUrl . $companyBranding->dark_logo;
+            $companyLogoLight = $cloudFrontUrl . $companyBranding->light_logo;
+            $companyFavicon = $cloudFrontUrl . $companyBranding->favicon;
             $companyName = $companyBranding->company_name;
             $companyDomain = "https://" . $companyBranding->domain . "/";
             $companyLearnDomain = "https://" . $companyBranding->learn_domain . "/";

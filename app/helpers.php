@@ -301,7 +301,7 @@ if (!function_exists('checkWhitelabeled')) {
                 'company_email' => $company_email,
                 'learn_domain' => $isWhitelabled->learn_domain,
                 'company_name' => $isWhitelabled->company_name,
-                'logo' => $isWhitelabled->dark_logo,
+                'logo' => env('CLOUDFRONT_URL') . $isWhitelabled->dark_logo,
                 'company_id' => $company_id,
             ];
         }
