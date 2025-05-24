@@ -115,8 +115,6 @@ class TrainingModuleController extends Controller
 
         $companyId = auth()->user()->company_id;
 
-        $cover_file = 'defaultTraining.jpg';
-
         // Handling cover file
         if ($request->hasFile('cover_file')) {
             $file = $request->file('cover_file');
@@ -127,6 +125,8 @@ class TrainingModuleController extends Controller
             $newFilename = $randomName . '.' . $extension;
 
             $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
+        }else{
+            $filePath = 'uploads/trainingModule/defaultTraining.jpg';
         }
 
         $trainingModule = new TrainingModule([
