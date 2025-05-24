@@ -49,8 +49,6 @@ class ApiSettingsController extends Controller
         }
     }
 
-
-
     public function updateProfile(Request $request)
     {
         try {
@@ -117,7 +115,6 @@ class ApiSettingsController extends Controller
             ], 500);
         }
     }
-
 
 
     public function updatePassword(UpdatePasswordRequest $request)

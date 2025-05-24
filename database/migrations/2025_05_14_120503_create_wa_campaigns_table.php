@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('campaign_type');
             $table->string('employee_type');
             $table->unsignedBigInteger('phishing_website');
-            $table->unsignedBigInteger('training_module')->nullable();
+            $table->longText('training_module')->nullable();
             $table->string('training_assignment')->nullable();
             $table->integer('days_until_due')->nullable();
             $table->string('training_lang')->nullable();

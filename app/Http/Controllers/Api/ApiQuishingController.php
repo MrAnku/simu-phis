@@ -141,7 +141,6 @@ class ApiQuishingController extends Controller
         }
     }
 
-
     public function deleteCampaign(Request $request)
     {
         try {
@@ -164,7 +163,7 @@ class ApiQuishingController extends Controller
             QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 
             log_action("Quishing Campaign deleted : {$campaign->campaign_name}");
-            
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign deleted successfully'),
