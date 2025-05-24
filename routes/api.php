@@ -125,6 +125,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update-reporting', [ApiSettingsController::class, 'updateReporting']);
         Route::post('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
+        Route::put('/update-siem', [ApiSettingsController::class, 'updateSiem']);
     });
 
     Route::prefix('sender-profiles')->group(function () {

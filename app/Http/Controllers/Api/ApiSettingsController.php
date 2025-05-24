@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\Company;
 use App\Models\Settings;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use PragmaRX\Google2FA\Google2FA;
 use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Writer\PngWriter;
+use App\Models\SiemProvider;
+use Illuminate\Http\Request;
 use Endroid\QrCode\Color\Color;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\ErrorCorrectionLevel;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\UpdatePasswordRequest;
+use Illuminate\Validation\ValidationException;
 
 class ApiSettingsController extends Controller
 {
@@ -656,6 +658,62 @@ class ApiSettingsController extends Controller
                 'success' => false,
                 'message' => __('Something went wrong, please try again later.')
             ], 500);
+        }
+    }
+
+    public function updateSiem(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider' => 'required|string|in:webhook,splunk',
+                'provider_url' => 'required|string',
+                'auth_token' => 'nullable|string',
+            ]);
+
+            //xss check start
+
+            $input = $request->all();
+
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => __('Invalid input detected.')
+                    ], 400);
+                }
+            }
+            array_walk_recursive($input, function (&$input) {
+                $input = strip_tags($input);
+            });
+            $request->merge($input);
+            //xss check end
+
+            $companyId = Auth::user()->company_id;
+            $siemSettings = SiemProvider::where('company_id', $companyId)->first();
+            if ($siemSettings) {
+                $siemSettings->update([
+                    'provider_name' => $request->input('provider'),
+                    'url' => $request->input('provider_url'),
+                    'status' => $request->input('status'),
+                    'token' => $request->input('auth_token') == '' ? null : $request->input('auth_token'),
+                ]);
+                return response()->json(['success' => true, 'message' => __('SIEM settings updated')]);
+            } else {
+                SiemProvider::create([
+                    'company_id' => $companyId,
+                    'provider_name' => $request->input('provider'),
+                    'url' => $request->input('provider_url'),
+                    'status' => $request->input('status'),
+                    'token' => $request->input('auth_token') == '' ? null : $request->input('auth_token'),
+                ]);
+
+                return response()->json(['success' => true, 'message' => __('SIEM settings updated')]);
+            }
+
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 }
