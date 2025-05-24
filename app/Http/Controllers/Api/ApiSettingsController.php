@@ -93,26 +93,26 @@ class ApiSettingsController extends Controller
                 log_action("Profile updated");
                 return response()->json([
                     'success' => true,
-                    'messsage' => __('Profile updated')
+                    'message' => __('Profile updated')
                 ], 200);
             } else {
                 log_action("No changes made or record not found");
                 return response()->json([
                     'success' => false,
-                    'messsage' => __('No changes made or record not found')
+                    'message' => __('No changes made or record not found')
                 ], 404);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'messsage' => __('Validation failed.'),
+                'message' => __('Validation failed.'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             log_action("Exception while updating profile: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'messsage' => __('An error occurred while updating the profile.'),
+                'message' => __('An error occurred while updating the profile.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -440,7 +440,7 @@ class ApiSettingsController extends Controller
         try {
             // Step 1: Validate input fields
             $validator = Validator::make($request->all(), [
-                'redirect_url' => 'required|url',
+                // 'redirect_url' => 'required|url',
                 'redirect_type' => 'required|string|max:50',
             ]);
 
@@ -591,6 +591,11 @@ class ApiSettingsController extends Controller
             $isUpdated = DB::table('company_settings')
                 ->where('company_id', $company_id)
                 ->update(['phish_reporting' => (int)$status]);
+
+                // return response()->json([
+                //     'success' => true,
+                //     "data" => $isUpdated
+                // ]);
 
             // Step 4: Check if the update was successful
             if ($isUpdated) {

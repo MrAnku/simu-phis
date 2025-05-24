@@ -116,14 +116,14 @@ Route::middleware('auth:api')->group(function () {
     // Settings routes
     Route::prefix('settings')->group(function () {
         Route::get('/', [ApiSettingsController::class, 'index']);
-        Route::post('/update-profile', [ApiSettingsController::class, 'updateProfile']);
-        Route::post('/update-password', [ApiSettingsController::class, 'updatePassword']);
+        Route::put('/update-profile', [ApiSettingsController::class, 'updateProfile']);
+        Route::put('/update-password', [ApiSettingsController::class, 'updatePassword']);
         Route::post('/acc-dectivate', [ApiSettingsController::class, 'deactivateAccount']);
-        Route::post('/update-lang', [ApiSettingsController::class, 'updateLang']);
+        Route::put('/update-lang', [ApiSettingsController::class, 'updateLang']);
         Route::put('/update-phish-edu', [ApiSettingsController::class, 'updatePhishingEdu']);
-        Route::post('/update-train-freq', [ApiSettingsController::class, 'updateTrainFreq']);
-        Route::post('/update-reporting', [ApiSettingsController::class, 'updateReporting']);
-        Route::post('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
+        Route::put('/update-train-freq', [ApiSettingsController::class, 'updateTrainFreq']);
+        Route::put('/update-reporting', [ApiSettingsController::class, 'updateReporting']);
+        Route::put('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
         Route::put('/update-siem', [ApiSettingsController::class, 'updateSiem']);
     });
