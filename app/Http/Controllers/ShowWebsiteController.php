@@ -25,6 +25,7 @@ use App\Models\SmishingLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Mail\AssignTrainingWithPassResetLink;
 use Illuminate\Validation\ValidationException;
@@ -54,17 +55,11 @@ class ShowWebsiteController extends Controller
 
                 $website = PhishingWebsite::find($p);
 
-                if ($website) {
-                    $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
-
-                    if (File::exists($filePath)) {
-                        $content = File::get($filePath);
-                        return response($content)->header('Content-Type', 'text/html');
-                    } else {
-                        echo "file not found";
-                    }
+                if ($website && Storage::disk('s3')->exists($website->file)) {
+                    $content = Storage::disk('s3')->get($website->file);
+                    return response($content)->header('Content-Type', 'text/html');
                 } else {
-                    echo "file not found";
+                    abort(404);
                 }
             } else {
                 abort(404);
@@ -72,26 +67,20 @@ class ShowWebsiteController extends Controller
         } else {
             $website = PhishingWebsite::find($p);
 
-            if ($website) {
-                $filePath = storage_path("app/public/uploads/phishingMaterial/phishing_websites/{$website->file}");
+            if ($website && Storage::disk('s3')->exists($website->file)) {
 
-                if (File::exists($filePath)) {
+                DB::table('phish_websites_sessions')->insert([
+                    'user' => $dynamicvalue,
+                    'session' => $c,
+                    'website_id' => $p,
+                    'website_name' => $l,
+                    'expiry' => now()->addMinutes(10)
+                ]);
 
-                    DB::table('phish_websites_sessions')->insert([
-                        'user' => $dynamicvalue,
-                        'session' => $c,
-                        'website_id' => $p,
-                        'website_name' => $l,
-                        'expiry' => now()->addMinutes(10)
-                    ]);
-
-                    $content = File::get($filePath);
-                    return response($content)->header('Content-Type', 'text/html');
-                } else {
-                    echo "file not found";
-                }
+                $content = Storage::disk('s3')->get($website->file);
+                return response($content)->header('Content-Type', 'text/html');
             } else {
-                echo "file not found";
+                abort(404);
             }
         }
     }
