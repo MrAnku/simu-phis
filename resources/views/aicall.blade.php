@@ -511,10 +511,7 @@
                                                     style="max-height: 300px;overflow-y: scroll;scrollbar-width: thin;">
                                                     @forelse ($trainings as $training)
                                                         @php
-                                                            $coverImgPath = asset(
-                                                                'storage/uploads/trainingModule/' .
-                                                                    $training->cover_image,
-                                                            );
+                                                            $coverImgPath = env('CLOUDFRONT_URL') . $training->cover_image;
                                                         @endphp
                                                         <div class="col-lg-6 t_modules">
                                                             <div class="card custom-card">

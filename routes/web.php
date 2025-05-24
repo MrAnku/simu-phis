@@ -536,161 +536,6 @@ Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDet
 
 
 
-//------------------------admin route----------------------//
-
-Route::get('/admin', function () {
-    if (!Auth::guard('admin')->check()) {
-        return redirect()->route('admin.login');
-    } else {
-
-        return redirect()->route('admin.dashboard');
-    }
-});
-
-Route::get('admin/login', [AdminLoginController::class, 'showLoginPage'])
-    ->name('admin.login');
-
-Route::post('admin/login', [AdminLoginController::class, 'doAdminLogin'])
-    ->name('admin.doLogin');
-
-Route::middleware(['isAdminLoggedIn'])->group(function () {
-
-    Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-
-    //-----------------partners route ------------------------//
-
-    Route::get('admin/deal-registrations', [DealRegController::class, 'index'])->name('admin.deal.reg');
-    Route::post('admin/deal-registrations/approve', [DealRegController::class, 'approveDeal'])->name('admin.deal.approve');
-    Route::post('admin/deal-registrations/reject', [DealRegController::class, 'rejectDeal'])->name('admin.deal.reject');
-    Route::get('admin/partners', [PartnerController::class, 'index'])->name('admin.partners');
-    Route::post('admin/approve-partner', [PartnerController::class, 'approvePartner'])->name('admin.approvePartner');
-    Route::post('admin/hold-service', [PartnerController::class, 'holdService'])->name('admin.holdService');
-    Route::post('admin/start-service', [PartnerController::class, 'startService'])->name('admin.startService');
-    Route::post('admin/reject-approval', [PartnerController::class, 'rejectApproval'])->name('admin.rejectApproval');
-    Route::post('admin/delete-partner', [PartnerController::class, 'deletePartner'])->name('admin.deletePartner');
-    Route::post('admin/add-notice', [PartnerController::class, 'addNotice'])->name('admin.addNotice');
-    Route::post('admin/delete-notice', [PartnerController::class, 'deleteNotice'])->name('admin.deleteNotice');
-
-    Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');
-
-    //-----------------partners route ------------------------//
-
-    //----------------encyclopedia routes----------------------//
-    Route::get('admin/encyclopedia', [EncycloController::class, 'index'])->name('admin.encyclo');
-    Route::post('admin/encyclopedia/add', [EncycloController::class, 'store'])->name('admin.add-encyclo');
-    Route::get('admin/encyclopedia/{id}', [EncycloController::class, 'getEncyclo'])->name('admin-get-encyclo');
-
-    Route::post('admin/encyclopedia/update', [EncycloController::class, 'updateEncyclo'])->name('admin.update-encyclo');
-
-    Route::post('admin/encyclopedia/delete', [EncycloController::class, 'deleteData'])->name('admin.delete-encyclo');
-    //----------------encyclopedia routes----------------------//
-
-    //-------------------companies route ---------------------//
-    Route::get('admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
-    Route::post('/admin/companies/approve', [CompanyController::class, 'approveCompany'])->name('admin.companies.approve');
-    Route::post('/admin/companies/reject', [CompanyController::class, 'rejectApproval'])->name('admin.companies.reject');
-    Route::post('/admin/companies/delete', [CompanyController::class, 'deleteCompany'])->name('admin.companies.delete');
-
-    //-------------------companies route ---------------------//
-
-    //-------------------Training Game-----------------------//
-    Route::get('admin/training-game', [AdminTrainingGameController::class, 'index'])->name('admin.training.game');
-    Route::post('admin/training-game/add', [AdminTrainingGameController::class, 'store'])->name('admin.addTrainingGame');
-    Route::post('admin/training-game/delete', [AdminTrainingGameController::class, 'deleteData'])->name('admin.deleteTrainingGame');
-    //-------------------Training Game-----------------------//
-
-    //-------------------Ai vishing route ---------------------//
-    Route::get('admin/ai-vishing/new-agent-requests', [AiVishingController::class, 'index'])->name('admin.aivishing.newagentreqs');
-    Route::get('admin/ai-vishing/req-prompt/{id}', [AiVishingController::class, 'getPrompt'])->name('admin.aivishing.getprompt');
-
-    Route::post('admin/ai-vishing/approve-agent', [AiVishingController::class, 'approveAgent'])->name('admin.aivishing.approveagent');
-
-    Route::post('admin/ai-vishing/delete-agent-request', [AiVishingController::class, 'deleteAgentRequest'])->name('admin.aivishing.delete.agent.request');
-
-    Route::post('admin/ai-vishing/add-new-agent', [AiVishingController::class, 'newAgent'])->name('admin.aivishing.newagent');
-    Route::post('admin/ai-vishing/delete-agent', [AiVishingController::class, 'deleteAgent'])->name('admin.aivishing.deleteAgent');
-
-    //-----------------whatsapp routes-------------------------//
-
-    Route::get('admin/whatsapp', [WhatsAppController::class, 'index'])->name('admin.whatsapp');
-    Route::post('admin/whatsapp/approve', [WhatsAppController::class, 'approveNumberChange'])->name('admin.whatsappnumber.change');
-
-    //-----------------whitelabel requests route--------------//
-    Route::get('admin/whitelabel-req', [AdminWhiteLabelController::class, 'index'])->name('admin.whitelabel');
-    Route::post('admin/approve-whitelabel', [AdminWhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
-    Route::post('admin/stop-whitelabel', [AdminWhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
-    Route::post('admin/reject-whitelabel', [AdminWhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
-    //-----------------whitelabel requests route--------------//
-
-    //----------------phishing emails route ----------------------//
-
-    Route::get('admin/phishing-emails', [AdminPhishingEmailController::class, 'index'])->name('admin.phishingEmails');
-
-    Route::post('admin/phishing-email', [AdminPhishingEmailController::class, 'getTemplateById'])->name('admin.phishing.getTemplateById');
-    Route::post('admin/add-email-template', [AdminPhishingEmailController::class, 'addEmailTemplate'])->name('admin.addEmailTemplate');
-    Route::post('admin/update-email-template', [AdminPhishingEmailController::class, 'updateTemplate'])->name('admin.phishing.update');
-    Route::post('admin/delete-email-template', [AdminPhishingEmailController::class, 'deleteTemplate'])->name('admin.phishing.template.delete');
-
-    //----------------phishing emails route ----------------------//
-
-    // -----------------quishing emails route ----------------------//
-    Route::get('admin/quishing-emails', [AdminQuishingEmailController::class, 'index'])->name('admin.quishingEmails');
-
-    Route::post('admin/quishing-emails/add-temp', [AdminQuishingEmailController::class, 'addTemplate'])->name('admin.quishing.emails.add');
-    Route::post('/admin/quishing-emails/delete-temp', [AdminQuishingEmailController::class, 'deleteTemplate'])->name('admin.quishing.emails.delete');
-    Route::post('admin/quishing-emails/update-temp', [AdminQuishingEmailController::class, 'updateTemplate'])->name('admin.quishing.emails.update');
-    // -----------------quishing emails route ----------------------//
-
-    //----------------phishing websites route -------------------------//
-
-    Route::get('admin/phishing-websites', [AdminPhishingWebsiteController::class, 'index'])->name('admin.phishing.websites');
-    Route::post('admin/delete-website', [AdminPhishingWebsiteController::class, 'deleteWebsite'])->name('admin.phishing.website.delete');
-    Route::post('admin/add-phishing-website', [AdminPhishingWebsiteController::class, 'addPhishingWebsite'])->name('admin.phishing.website.add');
-
-    //----------------phishing websites route -------------------------//
-
-
-    //----------------------sender profiles route ----------------------//
-
-    Route::get('admin/sender-profiles', [AdminSenderProfileController::class, 'index'])->name('admin.senderprofile.index');
-    Route::post('admin/delete-sender-profile', [AdminSenderProfileController::class, 'deleteSenderProfile'])->name('admin.senderprofile.delete');
-    Route::post('admin/add-sender-profile', [AdminSenderProfileController::class, 'addSenderProfile'])->name('admin.senderprofile.add');
-    Route::get('admin/get-sender-profile/{id}', [AdminSenderProfileController::class, 'getSenderProfile'])->name('admin.senderprofile.get');
-
-    Route::post('admin/update-sender-profile', [AdminSenderProfileController::class, 'updateSenderProfile'])->name('admin.senderprofile.update');
-
-    //----------------------sender profiles route ----------------------//
-
-
-    //---------------------------training module route -----------------//
-
-    Route::get('admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.trainingmodule.index');
-    Route::post('admin/add-training-module', [AdminTrainingModuleController::class, 'addTraining'])->name('admin.trainingmodule.add');
-    Route::post('admin/add-gamified-training', [AdminTrainingModuleController::class, 'addGamifiedTraining'])->name('admin.add.gamified_training');
-    Route::post('admin/update-gamified-training', [AdminTrainingModuleController::class, 'updateGamifiedTraining'])->name('admin.update.gamified_training');
-    Route::get('admin/get-training-module/{id}', [AdminTrainingModuleController::class, 'getTrainingById'])->name('admin.trainingmodule.getTrainingById');
-
-    Route::post('admin/update-training-module', [AdminTrainingModuleController::class, 'updateTrainingModule'])->name('admin.trainingmodule.update');
-
-    Route::post('admin/delete-training-module', [AdminTrainingModuleController::class, 'deleteTraining'])->name('admin.trainingmodule.delete');
-
-    Route::get('admin/training-preview/{trainingid}', [AdminTrainingModuleController::class, 'trainingPreview'])->name('admin.trainingmodule.preview');
-
-    Route::get('admin/training-preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
-
-    //---------------------------all logs route -----------------//
-    Route::get('admin/all-logs', [LogController::class, 'index'])->name('admin.all.logs');
-
-
-    Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
-});
-
-
-//------------------------admin route----------------------//
-
-
-
-
 // download route 
 Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
     Route::get('/download-pdf', [PdfController::class, 'downloadPdf'])->name('download-pdf');
@@ -727,3 +572,158 @@ Route::get('/send-mail', function (MailController $controller) {
 });
 
 require __DIR__ . '/auth.php';
+
+
+
+
+//------------------------admin route----------------------//
+
+// Route::get('/admin', function () {
+//     if (!Auth::guard('admin')->check()) {
+//         return redirect()->route('admin.login');
+//     } else {
+
+//         return redirect()->route('admin.dashboard');
+//     }
+// });
+
+// Route::get('admin/login', [AdminLoginController::class, 'showLoginPage'])
+//     ->name('admin.login');
+
+// Route::post('admin/login', [AdminLoginController::class, 'doAdminLogin'])
+//     ->name('admin.doLogin');
+
+// Route::middleware(['isAdminLoggedIn'])->group(function () {
+
+//     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+//     //-----------------partners route ------------------------//
+
+//     Route::get('admin/deal-registrations', [DealRegController::class, 'index'])->name('admin.deal.reg');
+//     Route::post('admin/deal-registrations/approve', [DealRegController::class, 'approveDeal'])->name('admin.deal.approve');
+//     Route::post('admin/deal-registrations/reject', [DealRegController::class, 'rejectDeal'])->name('admin.deal.reject');
+//     Route::get('admin/partners', [PartnerController::class, 'index'])->name('admin.partners');
+//     Route::post('admin/approve-partner', [PartnerController::class, 'approvePartner'])->name('admin.approvePartner');
+//     Route::post('admin/hold-service', [PartnerController::class, 'holdService'])->name('admin.holdService');
+//     Route::post('admin/start-service', [PartnerController::class, 'startService'])->name('admin.startService');
+//     Route::post('admin/reject-approval', [PartnerController::class, 'rejectApproval'])->name('admin.rejectApproval');
+//     Route::post('admin/delete-partner', [PartnerController::class, 'deletePartner'])->name('admin.deletePartner');
+//     Route::post('admin/add-notice', [PartnerController::class, 'addNotice'])->name('admin.addNotice');
+//     Route::post('admin/delete-notice', [PartnerController::class, 'deleteNotice'])->name('admin.deleteNotice');
+
+//     Route::post('admin/create-partner', [PartnerController::class, 'createPartner'])->name('admin.createPartner');
+
+//     //-----------------partners route ------------------------//
+
+//     //----------------encyclopedia routes----------------------//
+//     Route::get('admin/encyclopedia', [EncycloController::class, 'index'])->name('admin.encyclo');
+//     Route::post('admin/encyclopedia/add', [EncycloController::class, 'store'])->name('admin.add-encyclo');
+//     Route::get('admin/encyclopedia/{id}', [EncycloController::class, 'getEncyclo'])->name('admin-get-encyclo');
+
+//     Route::post('admin/encyclopedia/update', [EncycloController::class, 'updateEncyclo'])->name('admin.update-encyclo');
+
+//     Route::post('admin/encyclopedia/delete', [EncycloController::class, 'deleteData'])->name('admin.delete-encyclo');
+//     //----------------encyclopedia routes----------------------//
+
+//     //-------------------companies route ---------------------//
+//     Route::get('admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
+//     Route::post('/admin/companies/approve', [CompanyController::class, 'approveCompany'])->name('admin.companies.approve');
+//     Route::post('/admin/companies/reject', [CompanyController::class, 'rejectApproval'])->name('admin.companies.reject');
+//     Route::post('/admin/companies/delete', [CompanyController::class, 'deleteCompany'])->name('admin.companies.delete');
+
+//     //-------------------companies route ---------------------//
+
+//     //-------------------Training Game-----------------------//
+//     Route::get('admin/training-game', [AdminTrainingGameController::class, 'index'])->name('admin.training.game');
+//     Route::post('admin/training-game/add', [AdminTrainingGameController::class, 'store'])->name('admin.addTrainingGame');
+//     Route::post('admin/training-game/delete', [AdminTrainingGameController::class, 'deleteData'])->name('admin.deleteTrainingGame');
+//     //-------------------Training Game-----------------------//
+
+//     //-------------------Ai vishing route ---------------------//
+//     Route::get('admin/ai-vishing/new-agent-requests', [AiVishingController::class, 'index'])->name('admin.aivishing.newagentreqs');
+//     Route::get('admin/ai-vishing/req-prompt/{id}', [AiVishingController::class, 'getPrompt'])->name('admin.aivishing.getprompt');
+
+//     Route::post('admin/ai-vishing/approve-agent', [AiVishingController::class, 'approveAgent'])->name('admin.aivishing.approveagent');
+
+//     Route::post('admin/ai-vishing/delete-agent-request', [AiVishingController::class, 'deleteAgentRequest'])->name('admin.aivishing.delete.agent.request');
+
+//     Route::post('admin/ai-vishing/add-new-agent', [AiVishingController::class, 'newAgent'])->name('admin.aivishing.newagent');
+//     Route::post('admin/ai-vishing/delete-agent', [AiVishingController::class, 'deleteAgent'])->name('admin.aivishing.deleteAgent');
+
+//     //-----------------whatsapp routes-------------------------//
+
+//     Route::get('admin/whatsapp', [WhatsAppController::class, 'index'])->name('admin.whatsapp');
+//     Route::post('admin/whatsapp/approve', [WhatsAppController::class, 'approveNumberChange'])->name('admin.whatsappnumber.change');
+
+//     //-----------------whitelabel requests route--------------//
+//     Route::get('admin/whitelabel-req', [AdminWhiteLabelController::class, 'index'])->name('admin.whitelabel');
+//     Route::post('admin/approve-whitelabel', [AdminWhiteLabelController::class, 'approveWhitelabel'])->name('admin.whitelabel.approve');
+//     Route::post('admin/stop-whitelabel', [AdminWhiteLabelController::class, 'stopWhitelabel'])->name('admin.whitelabel.stop');
+//     Route::post('admin/reject-whitelabel', [AdminWhiteLabelController::class, 'rejectWhitelabel'])->name('admin.whitelabel.reject');
+//     //-----------------whitelabel requests route--------------//
+
+//     //----------------phishing emails route ----------------------//
+
+//     Route::get('admin/phishing-emails', [AdminPhishingEmailController::class, 'index'])->name('admin.phishingEmails');
+
+//     Route::post('admin/phishing-email', [AdminPhishingEmailController::class, 'getTemplateById'])->name('admin.phishing.getTemplateById');
+//     Route::post('admin/add-email-template', [AdminPhishingEmailController::class, 'addEmailTemplate'])->name('admin.addEmailTemplate');
+//     Route::post('admin/update-email-template', [AdminPhishingEmailController::class, 'updateTemplate'])->name('admin.phishing.update');
+//     Route::post('admin/delete-email-template', [AdminPhishingEmailController::class, 'deleteTemplate'])->name('admin.phishing.template.delete');
+
+//     //----------------phishing emails route ----------------------//
+
+//     // -----------------quishing emails route ----------------------//
+//     Route::get('admin/quishing-emails', [AdminQuishingEmailController::class, 'index'])->name('admin.quishingEmails');
+
+//     Route::post('admin/quishing-emails/add-temp', [AdminQuishingEmailController::class, 'addTemplate'])->name('admin.quishing.emails.add');
+//     Route::post('/admin/quishing-emails/delete-temp', [AdminQuishingEmailController::class, 'deleteTemplate'])->name('admin.quishing.emails.delete');
+//     Route::post('admin/quishing-emails/update-temp', [AdminQuishingEmailController::class, 'updateTemplate'])->name('admin.quishing.emails.update');
+//     // -----------------quishing emails route ----------------------//
+
+//     //----------------phishing websites route -------------------------//
+
+//     Route::get('admin/phishing-websites', [AdminPhishingWebsiteController::class, 'index'])->name('admin.phishing.websites');
+//     Route::post('admin/delete-website', [AdminPhishingWebsiteController::class, 'deleteWebsite'])->name('admin.phishing.website.delete');
+//     Route::post('admin/add-phishing-website', [AdminPhishingWebsiteController::class, 'addPhishingWebsite'])->name('admin.phishing.website.add');
+
+//     //----------------phishing websites route -------------------------//
+
+
+//     //----------------------sender profiles route ----------------------//
+
+//     Route::get('admin/sender-profiles', [AdminSenderProfileController::class, 'index'])->name('admin.senderprofile.index');
+//     Route::post('admin/delete-sender-profile', [AdminSenderProfileController::class, 'deleteSenderProfile'])->name('admin.senderprofile.delete');
+//     Route::post('admin/add-sender-profile', [AdminSenderProfileController::class, 'addSenderProfile'])->name('admin.senderprofile.add');
+//     Route::get('admin/get-sender-profile/{id}', [AdminSenderProfileController::class, 'getSenderProfile'])->name('admin.senderprofile.get');
+
+//     Route::post('admin/update-sender-profile', [AdminSenderProfileController::class, 'updateSenderProfile'])->name('admin.senderprofile.update');
+
+//     //----------------------sender profiles route ----------------------//
+
+
+//     //---------------------------training module route -----------------//
+
+//     Route::get('admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.trainingmodule.index');
+//     Route::post('admin/add-training-module', [AdminTrainingModuleController::class, 'addTraining'])->name('admin.trainingmodule.add');
+//     Route::post('admin/add-gamified-training', [AdminTrainingModuleController::class, 'addGamifiedTraining'])->name('admin.add.gamified_training');
+//     Route::post('admin/update-gamified-training', [AdminTrainingModuleController::class, 'updateGamifiedTraining'])->name('admin.update.gamified_training');
+//     Route::get('admin/get-training-module/{id}', [AdminTrainingModuleController::class, 'getTrainingById'])->name('admin.trainingmodule.getTrainingById');
+
+//     Route::post('admin/update-training-module', [AdminTrainingModuleController::class, 'updateTrainingModule'])->name('admin.trainingmodule.update');
+
+//     Route::post('admin/delete-training-module', [AdminTrainingModuleController::class, 'deleteTraining'])->name('admin.trainingmodule.delete');
+
+//     Route::get('admin/training-preview/{trainingid}', [AdminTrainingModuleController::class, 'trainingPreview'])->name('admin.trainingmodule.preview');
+
+//     Route::get('admin/training-preview-content/{trainingid}/{lang}', [TrainingModuleController::class, 'loadPreviewTrainingContent'])->name('admin.trainingmodule.preview.content');
+
+//     //---------------------------all logs route -----------------//
+//     Route::get('admin/all-logs', [LogController::class, 'index'])->name('admin.all.logs');
+
+
+//     Route::get('admin/logout', [AdminLoginController::class, 'logoutAdmin'])->name('adminLogout');
+// });
+
+
+//------------------------admin route----------------------//
