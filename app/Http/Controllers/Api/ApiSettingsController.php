@@ -29,7 +29,9 @@ class ApiSettingsController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
-            $all_settings = Company::where('company_id', $companyId)->with('company_settings')->with('company_whiteLabel')->first();
+            $all_settings = Company::where('company_id', $companyId)
+            ->with('company_settings', 'company_whiteLabel', 'siemConfig')
+            ->first();
 
             if (!$all_settings) {
                 return response()->json([
