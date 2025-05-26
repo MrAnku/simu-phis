@@ -107,15 +107,18 @@ class ApiQuishingEmailController extends Controller
             }
 
             // Store the file
-            $fileName = uniqid() . '.' . $request->file('template_file')->getClientOriginalExtension();
-            $filePath = $request->file('template_file')->storeAs('public/uploads/quishing_templates', $fileName);
+            $randomName = generateRandom(32);
+            $extension = $request->file('template_file')->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('template_file')->storeAs('/uploads/quishing_templates', $newFilename, 's3');
 
             // Create template
             QshTemplate::create([
                 'name' => $request->template_name,
                 'email_subject' => $request->template_subject,
                 'difficulty' => $request->difficulty,
-                'file' => $filePath,
+                'file' => "/" . $filePath,
                 'website' => $request->associated_website,
                 'sender_profile' => $request->sender_profile,
                 'company_id' => Auth::user()->company_id,
@@ -164,14 +167,13 @@ class ApiQuishingEmailController extends Controller
                 ], 404);
             }
 
-            // Delete file from storage
-            Storage::delete($template->file);
-
-
             // Delete record from database
             $template->delete();
 
-             log_action("Template deleted : {$template->name}");
+            // Delete the file from S3
+            Storage::disk('s3')->delete($template->file);
+
+            log_action("Template deleted : {$template->name}");
 
             return response()->json([
                 'status' => true,

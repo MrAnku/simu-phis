@@ -33,8 +33,8 @@ class ApiWhiteLabelController extends Controller
             ]);
 
             $whiteLabelExists = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->exists();
-            if($whiteLabelExists){
-                   return response()->json([
+            if ($whiteLabelExists) {
+                return response()->json([
                     'status' => false,
                     'message' => 'White Label already added for your company.'
                 ], 422);
@@ -66,14 +66,22 @@ class ApiWhiteLabelController extends Controller
 
             $companyId = Auth::user()->company_id;
 
-            $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $request->file('dark_logo')->getClientOriginalName(), 's3');
-            $darkLogoUrl = Storage::disk('s3')->url($darkLogoPath);
+            $randomName = generateRandom(10);
+            $extension = $request->file('dark_logo')->getClientOriginalExtension();
+            $darkLogoFilename = $randomName . '.' . $extension;
+            $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $darkLogoFilename, 's3');
 
-            $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $request->file('light_logo')->getClientOriginalName(), 's3');
-            $lightLogoUrl = Storage::disk('s3')->url($lightLogoPath);
+            $randomName = generateRandom(10);
+            $extension = $request->file('light_logo')->getClientOriginalExtension();
+            $lightLogoFilename = $randomName . '.' . $extension;
 
-            $faviconLogoPath = $request->file('favicon')->storeAs("whiteLabel/{$companyId}", $request->file('favicon')->getClientOriginalName(), 's3');
-            $faviconLogoUrl = Storage::disk('s3')->url($faviconLogoPath);
+            $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $lightLogoFilename, 's3');
+
+            $randomName = generateRandom(10);
+            $extension = $request->file('favicon')->getClientOriginalExtension();
+            $faviconLogoFilename = $randomName . '.' . $extension;
+
+            $faviconLogoPath = $request->file('favicon')->storeAs("whiteLabel/{$companyId}", $faviconLogoFilename, 's3');
 
             $isCreatedWhitLabel = WhiteLabelledCompany::create([
                 'company_id' => Auth::user()->company_id,
@@ -81,9 +89,9 @@ class ApiWhiteLabelController extends Controller
                 'company_email' => $request->company_email,
                 'domain' => $request->domain,
                 'learn_domain' => $request->learn_domain,
-                'dark_logo' => $darkLogoUrl,
-                'light_logo' => $lightLogoUrl,
-                'favicon' => $faviconLogoUrl,
+                'dark_logo' => "/" . $darkLogoPath,
+                'light_logo' => "/" . $lightLogoPath,
+                'favicon' => "/" . $faviconLogoPath,
                 'company_name' => $request->company_name,
             ]);
 

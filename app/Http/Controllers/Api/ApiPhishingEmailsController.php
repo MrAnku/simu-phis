@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Campaign;
 use App\Models\CampaignLive;
+use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\SenderProfile;
 use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -225,7 +226,8 @@ class ApiPhishingEmailsController extends Controller
         $fileAbsolutePath = storage_path('app/public/' . $filelocation);
 
         try {
-            $isDeleted = PhishingEmail::where('id', $tempid)->delete();
+            $template = PhishingEmail::where('id', $tempid)->first();
+            $isDeleted = $template->delete();
 
             // Delete related Campaigns
             Campaign::where('phishing_material', $tempid)
@@ -236,10 +238,8 @@ class ApiPhishingEmailsController extends Controller
                 ->where('company_id', $company_id)
                 ->delete();
 
-            // Delete file if exists
-            if (File::exists($fileAbsolutePath)) {
-                File::delete($fileAbsolutePath);
-            }
+            // Delete the file from S3
+            Storage::disk('s3')->delete($template->mailBodyFilePath);
 
             if ($isDeleted) {
                 log_action("Email Template (ID: $tempid) deleted successfully");
@@ -310,18 +310,17 @@ class ApiPhishingEmailsController extends Controller
         $randomName = generateRandom(32);
         $extension = $eMailFile->getClientOriginalExtension();
         $newFilename = $randomName . '.' . $extension;
-        $targetDir = 'uploads/phishingMaterial/phishing_emails';
 
         try {
             // Move the uploaded file to the target directory
-            $path = $eMailFile->storeAs($targetDir, $newFilename, 'public');
+            $filePath = $request->file('eMailFile')->storeAs('/uploads/phishingMaterial/phishing_emails', $newFilename, 's3');
 
             // Insert data into the database
             $isInserted = PhishingEmail::create([
                 'name' => $eTempName,
                 'email_subject' => $eSubject,
                 'difficulty' => $difficulty,
-                'mailBodyFilePath' => $path,
+                'mailBodyFilePath' =>  "/" . $filePath,
                 'website' => $eAssoWebsite,
                 'senderProfile' => $eSenderProfile,
                 'company_id' => $company_id,

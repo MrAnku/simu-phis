@@ -146,7 +146,7 @@ class ApiTrainingModuleController extends Controller
             // $category =   $request->input('category');
             $mPassingScore = $request->input('mPassingScore');
             $mModuleLang = $request->input('mModuleLang', 'en');
-            $mCoverFile = 'defaultTraining.jpg';
+            $filePath = 'uploads/trainingModule/defaultTraining.jpg';
             $mCompTime = $request->input('mCompTime');
             $jsonData = $request->input('jsonData');
             $companyId = Auth::user()->company_id;
@@ -154,12 +154,13 @@ class ApiTrainingModuleController extends Controller
 
             if ($request->hasFile('mCoverFile')) {
                 $file = $request->file('mCoverFile');
-                $mCoverFile = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-                // return response()->json([
-                //     'message' => 'Module created successfully.',
-                //     'coverFile' => $mCoverFile,
-                // ]);
-                $file->storeAs('public/uploads/trainingModule', $mCoverFile);
+
+                // Generate a random name for the file
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
+
+                $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
             }
 
             $trainingModule = new TrainingModule([
@@ -176,7 +177,7 @@ class ApiTrainingModuleController extends Controller
                 'tags' => $request->input('tags'),
                 'program_resources' => $request->input('program_resources'),
                 'estimated_time' => $mCompTime,
-                'cover_image' => $mCoverFile,
+                'cover_image' => "/" . $filePath,
                 'passing_score' => $mPassingScore,
                 'json_quiz' => $jsonData,
                 'module_language' => $mModuleLang,
@@ -228,17 +229,24 @@ class ApiTrainingModuleController extends Controller
             $companyId = Auth::user()->company_id;
             $cover_file = 'defaultTraining.jpg';
 
-            // Handle file upload
+            // Handling cover file
             if ($request->hasFile('cover_file')) {
                 $file = $request->file('cover_file');
-                $cover_file = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('public/uploads/trainingModule', $cover_file);
+
+                // Generate a random name for the file
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
+
+                $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
+            } else {
+                $filePath = 'uploads/trainingModule/defaultTraining.jpg';
             }
 
             $trainingModule = new TrainingModule([
                 'name' => $request->input('module_name'),
                 'estimated_time' => $request->input('completion_time'),
-                'cover_image' => $cover_file,
+                'cover_image' => "/" . $filePath,
                 'passing_score' => $request->input('passing_score'),
                 'category' => $request->input('category'),
                 'training_type' => 'gamified',
@@ -296,10 +304,16 @@ class ApiTrainingModuleController extends Controller
 
             // Handle cover image if provided
             if ($request->hasFile('cover_file')) {
+
                 $file = $request->file('cover_file');
-                $cover_file = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('uploads/trainingModule', $cover_file, 'public');
-                $updateData['cover_image'] = $cover_file;
+
+                // Generate a random name for the file
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
+
+                $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
+                $updateData['cover_image'] = $newFilename;
             }
 
             $isTrainingUpdated = TrainingModule::where('id', $request->input('gamifiedTrainingId'))
@@ -462,10 +476,15 @@ class ApiTrainingModuleController extends Controller
             ];
             // return $request->file('mCoverFile');
             if ($request->hasFile('mCoverFile')) {
-                $file = $request->file('mCoverFile');
-                $mCoverFile = generateRandom(32) . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('public/uploads/trainingModule', $mCoverFile);
-                $updateData['cover_image'] = $mCoverFile;
+                    $file = $request->file('mCoverFile');
+
+            // Generate a random name for the file
+            $randomName = generateRandom(32);
+            $extension = $file->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
+             $updateData['cover_image'] = $newFilename;
             }
             // return $trainingModuleId;
             // $updateData['cover_image'] = "default image";
@@ -537,14 +556,14 @@ class ApiTrainingModuleController extends Controller
             DB::table('training_assigned_users')->where('training', $trainingId)->where('company_id', $company_id)->delete();
 
             // Delete training module
-            $isDeleted = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->delete();
+            $trainingModule = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->first();
+
+            $isDeleted  = $trainingModule->delete();
 
             // Delete cover image if not default
             if ($isDeleted && $coverImage !== 'defaultTraining.jpg') {
-                $coverFile = 'uploads/trainingModule/' . $coverImage;
-                if (Storage::exists($coverFile)) {
-                    Storage::delete($coverFile);
-                }
+                // Delete the file from S3
+                Storage::disk('s3')->delete($trainingModule->cover_image);
             }
 
             DB::commit(); // Commit transaction
