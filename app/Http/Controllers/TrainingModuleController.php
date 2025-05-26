@@ -64,7 +64,7 @@ class TrainingModuleController extends Controller
         $moduleName = $request->input('moduleName');
         $mPassingScore = $request->input('mPassingScore');
         $mModuleLang = $request->input('mModuleLang', 'en');
-        $mCoverFile = 'defaultTraining.jpg';
+        $filePath = 'uploads/trainingModule/defaultTraining.jpg';
         $mCompTime = $request->input('mCompTime');
         $jsonData = $request->input('jsonData');
 
@@ -125,7 +125,7 @@ class TrainingModuleController extends Controller
             $newFilename = $randomName . '.' . $extension;
 
             $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
-        }else{
+        } else {
             $filePath = 'uploads/trainingModule/defaultTraining.jpg';
         }
 
@@ -167,17 +167,20 @@ class TrainingModuleController extends Controller
         // handling cover file
         if ($request->hasFile('cover_file')) {
             $file = $request->file('cover_file');
+
+            // Generate a random name for the file
             $randomName = generateRandom(32);
             $extension = $file->getClientOriginalExtension();
-            $cover_file = $randomName . '.' . $extension;
-            $file->storeAs('uploads/trainingModule', $cover_file, 'public');
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
 
             $isTrainingUpdated = TrainingModule::where('id', $request->gamifiedTrainingId)
                 ->where('company_id', $company_id)
                 ->update([
                     'name' => $request->module_name,
                     'estimated_time' => $request->completion_time,
-                    'cover_image' => $cover_file,
+                    'cover_image' => "/" . $filePath,
                     'passing_score' => $request->passing_score,
                     'category' => $request->input('category'),
                     'json_quiz' => $request->gamifiedJsonData,
@@ -239,6 +242,7 @@ class TrainingModuleController extends Controller
 
     public function updateTrainingModule(Request $request)
     {
+        // return "kk";
         $request->validate([
             'trainingModuleid' => 'required|integer|exists:training_modules,id',
             'moduleName' => 'required|string|max:255',
@@ -254,7 +258,7 @@ class TrainingModuleController extends Controller
         $moduleName = $request->input('moduleName');
         $mPassingScore = $request->input('mPassingScore');
         $mModuleLang = $request->input('mModuleLang') ?? 'en';
-        $mCoverFile = 'defaultTraining.jpg';
+        $filePath = 'uploads/trainingModule/defaultTraining.jpg';
         $mCompTime = $request->input('mCompTime');
         $jsonData = $request->input('updatedjsonData');
 
@@ -262,18 +266,22 @@ class TrainingModuleController extends Controller
 
         // handling cover file
         if ($request->hasFile('mCoverFile')) {
+
             $file = $request->file('mCoverFile');
+
+            // Generate a random name for the file
             $randomName = generateRandom(32);
             $extension = $file->getClientOriginalExtension();
-            $mCoverFile = $randomName . '.' . $extension;
-            $file->storeAs('uploads/trainingModule', $mCoverFile, 'public');
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
 
             $isTrainingUpdated = TrainingModule::where('id', $trainingModuleId)
                 ->where('company_id', $company_id)
                 ->update([
                     'name' => $moduleName,
                     'estimated_time' => $mCompTime,
-                    'cover_image' => $mCoverFile,
+                    'cover_image' => "/" . $filePath,
                     'passing_score' => $mPassingScore,
                     'category' => $request->input('category'),
                     'json_quiz' => $jsonData,
