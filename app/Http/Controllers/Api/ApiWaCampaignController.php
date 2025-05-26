@@ -36,7 +36,9 @@ class ApiWaCampaignController extends Controller
                 $templates = json_decode($hasTemplates->template, true)['data'];
             }
 
-            $campaigns = WaCampaign::with('trainingData')->where('company_id', $company_id)->orderBy('id', 'desc')
+            $campaigns = WaCampaign::with(['trainingData', 'userGroupData'])
+                ->where('company_id', $company_id)
+                ->orderByDesc('id')
                 ->get();
             $trainings = TrainingModule::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')->get();
@@ -59,7 +61,7 @@ class ApiWaCampaignController extends Controller
             ], 500);
         }
     }
-    
+
     public function createCampaign(Request $request)
     {
         try {
@@ -129,7 +131,7 @@ class ApiWaCampaignController extends Controller
             }
 
             if ($validated['employee_type'] == 'bluecollar') {
-                
+
                 $users = BlueCollarEmployee::where('group_id', $validated['users_group'])->get();
             }
 
@@ -208,7 +210,7 @@ class ApiWaCampaignController extends Controller
             ]);
 
             log_action("Whatsapp Campaign created : {$validated['campaign_name']}");
-            
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign created successfully'),
@@ -357,7 +359,7 @@ class ApiWaCampaignController extends Controller
             }
 
             log_action("Whatsapp Configuration Updated");
-            
+
             return response()->json([
                 'success' => true,
                 'message' => __('Configuration updated successfully!'),
@@ -532,5 +534,5 @@ class ApiWaCampaignController extends Controller
                 'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
-    }    
+    }
 }

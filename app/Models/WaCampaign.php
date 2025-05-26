@@ -26,7 +26,12 @@ class WaCampaign extends Model
         'company_id',
     ];
 
-    public function trainingData(){
+    public function trainingData()
+    {
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
+    }
+    public function userGroupData()
+    {
+        return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
     }
 }
