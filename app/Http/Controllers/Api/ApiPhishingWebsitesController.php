@@ -412,4 +412,50 @@ class ApiPhishingWebsitesController extends Controller
             ], 500);
         }
     }
+
+
+    public function duplicate(Request $request)
+    {
+        try {
+            if (!$request->route('id')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing Website ID is required')
+                ], 422);
+            }
+            $id = base64_decode($request->route('id'));
+
+            $phishingWebsiteExists = PhishingWebsite::where('id', $id)->where('company_id', '!=', 'default')->first();
+            if ($phishingWebsiteExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing Website already exists for this company')
+                ], 422);
+            }
+
+            $phishingEmail = PhishingWebsite::where('id', $id)->where('company_id', 'default')->first();
+            if (!$phishingEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing Website not found')
+                ], 422);
+            }
+
+            $duplicateTraining = $phishingEmail->replicate(['company_id', 'name']);
+            $duplicateTraining->company_id = Auth::user()->company_id;
+            $duplicateTraining->name = $phishingEmail->name . ' (Copy)';
+
+            $duplicateTraining->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Phishing Website duplicated successfully')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

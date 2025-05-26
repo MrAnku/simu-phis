@@ -210,4 +210,49 @@ class ApiQuishingController extends Controller
             ], 500);
         }
     }
+
+    public function duplicate(Request $request)
+    {
+        try {
+            if (!$request->route('id')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Quishing Template ID is required')
+                ], 422);
+            }
+            $id = base64_decode($request->route('id'));
+
+            $qshTempExists = QshTemplate::where('id', $id)->where('company_id', '!=', 'default')->first();
+            if ($qshTempExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Quishing Template already exists for this company')
+                ], 422);
+            }
+
+            $qshTemplate = QshTemplate::where('id', $id)->where('company_id', 'default')->first();
+            if (!$qshTemplate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Quishing Template not found')
+                ], 422);
+            }
+
+            $duplicateTraining = $qshTemplate->replicate(['company_id', 'name']);
+            $duplicateTraining->company_id = Auth::user()->company_id;
+            $duplicateTraining->name = $qshTemplate->name . ' (Copy)';
+
+            $duplicateTraining->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Quishing Template duplicated successfully')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

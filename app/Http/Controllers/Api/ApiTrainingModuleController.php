@@ -476,15 +476,15 @@ class ApiTrainingModuleController extends Controller
             ];
             // return $request->file('mCoverFile');
             if ($request->hasFile('mCoverFile')) {
-                    $file = $request->file('mCoverFile');
+                $file = $request->file('mCoverFile');
 
-            // Generate a random name for the file
-            $randomName = generateRandom(32);
-            $extension = $file->getClientOriginalExtension();
-            $newFilename = $randomName . '.' . $extension;
+                // Generate a random name for the file
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
 
-            $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
-             $updateData['cover_image'] = $newFilename;
+                $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
+                $updateData['cover_image'] = $newFilename;
             }
             // return $trainingModuleId;
             // $updateData['cover_image'] = "default image";
@@ -764,6 +764,51 @@ class ApiTrainingModuleController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
             ]);
+        }
+    }
+
+    public function duplicate(Request $request)
+    {
+        try {
+            if (!$request->route('id')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training ID is required')
+                ], 422);
+            }
+            $id = base64_decode($request->route('id'));
+
+             $trainingModuleExists = TrainingModule::where('id', $id)->where('company_id', '!=', 'default')->first();
+             if($trainingModuleExists){
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training Module already exists for this company')
+                ], 422);
+             }
+
+            $trainingModule = TrainingModule::where('id', $id)->where('company_id', 'default')->first();
+            if (!$trainingModule) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training Module not found')
+                ], 422);
+            }
+
+            $duplicateTraining = $trainingModule->replicate(['company_id', 'name']);
+            $duplicateTraining->company_id = Auth::user()->company_id;
+            $duplicateTraining->name = $trainingModule->name . ' (Copy)';
+
+            $duplicateTraining->save();
+
+              return response()->json([
+                'success' => true,
+                'message' => __('Training Module duplicated successfully')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 }
