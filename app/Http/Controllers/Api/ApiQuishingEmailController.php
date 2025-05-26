@@ -156,7 +156,7 @@ class ApiQuishingEmailController extends Controller
             // Validate request
 
             $id = base64_decode($request->id);
-            $template = QshTemplate::where('id', $request->id)
+            $template = QshTemplate::where('id', $id)
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
 
