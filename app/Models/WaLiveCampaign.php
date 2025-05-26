@@ -29,4 +29,8 @@ class WaLiveCampaign extends Model
         'training_assigned',
         'company_id',
     ];
+    public function whatsTrainingData()
+    {
+        return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
 }
