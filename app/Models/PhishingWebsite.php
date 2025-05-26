@@ -19,10 +19,6 @@ class PhishingWebsite extends Model
         return $this->belongsTo(PhishingEmail::class, 'website', 'id');
     }
 
-    public function getFileAttribute($value)
-    {
-        return "/storage/uploads/phishingMaterial/phishing_websites/" . $value;
-    }
 
     public function getUrlAttribute()
     {
