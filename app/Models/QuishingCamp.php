@@ -24,9 +24,10 @@ class QuishingCamp extends Model
 
     public function userGroupData()
     {
-        return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
+        return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
     }
-    public function campLive(){
+    public function campLive()
+    {
         return $this->hasMany(QuishingLiveCamp::class, 'campaign_id', 'campaign_id');
     }
 }
