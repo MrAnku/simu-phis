@@ -157,7 +157,57 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
+    public function updateWebsite(Request $request): JsonResponse
+    {
+        try{
+            $data = $request->validate([
+                'id' => 'required|integer',
+                'name' => 'required|string|max:255',
+                'file' => 'required|file|mimes:html',
+                'domain' => 'required|string|max:255',
+            ]);
 
+            $phishingWebsite = PhishingWebsite::find($data['id']);
+            if (!$phishingWebsite) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing website not found.')
+                ], 404);
+            }
+
+            //store new file
+            $randomName = generateRandom(32);
+            $extension = $request->file('file')->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('file')->storeAs('/uploads/phishingMaterial/phishing_websites', $newFilename, 's3');
+
+            PhishingWebsite::where('id', $data['id'])
+                ->update([
+                    'name' => $data['name'],
+                    'file' => "/" . $filePath,
+                    'domain' => $data['domain']
+                ]);
+            log_action("Phishing website updated successfully (ID: {$data['id']})");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Phishing website updated successfully.')
+            ], 200);
+
+        }catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     public function searchWebsite(Request $request)
@@ -184,11 +234,10 @@ class ApiPhishingWebsitesController extends Controller
                 'message' => __('Search results fetched successfully.'),
                 'data' => $phishingWebsites
             ], 200);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Something went wrong.'),
-                'error' => $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }

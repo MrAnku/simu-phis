@@ -227,56 +227,88 @@ class ApiQuishingEmailController extends Controller
 
     public function updateTemplate(Request $request)
     {
+        // XSS check
+        $input = $request->only(
+            'id',
+            'name',
+            'email_subject',
+            'difficulty',
+            'sender_profile',
+            'phishing_website'
+        );
+
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Invalid input detected.')
+                ], 400);
+            }
+        }
+
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+
+        $request->merge($input);
+
+        // Validation
         try {
-            // Validate request
-            $validator = Validator::make($request->all(), [
-                'template_id' => 'required',
-                'website' => 'required|numeric',
-                'sender_profile' => 'required|numeric',
-                'difficulty' => 'required',
+            $data = $request->validate([
+                'id' => 'required|exists:qsh_templates,id',
+                'name' => 'required|string|max:30',
+                'email_subject' => 'required|string|max:100',
+                'difficulty' => 'required|string|max:30',
+                'file' => 'required|file|mimes:html',
+                'phishing_website' => 'required|numeric',
+                'sender_profile' => 'required|numeric'
             ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => __('Validation failed.'),
-                    'errors' => $validator->errors()
-                ], 422);
-            }
+            $quishingEmail = QshTemplate::find($data['id']);
+            if (!$quishingEmail) {
 
-            // $id = base64_decode($request->template_id);
-            $template = QshTemplate::find($request->template_id);
-
-            if (!$template) {
                 return response()->json([
-                    'status' => false,
-                    'message' => __('Template not found.')
+                    'success' => false,
+                    'message' => __('Quishing template not found.')
                 ], 404);
             }
 
-            $updated = $template->update([
-                'website' => $request->website,
-                'sender_profile' => $request->sender_profile,
-                'difficulty' => $request->difficulty,
-            ]);
+            //store new file
+            $randomName = generateRandom(32);
+            $extension = $request->file('file')->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
 
-            if ($updated) {
-                log_action("Template updated : {$template->name}");
-                return response()->json([
-                    'status' => true,
-                    'message' => __('Template updated successfully.')
-                ], 200);
-            }
+            $filePath = $request->file('file')->storeAs('/uploads/quishing_templates', $newFilename, 's3');
+
+            QshTemplate::where('id', $data['id'])
+                ->update([
+                    'name' => $data['name'],
+                    'email_subject' => $data['email_subject'],
+                    'difficulty' => $data['difficulty'],
+                    'file' => "/" . $filePath,
+                    'website' => $data['phishing_website'],
+                    'sender_profile' => $data['sender_profile']
+                ]);
+            log_action("Quishing template updated successfully (ID: {$data['id']})");
 
             return response()->json([
-                'status' => false,
-                'message' => __('Failed to update template.')
-            ], 500);
+                'success' => true,
+                'message' => __('Quishing template updated successfully.')
+            ], 200);
+
+
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
+            log_action("Exception while updating template: " . $e->getMessage());
+
             return response()->json([
-                'status' => false,
-                'message' => __('Something went wrong.'),
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => __('Something went wrong. '). $e->getMessage()
             ], 500);
         }
     }

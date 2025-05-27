@@ -146,12 +146,19 @@ class ApiPhishingEmailsController extends Controller
     public function updateTemplate(Request $request)
     {
         // XSS check
-        $input = $request->only('editEtemp', 'difficulty', 'updateESenderProfile', 'updateEAssoWebsite');
+        $input = $request->only(
+            'id',
+            'name',
+            'email_subject',
+            'difficulty',
+            'sender_profile',
+            'phishing_website'
+        );
 
         foreach ($input as $key => $value) {
             if (preg_match('/<[^>]*>|<\?php/', $value)) {
                 return response()->json([
-                    'status' => 'error',
+                    'success' => false,
                     'message' => __('Invalid input detected.')
                 ], 400);
             }
@@ -166,48 +173,60 @@ class ApiPhishingEmailsController extends Controller
         // Validation
         try {
             $data = $request->validate([
-                'editEtemp' => 'required|exists:phishing_emails,id',
+                'id' => 'required|exists:phishing_emails,id',
+                'name' => 'required|string|max:30',
+                'email_subject' => 'required|string|max:100',
                 'difficulty' => 'required|string|max:30',
-                'updateESenderProfile' => 'required|numeric',
-                'updateEAssoWebsite' => 'required|string|max:255'
+                'file' => 'required|file|mimes:html',
+                'phishing_website' => 'required|numeric',
+                'sender_profile' => 'required|numeric'
             ]);
+
+            $phishingEmail = PhishingEmail::find($data['id']);
+            if (!$phishingEmail) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing email template not found.')
+                ], 404);
+            }
+
+            //store new file
+            $randomName = generateRandom(32);
+            $extension = $request->file('file')->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('file')->storeAs('/uploads/phishingMaterial/phishing_emails', $newFilename, 's3');
+
+            PhishingEmail::where('id', $data['id'])
+                ->update([
+                    'name' => $data['name'],
+                    'email_subject' => $data['email_subject'],
+                    'difficulty' => $data['difficulty'],
+                    'mailBodyFilePath' => "/" . $filePath,
+                    'website' => $data['phishing_website'],
+                    'senderProfile' => $data['sender_profile']
+                ]);
+            log_action("Email template updated successfully (ID: {$data['id']})");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Email template updated successfully.')
+            ], 200);
+
+
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first(),
-                'errors' => __("Validation failed")
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
-        }
-
-        try {
-            $phishingEmail = PhishingEmail::find($data['editEtemp']);
-
-            $phishingEmail->website = $data['updateEAssoWebsite'];
-            $phishingEmail->difficulty = $data['difficulty'];
-            $phishingEmail->senderProfile = $data['updateESenderProfile'];
-
-            if ($phishingEmail->save()) {
-                log_action("Email template updated successfully (ID: {$data['editEtemp']})");
-
-                return response()->json([
-                    'status' => true,
-                    'message' => __('Email template updated successfully.')
-                ], 200);
-            } else {
-                log_action("Failed to update email template (ID: {$data['editEtemp']})");
-
-                return response()->json([
-                    'status' => false,
-                    'message' => __('Failed to update email template.')
-                ], 500);
-            }
         } catch (\Exception $e) {
             log_action("Exception while updating template: " . $e->getMessage());
 
             return response()->json([
-                'status' => false,
-                'message' => __('Something went wrong.'),
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => __('Something went wrong. '). $e->getMessage()
             ], 500);
         }
     }
