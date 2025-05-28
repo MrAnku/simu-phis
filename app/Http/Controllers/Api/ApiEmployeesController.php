@@ -657,9 +657,8 @@ class ApiEmployeesController extends Controller
             $employee = new EmployeeService();
             $deleted = $employee->deleteGroup($grpId);
             if ($deleted['status'] == 1) {
-                $group = UsersGroup::where('group_id', $grpId)->first();
 
-                log_action("Employee Group deleted : {$group->group_name}");
+                log_action("Employee Group deleted");
                 return response()->json(['success' => true, 'msg' => $deleted['msg']], 200);
             } else {
                 return response()->json(['success' => false, 'msg' => $deleted['msg']], 404);
