@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('company_id');
             $table->integer('employees');
-            $table->integer('used_employees')->nullable();
+            $table->integer('used_employees')->default(0);
             $table->integer('tprm_employees')->default(0);
-            $table->integer('used_tprm_employees')->nullable();
+            $table->integer('used_tprm_employees')->default(0);
             $table->integer('blue_collar_employees')->default(0);
-            $table->integer('used_blue_collar_employees')->nullable();
+            $table->integer('used_blue_collar_employees')->default(0);
             $table->date('expiry');
             $table->timestamps();
         });
