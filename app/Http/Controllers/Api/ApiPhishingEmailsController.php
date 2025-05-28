@@ -122,6 +122,13 @@ class ApiPhishingEmailsController extends Controller
         try {
             $phishingEmail = PhishingEmail::find($id);
 
+            if(!$phishingEmail) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Phishing email template not found.')
+                ], 404);
+            }
+
             return response()->json([
                 'status' => true,
                 'message' => __('Phishing email template found.'),

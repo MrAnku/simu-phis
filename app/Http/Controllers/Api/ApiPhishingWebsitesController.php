@@ -66,6 +66,42 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
+    public function getWebsiteById(Request $request): JsonResponse
+    {
+        // Manually validate the request
+        $id = $request->route('id');
+
+        // Check if campaignId exists
+        if (!$id) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Website id is required.')
+            ], 400);
+        }
+
+        try {
+            $website = PhishingWebsite::find($id);
+
+            if(!$website) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Website not found.')
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Website template found.'),
+                'data' => $website
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
     public function deleteWebsite(Request $request): JsonResponse

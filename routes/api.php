@@ -249,6 +249,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('quishing-emails')->group(function () {
         Route::get('/', [ApiQuishingEmailController::class, 'index']);
         Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
+        Route::get('/get-template-by-id/{id?}', [ApiQuishingEmailController::class, 'getTemplateById']);
         Route::delete('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
         Route::put('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
     });
@@ -258,6 +259,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
         Route::delete('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
         Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
+        Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);

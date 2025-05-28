@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\QshTemplate;
+use Illuminate\Http\JsonResponse;
 use App\Models\SenderProfile;
 use App\Models\PhishingWebsite;
 use Illuminate\Support\Facades\Auth;
@@ -134,6 +135,42 @@ class ApiQuishingEmailController extends Controller
                 'status' => false,
                 'message' => __('Failed to add template.'),
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTemplateById(Request $request): JsonResponse
+    {
+        // Manually validate the request
+        $id = $request->route('id');
+
+        // Check if campaignId exists
+        if (!$id) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Template id is required.')
+            ], 400);
+        }
+
+        try {
+            $qshTemplate = QshTemplate::find($id);
+
+            if(!$qshTemplate) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Quishing email template not found.')
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => __('Quishing email template found.'),
+                'data' => $qshTemplate
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
