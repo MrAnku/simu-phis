@@ -197,78 +197,7 @@ class OutlookAdController extends Controller
             return response()->json(['status' => 0, 'msg' => $errors]);
         }
 
-        // $error = '';
-
-        // foreach ($request->employees as $emp) {
-
-        //     // Validate required fields
-        //     if (!isset($emp['email']) || !isset($emp['name'])) {
-        //         $error = 'Email and Name are required fields.';
-        //         break;
-        //     }
-
-        //     //checking employees limit
-        //     if ((int)auth()->user()->usedemployees >= (int)auth()->user()->employees) {
-        //         $error = 'You have reached your employees limit.';
-        //         break;
-        //     }
-
-        //     //checking domain verification
-        //     $domain = explode("@", $emp['email'])[1];
-        //     $checkDomain = DomainVerified::where('domain', $domain)
-        //         ->where('verified', 1)
-        //         ->where('company_id', $company_id)
-        //         ->exists();
-        //     if (!$checkDomain) {
-        //         $error = 'Domain is not verified.';
-        //         break;
-        //     }
-
-        //     //checking email duplication
-        //     // $checkEmail = Users::where('user_email', $emp['email'])
-        //     //     ->where('company_id', $company_id)
-        //     //     ->exists();
-        //     // if ($checkEmail) {
-        //     //     $error = 'Email already exists.';
-        //     //     break;
-        //     // }
-
-        //     //this user already in this group
-        //     $userExists = Users::where('user_email', $emp['email'])->where('group_id', $groupId)->exists();
-        //     if ($userExists) {
-        //         continue;
-        //     }
-
-        //     //this user is already added in this company
-        //     $userExists = Users::where('user_email', $emp['email'])->where('company_id', $company_id)->exists();
-        //     if (!$userExists) {
-        //         auth()->user()->increment('usedemployees');
-        //     }
-
-
-
-        //     Users::firstOrCreate(
-        //         ['user_email' => $emp['email']], // Avoid duplicates
-        //         [
-        //             'group_id' => $groupId,
-        //             'user_name' => $emp['name'],
-        //             'user_email' => $emp['email'],
-        //             'user_company' => $emp['company'],
-        //             'user_job_title' => $emp['jobTitle'],
-        //             'whatsapp' => $emp['whatsapp'],
-        //             'company_id' => $company_id
-        //         ]
-        //     );
-
-        // Update used employees count
-        // auth()->user()->increment('usedemployees');
-        // }
-
-        // if ($error) {
-        //     log_action("Failed to add employees from Outlook AD", $error);
-        //     return response()->json(['status' => 0, 'msg' => $error]);
-        // }
-        // log_action("Employees added from Outlook AD");
+      
         return response()->json(['status' => 1, 'msg' => 'Employees saved successfully.']);
     }
 }

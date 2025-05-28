@@ -12,6 +12,7 @@ use App\Models\BreachedEmail;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\CampaignReport;
+use App\Models\CompanyLicense;
 use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
 use App\Models\QuishingLiveCamp;
@@ -32,6 +33,15 @@ class EmployeeService
                 'msg' => __('Employee limit exceeded')
             ];
         }
+
+        // check expiry
+        if ($this->isExpired()) {
+            return [
+                'status' => 0,
+                'msg' => __('License Expired')
+            ];
+        }
+
         //domain verified
         if (!$this->domainVerified($email)) {
             return [
@@ -188,7 +198,7 @@ class EmployeeService
                             if (count($usersArray) >= 1) {
                                 $group->users = json_encode(array_values($usersArray));
                                 $group->save();
-                            }else{
+                            } else {
                                 $group->users = null;
                                 $group->save();
                             }
@@ -223,7 +233,20 @@ class EmployeeService
     }
     private function isLimitExceeded()
     {
-        if (Auth::user()->usedemployees >= Auth::user()->employees) {
+        $company_id = Auth::user()->company_id;
+        $company_license = CompanyLicense::where('company_id', $company_id)->first();
+        if ($company_license->used_employees >= $company_license->employees) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function isExpired()
+    {
+        $company_id = Auth::user()->company_id;
+        $company_license = CompanyLicense::where('company_id', $company_id)->first();
+        if (now()->gt($company_license->expiry)) {
             return true;
         } else {
             return false;
@@ -241,7 +264,11 @@ class EmployeeService
             ->exists();
 
         if (!$userExists && !$deletedEmployee) {
-            Auth::user()->increment('usedemployees');
+            $company_license = CompanyLicense::where('company_id', Auth::user()->company_id)->first();
+            if ($company_license) {
+                $company_license->increment('used_employees');
+            }
+            // Auth::user()->increment('usedemployees');
         }
     }
 }
