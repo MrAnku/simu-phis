@@ -62,8 +62,10 @@ class ApiQuishingController extends Controller
             }
 
             // Decode JSON arrays from JS frontend
-            $trainingModules = json_decode($request->training_modules, true);
-            $quishingMaterials = json_decode($request->quishing_materials, true);
+            // $trainingModules = json_decode($request->training_modules, true);
+            // $quishingMaterials = json_decode($request->quishing_materials, true);
+            $trainingModules = $request->training_modules;
+            $quishingMaterials = $request->quishing_materials;
 
             $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
             $userIds = json_decode($userIdsJson, true);
