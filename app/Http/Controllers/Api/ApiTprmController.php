@@ -804,7 +804,14 @@ class ApiTprmController extends Controller
                         return response()->json(['success' => false, 'message' => __('Email: ') . ' ' . $emailExists->user_email . ' ' . __('already exists')], 422);
                     }
 
-                    $userExists = TprmUsers::where('user_email', $userEmail)
+                    $tprmUsers = new TprmUsers();
+                    $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
+                    $tprmUsers->user_name = explode('@', $userEmail)[0];
+                    $tprmUsers->user_email = $userEmail;
+                    $tprmUsers->company_id = $companyId;
+                    $tprmUsers->save();
+
+                     $userExists = TprmUsers::where('user_email', $userEmail)
                         ->where('company_id', Auth::user()->company_id)
                         ->exists();
 
@@ -817,13 +824,6 @@ class ApiTprmController extends Controller
                             $company_license->increment('used_tprm_employees');
                         }
                     }
-
-                    $tprmUsers = new TprmUsers();
-                    $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
-                    $tprmUsers->user_name = explode('@', $userEmail)[0];
-                    $tprmUsers->user_email = $userEmail;
-                    $tprmUsers->company_id = $companyId;
-                    $tprmUsers->save();
                 }
                 if (!$message) {
                     log_action("Users added to group : {$domainName}");

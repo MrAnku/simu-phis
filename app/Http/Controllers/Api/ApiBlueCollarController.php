@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\BlueCollarEmployee;
-use App\Models\BlueCollarGroup;
-use App\Models\BlueCollarTrainingUser;
-use App\Models\OutlookAdToken;
-use App\Models\WhatsappCampaign;
-use App\Models\WhatsAppCampaignUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CompanyLicense;
+use App\Models\OutlookAdToken;
+use App\Models\BlueCollarGroup;
+use App\Models\WhatsappCampaign;
+use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\WhatsAppCampaignUser;
+use Illuminate\Support\Facades\Auth;
+use App\Models\BlueCollarTrainingUser;
+use App\Models\DeletedBlueCollarEmployee;
 use Illuminate\Support\Facades\Validator;
 
 class ApiBlueCollarController extends Controller
@@ -125,13 +127,23 @@ class ApiBlueCollarController extends Controller
             if (!$request->route('user_id')) {
                 return response()->json(['success' => false, 'message' => __('User ID is required')], 422);
             }
-            $user = BlueCollarEmployee::find($request->route('user_id'));
+             $user = BlueCollarEmployee::find($request->route('user_id'));
+            $user_whatsapp = $user->whatsapp;
 
             if ($user) {
 
                 $user->delete();
+                $user_whatsapp;
 
-                  log_action("Blue Collar User deleted : {$user->user_name}");
+               $emailExists = DeletedBlueCollarEmployee::where('whatsapp', $user_whatsapp)->where('company_id', Auth::user()->company_id)->exists();
+                if (!$emailExists) {
+                    DeletedBlueCollarEmployee::create([
+                        'whatsapp' => $user_whatsapp,
+                        'company_id' => Auth::user()->company_id,
+                    ]);
+                }
+
+                log_action("Blue Collar User deleted : {$user->user_name}");
 
                 return response()->json(['success' => true, 'message' => __('User deleted successfully')], 200);
             } else {
@@ -183,6 +195,18 @@ class ApiBlueCollarController extends Controller
             //     return response()->json(['success' => false, 'message' => __('mployee limit has been reached')]);
             // }
 
+            //check License limit
+            $company_license = CompanyLicense::where('company_id', $companyId)->first();
+
+            if ($company_license->used_blue_collar_employees >= $company_license->blue_collar_employees) {
+                return response()->json(['success' => false, 'message' => __('Blue Collar Employee limit exceeded')], 422);
+            }
+
+            // Check License Expiry
+            if (now()->toDateString() > $company_license->expiry) {
+                return response()->json(['success' => false, 'message' => __('Your License has beeen Expired')], 422);
+            }
+
             //checking if the email is unique
             $user = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)->exists();
             if ($user) {
@@ -199,6 +223,23 @@ class ApiBlueCollarController extends Controller
                     'company_id' => $companyId,
                 ]
             );
+
+            $userExists = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+
+            $deletedEmployee = DeletedBlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+
+            if (!$userExists || !$deletedEmployee) {
+                if ($company_license) {
+                    $company_license->increment('used_blue_collar_employees');
+                }
+            }
+
+
+
             // Auth::user()->increment('usedemployees');
 
             log_action("Blue Collar User added : {$request->usrName}");
