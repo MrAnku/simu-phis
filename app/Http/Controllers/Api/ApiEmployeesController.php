@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\BlueCollarGroup;
-use App\Models\DomainVerified;
-use App\Models\OutlookAdToken;
 use App\Models\Users;
 use App\Models\UsersGroup;
-use App\Services\EmployeeService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\DomainVerified;
+use App\Models\OutlookAdToken;
+use App\Models\BlueCollarGroup;
+use App\Models\DeletedEmployee;
+use App\Services\EmployeeService;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -428,8 +429,15 @@ class ApiEmployeesController extends Controller
                     return response()->json(['success' => false, 'message' => __('Failed to delete employee')]);
                 }
             }
+            $emailExists = DeletedEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
+            if (!$emailExists) {
+                DeletedEmployee::create([
+                    'email' => $user_email,
+                    'company_id' => Auth::user()->company_id,
+                ]);
+            }
 
-            log_action("Employee deleted : {$user_name}");
+            log_action("Employee deleted : {$user_email}");
             return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
@@ -553,7 +561,7 @@ class ApiEmployeesController extends Controller
                 log_action("Employee Added : { $request->usrName}");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
-                return response()->json(['success' => false, 'message' => $addedEmployee['msg']]);
+                return response()->json(['success' => false, 'message' => $addedEmployee['msg']], 422);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);

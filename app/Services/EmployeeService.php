@@ -246,11 +246,11 @@ class EmployeeService
     {
         $company_id = Auth::user()->company_id;
         $company_license = CompanyLicense::where('company_id', $company_id)->first();
-        if (now()->gt($company_license->expiry)) {
+        if (!$company_license) {
             return true;
-        } else {
-            return false;
         }
+
+        return now()->toDateString() > $company_license->expiry;
     }
 
     private function increaseLimit($email)
@@ -268,7 +268,6 @@ class EmployeeService
             if ($company_license) {
                 $company_license->increment('used_employees');
             }
-            // Auth::user()->increment('usedemployees');
         }
     }
 }
