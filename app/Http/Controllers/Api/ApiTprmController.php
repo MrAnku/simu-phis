@@ -873,6 +873,8 @@ class ApiTprmController extends Controller
             if (!$user) {
                 return response()->json(['success' => false, 'message' => __('TPRM Employee not found')], 404);
             }
+            TprmCampaignLive::where('user_id', $user->id)->where('company_id', Auth::user()->company_id)->delete();
+            
             $user->delete();
 
             $emailExists = DeletedTprmEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
