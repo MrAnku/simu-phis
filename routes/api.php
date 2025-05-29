@@ -292,6 +292,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/campaigns/fetchEmail', [ApiTprmController::class, 'fetchEmail']);
         Route::post('/campaigns/addGroupUser', [ApiTprmController::class, 'addGroupUser']);
         Route::get('/campaigns/get-emails-by-domain/{domain?}', [ApiTprmController::class, 'getEmailsByDomain']);
+        Route::delete('/delete-tprm-emp-by-email', [ApiTprmController::class, 'deleteTprmUserByEmail']);
     });
 
     //smishing campaign routes---------------------------------

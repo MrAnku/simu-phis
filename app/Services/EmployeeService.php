@@ -26,7 +26,7 @@ class EmployeeService
 
     public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null)
     {
-        //check limit
+        //check License limit
         if ($this->isLimitExceeded()) {
             return [
                 'status' => 0,
@@ -38,7 +38,7 @@ class EmployeeService
         if ($this->isExpired()) {
             return [
                 'status' => 0,
-                'msg' => __('License Expired')
+                'msg' => __('Your License has beeen Expired')
             ];
         }
 

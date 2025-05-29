@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Company;
-use App\Models\DomainEmail;
-use App\Models\PhishingEmail;
-use App\Models\TpmrVerifiedDomain;
-use App\Models\TprmCampaign;
-use App\Models\TprmCampaignLive;
-use App\Models\TprmCampaignReport;
-use App\Models\TprmRequest;
-use App\Models\TprmUsers;
-use App\Models\TprmUsersGroup;
 use Carbon\Carbon;
+use App\Models\Company;
+use App\Models\TprmUsers;
+use App\Models\DomainEmail;
+use App\Models\TprmRequest;
+use App\Models\TprmCampaign;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PhishingEmail;
+use App\Models\CompanyLicense;
+use App\Models\TprmUsersGroup;
+use App\Models\TprmCampaignLive;
+use App\Models\TpmrVerifiedDomain;
+use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Models\DeletedTprmEmployee;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Log;
 
 class ApiTprmController extends Controller
 {
@@ -771,9 +773,18 @@ class ApiTprmController extends Controller
                     $message = __('New group Created');
                 }
 
-                if (count($emails) > 5) {
-                    return response()->json(['success' => false, 'message' => __('You can add only 5 emails at a time')], 422);
+                //check License limit
+                $company_license = CompanyLicense::where('company_id', $companyId)->first();
+
+                if ($company_license->used_tprm_employees >= $company_license->tprm_employees) {
+                    return response()->json(['success' => false, 'message' => __('Employee limit exceeded')], 422);
                 }
+
+                // Check License Expiry
+                if (now()->toDateString() > $company_license->expiry) {
+                    return response()->json(['success' => false, 'message' => __('Your License has beeen Expired')], 422);
+                }
+
                 foreach ($emails as $userEmail) {
                     $emailDomain = explode('@', $userEmail)[1];
 
@@ -792,6 +803,21 @@ class ApiTprmController extends Controller
                     if ($emailExists) {
                         return response()->json(['success' => false, 'message' => __('Email: ') . ' ' . $emailExists->user_email . ' ' . __('already exists')], 422);
                     }
+
+                    $userExists = TprmUsers::where('user_email', $userEmail)
+                        ->where('company_id', Auth::user()->company_id)
+                        ->exists();
+
+                    $deletedEmployee = DeletedTprmEmployee::where('email', $userEmail)
+                        ->where('company_id', Auth::user()->company_id)
+                        ->exists();
+
+                    if (!$userExists && !$deletedEmployee) {
+                        if ($company_license) {
+                            $company_license->increment('used_tprm_employees');
+                        }
+                    }
+
                     $tprmUsers = new TprmUsers();
                     $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
                     $tprmUsers->user_name = explode('@', $userEmail)[0];
@@ -831,6 +857,36 @@ class ApiTprmController extends Controller
             }
 
             return response()->json(['success' => true, 'data' => $emails, 'message' => __('Emails fetched by domain successfully')]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteTprmUserByEmail(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_email' => 'required'
+            ]);
+            $user_email = $request->input('user_email');
+            $user = TprmUsers::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => __('TPRM Employee not found')], 404);
+            }
+            $user->delete();
+
+            $emailExists = DeletedTprmEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
+            if (!$emailExists) {
+                DeletedTprmEmployee::create([
+                    'email' => $user_email,
+                    'company_id' => Auth::user()->company_id,
+                ]);
+            }
+
+            log_action("TPRM Employee deleted : {$user_email}");
+            return response()->json(['success' => true, 'message' => __('TPRM Employee deleted successfully')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
