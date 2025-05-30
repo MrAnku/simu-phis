@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiDashboardController;
+use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
@@ -138,6 +139,10 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add', [ApiSenderProfileController::class, 'addSenderProfile']);
         Route::delete('/delete', [ApiSenderProfileController::class, 'deleteSenderProfile']);
         Route::post('/update/{id}', [ApiSenderProfileController::class, 'updateSenderProfile']);
+    });
+
+    Route::prefix('integration')->group(function () {
+        Route::get('/', [ApiIntegrationController::class, 'index']);
     });
 
     Route::prefix('training-module')->group(function () {
