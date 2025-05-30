@@ -412,6 +412,10 @@ class ApiEmployeesController extends Controller
                 'user_email' => 'required'
             ]);
             $user_email = $request->input('user_email');
+
+            $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
+            $user_name = $user->user_name;
+
             $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
             if ($users->isEmpty()) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
@@ -424,9 +428,8 @@ class ApiEmployeesController extends Controller
                     return response()->json(['success' => false, 'message' => __('Failed to delete employee')]);
                 }
             }
-            $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
 
-            log_action("Employee deleted : {$user->user_name}");
+            log_action("Employee deleted : {$user_name}");
             return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
