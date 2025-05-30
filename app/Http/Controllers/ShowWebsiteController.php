@@ -55,8 +55,8 @@ class ShowWebsiteController extends Controller
 
                 $website = PhishingWebsite::find($p);
 
-                if ($website && Storage::disk('s3')->exists($website->file)) {
-                    $content = Storage::disk('s3')->get($website->file);
+                if ($website) {
+                    $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
                     return response($content)->header('Content-Type', 'text/html');
                 } else {
                     abort(404);
@@ -67,7 +67,9 @@ class ShowWebsiteController extends Controller
         } else {
             $website = PhishingWebsite::find($p);
 
-            if ($website && Storage::disk('s3')->exists($website->file)) {
+            // return "hello";
+
+            if ($website) {
 
                 DB::table('phish_websites_sessions')->insert([
                     'user' => $dynamicvalue,
@@ -77,7 +79,7 @@ class ShowWebsiteController extends Controller
                     'expiry' => now()->addMinutes(10)
                 ]);
 
-                $content = Storage::disk('s3')->get($website->file);
+                $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
                 return response($content)->header('Content-Type', 'text/html');
             } else {
                 abort(404);
