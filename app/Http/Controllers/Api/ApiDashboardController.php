@@ -11,6 +11,8 @@ use App\Models\EmailCampActivity;
 use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\TrainingAssignedUser;
+use App\Models\UsersGroup;
 use Illuminate\Support\Facades\Auth;
 
 class ApiDashboardController extends Controller
@@ -412,5 +414,36 @@ class ApiDashboardController extends Controller
         ];
 
         return $usage;
+    }
+
+    // cards apis
+
+    public function simulationReport(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+        $months = $request->query('months', 1);
+        $user_group = $request->query('user_group');
+        $training_status = $request->query('training_status');
+
+        $usersArray = UsersGroup::where('company_id', $companyId)
+            ->where('group_id', $user_group)
+            ->first()->users;
+        $usersArray = json_decode($usersArray, true);
+        $reportData = TrainingAssignedUser::with(
+            'trainingData',
+            'trainingGame',
+            'campaign',
+            'campaign.campaignActivity',
+            'campaign.campLive'
+        )
+            ->whereIn('user_id', $usersArray)
+            ->where('company_id', $companyId)
+            ->where('completed', $training_status)
+            ->where('assigned_date', '>=', Carbon::now()->subMonths($months))
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $reportData
+        ], 200);
     }
 }

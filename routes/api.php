@@ -70,6 +70,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-email-reported-data', [ApiDashboardController::class, 'getEmailReportedData']);
     Route::get('/get-package-data', [ApiDashboardController::class, 'getPackage']);
     Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
+
+    //card reports
+
+    Route::get('/simulation-report', [ApiDashboardController::class, 'simulationReport']);
     // });
 
     //email campaign routes
