@@ -366,7 +366,8 @@ class ApiEmployeesController extends Controller
                         $user->user_email,
                         $user->user_company,
                         $user->user_job_title,
-                        $user->whatsapp
+                        $user->whatsapp,
+                        true // For all employees
                     );
                     if ($addedEmployee['status'] == 1) {
                         $addedInGroup = $employee->addEmployeeInGroup($request->groupId, $addedEmployee['user_id']);

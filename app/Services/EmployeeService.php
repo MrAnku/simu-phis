@@ -24,33 +24,35 @@ use Illuminate\Support\Facades\Auth;
 class EmployeeService
 {
 
-    public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null)
+    public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null, $fromAllEmployees = false)
     {
-        //check License limit
-        if ($this->isLimitExceeded()) {
-            return [
-                'status' => 0,
-                'msg' => __('Employee limit exceeded')
-            ];
-        }
+        if (!$fromAllEmployees) {
+            //check License limit
+            if ($this->isLimitExceeded()) {
+                return [
+                    'status' => 0,
+                    'msg' => __('Employee limit exceeded')
+                ];
+            }
 
-        // check expiry
-        if ($this->isExpired()) {
-            return [
-                'status' => 0,
-                'msg' => __('Your License has beeen Expired')
-            ];
-        }
+            // check expiry
+            if ($this->isExpired()) {
+                return [
+                    'status' => 0,
+                    'msg' => __('Your License has beeen Expired')
+                ];
+            }
 
-        //domain verified
-        if (!$this->domainVerified($email)) {
-            return [
-                'status' => 0,
-                'msg' => __('This domain is not verified')
-            ];
+            //domain verified
+            if (!$this->domainVerified($email)) {
+                return [
+                    'status' => 0,
+                    'msg' => __('This domain is not verified')
+                ];
+            }
+            //increase the limit
+            $this->increaseLimit($email);
         }
-        //increase the limit
-        $this->increaseLimit($email);
 
         $user = Users::create(
             [
