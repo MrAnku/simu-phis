@@ -26,6 +26,7 @@ class ApiQuishingController extends Controller
             $campLive = QuishingLiveCamp::where('company_id', $company_id)
                 ->get();
             $qshTemplate = QshTemplate::where('company_id', $company_id)
+                ->orWhere('company_id', 'default')
                 ->get();
 
             return response()->json([

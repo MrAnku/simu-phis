@@ -176,8 +176,8 @@ class ProcessCampaigns extends Command
 
               $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
 
-                // Use Storage facade to get the mail body from S3
-                $mailBody = Storage::disk('s3')->get($phishingMaterial->mailBodyFilePath);
+              // Use Storage facade to get the mail body from S3
+              $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
 
               $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
               $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
@@ -462,7 +462,7 @@ class ProcessCampaigns extends Command
       Mail::to($mailData['email'])->send(new CampaignMail($mailData));
       return true;
     } catch (\Exception $e) {
-
+      echo 'Error sending email: ' . $e->getMessage() . "\n";
       return false;
     }
   }
@@ -475,7 +475,7 @@ class ProcessCampaigns extends Command
     $tempFilePath = $meta['uri'];
 
     $response = Http::withoutVerifying()
-     ->timeout(60)
+      ->timeout(60)
       ->attach('file', file_get_contents($tempFilePath), 'email.html')
       ->post('https://translate.sparrow.host/translate_file', [
         'source' => 'en',
@@ -496,12 +496,12 @@ class ProcessCampaigns extends Command
       echo 'No translated URL found in response.';
       return $emailBody;
     }
-    
+
     $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
 
     $translatedContent = file_get_contents($translatedUrl);
 
-    
+
     return $translatedContent;
   }
 
