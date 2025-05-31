@@ -248,14 +248,14 @@ class ShowWebsiteController extends Controller
         }else{
 
             // assign training to bluecollar employees
-            $already_have_this_training = DB::table('blue_collar_training_users')
+            $trainingAssigned = DB::table('blue_collar_training_users')
                 ->where('user_whatsapp', $campaign->user_phone)
                 ->where('training', $campaign->training_module)
                 ->first();
 
-            if ($already_have_this_training) {
+            if ($trainingAssigned) {
                 // return "Send Remainder";
-                return $this->whatsappSendTrainingReminder($campaign);
+                return $this->whatsappSendTrainingReminder($campaign, $trainingAssigned->id);
             } else {
                 // return "Assign Training";
                 return $this->whatsappAssignFirstTraining($campaign);
@@ -330,7 +330,7 @@ class ShowWebsiteController extends Controller
         return response()->json(['success' => __('Training assigned and WhatsApp notification sent')]);
     }
 
-    private function whatsappSendTrainingReminder($campaign)
+    private function whatsappSendTrainingReminder($campaign, $trainingAssignedId)
     {
         // WhatsApp API Configuration
         $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
@@ -351,7 +351,7 @@ class ShowWebsiteController extends Controller
                         "parameters" => [
                             ["type" => "text", "text" => $campaign->user_name],
                             ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($campaign->training_module)],
+                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($trainingAssignedId)],
                         ]
                     ]
                 ]

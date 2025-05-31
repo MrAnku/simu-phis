@@ -291,7 +291,7 @@ class WhatsappCampaignController extends Controller
         // dd($User->trainingModule->name);
 
         if ($User) {
-            return view('start-training', compact('training_module_name'));
+            return view('start-training', compact('training_module_name', 'assigntraining_id'));
         } else {
             return back()->with('error', __('Invalid User'));
         }

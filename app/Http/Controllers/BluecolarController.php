@@ -253,21 +253,24 @@ class BluecolarController extends Controller
     public function storeBlueCollarUser(Request $request)
     {
         try {
-            $decodedId = base64_decode($request->encoded_id);
+            
 
             $request->validate([
                 'name' => 'required|string|max:255',
-                'phone_number' => 'required|string|max:15|unique:bluecollar_training_initiators,phone_number',
+                'mobile' => 'required|string|digits_between:10,15',
+                'encoded_id' => 'required|string',
             ]);
+
+            $decodedId = base64_decode($request->encoded_id);
 
             $TrainingData = BlueCollarTrainingUser::where('id', $decodedId)->first();
             if (!$TrainingData) {
-                return response()->json(['success' => false, 'message' => __('Training data not found')], 404);
+                return redirect()->back()->with('error', __('You don\'t have permission to access this training.'));
             }
 
             BluecollarTrainingInitiator::create([
                 'name' => $request->name,
-                'phone_number' => $request->phone_number,
+                'phone_number' => $request->mobile,
             ]);
 
             $assignedTraining = BlueCollarTrainingUser::with('trainingData')
@@ -275,22 +278,19 @@ class BluecolarController extends Controller
                 ->where('completed', 0)
                 ->first();
 
-            if ($assignedTraining && $assignedTraining->training_type == 'static_training') {
-                $trainingUrl = route('learner.start.bluecollartraining', [
+            if ($assignedTraining) {
+                return redirect()->route('learner.start.bluecollartraining', [
                     'training_id' => encrypt($assignedTraining->training),
                     'training_lang' => $assignedTraining->training_lang,
-                    'id' => base64_encode($TrainingData->id),
+                    'id' => base64_encode($assignedTraining->id)
                 ]);
-
-                return response()->json(['success' => true, 'trainingUrl' => $trainingUrl]);
             } else {
-
-                return response()->json(['success' => true, 'message' => __('User created successfully.')]);
+                return redirect()->back()->with('error', __('You have already completed this training or it is not assigned to you.'));
             }
         } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+            return redirect()->back()->withErrors($e->validator);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Something went wrong:') . $e->getMessage()], 500);
+            return redirect()->back()->with('error', __('An error occurred while processing your request: ') . $e->getMessage());
         }
     }
 

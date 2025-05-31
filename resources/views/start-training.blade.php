@@ -91,7 +91,9 @@
         <h2>To start the training of <span style="color: #2575fc">{{ $training_module_name }}</span>, fill the details
             below</h2>
 
-        <form id="trainingForm">
+        <form id="trainingForm" action="{{ route('training.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="encoded_id" value="{{ $assigntraining_id }}">
             <label for="name">Full Name</label>
             <input class="form-control" type="text" id="name" name="name" placeholder="Enter your full name"
                 required>
@@ -102,11 +104,24 @@
 
             <button type="submit">Start Training</button>
         </form>
-
-        <p id="responseMessage" style="color: green; display: none; font-weight: bold; margin-top: 10px;"></p>
+        
+        @if ($errors->any())
+            <div class="alert alert-danger" style="text-align:left;">
+                <ul style="margin-bottom:0;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger" style="text-align:left;">
+                {{ session('error') }}
+            </div>
+        @endif
     </div>
 
-    <script>
+    {{-- <script>
         $(document).ready(function() {
             function getBase64IdFromURL() {
                 let urlParts = window.location.pathname.split('/start-training/');
@@ -128,7 +143,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "{{ route('training.store') }}",
+                    url: "/training/store",
                     data: formData,
                     dataType: "json",
                     success: function(response) {
@@ -159,7 +174,7 @@
                 });
             });
         });
-    </script>
+    </script> --}}
 
 </body>
 
