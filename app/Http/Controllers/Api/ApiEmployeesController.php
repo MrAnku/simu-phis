@@ -394,13 +394,15 @@ class ApiEmployeesController extends Controller
         }
         $user_id = base64_decode($request->route('user_id'));
         $isUserExists =   Users::where('id', $user_id)->where('company_id', Auth::user()->company_id)->first();
+        $user_name = $isUserExists->user_name;
+
         if (!$isUserExists) {
             return response()->json(['success' => false, 'message' => __('User not found')], 404);
         }
         $employee = new EmployeeService();
         try {
             $employee->deleteEmployeeById($user_id);
-            log_action("Employee deleted : {$isUserExists->user_name}");
+            log_action("Employee deleted : {$user_name}");
             return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);

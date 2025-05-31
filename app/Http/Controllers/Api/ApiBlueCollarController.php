@@ -129,6 +129,7 @@ class ApiBlueCollarController extends Controller
             }
              $user = BlueCollarEmployee::find($request->route('user_id'));
             $user_whatsapp = $user->whatsapp;
+            $user_name = $user->user_name;
 
             if ($user) {
 
@@ -143,7 +144,7 @@ class ApiBlueCollarController extends Controller
                     ]);
                 }
 
-                log_action("Blue Collar User deleted : {$user->user_name}");
+                log_action("Blue Collar User deleted : {$user_name}");
 
                 return response()->json(['success' => true, 'message' => __('User deleted successfully')], 200);
             } else {
@@ -263,11 +264,12 @@ class ApiBlueCollarController extends Controller
             $group = BlueCollarGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)
                 ->first();
+            $group_name = $group->group_name;
             if (!$group) {
                 return response()->json(['success' => false, 'message' => __('Group not found')], 404);
             }
 
-            log_action("Blue Collar group deleted : {$group->group_name}");
+            log_action("Blue Collar group deleted : {$group_name}");
 
             BlueCollarGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)

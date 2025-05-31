@@ -153,6 +153,7 @@ class ApiQuishingController extends Controller
                 ], 422);
             }
             $campaign = QuishingCamp::where('campaign_id', $campaign_id)->first();
+            $campaign_name = $campaign->campaign_name;
             if (!$campaign) {
                 return response()->json([
                     'success' => false,
@@ -163,7 +164,7 @@ class ApiQuishingController extends Controller
             $campaign->delete();
             QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 
-            log_action("Quishing Campaign deleted : {$campaign->campaign_name}");
+            log_action("Quishing Campaign deleted : {$campaign_name}");
 
             return response()->json([
                 'success' => true,

@@ -305,13 +305,15 @@ class ApiSmishingController extends Controller
                 return response()->json(['success' => false, 'message' => __('Campaign ID is required.')], 404);
             }
             $campaign = SmishingCampaign::where('campaign_id', $campaign_id)->first();
+            $campaign_name = $campaign->campaign_name;
+
             if (!$campaign) {
                 return response()->json(['success' => false, 'message' => __('Campaign not found.')], 404);
             }
             $campaign->delete();
             SmishingLiveCampaign::where('campaign_id', $campaign_id)->delete();
 
-            log_action("Smishing Campaign deleted : {$campaign->campaign_name}");
+            log_action("Smishing Campaign deleted : {$campaign_name}");
             return response()->json(['success' => true, 'message' => __('Campaign deleted successfully')], 200);
         } catch (\Exception $e) {
             return response()->json([

@@ -199,9 +199,11 @@ class ApiSmishingTemplateController extends Controller
             ]);
 
             $smishingTemplate = SmishingTemplate::where('id', $request->input('template_id'))->first();
+            $tempName = $smishingTemplate->name;
+
             $smishingTemplate->delete();
 
-            log_action("Smishing Template deleted : {$smishingTemplate->name}");
+            log_action("Smishing Template deleted : {$tempName}");
             return response()->json([
                 'status' => 'success',
                 'message' => __('Template deleted successfully.')

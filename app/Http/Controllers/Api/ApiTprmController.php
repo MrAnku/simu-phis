@@ -491,6 +491,8 @@ class ApiTprmController extends Controller
 
             // Check if campaign exists
             $campaign = TprmCampaign::where('campaign_id', $campId)->first();
+            $campaign_name = $campaign->campaign_name;
+
             if (!$campaign) {
                 return response()->json(['success' => false, 'message' => __('Campaign not found')], 404);
             }
@@ -504,7 +506,7 @@ class ApiTprmController extends Controller
             // Check if any records were deleted
             if ($res1 || $res2 || $res3) {
                 DB::commit();
-                log_action("TPRM Campaign deleted : {$campaign->campaign_name}");
+                log_action("TPRM Campaign deleted : {$campaign_name}");
 
                 return response()->json(['success' => true, 'message' => __('Campaign deleted successfully.')], 200);
             } else {

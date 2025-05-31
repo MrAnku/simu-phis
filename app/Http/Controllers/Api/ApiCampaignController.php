@@ -941,6 +941,7 @@ class ApiCampaignController extends Controller
             $training_id = base64_decode($encodedTrainingId);
 
             $trainingAssigned = TrainingAssignedUser::find($training_id);
+            $user_email = $trainingAssigned->user_email;
 
             if (!$trainingAssigned) {
                 return response()->json([
@@ -951,7 +952,7 @@ class ApiCampaignController extends Controller
 
             $trainingAssigned->delete();
 
-            log_action("Training removed for {$trainingAssigned->user_email}");
+            log_action("Training removed for {$user_email}");
 
             return response()->json([
                 'success' => true,

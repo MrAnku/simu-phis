@@ -155,7 +155,7 @@ class ApiQuishingEmailController extends Controller
         try {
             $qshTemplate = QshTemplate::find($id);
 
-            if(!$qshTemplate) {
+            if (!$qshTemplate) {
                 return response()->json([
                     'status' => false,
                     'message' => __('Quishing email template not found.')
@@ -196,6 +196,7 @@ class ApiQuishingEmailController extends Controller
             $template = QshTemplate::where('id', $id)
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
+            $template_name = $template->name;
 
             if (!$template) {
                 return response()->json([
@@ -210,7 +211,7 @@ class ApiQuishingEmailController extends Controller
             // Delete the file from S3
             Storage::disk('s3')->delete($template->file);
 
-            log_action("Template deleted : {$template->name}");
+            log_action("Template deleted : {$template_name}");
 
             return response()->json([
                 'status' => true,
