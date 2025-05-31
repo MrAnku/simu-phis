@@ -7,12 +7,14 @@ use Plivo\RestClient;
 use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
+use App\Models\WaCampaign;
 use Illuminate\Support\Str;
 use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
 use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
+use App\Models\WaLiveCampaign;
 use App\Models\PhishingWebsite;
 use App\Models\QuishingLiveCamp;
 use App\Models\SmishingCampaign;
@@ -24,6 +26,7 @@ use App\Mail\TrainingAssignedEmail;
 use App\Models\SmishingLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
@@ -115,10 +118,13 @@ class ShowWebsiteController extends Controller
         $campid = $request->input('campid');
         $qsh = $request->input('qsh');
         $smi = $request->input('smi');
+        $wsh = $request->input('wsh');
         if ($qsh == 1) {
             $campDetail = QuishingLiveCamp::find($campid);
         } else if ($smi == 1) {
             $campDetail = SmishingLiveCampaign::find($campid);
+        } else if ($wsh == 1) {
+            $campDetail = WaLiveCampaign::find($campid);
         } else {
             $campDetail = CampaignLive::find($campid);
         }
@@ -213,6 +219,169 @@ class ShowWebsiteController extends Controller
         }
     }
 
+    private function assignTrainingByWhatsapp($campid)
+    {
+        $campaign = WaLiveCampaign::where('id', $campid)->first();
+        if (!$campaign) {
+            return response()->json(['error' => 'Invalid campaign or user']);
+        }
+        if ($campaign->training_module == null) {
+            return response()->json(['error' => 'No training module assigned']);
+        }
+
+        //checking assignment
+        $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
+
+        if ($campaign->employee_type == 'normal') {
+            if ($all_camp->training_assignment == 'all') {
+                $trainings = json_decode($all_camp->training_module, true);
+                $this->assignAllTrainings($campaign, $trainings);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                $this->assignSingleTraining($campaign);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
+        }else{
+
+            // assign training to bluecollar employees
+            $already_have_this_training = DB::table('blue_collar_training_users')
+                ->where('user_whatsapp', $campaign->user_phone)
+                ->where('training', $campaign->training_module)
+                ->first();
+
+            if ($already_have_this_training) {
+                // return "Send Remainder";
+                return $this->whatsappSendTrainingReminder($campaign);
+            } else {
+                // return "Assign Training";
+                return $this->whatsappAssignFirstTraining($campaign);
+            }
+
+        }
+    }
+
+    private function whatsappAssignFirstTraining($campaign)
+    {
+        $training_assigned = DB::table('blue_collar_training_users')
+            ->insertGetId([
+                'campaign_id' => $campaign->campaign_id,
+                'user_id' => $campaign->user_id,
+                'user_name' => $campaign->user_name,
+                'user_whatsapp' => $campaign->user_phone,
+                'training' => $campaign->training_module,
+                'training_lang' => $campaign->training_lang,
+                'training_type' => $campaign->training_type,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
+                'company_id' => $campaign->company_id
+            ]);
+
+
+
+        if (!$training_assigned) {
+            return response()->json(['error' => __('Failed to assign training')]);
+        }
+
+        $campaign->update(['training_assigned' => 1]);
+
+        // WhatsApp Notification
+        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
+        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
+        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
+
+        $whatsapp_data = [
+            "messaging_product" => "whatsapp",
+            "to" => $campaign->user_phone, // Replace with actual user phone number
+            "type" => "template",
+            "template" => [
+                "name" => "training_message",
+                "language" => ["code" => "en"],
+                "components" => [
+                    [
+                        "type" => "body",
+                        "parameters" => [
+                            ["type" => "text", "text" => $campaign->user_name],
+                            ["type" => "text", "text" => $campaign->trainingData->name],
+                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($training_assigned),]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $whatsapp_response = Http::withHeaders([
+            "Authorization" => "Bearer {$access_token}",
+            "Content-Type" => "application/json"
+        ])->withOptions([
+            'verify' => false
+        ])->post($whatsapp_url, $whatsapp_data);
+
+
+        if ($whatsapp_response->successful()) {
+            log_action("Bluecollar Training Assigned | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
+        } else {
+            log_action("Training assignment failed", 'employee', 'employee');
+        }
+
+        return response()->json(['success' => __('Training assigned and WhatsApp notification sent')]);
+    }
+
+    private function whatsappSendTrainingReminder($campaign)
+    {
+        // WhatsApp API Configuration
+        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
+        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
+        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
+
+
+        $whatsapp_data = [
+            "messaging_product" => "whatsapp",
+            "to" => $campaign->user_phone, // Replace with actual user phone number
+            "type" => "template",
+            "template" => [
+                "name" => "training_message",
+                "language" => ["code" => "en"],
+                "components" => [
+                    [
+                        "type" => "body",
+                        "parameters" => [
+                            ["type" => "text", "text" => $campaign->user_name],
+                            ["type" => "text", "text" => $campaign->trainingData->name],
+                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($campaign->training_module)],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // Send WhatsApp message
+
+        $whatsapp_response = Http::withHeaders([
+            "Authorization" => "Bearer {$access_token}",
+            "Content-Type" => "application/json"
+        ])->withOptions([
+            'verify' => false
+        ])->post($whatsapp_url, $whatsapp_data);
+
+
+        if ($whatsapp_response->successful()) {
+            log_action("Bluecolar training Reminder Sent | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
+            return response()->json(['success' => __('Training reminder sent via WhatsApp')]);
+        } else {
+            return response()->json([
+                'error' => __('Failed to send WhatsApp message'),
+                'status' => $whatsapp_response->status(),
+                'response' => $whatsapp_response->body()
+            ], 500);
+        }
+    }
+
+
+
     public function assignTraining(Request $request)
     {
         if ($request->has('assignTraining')) {
@@ -220,6 +389,7 @@ class ShowWebsiteController extends Controller
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
+            $wsh = $request->input('wsh');
 
             // Quishing Campaign
             if ($qsh == 1) {
@@ -229,6 +399,10 @@ class ShowWebsiteController extends Controller
             if ($smi == 1) {
                 $this->assignTrainingBySmishing($campid);
                 $this->sendTrainingSms($campid);
+                return;
+            }
+            if ($wsh == 1) {
+                $this->assignTrainingByWhatsapp($campid);
                 return;
             }
 
@@ -259,7 +433,7 @@ class ShowWebsiteController extends Controller
                 $updateReport = CampaignReport::where('campaign_id', $campaign->campaign_id)
                     ->increment('training_assigned');
             } else {
-                return $this->assignSingleTraining($campaign);
+                $this->assignSingleTraining($campaign);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -478,25 +652,21 @@ class ShowWebsiteController extends Controller
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
+            $wsh = $request->input('wsh');
 
             if ($qsh == 1) {
-                $campaign = QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->first();
-                if ($campaign) {
-                    $campaign->update(['compromised' => '1']);
-                }
+               QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
 
                 return;
             }
 
             if ($smi == 1) {
-                $campaign = SmishingLiveCampaign::where('id', $campid)->where('compromised', 0)->first();
-                if ($campaign) {
-                    $campaign->update(['compromised' => 1]);
+                SmishingLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
+                return;
+            }
 
-                    $this->sendAlertSms($campaign);
-                }
-
-
+            if ($wsh == 1) {
+                WaLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
                 return;
             }
 
@@ -618,6 +788,7 @@ class ShowWebsiteController extends Controller
             $userid = $request->input('userid');
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
+            $wsh = $request->input('wsh');
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
@@ -625,6 +796,10 @@ class ShowWebsiteController extends Controller
             }
             if ($smi == 1) {
                 SmishingLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
+                return;
+            }
+            if ($wsh == 1) {
+                WaLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
                 return;
             }
 

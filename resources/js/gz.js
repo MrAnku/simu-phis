@@ -8,15 +8,16 @@ const userid = params.get('usrid');
 const tprmid = params.get('tprm') ?? false;
 const qsh = params.get('qsh') ?? false;
 const smi = params.get('smi') ?? false;
+const wsh = params.get('wsh') ?? false;
 
 let redirectUrl = '';
 let alertPage = '';
 
 if (campid && userid) {
 
-  updatePayloadClick(campid, userid, tprmid, qsh, smi);
+  updatePayloadClick(campid, userid, tprmid, qsh, smi, wsh);
   
-  checkWhereToRedirect(campid, tprmid, qsh, smi)
+  checkWhereToRedirect(campid, tprmid, qsh, smi, wsh)
     .then((res) => {
       if (res.redirect !== 'simuEducation') {
         redirectUrl = res.redirect_url;
@@ -41,20 +42,20 @@ $("#email").on('input', function(){
   var inputLength = $(this).val().length;
   if (inputLength === 3){
     if(redirectUrl !== ''){
-      updateCompromised(campid, userid, tprmid, qsh, smi);
-      assignTraining(campid, userid, tprmid, qsh, smi);
+      updateCompromised(campid, userid, tprmid, qsh, smi, wsh);
+      assignTraining(campid, userid, tprmid, qsh, smi, wsh);
       window.location.href = redirectUrl;
     } else{
       document.documentElement.innerHTML = alertPage;
-      assignTraining(campid, userid, tprmid, qsh, smi);
-      updateCompromised(campid, userid, tprmid, qsh, smi);
+      assignTraining(campid, userid, tprmid, qsh, smi, wsh);
+      updateCompromised(campid, userid, tprmid, qsh, smi, wsh);
       
     }
   }
     
 });
 
-function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false) {
+function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false, wsh = false) {
   // console.log(campid);
   return new Promise((resolve, reject) => {
     $.post({
@@ -63,6 +64,7 @@ function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false) {
         checkWhereToRedirect: 1,
         qsh: qsh !== false ? 1 : 0,
         smi: smi !== false ? 1 : 0,
+        wsh: wsh !== false ? 1 : 0,
         campid: campid
       },
       success: function (res) {
@@ -75,7 +77,7 @@ function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false) {
   });
 }
 
-function assignTraining(campid, userid, tprm = false, qsh = false, smi = false) {
+function assignTraining(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
   if(tprm){
     return;
   }
@@ -85,6 +87,7 @@ function assignTraining(campid, userid, tprm = false, qsh = false, smi = false) 
       assignTraining: 1,
       qsh: qsh !== false ? 1 : 0,
       smi: smi !== false ? 1 : 0,
+      wsh: wsh !== false ? 1 : 0,
       campid: campid,
       userid: userid
     },
@@ -96,13 +99,14 @@ function assignTraining(campid, userid, tprm = false, qsh = false, smi = false) 
 
 //email compromises =============================================
 
-function updateCompromised(campid, userid, tprm = false, qsh = false) {
+function updateCompromised(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
   $.post({
     url: tprm !== false ? '/temp-compromised' : '/emp-compromised',
     data: {
       emailCompromised: 1,
       qsh: qsh !== false ? 1 : 0,
       smi: smi !== false ? 1 : 0,
+      wsh: wsh !== false ? 1 : 0,
       campid: campid,
       userid: userid
     },
@@ -114,13 +118,14 @@ function updateCompromised(campid, userid, tprm = false, qsh = false) {
 
 //payload handle===================================================
 
-function updatePayloadClick(campid, userid, tprm = false, qsh = false, smi = false) {
+function updatePayloadClick(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
   $.post({
     url: tprm !== false ? '/tupdate-payload' : '/update-payload',
     data: {
       updatePayloadClick: 1,
       qsh: qsh !== false ? 1 : 0,
       smi: smi !== false ? 1 : 0,
+      wsh: wsh !== false ? 1 : 0,
       campid: campid,
       userid: userid
     },

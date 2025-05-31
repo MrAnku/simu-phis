@@ -33,4 +33,11 @@ class WaLiveCampaign extends Model
     {
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
     }
+
+    public function trainingData()
+    {
+        return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
+    }
+
+
 }
