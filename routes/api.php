@@ -250,7 +250,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-email-template', [ApiPhishingEmailsController::class, 'addEmailTemplate']);
         Route::post('/generate-template', [ApiPhishingEmailsController::class, 'generateTemplate']);
         Route::post('/save-ai-phish-template', [ApiPhishingEmailsController::class, 'saveAIPhishTemplate']);
-        Route::put('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
+        Route::post('/update-email-template', [ApiPhishingEmailsController::class, 'updateTemplate']);
         Route::delete('/delete-email-template', [ApiPhishingEmailsController::class, 'deleteTemplate']);
         Route::post('/duplicate/{id?}', [ApiPhishingEmailsController::class, 'duplicate']);
     });
@@ -260,7 +260,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/add-temp', [ApiQuishingEmailController::class, 'addTemplate']);
         Route::get('/get-template-by-id/{id?}', [ApiQuishingEmailController::class, 'getTemplateById']);
         Route::delete('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
-        Route::put('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
+        Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
     });
 
     Route::prefix('phishing-website')->group(function () {
@@ -269,6 +269,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
         Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
         Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
+        Route::post('/update-website', [ApiPhishingWebsitesController::class, 'updateWebsite']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
