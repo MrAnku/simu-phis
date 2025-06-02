@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -23,6 +24,24 @@ return new class extends Migration
             $table->date('expiry');
             $table->timestamps();
         });
+
+        // Now insert based on users table
+        $companies = DB::table('company')->get();
+
+        foreach ($companies as $company) {
+            DB::table('company_licenses')->insert([
+                'company_id' => $company->company_id,
+                'employees' => $company->employees,
+                'used_employees' => $company->usedemployees,
+                'tprm_employees' => $company->employees,
+                'used_tprm_employees' => 0,
+                'blue_collar_employees' => $company->employees,
+                'used_blue_collar_employees' => 0,
+                'expiry' => now()->addMonths(2),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
