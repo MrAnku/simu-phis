@@ -35,6 +35,8 @@ use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
+Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPassword']);
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
 Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
 
