@@ -7,6 +7,7 @@ use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PragmaRX\Google2FA\Google2FA;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class MFAController extends Controller
 {
@@ -20,26 +21,19 @@ class MFAController extends Controller
     {
         $request->validate([
             'otp' => 'required|string',
-            'mfa_id' => 'required|integer', // ✅ now expect mfa_id from frontend
+            'company_id' => 'required', // ✅ now expect mfa_id from frontend
         ]);
 
-        $user = Company::find($request->mfa_id);
+        $company = Company::where('company_id', $request->company_id)->first();
 
-        if (!$user) {
+        if (!$company) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found',
+                'message' => 'Something went wrong, please try again',
             ], 404);
         }
 
-        $settings = Settings::where('company_id', $user->company_id)->first();
-
-        // return response()->json([
-        //     'message' => 'Logged in successfully',
-        //     'user' => decrypt(
-        //         $settings->mfa_secret
-        //     ),
-        // ], 200);
+        $settings = Settings::where('company_id', $company->company_id)->first();
 
         if (!$settings || !$settings->mfa_secret) {
             return response()->json([
@@ -51,18 +45,17 @@ class MFAController extends Controller
         $google2fa = new Google2FA();
         $valid = $google2fa->verifyKey(decrypt($settings->mfa_secret), $request->otp);
 
-        // return response()->json([
-        //     'message' => 'Logged in successfully',
-        //     'user' =>   $valid,
-        // ], 200);
-
         if ($valid) {
-            // Auth::login($user);
+            Auth::login($company);
+            $token = JWTAuth::fromUser($company);
+            $cookie = cookie('jwt', $token, 60 * 24);
+
             return response()->json([
+                'token' => $token,
                 'success' => true,
+                'company' => $company,
                 'message' => 'Logged in successfully',
-                'user' => $user,
-            ], 200);
+            ])->withCookie($cookie);
         }
 
         return response()->json([

@@ -32,8 +32,8 @@ class AuthenticatedSessionController extends Controller
         $company_settings = Settings::where('company_id', $user->company_id)->first();
         if ($company_settings->mfa == 1) {
             // Store the user ID in the session and logout
-            session(['mfa_user_id' => $user->id]);
-            Auth::logout();
+            // session(['mfa_user_id' => $user->id]);
+            Auth::logout($user);
             return response()->json([
                 "mfa" => true,
                 'company' => $user,
@@ -46,7 +46,8 @@ class AuthenticatedSessionController extends Controller
             'token' => $token,
             'company' => Auth::user(),
             "success" => true,
-            "MFA" => false,
+            "message" => "Logged in successfully",
+            "mfa" => false,
         ])->withCookie($cookie);
     }
 

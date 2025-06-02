@@ -255,6 +255,7 @@ class ApiSettingsController extends Controller
 
                     return response()->json([
                         'success' => true,
+                        'msg' => "MFA QR code generated successfully.",
                         'QR_Image' => $QR_Image,
                         'secretKey' => encrypt($secretKey)
                     ], 200);
