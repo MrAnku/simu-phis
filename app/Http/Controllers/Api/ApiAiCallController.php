@@ -386,23 +386,30 @@ class ApiAiCallController extends Controller
                 'agent_name' => 'required|string',
                 'agent_prompt' => 'required|string',
                 'language' => 'required|string',
-                'deepfake_audio' => 'nullable|file|mimes:mp3,wav,aac|max:2048',
+                'deepfake_audio' => 'nullable|file|mimes:mp3,wav,aac',
             ]);
 
             $companyId = Auth::user()->company_id;
 
             if ($request->hasFile('deepfake_audio')) {
-                $file = $request->file('deepfake_audio');
-                $filename = time() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('deepfake_audio', $filename, 'public');
+
+                 $file = $request->file('deepfake_audio');
+
+                // Generate a random name for the file
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
+
+                $filePath = $request->file('deepfake_audio')->storeAs('/deepfake_audio', $newFilename, 's3');
+                $filePath = '/' . $filePath;
             } else {
-                $filename = null;
+                $filePath = null;
             }
             AiAgentRequest::create([
                 'company_id' => $companyId,
                 'agent_name' => $request->agent_name,
                 'language' => $request->language,
-                'audio_file' => $filename,
+                'audio_file' => $filePath,
                 'prompt' => $request->agent_prompt,
                 'status' => 0
             ]);
