@@ -93,21 +93,24 @@ class AuthenticatedSessionController extends Controller
 
         if ($status == Password::RESET_LINK_SENT) {
              return response()->json([
-                'message' => 'Password reset link sent to your email.',
                 'success' => true,
+                'message' => 'Password reset link sent to your email.',
             ]);
         }
-
-           
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send password reset link.',
+        ], 500);
+ 
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => $e->validator->errors()->first(),
                 'success' => false,
+                'message' => $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error: ' . $e->getMessage(),
                 'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -136,6 +139,11 @@ class AuthenticatedSessionController extends Controller
                     'message' => 'Password has been reset successfully.',
                 ]);
             }
+
+             return response()->json([
+                'success' => false,
+                'message' => 'Token is invalid or expired.',
+            ], 422);
 
         } catch (ValidationException $e) {
             return response()->json([
