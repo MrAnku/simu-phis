@@ -27,7 +27,7 @@ class AuthenticatedSessionController extends Controller
                 'message' => 'Invalid credentials',
             ], 401);
         }
-        $cookie = cookie('jwt', $token, 60*24);
+        
         $user = Auth::user();
         $company_settings = Settings::where('company_id', $user->company_id)->first();
         if ($company_settings->mfa == 1) {
@@ -35,15 +35,13 @@ class AuthenticatedSessionController extends Controller
             session(['mfa_user_id' => $user->id]);
             Auth::logout();
             return response()->json([
-                "MFA" => true,
-                'token' => $token,
+                "mfa" => true,
                 'company' => $user,
-                "success" => false
-            ])->withCookie($cookie);
-            // throw ValidationException::withMessages([
-            //     'mfa' => 'Multi-factor authentication is required.',
-            // ])->redirectTo(route('mfa.enter'));
+                "success" => true
+            ]);
+           
         }
+        $cookie = cookie('jwt', $token, 60*24);
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),
