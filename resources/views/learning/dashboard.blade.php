@@ -13,9 +13,9 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>
-        Learning | {{ $companyName }}
+        Learning | {{env('APP_NAME')}}
     </title>
-    <link rel="icon" href="{{ $companyFavicon }}" type="image/x-icon" />
+    <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="/dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -55,7 +55,7 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href="#">
-                        <img src="{{ $companyLogoDark }}" alt="{{ $companyName }}" class="navbar-brand-image"
+                        <img src="/assets/images/simu-logo-dark.png" alt="{{env('APP_NAME')}}" class="navbar-brand-image"
                             style="width: 181px; height: auto;" />
                     </a>
                 </h1>
@@ -453,7 +453,7 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                             <ul class="list-inline list-inline-dots mb-0">
                                 <li class="list-inline-item">
                                     {{ __('Copyright') }} &copy; {{ date('Y') }}
-                                    <a href="." class="link-secondary">{{ __($companyName) }}</a>. {{ __('All rights reserved.') }}
+                                    <a href="." class="link-secondary">{{ env('APP_NAME') }}</a>. {{ __('All rights reserved.') }}
                                 </li>
                             </ul>
                         </div>

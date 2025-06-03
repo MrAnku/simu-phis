@@ -11,10 +11,10 @@ if(session('locale')){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{$companyName }} - Training</title>
+    <title>{{ env('APP_NAME') }} - Training</title>
     <!-- FontAwesome-cdn include -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="icon" type="image/png" href="{{ $companyFavicon }}">
+    <link rel="icon" type="image/png" href="/assets/images/simu-icon.png">
     <!-- Google fonts include -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -35,7 +35,7 @@ if(session('locale')){
                 <div class="col-md-6">
                     <div class="logo_area ps-5">
                         <a href="#">
-                            <img src="{{ $companyLogoLight }}" alt="image-not-found" width="200">
+                            <img src="/assets/images/simu-logo.png" alt="image-not-found" width="200">
                         </a>
                     </div>
                 </div>

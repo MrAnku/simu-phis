@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $companyName }} Learning | Create Password</title>
+    <title>{{env('APP_NAME')}} Learning | Create Password</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="icon" href="{{ $companyFavicon }}" type="image/x-icon">
+    <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon">
     <style>
         body {
             background-color: #f8f9fa;
@@ -41,7 +41,7 @@
 </head>
 <body>
     <header class="text-center my-4">
-        <img src="{{ $companyLogoDark }}" alt="Company Logo" style="max-width: 250px;">
+        <img src="/assets/images/simu-logo-dark.png" alt="Company Logo" style="max-width: 250px;">
     </header>
     <div class="container">
         <div class="row justify-content-center">
