@@ -161,6 +161,10 @@ class ApiQuishingController extends Controller
                 ], 404);
             }
 
+            if ($request->deleteTrainingsAlso == 1) {
+                TrainingAssignedUser::where('campaign_id', $campaign_id)->delete();
+            }
+
             $campaign->delete();
             QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
 

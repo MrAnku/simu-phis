@@ -13,6 +13,7 @@ use App\Models\BlueCollarGroup;
 use App\Models\BlueCollarEmployee;
 use App\Models\WhatsappTempRequest;
 use App\Http\Controllers\Controller;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\CompanyWhatsappConfig;
@@ -243,6 +244,10 @@ class ApiWaCampaignController extends Controller
                     'success' => false,
                     'message' => __('Campaign not found!'),
                 ], 404);
+            }
+
+            if ($request->deleteTrainingsAlso == 1) {
+                TrainingAssignedUser::where('campaign_id', $campaign_id)->delete();
             }
 
             $campaign->delete();

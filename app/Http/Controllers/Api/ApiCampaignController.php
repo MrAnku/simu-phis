@@ -373,6 +373,10 @@ class ApiCampaignController extends Controller
             $campid = $request->route('campaign_id');
             $companyId = Auth::user()->company_id;
 
+            if ($request->deleteTrainingsAlso == 1) {
+                TrainingAssignedUser::where('campaign_id', $campid)->delete();
+            }
+
             Campaign::where('campaign_id', $campid)
                 ->where('company_id', $companyId)
                 ->delete();

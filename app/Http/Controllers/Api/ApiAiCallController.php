@@ -8,6 +8,7 @@ use App\Models\AiAgentRequest;
 use App\Models\AiCallAgent;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
@@ -277,6 +278,11 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => false, 'message' => __('Campaign ID is required')], 422);
             }
             $campaignid = $request->route('campaign_id');
+
+            if($request->deleteTrainingsAlso == 1){
+                TrainingAssignedUser::where('campaign_id', $campaignid)->delete();
+            }
+
             $camp = AiCallCampaign::where('campaign_id', $campaignid)->first();
             if ($camp) {
                 $camp->delete();
