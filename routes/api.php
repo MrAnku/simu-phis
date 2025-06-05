@@ -76,7 +76,7 @@ Route::middleware('auth:api')->group(function () {
 
     //card reports
 
-    Route::get('/simulation-report', [ApiDashboardController::class, 'simulationReport']);
+    Route::get('/simulation-report/email', [ApiDashboardController::class, 'emailSimulationReport']);
     // });
 
     //email campaign routes

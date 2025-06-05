@@ -10,7 +10,6 @@ class CampaignLive extends Model
     use HasFactory;
 
     protected $table = 'campaign_live';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',

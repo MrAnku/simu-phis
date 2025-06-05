@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
+use App\Models\Users;
 use App\Models\Campaign;
+use App\Models\UsersGroup;
+use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\BreachedEmail;
 use App\Models\CampaignReport;
@@ -12,7 +15,6 @@ use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
-use App\Models\UsersGroup;
 use Illuminate\Support\Facades\Auth;
 
 class ApiDashboardController extends Controller
@@ -479,32 +481,358 @@ class ApiDashboardController extends Controller
 
     // cards apis
 
-    public function simulationReport(Request $request)
+    public function emailSimulationReport(Request $request)
     {
         $companyId = Auth::user()->company_id;
-        $months = $request->query('months', 1);
-        $user_group = $request->query('user_group');
-        $training_status = $request->query('training_status');
 
-        $usersArray = UsersGroup::where('company_id', $companyId)
-            ->where('group_id', $user_group)
-            ->first()->users;
-        $usersArray = json_decode($usersArray, true);
-        $reportData = TrainingAssignedUser::with(
-            'trainingData',
-            'trainingGame',
-            'campaign',
-            'campaign.campaignActivity',
-            'campaign.campLive'
-        )
-            ->whereIn('user_id', $usersArray)
-            ->where('company_id', $companyId)
-            ->where('completed', $training_status)
-            ->where('assigned_date', '>=', Carbon::now()->subMonths($months))
-            ->get();
+        $total = CampaignLive::where('company_id', $companyId)->count();
+        $clicked = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->count();
+        $reportRate = CampaignLive::where('company_id', $companyId)
+            ->where('email_reported', 1)
+            ->count();
+        $ignoreRate = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 0)
+            ->count();
+
+        $repeatClickers = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->groupBy('user_email')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('user_email')
+            ->count();
+
+        $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+
+
         return response()->json([
             'success' => true,
-            'data' => $reportData
+            'message' => 'Email simulation report retrieved successfully',
+            'data' => [
+                "cards" => [
+                    'total' => $total,
+                    'clicked' => $clicked,
+                    'reported' => $reportRate,
+                    'ignored' => $ignoreRate,
+                    'repeat_clickers' => $repeatClickers,
+                    'remediation_rate_percent' => $remediationRate,
+                    'pp_difference' => $this->ppDifference(),
+                ],
+                "phishing_events_overtime" => $this->eventsOverTime(),
+                "grouped_simulation_statistics" => $this->groupedSimulationStatistics(),
+                "employee_simulation_events" => $this->empSimulationEvents(),
+                "timing_statistics" => $this->timingStatistics(),
+                "clicks_in_week_days" => $this->clicksInWeekDays(),
+            ]
         ], 200);
+    }
+
+    private function ppDifference()
+    {
+        $companyId = Auth::user()->company_id;
+        $now = Carbon::now();
+        $currentStart = $now->copy()->subDays(7);  // Last 7 days
+        $previousStart = $now->copy()->subDays(14); // Previous 7 days
+        $previousEnd = $now->copy()->subDays(7);
+
+        // Current period
+        $totalCurrent = CampaignLive::where('company_id', $companyId)
+            ->whereBetween('created_at', [$currentStart, $now])
+            ->count();
+
+        $clickedCurrent = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->whereBetween('created_at', [$currentStart, $now])
+            ->count();
+
+        $clickRateCurrent = $totalCurrent > 0 ? ($clickedCurrent / $totalCurrent) * 100 : 0;
+
+        // Previous period
+        $totalPrevious = CampaignLive::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $previousEnd])
+            ->count();
+
+        $clickedPrevious = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->whereBetween('created_at', [$previousStart, $previousEnd])
+            ->count();
+
+        $clickRatePrevious = $totalPrevious > 0 ? ($clickedPrevious / $totalPrevious) * 100 : 0;
+
+        // Percentage Point Difference
+        $ppDifference = $clickRateCurrent - $clickRatePrevious;
+
+        // Format result
+        $ppFormatted = number_format($ppDifference, 2) . ' pp';
+        return $ppFormatted;
+    }
+    private function eventsOverTime()
+    {
+        $companyId = Auth::user()->company_id;
+        $now = Carbon::now();
+        $chartData = [];
+
+        for ($i = 0; $i < 5; $i++) {
+            $monthDate = $now->copy()->subMonthsNoOverflow($i);
+            $monthStart = $monthDate->copy()->startOfMonth();
+            $monthEnd = $monthDate->copy()->endOfMonth();
+
+            $total = CampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+
+            $clicked = CampaignLive::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+
+            $reported = CampaignLive::where('company_id', $companyId)
+                ->where('email_reported', 1)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+
+            $ignored = CampaignLive::where('company_id', $companyId)
+                ->where('payload_clicked', 0)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+
+            $clickRate = $total > 0 ? round(($clicked / $total) * 100, 2) : 0;
+            $reportRate = $total > 0 ? round(($reported / $total) * 100, 2) : 0;
+            $ignoreRate = $total > 0 ? round(($ignored / $total) * 100, 2) : 0;
+
+            // Example target rates, adjust as needed
+            $targetClickRate = 5;
+            $targetReportRate = 40;
+            $targetIgnoreRate = 40;
+
+            $chartData[] = [
+                'month' => $monthDate->format('F Y'),
+                'clickRate' => $clickRate,
+                'targetClickRate' => $targetClickRate,
+                'reportRate' => $reportRate,
+                'targetReportRate' => $targetReportRate,
+                'ignoreRate' => $ignoreRate,
+                'targetIgnoreRate' => $targetIgnoreRate,
+            ];
+        }
+
+        return array_reverse($chartData);
+    }
+
+    private function groupedSimulationStatistics()
+    {
+        $companyId = Auth::user()->company_id;
+
+        // Fetch all campaigns for the company
+        $groups = UsersGroup::with('emailCampaigns.campLive')->where('company_id', $companyId)->get();
+        if ($groups->isEmpty()) {
+            return [];
+        }
+        return $groups->map(function ($group) {
+            $total = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->count();
+            });
+            $totalSent = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->where('sent', 1)->count();
+            });
+
+            $clicked = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->where('payload_clicked', 1)->count();
+            });
+
+            $reported = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->where('email_reported', 1)->count();
+            });
+
+            $ignored = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->where('payload_clicked', 0)->count();
+            });
+            $compromised = $group->emailCampaigns->sum(function ($campaign) {
+                return $campaign->campLive->where('emp_compromised', 1)->count();
+            });
+
+            return [
+                'group_name' => $group->group_name,
+                'total_sent' => $totalSent,
+                'total_clicked' => $clicked,
+                'click_rate' => $total > 0 ? round(($clicked / $total) * 100, 2) : 0,
+                'reported' => $reported,
+                'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                'ignored' => $ignored,
+                'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
+                'compromised' => $compromised,
+                'compromised_rate' => $total > 0 ? round(($compromised / $total) * 100, 2) : 0,
+            ];
+        });
+    }
+
+    private function timingStatistics()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $campaignLive = [
+            'avg_time_to_click_in_hours' => round(
+                CampaignLive::where('company_id', $companyId)
+                    ->whereNotNull('created_at')
+                    ->whereNotNull('updated_at')
+                    ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)) as avg_seconds')
+                    ->value('avg_seconds') / 3600,
+                2
+            ),
+            'percent_within_10_min' => round(
+                (
+                    CampaignLive::where('company_id', $companyId)
+                    ->whereNotNull('created_at')
+                    ->whereNotNull('updated_at')
+                    ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 10')
+                    ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) > 1')
+                    ->count()
+                    /
+                    max(
+                        CampaignLive::where('company_id', $companyId)
+                            ->whereNotNull('created_at')
+                            ->whereNotNull('updated_at')
+                            ->count(),
+                        1
+                    )
+                ) * 100,
+                2
+            ),
+            'clicked_within_1_hour' => round(
+                (
+                    CampaignLive::where('company_id', $companyId)
+                    ->whereNotNull('created_at')
+                    ->whereNotNull('updated_at')
+                    ->where('payload_clicked', 1)
+                    ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 60')
+                    ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) > 1')
+                    ->count()
+                    /
+                    max(
+                        CampaignLive::where('company_id', $companyId)
+                            ->whereNotNull('created_at')
+                            ->whereNotNull('updated_at')
+                            ->count(),
+                        1
+                    )
+                ) * 100,
+                2
+            ),
+            'clicked_within_1_day' => round(
+                (
+                    CampaignLive::where('company_id', $companyId)
+                    ->whereNotNull('created_at')
+                    ->whereNotNull('updated_at')
+                    ->where('payload_clicked', 1)
+                    ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 24')
+                    ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) > 1')
+                    ->count()
+                    /
+                    max(
+                        CampaignLive::where('company_id', $companyId)
+                            ->whereNotNull('created_at')
+                            ->whereNotNull('updated_at')
+                            ->count(),
+                        1
+                    )
+                ) * 100,
+                2
+            ),
+        ];
+        return $campaignLive;
+    }
+
+    private function clicksInWeekDays()
+    {
+        $companyId = Auth::user()->company_id;
+
+
+        $weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        $total = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->count();
+
+        $clicksByDay = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->selectRaw('DAYOFWEEK(created_at) as day, COUNT(*) as count')
+            ->groupBy('day')
+            ->pluck('count', 'day')
+            ->toArray();
+
+        $result = [];
+        foreach ($weekDays as $i => $dayName) {
+            // DAYOFWEEK returns 1 (Sunday) to 7 (Saturday)
+            $dayIndex = $i + 1;
+            $count = isset($clicksByDay[$dayIndex]) ? $clicksByDay[$dayIndex] : 0;
+            $percent = $total > 0 ? round(($count / $total) * 100, 2) : 0;
+            $result[] = [
+                'day' => $dayName,
+                'percentage' => $percent
+            ];
+        }
+
+        return $result;
+    }
+    private function empSimulationEvents()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $uniqueUsers = Users::where('company_id', $companyId)
+            ->select('user_email')
+            ->distinct()
+            ->get();
+
+        $campaignStats = [];
+
+        foreach ($uniqueUsers as $user) {
+            $userEmail = $user->user_email;
+
+            $total = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->count();
+
+            $totalSent = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->where('sent', 1)
+                ->count();
+
+            $clicked = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->where('payload_clicked', 1)
+                ->count();
+
+            $reported = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->where('email_reported', 1)
+                ->count();
+
+            $ignored = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->where('payload_clicked', 0)
+                ->count();
+
+            $compromised = CampaignLive::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->where('emp_compromised', 1)
+                ->count();
+
+            $campaignStats[] = [
+                'user_email' => $userEmail,
+                'total_sent' => $totalSent,
+                'total_clicked' => $clicked,
+                'click_rate' => $total > 0 ? round(($clicked / $total) * 100, 2) : 0,
+                'reported' => $reported,
+                'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                'ignored' => $ignored,
+                'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
+                'compromised' => $compromised,
+                'compromised_rate' => $total > 0 ? round(($compromised / $total) * 100, 2) : 0,
+            ];
+        }
+
+        return $campaignStats;
+
+        return $uniqueUsers;
     }
 }

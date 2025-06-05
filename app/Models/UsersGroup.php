@@ -24,6 +24,10 @@ class UsersGroup extends Model
     {
         return $this->hasMany(Users::class, 'group_id', 'group_id');
     }
+    public function emailCampaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class, 'users_group', 'group_id');
+    }
     public function getUsersCountAttribute(): int
     {
         $users = json_decode($this->users, true);
