@@ -308,7 +308,7 @@ if (!function_exists('checkWhitelabeled')) {
 
         return [
             'company_email' => env('MAIL_FROM_ADDRESS'),
-            'learn_domain' => 'learn.simuphish.com',
+            'learn_domain' => env('SIMUPHISH_LEARNING_URL'),
             'company_name' => env('APP_NAME'),
             'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png',
             'company_id' => $company_id,
@@ -382,7 +382,7 @@ if (!function_exists('learnDomain')) {
             if ($companyBranding) {
                 $domain = $companyBranding->learn_domain;
             } else {
-                $domain = 'learn.simuphish.com';
+                $domain = env('SIMUPHISH_LEARNING_URL');
             }
 
             return $domain;
