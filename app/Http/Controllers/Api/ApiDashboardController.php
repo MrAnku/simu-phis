@@ -77,8 +77,12 @@ class ApiDashboardController extends Controller
     public function getLineChartData()
     {
         $lastSixMonthsData = [];
+        $lastSixMonthsWhatsAppData = [];
+        $lastSixMonthsQuishingData = [];
+        $lastSixMonthsAiVishingData = [];
         $currentDate = now();
 
+        // all_campaigns: uses launch_time
         for ($i = 0; $i < 6; $i++) {
             $monthDate = $currentDate->copy()->subMonthsNoOverflow($i);
             $monthName = $monthDate->format('F');
@@ -86,8 +90,8 @@ class ApiDashboardController extends Controller
 
             $noOfCampaigns = DB::table('all_campaigns')
                 ->whereRaw(
-                    'MONTH(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND YEAR(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND company_id = ?',
-                    [$monthDate->format('m'), $year, Auth::user()->company_id]
+                    'MONTH(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ? AND YEAR(STR_TO_DATE(launch_time, "%m/%d/%Y %h:%i %p")) = ?',
+                    [$monthDate->format('m'), $year]
                 )
                 ->where('company_id', Auth::user()->company_id)
                 ->count();
@@ -98,10 +102,67 @@ class ApiDashboardController extends Controller
             ];
         }
 
+        // wa_live_campaigns: uses created_at
+        for ($i = 0; $i < 6; $i++) {
+            $WhatsAppmonthDate = $currentDate->copy()->subMonthsNoOverflow($i);
+            $WhatsAppmonthName = $WhatsAppmonthDate->format('F');
+            $year = $WhatsAppmonthDate->format('Y');
+
+            $noOfWhatsAppCampaigns = DB::table('wa_live_campaigns')
+                ->whereMonth('created_at', $WhatsAppmonthDate->format('m'))
+                ->whereYear('created_at', $year)
+                ->where('company_id', Auth::user()->company_id)
+                ->count();
+
+            $lastSixMonthsWhatsAppData[] = [
+                'month' => __($WhatsAppmonthName),
+                'no_of_camps' => $noOfWhatsAppCampaigns,
+            ];
+        }
+
+        // quishing_live_camps: use the correct date column, e.g. created_at
+        for ($i = 0; $i < 6; $i++) {
+            $monthQuishingDate = $currentDate->copy()->subMonthsNoOverflow($i);
+            $monthNameQuishing = $monthQuishingDate->format('F');
+            $year = $monthQuishingDate->format('Y');
+
+            // Change 'created_at' to your actual date column if different
+            $noOfQuishingCampaigns = DB::table('quishing_live_camps')
+                ->whereMonth('created_at', $monthQuishingDate->format('m'))
+                ->whereYear('created_at', $year)
+                ->where('company_id', Auth::user()->company_id)
+                ->count();
+
+            $lastSixMonthsQuishingData[] = [
+                'month' => __($monthNameQuishing),
+                'no_of_camps' => $noOfQuishingCampaigns,
+            ];
+        }
+        for ($i = 0; $i < 6; $i++) {
+            $monthAiVishingDate = $currentDate->copy()->subMonthsNoOverflow($i);
+            $monthNameAiVishing = $monthAiVishingDate->format('F');
+            $year = $monthAiVishingDate->format('Y');
+
+            // Change 'created_at' to your actual date column if different
+            $noOfAiVishingCampaigns = DB::table('ai_call_camp_live')
+                ->whereMonth('created_at', $monthAiVishingDate->format('m'))
+                ->whereYear('created_at', $year)
+                ->where('company_id', Auth::user()->company_id)
+                ->count();
+
+            $lastSixMonthsAiVishingData[] = [
+                'month' => __($monthNameAiVishing),
+                'no_of_camps' => $noOfAiVishingCampaigns,
+            ];
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Line chart data fetched successfully',
             'data' => array_reverse($lastSixMonthsData),
+            'WhatsAppData' => array_reverse($lastSixMonthsWhatsAppData),
+            'QuishinhData' => array_reverse($lastSixMonthsQuishingData),
+            'AiVishingData' => array_reverse($lastSixMonthsAiVishingData),
         ]);
     }
 
