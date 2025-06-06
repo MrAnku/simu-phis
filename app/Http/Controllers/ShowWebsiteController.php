@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Models\QuishingActivity;
 use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
@@ -245,7 +246,7 @@ class ShowWebsiteController extends Controller
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
-        }else{
+        } else {
 
             // assign training to bluecollar employees
             $trainingAssigned = DB::table('blue_collar_training_users')
@@ -260,7 +261,6 @@ class ShowWebsiteController extends Controller
                 // return "Assign Training";
                 return $this->whatsappAssignFirstTraining($campaign);
             }
-
         }
     }
 
@@ -655,7 +655,27 @@ class ShowWebsiteController extends Controller
             $wsh = $request->input('wsh');
 
             if ($qsh == 1) {
-               QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
+                QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
+
+                $agent = new Agent();
+
+                $clientData = [
+                    'platform' => $agent->platform(), // Extract OS
+                    'browser' => $agent->browser(), // Extract Browser
+                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
+                    'ip' => $request->ip(), // Client IP Address
+                    'source' => $request->header('User-Agent'), // Full User-Agent string
+                    'browserVersion' => $agent->version($agent->browser()),
+                    'device' => $agent->device(),
+                    'isMobile' => $agent->isMobile(),
+                    'isDesktop' => $agent->isDesktop(),
+
+                ];
+                QuishingActivity::where('campaign_live_id', $campid)
+                    ->update([
+                        'compromised_at' => now(),
+                        'client_details' => json_encode($clientData)
+                    ]);
 
                 return;
             }
@@ -792,6 +812,7 @@ class ShowWebsiteController extends Controller
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
+                QuishingActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
                 return;
             }
             if ($smi == 1) {

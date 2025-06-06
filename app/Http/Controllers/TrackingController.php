@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
+use App\Models\QuishingActivity;
+use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
-use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\Log;
 
@@ -122,6 +123,7 @@ class TrackingController extends Controller
                 if ($quishingLive) {
                     $quishingLive->mail_open = '1';
                     $quishingLive->save();
+                    QuishingActivity::where('campaign_live_id', $employeeid)->update(['email_viewed_at' => now()]);
                 }
             }
 

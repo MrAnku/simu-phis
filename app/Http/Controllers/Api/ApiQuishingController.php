@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
 use App\Models\TrainingModule;
+use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
@@ -100,7 +101,7 @@ class ApiQuishingController extends Controller
             ]);
 
             foreach ($users as $user) {
-                QuishingLiveCamp::create([
+                $camp_live = QuishingLiveCamp::create([
                     'campaign_id'        => $campaign_id,
                     'campaign_name'      => $request->campaign_name,
                     'user_id'            => $user->id,
@@ -119,6 +120,11 @@ class ApiQuishingController extends Controller
 
                     'quishing_lang'      => $request->quishing_language ?? null,
                     'company_id'         => Auth::user()->company_id,
+                ]);
+                QuishingActivity::create([
+                    'campaign_id' => $camp_live->campaign_id,
+                    'campaign_live_id' => $camp_live->id,
+                    'company_id' => Auth::user()->company_id,
                 ]);
             }
 
@@ -167,6 +173,7 @@ class ApiQuishingController extends Controller
 
             $campaign->delete();
             QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
+            QuishingActivity::where('campaign_id', $campaign_id)->delete();
 
             log_action("Quishing Campaign deleted : {$campaign_name}");
 

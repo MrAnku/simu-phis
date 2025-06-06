@@ -6,6 +6,7 @@ use App\Models\Users;
 use Aws\Api\Validator;
 use App\Models\UsersGroup;
 use App\Models\QshTemplate;
+use App\Models\QuishingActivity;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
@@ -109,7 +110,7 @@ class QuishingController extends Controller
         ]);
 
         foreach ($users as $user) {
-            QuishingLiveCamp::create([
+            $camp_live = QuishingLiveCamp::create([
                 'campaign_id' => $campaign_id,
                 'campaign_name' => $request->campaign_name,
                 'user_id' => $user->id,
@@ -123,6 +124,11 @@ class QuishingController extends Controller
                 'quishing_material' => !empty($request->quishing_materials) ? $request->quishing_materials[array_rand($request->quishing_materials)] : null,
                 'quishing_lang' => $request->quishing_language ?? null,
                 'company_id' => Auth::user()->company_id
+            ]);
+            QuishingActivity::create([
+                'campaign_id' => $camp_live->campaign_id,
+                'campaign_live_id' => $camp_live->id,
+                'company_id' => Auth::user()->company_id,
             ]);
         }
 
@@ -139,6 +145,7 @@ class QuishingController extends Controller
 
         $campaign->delete();
         QuishingLiveCamp::where('campaign_id', $campaign_id)->delete();
+        QuishingActivity::where('campaign_id', $campaign_id)->delete();
 
         return response()->json(['status' => 1, 'msg' => __('Campaign deleted successfully')]);
     }

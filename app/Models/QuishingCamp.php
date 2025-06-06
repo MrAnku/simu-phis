@@ -30,4 +30,9 @@ class QuishingCamp extends Model
     {
         return $this->hasMany(QuishingLiveCamp::class, 'campaign_id', 'campaign_id');
     }
+
+    public function campaignActivity()
+    {
+        return $this->hasMany(QuishingActivity::class, 'campaign_id', 'campaign_id');
+    }
 }

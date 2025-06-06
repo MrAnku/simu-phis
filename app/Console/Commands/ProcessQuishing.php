@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Company;
 use App\Mail\CampaignMail;
 use App\Mail\QuishingMail;
+use App\Models\QuishingActivity;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
@@ -68,6 +69,9 @@ class ProcessQuishing extends Command
                     //send mail
                     $mailSent = $this->sendMail($mailData);
                     if ($mailSent) {
+                        
+                        QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
                         echo "Mail sent to {$campaign->user_email} \n";
                         $campaign->sent = '1';
                         $campaign->save();

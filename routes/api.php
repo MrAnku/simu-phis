@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
@@ -77,6 +78,7 @@ Route::middleware('auth:api')->group(function () {
     //card reports
 
     Route::get('/simulation-report/email', [ApiDashboardController::class, 'emailSimulationReport']);
+    Route::get('/simulation-report/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
     // });
 
     //email campaign routes
