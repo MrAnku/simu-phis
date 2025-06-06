@@ -10,7 +10,6 @@ class Campaign extends Model
     use HasFactory;
 
     protected $table = 'all_campaigns';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',
