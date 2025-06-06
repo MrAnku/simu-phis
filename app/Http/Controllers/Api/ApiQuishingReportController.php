@@ -10,6 +10,7 @@ use App\Models\QuishingLiveCamp;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Http\Controllers\Controller;
+use App\Models\QshTemplate;
 use Illuminate\Support\Facades\Auth;
 
 class ApiQuishingReportController extends Controller
@@ -82,7 +83,7 @@ class ApiQuishingReportController extends Controller
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime($usersArray, $months),
-                    "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
+                    "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics($group, $months),
                     "employee_simulation_events" => $this->empSimulationEvents($usersArray, $months),
                     "timing_statistics" => $this->timingStatistics($usersArray, $months),
@@ -125,7 +126,7 @@ class ApiQuishingReportController extends Controller
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
-                     "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial(),
+                     "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial(),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics(),
                     "employee_simulation_events" => $this->empSimulationEvents(),
                     "timing_statistics" => $this->timingStatistics(),
@@ -178,7 +179,7 @@ class ApiQuishingReportController extends Controller
     private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
 
         $companyId = Auth::user()->company_id;
-        $phishingEmails = PhishingEmail::where(function($query) use ($companyId) {
+        $phishingEmails = QshTemplate::where(function($query) use ($companyId) {
                 $query->where('company_id', 'default')
                     ->orWhere('company_id', $companyId);
             })
@@ -195,7 +196,7 @@ class ApiQuishingReportController extends Controller
 
             foreach ($phishingEmails as $email) {
                 $engagedRecords = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('phishing_material', $email->id)
+                    ->where('quishing_material', $email->id)
                     ->whereIn('user_id', $usersArray)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->get();
@@ -221,7 +222,7 @@ class ApiQuishingReportController extends Controller
 
             foreach ($phishingEmails as $email) {
                 $engagedRecords = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('phishing_material', $email->id)
+                    ->where('quishing_material', $email->id)
                     ->get();
 
                 // You can process $engagedRecords as needed, e.g., count or push to $mostEngaged

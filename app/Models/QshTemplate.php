@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QshTemplate extends Model
 {
@@ -22,5 +23,9 @@ class QshTemplate extends Model
     }
     public function website(){
         return $this->belongsTo(PhishingWebsite::class, 'website', 'id');
+    }
+    public function emailCampLive(): HasMany
+    {
+        return $this->hasMany(QuishingLiveCamp::class, 'quishing_material', 'id');
     }
 }
