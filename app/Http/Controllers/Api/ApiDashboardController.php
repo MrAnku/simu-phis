@@ -14,6 +14,7 @@ use App\Models\EmailCampActivity;
 use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\PhishingEmail;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 
@@ -549,6 +550,7 @@ class ApiDashboardController extends Controller
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime($usersArray, $months),
+                    "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics($group, $months),
                     "employee_simulation_events" => $this->empSimulationEvents($usersArray, $months),
                     "timing_statistics" => $this->timingStatistics($usersArray, $months),
@@ -591,6 +593,7 @@ class ApiDashboardController extends Controller
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
+                     "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial(),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics(),
                     "employee_simulation_events" => $this->empSimulationEvents(),
                     "timing_statistics" => $this->timingStatistics(),
@@ -639,6 +642,74 @@ class ApiDashboardController extends Controller
         // Format result
         $ppFormatted = number_format($ppDifference, 2) . ' pp';
         return $ppFormatted;
+    }
+    private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
+
+        $companyId = Auth::user()->company_id;
+        $phishingEmails = PhishingEmail::where(function($query) use ($companyId) {
+                $query->where('company_id', 'default')
+                    ->orWhere('company_id', $companyId);
+            })
+            ->whereHas('emailCampLive')
+            ->get();
+        if($phishingEmails->isEmpty()){
+                return [];
+            }
+        $mostEngaged = [];
+
+        if ($usersArray && $months) {
+            $startDate = now()->subMonths($months)->startOfMonth();
+            $endDate = now();
+
+            foreach ($phishingEmails as $email) {
+                $engagedRecords = CampaignLive::where('company_id', $companyId)
+                    ->where('phishing_material', $email->id)
+                    ->whereIn('user_id', $usersArray)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->get();
+
+                // You can process $engagedRecords as needed, e.g., count or push to $mostEngaged
+                $mostEngaged[] = [
+                    'phishing_email_name' => $email->name,
+                    'sent' => $engagedRecords->where('sent', 1)->count(),
+                    'mail_open' => $engagedRecords->where('mail_open', 1)->count(),
+                    'payload_clicked' => $engagedRecords->where('payload_clicked', 1)->count(),
+                    'compromised' => $engagedRecords->where('emp_compromised', 1)->count(),
+                    'reported' => $engagedRecords->where('email_reported', 1)->count(),
+                    'training_assigned' => $engagedRecords->where('training_assigned', 1)->count(),
+
+
+
+                ];
+            }
+            return $mostEngaged;
+
+        }else{
+          
+
+            foreach ($phishingEmails as $email) {
+                $engagedRecords = CampaignLive::where('company_id', $companyId)
+                    ->where('phishing_material', $email->id)
+                    ->get();
+
+                // You can process $engagedRecords as needed, e.g., count or push to $mostEngaged
+                $mostEngaged[] = [
+                    'phishing_email_name' => $email->name,
+                    'sent' => $engagedRecords->where('sent', 1)->count(),
+                    'mail_open' => $engagedRecords->where('mail_open', 1)->count(),
+                    'payload_clicked' => $engagedRecords->where('payload_clicked', 1)->count(),
+                    'compromised' => $engagedRecords->where('emp_compromised', 1)->count(),
+                    'reported' => $engagedRecords->where('email_reported', 1)->count(),
+                    'training_assigned' => $engagedRecords->where('training_assigned', 1)->count(),
+
+
+
+                ];
+            }
+            return $mostEngaged;
+        }
+
+
     }
     private function eventsOverTime($usersArray = null, $months = null)
     {

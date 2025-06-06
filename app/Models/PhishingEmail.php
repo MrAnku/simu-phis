@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PhishingEmail extends Model
@@ -25,5 +26,9 @@ class PhishingEmail extends Model
     public function sender_p(): HasOne
     {
         return $this->hasOne(SenderProfile::class, 'id', 'senderProfile');
+    }
+    public function emailCampLive(): HasMany
+    {
+        return $this->hasMany(CampaignLive::class, 'phishing_material', 'id');
     }
 }
