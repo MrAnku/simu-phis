@@ -16,8 +16,10 @@ use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\WaLiveCampaign;
 use App\Models\PhishingWebsite;
+use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Models\SmishingCampaign;
+use App\Models\WhatsappActivity;
 use \App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
@@ -31,7 +33,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Mail\AssignTrainingWithPassResetLink;
-use App\Models\QuishingActivity;
 use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
@@ -687,6 +688,26 @@ class ShowWebsiteController extends Controller
 
             if ($wsh == 1) {
                 WaLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
+
+                $agent = new Agent();
+
+                $clientData = [
+                    'platform' => $agent->platform(), // Extract OS
+                    'browser' => $agent->browser(), // Extract Browser
+                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
+                    'ip' => $request->ip(), // Client IP Address
+                    'source' => $request->header('User-Agent'), // Full User-Agent string
+                    'browserVersion' => $agent->version($agent->browser()),
+                    'device' => $agent->device(),
+                    'isMobile' => $agent->isMobile(),
+                    'isDesktop' => $agent->isDesktop(),
+
+                ];
+                WhatsappActivity::where('campaign_live_id', $campid)
+                    ->update([
+                        'compromised_at' => now(),
+                        'client_details' => json_encode($clientData)
+                    ]);
                 return;
             }
 
@@ -821,6 +842,7 @@ class ShowWebsiteController extends Controller
             }
             if ($wsh == 1) {
                 WaLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
+                WhatsappActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
                 return;
             }
 

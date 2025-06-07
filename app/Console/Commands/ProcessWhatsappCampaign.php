@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\WaLiveCampaign;
 use App\Models\PhishingWebsite;
 use Illuminate\Console\Command;
+use App\Models\WhatsappActivity;
 use App\Models\WhatsappCampaign;
 use Illuminate\Support\Facades\DB;
 use App\Models\WhatsAppCampaignUser;
@@ -148,6 +149,8 @@ class ProcessWhatsappCampaign extends Command
                             $campaign->sent = 1;
                             $campaign->save();
                             echo "WhatsApp message sent to " . $campaign->user_name . "\n";
+
+                            WhatsappActivity::where('campaign_live_id', $campaign->id)->update(['whatsapp_sent_at' => now()]);
                         } else {
                             echo json_encode($response->body());
                         }

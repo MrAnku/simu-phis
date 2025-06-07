@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
+use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
@@ -79,6 +80,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/simulation-report/email', [ApiDashboardController::class, 'emailSimulationReport']);
     Route::get('/simulation-report/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
+    Route::get('/simulation-report/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
     // });
 
     //email campaign routes

@@ -4,17 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
 use App\Models\Users;
-use App\Models\QuishingCamp;
 use App\Models\UsersGroup;
-use App\Models\QuishingLiveCamp;
+use App\Models\WaCampaign;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\QshTemplate;
+use App\Models\CompanyWhatsappTemplate;
+use App\Models\PhishingWebsite;
+use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Auth;
 
-class ApiQuishingReportController extends Controller
+class ApiWhatsappReportController extends Controller
 {
-    public function quishingSimulationReport(Request $request)
+    public function whatsappSimulationReport(Request $request)
     {
         $companyId = Auth::user()->company_id;
 
@@ -37,52 +38,57 @@ class ApiQuishingReportController extends Controller
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
 
-            $total = QuishingLiveCamp::where('company_id', $companyId)
+            $total = WaLiveCampaign::where('company_id', $companyId)
                 ->whereIn('user_id', $usersArray)
+                ->where('employee_type', 'normal')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
-            $scanned = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->whereIn('user_id', $usersArray)
+                ->where('employee_type', 'normal')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
-            $reportRate = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('email_reported', '1')
+            // $reportRate = WaLiveCampaign::where('company_id', $companyId)
+            //     ->where('email_reported', 1)
+            //     ->whereIn('user_id', $usersArray)
+            //     ->where('employee_type', 'normal')
+            //     ->whereBetween('created_at', [$startDate, $endDate])
+            //     ->count();
+            $ignoreRate = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 0)
                 ->whereIn('user_id', $usersArray)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->count();
-            $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '0')
-                ->whereIn('user_id', $usersArray)
+                ->where('employee_type', 'normal')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
-            $repeatScanners = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $repeatScanners = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->whereIn('user_id', $usersArray)
+                ->where('employee_type', 'normal')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->groupBy('user_email')
                 ->havingRaw('COUNT(*) > 1')
                 ->pluck('user_email')
                 ->count();
 
-            $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+            $remediationRate = $total > 0 ? round(($ignoreRate / $total) * 100, 2) : 0;
             return response()->json([
                 'success' => true,
-                'message' => 'Quishing simulation report retrieved successfully',
+                'message' => 'Whatsapp simulation report retrieved successfully',
                 'data' => [
                     "cards" => [
                         'total' => $total,
-                        'qr_scanned' => $scanned,
-                        'reported' => $reportRate,
+                        'payload_clicked' => $payloadClicked,
+                        // 'reported' => $reportRate,
                         'ignored' => $ignoreRate,
                         'repeat_scanners' => $repeatScanners,
                         'remediation_rate_percent' => $remediationRate,
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime($usersArray, $months),
-                    "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
+                    "most_engaged_phishing_website" => $this->mostEngagedPhishingWebsite($usersArray, $months),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics($group, $months),
                     "employee_simulation_events" => $this->empSimulationEvents($usersArray, $months),
                     "timing_statistics" => $this->timingStatistics($usersArray, $months),
@@ -91,25 +97,25 @@ class ApiQuishingReportController extends Controller
                 ]
             ], 200);
         } else {
-            $total = QuishingLiveCamp::where('company_id', $companyId)->count();
-            $scanned = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $total = WaLiveCampaign::where('company_id', $companyId)->count();
+            $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->count();
-            $reportRate = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('email_reported', '1')
-                ->count();
-            $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '0')
+            // $reportRate = WaLiveCampaign::where('company_id', $companyId)
+            //     ->where('email_reported', 1)
+            //     ->count();
+            $ignoreRate = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 0)
                 ->count();
 
-            $repeatScanners = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $repeatScanners = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->groupBy('user_email')
                 ->havingRaw('COUNT(*) > 1')
                 ->pluck('user_email')
                 ->count();
 
-            $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+            $remediationRate = $total > 0 ? round(($ignoreRate / $total) * 100, 2) : 0;
 
             return response()->json([
                 'success' => true,
@@ -117,15 +123,15 @@ class ApiQuishingReportController extends Controller
                 'data' => [
                     "cards" => [
                         'total' => $total,
-                        'qr_scanned' => $scanned,
-                        'reported' => $reportRate,
+                        'payload_clicked' => $payloadClicked,
+                        // 'reported' => $reportRate,
                         'ignored' => $ignoreRate,
                         'repeat_scanners' => $repeatScanners,
                         'remediation_rate_percent' => $remediationRate,
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
-                     "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial(),
+                     "most_engaged_phishing_website" => $this->mostEngagedPhishingWebsite(),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics(),
                     "employee_simulation_events" => $this->empSimulationEvents(),
                     "timing_statistics" => $this->timingStatistics(),
@@ -145,46 +151,46 @@ class ApiQuishingReportController extends Controller
         $previousEnd = $now->copy()->subDays(7);
 
         // Current period
-        $totalCurrent = QuishingLiveCamp::where('company_id', $companyId)
+        $totalCurrent = WaLiveCampaign::where('company_id', $companyId)
             ->whereBetween('created_at', [$currentStart, $now])
             ->count();
 
-        $scannedCurrent = QuishingLiveCamp::where('company_id', $companyId)
-            ->where('qr_scanned', '1')
+        $payloadClickedCurrent = WaLiveCampaign::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
             ->whereBetween('created_at', [$currentStart, $now])
             ->count();
 
-        $scanRateCurrent = $totalCurrent > 0 ? ($scannedCurrent / $totalCurrent) * 100 : 0;
+        $clickRateCurrent = $totalCurrent > 0 ? ($payloadClickedCurrent / $totalCurrent) * 100 : 0;
 
         // Previous period
-        $totalPrevious = QuishingLiveCamp::where('company_id', $companyId)
+        $totalPrevious = WaLiveCampaign::where('company_id', $companyId)
             ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->count();
 
-        $scannedPrevious = QuishingLiveCamp::where('company_id', $companyId)
-            ->where('qr_scanned', '1')
+        $payloadClickedPrevious = WaLiveCampaign::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
             ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->count();
 
-        $scanRatePrevious = $totalPrevious > 0 ? ($scannedPrevious / $totalPrevious) * 100 : 0;
+        $clickRatePrevious = $totalPrevious > 0 ? ($payloadClickedPrevious / $totalPrevious) * 100 : 0;
 
         // Percentage Point Difference
-        $ppDifference = $scanRateCurrent - $scanRatePrevious;
+        $ppDifference = $clickRateCurrent - $clickRatePrevious;
 
         // Format result
         $ppFormatted = number_format($ppDifference, 2) . ' pp';
         return $ppFormatted;
     }
-    private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
+    private function mostEngagedPhishingWebsite($usersArray = null, $months = null){
 
         $companyId = Auth::user()->company_id;
-        $phishingEmails = QshTemplate::where(function($query) use ($companyId) {
+        $phishingWebsites = PhishingWebsite::where(function($query) use ($companyId) {
                 $query->where('company_id', 'default')
                     ->orWhere('company_id', $companyId);
             })
-            ->whereHas('emailCampLive')
+            ->whereHas('whatsappCampLive')
             ->get();
-        if($phishingEmails->isEmpty()){
+        if($phishingWebsites->isEmpty()){
                 return [];
             }
         $mostEngaged = [];
@@ -193,22 +199,22 @@ class ApiQuishingReportController extends Controller
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
 
-            foreach ($phishingEmails as $email) {
-                $engagedRecords = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('quishing_material', $email->id)
+            foreach ($phishingWebsites as $website) {
+                $engagedRecords = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('phishing_website', $website->id)
                     ->whereIn('user_id', $usersArray)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->get();
 
                 // You can process $engagedRecords as needed, e.g., count or push to $mostEngaged
                 $mostEngaged[] = [
-                    'phishing_email_name' => $email->name,
-                    'sent' => $engagedRecords->where('sent', '1')->count(),
-                    'mail_open' => $engagedRecords->where('mail_open', '1')->count(),
-                    'qr_scanned' => $engagedRecords->where('qr_scanned', '1')->count(),
-                    'compromised' => $engagedRecords->where('compromised', '1')->count(),
-                    'reported' => $engagedRecords->where('email_reported', '1')->count(),
-                    'training_assigned' => $engagedRecords->where('training_assigned', '1')->count(),
+                    'phishing_website_name' => $website->name,
+                    'sent' => $engagedRecords->where('sent', 1)->count(),
+                    // 'mail_open' => $engagedRecords->where('mail_open', 1)->count(),
+                    'payload_clicked' => $engagedRecords->where('payload_clicked', 1)->count(),
+                    'compromised' => $engagedRecords->where('compromised', 1)->count(),
+                    'training_assigned' => $engagedRecords->where('training_assigned', 1)->count(),
+                    // 'training_assigned' => $engagedRecords->where('training_assigned', 1)->count(),
 
 
 
@@ -219,20 +225,20 @@ class ApiQuishingReportController extends Controller
         }else{
           
 
-            foreach ($phishingEmails as $email) {
-                $engagedRecords = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('quishing_material', $email->id)
+            foreach ($phishingWebsites as $website) {
+                $engagedRecords = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('phishing_website', $website->id)
                     ->get();
 
                 // You can process $engagedRecords as needed, e.g., count or push to $mostEngaged
                 $mostEngaged[] = [
-                    'phishing_email_name' => $email->name,
-                    'sent' => $engagedRecords->where('sent', '1')->count(),
-                    'mail_open' => $engagedRecords->where('mail_open', '1')->count(),
-                    'qr_scanned' => $engagedRecords->where('qr_scanned', '1')->count(),
-                    'compromised' => $engagedRecords->where('compromised', '1')->count(),
-                    'reported' => $engagedRecords->where('email_reported', '1')->count(),
-                    'training_assigned' => $engagedRecords->where('training_assigned', '1')->count(),
+                    'phishing_website_name' => $website->name,
+                    'sent' => $engagedRecords->where('sent', 1)->count(),
+                    // 'mail_open' => $engagedRecords->where('mail_open', 1)->count(),
+                    'payload_clicked' => $engagedRecords->where('payload_clicked', 1)->count(),
+                    'compromised' => $engagedRecords->where('compromised', 1)->count(),
+                    // 'reported' => $engagedRecords->where('email_reported', 1)->count(),
+                    'training_assigned' => $engagedRecords->where('training_assigned', 1)->count(),
 
 
 
@@ -257,44 +263,44 @@ class ApiQuishingReportController extends Controller
                 $monthStart = $monthDate->copy()->startOfMonth();
                 $monthEnd = $monthDate->copy()->endOfMonth();
 
-                $total = QuishingLiveCamp::where('company_id', $companyId)
+                $total = WaLiveCampaign::where('company_id', $companyId)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->whereIn('user_id', $usersArray)
                     ->count();
 
-                $scanned = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('qr_scanned', '1')
+                $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('payload_clicked', 1)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->whereIn('user_id', $usersArray)
                     ->count();
 
-                $reported = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('email_reported', '1')
+                // $reported = WaLiveCampaign::where('company_id', $companyId)
+                //     ->where('email_reported', 1)
+                //     ->whereBetween('created_at', [$monthStart, $monthEnd])
+                //     ->whereIn('user_id', $usersArray)
+                //     ->count();
+
+                $ignored = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('payload_clicked', 0)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->whereIn('user_id', $usersArray)
                     ->count();
 
-                $ignored = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('qr_scanned', '0')
-                    ->whereBetween('created_at', [$monthStart, $monthEnd])
-                    ->whereIn('user_id', $usersArray)
-                    ->count();
-
-                $scanRate = $total > 0 ? round(($scanned / $total) * 100, 2) : 0;
-                $reportRate = $total > 0 ? round(($reported / $total) * 100, 2) : 0;
+                $clickRate = $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0;
+                // $reportRate = $total > 0 ? round(($reported / $total) * 100, 2) : 0;
                 $ignoreRate = $total > 0 ? round(($ignored / $total) * 100, 2) : 0;
 
                 // Example target rates, adjust as needed
-                $targetScanRate = 5;
+                $targetClickRate = 5;
                 $targetReportRate = 40;
                 $targetIgnoreRate = 40;
 
                 $chartData[] = [
                     'month' => $monthDate->format('F Y'),
-                    'scanRate' => $scanRate,
-                    'targetScanRate' => $targetScanRate,
-                    'reportRate' => $reportRate,
-                    'targetReportRate' => $targetReportRate,
+                    'clickRate' => $clickRate,
+                    'targetClickRate' => $targetClickRate,
+                    // 'reportRate' => $reportRate,
+                    // 'targetReportRate' => $targetReportRate,
                     'ignoreRate' => $ignoreRate,
                     'targetIgnoreRate' => $targetIgnoreRate,
                 ];
@@ -305,40 +311,40 @@ class ApiQuishingReportController extends Controller
                 $monthStart = $monthDate->copy()->startOfMonth();
                 $monthEnd = $monthDate->copy()->endOfMonth();
 
-                $total = QuishingLiveCamp::where('company_id', $companyId)
+                $total = WaLiveCampaign::where('company_id', $companyId)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->count();
 
-                $scanned = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('qr_scanned', '1')
+                $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('payload_clicked', 1)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->count();
 
-                $reported = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('email_reported', '1')
+                // $reported = WaLiveCampaign::where('company_id', $companyId)
+                //     ->where('email_reported', 1)
+                //     ->whereBetween('created_at', [$monthStart, $monthEnd])
+                //     ->count();
+
+                $ignored = WaLiveCampaign::where('company_id', $companyId)
+                    ->where('payload_clicked', 0)
                     ->whereBetween('created_at', [$monthStart, $monthEnd])
                     ->count();
 
-                $ignored = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('qr_scanned', '0')
-                    ->whereBetween('created_at', [$monthStart, $monthEnd])
-                    ->count();
-
-                $scanRate = $total > 0 ? round(($scanned / $total) * 100, 2) : 0;
-                $reportRate = $total > 0 ? round(($reported / $total) * 100, 2) : 0;
+                $clickRate = $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0;
+                // $reportRate = $total > 0 ? round(($reported / $total) * 100, 2) : 0;
                 $ignoreRate = $total > 0 ? round(($ignored / $total) * 100, 2) : 0;
 
                 // Example target rates, adjust as needed
-                $targetScanRate = 5;
+                $targetClickRate = 5;
                 $targetReportRate = 40;
                 $targetIgnoreRate = 40;
 
                 $chartData[] = [
                     'month' => $monthDate->format('F Y'),
-                    'scanRate' => $scanRate,
-                    'targetScanRate' => $targetScanRate,
-                    'reportRate' => $reportRate,
-                    'targetReportRate' => $targetReportRate,
+                    'clickRate' => $clickRate,
+                    'targetClickRate' => $targetClickRate,
+                    // 'reportRate' => $reportRate,
+                    // 'targetReportRate' => $targetReportRate,
                     'ignoreRate' => $ignoreRate,
                     'targetIgnoreRate' => $targetIgnoreRate,
                 ];
@@ -356,7 +362,7 @@ class ApiQuishingReportController extends Controller
 
         if ($group && $months) {
             // Fetch all campaigns for the company
-            $groups = UsersGroup::with('emailCampaigns.campLive')
+            $groups = UsersGroup::with('whatsappCampaigns.campLive')
             ->where('company_id', $companyId)
             ->where('group_id', $group)
             ->get();
@@ -364,35 +370,35 @@ class ApiQuishingReportController extends Controller
                 return [];
             }
             return $groups->map(function ($group) {
-                $total = $group->emailCampaigns->sum(function ($campaign) {
+                $total = $group->whatsappCampaigns->sum(function ($campaign) {
                     return $campaign->campLive->count();
                 });
-                $totalSent = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('sent', '1')->count();
+                $totalSent = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('sent', 1)->count();
                 });
 
-                $scanned = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('qr_scanned', '1')->count();
+                $payloadClicked = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('payload_clicked', 1)->count();
                 });
 
-                $reported = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('email_reported', '1')->count();
-                });
+                // $reported = $group->whatsappCampaigns->sum(function ($campaign) {
+                //     return $campaign->campLive->where('email_reported', 1)->count();
+                // });
 
-                $ignored = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('qr_scanned', '0')->count();
+                $ignored = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('payload_clicked', 0)->count();
                 });
-                $compromised = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('compromised', '1')->count();
+                $compromised = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('compromised', 1)->count();
                 });
 
                 return [
                     'group_name' => $group->group_name,
                     'total_sent' => $totalSent,
-                    'total_qr_scanned' => $scanned,
-                    'scan_rate' => $total > 0 ? round(($scanned / $total) * 100, 2) : 0,
-                    'reported' => $reported,
-                    'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                    'total_payload_clicked' => $payloadClicked,
+                    'click_rate' => $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0,
+                    // 'reported' => $reported,
+                    // 'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
                     'ignored' => $ignored,
                     'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
                     'compromised' => $compromised,
@@ -401,40 +407,40 @@ class ApiQuishingReportController extends Controller
             });
         } else {
             // Fetch all campaigns for the company
-            $groups = UsersGroup::with('emailCampaigns.campLive')->where('company_id', $companyId)->get();
+            $groups = UsersGroup::with('whatsappCampaigns.campLive')->where('company_id', $companyId)->get();
             if ($groups->isEmpty()) {
                 return [];
             }
             return $groups->map(function ($group) {
-                $total = $group->emailCampaigns->sum(function ($campaign) {
+                $total = $group->whatsappCampaigns->sum(function ($campaign) {
                     return $campaign->campLive->count();
                 });
-                $totalSent = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('sent', '1')->count();
+                $totalSent = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('sent', 1)->count();
                 });
 
-                $scanned = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('qr_scanned', '1')->count();
+                $payloadClicked = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('payload_clicked', 1)->count();
                 });
 
-                $reported = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('email_reported', '1')->count();
-                });
+                // $reported = $group->whatsappCampaigns->sum(function ($campaign) {
+                //     return $campaign->campLive->where('email_reported', 1)->count();
+                // });
 
-                $ignored = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('qr_scanned', '0')->count();
+                $ignored = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('payload_clicked', 0)->count();
                 });
-                $compromised = $group->emailCampaigns->sum(function ($campaign) {
-                    return $campaign->campLive->where('compromised', '1')->count();
+                $compromised = $group->whatsappCampaigns->sum(function ($campaign) {
+                    return $campaign->campLive->where('compromised', 1)->count();
                 });
 
                 return [
                     'group_name' => $group->group_name,
                     'total_sent' => $totalSent,
-                    'total_qr_scanned' => $scanned,
-                    'scan_rate' => $total > 0 ? round(($scanned / $total) * 100, 2) : 0,
-                    'reported' => $reported,
-                    'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                    'total_payload_clicked' => $payloadClicked,
+                    'click_rate' => $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0,
+                    // 'reported' => $reported,
+                    // 'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
                     'ignored' => $ignored,
                     'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
                     'compromised' => $compromised,
@@ -453,9 +459,9 @@ class ApiQuishingReportController extends Controller
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
 
-            $QuishingLiveCamp = [
-                'avg_time_to_scan_in_hours' => round(
-                    QuishingLiveCamp::where('company_id', $companyId)
+            $WaLiveCampaign = [
+                'avg_time_to_click_in_hours' => round(
+                    WaLiveCampaign::where('company_id', $companyId)
                         ->whereIn('user_id', $usersArray)
                         ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)) as avg_seconds')
                         ->value('avg_seconds') / 3600,
@@ -463,50 +469,48 @@ class ApiQuishingReportController extends Controller
                 ),
                 'percent_within_10_min' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereIn('user_id', $usersArray)
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 10')
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) > 1')
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->count(),
                             1
                         )
                     ) * 100,
                     2
                 ),
-                'scanned_within_1_hour' => round(
+                'clicked_within_1_hour' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereIn('user_id', $usersArray)
-                        ->where('qr_scanned', '1')
+                        ->where('payload_clicked', 1)
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 60')
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) > 1')
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
-
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->count(),
                             1
                         )
                     ) * 100,
                     2
                 ),
-                'scanned_within_1_day' => round(
+                'clicked_within_1_day' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereIn('user_id', $usersArray)
-                        ->where('qr_scanned', '1')
+                        ->where('payload_clicked', 1)
                         ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 24')
                         ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) > 1')
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
-
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->count(),
                             1
                         )
@@ -514,11 +518,11 @@ class ApiQuishingReportController extends Controller
                     2
                 ),
             ];
-            return $QuishingLiveCamp;
+            return $WaLiveCampaign;
         } else {
-            $QuishingLiveCamp = [
-                'avg_time_to_scan_in_hours' => round(
-                    QuishingLiveCamp::where('company_id', $companyId)
+            $WaLiveCampaign = [
+                'avg_time_to_click_in_hours' => round(
+                    WaLiveCampaign::where('company_id', $companyId)
                         ->whereNotNull('created_at')
                         ->whereNotNull('updated_at')
                         ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)) as avg_seconds')
@@ -527,7 +531,7 @@ class ApiQuishingReportController extends Controller
                 ),
                 'percent_within_10_min' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereNotNull('created_at')
                         ->whereNotNull('updated_at')
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 10')
@@ -535,7 +539,7 @@ class ApiQuishingReportController extends Controller
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->whereNotNull('created_at')
                                 ->whereNotNull('updated_at')
                                 ->count(),
@@ -544,18 +548,18 @@ class ApiQuishingReportController extends Controller
                     ) * 100,
                     2
                 ),
-                'scanned_within_1_hour' => round(
+                'clicked_within_1_hour' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereNotNull('created_at')
                         ->whereNotNull('updated_at')
-                        ->where('qr_scanned', '1')
+                        ->where('payload_clicked', 1)
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) <= 60')
                         ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, updated_at) > 1')
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->whereNotNull('created_at')
                                 ->whereNotNull('updated_at')
                                 ->count(),
@@ -564,18 +568,18 @@ class ApiQuishingReportController extends Controller
                     ) * 100,
                     2
                 ),
-                'scanned_within_1_day' => round(
+                'clicked_within_1_day' => round(
                     (
-                        QuishingLiveCamp::where('company_id', $companyId)
+                        WaLiveCampaign::where('company_id', $companyId)
                         ->whereNotNull('created_at')
                         ->whereNotNull('updated_at')
-                        ->where('qr_scanned', '1')
+                        ->where('payload_clicked', 1)
                         ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) <= 24')
                         ->whereRaw('TIMESTAMPDIFF(HOUR, created_at, updated_at) > 1')
                         ->count()
                         /
                         max(
-                            QuishingLiveCamp::where('company_id', $companyId)
+                            WaLiveCampaign::where('company_id', $companyId)
                                 ->whereNotNull('created_at')
                                 ->whereNotNull('updated_at')
                                 ->count(),
@@ -585,7 +589,7 @@ class ApiQuishingReportController extends Controller
                     2
                 ),
             ];
-            return $QuishingLiveCamp;
+            return $WaLiveCampaign;
         }
     }
 
@@ -600,14 +604,14 @@ class ApiQuishingReportController extends Controller
 
 
             $weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            $total = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $total = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->whereIn('user_id', $usersArray)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
-            $scansByDay = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $scansByDay = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->whereIn('user_id', $usersArray)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->selectRaw('DAYOFWEEK(created_at) as day, COUNT(*) as count')
@@ -630,12 +634,12 @@ class ApiQuishingReportController extends Controller
             return $result;
         } else {
             $weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            $total = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $total = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->count();
 
-            $scansByDay = QuishingLiveCamp::where('company_id', $companyId)
-                ->where('qr_scanned', '1')
+            $scansByDay = WaLiveCampaign::where('company_id', $companyId)
+                ->where('payload_clicked', 1)
                 ->selectRaw('DAYOFWEEK(created_at) as day, COUNT(*) as count')
                 ->groupBy('day')
                 ->pluck('count', 'day')
@@ -675,48 +679,48 @@ class ApiQuishingReportController extends Controller
             foreach ($uniqueUsers as $user) {
                 $userEmail = $user->user_email;
 
-                $total = QuishingLiveCamp::where('company_id', $companyId)
+                $total = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
-                $totalSent = QuishingLiveCamp::where('company_id', $companyId)
+                $totalSent = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('sent', '1')
+                    ->where('sent', 1)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
-                $scanned = QuishingLiveCamp::where('company_id', $companyId)
+                $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('qr_scanned', '1')
+                    ->where('payload_clicked', 1)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
-                $reported = QuishingLiveCamp::where('company_id', $companyId)
+                // $reported = WaLiveCampaign::where('company_id', $companyId)
+                //     ->where('user_email', $userEmail)
+                //     ->where('email_reported', 1)
+                //     ->whereBetween('created_at', [$startDate, $endDate])
+                //     ->count();
+
+                $ignored = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('email_reported', '1')
+                    ->where('payload_clicked', 0)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
-                $ignored = QuishingLiveCamp::where('company_id', $companyId)
+                $compromised = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('qr_scanned', '0')
-                    ->whereBetween('created_at', [$startDate, $endDate])
-                    ->count();
-
-                $compromised = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('user_email', $userEmail)
-                    ->where('compromised', '1')
+                    ->where('compromised', 1)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
                 $campaignStats[] = [
                     'user_email' => $userEmail,
                     'total_sent' => $totalSent,
-                    'total_scanned' => $scanned,
-                    'scan_rate' => $total > 0 ? round(($scanned / $total) * 100, 2) : 0,
-                    'reported' => $reported,
-                    'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                    'total_scanned' => $payloadClicked,
+                    'click_rate' => $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0,
+                    // 'reported' => $reported,
+                    // 'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
                     'ignored' => $ignored,
                     'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
                     'compromised' => $compromised,
@@ -736,42 +740,42 @@ class ApiQuishingReportController extends Controller
             foreach ($uniqueUsers as $user) {
                 $userEmail = $user->user_email;
 
-                $total = QuishingLiveCamp::where('company_id', $companyId)
+                $total = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
                     ->count();
 
-                $totalSent = QuishingLiveCamp::where('company_id', $companyId)
+                $totalSent = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('sent', '1')
+                    ->where('sent', 1)
                     ->count();
 
-                $scanned = QuishingLiveCamp::where('company_id', $companyId)
+                $payloadClicked = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('qr_scanned', '1')
+                    ->where('payload_clicked', 1)
                     ->count();
 
-                $reported = QuishingLiveCamp::where('company_id', $companyId)
+                // $reported = WaLiveCampaign::where('company_id', $companyId)
+                //     ->where('user_email', $userEmail)
+                //     ->where('email_reported', 1)
+                //     ->count();
+
+                $ignored = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('email_reported', '1')
+                    ->where('payload_clicked', 0)
                     ->count();
 
-                $ignored = QuishingLiveCamp::where('company_id', $companyId)
+                $compromised = WaLiveCampaign::where('company_id', $companyId)
                     ->where('user_email', $userEmail)
-                    ->where('qr_scanned', '0')
-                    ->count();
-
-                $compromised = QuishingLiveCamp::where('company_id', $companyId)
-                    ->where('user_email', $userEmail)
-                    ->where('compromised', '1')
+                    ->where('compromised', 1)
                     ->count();
 
                 $campaignStats[] = [
                     'user_email' => $userEmail,
                     'total_sent' => $totalSent,
-                    'total_scanned' => $scanned,
-                    'scan_rate' => $total > 0 ? round(($scanned / $total) * 100, 2) : 0,
-                    'reported' => $reported,
-                    'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
+                    'total_scanned' => $payloadClicked,
+                    'click_rate' => $total > 0 ? round(($payloadClicked / $total) * 100, 2) : 0,
+                    // 'reported' => $reported,
+                    // 'reported_rate' => $total > 0 ? round(($reported / $total) * 100, 2) : 0,
                     'ignored' => $ignored,
                     'ignored_rate' => $total > 0 ? round(($ignored / $total) * 100, 2) : 0,
                     'compromised' => $compromised,
@@ -792,7 +796,7 @@ class ApiQuishingReportController extends Controller
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
 
-            $campaigns = QuishingCamp::with('campaignActivity')
+            $campaigns = WaCampaign::with('campaignActivity')
                 ->where('company_id', $companyId)
                 ->where('users_group', $group)
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -803,30 +807,30 @@ class ApiQuishingReportController extends Controller
             $total = $campaigns->sum(function ($campaign) {
                 return $campaign->campaignActivity->count();
             });
-            $genuineEmail = 0;
-            $showsInterestInPhishingEmail = 0;
+            $genuineWhatsapp = 0;
+            $showsInterestInPhishingWebsite = 0;
             $looksSuspicious = 0;
             $totallySafe = 0;
             foreach ($campaigns as $campaign) {
                 foreach ($campaign->campaignActivity as $activity) {
-                    if ($activity->email_sent_at && $activity->email_viewed_at) {
-                        $emailSentAt = Carbon::parse($activity->email_sent_at);
-                        $emailViewedAt = Carbon::parse($activity->email_viewed_at);
+                    if ($activity->whatsapp_sent_at && $activity->payload_clicked_at) {
+                        $whatsappSentAt = Carbon::parse($activity->whatsapp_sent_at);
+                        $payloadClickedAt = Carbon::parse($activity->payload_clicked_at);
 
-                        $diffMinutes = $emailViewedAt->diffInMinutes($emailSentAt);
+                        $diffMinutes = $payloadClickedAt->diffInMinutes($whatsappSentAt);
                         if ($diffMinutes <= 30 && $diffMinutes > 2) {
-                            $genuineEmail++;
+                            $genuineWhatsapp++;
                         }
                     }
                 }
                 foreach ($campaign->campaignActivity as $activity) {
-                    if ($activity->email_viewed_at && $activity->payload_clicked_at) {
-                        $viewedAt = Carbon::parse($activity->email_viewed_at);
-                        $payloadClickedAt = Carbon::parse($activity->payload_clicked_at);
+                    if ($activity->payload_clicked_at && $activity->compromised_at) {
+                        $clickedAt = Carbon::parse($activity->payload_clicked_at);
+                        $compromisedAt = Carbon::parse($activity->compromised_at);
 
-                        $diffMinutes = $payloadClickedAt->diffInSeconds($viewedAt);
+                        $diffMinutes = $compromisedAt->diffInSeconds($clickedAt);
                         if ($diffMinutes <= 10 && $diffMinutes > 2) {
-                            $showsInterestInPhishingEmail++;
+                            $showsInterestInPhishingWebsite++;
                         }
                         if ($diffMinutes <= 120 && $diffMinutes > 10) {
                             $looksSuspicious++;
@@ -842,23 +846,23 @@ class ApiQuishingReportController extends Controller
             }
 
             // Calculate percentages
-            $genuineEmailPercent = $total > 0 ? round(($genuineEmail / $total) * 100, 2) : 0;
-            $showsInterestInPhishingEmailPercent = $total > 0 ? round(($showsInterestInPhishingEmail / $total) * 100, 2) : 0;
+            $genuineWhatsappPercent = $total > 0 ? round(($genuineWhatsapp / $total) * 100, 2) : 0;
+            $showsInterestInPhishingWebsitePercent = $total > 0 ? round(($showsInterestInPhishingWebsite / $total) * 100, 2) : 0;
             $looksSuspiciousPercent = $total > 0 ? round(($looksSuspicious / $total) * 100, 2) : 0;
             $totallySafePercent = $total > 0 ? round(($totallySafe / $total) * 100, 2) : 0;
             return [
                 'total' => $total,
-                'genuineEmail' => $genuineEmail,
-                'genuineEmailPercent' => $genuineEmailPercent,
-                'showsInterestInPhishingEmail' => $showsInterestInPhishingEmail,
-                'showsInterestInPhishingEmailPercent' => $showsInterestInPhishingEmailPercent,
+                'genuineWhatapp' => $genuineWhatsapp,
+                'genuineWhatsappPercent' => $genuineWhatsappPercent,
+                'showsInterestInPhishingWebsite' => $showsInterestInPhishingWebsite,
+                'showsInterestInPhishingWebsitePercent' => $showsInterestInPhishingWebsitePercent,
                 'looksSuspicious' => $looksSuspicious,
                 'looksSuspiciousPercent' => $looksSuspiciousPercent,
                 'totallySafe' => $totallySafe,
                 'totallySafePercent' => $totallySafePercent
             ];
         } else {
-            $campaigns = QuishingCamp::with('campaignActivity')
+            $campaigns = WaCampaign::with('campaignActivity')
                 ->where('company_id', $companyId)
                 ->get();
             if ($campaigns->isEmpty()) {
@@ -867,30 +871,30 @@ class ApiQuishingReportController extends Controller
             $total = $campaigns->sum(function ($campaign) {
                 return $campaign->campaignActivity->count();
             });
-            $genuineEmail = 0;
-            $showsInterestInPhishingEmail = 0;
+            $genuineWhatsapp = 0;
+            $showsInterestInPhishingWebsite = 0;
             $looksSuspicious = 0;
             $totallySafe = 0;
             foreach ($campaigns as $campaign) {
                 foreach ($campaign->campaignActivity as $activity) {
-                    if ($activity->email_sent_at && $activity->email_viewed_at) {
-                        $emailSentAt = Carbon::parse($activity->email_sent_at);
-                        $emailViewedAt = Carbon::parse($activity->email_viewed_at);
+                    if ($activity->whatsapp_sent_at && $activity->payload_clicked_at) {
+                        $whatsappSentAt = Carbon::parse($activity->whatsapp_sent_at);
+                        $payloadClickedAt = Carbon::parse($activity->payload_clicked_at);
 
-                        $diffMinutes = $emailViewedAt->diffInMinutes($emailSentAt);
+                        $diffMinutes = $payloadClickedAt->diffInMinutes($whatsappSentAt);
                         if ($diffMinutes <= 30 && $diffMinutes > 2) {
-                            $genuineEmail++;
+                            $genuineWhatsapp++;
                         }
                     }
                 }
                 foreach ($campaign->campaignActivity as $activity) {
-                    if ($activity->email_viewed_at && $activity->payload_clicked_at) {
-                        $viewedAt = Carbon::parse($activity->email_viewed_at);
-                        $payloadClickedAt = Carbon::parse($activity->payload_clicked_at);
+                    if ($activity->payload_clicked_at && $activity->compromised_at) {
+                        $clickedAt = Carbon::parse($activity->payload_clicked_at);
+                        $compromisedAt = Carbon::parse($activity->compromised_at);
 
-                        $diffMinutes = $payloadClickedAt->diffInSeconds($viewedAt);
+                        $diffMinutes = $compromisedAt->diffInSeconds($clickedAt);
                         if ($diffMinutes <= 10 && $diffMinutes > 2) {
-                            $showsInterestInPhishingEmail++;
+                            $showsInterestInPhishingWebsite++;
                         }
                         if ($diffMinutes <= 120 && $diffMinutes > 10) {
                             $looksSuspicious++;
@@ -906,16 +910,16 @@ class ApiQuishingReportController extends Controller
             }
 
             // Calculate percentages
-            $genuineEmailPercent = $total > 0 ? round(($genuineEmail / $total) * 100, 2) : 0;
-            $showsInterestInPhishingEmailPercent = $total > 0 ? round(($showsInterestInPhishingEmail / $total) * 100, 2) : 0;
+            $genuineWhatsappPercent = $total > 0 ? round(($genuineWhatsapp / $total) * 100, 2) : 0;
+            $showsInterestInPhishingWebsitePercent = $total > 0 ? round(($showsInterestInPhishingWebsite / $total) * 100, 2) : 0;
             $looksSuspiciousPercent = $total > 0 ? round(($looksSuspicious / $total) * 100, 2) : 0;
             $totallySafePercent = $total > 0 ? round(($totallySafe / $total) * 100, 2) : 0;
             return [
                 'total' => $total,
-                'genuineEmail' => $genuineEmail,
-                'genuineEmailPercent' => $genuineEmailPercent,
-                'showsInterestInPhishingEmail' => $showsInterestInPhishingEmail,
-                'showsInterestInPhishingEmailPercent' => $showsInterestInPhishingEmailPercent,
+                'genuineWhatapp' => $genuineWhatsapp,
+                'genuineWhatsappPercent' => $genuineWhatsappPercent,
+                'showsInterestInPhishingWebsite' => $showsInterestInPhishingWebsite,
+                'showsInterestInPhishingWebsitePercent' => $showsInterestInPhishingWebsitePercent,
                 'looksSuspicious' => $looksSuspicious,
                 'looksSuspiciousPercent' => $looksSuspiciousPercent,
                 'totallySafe' => $totallySafe,

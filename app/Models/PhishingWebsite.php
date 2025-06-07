@@ -27,4 +27,7 @@ class PhishingWebsite extends Model
             . '&p=' . $this->id
             . '&l=' . Str::slug($this->name);
     }
+    public function whatsappCampLive(){
+        return $this->hasMany(WaLiveCampaign::class, 'phishing_website', 'id');
+    }
 }

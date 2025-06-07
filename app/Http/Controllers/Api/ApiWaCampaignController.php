@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\CompanyWhatsappConfig;
 use App\Models\CompanyWhatsappTemplate;
+use App\Models\WhatsappActivity;
 use Illuminate\Validation\ValidationException;
 
 class ApiWaCampaignController extends Controller
@@ -146,7 +147,7 @@ class ApiWaCampaignController extends Controller
 
             foreach ($users as $user) {
 
-                WaLiveCampaign::create([
+                $camp_live = WaLiveCampaign::create([
                     'campaign_id' => $campaign_id,
                     'campaign_name' => $validated['campaign_name'],
                     'campaign_type' => $validated['campaign_type'],
@@ -168,6 +169,12 @@ class ApiWaCampaignController extends Controller
                     'template_name' => $validated['template_name'],
                     'variables' => json_encode($validated['variables']),
                     'company_id' => Auth::user()->company_id,
+                ]);
+
+                WhatsappActivity::create([
+                    'campaign_id' => $camp_live->campaign_id,
+                    'campaign_live_id' => $camp_live->id,
+                    'company_id' => $camp_live->company_id,
                 ]);
             }
 
@@ -253,6 +260,7 @@ class ApiWaCampaignController extends Controller
             $campaign->delete();
 
             WaLiveCampaign::where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->delete();
+            WhatsappActivity::where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->delete();
 
             log_action('WhatsApp campaign deleted');
             return response()->json([

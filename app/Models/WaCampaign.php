@@ -34,4 +34,12 @@ class WaCampaign extends Model
     {
         return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
     }
+    public function campLive()
+    {
+        return $this->hasMany(WaLiveCampaign::class, 'campaign_id', 'campaign_id');
+    }
+    public function campaignActivity()
+    {
+        return $this->hasMany(WhatsappActivity::class, 'campaign_id', 'campaign_id');
+    }
 }

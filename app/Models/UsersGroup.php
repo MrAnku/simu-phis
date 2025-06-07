@@ -28,6 +28,10 @@ class UsersGroup extends Model
     {
         return $this->hasMany(Campaign::class, 'users_group', 'group_id');
     }
+    public function whatsappCampaigns(): HasMany
+    {
+        return $this->hasMany(WaCampaign::class, 'users_group', 'group_id');
+    }
     public function getUsersCountAttribute(): int
     {
         $users = json_decode($this->users, true);
