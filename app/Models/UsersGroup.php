@@ -32,6 +32,10 @@ class UsersGroup extends Model
     {
         return $this->hasMany(WaCampaign::class, 'users_group', 'group_id');
     }
+    public function aiCampaigns(): HasMany
+    {
+        return $this->hasMany(AiCallCampaign::class, 'emp_group', 'group_id');
+    }
     public function getUsersCountAttribute(): int
     {
         $users = json_decode($this->users, true);

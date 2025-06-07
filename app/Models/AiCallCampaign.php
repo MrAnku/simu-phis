@@ -10,7 +10,6 @@ class AiCallCampaign extends Model
     use HasFactory;
 
     protected $table = 'ai_call_campaigns';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',
@@ -24,7 +23,6 @@ class AiCallCampaign extends Model
         'ai_agent_name',
         'phone_no',
         'status',
-        'created_at',
         'company_id'
     ];
 

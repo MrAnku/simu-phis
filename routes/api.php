@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AivishingReportController;
 use App\Http\Controllers\Api\ApiAiCallController;
+use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiBlueCollarController;
 // use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiEmployeesController;
@@ -83,6 +85,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/simulation-report/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
     Route::get('/simulation-report/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
     Route::get('/simulation-report/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
+    Route::get('/simulation-report/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
     // });
 
     //email campaign routes

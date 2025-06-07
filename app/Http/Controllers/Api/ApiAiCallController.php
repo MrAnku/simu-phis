@@ -153,7 +153,6 @@ class ApiAiCallController extends Controller
                 'ai_agent_name' => $request->ai_agent_name,
                 'phone_no' => $request->ai_phone,
                 'status' => 'pending',
-                'created_at' => now(),
                 'company_id' => $companyId
             ]);
 
@@ -226,7 +225,6 @@ class ApiAiCallController extends Controller
                         'to_mobile' => "+" . $user->whatsapp,
                         'agent_id' => $campaign->ai_agent,
                         'status' => 'pending',
-                        'created_at' => now(),
                         'company_id' => $campaign->company_id,
                     ]);
                 }

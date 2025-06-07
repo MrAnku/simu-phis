@@ -10,7 +10,6 @@ class AiCallCampLive extends Model
     use HasFactory;
 
     protected $table = 'ai_call_camp_live';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',
@@ -30,7 +29,6 @@ class AiCallCampLive extends Model
         'call_send_response',
         'call_end_response',
         'call_report',
-        'created_at',
         'company_id'
     ];
 
@@ -44,5 +42,9 @@ class AiCallCampLive extends Model
 
     public function trainingData(){
         return $this->belongsTo(TrainingModule::class, 'training', 'id');
+    }
+
+    public function agentDetail(){
+        return $this->belongsTo(AiCallAgent::class, 'agent_id', 'agent_id');
     }
 }
