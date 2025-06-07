@@ -58,7 +58,7 @@ use App\Http\Controllers\Admin\AdminSenderProfileController;
 use App\Http\Controllers\Admin\AdminTrainingModuleController;
 use App\Http\Controllers\Admin\AdminPhishingWebsiteController;
 use App\Http\Controllers\Admin\AdminWhiteLabelController;
-
+use App\Http\Controllers\PhishTriageController;
 
 Route::get('/company/create-password/{token}', [CreatePassController::class, 'createCompanyPassPage'])->name('company.createCompanyPassPage');
 Route::post('/company/create-password', [CreatePassController::class, 'storeCompanyPass'])->name('company.storeCompanyPass');
@@ -489,7 +489,7 @@ Route::middleware([
 // ---------------------company route---------------------//
 
 Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
-
+Route::post('/phish-triage/log-report', [PhishTriageController::class, 'logReport']);
 
 
 // download route 

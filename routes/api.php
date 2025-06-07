@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\PhishTriageController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
@@ -329,4 +330,9 @@ Route::middleware('auth:api')->group(function () {
 
     // White Label routes
     Route::post('/save-white-label', [ApiWhiteLabelController::class, 'saveWhiteLabel']);
+
+    //phish triage
+    Route::prefix('phish-triage')->group(function () {
+        Route::get('/email-reported', [PhishTriageController::class, 'emailsReported']);
+    });
 });
