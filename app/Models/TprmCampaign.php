@@ -10,7 +10,6 @@ class TprmCampaign extends Model
     use HasFactory;
 
     protected $table = 'tprm_all_campaigns';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',
@@ -32,10 +31,20 @@ class TprmCampaign extends Model
         'company_id'
     ];
 
-    public function noOfUsers(){
+    public function noOfUsers()
+    {
         return $this->hasMany(TprmUsers::class, 'group_id', 'users_group');
     }
-public function tprmReport(){
- return $this->hasMany(TprmCampaignReport::class, 'campaign_id', 'campaign_id');
-}
+    public function tprmReport()
+    {
+        return $this->hasMany(TprmCampaignReport::class, 'campaign_id', 'campaign_id');
+    }
+    public function campLive()
+    {
+        return $this->hasMany(TprmCampaignLive::class, 'campaign_id', 'campaign_id');
+    }
+    public function campaignActivity()
+    {
+        return $this->hasMany(TprmActivity::class, 'campaign_id', 'campaign_id');
+    }
 }

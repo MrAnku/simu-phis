@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Mail\AssignTrainingWithPassResetLink;
+use App\Models\TprmActivity;
 use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
@@ -779,46 +780,31 @@ class ShowWebsiteController extends Controller
         if ($request->has('emailCompromised')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+            TprmCampaignLive::where('id', $campid)->where('emp_compromised', 0)->update(['emp_compromised' => 1]);
+            $agent = new Agent();
 
-            // Check if the campaign exists and user's email is compromised
-            $user = DB::table('tprm_campaign_live')
-                ->where('id', $campid)
-                ->where('emp_compromised', 0)
-                ->where('user_id', $userid)
-                ->first();
+            $clientData = [
+                    'platform' => $agent->platform(), // Extract OS
+                    'browser' => $agent->browser(), // Extract Browser
+                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
+                    'ip' => $request->ip(), // Client IP Address
+                    'source' => $request->header('User-Agent'), // Full User-Agent string
+                    'browserVersion' => $agent->version($agent->browser()),
+                    'device' => $agent->device(),
+                    'isMobile' => $agent->isMobile(),
+                    'isDesktop' => $agent->isDesktop(),
 
-            if ($user) {
-                $campId2 = $user->campaign_id;
+                ];
+                TprmActivity::where('campaign_live_id', $campid)
+                    ->update([
+                        'compromised_at' => now(),
+                        'client_details' => json_encode($clientData)
+                    ]);
+            
 
-                // Update campaign_reports table
-                $reportsEmpComCount = DB::table('tprm_campaign_reports')
-                    ->where('campaign_id', $campId2)
-                    ->first();
+                log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
 
-                if ($reportsEmpComCount) {
-                    $emp_compromised = (int)$reportsEmpComCount->emp_compromised + 1;
 
-                    DB::table('tprm_campaign_reports')
-                        ->where('campaign_id', $campId2)
-                        ->update(['emp_compromised' => $emp_compromised]);
-                }
-
-                // Update campaign_live table
-                $isUpdatedIndividual = DB::table('tprm_campaign_live')
-                    ->where('id', $campid)
-                    ->update(['emp_compromised' => 1]);
-
-                if ($isUpdatedIndividual) {
-
-                    log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
-
-                    return response()->json(['message' => 'Email compromised status updated successfully']);
-                } else {
-                    return response()->json(['error' => 'Failed to update email compromised status']);
-                }
-            } else {
-                return response()->json(['error' => 'Invalid campaign or user email already compromised']);
-            }
         }
     }
 
@@ -865,46 +851,13 @@ class ShowWebsiteController extends Controller
         if ($request->has('updatePayloadClick')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+            //update payload click for TPRM campaigns
+            TprmCampaignLive::where('id', $campid)->update(['payload_clicked' => 1]);
+            TprmActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 
-            // Check if the campaign exists and payload is not already clicked
-            $user = DB::table('tprm_campaign_live')
-                ->where('id', $campid)
-                ->where('payload_clicked', 0)
-                ->where('user_id', $userid)
-                ->first();
+            log_action("TPRM phishing payload clicked", 'employee', 'employee');
 
-            if ($user) {
-                $campId2 = $user->campaign_id;
-
-                // Update campaign_reports table
-                $reportsPayloadCount = DB::table('tprm_campaign_reports')
-                    ->where('campaign_id', $campId2)
-                    ->first();
-
-                if ($reportsPayloadCount) {
-                    $payloads_clicked = (int)$reportsPayloadCount->payloads_clicked + 1;
-
-                    DB::table('tprm_campaign_reports')
-                        ->where('campaign_id', $campId2)
-                        ->update(['payloads_clicked' => $payloads_clicked]);
-                }
-
-                // Update campaign_live table
-                $isUpdatedIndividual = DB::table('tprm_campaign_live')
-                    ->where('id', $campid)
-                    ->update(['payload_clicked' => 1]);
-
-                if ($isUpdatedIndividual) {
-                    log_action("TPRM phishing payload clicked by {$user->user_email}", 'employee', 'employee');
-
-                    return response()->json(['message' => 'TPRM campaign payload click updated']);
-                } else {
-                    return response()->json(['error' => 'Failed to update payload click']);
-                }
-            } else {
-                log_action("TPRM phishing | Invalid campaign or payload click already updated", 'employee', 'employee');
-                return response()->json(['error' => 'Invalid campaign or payload click already updated']);
-            }
+            
         }
     }
 }

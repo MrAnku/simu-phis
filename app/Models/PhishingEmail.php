@@ -31,4 +31,8 @@ class PhishingEmail extends Model
     {
         return $this->hasMany(CampaignLive::class, 'phishing_material', 'id');
     }
+    public function tprmCampLive(): HasMany
+    {
+        return $this->hasMany(TprmCampaignLive::class, 'phishing_material', 'id');
+    }
 }

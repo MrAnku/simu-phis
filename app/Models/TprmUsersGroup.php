@@ -24,4 +24,8 @@ class TprmUsersGroup extends Model
     {
         return $this->hasMany(TprmUsers::class, 'group_id', 'group_id');
     }
+    public function tprmCampaigns(): HasMany
+    {
+        return $this->hasMany(TprmCampaign::class, 'users_group', 'group_id');
+    }
 }

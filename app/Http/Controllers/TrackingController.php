@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CampaignLive;
+use App\Models\TprmActivity;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
 use App\Models\QuishingActivity;
@@ -53,6 +54,9 @@ class TrackingController extends Controller
             if ($campaignLive) {
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
+
+                TprmActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
+
                 log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
                 $report = TprmCampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
 

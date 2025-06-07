@@ -509,6 +509,7 @@ Route::middleware(['auth', 'checkWhiteLabel'])->group(function () {
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
+Route::get('/ttrackEmailView/{campid}', [TrackingController::class, 'ttrackemail']);
 Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
 Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
 

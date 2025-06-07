@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\ApiSmishingController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTprmController;
+use App\Http\Controllers\Api\ApiTprmReportController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
@@ -81,6 +82,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/simulation-report/email', [ApiDashboardController::class, 'emailSimulationReport']);
     Route::get('/simulation-report/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
     Route::get('/simulation-report/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
+    Route::get('/simulation-report/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
     // });
 
     //email campaign routes

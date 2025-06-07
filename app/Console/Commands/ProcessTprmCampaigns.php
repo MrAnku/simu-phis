@@ -8,6 +8,7 @@ use App\Mail\CampaignMail;
 use Illuminate\Support\Str;
 use App\Models\TprmCampaign;
 use App\Models\SenderProfile;
+use App\Models\TprmActivity;
 use Illuminate\Console\Command;
 use App\Models\TprmCampaignLive;
 use App\Models\TprmCampaignReport;
@@ -170,6 +171,7 @@ class ProcessTprmCampaigns extends Command
 
               echo "Sending email to: " . $email . "\n";
               $mailSentRes = $this->sendMail($mailData);
+              TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
               // Update campaign as sent
               $campaign->update(['sent' => 1]);

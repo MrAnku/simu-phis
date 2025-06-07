@@ -10,7 +10,6 @@ class TprmCampaignLive extends Model
     use HasFactory;
 
     protected $table = 'tprm_campaign_live';
-    public $timestamps = false;
 
     protected $fillable = [
         'campaign_id',

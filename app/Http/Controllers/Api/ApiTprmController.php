@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\DeletedTprmEmployee;
+use App\Models\TprmActivity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -428,7 +429,7 @@ class ApiTprmController extends Controller
             }
 
             foreach ($users as $user) {
-                TprmCampaignLive::create([
+                $camp_live = TprmCampaignLive::create([
                     'campaign_id' => $campId,
                     'campaign_name' => $campName,
                     'user_id' => $user->id,
@@ -438,6 +439,12 @@ class ApiTprmController extends Controller
                     'phishing_material' => $phishMaterial,
                     'email_lang' => $emailLang,
                     'sent' => '0',
+                    'company_id' => $companyId,
+                ]);
+
+                TprmActivity::create([
+                    'campaign_id' => $campId,
+                    'campaign_live_id' => $camp_live->id,
                     'company_id' => $companyId,
                 ]);
             }
@@ -502,6 +509,9 @@ class ApiTprmController extends Controller
             $res2 = TprmCampaignLive::where('campaign_id', $campId)->delete();
 
             $res3 = TprmCampaignReport::where('campaign_id', $campId)->delete();
+            TprmActivity::where('campaign_id', $campId)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
 
             // Check if any records were deleted
             if ($res1 || $res2 || $res3) {
@@ -813,7 +823,7 @@ class ApiTprmController extends Controller
                     $tprmUsers->company_id = $companyId;
                     $tprmUsers->save();
 
-                     $userExists = TprmUsers::where('user_email', $userEmail)
+                    $userExists = TprmUsers::where('user_email', $userEmail)
                         ->where('company_id', Auth::user()->company_id)
                         ->exists();
 
@@ -876,7 +886,7 @@ class ApiTprmController extends Controller
                 return response()->json(['success' => false, 'message' => __('TPRM Employee not found')], 404);
             }
             TprmCampaignLive::where('user_id', $user->id)->where('company_id', Auth::user()->company_id)->delete();
-            
+
             $user->delete();
 
             $emailExists = DeletedTprmEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
