@@ -11,9 +11,9 @@ class PhishTriageController extends Controller
 {
     public function logReport(Request $request)
     {
-        if ($request->header('X-SIMUPHISH') !== 'phishReportButton') {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+        // if ($request->header('X-SIMUPHISH') !== 'phishReportButton') {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
         $userEmail = $request->input('to')[0];
         $isEmployee = Users::where('user_email', $userEmail)->first();
         if (!$isEmployee) {
