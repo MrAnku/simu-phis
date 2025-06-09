@@ -216,7 +216,7 @@
         <h2>Quiz Results</h2>
         <p id="scoreSummary"></p>
         <button id="restartQuiz">Restart</button>
-        <a href="{{ route('learner.dashboard') }}" class="btn">Dashboard</a>
+        <a href="{{ url()->previous() }}" class="btn">Dashboard</a>
     </div>
 
     <script>
