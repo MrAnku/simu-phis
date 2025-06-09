@@ -352,7 +352,7 @@
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 150px">
                                                                         <img alt="Logo" height="auto"
-                                                                            src="{{ assets('assets/images/simu-logo-dark.png') }}"
+                                                                            src="{{ asset('assets/images/simu-logo-dark.png') }}"
                                                                             style="
                                           display: block;
                                           height: auto;
@@ -1731,7 +1731,7 @@
                                                                                 target="_blank"><img align="center"
                                                                                     alt="simUphish Logo" class="icon"
                                                                                     height="auto"
-                                                                                    src="{{ assets('assets/images/simu-icon.png') }}"
+                                                                                    src="{{ asset('assets/images/simu-icon.png') }}"
                                                                                     style="
                                               display: block;
                                               height: auto;
