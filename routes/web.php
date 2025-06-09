@@ -77,6 +77,10 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
     Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
         ->name('learner.training.dashboard');
 
+    Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
+
+    Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
+
     Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
 
     Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
@@ -86,15 +90,15 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
 
     Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
 
+    Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+
     Route::post('/update-bluecollar-training-score', [BluecolarController::class, 'bluecollarUpdateTrainingScore'])->name('learner.bluecollarupdate.score');
     Route::post('/download-certificate', [BluecolarController::class, 'bluecollarDownloadCertificate'])->name('learner.download.cert');
 
 
     // Route::middleware(['isLearnerLoggedIn'])->group(function () {
 
-    //     Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);
 
-    //     Route::get('/training/{training_id}/{training_lang}/{id}', [LearnerDashController::class, 'startTraining'])->name('learner.start.training');
 
     //     Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
     //     Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
@@ -104,7 +108,7 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
 
     //     Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
 
-    //     Route::post('/update-training-score', [LearnerDashController::class, 'updateTrainingScore'])->name('learner.update.score');
+
     //     Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
     // });
 });
