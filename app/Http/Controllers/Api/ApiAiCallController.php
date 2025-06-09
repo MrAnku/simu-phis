@@ -353,7 +353,7 @@ class ApiAiCallController extends Controller
                             $localReport->save();
                         }
 
-                        return response()->json(['success' => true, 'data' => $res, 'message' => __('Call report fetched successfully')], 200);
+                        return $res;
                     } else {
                         // Handle the error, e.g., log the error or throw an exception
                         log_action("Error while fetching AI Vishing Call report for call id {$request->route('callId')}");
