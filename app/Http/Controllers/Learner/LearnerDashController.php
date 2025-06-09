@@ -146,28 +146,28 @@ class LearnerDashController extends Controller
         $token = encrypt($request->email);
 
         // Check white label and Construct learning dashboard link
-        $trainingAssignedUser = TrainingAssignedUser::where('user_email', $request->email)->first();
+        // $trainingAssignedUser = TrainingAssignedUser::where('user_email', $request->email)->first();
 
-        $whiteLabelled = WhiteLabelledCompany::where('company_id', $trainingAssignedUser->company_id)
-            ->where('approved_by_partner', 1)
-            ->where('service_status', 1)
-            ->first();
+        // $whiteLabelled = WhiteLabelledCompany::where('company_id', $trainingAssignedUser->company_id)
+        //     ->where('approved_by_partner', 1)
+        //     ->where('service_status', 1)
+        //     ->first();
 
-        if ($whiteLabelled) {
-            $learning_dashboard_link = $whiteLabelled->learn_domain . '/training-dashboard/' . $token;
+        // if ($whiteLabelled) {
+        //     $learning_dashboard_link = $whiteLabelled->learn_domain . '/training-dashboard/' . $token;
 
-            $smtp =  WhiteLabelledSmtp::where('company_id', $trainingAssignedUser->company_id)
-                ->first();
-            config([
-                'mail.mailers.smtp.host' => $smtp->smtp_host,
-                'mail.mailers.smtp.username' => $smtp->smtp_username,
-                'mail.mailers.smtp.password' => $smtp->smtp_password,
-                'mail.from.address' => $smtp->from_address,
-                'mail.from.name' => $smtp->from_name,
-            ]);
-        } else {
+        //     $smtp =  WhiteLabelledSmtp::where('company_id', $trainingAssignedUser->company_id)
+        //         ->first();
+        //     config([
+        //         'mail.mailers.smtp.host' => $smtp->smtp_host,
+        //         'mail.mailers.smtp.username' => $smtp->smtp_username,
+        //         'mail.mailers.smtp.password' => $smtp->smtp_password,
+        //         'mail.from.address' => $smtp->from_address,
+        //         'mail.from.name' => $smtp->from_name,
+        //     ]);
+        // } else {
             $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-        }
+        // }
 
         // Insert new record into the database
         $inserted = DB::table('learnerloginsession')->insert([

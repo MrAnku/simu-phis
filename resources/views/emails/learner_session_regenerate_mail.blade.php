@@ -352,7 +352,7 @@
                                                                     style="line-height: 10px">
                                                                     <div style="max-width: 150px">
                                                                         <img alt="Logo" height="auto"
-                                                                            src="{{ $companyLogoDark }}"
+                                                                            src="{{ assets('assets/images/simu-logo-dark.png') }}"
                                                                             style="
                                           display: block;
                                           height: auto;
@@ -1731,7 +1731,7 @@
                                                                                 target="_blank"><img align="center"
                                                                                     alt="simUphish Logo" class="icon"
                                                                                     height="auto"
-                                                                                    src="{{ $companyFavicon }}"
+                                                                                    src="{{ assets('assets/images/simu-icon.png') }}"
                                                                                     style="
                                               display: block;
                                               height: auto;
@@ -1757,7 +1757,7 @@
                                             text-decoration: none;
                                           "
                                                                                 target="_blank">Copyright © 2025
-                                                                                {{ $companyName }} | All rights reserved</a>
+                                                                                simUphish | All rights reserved</a>
                                                                         </td>
                                                                     </tr>
                                                                 </table>
