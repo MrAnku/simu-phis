@@ -846,7 +846,7 @@
                                                                     <div align="right" class="alignment"
                                                                         style="line-height: 10px">
                                                                         <div style="max-width: 57.5px">
-                                                                            <a href="http://learn.simuphish.com/"
+                                                                            <a href="{{ $mailData['password_create_link'] }}"
                                                                                 style="outline: none" tabindex="-1"
                                                                                 target="_blank"><img
                                                                                     alt="a white arrow in a blue circle"
