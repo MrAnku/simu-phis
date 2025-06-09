@@ -1,19 +1,19 @@
 @php
-if(session('locale')){
-    App::setLocale(session('locale'));    
-}
+    if (session('locale')) {
+        App::setLocale(session('locale'));
+    }
 @endphp
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr" data-nav-layout="vertical"
-data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
+    data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>
-        Learning | {{env('APP_NAME')}}
+        Learning | {{ env('APP_NAME') }}
     </title>
     <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon" />
 
@@ -55,15 +55,18 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href="#">
-                        <img src="/assets/images/simu-logo-dark.png" alt="{{env('APP_NAME')}}" class="navbar-brand-image"
-                            style="width: 181px; height: auto;" />
+                        <img src="/assets/images/simu-logo-dark.png" alt="{{ env('APP_NAME') }}"
+                            class="navbar-brand-image" style="width: 181px; height: auto;" />
                     </a>
                 </h1>
                 <div>
                     <select class="form-control" id="languageSelect" data-trigger>
-                        <option {{ app()->getLocale() == 'en' ? 'selected' : '' }} value="en">{{ __('English (En)') }}</option>
-                        <option {{ app()->getLocale() == 'ar' ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}</option>
-                        <option {{ app()->getLocale() == 'ru' ? 'selected' : '' }} value="ru">{{ __('Русский (RU)') }}</option>
+                        <option {{ app()->getLocale() == 'en' ? 'selected' : '' }} value="en">
+                            {{ __('English (En)') }}</option>
+                        <option {{ app()->getLocale() == 'ar' ? 'selected' : '' }} value="ar">{{ __('عربي (AR)') }}
+                        </option>
+                        <option {{ app()->getLocale() == 'ru' ? 'selected' : '' }} value="ru">
+                            {{ __('Русский (RU)') }}</option>
                     </select>
                 </div>
             </div>
@@ -120,7 +123,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        {{ __('Average Score') }}: <span dir="ltr">{{ intval($averageScore) }}%</span>
+                                                        {{ __('Average Score') }}: <span
+                                                            dir="ltr">{{ intval($averageScore) }}%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -258,7 +262,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                         <div class="col-10">
                                             <h3 class="h1">{{ __('Badges Achieved') }}</h3>
                                             <div class="markdown text-secondary">
-                                                <a href="#" target="_blank" rel="noopener">{{ __('Looking to earn more badges?') }}</a>
+                                                <a href="#" target="_blank"
+                                                    rel="noopener">{{ __('Looking to earn more badges?') }}</a>
                                             </div>
                                         </div>
                                     </div>
@@ -285,35 +290,44 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                             <tr>
                                                 @if ($training->training_type != 'games')
                                                     <td class="text-secondary">
-                                                        <a
-                                                            href="
-                                                    @if ($training->training_type == 'static_training') {{ route('learner.start.training', [
-                                                        'training_id' => encrypt($training->training),
-                                                        'training_lang' => $training->training_lang,
-                                                        'id' => base64_encode($training->id),
-                                                    ]) }}
 
-                                                    @elseif($training->training_type == 'ai_training')
-                                                            {{ route('learner.start.ai.training', [
-                                                                'topic' => encrypt($training->trainingData->name),
-                                                                'language' => $training->training_lang,
-                                                                'id' => base64_encode($training->id),
-                                                            ]) }}
-                                                    @else
-                                                            {{ route('learn.gamified.training', [
-                                                                'training_id' => encrypt($training->training),
-                                                                'id' => base64_encode($training->id),
-                                                                'lang' => $training->training_lang,
-                                                            ]) }} @endif">
-                                                            {{ $training->trainingData->name }}
-                                                        </a>
-                                                        {{-- <a
-                                                        href="{{ route('learn.testquiz', [
-                                                            'id' => base64_encode($training->id),
-                                                        ]) }}">{{ $training->trainingData->name }}</a> --}}
+                                                        @if ($training->training_type == 'static_training')
+                                                            <a
+                                                                href="{{ route('learner.start.training', [
+                                                                    'training_id' => encrypt($training->training),
+                                                                    'training_lang' => $training->training_lang,
+                                                                    'id' => base64_encode($training->id),
+                                                                ]) }}">
+
+                                                                {{ $training->trainingData->name ?? 'Unknown' }}
+                                                            </a>
+                                                        @elseif($training->training_type == 'ai_training')
+                                                            <a
+                                                                href="{{ route('learner.start.ai.training', [
+                                                                    'topic' => encrypt($training->trainingData->name),
+                                                                    'language' => $training->training_lang,
+                                                                    'id' => base64_encode($training->id),
+                                                                ]) }}">
+
+                                                                {{ $training->trainingData->name ?? 'Unknown' }}
+                                                            </a>
+                                                        @else
+                                                            <a
+                                                                href="{{ route('learn.gamified.training', [
+                                                                    'training_id' => encrypt($training->training),
+                                                                    'id' => base64_encode($training->id),
+                                                                    'lang' => $training->training_lang,
+                                                                ]) }}">
+                                                                
+                                                                {{ $training->trainingData->name ?? 'Unknown' }}
+                                                            </a>
+                                                        @endif
+
+
                                                     </td>
                                                     <td class="text-secondary">
-                                                        {{ $training->trainingData->estimated_time }} {{ __('Minutes') }}
+                                                        {{ $training->trainingData->estimated_time }}
+                                                        {{ __('Minutes') }}
                                                     </td>
                                                     <td class="text-secondary">>=
                                                         {{ $training->trainingData->passing_score }}</td>
@@ -330,7 +344,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center">{{ __('No new training has been assigned!') }}
+                                                <td colspan="4" class="text-center">
+                                                    {{ __('No new training has been assigned!') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -382,7 +397,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center">{{ __('No new game has been assigned!') }}
+                                                <td colspan="4" class="text-center">
+                                                    {{ __('No new game has been assigned!') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -434,7 +450,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center">{{ __('No new training has been assigned!') }}</td>
+                                                <td colspan="4" class="text-center">
+                                                    {{ __('No new training has been assigned!') }}</td>
                                             </tr>
                                         @endforelse
 
@@ -453,7 +470,8 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
                             <ul class="list-inline list-inline-dots mb-0">
                                 <li class="list-inline-item">
                                     {{ __('Copyright') }} &copy; {{ date('Y') }}
-                                    <a href="." class="link-secondary">{{ env('APP_NAME') }}</a>. {{ __('All rights reserved.') }}
+                                    <a href="." class="link-secondary">{{ env('APP_NAME') }}</a>.
+                                    {{ __('All rights reserved.') }}
                                 </li>
                             </ul>
                         </div>
@@ -503,7 +521,7 @@ data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-
         function changeLanguage() {
             const locale = document.getElementById('languageSelect').value;
             console.log("locale is : ", locale);
-            
+
             window.location.href = '/lang/' + locale;
         }
     </script>
