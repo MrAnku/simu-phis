@@ -20,23 +20,29 @@ use Illuminate\Validation\ValidationException;
 class ApiPhishingEmailsController extends Controller
 {
     //
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             $company_id = Auth::user()->company_id;
 
-            $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
-                ->where('company_id', $company_id)
-                ->orWhere('company_id', 'default')->paginate(10);
+            if ($request->has('difficulty')) {
+
+                $difficulty = $request->input('difficulty');
+                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('difficulty', $difficulty)
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id)
+                            ->orWhere('company_id', 'default');
+                    })->paginate(10);
+            } else {
+                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('company_id', $company_id)
+                    ->orWhere('company_id', 'default')->paginate(10);
+            }
 
 
-            // $senderProfiles = SenderProfile::where('company_id', $company_id)
-            //     ->orWhere('company_id', 'default')
-            //     ->get();
 
-            // $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-            //     ->orWhere('company_id', 'default')
-            //     ->get();
+
 
             return response()->json([
                 'status' => true,
@@ -74,15 +80,30 @@ class ApiPhishingEmailsController extends Controller
                 ->orWhere('company_id', 'default')
                 ->get();
 
-            $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
-                ->where(function ($query) use ($company_id) {
-                    $query->where('company_id', $company_id)
-                        ->orWhere('company_id', 'default');
-                })
-                ->when($searchTerm, function ($query, $searchTerm) {
-                    return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                })
-                ->paginate(10);
+            if ($request->has('difficulty')) {
+                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id)
+                            ->orWhere('company_id', 'default');
+                    })
+                    ->where('difficulty', $request->input('difficulty'))
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(10);
+            } else {
+                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id)
+                            ->orWhere('company_id', 'default');
+                    })
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(10);
+            }
+
+
 
             return response()->json([
                 'status' => true,
@@ -122,7 +143,7 @@ class ApiPhishingEmailsController extends Controller
         try {
             $phishingEmail = PhishingEmail::find($id);
 
-            if(!$phishingEmail) {
+            if (!$phishingEmail) {
                 return response()->json([
                     'status' => false,
                     'message' => __('Phishing email template not found.')
@@ -213,9 +234,6 @@ class ApiPhishingEmailsController extends Controller
                 'success' => true,
                 'message' => __('Email template updated successfully.')
             ], 200);
-
-
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -226,7 +244,7 @@ class ApiPhishingEmailsController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => __('Something went wrong. '). $e->getMessage()
+                'message' => __('Something went wrong. ') . $e->getMessage()
             ], 500);
         }
     }
