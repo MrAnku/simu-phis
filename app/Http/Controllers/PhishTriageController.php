@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DomainVerified;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use App\Models\PhishTriageReportLog;
@@ -15,12 +16,28 @@ class PhishTriageController extends Controller
         //     return response()->json(['message' => 'Unauthorized'], 401);
         // }
         $userEmail = $request->input('to')[0];
+        //convert to lowercase
+        $userEmail = strtolower($userEmail);
+
+        //extract the domain from the email
+        $domain = substr(strrchr($userEmail, "@"), 1);
+
+        //check the domain exists in verified domains
+        $domainExists = DomainVerified::where('domain', $domain)->latest()->first();
         $isEmployee = Users::where('user_email', $userEmail)->first();
-        if (!$isEmployee) {
-            $companyId = "unknown";
-        }else{
+        if ($domainExists) {
+           $companyId = $domainExists->company_id;
+        }else if($isEmployee) {
             $companyId = $isEmployee->company_id;
+        }else{
+            $companyId = "unknown";
         }
+        // $isEmployee = Users::where('user_email', $userEmail)->first();
+        // if (!$isEmployee) {
+        //     $companyId = "unknown";
+        // }else{
+        //     $companyId = $isEmployee->company_id;
+        // }
         PhishTriageReportLog::create([
             'user_email' => $request->input('to')[0],
             'reported_email' => $request->input('from'),
