@@ -459,6 +459,12 @@ class ApiDashboardController extends Controller
                     ->orWhere('company_id', $companyId);
             })
             ->count();
+        $quishingEmailsCount = DB::table('qsh_templates')
+            ->where(function ($query) use ($companyId) {
+                $query->where('company_id', 'default')
+                    ->orWhere('company_id', $companyId);
+            })
+            ->count();
 
         // Get phishing websites
         $phishingWebsitesCount = DB::table('phishing_websites')
@@ -507,6 +513,7 @@ class ApiDashboardController extends Controller
         return [
             'active_campaigns' => $activeCampaignsCount,
             'phishing_emails' => $phishingEmailsCount,
+            'quishing_emails' => $quishingEmailsCount,
             'phishing_websites' => $phishingWebsitesCount,
             'training_modules' => $trainingModulesCount,
             'senderprofile' => $senderprofileCount,
