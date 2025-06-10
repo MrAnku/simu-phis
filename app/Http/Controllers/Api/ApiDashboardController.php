@@ -14,8 +14,12 @@ use App\Models\EmailCampActivity;
 use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampaign;
 use App\Models\PhishingEmail;
+use App\Models\QuishingCamp;
+use App\Models\TprmCampaign;
 use App\Models\TrainingAssignedUser;
+use App\Models\WaCampaign;
 use Illuminate\Support\Facades\Auth;
 
 class ApiDashboardController extends Controller
@@ -43,16 +47,17 @@ class ApiDashboardController extends Controller
 
         // return $breachedEmails['userData'];
 
-        $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', Auth::user()->company_id)
-            ->where('status', true)->first();
+        // $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', Auth::user()->company_id)
+        //     ->where('status', true)->first();
 
-        $activeTprm = TpmrVerifiedDomain::where('company_id', Auth::user()->company_id)
-            ->where('verified', true)->first();
+        // $activeTprm = TpmrVerifiedDomain::where('company_id', Auth::user()->company_id)
+        //     ->where('verified', true)->first();
 
         // return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts', 'activeAIVishing', 'activeTprm'));
         return response()->json([
             'status' => 'success',
             'data' => [
+                'campaigns' => $this->campaignCounts(),
                 'totalAssets' => $data,
                 'recentSixCampaigns' => $recentSixCampaigns,
                 'campaignsWithReport' => $campaignsWithReport,
@@ -62,6 +67,93 @@ class ApiDashboardController extends Controller
                 'usageCounts' => $usageCounts
             ]
         ], 200);
+    }
+
+    private function campaignCounts()
+    {
+        $companyId = Auth::user()->company_id;
+        $emailCampaigns = Campaign::where('company_id', $companyId)
+            ->count();
+
+        $whatsappCampaigns = WaCampaign::where('company_id', $companyId)
+            ->count();
+        $aiVishingCampaigns = AiCallCampaign::where('company_id', $companyId)
+            ->count();
+        $quishingCampaigns = QuishingCamp::where('company_id', $companyId)
+            ->count();
+        $tprmCampaigns = TprmCampaign::where('company_id', $companyId)
+            ->count();
+        return [
+            'emailCampaigns' => $emailCampaigns,
+            'emailCampaignPercent' => $this->getCampaignPercent('email'),
+            'whatsappCampaigns' => $whatsappCampaigns,
+            'whatsappCampaignPercent' => $this->getCampaignPercent('whatsapp'),
+            'aiVishingCampaigns' => $aiVishingCampaigns,
+            'aiVishingCampaignPercent' => $this->getCampaignPercent('ai_vishing'),
+            'quishingCampaigns' => $quishingCampaigns,
+            'quishingCampaignPercent' => $this->getCampaignPercent('quishing'),
+            'tprmCampaigns' => $tprmCampaigns,
+            'tprmCampaignPercent' => $this->getCampaignPercent('tprm'),
+        ];
+    }
+
+    private function getCampaignPercent($type)
+    {
+        $now = now();
+        $startCurrent = $now->copy()->subDays(14);
+        $startPrevious = $now->copy()->subDays(28);
+        $companyId = Auth::user()->company_id;
+
+        if ($type === 'email') {
+            $currentPeriodCount = Campaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startCurrent, $now])
+                ->count();
+
+            $previousPeriodCount = Campaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startPrevious, $startCurrent])
+                ->count();
+        } else if ($type === 'whatsapp') {
+            $currentPeriodCount = WaCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startCurrent, $now])
+                ->count();
+
+            $previousPeriodCount = WaCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startPrevious, $startCurrent])
+                ->count();
+        } else if ($type === 'ai_vishing') {
+            $currentPeriodCount = AiCallCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startCurrent, $now])
+                ->count();
+
+            $previousPeriodCount = AiCallCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startPrevious, $startCurrent])
+                ->count();
+        } else if ($type === 'quishing') {
+            $currentPeriodCount = QuishingCamp::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startCurrent, $now])
+                ->count();
+
+            $previousPeriodCount = QuishingCamp::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startPrevious, $startCurrent])
+                ->count();
+        } else {
+            $currentPeriodCount = TprmCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startCurrent, $now])
+                ->count();
+
+            $previousPeriodCount = TprmCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startPrevious, $startCurrent])
+                ->count();
+        }
+
+
+
+        if ($previousPeriodCount > 0) {
+            $emailCampaignsPercent = round((($currentPeriodCount - $previousPeriodCount) / $previousPeriodCount) * 100, 2);
+        } else {
+            $emailCampaignsPercent = $currentPeriodCount > 0 ? 100 : 0;
+        }
+        return $emailCampaignsPercent;
     }
 
     public function getPieData()
@@ -425,6 +517,7 @@ class ApiDashboardController extends Controller
         ];
     }
 
+
     public function osBrowserUsage()
     {
         $companyId = Auth::user()->company_id;
@@ -593,7 +686,7 @@ class ApiDashboardController extends Controller
                         'pp_difference' => $this->ppDifference(),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
-                     "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial(),
+                    "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial(),
                     "grouped_simulation_statistics" => $this->groupedSimulationStatistics(),
                     "employee_simulation_events" => $this->empSimulationEvents(),
                     "timing_statistics" => $this->timingStatistics(),
@@ -643,18 +736,19 @@ class ApiDashboardController extends Controller
         $ppFormatted = number_format($ppDifference, 2) . ' pp';
         return $ppFormatted;
     }
-    private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
+    private function mostEngagedPhishingMaterial($usersArray = null, $months = null)
+    {
 
         $companyId = Auth::user()->company_id;
-        $phishingEmails = PhishingEmail::where(function($query) use ($companyId) {
-                $query->where('company_id', 'default')
-                    ->orWhere('company_id', $companyId);
-            })
+        $phishingEmails = PhishingEmail::where(function ($query) use ($companyId) {
+            $query->where('company_id', 'default')
+                ->orWhere('company_id', $companyId);
+        })
             ->whereHas('emailCampLive')
             ->get();
-        if($phishingEmails->isEmpty()){
-                return [];
-            }
+        if ($phishingEmails->isEmpty()) {
+            return [];
+        }
         $mostEngaged = [];
 
         if ($usersArray && $months) {
@@ -683,9 +777,8 @@ class ApiDashboardController extends Controller
                 ];
             }
             return $mostEngaged;
+        } else {
 
-        }else{
-          
 
             foreach ($phishingEmails as $email) {
                 $engagedRecords = CampaignLive::where('company_id', $companyId)
@@ -708,8 +801,6 @@ class ApiDashboardController extends Controller
             }
             return $mostEngaged;
         }
-
-
     }
     private function eventsOverTime($usersArray = null, $months = null)
     {
@@ -825,9 +916,9 @@ class ApiDashboardController extends Controller
         if ($group && $months) {
             // Fetch all campaigns for the company
             $groups = UsersGroup::with('emailCampaigns.campLive')
-            ->where('company_id', $companyId)
-            ->where('group_id', $group)
-            ->get();
+                ->where('company_id', $companyId)
+                ->where('group_id', $group)
+                ->get();
             if ($groups->isEmpty()) {
                 return [];
             }

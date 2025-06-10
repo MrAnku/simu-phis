@@ -750,7 +750,7 @@ class ApiTrainingModuleController extends Controller
                 ->orWhere('company_id', 'default')
                 ->get()
                 ->map(function ($game) {
-                    $game->cover_image = 'storage/uploads/trainingGame/' . $game->cover_image;
+                    $game->cover_image = $game->cover_image;
                     return $game;
                 });
 
