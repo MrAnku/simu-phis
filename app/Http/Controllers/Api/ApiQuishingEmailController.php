@@ -39,7 +39,7 @@ class ApiQuishingEmailController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->paginate(10);
+                    })->paginate(9);
             } else if($request->has('difficulty')){
 
                  $difficulty = $request->input('difficulty');
@@ -48,7 +48,7 @@ class ApiQuishingEmailController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->paginate(10);
+                    })->paginate(9);
                
             } else{
                  // All QshTemplates if no search
@@ -56,7 +56,7 @@ class ApiQuishingEmailController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->paginate(10);
+                    })->paginate(9);
             }
 
             return response()->json([

@@ -67,14 +67,14 @@ class ApiTrainingModuleController extends Controller
                     $trainings = TrainingGame::where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->paginate(10);
+                    })->paginate(9);
                 } else {
                     $trainings = TrainingModule::where('training_type', $selectedType)
                         ->where('category', $selectedCategory)
                         ->where(function ($query) use ($company_id) {
                             $query->where('company_id', $company_id)
                                 ->orWhere('company_id', 'default');
-                        })->paginate(10);
+                        })->paginate(9);
                 }
             } else {
                 // Default filter
@@ -83,7 +83,7 @@ class ApiTrainingModuleController extends Controller
                         ->orWhere('company_id', 'default');
                 })->where('training_type', 'static_training')
                     ->where('category', 'international')
-                    ->paginate(10);
+                    ->paginate(9);
             }
 
             $trainings->appends($request->except('page'));

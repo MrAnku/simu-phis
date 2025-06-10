@@ -26,7 +26,7 @@ class ApiPhishingWebsitesController extends Controller
             // Get all phishing websites related to the company or default ones
             $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')
-                ->paginate(10); // Fetch results as a collection
+                ->paginate(9); // Fetch results as a collection
 
             return response()->json([
                 'success' => true,
@@ -227,7 +227,7 @@ class ApiPhishingWebsitesController extends Controller
                 ->where(function ($query) use ($searchTerm) {
                     $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                 })
-                ->paginate(10);
+                ->paginate(9);
 
             return response()->json([
                 'success' => true,

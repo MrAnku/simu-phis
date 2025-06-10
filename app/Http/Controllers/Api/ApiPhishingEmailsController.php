@@ -33,11 +33,11 @@ class ApiPhishingEmailsController extends Controller
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
-                    })->paginate(10);
+                    })->paginate(9);
             } else {
                 $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                     ->where('company_id', $company_id)
-                    ->orWhere('company_id', 'default')->paginate(10);
+                    ->orWhere('company_id', 'default')->paginate(9);
             }
 
 
@@ -90,7 +90,7 @@ class ApiPhishingEmailsController extends Controller
                     ->when($searchTerm, function ($query, $searchTerm) {
                         return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                     })
-                    ->paginate(10);
+                    ->paginate(9);
             } else {
                 $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                     ->where(function ($query) use ($company_id) {
@@ -100,7 +100,7 @@ class ApiPhishingEmailsController extends Controller
                     ->when($searchTerm, function ($query, $searchTerm) {
                         return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                     })
-                    ->paginate(10);
+                    ->paginate(9);
             }
 
 

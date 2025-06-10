@@ -42,12 +42,12 @@ class ApiCampaignController extends Controller
             $usersGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
             $phishingEmails = PhishingEmail::where('company_id', $companyId)
                 ->orWhere('company_id', 'default')
-                ->limit(10)->get();
+                ->limit(9)->get();
             $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
                 $query->where('company_id', $companyId)
                     ->orWhere('company_id', 'default');
             })->where('training_type', 'static_training')
-                ->limit(10)
+                ->limit(9)
                 ->get();
 
 
