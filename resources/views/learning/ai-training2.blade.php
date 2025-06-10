@@ -506,7 +506,7 @@
             }
 
             $('#showScoreModal').on('hidden.bs.modal', function() {
-                window.location.href = window.location.href;
+                window.location.href = "{{ url()->previous() }}";
             });
         </script>
         <script>

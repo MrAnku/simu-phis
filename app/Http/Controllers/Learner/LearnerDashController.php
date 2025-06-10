@@ -323,7 +323,8 @@ class LearnerDashController extends Controller
 
         $row_id = base64_decode($request->id);
 
-        $rowData = TrainingAssignedUser::find($row_id);
+        $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+        
         if ($rowData && $request->trainingScore > $rowData->personal_best) {
             // Update the column if the current value is greater
             $rowData->personal_best = $request->trainingScore;
@@ -331,7 +332,9 @@ class LearnerDashController extends Controller
 
             log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
 
-            if ($request->trainingScore == 100) {
+            $passingScore = (int)$rowData->trainingData->passing_score;
+
+            if ($request->trainingScore == $passingScore) {
                 $rowData->completed = 1;
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
