@@ -23,7 +23,7 @@ class PhishTriageController extends Controller
         $domain = substr(strrchr($userEmail, "@"), 1);
 
         //check the domain exists in verified domains
-        $domainExists = DomainVerified::where('domain', $domain)->latest()->first();
+        $domainExists = DomainVerified::where('domain', $domain)->first();
         $isEmployee = Users::where('user_email', $userEmail)->first();
         if ($domainExists) {
            $companyId = $domainExists->company_id;
