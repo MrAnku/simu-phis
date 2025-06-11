@@ -93,7 +93,9 @@ class ApiTprmController extends Controller
     public function fetchUsersGroups()
     {
         $companyId = Auth::user()->company_id;
-        return TprmUsersGroup::where('company_id', $companyId)->get();
+        return TprmUsersGroup::where('company_id', $companyId)
+        ->whereHas('users')
+        ->get();
     }
     public function fetchPhishingEmails()
     {

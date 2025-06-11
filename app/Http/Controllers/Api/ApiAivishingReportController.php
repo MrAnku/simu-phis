@@ -175,7 +175,7 @@ class ApiAivishingReportController extends Controller
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
             $query = $query->whereIn('user_id', $usersArray)
-                           ->whereBetween('created_at', [$startDate, $endDate]);
+                ->whereBetween('created_at', [$startDate, $endDate]);
         }
 
         $agentStats = $query->whereNotNull('agent_id')
@@ -192,9 +192,9 @@ class ApiAivishingReportController extends Controller
         return $agentStats->map(function ($stat) {
             $agent = AiCallAgent::where('agent_id', $stat->agent_id)->first();
             return [
-            'agent_id' => $stat->agent_id,
-            'agent_name' => $agent ? $agent->agent_name : null,
-            'total_calls' => $stat->total_calls
+                'agent_id' => $stat->agent_id,
+                'agent_name' => $agent ? $agent->agent_name : null,
+                'total_calls' => $stat->total_calls
             ];
         })->values();
 
@@ -379,8 +379,11 @@ class ApiAivishingReportController extends Controller
 
                 $fellForSimulation = 0;
                 $transcriptions = 0;
-                $endResponses = $group->aiCampaigns->where('call_end_response', '!=', null)
-                    ->get();
+                $endResponses = $group->aiCampaigns->filter(function ($campaign) {
+                    return $campaign->individualCamps->contains(function ($camp) {
+                        return $camp->call_end_response !== null;
+                    });
+                });
                 if ($endResponses->isNotEmpty()) {
                     foreach ($endResponses as $response) {
                         $responseJson = json_decode($response->call_end_response, true);
@@ -394,12 +397,18 @@ class ApiAivishingReportController extends Controller
                     }
                 }
 
-                $inProgress = $group->aiCampaigns->where('status', 'waiting')
-                    ->count();
+                $inProgress = $group->aiCampaigns->sum(function ($campaign) {
+                    return $campaign->individualCamps->where('status', 'waiting')->count();
+                });
+                $callIgnored = $group->aiCampaigns->sum(function ($campaign) {
+                    return $campaign->individualCamps->where('status', 'waiting')
+                        ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 30')
+                        ->count();
+                });
 
-                $callIgnored = $group->aiCampaigns->where('status', 'waiting')
-                    ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 30')
-                    ->count();
+                // $callIgnored = $group->aiCampaigns->where('status', 'waiting')
+                //     ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 30')
+                //     ->count();
 
                 return [
                     'group_name' => $group->group_name,
