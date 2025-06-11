@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiPolicyCampaignController;
 use App\Http\Controllers\Api\ApiPolicyController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
@@ -340,5 +341,10 @@ Route::middleware('auth:api')->group(function () {
     //policy
     Route::prefix('policy')->group(function () {
         Route::post('/add-policy', [ApiPolicyController::class, 'addPolicy']);
+    });
+
+     //policy
+    Route::prefix('policy-campaign')->group(function () {
+        Route::post('/create-campaign', [ApiPolicyCampaignController::class, 'create']);
     });
 });

@@ -17,7 +17,6 @@ class ApiPolicyController extends Controller
                 'policy_name' => 'required|string|max:255',
                 'policy_description' => 'required|string',
                 'policy_file' => 'required|file|mimes:pdf|max:10240',
-                'company_id' => 'required|string|exists:company,company_id',
             ]);
 
             $file = $request->file('policy_file');
@@ -33,7 +32,7 @@ class ApiPolicyController extends Controller
                 'policy_name' => $request->policy_name,
                 'policy_description' => $request->policy_description,
                 'policy_file' => "/" . $filePath,
-                'company_id' => $request->company_id,
+                'company_id' => Auth::user()->company_id,
             ]);
             log_action("Policy created for company : " . Auth::user()->company_name);
             return response()->json(['status' => 'success','message' => 'Policy added successfully'], 201);
