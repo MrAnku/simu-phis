@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiPolicyController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
@@ -334,5 +335,10 @@ Route::middleware('auth:api')->group(function () {
     //phish triage
     Route::prefix('phish-triage')->group(function () {
         Route::get('/email-reported', [PhishTriageController::class, 'emailsReported']);
+    });
+
+    //policy
+    Route::prefix('policy')->group(function () {
+        Route::post('/add-policy', [ApiPolicyController::class, 'addPolicy']);
     });
 });
