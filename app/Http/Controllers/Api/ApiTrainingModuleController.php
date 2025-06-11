@@ -18,29 +18,27 @@ use Illuminate\Validation\ValidationException;
 class ApiTrainingModuleController extends Controller
 {
 
-    public function allTrainingModule(Request $request)
+    public function trainings(Request $request)
     {
         try {
-            $user = Auth::user();
             $companyId = Auth::user()->company_id;
-
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
-            }
-
-            // Default 10 items per page
-            $perPage = 10;
-
+            $params = $request->query();
+           
             // Get paginated training modules
-            $trainingModules = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
+            $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
+                $query->where('company_id', $companyId)
+                    ->orWhere('company_id', 'default');
+            })
+            ->where($params)
+            ->paginate(12);
 
             // $trainingModules = TrainingModule::paginate($perPage);
 
 
             return response()->json([
                 'success' => true,
-                'all_training_module' => $trainingModules,
-                'message' => __('Fetch All Training Module')
+                'message' => __('Training modules fetched successfully'),
+                'data' => $trainingModules,
             ]);
         } catch (\Exception $e) {
             return response()->json([
