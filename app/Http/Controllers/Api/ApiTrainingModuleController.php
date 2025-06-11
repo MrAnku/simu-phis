@@ -22,18 +22,25 @@ class ApiTrainingModuleController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-            $params = $request->query();
-           
-            // Get paginated training modules
-            $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
+            $params = $request->only(['category', 'training_type']);
+            $search = $request->query('search');
+
+            $query = TrainingModule::where(function ($query) use ($companyId) {
                 $query->where('company_id', $companyId)
                     ->orWhere('company_id', 'default');
-            })
-            ->where($params)
-            ->paginate(12);
+            });
 
-            // $trainingModules = TrainingModule::paginate($perPage);
+            // Add basic filters
+            foreach ($params as $key => $value) {
+                $query->where($key, $value);
+            }
 
+            // Add search filter
+            if ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            }
+
+            $trainingModules = $query->paginate(12);
 
             return response()->json([
                 'success' => true,
@@ -776,13 +783,13 @@ class ApiTrainingModuleController extends Controller
             }
             $id = base64_decode($request->route('id'));
 
-             $trainingModuleExists = TrainingModule::where('id', $id)->where('company_id', '!=', 'default')->first();
-             if($trainingModuleExists){
+            $trainingModuleExists = TrainingModule::where('id', $id)->where('company_id', '!=', 'default')->first();
+            if ($trainingModuleExists) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Training Module already exists for this company')
                 ], 422);
-             }
+            }
 
             $trainingModule = TrainingModule::where('id', $id)->where('company_id', 'default')->first();
             if (!$trainingModule) {
@@ -798,7 +805,7 @@ class ApiTrainingModuleController extends Controller
 
             $duplicateTraining->save();
 
-              return response()->json([
+            return response()->json([
                 'success' => true,
                 'message' => __('Training Module duplicated successfully')
             ], 201);
