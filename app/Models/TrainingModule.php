@@ -33,4 +33,9 @@ class TrainingModule extends Model
         'module_language',
         'company_id'
     ];
+
+    public function trainingAssigned()
+    {
+        return $this->hasMany(TrainingAssignedUser::class, 'training', 'id');
+    }
 }

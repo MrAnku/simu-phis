@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiIntegrationController;
+use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiPolicyCampaignController;
 use App\Http\Controllers\Api\ApiPolicyController;
@@ -83,13 +84,20 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
 
     //card reports
+    Route::prefix('simulation-report')->group(function () {
+        Route::get('/email', [ApiDashboardController::class, 'emailSimulationReport']);
+        Route::get('/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
+        Route::get('/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
+        Route::get('/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
+        Route::get('/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
+    });
 
-    Route::get('/simulation-report/email', [ApiDashboardController::class, 'emailSimulationReport']);
-    Route::get('/simulation-report/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
-    Route::get('/simulation-report/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
-    Route::get('/simulation-report/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
-    Route::get('/simulation-report/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
-    // });
+
+    //card reports
+    Route::prefix('insight-reporting')->group(function () {
+        Route::get('/', [ApiNewReportingController::class, 'index']);
+    });
+
 
     //email campaign routes
     Route::prefix('email-campaign')->group(function () {

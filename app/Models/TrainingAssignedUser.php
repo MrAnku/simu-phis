@@ -14,7 +14,8 @@ class TrainingAssignedUser extends Model
 
     protected $fillable = [
         'training',
-        'username',
+        'user_name',
+        'user_email',
         'completion_date',
         'personal_best',
         'completed',

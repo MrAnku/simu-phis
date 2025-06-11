@@ -38,5 +38,10 @@ class Users extends Model
         return $this->hasMany(AiCallCampLive::class, 'user_id', 'id');
     }
 
+    public function assignedTrainingsNew() 
+    {
+        return $this->hasMany(TrainingAssignedUser::class, 'user_email', 'user_email');
+    }
+
 
 }
