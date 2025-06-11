@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PolicyCampaignLive extends Model
+class AssignedPolicy extends Model
 {
-    protected $fillable = [
-        'campaign_name',
-        'campaign_id',
+   protected $fillable = [
         'user_name',
         'user_email',
-        'sent',
         'policy',
+        'accepted',
+        'accepted_at',
         'company_id',
     ];
 }

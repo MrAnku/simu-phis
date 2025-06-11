@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('policy_campaign_lives', function (Blueprint $table) {
+        Schema::create('assigned_policies', function (Blueprint $table) {
             $table->id();
-            $table->string('campaign_name');
-            $table->string('campaign_id');
             $table->string('user_name');
             $table->string('user_email');
-            $table->boolean('sent')->default(false);
             $table->string('policy');
+            $table->boolean('accepted')->default(false);
+            $table->timestamp('accepted_at')->nullable();
             $table->string('company_id');
             $table->timestamps();
         });
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('policy_campaign_lives');
+        Schema::dropIfExists('assigned_policies');
     }
 };

@@ -13,5 +13,6 @@ class PolicyCampaign extends Model
         'policy',
         'scheduled_at',
         'company_id',
+        'status',
     ];
 }

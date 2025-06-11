@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('policy');
             $table->timestamp('scheduled_at');
             $table->string('company_id');
+            $table->string('status')->default('pending'); // false = scheduled, true = running
             $table->timestamps();
         });
     }
