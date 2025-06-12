@@ -26,4 +26,9 @@ class TprmCampaignLive extends Model
         'training_assigned',
         'company_id'
     ];
+
+    public function campaignActivity()
+    {
+        return $this->hasOne(TprmActivity::class, 'campaign_live_id', 'id');
+    }
 }

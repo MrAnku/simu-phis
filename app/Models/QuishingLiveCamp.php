@@ -35,5 +35,9 @@ class QuishingLiveCamp extends Model
         return $this->belongsTo(QshTemplate::class, 'quishing_material', 'id');
     }
 
+    public function campaignActivity()
+    {
+        return $this->hasOne(QuishingActivity::class, 'campaign_live_id', 'id');
+    }
     
 }

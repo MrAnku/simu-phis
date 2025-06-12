@@ -39,5 +39,10 @@ class WaLiveCampaign extends Model
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
 
+    public function campaignActivity()
+    {
+        return $this->hasOne(WhatsappActivity::class, 'campaign_live_id', 'id');
+    }
+
 
 }

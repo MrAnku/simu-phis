@@ -199,7 +199,7 @@ class ApiQuishingController extends Controller
                     'message' => __('Campaign ID is required'),
                 ], 422);
             }
-            $campaign = QuishingCamp::with('campLive')->where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->first();
+            $campaign = QuishingCamp::with('campLive', 'campLive.campaignActivity')->where('campaign_id', $campaign_id)->where('company_id', Auth::user()->company_id)->first();
             if (!$campaign) {
                 return response()->json([
                     'success' => false,

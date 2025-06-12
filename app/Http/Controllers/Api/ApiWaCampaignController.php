@@ -286,7 +286,7 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
 
-            $campaigns = WaLiveCampaign::with(['whatsTrainingData', 'whatsTrainingData.trainingData'])
+            $campaigns = WaLiveCampaign::with(['whatsTrainingData', 'whatsTrainingData.trainingData', 'campaignActivity'])
                 ->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();

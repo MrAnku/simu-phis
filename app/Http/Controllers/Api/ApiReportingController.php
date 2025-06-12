@@ -896,7 +896,7 @@ class ApiReportingController extends Controller
                 ], 422);
             }
             $companyId = Auth::user()->company_id;
-            $allUsers = TprmCampaignLive::where('campaign_id', $campId)->where('company_id', $companyId)->get();
+            $allUsers = TprmCampaignLive::with('campaignActivity')->where('campaign_id', $campId)->where('company_id', $companyId)->get();
 
             if ($allUsers->isEmpty()) {
 
