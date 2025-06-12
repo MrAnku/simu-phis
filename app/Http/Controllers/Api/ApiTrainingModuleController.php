@@ -750,14 +750,21 @@ class ApiTrainingModuleController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-
-            $games = TrainingGame::where('company_id', $companyId)
-                ->orWhere('company_id', 'default')
-                ->get()
-                ->map(function ($game) {
-                    $game->cover_image = $game->cover_image;
-                    return $game;
-                });
+            $search = request()->query('search');
+            if ($search) {
+                $games = TrainingGame::where(function ($query) use ($companyId) {
+                    $query->where('company_id', $companyId)
+                        ->orWhere('company_id', 'default');
+                })
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->paginate(9);
+            } else {
+                $games = TrainingGame::where(function ($query) use ($companyId) {
+                    $query->where('company_id', $companyId)
+                        ->orWhere('company_id', 'default');
+                })
+                    ->paginate(9);
+            }
 
             return response()->json([
                 'success' => true,
