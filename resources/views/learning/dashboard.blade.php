@@ -432,7 +432,7 @@
                                                 <td class="text-secondary">{{ $training->completion_date }}
                                                 </td>
                                                 <td>
-                                                    <form action="/download-certificate" method="POST">
+                                                    <form action="{{route('learner.download.cert')}}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="training_module"
                                                             value="{{ $training->trainingData->name }}">
@@ -441,7 +441,7 @@
                                                         <input type="hidden" name="completion_date"
                                                             value="{{ $training->completion_date }}">
                                                         <input type="hidden" name="username"
-                                                            value="{{ session('learner')->login_username }}">
+                                                            value="{{ $userEmail }}">
                                                         <button type="submit"
                                                             class="btn btn-primary btn-sm">{{ __('Download') }}</button>
                                                     </form>

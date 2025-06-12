@@ -34,7 +34,9 @@ if(session('locale')){
             <div class="row py-5">
                 <div class="col-md-6">
                     <div class="logo_area ps-5">
-                        <a href="#">
+                        <a href="{{ route('learner.training.dashboard', [
+                        'token' => Session::get('token'),
+                        ])}}">
                             <img src="/assets/images/simu-logo.png" alt="image-not-found" width="200">
                         </a>
                     </div>

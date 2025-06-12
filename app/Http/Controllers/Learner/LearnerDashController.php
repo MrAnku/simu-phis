@@ -90,7 +90,7 @@ class LearnerDashController extends Controller
 
         Session::put('token', $token);
 
-        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates'));
+        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userEmail'));
     }
     public function renewToken(Request $request)
     {
