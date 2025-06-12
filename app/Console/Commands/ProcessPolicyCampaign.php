@@ -9,6 +9,7 @@ use App\Models\PolicyCampaign;
 use Illuminate\Console\Command;
 use App\Mail\PolicyCampaignEmail;
 use App\Models\AssignedPolicy;
+use App\Models\Policy;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -111,15 +112,14 @@ class ProcessPolicyCampaign extends Command
                 ->get();
 
             foreach ($campaigns as $campaign) {
-
-
-                // $all_camp = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->first();
-
+                
+                $policy = Policy::where('id', $campaign->policy)->first();
+               
                 $mailData = [
                     'user_name' => $campaign['user_name'],
                     'company_name' => 'simUphish',
-                    // 'company_email' => $learnSiteAndLogo['company_email'],
-                    // 'learning_site' =>  $learning_dashboard_link,
+                    'assigned_at' => $campaign['created_at'],
+                    'policy_name' => $policy->policy_name,
                     'logo' => "/assets/images/simu-logo-dark.png",
                     'company_id' => $campaign['company_id'],
                     'learn_domain' => env('SIMUPHISH_LEARNING_URL'),

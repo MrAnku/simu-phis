@@ -2,80 +2,99 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <title>New Policy Assigned</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-        }
-
-        .email-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
+            background-color: #ffffff;
+            margin: 0;
             padding: 20px;
-            border: 1px solid #ddd;
+            color: #333;
         }
 
-        .header img {
-            width: 100px;
-            height: auto;
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .logo {
             text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 120px;
         }
 
         .content {
-            margin-top: 20px;
+            font-size: 15px;
+            margin-bottom: 30px;
         }
 
-        .content h1 {
-            font-size: 24px;
-            color: #333;
-            text-align: center;
+        .report-box {
+            background-color: #f7f7f8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
         }
 
-        .content p {
-            font-size: 16px;
-            color: #555;
+        .report-box p {
+            margin: 10px 0;
         }
 
-        .content a {
-            color: #007bff;
+        .label {
+            font-weight: bold;
+        }
+
+        a {
+            color: #1a73e8;
             text-decoration: none;
-        }
-
-        .footer {
-            margin-top: 30px;
-            text-align: center;
         }
 
         .button {
             display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background-color: #fff;
+            border-radius: 4px;
             text-decoration: none;
-            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 12px;
+            text-align: center;
+            color: #888;
         }
     </style>
 </head>
 
 <body>
-    <div class="email-container">
-        <div class="header" style="text-align:center; margin-bottom:43px;">
-            <p>heyyyy</p>
-            {{-- <img src="{{ $mailData['logo'] }}" alt="Company Logo"> --}}
+
+    <div class="container">
+        <div class="logo">
+            <img src="{{ asset('/assets/images/simu-logo-dark.png') }}" style="width: 200px;" alt="simUphish Logo">
         </div>
+
         <div class="content">
-            {{-- <h1>Hi {{ $mailData['user_name'] }}, Your organization has enrolled you in a training session after you
-                encountered a simulated phishing exercise.</h1>
-            <p>Game training <strong>{{ $mailData['training_name'] }}</strong> is assigned to you. Kindly login to our
-                Learning Portal to complete your training.</p> --}}
-            {{-- <p><strong>Username:</strong> <a href="mailto:{{$mailData['login_email']}}">{{$mailData['login_email']}}</a></p>
-            <p><strong>Password:</strong> {{$mailData['login_pass']}}</p> --}}
+            <p><strong>Hello {{ $mailData['user_name'] }},</strong></p>
+            <p>A New Policy has been assigned to you. Kindly Login to the learning portal, read the policy carefully, and take action accordingly.</p>
+
+            <div class="report-box">
+                <p><strong>Policy Assignment Notification</strong></p>
+                <p>📄 <span class="label">Policy Name:</span> {{ $mailData['policy_name'] }}</p>
+                <p>📅 <span class="label">Assigned On:</span> {{ $mailData['assigned_at'] }}</p>
+                <a href="{{ env('SIMUPHISH_LEARNING_URL') }}" class="button">Login to Learning Portal</a>
+            </div>
         </div>
+
         <div class="footer">
-            {{-- <a href="{{ $mailData['learning_site'] }}" class="button">Start Game</a> --}}
+            <p>
+                <a href="https://simuphish.com/" target="_blank">Copyright © {{ date('Y') }} simUphish | All rights reserved</a>
+            </p>
         </div>
     </div>
 </body>
-
 </html>
