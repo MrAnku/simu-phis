@@ -31,17 +31,20 @@ class ApiPolicyCampaignController extends Controller
             ]);
             log_action("Policy campaign created for company: " . Auth::user()->company_id);
 
-            return response()->json(['message' => 'Policy campaign created successfully'], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Policy campaign created successfully'
+            ], 201);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }

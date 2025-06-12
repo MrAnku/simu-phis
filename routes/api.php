@@ -341,10 +341,14 @@ Route::middleware('auth:api')->group(function () {
     //policy
     Route::prefix('policy')->group(function () {
         Route::post('/add-policy', [ApiPolicyController::class, 'addPolicy']);
+        Route::get('/fetch-assigned-policy', [ApiPolicyController::class, 'fetchAssignedPolicy']);
+        Route::put('/accept-policy', [ApiPolicyController::class, 'acceptPolicy']);
+        Route::delete('/delete-policy/{encoded_id?}', [ApiPolicyController::class, 'deletePolicy']);
     });
 
-     //policy
+    //policy campaign
     Route::prefix('policy-campaign')->group(function () {
         Route::post('/create-campaign', [ApiPolicyCampaignController::class, 'create']);
+        Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 });

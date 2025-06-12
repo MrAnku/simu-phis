@@ -42,6 +42,7 @@ class ProcessPolicyCampaign extends Command
     {
         $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
 
+
         if (!$companies) {
             return;
         }
@@ -60,6 +61,8 @@ class ProcessPolicyCampaign extends Command
                         $this->makeCampaignLive($campaign->campaign_id);
 
                         $campaign->update(['status' => 'running']);
+                    }else{
+                        echo 'Campaign : ' . $campaign->campaign_name . ' is not yet scheduled to go live.' . "\n";
                     }
                 }
             }
@@ -88,7 +91,7 @@ class ProcessPolicyCampaign extends Command
                 ]);
             }
 
-            echo 'Campaign is live' . "\n";
+            echo 'Policy Campaign is live' . "\n";
         }
     }
 
