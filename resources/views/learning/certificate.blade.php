@@ -1,141 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate of Completion</title>
-    <style>
-        /* General Styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #e1f5fe; /* Soft blue gradient background */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #333;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Certificate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: #fdf6f8;
+      color: #333;
+    }
 
-        /* Certificate Container */
-        .certificate-container {
-            background: #ffffff;
-            border: 15px solid #007BFF;
-            border-radius: 20px;
-            padding: 40px;
-            width: 90%;
-            max-width: 900px;
-            text-align: center;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
+    .certificate {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px;
+      background: linear-gradient(to bottom right, #ffffff, #f9f7fd);
+      position: relative;
+      border: 10px solid #eceff1;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
 
-        /* Header Styles */
-        h1 {
-            color: #007BFF;
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+    .top-decor, .bottom-decor {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle at top left, #6f4ef2 0%, #c167ff 100%);
+      border-radius: 50%;
+      z-index: 0;
+    }
 
-        /* Certificate Text Styles */
-        p {
-            font-size: 20px;
-            line-height: 1.8;
-            margin: 15px 0;
-            color: #333;
-        }
+    .top-decor {
+      top: -100px;
+      left: -100px;
+    }
 
-        .certificate-id {
-            font-weight: bold;
-            font-size: 22px;
-            color: #007BFF;
-            margin-top: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+    .bottom-decor {
+      bottom: -100px;
+      right: -100px;
+      background: radial-gradient(circle at bottom right, #6f4ef2 0%, #c167ff 100%);
+    }
 
-        /* Footer Styles */
-        .footer {
-            margin-top: 40px;
-            font-style: italic;
-            font-size: 18px;
-            color: #777;
-        }
+    .certificate-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
 
-        /* Signature Section */
-        .signature {
-            margin-top: 50px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #007BFF;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    .certificate h1 {
+      font-size: 40px;
+      color: #6156dc;
+      letter-spacing: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
 
-        /* Divider */
-        .divider {
-            margin: 40px 0;
-            border-top: 3px solid #007BFF;
-            width: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .certificate h2 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
 
-        /* Decorative Elements */
-        .decorative {
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: rgba(0, 123, 255, 0.15);
-            border-radius: 50%;
-            box-shadow: 0 0 50px rgba(0, 123, 255, 0.2);
-        }
+    .certificate-content .name {
+      font-family: 'Great Vibes', cursive;
+      font-size: 48px;
+      font-weight: bold;
+      color: #000;
+      margin: 30px 0 10px;
+    }
 
-        /* Additional Information Block */
-        .certificate-details {
-            margin: 30px 0;
-            font-size: 22px;
-            color: #555;
-            line-height: 1.8;
-        }
+    .certificate .desc {
+      font-size: 18px;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
 
-        .certificate-details span {
-            font-weight: bold;
-            color: #007BFF;
-        }
+    .certificate .course {
+      font-size: 22px;
+      font-weight: bold;
+      color: #222;
+      margin-bottom: 40px;
+    }
 
-    </style>
+    .certificate .date {
+      font-size: 16px;
+      color: #333;
+      margin-top: 40px;
+    }
+
+    .logo {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      text-align: right;
+    }
+
+    .logo h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #6156dc;
+      font-weight: 700;
+    }
+
+    .logo p {
+      margin: 0;
+      font-size: 12px;
+      color: #777;
+      font-weight: 500;
+    }
+
+    .ribbon {
+      position: absolute;
+      left: 40px;
+      bottom: 40px;
+      width: 80px;
+    }
+
+    .ribbon img {
+      width: 100%;
+    }
+
+  </style>
 </head>
 <body>
-    <div class="certificate-container">
-        <div class="decorative"></div> <!-- Decorative element for a touch of elegance -->
+  <div class="certificate">
+    <div class="top-decor"></div>
+    <div class="bottom-decor"></div>
 
-        <h1>Certificate of Completion</h1>
-
-        <div class="certificate-details">
-            <p><span>Training Module:</span> {{ $trainingModule }}</p>
-            <p><span>Completion Date:</span> {{ $completionDate }}</p>
-            <p><span>Username:</span> {{ $username }}</p>
-        </div>
-
-        <div class="divider"></div>
-
-        <p class="certificate-id"><strong>Certificate ID:</strong> {{ $certificateId }}</p>
-
-        <div class="footer">
-            <p>This certificate confirms the successful completion of the training module.</p>
-        </div>
-
-        <div class="signature">
-            <p>Authorized Signature</p>
-        </div>
+    <div class="logo">
+      <h3>simUphish</h3>
+      <p>DEFEND | EDUCATE | EMPOWER</p>
     </div>
+
+    <div class="certificate-content">
+      <h1>CERTIFICATE</h1>
+      <h2>OF ACHIEVEMENT</h2>
+      <p>Presented To</p>
+      <div class="name">{{ $username ?? 'Recipient Name' }}</div>
+      <p class="desc">For the successful completion of</p>
+      <div class="course">{{ $trainingModule ?? 'Phishing Training' }}</div>
+      <div class="date">{{ $completionDate ?? 'June 11, 2025' }}</div>
+    </div>
+
+     {{-- <i class='bx  bx-medal-star-alt'  ></i>  --}}
+     <img src="https://img.icons8.com/emoji/96/000000/reminder-ribbon-emoji.png" alt="Ribbon" />
+    <div class="ribbon">
+       
+      <!-- <img src="https://img.icons8.com/emoji/96/000000/reminder-ribbon-emoji.png" alt="Ribbon" /> -->
+    </div>
+  </div>
 </body>
 </html>

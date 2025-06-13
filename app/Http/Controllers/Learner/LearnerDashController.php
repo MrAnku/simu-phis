@@ -365,7 +365,8 @@ class LearnerDashController extends Controller
         }
 
         // Generate the PDF from the view and include the certificate ID
-        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'username', 'certificateId'));
+        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'username', 'certificateId'))
+         ->setPaper('a4', 'landscape');
 
         // Define the filename with certificate ID
         $fileName = "{$trainingModule}_Certificate_{$certificateId}.pdf";
@@ -373,6 +374,7 @@ class LearnerDashController extends Controller
         log_action("Employee downloaded training certificate", 'learner', 'learner');
         // Return the PDF download response
         return $pdf->download($fileName);
+
     }
 
     /**
