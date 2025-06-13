@@ -462,13 +462,9 @@ class ApiWaCampaignController extends Controller
                 ]);
             }
             if ($type == "bluecollar") {
-                $result = BlueCollarGroup::where('company_id', $companyId)->get();
-                if ($result->isEmpty()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('No groups found!'),
-                    ], 404);
-                }
+                $result = BlueCollarGroup::where('company_id', $companyId)
+                ->whereHas('bluecollarusers')->get();
+                
                 return response()->json([
                     'success' => true,
                     'message' => __('Groups fetched successfully!'),
