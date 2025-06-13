@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Models\CompanyWhatsappConfig;
 use App\Models\CompanyWhatsappTemplate;
-use App\Mail\AssignTrainingWithPassResetLink;
 use App\Http\Requests\StoreWhatsAppTemplateRequest;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarGroup;

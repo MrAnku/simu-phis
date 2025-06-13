@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Email;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
-use App\Mail\AssignTrainingWithPassResetLink;
 
 class ProcessCampaigns extends Command
 {

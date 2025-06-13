@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\AssignTrainingWithPassResetLink;
 use App\Models\TrainingAssignedUser;
 use App\Services\TrainingAssignedService;
 

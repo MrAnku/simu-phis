@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
-use App\Mail\AssignTrainingWithPassResetLink;
 use App\Models\TprmActivity;
 use Illuminate\Validation\ValidationException;
 
