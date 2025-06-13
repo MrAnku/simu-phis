@@ -345,6 +345,8 @@ Route::middleware('auth:api')->group(function () {
     //phish triage
     Route::prefix('phish-triage')->group(function () {
         Route::get('/email-reported', [PhishTriageController::class, 'emailsReported']);
+
+        Route::put('/ai-analysis', [PhishTriageController::class, 'aiAnalysis']);
     });
 
     //policy
