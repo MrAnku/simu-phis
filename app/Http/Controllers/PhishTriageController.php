@@ -90,7 +90,7 @@ class PhishTriageController extends Controller
                 'success' => true,
                 'data' => json_decode($phishTriageReportLog->ai_analysis),
                 'message' => 'AI analysis already completed for this log.'
-            ], 422);
+            ], 200);
         }
 
         try {
