@@ -96,6 +96,7 @@ Route::middleware('auth:api')->group(function () {
     //card reports
     Route::prefix('insight-reporting')->group(function () {
         Route::get('/', [ApiNewReportingController::class, 'index']);
+        Route::get('/training-report/{training_id}', [ApiNewReportingController::class, 'trainingReport']);
     });
 
 

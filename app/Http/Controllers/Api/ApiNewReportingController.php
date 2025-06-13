@@ -19,7 +19,7 @@ class ApiNewReportingController extends Controller
                 ->orWhere('company_id', 'default');
         })
         ->whereHas('trainingAssigned')
-        ->select('name', 'category', 'passing_score')
+        ->select('id', 'name', 'category', 'passing_score')
         ->get();
 
         return response()->json([
@@ -67,5 +67,66 @@ class ApiNewReportingController extends Controller
 
         }
         return $usersData;
+    }
+
+    public function trainingReport(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+        $trainingId = $request->route('training_id');
+
+        if (!$trainingId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Training ID is required'
+            ], 400);
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Training report retrieved successfully',
+            'data' => [
+                'cards' => $this->getTrainingStatistics($trainingId)
+            ]
+        ]);
+    }
+
+    public function getTrainingStatistics($trainingId){
+        $companyId = Auth::user()->company_id;
+
+        //training score average
+        $scoreAvg = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('training', $trainingId)
+            ->whereNotNull('personal_best')
+            ->avg('personal_best');
+        
+
+        //training assigned
+
+        $totalAssigned = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('training', $trainingId)
+            ->count();
+
+        //in progress
+        $inProgress = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('training', $trainingId)
+            ->where('personal_best', '<', 0)
+            ->where('completed', 0)
+            ->count();
+
+        //training completed
+
+        $completed = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('training', $trainingId)
+            ->where('completed', 1)
+            ->whereNotNull('personal_best')
+            ->count();
+
+        return [
+            'score_avg' => round($scoreAvg, 2),
+            'total_assigned' => $totalAssigned,
+            'in_progress' => $inProgress,
+            'completed' => $completed
+        ];
     }
 }

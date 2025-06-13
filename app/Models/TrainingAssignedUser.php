@@ -10,7 +10,6 @@ class TrainingAssignedUser extends Model
     use HasFactory;
 
     protected $table = 'training_assigned_users';
-    public $timestamps = false;
 
     protected $fillable = [
         'training',
