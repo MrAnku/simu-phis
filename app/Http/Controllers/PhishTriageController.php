@@ -87,7 +87,7 @@ class PhishTriageController extends Controller
 
         if ($phishTriageReportLog->ai_analysis !== null) {
             return response()->json([
-                'success' => false,
+                'success' => true,
                 'data' => json_decode($phishTriageReportLog->ai_analysis),
                 'message' => 'AI analysis already completed for this log.'
             ], 422);
@@ -129,7 +129,7 @@ class PhishTriageController extends Controller
 
 
             // Call OpenAI API
-            $response = Http::withToken(env('OPENAI_API_KEY'))->post('https://api.openai.com/v1/chat/completions', [
+            $response = Http::withToken(env('OPENAI_API_KEY'))->withoutVerifying()->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-4o',
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt],
