@@ -58,7 +58,7 @@ class OutlookAdController extends Controller
 
 
         // Redirect to employee list page
-        return redirect()->route('employees')->with('success', 'Authorization successful! Now your can sync your employees.');
+        return redirect()->to(env('NEXT_APP_URL') . '/integration?msg=You are successfully authorized to Sync Outlook AD Users');
     }
 
     public function fetchGroups()

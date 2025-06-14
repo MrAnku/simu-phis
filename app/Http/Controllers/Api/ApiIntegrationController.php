@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\SiemProvider;
 use Illuminate\Http\Request;
+use App\Models\OutlookAdToken;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,12 @@ class ApiIntegrationController extends Controller
         $ldapConfig = DB::table('ldap_ad_config')
             ->where('company_id', $companyId)
             ->first();
+        $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
+        if(!$hasOutlookAdToken) {
+            $authenticateUrl = env('OUTLOOK_AUTH_URL');
+        }else{
+            $authenticateUrl = null;
+        }
         return response()->json([
             'success' => true,
             'message' => 'Integration configurations retrieved successfully.',
@@ -30,6 +37,8 @@ class ApiIntegrationController extends Controller
                 'siem_config' => $siemConfig,
                 'ldap_config' => $ldapConfig,
                 'outlook_report_button_xml_url' => 'https://365button.simuphish.com/button.xml',
+                'has_outlook_token' => $hasOutlookAdToken,
+                'outlook_authenticate_url' => $authenticateUrl
             ]
         ]);
     }
