@@ -94,7 +94,7 @@ class ApiBlueCollarController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('NeW Blue Collar Group created successfully')
+                'message' => __('New Blue Collar Division created successfully')
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error:') . $e->getMessage()], 500);
@@ -306,7 +306,7 @@ class ApiBlueCollarController extends Controller
             BlueCollarEmployee::where('group_id', $grpId)->delete();
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => __('Blue Collar group deleted successfully')], 200);
+            return response()->json(['success' => true, 'message' => __('Blue Collar Division deleted successfully')], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             log_action("An error occurred while deleting the Blue Collar group");

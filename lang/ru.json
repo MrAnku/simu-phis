@@ -707,7 +707,7 @@
     "Employee already exists in group": "Сотрудник уже находится в группе",
     "Employee added to group successfully": "Сотрудник успешно добавлен в группу",
     "Group not found": "Группа не найдена",
-    "Group deleted successfully": "Группа успешно удалена",
+    "Division deleted successfully": "Отдел успешно удален",
     "Employee limit has been reached": "Достигнут предел сотрудников",
     "This Whatsapp already exists / Or added by some other company": "Этот WhatsApp уже существует или добавлен другой компанией",
     "User deleted successfully": "Пользователь успешно удален",
@@ -1104,6 +1104,8 @@
     "You consent to simUphish enabling the TPRM module for your account": "Вы даете согласие на активацию модуля TPRM в вашем аккаунте компанией simUphish",
     "I Agree": "Я согласен",
     "For questions or support, please contact contact@simuphish.com": "По вопросам или за поддержкой обращайтесь по адресу contact@simuphish.com",
-     "By enabling TPRM, SimUphish will": "При активации TPRM, SimUphish будет",
-  "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "Симуляции никогда не будут содержать вредоносный контент, вредоносное ПО или реальный сбор учетных данных. Они предназначены исключительно для повышения осведомленности и анализа поведения"
+    "By enabling TPRM, SimUphish will": "При активации TPRM, SimUphish будет",
+    "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "Симуляции никогда не будут содержать вредоносный контент, вредоносное ПО или реальный сбор учетных данных. Они предназначены исключительно для повышения осведомленности и анализа поведения",
+    "New Blue Collar Division created successfully": "Новый отдел синих воротничков успешно создан",
+    "Blue Collar Division deleted successfully": "Отдел синих воротничков успешно удалён"
 }

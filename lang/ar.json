@@ -707,7 +707,7 @@
     "Employee already exists in group": "الموظف موجود بالفعل في المجموعة",
     "Employee added to group successfully": "تمت إضافة الموظف إلى المجموعة بنجاح",
     "Group not found": "لم يتم العثور على المجموعة",
-    "Group deleted successfully": "تم حذف المجموعة بنجاح",
+    "Division deleted successfully": "تم حذف القسم بنجاح",
     "Employee limit has been reached": "تم الوصول إلى الحد الأقصى للموظفين",
     "This Whatsapp already exists / Or added by some other company": "رقم الواتساب هذا موجود بالفعل أو تمت إضافته من قبل شركة أخرى",
     "User deleted successfully": "تم حذف المستخدم بنجاح",
@@ -1108,5 +1108,7 @@
     "I Agree": "أوافق",
     "For questions or support, please contact contact@simuphish.com": "للاستفسارات أو الدعم، يرجى التواصل عبر contact@simuphish.com",
     "By enabling TPRM, SimUphish will": "من خلال تفعيل TPRM، ستقوم simUphish بما يلي",
-    "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "لن تتضمن المحاكاة أبدًا أي محتوى ضار أو برامج ضارة أو جمع فعلي لبيانات الاعتماد. وهي مخصصة فقط للتوعية وتحليل السلوك"
+    "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "لن تتضمن المحاكاة أبدًا أي محتوى ضار أو برامج ضارة أو جمع فعلي لبيانات الاعتماد. وهي مخصصة فقط للتوعية وتحليل السلوك",
+    "New Blue Collar Division created successfully": "تم إنشاء قسم العمالة الزرقاء الجديد بنجاح",
+    "Blue Collar Division deleted successfully": "تم حذف قسم العمالة الزرقاء بنجاح"
 }

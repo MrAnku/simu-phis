@@ -138,7 +138,7 @@ class ApiAiCallController extends Controller
             $isvalid = $this->checkValidMobile($request->emp_group);
 
             if (!$isvalid) {
-                return response()->json(['success' => false, 'message' => __('Please check if selected employee group has valid phone number')], 422);
+                return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
             }
 
             AiCallCampaign::create([
@@ -190,12 +190,12 @@ class ApiAiCallController extends Controller
 
         // Check if any user has whatsapp = 0 or null
         foreach ($users as $user) {
-            if (empty($user->whatsapp)) { // Checks both 0 and null
-                return false;
+            if (!empty($user->whatsapp)) {
+                return true;
             }
         }
 
-        return true; // All users have valid WhatsApp numbers
+        return false;
     }
 
     private function makeCampaignLive($campaignid)

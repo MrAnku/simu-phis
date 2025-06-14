@@ -286,7 +286,7 @@ class ApiEmployeesController extends Controller
 
             log_action("New employee group {$grpName} created");
 
-            return response()->json(['success' => true, 'message' => __('New Employee Group created successfully')], 201);
+            return response()->json(['success' => true, 'message' => __('New Employee Division created successfully')], 201);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {

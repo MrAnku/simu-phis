@@ -132,7 +132,7 @@ class EmployeeService
         $group->delete();
         return [
             'status' => 1,
-            'msg' => __('Group deleted successfully')
+            'msg' => __('Division deleted successfully')
         ];
     }
     public function deleteCampaignsByGroupId($groupId)
