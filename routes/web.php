@@ -128,6 +128,10 @@ Route::post('game-score', [AdminTrainingGameController::class, 'gameScore'])
 // bluecollar traininglearning portal 
 Route::get('/bluecollartraining/{training_id}/{training_lang}/{id}', [BluecolarController::class, 'bluecollarStartTraining'])->name('learner.start.bluecollartraining');
 
+Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
+
+Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
+
 
 // Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
 //bluecollar traininglearning portal end
@@ -263,9 +267,7 @@ Route::middleware([
         // Route::get('/employees', [EmployeesController::class, 'index'])->name('employees');
         Route::get('/employee/{base_encode_id}', [SingleEmpController::class, 'employeeDetail'])->name('employee.detail');
 
-        Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
 
-        Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
 
         Route::get('/fetch-outlook-groups', [OutlookAdController::class, 'fetchGroups'])->name('fetch.outlook.groups');
         Route::get('/fetch-outlook-emps/{groupId}', [OutlookAdController::class, 'fetchEmps'])->name('fetch.outlook.emps');
