@@ -353,19 +353,20 @@ class LearnerDashController extends Controller
         $trainingModule = $request->input('training_module');
         $trainingId = $request->input('training_id');
         $completionDate = $request->input('completion_date');
-        $username = $request->input('username');
+        $userEmail = $request->input('user_email');
+        $userName = $request->input('user_name');
 
         // Check if the certificate ID already exists for this user and training module
-        $certificateId = $this->getCertificateId($trainingModule, $username, $trainingId);
+        $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
 
         // If the certificate ID doesn't exist, generate a new one
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($trainingModule, $username, $certificateId, $trainingId); // Store the new certificate ID in your database
+            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId); // Store the new certificate ID in your database
         }
 
         // Generate the PDF from the view and include the certificate ID
-        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'username', 'certificateId'))
+        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'userEmail', 'userName', 'certificateId'))
          ->setPaper('a4', 'landscape');
 
         // Define the filename with certificate ID
@@ -380,11 +381,11 @@ class LearnerDashController extends Controller
     /**
      * Get the certificate ID from the database (if it exists).
      */
-    private function getCertificateId($trainingModule, $username, $trainingId)
+    private function getCertificateId($trainingModule, $userEmail, $trainingId)
     {
         // Check the database for an existing certificate ID for this user and training module
         $certificate = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $username)
+            ->where('user_email', $userEmail)
             ->first();
         return $certificate ? $certificate->certificate_id : null;
     }
@@ -401,11 +402,11 @@ class LearnerDashController extends Controller
     /**
      * Store the generated certificate ID in the database.
      */
-    private function storeCertificateId($trainingModule, $username, $certificateId, $trainingId)
+    private function storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId)
     {
-        // Find the existing record based on training module and username
+        // Find the existing record based on training module and userEmail
         $assignedUser = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $username)
+            ->where('user_email', $userEmail)
             ->first();
 
         // Check if the record was found

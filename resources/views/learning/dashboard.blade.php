@@ -318,7 +318,7 @@
                                                                     'id' => base64_encode($training->id),
                                                                     'lang' => $training->training_lang,
                                                                 ]) }}">
-                                                                
+
                                                                 {{ $training->trainingData->name ?? 'Unknown' }}
                                                             </a>
                                                         @endif
@@ -432,7 +432,8 @@
                                                 <td class="text-secondary">{{ $training->completion_date }}
                                                 </td>
                                                 <td>
-                                                    <form action="{{route('learner.download.cert')}}" method="POST">
+                                                    <form action="{{ route('learner.download.cert') }}"
+                                                        method="POST">
                                                         @csrf
                                                         <input type="hidden" name="training_module"
                                                             value="{{ $training->trainingData->name }}">
@@ -440,8 +441,11 @@
                                                             value="{{ $training->training }}">
                                                         <input type="hidden" name="completion_date"
                                                             value="{{ $training->completion_date }}">
-                                                        <input type="hidden" name="username"
+                                                        <input type="hidden" name="user_email"
                                                             value="{{ $userEmail }}">
+                                                        <input type="hidden" name="user_name"
+                                                            value="{{ $training->user_name }}">
+
                                                         <button type="submit"
                                                             class="btn btn-primary btn-sm">{{ __('Download') }}</button>
                                                     </form>
