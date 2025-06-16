@@ -180,4 +180,75 @@ class PhishTriageController extends Controller
             ], 500);
         }
     }
+
+    public function domainAnalysis(Request $request)
+    {
+        $domain = $request->route('domain');
+        if (!$domain) {
+            return response()->json(['error' => 'Domain is required'], 400);
+        }
+
+        // SPF Check
+        $spfRecord = dns_get_record($domain, DNS_TXT);
+        $spfStatus = 'NOT FOUND';
+        foreach ($spfRecord as $record) {
+            if (isset($record['txt']) && stripos($record['txt'], 'v=spf1') === 0) {
+                $spfStatus = 'FOUND';
+                break;
+            }
+        }
+
+        // DKIM Check (look for default._domainkey)
+        $dkimSelector = 'default._domainkey.' . $domain;
+        $dkimRecord = dns_get_record($dkimSelector, DNS_TXT);
+        $dkimStatus = 'NOT FOUND';
+        foreach ($dkimRecord as $record) {
+            if (isset($record['txt']) && stripos($record['txt'], 'v=DKIM1') === 0) {
+                $dkimStatus = 'FOUND';
+                break;
+            }
+        }
+
+        // DMARC Check (_dmarc)
+        $dmarcSelector = '_dmarc.' . $domain;
+        $dmarcRecord = dns_get_record($dmarcSelector, DNS_TXT);
+        $dmarcStatus = 'NOT FOUND';
+        $dmarcPolicy = null;
+        foreach ($dmarcRecord as $record) {
+            if (isset($record['txt']) && stripos($record['txt'], 'v=DMARC1') === 0) {
+                $dmarcStatus = 'FOUND';
+                if (preg_match('/p=([a-zA-Z]+)/', $record['txt'], $matches)) {
+                    $dmarcPolicy = strtoupper($matches[1]);
+                }
+                break;
+            }
+        }
+
+        // Map to more descriptive statuses
+        $spfResult = $spfStatus === 'FOUND' ? 'PASS' : 'FAIL';
+        $dkimResult = $dkimStatus === 'FOUND' ? 'PASS' : 'FAIL';
+        $dmarcResult = 'NOT FOUND';
+        if ($dmarcStatus === 'FOUND') {
+            if ($dmarcPolicy === 'NONE') {
+                $dmarcResult = 'NONE';
+            } elseif ($dmarcPolicy === 'QUARANTINE') {
+                $dmarcResult = 'QUARANTINE';
+            } elseif ($dmarcPolicy === 'REJECT') {
+                $dmarcResult = 'REJECT';
+            } else {
+                $dmarcResult = 'UNKNOWN';
+            }
+        }
+
+        $result = [
+            'SPF' => $spfResult,
+            'DKIM' => $dkimResult,
+            'DMARC' => $dmarcResult
+        ];
+
+        return response()->json([
+            'domain' => $domain,
+            'analysis' => $result
+        ], 200);
+    }
 }

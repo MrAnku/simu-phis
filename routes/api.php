@@ -351,6 +351,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/email-reported', [PhishTriageController::class, 'emailsReported']);
 
         Route::put('/ai-analysis', [PhishTriageController::class, 'aiAnalysis']);
+        Route::get('/domain-analysis/{domain}', [PhishTriageController::class, 'domainAnalysis']);
     });
 
     //policy
