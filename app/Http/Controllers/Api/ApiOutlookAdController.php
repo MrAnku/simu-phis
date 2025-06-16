@@ -37,7 +37,7 @@ class ApiOutlookAdController extends Controller
         ]);
     }
 
-    public function handleMicrosoftCallback(Request $request)
+    public function saveOutlookCode(Request $request)
     {
         if (!$request->has('code')) {
             return response()->json([
@@ -50,7 +50,7 @@ class ApiOutlookAdController extends Controller
         $response = Http::asForm()->post($tokenUrl, [
             "client_id" => env('MS_CLIENT_ID'),
             "client_secret" => env('MS_CLIENT_SECRET'),
-            "code" => $request->query('code'),
+            "code" => $request->code,
             "redirect_uri" => env('MS_REDIRECT_URI'),
             "grant_type" => "authorization_code",
         ]);
@@ -74,7 +74,6 @@ class ApiOutlookAdController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [],
             'message' => __('Authorization Successfull! Now you can sync your employees')
         ], 200);
     }

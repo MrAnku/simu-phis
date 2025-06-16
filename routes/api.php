@@ -70,8 +70,8 @@ Route::middleware('auth:api')->get('/dashboard', [ApiDashboardController::class,
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::middleware('auth:api')->group(function () {
 
-    Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
-    
+    Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
+
     // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
     //     function () {
     //         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
