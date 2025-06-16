@@ -53,7 +53,7 @@ class OutlookAdController extends Controller
         // Store the token in Laravel storage
         OutlookAdToken::create([
             'access_token' => $accessToken,
-            'company_id' => auth()->user()->company_id
+            'company_id' => Auth::user()->company_id
         ]);
 
 
