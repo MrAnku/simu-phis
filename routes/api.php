@@ -1,47 +1,48 @@
 <?php
 
-use App\Http\Controllers\Api\AivishingReportController;
-use App\Http\Controllers\Api\ApiAiCallController;
-use App\Http\Controllers\Api\ApiAivishingReportController;
-use App\Http\Controllers\Api\ApiBlueCollarController;
-// use App\Http\Controllers\Api\ApiBlueCollarController;
-use App\Http\Controllers\Api\ApiEmployeesController;
-use App\Http\Controllers\Api\ApiOutlookAdController;
-use App\Http\Controllers\Api\ApiPhishingEmailsController;
-use App\Http\Controllers\Api\ApiQuishingEmailController;
-use App\Http\Controllers\Api\ApiReportingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\SupportController;
+// use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\OutlookAdController;
 use App\Http\Controllers\ReportingController;
+use App\Http\Controllers\Api\ApiTprmController;
+use App\Http\Controllers\PhishTriageController;
+use App\Http\Controllers\Api\ApiAiCallController;
+use App\Http\Controllers\Api\ApiPolicyController;
 use App\Http\Controllers\SenderProfileController;
+use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
-use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
-use App\Http\Controllers\Api\ApiDashboardController;
-use App\Http\Controllers\Api\ApiIntegrationController;
-use App\Http\Controllers\Api\ApiNewReportingController;
-use App\Http\Controllers\Api\ApiPhishingWebsitesController;
-use App\Http\Controllers\Api\ApiPolicyCampaignController;
-use App\Http\Controllers\Api\ApiPolicyController;
-use App\Http\Controllers\Api\ApiQuishingReportController;
-use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiSettingsController;
-use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\Api\ApiSmishingController;
-use App\Http\Controllers\Api\ApiSmishingTemplateController;
-use App\Http\Controllers\Api\ApiSupportController;
-use App\Http\Controllers\Api\ApiTprmController;
+use App\Http\Controllers\Api\ApiDashboardController;
+use App\Http\Controllers\Api\ApiEmployeesController;
+use App\Http\Controllers\Api\ApiOutlookAdController;
+use App\Http\Controllers\Api\ApiReportingController;
+use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiTprmReportController;
-use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
-use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
+use App\Http\Controllers\Api\ApiIntegrationController;
+use App\Http\Controllers\Api\ApiShowWebsiteController;
+use App\Http\Controllers\Api\AivishingReportController;
+use App\Http\Controllers\Api\ApiNewReportingController;
+use App\Http\Controllers\Api\ApiQuishingEmailController;
+use App\Http\Controllers\Api\ApiSenderProfileController;
+use App\Http\Controllers\Api\ApiPhishingEmailsController;
+use App\Http\Controllers\Api\ApiPolicyCampaignController;
+use App\Http\Controllers\Api\ApiQuishingReportController;
+use App\Http\Controllers\Api\ApiTrainingModuleController;
+use App\Http\Controllers\Api\ApiWhatsappReportController;
+use App\Http\Controllers\Api\ApiAivishingReportController;
+use App\Http\Controllers\Api\ApiPhishingWebsitesController;
+use App\Http\Controllers\Api\ApiSmishingTemplateController;
+use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\PhishTriageController;
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
@@ -68,6 +69,9 @@ Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middle
 Route::middleware('auth:api')->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::middleware('auth:api')->group(function () {
+
+    Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
+    
     // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
     //     function () {
     //         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);

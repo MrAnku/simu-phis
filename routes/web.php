@@ -130,7 +130,7 @@ Route::get('/bluecollartraining/{training_id}/{training_lang}/{id}', [BluecolarC
 
 Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
 
-Route::get('/microsoft-ad-callback', [OutlookAdController::class, 'handleMicrosoftCallback'])->name('microsoft.ad.callback');
+
 
 
 // Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
