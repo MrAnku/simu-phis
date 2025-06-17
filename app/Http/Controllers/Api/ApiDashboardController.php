@@ -34,6 +34,11 @@ class ApiDashboardController extends Controller
     {
         $companyId = Auth::user()->company_id;
 
+        $recentSixCampaigns = Campaign::where('company_id', $companyId)
+            ->orderBy('id', 'desc')
+            ->take(6)
+            ->get();
+
      
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
 
@@ -42,6 +47,7 @@ class ApiDashboardController extends Controller
             'data' => [
                 'campaigns' => $this->campaignCounts(),
                 'totalAssets' => $this->getTotalAssets(),
+                'recentSixCampaigns' => $recentSixCampaigns,
                 'email_and_trainings' => $this->getEmailAndTrainingCounts(),
                 'simulation_activity' => $this->getSimulationActivity(),
                 'package' => $this->getPackage(),
