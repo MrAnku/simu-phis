@@ -34,6 +34,17 @@ class Campaign extends Model
         'company_id'
     ];
 
+    public function trainingModules()
+    {
+        $ids = json_decode($this->training_module, true);
+        return TrainingModule::whereIn('id', $ids ?? []);
+    }
+    public function phishingMaterials()
+    {
+        $ids = json_decode($this->phishing_material, true);
+        return PhishingEmail::whereIn('id', $ids ?? []);
+    }
+
     public function campLive()
     {
         return $this->hasMany(CampaignLive::class, 'campaign_id', 'campaign_id');

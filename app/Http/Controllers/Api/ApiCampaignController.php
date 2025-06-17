@@ -415,6 +415,10 @@ class ApiCampaignController extends Controller
             $campaign = Campaign::with(['campLive', 'campaignActivity', 'campReport', 'trainingAssignedUsers.trainingData'])->where('campaign_id', $campid)
                 ->where('company_id', $companyId)
                 ->first();
+            $trainingModules = $campaign->trainingModules()->get();
+            $phishingMaterials = $campaign->phishingMaterials()->get();
+            $campaign->training_modules_data = $trainingModules;
+            $campaign->phishing_materials_data = $phishingMaterials;
 
             if (!$campaign) {
                 return response()->json([
