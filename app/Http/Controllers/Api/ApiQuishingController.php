@@ -206,6 +206,11 @@ class ApiQuishingController extends Controller
                     'message' => __('Campaign not found'),
                 ], 404);
             }
+            $trainingModules = $campaign->trainingModules()->get();
+            $quishingMaterials = $campaign->quishingMaterials()->get();
+            $campaign->training_modules_data = $trainingModules;
+            $campaign->quishing_materials_data = $quishingMaterials;
+
             $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();

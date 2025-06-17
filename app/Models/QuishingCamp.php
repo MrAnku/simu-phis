@@ -22,6 +22,17 @@ class QuishingCamp extends Model
         'company_id',
     ];
 
+    public function trainingModules()
+    {
+        $ids = json_decode($this->training_module, true);
+        return TrainingModule::whereIn('id', $ids ?? []);
+    }
+    public function quishingMaterials()
+    {
+        $ids = json_decode($this->quishing_material, true);
+        return QshTemplate::whereIn('id', $ids ?? []);
+    }
+
     public function userGroupData()
     {
         return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');

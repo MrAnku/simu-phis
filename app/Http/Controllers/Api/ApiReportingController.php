@@ -21,6 +21,8 @@ use App\Models\WhatsAppCampaignUser;
 use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\PhishingEmail;
+use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
@@ -627,6 +629,7 @@ class ApiReportingController extends Controller
 
             // Fetch user group ID
             $userGroup = TprmCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            $phishingMaterial = PhishingEmail::find($userGroup->phishing_material);
 
             if ($reportRow && $userGroup) {
                 // Count the number of users in the group
@@ -641,6 +644,7 @@ class ApiReportingController extends Controller
                     'payloads_clicked' => $reportRow->payloads_clicked,
                     'emp_compromised' => $reportRow->emp_compromised,
                     'email_reported' => $reportRow->email_reported,
+                    'phishing_material' => $phishingMaterial ?? null,
                     'status' => $reportRow->status,
                     'no_of_users' => $no_of_users,
                 ];

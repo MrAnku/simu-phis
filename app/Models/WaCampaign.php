@@ -26,6 +26,13 @@ class WaCampaign extends Model
         'company_id',
     ];
 
+    public function trainingModules()
+    {
+        $ids = json_decode($this->training_module, true);
+        return TrainingModule::whereIn('id', $ids ?? []);
+    }
+   
+
     public function trainingData()
     {
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');

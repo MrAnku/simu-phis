@@ -286,10 +286,18 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
 
-            $campaigns = WaLiveCampaign::with(['whatsTrainingData', 'whatsTrainingData.trainingData', 'campaignActivity'])
+
+            $campaigns = WaLiveCampaign::with(['whatsTrainingData', 'phishingWebsite', 'whatsTrainingData.trainingData', 'campaignActivity'])
                 ->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
+            $campaign = WaCampaign::where('campaign_id', $campaign_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+            $training_modules_data = $campaign->trainingModules()->get();
+            $campaigns->each(function ($campaign) use ($training_modules_data) {
+                $campaign->training_modules = $training_modules_data;
+            });
 
             if ($campaigns->isEmpty()) {
                 return response()->json([

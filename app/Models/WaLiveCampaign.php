@@ -29,6 +29,11 @@ class WaLiveCampaign extends Model
         'training_assigned',
         'company_id',
     ];
+
+    public function phishingWebsite()
+    {
+        return $this->belongsTo(PhishingWebsite::class, 'phishing_website', 'id');
+    }
     public function whatsTrainingData()
     {
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
