@@ -5,21 +5,27 @@ namespace App\Http\Controllers\Api;
 use Carbon\Carbon;
 use App\Models\Users;
 use App\Models\Campaign;
+use App\Models\TprmUsers;
 use App\Models\UsersGroup;
+use App\Models\WaCampaign;
 use App\Models\CampaignLive;
+use App\Models\QuishingCamp;
+use App\Models\TprmCampaign;
 use Illuminate\Http\Request;
 use App\Models\BreachedEmail;
+use App\Models\PhishingEmail;
+use App\Models\AiCallCampaign;
+use App\Models\AiCallCampLive;
 use App\Models\CampaignReport;
+use App\Models\CompanyLicense;
+use App\Models\TprmUsersGroup;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
 use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\AiCallCampaign;
-use App\Models\PhishingEmail;
-use App\Models\QuishingCamp;
-use App\Models\TprmCampaign;
 use App\Models\TrainingAssignedUser;
-use App\Models\WaCampaign;
 use Illuminate\Support\Facades\Auth;
 
 class ApiDashboardController extends Controller
@@ -28,45 +34,254 @@ class ApiDashboardController extends Controller
     {
         $companyId = Auth::user()->company_id;
 
-        $data = $this->getTotalAssets();
-
-        $recentSixCampaigns = Campaign::where('company_id', $companyId)
-            ->orderBy('id', 'desc')
-            ->take(6)
-            ->get();
-
-        $campaignsWithReport = CampaignReport::where('company_id', $companyId)->take(4)->get();
-
-        $totalEmpCompromised = CampaignReport::where('company_id', $companyId)
-            ->sum('emp_compromised');
-
-        $package = $this->getPackage();
-        $usageCounts = $this->osBrowserUsage();
-
+     
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
 
-        // return $breachedEmails['userData'];
-
-        // $activeAIVishing = DB::table('ai_call_reqs')->where('company_id', Auth::user()->company_id)
-        //     ->where('status', true)->first();
-
-        // $activeTprm = TpmrVerifiedDomain::where('company_id', Auth::user()->company_id)
-        //     ->where('verified', true)->first();
-
-        // return view('dashboard', compact('data', 'recentSixCampaigns', 'campaignsWithReport', 'totalEmpCompromised', 'package', 'breachedEmails', 'usageCounts', 'activeAIVishing', 'activeTprm'));
         return response()->json([
             'status' => 'success',
             'data' => [
                 'campaigns' => $this->campaignCounts(),
-                'totalAssets' => $data,
-                'recentSixCampaigns' => $recentSixCampaigns,
-                'campaignsWithReport' => $campaignsWithReport,
-                'totalEmpCompromised' => $totalEmpCompromised,
-                'package' => $package,
+                'totalAssets' => $this->getTotalAssets(),
+                'email_and_trainings' => $this->getEmailAndTrainingCounts(),
+                'simulation_activity' => $this->getSimulationActivity(),
+                'package' => $this->getPackage(),
+                'risk_score_distribution' => $this->getRiskScoreDistribution(),
+                'division_score' => $this->getDivisionScore(),
                 'breachedEmails' => $breachedEmails,
-                'usageCounts' => $usageCounts
+                'usageCounts' => $this->osBrowserUsage()
             ]
         ], 200);
+    }
+
+    private function getDivisionScore(){
+        $companyId = Auth::user()->company_id;
+
+        $groupScores = [];
+        $groups = UsersGroup::where('company_id', $companyId)->get();
+       
+        foreach ($groups as $group) {
+            $usersArray = json_decode($group->users, true);
+            if (!$usersArray || empty($usersArray)) {
+                continue;
+            }
+          
+
+            // Calculate risk score for this group
+            $totalSimulations = CampaignLive::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->count();
+            $compromisedSimulations = CampaignLive::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->where('emp_compromised', 1)
+                ->count();
+
+            $totalQuishing = QuishingLiveCamp::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->count();
+            $compromisedQuishing = QuishingLiveCamp::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->where('compromised', '1')
+                ->count();
+
+            $totalAiVishing = AiCallCampLive::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->count();
+            $compromisedAiVishing = AiCallCampLive::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->where('training_assigned', 1)
+                ->count();
+
+          
+
+            $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->count();
+            $compromisedWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->where('compromised', 1)
+                ->count();
+
+            $totalAll = $totalSimulations + $totalQuishing + $totalAiVishing + $totalWhatsapp;
+            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedAiVishing + $compromisedWhatsapp;
+
+            // Risk score calculation (same as user-level, but for group)
+            $riskScore = $totalAll > 0
+                ? 100 - round(($compromisedAll / $totalAll) * 100)
+                : 100;
+
+            // Organization impact: percent of users compromised in group
+            $totalUsers = count($usersArray);
+            $compromisedUsers = CampaignLive::where('company_id', $companyId)
+                ->whereIn('user_id', $usersArray)
+                ->where('emp_compromised', 1)
+                ->distinct('user_id')
+                ->count('user_id');
+            $organizationImpact = $totalUsers > 0 ? round(($compromisedUsers / $totalUsers) * 100, 2) : 0;
+
+            // End user impact: percent of simulations compromised
+            $endUserImpact = $totalAll > 0 ? round(($compromisedAll / $totalAll) * 100, 2) : 0;
+
+            $groupScores[] = [
+                'group_id' => $group->group_id,
+                'group_name' => $group->group_name,
+                'risk_score' => $riskScore,
+                'breakdown' => [
+                    'organization_impact' => $organizationImpact,
+                    'end_user_impact' => $endUserImpact,
+                    'total_simulations' => $totalAll,
+                    'total_compromised' => $compromisedAll,
+                ],
+            ];
+        }
+
+        return $groupScores;
+    }
+
+    private function getRiskScoreDistribution(){
+        $companyId = Auth::user()->company_id;
+
+        $scoreRanges = [
+            'poor' => [0, 20],
+            'fair' => [21, 40],
+            'good' => [41, 60],
+            'verygood' => [61, 80],
+            'excellent' => [81, 100],
+        ];
+
+        $distribution = [
+            'poor' => 0,
+            'fair' => 0,
+            'good' => 0,
+            'verygood' => 0,
+            'excellent' => 0,
+        ];
+
+        $totalUsers = \App\Models\Users::where('company_id', $companyId)->count();
+
+        if ($totalUsers === 0) {
+            return $distribution;
+        }
+
+        $users = \App\Models\Users::where('company_id', $companyId)->pluck('id');
+
+        foreach ($users as $userId) {
+            // Email simulation
+            $totalSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->count();
+            $compromisedSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->where('emp_compromised', 1)
+                ->count();
+
+            // Quishing simulation
+            $totalQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->count();
+            $compromisedQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->where('compromised', '1')
+                ->count();
+
+            // TPRM simulation
+            $totalTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->count();
+            $compromisedTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->where('emp_compromised', 1)
+                ->count();
+
+            // WhatsApp simulation
+            $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->count();
+            $compromisedWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                ->where('user_id', $userId)
+                ->where('compromised', 1)
+                ->count();
+
+            $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+            $riskScore = $totalAll > 0
+                ? 100 - round(($compromisedAll / $totalAll) * 100)
+                : 100; // If no simulations, assume excellent
+
+            foreach ($scoreRanges as $label => [$min, $max]) {
+                if ($riskScore >= $min && $riskScore <= $max) {
+                    $distribution[$label]++;
+                    break;
+                }
+            }
+        }
+
+        return $distribution;
+    }
+    private function getSimulationActivity(){
+        $companyId = Auth::user()->company_id;
+
+        $now = Carbon::now();
+        $campaignTypes = [
+            'email' => Campaign::class,
+            'quishing' => QuishingCamp::class,
+            'whatsapp' => WaCampaign::class,
+            'ai_vishing' => AiCallCampaign::class,
+            'tprm' => TprmCampaign::class,
+        ];
+
+        $result = [];
+
+        for ($i = 0; $i < 6; $i++) {
+            $monthDate = $now->copy()->subMonthsNoOverflow($i);
+            $monthStart = $monthDate->copy()->startOfMonth();
+            $monthEnd = $monthDate->copy()->endOfMonth();
+            $monthLabel = $monthDate->format('M y');
+
+            $monthData = ['month' => $monthLabel];
+
+            foreach ($campaignTypes as $type => $model) {
+                $count = $model::where('company_id', $companyId)
+                    ->whereBetween('created_at', [$monthStart, $monthEnd])
+                    ->count();
+                $monthData[$type . '_campaigns'] = $count;
+            }
+
+            $result[] = $monthData;
+        }
+
+        return array_reverse($result);
+    }
+
+    private function getEmailAndTrainingCounts(){
+        $companyId = Auth::user()->company_id;
+
+       //assigned
+        $trainingAssigned = TrainingAssignedUser::where('company_id', $companyId)
+            ->count();
+
+        //completed
+
+        $trainingCompleted = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('completed', 1)
+            ->count();
+
+        //inprogress
+        $trainingInProgress = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('completed', 0)
+            ->count();
+        
+        //certified
+        $trainingCertified = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('certificate_id', '!=', null)
+            ->count();
+
+        return [
+            'trainingAssigned' => $trainingAssigned,
+            'trainingCompleted' => $trainingCompleted,
+            'trainingInProgress' => $trainingInProgress,
+            'trainingCertified' => $trainingCertified,
+        ];
     }
 
     private function campaignCounts()
@@ -376,21 +591,28 @@ class ApiDashboardController extends Controller
     public function getPackage()
     {
         $companyId = Auth::user()->company_id;
-        $employees = (int) Auth::user()->usedemployees;
-        $allotedEmployees = (int) Auth::user()->employees;
 
-        // Prevent division by zero
-        $usedPercent = ($allotedEmployees > 0) ? ($employees / $allotedEmployees) * 100 : 0;
+        //division
+        $licenses = CompanyLicense::where('company_id', $companyId)->first();
 
-        // Prepare response data
-        $package = [
-            "alloted_emp" => $allotedEmployees,
-            "total_emp" => $employees,
-            "used_percent" => round($usedPercent, 2) // Round to 2 decimal places
+        if (!$licenses) {
+            return response()->json(['error' => 'No license found for this company'], 404);
+        }
+
+        return [
+            'division' => [
+                'total_alloted' => (int) $licenses->employees,
+                'total_used' => (int) $licenses->used_employees,
+            ],
+            'bluecollar' => [
+                'total_alloted' => (int) $licenses->blue_collar_employees,
+                'total_used' => (int) $licenses->used_blue_collar_employees,
+            ],
+            'tprm' => [
+                'total_alloted' => (int) $licenses->tprm_employees,
+                'total_used' => (int) $licenses->used_tprm_employees,
+            ],
         ];
-
-        // Return JSON response
-        return response()->json($package);
     }
 
     public function getLineChartData2()
@@ -446,11 +668,6 @@ class ApiDashboardController extends Controller
     {
         $companyId = Auth::user()->company_id;
 
-        // Get active campaigns
-        $activeCampaignsCount = DB::table('all_campaigns')
-            ->where('company_id', $companyId)
-            ->where('status', 'running')
-            ->count();
 
         // Get phishing emails
         $phishingEmailsCount = DB::table('phishing_emails')
@@ -460,14 +677,6 @@ class ApiDashboardController extends Controller
             })
             ->count();
         $quishingEmailsCount = DB::table('qsh_templates')
-            ->where(function ($query) use ($companyId) {
-                $query->where('company_id', 'default')
-                    ->orWhere('company_id', $companyId);
-            })
-            ->count();
-
-        // Get phishing websites
-        $phishingWebsitesCount = DB::table('phishing_websites')
             ->where(function ($query) use ($companyId) {
                 $query->where('company_id', 'default')
                     ->orWhere('company_id', $companyId);
@@ -491,36 +700,21 @@ class ApiDashboardController extends Controller
             ->count();
 
 
-        // Get WhatsApp Simulations
-        $waSimuCount = DB::table('whatsapp_campaigns')
-            ->where('company_id', $companyId)
+        // Get phishing websites
+        $phishingWebsitesCount = DB::table('phishing_websites')
+            ->where(function ($query) use ($companyId) {
+                $query->where('company_id', 'default')
+                    ->orWhere('company_id', $companyId);
+            })
             ->count();
 
-        // Get Phishing Simulations
-        $phishSimuCount = DB::table('all_campaigns')
-            ->where('company_id', $companyId)
-            ->count();
 
-
-        // Get upgrade Request
-        $upgrade_req = DB::table('upgrade_req')
-            ->where('company_id', $companyId)
-            ->where('status', 0)
-            ->latest()
-            ->first();
-
-        // Prepare data to pass to view
         return [
-            'active_campaigns' => $activeCampaignsCount,
             'phishing_emails' => $phishingEmailsCount,
             'quishing_emails' => $quishingEmailsCount,
-            'phishing_websites' => $phishingWebsitesCount,
             'training_modules' => $trainingModulesCount,
-            'senderprofile' => $senderprofileCount,
-            'waSimuCount' => $waSimuCount,
-            'phishSimuCount' => $phishSimuCount,
-            'getLinechart2' => $this->getLineChartData2(),
-            'upgrade_req' => $upgrade_req,
+            'phishing_websites' => $phishingWebsitesCount,
+            'senderprofile' => $senderprofileCount
         ];
     }
 
@@ -529,52 +723,63 @@ class ApiDashboardController extends Controller
     {
         $companyId = Auth::user()->company_id;
 
-        //os usage counts
-        $macUsers = EmailCampActivity::whereNotNull('client_details')
+        // Models for activities
+        $activityModels = [
+            \App\Models\EmailCampActivity::class,
+            \App\Models\QuishingActivity::class,
+            \App\Models\WhatsappActivity::class,
+            \App\Models\TprmActivity::class,
+        ];
+
+        // OS usage counts
+        $osCounts = [
+            'windows' => 0,
+            'mac' => 0,
+            'android' => 0,
+        ];
+
+        // Browser usage counts
+        $browserCounts = [
+            'chrome' => 0,
+            'firefox' => 0,
+            'edge' => 0,
+        ];
+
+        foreach ($activityModels as $model) {
+            $osCounts['mac'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->platform', 'OS X')
             ->where('company_id', $companyId)
             ->count();
 
-        $windowsUsers = EmailCampActivity::whereNotNull('client_details')
+            $osCounts['windows'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->platform', 'Windows')
             ->where('company_id', $companyId)
             ->count();
 
-        $androidUsers = EmailCampActivity::whereNotNull('client_details')
+            $osCounts['android'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->platform', 'Android')
             ->where('company_id', $companyId)
             ->count();
 
-        //browser usage counts
-        $chromeUsers = EmailCampActivity::whereNotNull('client_details')
+            $browserCounts['chrome'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->browser', 'Chrome')
             ->where('company_id', $companyId)
             ->count();
 
-        $firefoxUsers = EmailCampActivity::whereNotNull('client_details')
+            $browserCounts['firefox'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->browser', 'Firefox')
             ->where('company_id', $companyId)
             ->count();
 
-        $edgeUsers = EmailCampActivity::whereNotNull('client_details')
+            $browserCounts['edge'] += $model::whereNotNull('client_details')
             ->whereJsonContains('client_details->browser', 'Edge')
             ->where('company_id', $companyId)
             ->count();
-
-
-
+        }
 
         $usage = [
-            'os' => [
-                'windows' => $windowsUsers,
-                'mac' => $macUsers,
-                'android' => $androidUsers,
-            ],
-            'browser' => [
-                'chrome' => $chromeUsers,
-                'firefox' => $firefoxUsers,
-                'edge' => $edgeUsers,
-            ]
+            'os' => $osCounts,
+            'browser' => $browserCounts,
         ];
 
         return $usage;
