@@ -72,6 +72,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
+    Route::put('/save-outlook-dmi-code', [ApiOutlookAdController::class, 'saveOutlookDmiCode']);
     // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
     //     function () {
     //         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);

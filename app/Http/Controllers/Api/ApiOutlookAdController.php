@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\OutlookAdToken;
+use App\Models\OutlookDmiToken;
 use App\Models\Users;
 use App\Services\EmployeeService;
 use Illuminate\Http\Request;
@@ -75,6 +76,48 @@ class ApiOutlookAdController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('Authorization Successfull! Now you can sync your employees')
+        ], 200);
+    }
+
+    public function saveOutlookDmiCode(Request $request)
+    {
+        if (!$request->has('code')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authorization failed!'
+            ], 403);
+        }
+
+        $tokenUrl = env('MS_DMI_AUTHORITY_URL') . "/token";
+        $response = Http::asForm()->post($tokenUrl, [
+            'client_id' => env('MS_DMI_CLIENT_ID'),
+            'scope' => env('MS_DMI_SCOPE'),
+            'code' => $request->code,
+            'redirect_uri' => env('MS_DMI_REDIRECT_URI'),
+            'grant_type' => 'authorization_code',
+            'client_secret' => env('MS_DMI_CLIENT_SECRET'),
+        ]);
+
+        $tokenData = $response->json();
+
+        if (!isset($tokenData['access_token'])) {
+            return response()->json([
+                'success' => false,
+                'message' => $tokenData
+            ], 500);
+        }
+
+        $accessToken = $tokenData['access_token'];
+
+        // Store the token in Laravel storage
+        OutlookDmiToken::create([
+            'access_token' => $accessToken,
+            'company_id' => Auth::user()->company_id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Authorization Successful! Now you can send phishing emails to outlook users')
         ], 200);
     }
 
@@ -178,7 +221,7 @@ class ApiOutlookAdController extends Controller
     public function saveOutlookEmps(Request $request)
     {
         //xss check start
-        
+
         $inputs = $request->employees;
         foreach ($inputs as $key => $input) {
             foreach ($input as $key => $value) {
@@ -225,7 +268,7 @@ class ApiOutlookAdController extends Controller
                 false, // not from all employees
                 true // Set to true to skip domain verification
             );
-           
+
             if ($addedEmployee['status'] == true) {
 
                 if ($groupId !== null) {
