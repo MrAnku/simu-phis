@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Auth;
 class EmployeeService
 {
 
-    public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null, $fromAllEmployees = false)
+    public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null, $fromAllEmployees = false, $fromOutlookAd = false)
     {
         if (!$fromAllEmployees) {
             //check License limit
@@ -43,13 +43,16 @@ class EmployeeService
                 ];
             }
 
-            //domain verified
-            if (!$this->domainVerified($email)) {
-                return [
-                    'status' => 0,
-                    'msg' => __('This domain is not verified')
-                ];
+            if (!$fromOutlookAd) {
+                //domain verified
+                if (!$this->domainVerified($email)) {
+                    return [
+                        'status' => 0,
+                        'msg' => __('This domain is not verified')
+                    ];
+                }
             }
+
             //increase the limit
             $this->increaseLimit($email);
         }

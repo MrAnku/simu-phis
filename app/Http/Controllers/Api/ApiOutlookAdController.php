@@ -221,7 +221,9 @@ class ApiOutlookAdController extends Controller
                 $emp['email'],
                 !empty($emp['company']) ? $emp['company'] : null,
                 !empty($emp['jobTitle']) ? $emp['jobTitle'] : null,
-                !empty($emp['whatsapp']) ? $emp['whatsapp'] : null
+                !empty($emp['whatsapp']) ? $emp['whatsapp'] : null,
+                false, // not from all employees
+                true // Set to true to skip domain verification
             );
            
             if ($addedEmployee['status'] == true) {
