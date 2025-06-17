@@ -277,7 +277,7 @@ class ApiAiCallController extends Controller
             }
             $campaignid = $request->route('campaign_id');
 
-            if($request->deleteTrainingsAlso == 1){
+            if ($request->deleteTrainingsAlso == 1) {
                 TrainingAssignedUser::where('campaign_id', $campaignid)->delete();
             }
 
@@ -324,7 +324,7 @@ class ApiAiCallController extends Controller
         }
     }
 
-    public function fetchCallReport(Request $request)
+    public function  fetchCallReport(Request $request)
     {
         try {
             if (!$request->route('callId')) {
@@ -347,6 +347,29 @@ class ApiAiCallController extends Controller
                     if ($response->successful()) {
                         // Return the response data
                         $res = $response->json();
+                        $res['fell_for_simulation'] = false;
+
+                        if (isset($res['transcript_with_tool_calls'])) {
+                            foreach ($res['transcript_with_tool_calls'] as $toolCall) {
+                                if ($toolCall['role'] == 'tool_call_invocation') {
+                                    $arguments = json_decode($toolCall['arguments'], true);
+
+                                    if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
+                                        $res['fell_for_simulation'] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+
+
+                        //    echo $res['call']['call_id'];
+                        //     return;
+
+                        // if($res->transcript_with_tool_calls)
+
+                        // $res['fell_for_simulation'] = true;
                         log_action("AI Vishing Call report fetched for call id {$request->route('callId')}");
                         if (isset($res['transcript_object']) && count($res['transcript_object']) > 0) {
                             $localReport->call_report = $res;
@@ -361,7 +384,29 @@ class ApiAiCallController extends Controller
                         return response()->json(['success' => false, 'message' => $response->body()], 422);
                     }
                 } else {
-                    $data = json_decode($localReport->call_report);
+                    $data = json_decode($localReport->call_report, true);
+                    
+
+
+                    $data['fell_for_simulation'] = false;
+
+                        if (isset($data['transcript_with_tool_calls'])) {
+                            foreach ($data['transcript_with_tool_calls'] as $toolCall) {
+                                if ($toolCall['role'] == 'tool_call_invocation') {
+                                    $arguments = json_decode($toolCall['arguments'], true);
+
+                                    if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
+                                        $data['fell_for_simulation'] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+
+
+
+
                     return $data;
                 }
             }
@@ -397,7 +442,7 @@ class ApiAiCallController extends Controller
 
             if ($request->hasFile('deepfake_audio')) {
 
-                 $file = $request->file('deepfake_audio');
+                $file = $request->file('deepfake_audio');
 
                 // Generate a random name for the file
                 $randomName = generateRandom(32);
