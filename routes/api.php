@@ -174,6 +174,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('training-module')->group(function () {
         Route::get('/', [ApiTrainingModuleController::class, 'trainings']);
+        Route::get('/training_page', [ApiTrainingModuleController::class, 'trainingPage']);
         Route::get('/getby/{id}', [ApiTrainingModuleController::class, 'getTrainingById']);
         Route::put('/update', [ApiTrainingModuleController::class, 'updateTrainingModule']);
         Route::delete('/delete', [ApiTrainingModuleController::class, 'deleteTraining']);
