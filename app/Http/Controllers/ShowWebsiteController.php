@@ -25,6 +25,7 @@ use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\BlueCollarLearnerLoginSession;
 use App\Models\SmishingLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
@@ -294,6 +295,8 @@ class ShowWebsiteController extends Controller
         $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
 
+        $token = encrypt($campaign->user_phone);
+
         $whatsapp_data = [
             "messaging_product" => "whatsapp",
             "to" => $campaign->user_phone, // Replace with actual user phone number
@@ -307,12 +310,25 @@ class ShowWebsiteController extends Controller
                         "parameters" => [
                             ["type" => "text", "text" => $campaign->user_name],
                             ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($training_assigned),]
+                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/start-blue-collar-training/" . $token]
                         ]
                     ]
                 ]
             ]
         ];
+
+        // Insert new record into the database
+
+        $inserted = BlueCollarLearnerLoginSession::insert([
+            'whatsapp_number' => $campaign->user_phone,
+            'token' => $token,
+            'expiry' => now()->addHours(24),
+        ]);
+
+        // Check if the record was inserted successfully
+        if (!$inserted) {
+            return response()->json(['error' => 'Failed to create token'], 500);
+        }
 
         $whatsapp_response = Http::withHeaders([
             "Authorization" => "Bearer {$access_token}",
@@ -338,6 +354,8 @@ class ShowWebsiteController extends Controller
         $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
 
+          $token = encrypt($campaign->user_phone);
+
 
         $whatsapp_data = [
             "messaging_product" => "whatsapp",
@@ -352,12 +370,25 @@ class ShowWebsiteController extends Controller
                         "parameters" => [
                             ["type" => "text", "text" => $campaign->user_name],
                             ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => "https://" . Str::random(3) . "." . env('PHISHING_WEBSITE_DOMAIN') . "/start-training/" . base64_encode($trainingAssignedId)],
+                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/start-blue-collar-training/" . $token],
                         ]
                     ]
                 ]
             ]
         ];
+
+         // Insert new record into the database
+
+        $inserted = BlueCollarLearnerLoginSession::insert([
+            'whatsapp_number' => $campaign->user_phone,
+            'token' => $token,
+            'expiry' => now()->addHours(24),
+        ]);
+
+        // Check if the record was inserted successfully
+        if (!$inserted) {
+            return response()->json(['error' => 'Failed to create token'], 500);
+        }
 
         // Send WhatsApp message
 
@@ -783,27 +814,25 @@ class ShowWebsiteController extends Controller
             $agent = new Agent();
 
             $clientData = [
-                    'platform' => $agent->platform(), // Extract OS
-                    'browser' => $agent->browser(), // Extract Browser
-                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
-                    'ip' => $request->ip(), // Client IP Address
-                    'source' => $request->header('User-Agent'), // Full User-Agent string
-                    'browserVersion' => $agent->version($agent->browser()),
-                    'device' => $agent->device(),
-                    'isMobile' => $agent->isMobile(),
-                    'isDesktop' => $agent->isDesktop(),
+                'platform' => $agent->platform(), // Extract OS
+                'browser' => $agent->browser(), // Extract Browser
+                'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
+                'ip' => $request->ip(), // Client IP Address
+                'source' => $request->header('User-Agent'), // Full User-Agent string
+                'browserVersion' => $agent->version($agent->browser()),
+                'device' => $agent->device(),
+                'isMobile' => $agent->isMobile(),
+                'isDesktop' => $agent->isDesktop(),
 
-                ];
-                TprmActivity::where('campaign_live_id', $campid)
-                    ->update([
-                        'compromised_at' => now(),
-                        'client_details' => json_encode($clientData)
-                    ]);
-            
-
-                log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
+            ];
+            TprmActivity::where('campaign_live_id', $campid)
+                ->update([
+                    'compromised_at' => now(),
+                    'client_details' => json_encode($clientData)
+                ]);
 
 
+            log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
         }
     }
 
@@ -855,8 +884,6 @@ class ShowWebsiteController extends Controller
             TprmActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 
             log_action("TPRM phishing payload clicked", 'employee', 'employee');
-
-            
         }
     }
 }

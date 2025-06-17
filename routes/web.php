@@ -77,6 +77,16 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
     Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
         ->name('learner.training.dashboard');
 
+
+
+
+
+    Route::get('/start-blue-collar-training/{token}', [LearnerDashController::class, 'startBlueCollarTraining'])
+        ->name('learner.start.blue.collar.training');
+
+
+
+
     Route::middleware('isValidLearnerToken')->group(function () {
 
         Route::get('lang/{locale}', [LearnerDashController::class, 'appLangChange']);

@@ -14,8 +14,10 @@ use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
+use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\BlueCollarLearnerLoginSession;
 
 class LearnerDashController extends Controller
 {
@@ -92,6 +94,48 @@ class LearnerDashController extends Controller
 
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userEmail'));
     }
+
+    public function startBlueCollarTraining(Request $request)
+    {
+        $token = $request->route('token');
+
+        // Fetch the token and expiry time from blue_collar_learner_login_sessions
+
+        $session = BlueCollarLearnerLoginSession::where('token', $token)
+            ->orderBy('created_at', 'desc') // Ensure the latest session is checked
+            ->first();
+
+        // Check if session exists and if the token is expired
+        if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
+            return view('learning.session-expired', ['msg' => 'Your training session has expired!']); // Stop execution
+        }
+
+        // Decrypt the whatsapp number
+        $userWhatsapp = decrypt($session->token);
+
+        $averageScore = BlueCollarTrainingUser::where('user_whatsapp', $userWhatsapp)
+            ->avg('personal_best');
+
+        $assignedTrainingCount = BlueCollarTrainingUser::with('trainingData')
+            ->where('user_whatsapp', $userWhatsapp)
+            ->where('completed', 0)
+            ->get();
+
+        $completedTrainingCount = BlueCollarTrainingUser::with('trainingData')
+            ->where('user_whatsapp', $userWhatsapp)
+            ->where('completed', 1)
+            ->get();
+
+        $totalCertificates = BlueCollarTrainingUser::where('user_whatsapp', $userWhatsapp)
+            ->where('completed', 1)
+            ->where('personal_best', 100)
+            ->count();
+
+        Session::put('token', $token);
+
+        return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userWhatsapp'));
+    }
+
     public function renewToken(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -166,7 +210,7 @@ class LearnerDashController extends Controller
         //         'mail.from.name' => $smtp->from_name,
         //     ]);
         // } else {
-            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
         // }
 
         // Insert new record into the database
@@ -324,7 +368,7 @@ class LearnerDashController extends Controller
         $row_id = base64_decode($request->id);
 
         $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
-        
+
         if ($rowData && $request->trainingScore > $rowData->personal_best) {
             // Update the column if the current value is greater
             $rowData->personal_best = $request->trainingScore;
@@ -367,7 +411,7 @@ class LearnerDashController extends Controller
 
         // Generate the PDF from the view and include the certificate ID
         $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'userEmail', 'userName', 'certificateId'))
-         ->setPaper('a4', 'landscape');
+            ->setPaper('a4', 'landscape');
 
         // Define the filename with certificate ID
         $fileName = "{$trainingModule}_Certificate_{$certificateId}.pdf";
@@ -375,7 +419,6 @@ class LearnerDashController extends Controller
         log_action("Employee downloaded training certificate", 'learner', 'learner');
         // Return the PDF download response
         return $pdf->download($fileName);
-
     }
 
     /**
