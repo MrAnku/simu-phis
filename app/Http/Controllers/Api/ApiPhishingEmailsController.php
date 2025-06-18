@@ -397,9 +397,9 @@ class ApiPhishingEmailsController extends Controller
     {
         try {
             // Validate input
-            if (empty($request->prompt)) {
-                throw new \Exception('Prompt cannot be empty');
-            }
+            // if (empty($request->prompt)) {
+            //     throw new \Exception('Prompt cannot be empty');
+            // }
 
             // Define a structured system prompt for better email template generation
             $systemPrompt = <<<EOT
