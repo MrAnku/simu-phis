@@ -396,44 +396,47 @@ if (!function_exists('sendMailUsingDmi')) {
     {
         // Validate required mailData fields
         if (!isset($mailData['email'], $mailData['email_subject'], $mailData['mailBody'], $mailData['from_email'])) {
-            return ['success' => false, 'message' => 'Missing required email parameters.'];
+            return ['success' => false, 'message' => 'Missing required email parameters.Missing required email fields'];
         }
 
-        // Build email payload
+        // Build email payload for sendMail endpoint
         $email = [
-            "subject" => $mailData['email_subject'],
-            "body" => [
-                "contentType" => "HTML",
-                "content" => $mailData['mailBody']
-            ],
-            "from" => [
-                "emailAddress" => [
-                    "address" => $mailData['from_email']
-                ]
-            ],
-            "toRecipients" => [
-                [
+            "message" => [
+                "subject" => $mailData['email_subject'],
+                "body" => [
+                    "contentType" => "HTML",
+                    "content" => $mailData['mailBody']
+                ],
+                "from" => [
                     "emailAddress" => [
-                        "address" => $mailData['email']
+                        "address" => $mailData['from_email']
+                    ]
+                ],
+                "toRecipients" => [
+                    [
+                        "emailAddress" => [
+                            "address" => $mailData['email']
+                        ]
                     ]
                 ]
-            ]
+            ],
+            "saveToSentItems" => true // Save a copy in the sender's Sent Items folder
         ];
 
-        // Inject the email into Inbox (draft-style injection)
-        $injectResponse = Http::withToken($accessToken)
+        // Send the email using the sendMail endpoint
+        $sendResponse = Http::withToken($accessToken)
             ->withHeaders([
                 'Content-Type' => 'application/json'
             ])
-            ->post('https://graph.microsoft.com/v1.0/me/mailFolders/Inbox/messages', $email);
+            ->post('https://graph.microsoft.com/v1.0/me/sendMail', $email);
 
-        if ($injectResponse->successful()) {
-            return ['success' => true, 'message' => 'Email injected successfully.'];
+        if ($sendResponse->successful()) {
+            return ['success' => true, 'message' => 'Email sent successfully.'];
         }
 
         return [
             'success' => false,
-            'message' => 'Failed to inject email:'
+            'message' => 'Failed to send email: ' . $sendResponse->body()
         ];
     }
 }

@@ -280,7 +280,8 @@ class ProcessCampaigns extends Command
     $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
     if ($isOutlookEmail) {
       echo "Outlook email detected: " . $campaign->user_email . "\n";
-      $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+      $accessToken = OutlookDmiToken::where('company_id', $company_id)
+      ->where('created_at', '>', now()->subMinutes(60))->first();
       if ($accessToken) {
         echo "Access token found for company ID: " . $company_id . "\n";
 
@@ -293,6 +294,8 @@ class ProcessCampaigns extends Command
           echo "Email not sent to: " . $campaign->user_email . "\n";
         }
       } else {
+        OutlookDmiToken::where('company_id', $company_id)->delete();
+        echo "Access token expired or not found for company ID: " . $company_id . "\n";
         echo "No access token found for company ID: " . $company_id . "\n";
         if ($this->sendMail($mailData)) {
 
