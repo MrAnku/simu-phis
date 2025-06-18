@@ -153,9 +153,14 @@ class ProcessTprmCampaigns extends Command
               $mailBody = str_replace('{{user_name}}', $user_Name, $mailBody);
               $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/ttrackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
 
-              if ($campaign->email_lang !== 'en') {
+              if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
 
                 $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
+              }
+
+              if ($campaign->email_lang == 'am') {
+
+                $mailBody = $this->translateHtmlToAmharic($mailBody);
               }
 
               $mailData = [
@@ -190,6 +195,61 @@ class ProcessTprmCampaigns extends Command
         }
       }
     }
+  }
+
+  private function translateHtmlToAmharic(string $htmlContent): ?string
+  {
+    $apiKey = env('OPENAI_API_KEY');
+    $endpoint = 'https://api.openai.com/v1/chat/completions';
+
+    // Step 1: Split HTML into chunks (e.g., by <div> or <p>)
+    $chunks = preg_split('/(?=<div|<p|<section|<article|<table|<ul|<ol|<h[1-6])/i', $htmlContent, -1, PREG_SPLIT_NO_EMPTY);
+
+    $translatedChunks = [];
+
+    foreach ($chunks as $index => $chunk) {
+      $messages = [
+        [
+          "role" => "system",
+          "content" => "You are a professional translator. Translate only the visible text in the HTML into Amharic. Do not alter the structure, tags, attributes, or inline styles."
+        ],
+        [
+          "role" => "user",
+          "content" => "Translate this HTML into Amharic, keeping the HTML unchanged:\n\n$chunk"
+        ]
+      ];
+
+      try {
+        $response = Http::timeout(60)
+          ->retry(3, 5000)
+          ->withHeaders([
+            'Authorization' => "Bearer {$apiKey}",
+            'Content-Type'  => 'application/json',
+          ])->post($endpoint, [
+            'model' => 'gpt-4o',
+            'messages' => $messages,
+            'temperature' => 0.2,
+            'max_tokens' => 2048,
+          ]);
+
+        if ($response->successful()) {
+          $translatedChunk = $response->json()['choices'][0]['message']['content'] ?? '';
+          $translatedChunks[] = $translatedChunk;
+        } else {
+          \Log::error("Chunk $index failed", ['status' => $response->status(), 'body' => $response->body()]);
+          $translatedChunks[] = $chunk; // fallback to original
+        }
+
+        // Sleep to avoid hitting rate limits
+        sleep(1);
+      } catch (\Exception $e) {
+        \Log::error("Chunk $index exception", ['error' => $e->getMessage()]);
+        $translatedChunks[] = $chunk; // fallback to original
+      }
+    }
+
+    // Step 3: Combine all translated chunks
+    return implode('', $translatedChunks);
   }
 
   private function sendMailConditionally($mailData, $campaign, $company_id)
