@@ -19,6 +19,7 @@ use App\Models\EmailCampActivity;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\OutlookDmiToken;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
@@ -198,14 +199,7 @@ class ProcessCampaigns extends Command
                 'sendMailPassword' => $senderProfile->password,
               ];
 
-              if ($this->sendMail($mailData)) {
-
-                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                echo "Email sent to: " . $campaign->user_email . "\n";
-              } else {
-                echo "Email not sent to: " . $campaign->user_email . "\n";
-              }
+              $this->sendMailConditionally($mailData, $campaign, $company_id);
 
               $campaign->update(['sent' => 1]);
 
@@ -215,6 +209,48 @@ class ProcessCampaigns extends Command
             }
           }
         }
+      }
+    }
+  }
+
+  private function sendMailConditionally($mailData, $campaign, $company_id)
+  {
+    // check user email domain is outlook email
+    $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
+    if ($isOutlookEmail) {
+      echo "Outlook email detected: " . $campaign->user_email . "\n";
+      $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+      if ($accessToken) {
+        echo "Access token found for company ID: " . $company_id . "\n";
+
+        $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
+        if ($sent['success'] == true) {
+          $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+          echo "Email sent to: " . $campaign->user_email . "\n";
+        } else {
+          echo "Email not sent to: " . $campaign->user_email . "\n";
+        }
+      } else {
+        echo "No access token found for company ID: " . $company_id . "\n";
+        if ($this->sendMail($mailData)) {
+
+          $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+          echo "Email sent to: " . $campaign->user_email . "\n";
+        } else {
+          echo "Email not sent to: " . $campaign->user_email . "\n";
+        }
+      }
+    } else {
+      echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
+      if ($this->sendMail($mailData)) {
+
+        $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+        echo "Email sent to: " . $campaign->user_email . "\n";
+      } else {
+        echo "Email not sent to: " . $campaign->user_email . "\n";
       }
     }
   }

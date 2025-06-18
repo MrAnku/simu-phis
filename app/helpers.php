@@ -389,3 +389,86 @@ if (!function_exists('learnDomain')) {
         }
     }
 }
+
+
+if (!function_exists('sendMailUsingDmi')) {
+    function sendMailUsingDmi($accessToken, $mailData)
+    {
+        // Validate required mailData fields
+        if (!isset($mailData['email'], $mailData['email_subject'], $mailData['mailBody'], $mailData['from_email'])) {
+            return ['success' => false, 'message' => 'Missing required email parameters.'];
+        }
+
+        // Build email payload
+        $email = [
+            "subject" => $mailData['email_subject'],
+            "body" => [
+                "contentType" => "HTML",
+                "content" => $mailData['mailBody']
+            ],
+            "from" => [
+                "emailAddress" => [
+                    "address" => $mailData['from_email']
+                ]
+            ],
+            "toRecipients" => [
+                [
+                    "emailAddress" => [
+                        "address" => $mailData['email']
+                    ]
+                ]
+            ]
+        ];
+
+        // Inject the email into Inbox (draft-style injection)
+        $injectResponse = Http::withToken($accessToken)
+            ->withHeaders([
+                'Content-Type' => 'application/json'
+            ])
+            ->post('https://graph.microsoft.com/v1.0/me/mailFolders/Inbox/messages', $email);
+
+        if ($injectResponse->successful()) {
+            return ['success' => true, 'message' => 'Email injected successfully.'];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to inject email:'
+        ];
+    }
+}
+
+
+if (!function_exists('checkIfOutlookDomain')) {
+    function checkIfOutlookDomain($email) {
+
+        //extract the domain from the email address
+        $domain = substr(strrchr($email, "@"), 1);
+        // Validate input domain
+        if (empty($domain) || !is_string($domain)) {
+            return false;
+        }
+
+        // Trim and sanitize domain
+        $domain = trim($domain);
+        $domain = filter_var($domain, FILTER_SANITIZE_STRING);
+
+        // Attempt to get MX records
+        $mxRecords = @dns_get_record($domain, DNS_MX);
+
+        // Check if DNS query failed or returned no records
+        if ($mxRecords === false || empty($mxRecords)) {
+            return false;
+        }
+
+        // Check each MX record for Microsoft 365 pattern
+        foreach ($mxRecords as $record) {
+            if (isset($record['target']) && str_contains(strtolower($record['target']), 'mail.protection.outlook.com')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+

@@ -5,12 +5,13 @@ namespace App\Console\Commands;
 use App\Models\Company;
 use App\Mail\CampaignMail;
 use App\Mail\QuishingMail;
-use App\Models\QuishingActivity;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
+use App\Models\OutlookDmiToken;
 use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
+use App\Models\QuishingActivity;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\File;
@@ -67,20 +68,63 @@ class ProcessQuishing extends Command
                     $mailData = $this->prepareMailBody($campaign, $quishingTemplate->senderProfile()->first(), $quishingTemplate, $qrcodeLink);
 
                     //send mail
-                    $mailSent = $this->sendMail($mailData);
-                    if ($mailSent) {
-                        
-                        QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                    // $mailSent = $this->sendMail($mailData);
+                    $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+                    // if ($mailSent) {
 
-                        echo "Mail sent to {$campaign->user_email} \n";
-                        $campaign->sent = '1';
-                        $campaign->save();
-                    }
+                    // QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                    echo "Mail sent to {$campaign->user_email} \n";
+                    $campaign->sent = '1';
+                    $campaign->save();
+                    // }
                 }
             }
         }
 
         $this->checkCompletedCampaigns();
+    }
+
+    private function sendMailConditionally($mailData, $campaign, $company_id)
+    {
+        // check user email domain is outlook email
+        $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
+        if ($isOutlookEmail) {
+            echo "Outlook email detected: " . $campaign->user_email . "\n";
+            $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+            if ($accessToken) {
+                echo "Access token found for company ID: " . $company_id . "\n";
+
+                $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
+                if ($sent['success'] == true) {
+                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                    echo "Email sent to: " . $campaign->user_email . "\n";
+                } else {
+                    echo "Email not sent to: " . $campaign->user_email . "\n";
+                }
+            } else {
+                echo "No access token found for company ID: " . $company_id . "\n";
+                if ($this->sendMail($mailData)) {
+
+                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                    echo "Email sent to: " . $campaign->user_email . "\n";
+                } else {
+                    echo "Email not sent to: " . $campaign->user_email . "\n";
+                }
+            }
+        } else {
+            echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
+            if ($this->sendMail($mailData)) {
+
+                $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                echo "Email sent to: " . $campaign->user_email . "\n";
+            } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+            }
+        }
     }
 
     private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)

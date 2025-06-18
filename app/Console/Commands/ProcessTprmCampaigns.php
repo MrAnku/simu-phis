@@ -6,9 +6,10 @@ use Carbon\Carbon;
 use App\Models\TprmUsers;
 use App\Mail\CampaignMail;
 use Illuminate\Support\Str;
+use App\Models\TprmActivity;
 use App\Models\TprmCampaign;
 use App\Models\SenderProfile;
-use App\Models\TprmActivity;
+use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\TprmCampaignLive;
 use App\Models\TprmCampaignReport;
@@ -170,8 +171,10 @@ class ProcessTprmCampaigns extends Command
               // echo "Email data: " . json_encode($mailData, JSON_PRETTY_PRINT) . "\n";
 
               echo "Sending email to: " . $email . "\n";
-              $mailSentRes = $this->sendMail($mailData);
-              TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+              // $mailSentRes = $this->sendMail($mailData);
+              $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+
+              // TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
               // Update campaign as sent
               $campaign->update(['sent' => 1]);
@@ -185,6 +188,48 @@ class ProcessTprmCampaigns extends Command
             echo "No phishing material found for the campaign.\n";
           }
         }
+      }
+    }
+  }
+
+  private function sendMailConditionally($mailData, $campaign, $company_id)
+  {
+    // check user email domain is outlook email
+    $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
+    if ($isOutlookEmail) {
+      echo "Outlook email detected: " . $campaign->user_email . "\n";
+      $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+      if ($accessToken) {
+        echo "Access token found for company ID: " . $company_id . "\n";
+
+        $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
+        if ($sent['success'] == true) {
+          $activity = TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+          echo "Email sent to: " . $campaign->user_email . "\n";
+        } else {
+          echo "Email not sent to: " . $campaign->user_email . "\n";
+        }
+      } else {
+        echo "No access token found for company ID: " . $company_id . "\n";
+        if ($this->sendMail($mailData)) {
+
+          $activity = TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+          echo "Email sent to: " . $campaign->user_email . "\n";
+        } else {
+          echo "Email not sent to: " . $campaign->user_email . "\n";
+        }
+      }
+    } else {
+      echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
+      if ($this->sendMail($mailData)) {
+
+        $activity = TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+        echo "Email sent to: " . $campaign->user_email . "\n";
+      } else {
+        echo "Email not sent to: " . $campaign->user_email . "\n";
       }
     }
   }
@@ -367,7 +412,7 @@ class ProcessTprmCampaigns extends Command
     $tempFilePath = $meta['uri'];
 
     $response = Http::withoutVerifying()
-     ->timeout(60)
+      ->timeout(60)
       ->attach('file', file_get_contents($tempFilePath), 'email.html')
       ->post('https://translate.sparrow.host/translate_file', [
         'source' => 'en',
@@ -388,12 +433,12 @@ class ProcessTprmCampaigns extends Command
       echo 'No translated URL found in response.';
       return $emailBody;
     }
-    
+
     $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
 
     $translatedContent = file_get_contents($translatedUrl);
 
-    
+
     return $translatedContent;
   }
 }
