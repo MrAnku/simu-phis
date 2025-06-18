@@ -401,17 +401,18 @@ class ApiPhishingEmailsController extends Controller
             //     throw new \Exception('Prompt cannot be empty');
             // }
 
-            // Define a structured system prompt for better email template generation
+            // Define a structured system prompt for inline CSS email template
             $systemPrompt = <<<EOT
 You are an expert email template generator. Generate a valid, professional HTML email template that:
 1. Uses responsive design with a max-width of 600px
 2. Includes proper HTML email boilerplate (DOCTYPE, meta tags, etc.)
-3. Uses ONLY inline CSS for maximum email client compatibility (no <style> tags)
+3. Uses ONLY inline CSS (style attributes directly on HTML elements, no <style> tags)
 4. Includes a header, body, and footer section
 5. Is clean, professional, and follows email best practices
 6. Uses a mobile-friendly single-column layout
-7. Includes placeholder text where dynamic content would be inserted
-8. Returns only the HTML code without any markdown code fences (```) or explanations
+7. Includes placeholder text for dynamic content
+8. Returns only the HTML code without any markdown code fences (```), explanations, or comments
+9. Ensures compatibility with major email clients (Outlook, Gmail, etc.)
 EOT;
 
             // Combine user prompt with additional instructions
@@ -423,9 +424,9 @@ Ensure the template includes:
 - A professional header with a logo placeholder
 - A main content area with the requested content
 - A footer with unsubscribe link and company information
-- Inline CSS styling only (no <style> tags)
-- Responsive design for mobile devices
-- No markdown code fences (```) in the output
+- Inline CSS styling ONLY (style attributes on elements, no <style> tags)
+- Responsive design for mobile devices using inline CSS
+- No markdown code fences (```) or non-HTML content in the output
 EOT;
 
             // Make API request to GPT-4o
@@ -442,7 +443,7 @@ EOT;
                         ['role' => 'user', 'content' => $userPrompt],
                     ],
                     'max_tokens' => 2000,
-                    'temperature' => 0.6,
+                    'temperature' => 0.5, // Lowered for more precise adherence to instructions
                 ]);
 
             // Check for API failure
@@ -462,21 +463,21 @@ EOT;
             // Clean up potential markdown fences
             $html = preg_replace('/^```html\s*|\s*```$/m', '', trim($html));
 
-            // Validate HTML structure
+            // Validate HTML structure and ensure no <style> tags
             if (empty($html) || !str_contains(strtolower($html), '<html') || !str_contains(strtolower($html), '<body')) {
-                log_action("Invalid HTML generated for prompt: {$request->prompt}");
+                log_action("Invalid HTML structure generated for prompt: {$request->prompt}");
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid HTML template generated',
+                    'message' => 'Invalid HTML template structure',
                 ], 500);
             }
 
-            // Check for <style> tags (which shouldn't be present)
-            if (str_contains(strtolower($html), '<style')) {
+            // Strict check for <style> tags
+            if (preg_match('/<style\b[^>]*>/i', $html)) {
                 log_action("Generated HTML contains <style> tags for prompt: {$request->prompt}");
                 return response()->json([
                     'status' => false,
-                    'message' => 'Generated template contains unsupported style tags',
+                    'message' => 'Generated template contains unsupported <style> tags',
                 ], 500);
             }
 
