@@ -375,7 +375,7 @@
                                             <tr>
                                                 @if ($training->training_type == 'games')
                                                     <td class="text-secondary">
-                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug }}/?id={{ base64_encode($training->id) }}"
+                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug ?? ''}}/?id={{ base64_encode($training->id) }}"
                                                             target="_blank">
                                                             {{ $training->trainingGame->name }}
                                                         </a>
