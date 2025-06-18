@@ -377,7 +377,7 @@
                                                     <td class="text-secondary">
                                                         <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug ?? ''}}/?id={{ base64_encode($training->id) }}"
                                                             target="_blank">
-                                                            {{ $training->trainingGame->name }}
+                                                            {{ $training->trainingGame->name ?? 'Game not found' }}
                                                         </a>
                                                     </td>
                                                     <td class="text-secondary">
