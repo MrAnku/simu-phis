@@ -396,45 +396,104 @@ class ApiPhishingEmailsController extends Controller
     public function generateTemplate(Request $request)
     {
         try {
-            $prompt = "Generate a valid, professional HTML email template based on the following request. The output should only contain HTML code:\n\n{$request->prompt}";
-
-            $response = Http::withOptions(['verify' => false])->withHeaders([
-                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
-            ])->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-3.5-turbo',
-                'messages' => [
-                    ['role' => 'system', 'content' => __('You are an expert email template generator. Always provide valid HTML code.')],
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-                'max_tokens' => 1500,
-                'temperature' => 0.7,
-            ]);
-
-            if ($response->failed()) {
-
-                log_action("Failed to generate AI Email Template on topic of prompt: {$prompt}");
-
-                return response()->json([
-                    'status' => true,
-                    'message' => $response->body(),
-                ]);
+            // Validate input
+            if (empty($request->prompt)) {
+                throw new \Exception('Prompt cannot be empty');
             }
 
-            $html = $response['choices'][0]['message']['content'];
+            // Define a structured system prompt for better email template generation
+            $systemPrompt = <<<EOT
+You are an expert email template generator. Generate a valid, professional HTML email template that:
+1. Uses responsive design with a max-width of 600px
+2. Includes proper HTML email boilerplate (DOCTYPE, meta tags, etc.)
+3. Uses ONLY inline CSS for maximum email client compatibility (no <style> tags)
+4. Includes a header, body, and footer section
+5. Is clean, professional, and follows email best practices
+6. Uses a mobile-friendly single-column layout
+7. Includes placeholder text where dynamic content would be inserted
+8. Returns only the HTML code without any markdown code fences (```) or explanations
+EOT;
 
-            log_action("Email template generated using AI on topic of prompt: {$prompt}");
+            // Combine user prompt with additional instructions
+            $userPrompt = <<<EOT
+Generate a valid, professional HTML email template based on the following request:
+{$request->prompt}
+
+Ensure the template includes:
+- A professional header with a logo placeholder
+- A main content area with the requested content
+- A footer with unsubscribe link and company information
+- Inline CSS styling only (no <style> tags)
+- Responsive design for mobile devices
+- No markdown code fences (```) in the output
+EOT;
+
+            // Make API request to GPT-4o
+            $response = Http::withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->timeout(30)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-4o',
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $userPrompt],
+                    ],
+                    'max_tokens' => 2000,
+                    'temperature' => 0.6,
+                ]);
+
+            // Check for API failure
+            if ($response->failed()) {
+                $errorMessage = $response->body();
+                log_action("Failed to generate AI Email Template on topic of prompt: {$request->prompt}. Error: {$errorMessage}");
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Failed to generate email template: ' . $errorMessage,
+                ], 500);
+            }
+
+            // Extract HTML content
+            $html = $response['choices'][0]['message']['content'] ?? '';
+
+            // Clean up potential markdown fences
+            $html = preg_replace('/^```html\s*|\s*```$/m', '', trim($html));
+
+            // Validate HTML structure
+            if (empty($html) || !str_contains(strtolower($html), '<html') || !str_contains(strtolower($html), '<body')) {
+                log_action("Invalid HTML generated for prompt: {$request->prompt}");
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid HTML template generated',
+                ], 500);
+            }
+
+            // Check for <style> tags (which shouldn't be present)
+            if (str_contains(strtolower($html), '<style')) {
+                log_action("Generated HTML contains <style> tags for prompt: {$request->prompt}");
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Generated template contains unsupported style tags',
+                ], 500);
+            }
+
+            // Log success
+            log_action("Email template generated using AI on topic of prompt: {$request->prompt}");
 
             return response()->json([
                 'status' => true,
                 'html' => $html,
-                "message" => __("Successfully fetch message")
+                'message' => __('Successfully generated email template'),
             ]);
         } catch (\Exception $e) {
+            log_action("Error occurred while generating AI Email Template on topic of prompt: {$request->prompt}. Error: " . $e->getMessage());
 
-            log_action("Some Error Occured while generating AI Email Template on topic of prompt: {$prompt} : " . $e->getMessage());
             return response()->json([
                 'status' => false,
-                'message' => __('Error: ') . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }
