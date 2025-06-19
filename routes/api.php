@@ -354,6 +354,12 @@ Route::middleware('auth:api')->group(function () {
 
         Route::put('/ai-analysis', [PhishTriageController::class, 'aiAnalysis']);
         Route::get('/domain-analysis/{domain}', [PhishTriageController::class, 'domainAnalysis']);
+
+        Route::get('/auth', [PhishTriageController::class, 'redirect']);
+        Route::put('/callback', [PhishTriageController::class, 'callback']);
+        Route::get('/emails', [PhishTriageController::class, 'listEmails']);
+        Route::post('/email/action', [PhishTriageController::class, 'performAction']);
+        Route::post('/email/findmsgid', [PhishTriageController::class, 'findMessageId']);
     });
 
     //policy

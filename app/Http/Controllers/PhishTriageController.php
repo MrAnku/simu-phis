@@ -11,6 +11,7 @@ use App\Models\PhishTriageReportLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 
 class PhishTriageController extends Controller
 {
@@ -250,5 +251,123 @@ class PhishTriageController extends Controller
             'domain' => $domain,
             'analysis' => $result
         ], 200);
+    }
+
+
+    //phish triage actions
+
+    public function redirect()
+    {
+        $cache = Cache::get("outlook_token_" . Auth::user()->company_id);
+        if ($cache) {
+            return response()->json(['auth_url' => null], 200);
+        }
+        $params = [
+            'client_id' => env('PT_MS_CLIENT_ID'),
+            'response_type' => 'code',
+            'redirect_uri' => env('PT_MS_REDIRECT_URI'),
+            'response_mode' => 'query',
+            'scope' => 'offline_access Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read',
+        ];
+
+        $url = "https://login.microsoftonline.com/" . env('PT_MS_TENANT_ID') . "/oauth2/v2.0/authorize?" . http_build_query($params);
+        return response()->json(['auth_url' => $url]);
+    }
+
+    public function callback(Request $request)
+    {
+        $code = $request->code;
+        $companyId = Auth::user()->company_id; // Pass user ID to associate tokens
+
+        $response = Http::asForm()->post("https://login.microsoftonline.com/" . env('PT_MS_TENANT_ID') . "/oauth2/v2.0/token", [
+            'client_id' => env('PT_MS_CLIENT_ID'),
+            'scope' => 'offline_access Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read',
+            'code' => $code,
+            'redirect_uri' => env('PT_MS_REDIRECT_URI'),
+            'grant_type' => 'authorization_code',
+            'client_secret' => env('PT_MS_CLIENT_SECRET'),
+        ]);
+
+        $data = $response->json();
+
+        // Save access token for user (use DB in production)
+        Cache::put("outlook_token_$companyId", $data['access_token'], now()->addMinutes(55));
+        Cache::put("outlook_refresh_$companyId", $data['refresh_token'], now()->addDays(30));
+
+        return response()->json(['message' => 'Token stored']);
+    }
+
+    private function getToken()
+    {
+        $companyId = Auth::user()->company_id;
+        return Cache::get("outlook_token_$companyId");
+    }
+
+    public function listEmails(Request $request)
+    {
+        $token = $this->getToken();
+
+        $response = Http::withToken($token)->get('https://graph.microsoft.com/v1.0/me/messages?$top=10');
+
+        return response()->json($response->json());
+    }
+
+    public function performAction(Request $request)
+    {
+        $action = $request->action;
+        $id = $request->id;
+        $reportedEmail = PhishTriageReportLog::find($id);
+        if (!$reportedEmail) {
+            return response()->json(['success' => false, 'message' => 'Report not found'], 404);
+        }
+        $headerString = $reportedEmail->headers;
+        preg_match('/Message-Id:\s*<([^>]+)>/i', $headerString, $matches);
+        if (empty($matches[1])) {
+            return response()->json(['success' => false, 'message' => 'Message ID not found in headers'], 404);
+        }
+        $messageId = $matches[1];
+
+        $token = $this->getToken();
+
+        switch ($action) {
+            case 'mark_safe':
+                Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                    'destinationId' => 'inbox'
+                ]);
+                break;
+
+            case 'move_spam':
+                Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                    'destinationId' => 'junkemail'
+                ]);
+                break;
+
+            case 'block_delete':
+                $email = Http::withToken($token)->get("https://graph.microsoft.com/v1.0/me/messages/$messageId")->json();
+                $senderEmail = $email['sender']['emailAddress']['address'] ?? null;
+
+                if ($senderEmail) {
+                    Http::withToken($token)->patch("https://graph.microsoft.com/v1.0/me/mailboxSettings", [
+                        'junkEmailConfiguration' => [
+                            'blockedSenders' => [$senderEmail]
+                        ]
+                    ]);
+                }
+
+                Http::withToken($token)->delete("https://graph.microsoft.com/v1.0/me/messages/$messageId");
+                break;
+        }
+
+        return response()->json(['success' => true, 'message' => 'Action performed successfully']);
+    }
+
+    public function findMessageId(Request $request)
+    {
+
+        $headerString = $request->header;
+        preg_match('/Message-Id:\s*<([^>]+)>/i', $headerString, $matches);
+        $messageId = $matches[1] ?? null;
+
+        return response()->json(['message_id' => $messageId]);
     }
 }
