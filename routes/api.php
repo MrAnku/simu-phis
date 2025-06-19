@@ -300,6 +300,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
         Route::post('/update-website', [ApiPhishingWebsitesController::class, 'updateWebsite']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
+        Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
         Route::post('/duplicate/{id?}', [ApiPhishingWebsitesController::class, 'duplicate']);
@@ -351,6 +352,7 @@ Route::middleware('auth:api')->group(function () {
     //phish triage
     Route::prefix('phish-triage')->group(function () {
         Route::get('/email-reported', [PhishTriageController::class, 'emailsReported']);
+        Route::get('/resolved', [PhishTriageController::class, 'emailsResolved']);
 
         Route::put('/ai-analysis', [PhishTriageController::class, 'aiAnalysis']);
         Route::get('/domain-analysis/{domain}', [PhishTriageController::class, 'domainAnalysis']);
