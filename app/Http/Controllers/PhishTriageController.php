@@ -83,6 +83,22 @@ class PhishTriageController extends Controller
         return response()->json($logdata, 200);
     }
 
+    public function emailsResolved(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+        if ($request->query('email')) {
+            $email = $request->query('email');
+            $logdata = PhishTriageReportLog::where('company_id', $companyId)
+                ->where('user_email', $email)
+                ->where('status', '!=', 'reported')
+                ->get();
+            return response()->json($logdata, 200);
+        }
+        $logdata = PhishTriageReportLog::where('company_id', $companyId)
+        ->where('status', '!=', 'reported')->get();
+        return response()->json($logdata, 200);
+    }
+
     public function aiAnalysis(Request $request)
     {
         $id = base64_decode($request->query('encoded_id'));
