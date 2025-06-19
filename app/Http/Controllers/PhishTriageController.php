@@ -294,12 +294,15 @@ class PhishTriageController extends Controller
 
     public function callback(Request $request)
     {
+        // This method can remain largely unchanged if you're still using the authorization code flow for user-specific actions.
+        // However, for application-level access, you won't need this callback for most operations.
+        // You can keep it for user-specific delegated actions if needed.
         $code = $request->code;
-        $companyId = Auth::user()->company_id; // Pass user ID to associate tokens
+        $companyId = Auth::user()->company_id;
 
         $response = Http::asForm()->post("https://login.microsoftonline.com/" . env('PT_MS_TENANT_ID') . "/oauth2/v2.0/token", [
             'client_id' => env('PT_MS_CLIENT_ID'),
-            'scope' => 'offline_access Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read',
+            'scope' => 'https://graph.microsoft.com/.default', // Use .default for application permissions
             'code' => $code,
             'redirect_uri' => env('PT_MS_REDIRECT_URI'),
             'grant_type' => 'authorization_code',
@@ -308,26 +311,33 @@ class PhishTriageController extends Controller
 
         $data = $response->json();
 
-        // Save access token for user (use DB in production)
         Cache::put("outlook_token_$companyId", $data['access_token'], now()->addMinutes(55));
         Cache::put("outlook_refresh_$companyId", $data['refresh_token'], now()->addDays(30));
 
         return response()->json(['success' => true, 'message' => 'Token stored']);
     }
 
-    private function getToken()
+    private function getAppToken()
     {
-        $companyId = Auth::user()->company_id;
-        return Cache::get("outlook_token_$companyId");
-    }
+        // Use client credentials flow to get an application-level access token
+        $response = Http::asForm()->post("https://login.microsoftonline.com/" . env('PT_MS_TENANT_ID') . "/oauth2/v2.0/token", [
+            'client_id' => env('PT_MS_CLIENT_ID'),
+            'scope' => 'https://graph.microsoft.com/.default',
+            'client_secret' => env('PT_MS_CLIENT_SECRET'),
+            'grant_type' => 'client_credentials',
+        ]);
 
-    public function listEmails(Request $request)
-    {
-        $token = $this->getToken();
+        if ($response->failed()) {
+            \Log::error('Failed to obtain application token', ['error' => $response->body()]);
+            return null;
+        }
 
-        $response = Http::withToken($token)->get('https://graph.microsoft.com/v1.0/me/messages?$top=10');
+        $data = $response->json();
+        $token = $data['access_token'];
 
-        return response()->json($response->json());
+        // Cache the token (optional, adjust duration based on token expiry)
+        Cache::put('outlook_app_token', $token, now()->addMinutes(55));
+        return $token;
     }
 
     public function performAction(Request $request)
@@ -343,6 +353,13 @@ class PhishTriageController extends Controller
             return response()->json(['success' => false, 'message' => 'Report not found'], 404);
         }
 
+        // Assume PhishTriageReportLog has a field 'reported_by_email' with the user's email address
+        $targetUserEmail = $reportedEmail->user_email;
+        if (!$targetUserEmail) {
+            \Log::error('Reported user email not found', ['id' => $id]);
+            return response()->json(['success' => false, 'message' => 'Reported user email not found'], 400);
+        }
+
         $headerString = $reportedEmail->headers;
         \Log::info('Email headers', ['headers' => $headerString]);
 
@@ -352,38 +369,39 @@ class PhishTriageController extends Controller
             \Log::error('Message ID not found in headers', ['headers' => $headerString]);
             return response()->json(['success' => false, 'message' => 'Message ID not found in headers'], 404);
         }
-        $internetMessageId = "<{$matches[1]}>"; // Ensure angle brackets
+        $internetMessageId = "<{$matches[1]}>";
         \Log::info('Internet Message ID', ['internetMessageId' => $internetMessageId]);
 
-        $token = $this->getToken();
-        \Log::info('Token', ['token' => $token ?: 'null']);
-
+        // Get application-level access token
+        $token = $this->getAppToken();
         if (!$token) {
-            \Log::error('Token not retrieved');
+            \Log::error('Application token not retrieved');
             return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
         }
 
-        // Find Graph API message ID
+        // Find Graph API message ID in the target user's mailbox
         try {
-            $response = Http::withToken($token)->get("https://graph.microsoft.com/v1.0/me/messages", [
+            $response = Http::withToken($token)->get("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages", [
                 '$filter' => "internetMessageId eq '$internetMessageId'"
             ])->throw();
+
             $graphMessage = $response->json()['value'][0] ?? null;
             if (!$graphMessage) {
-                \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId]);
+                \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId, 'user' => $targetUserEmail]);
                 return response()->json(['success' => false, 'message' => 'Graph message not found'], 404);
             }
             $messageId = $graphMessage['id'];
-            \Log::info('Graph Message ID', ['messageId' => $messageId]);
+            \Log::info('Graph Message ID', ['messageId' => $messageId, 'user' => $targetUserEmail]);
         } catch (\Exception $e) {
-            \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage()]);
+            \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
             return response()->json(['success' => false, 'message' => 'Failed to fetch message: ' . $e->getMessage()], 500);
         }
 
+        // Perform the requested action
         try {
             switch ($action) {
                 case 'mark_safe':
-                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'inbox'
                     ])->throw();
                     \Log::info('Move to inbox response', ['status' => $response->status(), 'body' => $response->json()]);
@@ -391,7 +409,7 @@ class PhishTriageController extends Controller
                     break;
 
                 case 'move_spam':
-                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'junkemail'
                     ])->throw();
                     \Log::info('Move to spam response', ['status' => $response->status(), 'body' => $response->json()]);
@@ -399,26 +417,36 @@ class PhishTriageController extends Controller
                     break;
 
                 case 'block_delete':
-
-                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'deleteditems'
                     ])->throw();
                     \Log::info('Move to deleted response', ['status' => $response->status(), 'body' => $response->json()]);
                     $reportedEmail->update(['status' => 'blocked']);
                     break;
 
-
                 default:
                     \Log::error('Invalid action', ['action' => $action]);
                     return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
             }
         } catch (\Exception $e) {
-            \Log::error('API or database error', ['error' => $e->getMessage()]);
+            \Log::error('API or database error', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
             return response()->json(['success' => false, 'message' => 'Action failed: ' . $e->getMessage()], 500);
         }
 
         return response()->json(['success' => true, 'message' => 'Action performed successfully']);
     }
+
+
+
+    public function listEmails(Request $request)
+    {
+        $token = $this->getToken();
+
+        $response = Http::withToken($token)->get('https://graph.microsoft.com/v1.0/me/messages?$top=10');
+
+        return response()->json($response->json());
+    }
+
 
     public function findMessageId(Request $request)
     {
