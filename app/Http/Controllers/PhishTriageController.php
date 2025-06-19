@@ -74,10 +74,12 @@ class PhishTriageController extends Controller
             $email = $request->query('email');
             $logdata = PhishTriageReportLog::where('company_id', $companyId)
                 ->where('user_email', $email)
+                ->where('status', 'reported')
                 ->get();
             return response()->json($logdata, 200);
         }
-        $logdata = PhishTriageReportLog::where('company_id', $companyId)->get();
+        $logdata = PhishTriageReportLog::where('company_id', $companyId)
+        ->where('status', 'reported')->get();
         return response()->json($logdata, 200);
     }
 
@@ -334,12 +336,14 @@ class PhishTriageController extends Controller
                 Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
                     'destinationId' => 'inbox'
                 ]);
+                $reportedEmail->update(['status' => 'safe']);
                 break;
 
             case 'move_spam':
                 Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
                     'destinationId' => 'junkemail'
                 ]);
+                $reportedEmail->update(['status' => 'spam']);
                 break;
 
             case 'block_delete':
@@ -355,6 +359,7 @@ class PhishTriageController extends Controller
                 }
 
                 Http::withToken($token)->delete("https://graph.microsoft.com/v1.0/me/messages/$messageId");
+                $reportedEmail->update(['status' => 'blocked']);
                 break;
         }
 

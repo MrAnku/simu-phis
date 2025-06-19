@@ -13,6 +13,7 @@ class PhishTriageReportLog extends Model
         'headers',
         'body',
         'company_id',
-        'ai_analysis'
+        'ai_analysis',
+        'status'
     ];
 }
