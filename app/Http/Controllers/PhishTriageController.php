@@ -79,7 +79,7 @@ class PhishTriageController extends Controller
             return response()->json($logdata, 200);
         }
         $logdata = PhishTriageReportLog::where('company_id', $companyId)
-        ->where('status', 'reported')->get();
+            ->where('status', 'reported')->get();
         return response()->json($logdata, 200);
     }
 
@@ -95,7 +95,7 @@ class PhishTriageController extends Controller
             return response()->json($logdata, 200);
         }
         $logdata = PhishTriageReportLog::where('company_id', $companyId)
-        ->where('status', '!=', 'reported')->get();
+            ->where('status', '!=', 'reported')->get();
         return response()->json($logdata, 200);
     }
 
@@ -334,49 +334,87 @@ class PhishTriageController extends Controller
     {
         $action = $request->action;
         $id = $request->id;
+
+        \Log::info('Performing action', ['action' => $action, 'id' => $id]);
+
         $reportedEmail = PhishTriageReportLog::find($id);
         if (!$reportedEmail) {
+            \Log::error('Report not found', ['id' => $id]);
             return response()->json(['success' => false, 'message' => 'Report not found'], 404);
         }
+
         $headerString = $reportedEmail->headers;
-        preg_match('/Message-Id:\s*<([^>]+)>/i', $headerString, $matches);
+        \Log::info('Email headers', ['headers' => $headerString]);
+
+        // Extract header Message-Id
+        preg_match('/Message-ID:\s*<([^>]+)>/i', $headerString, $matches);
         if (empty($matches[1])) {
+            \Log::error('Message ID not found in headers', ['headers' => $headerString]);
             return response()->json(['success' => false, 'message' => 'Message ID not found in headers'], 404);
         }
-        $messageId = $matches[1];
+        $internetMessageId = "<{$matches[1]}>"; // Ensure angle brackets
+        \Log::info('Internet Message ID', ['internetMessageId' => $internetMessageId]);
 
         $token = $this->getToken();
+        \Log::info('Token', ['token' => $token ?: 'null']);
 
-        switch ($action) {
-            case 'mark_safe':
-                Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
-                    'destinationId' => 'inbox'
-                ]);
-                $reportedEmail->update(['status' => 'safe']);
-                break;
+        if (!$token) {
+            \Log::error('Token not retrieved');
+            return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
+        }
 
-            case 'move_spam':
-                Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
-                    'destinationId' => 'junkemail'
-                ]);
-                $reportedEmail->update(['status' => 'spam']);
-                break;
+        // Find Graph API message ID
+        try {
+            $response = Http::withToken($token)->get("https://graph.microsoft.com/v1.0/me/messages", [
+                '$filter' => "internetMessageId eq '$internetMessageId'"
+            ])->throw();
+            $graphMessage = $response->json()['value'][0] ?? null;
+            if (!$graphMessage) {
+                \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId]);
+                return response()->json(['success' => false, 'message' => 'Graph message not found'], 404);
+            }
+            $messageId = $graphMessage['id'];
+            \Log::info('Graph Message ID', ['messageId' => $messageId]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Failed to fetch message: ' . $e->getMessage()], 500);
+        }
 
-            case 'block_delete':
-                $email = Http::withToken($token)->get("https://graph.microsoft.com/v1.0/me/messages/$messageId")->json();
-                $senderEmail = $email['sender']['emailAddress']['address'] ?? null;
+        try {
+            switch ($action) {
+                case 'mark_safe':
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                        'destinationId' => 'inbox'
+                    ])->throw();
+                    \Log::info('Move to inbox response', ['status' => $response->status(), 'body' => $response->json()]);
+                    $reportedEmail->update(['status' => 'safe']);
+                    break;
 
-                if ($senderEmail) {
-                    Http::withToken($token)->patch("https://graph.microsoft.com/v1.0/me/mailboxSettings", [
-                        'junkEmailConfiguration' => [
-                            'blockedSenders' => [$senderEmail]
-                        ]
-                    ]);
-                }
+                case 'move_spam':
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                        'destinationId' => 'junkemail'
+                    ])->throw();
+                    \Log::info('Move to spam response', ['status' => $response->status(), 'body' => $response->json()]);
+                    $reportedEmail->update(['status' => 'spam']);
+                    break;
 
-                Http::withToken($token)->delete("https://graph.microsoft.com/v1.0/me/messages/$messageId");
-                $reportedEmail->update(['status' => 'blocked']);
-                break;
+                case 'block_delete':
+
+                    $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/me/messages/$messageId/move", [
+                        'destinationId' => 'deleteditems'
+                    ])->throw();
+                    \Log::info('Move to deleted response', ['status' => $response->status(), 'body' => $response->json()]);
+                    $reportedEmail->update(['status' => 'blocked']);
+                    break;
+
+
+                default:
+                    \Log::error('Invalid action', ['action' => $action]);
+                    return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
+            }
+        } catch (\Exception $e) {
+            \Log::error('API or database error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Action failed: ' . $e->getMessage()], 500);
         }
 
         return response()->json(['success' => true, 'message' => 'Action performed successfully']);
