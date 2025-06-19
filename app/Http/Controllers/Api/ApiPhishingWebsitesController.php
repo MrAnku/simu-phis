@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use Illuminate\Support\Str;
+
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\DomCrawler\Crawler;
 
 class ApiPhishingWebsitesController extends Controller
 {
@@ -82,7 +83,7 @@ class ApiPhishingWebsitesController extends Controller
         try {
             $website = PhishingWebsite::find($id);
 
-            if(!$website) {
+            if (!$website) {
                 return response()->json([
                     'status' => false,
                     'message' => __('Website not found.')
@@ -159,7 +160,7 @@ class ApiPhishingWebsitesController extends Controller
 
     public function updateWebsite(Request $request): JsonResponse
     {
-        try{
+        try {
             $data = $request->validate([
                 'id' => 'required|integer',
                 'name' => 'required|string|max:255',
@@ -195,8 +196,7 @@ class ApiPhishingWebsitesController extends Controller
                 'success' => true,
                 'message' => __('Phishing website updated successfully.')
             ], 200);
-
-        }catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
@@ -541,6 +541,89 @@ class ApiPhishingWebsitesController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function cloneWebsite(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+
+        $request->validate([
+            'url' => 'required|url'
+        ]);
+
+        $url = $request->input('url');
+
+        try {
+            $response = Http::get($url);
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Failed to fetch the URL'], 400);
+            }
+
+            $html = $response->body();
+            $crawler = new Crawler($html, $url);
+
+            $baseUrl = parse_url($url, PHP_URL_SCHEME) . '://' . parse_url($url, PHP_URL_HOST);
+
+            $assetUrls = [];
+
+            // Extract asset links
+            $crawler->filter('img, script, link[rel="stylesheet"]')->each(function ($node) use (&$assetUrls, $baseUrl) {
+                $tagName = $node->nodeName();
+                $attr = $tagName === 'link' ? 'href' : 'src';
+                $src = $node->attr($attr);
+                if ($src) {
+                    $absoluteUrl = $this->makeAbsoluteUrl($src, $baseUrl);
+                    $assetUrls[$src] = $absoluteUrl;
+                }
+            });
+
+            // Download and re-upload assets to S3
+            $cloudfrontBaseUrl = env('CLOUDFRONT_URL');
+            $s3Urls = [];
+
+            foreach ($assetUrls as $original => $assetUrl) {
+                $assetResponse = @file_get_contents($assetUrl);
+                if ($assetResponse === false) continue;
+
+                $pathInfo = pathinfo(parse_url($assetUrl, PHP_URL_PATH));
+                $extension = $pathInfo['extension'] ?? 'bin';
+                $s3Path = 'clones/' . uniqid() . '.' . $extension;
+
+                Storage::disk('s3')->put($s3Path, $assetResponse);
+
+                // Use CloudFront URL
+                $s3Urls[$original] = $cloudfrontBaseUrl . '/' . $s3Path;
+            }
+
+            // Replace URLs in HTML
+            foreach ($s3Urls as $old => $new) {
+                $html = str_replace($old, $new, $html);
+            }
+
+            // Save the final HTML
+            $filename = 'cloned_sites/' . md5($url) . '.html';
+            Storage::disk('s3')->put($filename, $html);
+
+            return response()->json([
+                'message' => 'Website cloned successfully.',
+                'file_url' => $cloudfrontBaseUrl . '/' . $filename,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Exception: ' . $e->getMessage()], 500);
+        }
+    }
+
+    private function makeAbsoluteUrl($url, $base)
+    {
+        if (preg_match('/^https?:\/\//', $url)) {
+            return $url;
+        } elseif (strpos($url, '//') === 0) {
+            return 'https:' . $url;
+        } elseif (strpos($url, '/') === 0) {
+            return rtrim($base, '/') . $url;
+        } else {
+            return $base . '/' . ltrim($url, '/');
         }
     }
 }

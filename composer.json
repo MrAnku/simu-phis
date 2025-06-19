@@ -16,7 +16,9 @@
         "netflie/whatsapp-cloud-api": "^2.2",
         "php-open-source-saver/jwt-auth": "^2.3",
         "plivo/plivo-php": "^4.67",
-        "pragmarx/google2fa-laravel": "^2.2"
+        "pragmarx/google2fa-laravel": "^2.2",
+        "symfony/css-selector": "^7.3",
+        "symfony/dom-crawler": "^7.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
