@@ -176,10 +176,10 @@ class ProcessTprmCampaigns extends Command
               // echo "Email data: " . json_encode($mailData, JSON_PRETTY_PRINT) . "\n";
 
               echo "Sending email to: " . $email . "\n";
-              // $mailSentRes = $this->sendMail($mailData);
-              $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+              $mailSentRes = $this->sendMail($mailData);
+              // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
 
-              // TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+              TprmActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
               // Update campaign as sent
               $campaign->update(['sent' => 1]);

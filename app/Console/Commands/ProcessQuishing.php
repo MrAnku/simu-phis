@@ -68,16 +68,16 @@ class ProcessQuishing extends Command
                     $mailData = $this->prepareMailBody($campaign, $quishingTemplate->senderProfile()->first(), $quishingTemplate, $qrcodeLink);
 
                     //send mail
-                    // $mailSent = $this->sendMail($mailData);
-                    $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
-                    // if ($mailSent) {
+                    $mailSent = $this->sendMail($mailData);
+                    // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+                    if ($mailSent) {
 
-                    // QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                    QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
                     echo "Mail sent to {$campaign->user_email} \n";
                     $campaign->sent = '1';
                     $campaign->save();
-                    // }
+                    }
                 }
             }
         }

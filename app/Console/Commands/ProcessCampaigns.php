@@ -204,7 +204,16 @@ class ProcessCampaigns extends Command
                 'sendMailPassword' => $senderProfile->password,
               ];
 
-              $this->sendMailConditionally($mailData, $campaign, $company_id);
+              // $this->sendMailConditionally($mailData, $campaign, $company_id);
+
+              if ($this->sendMail($mailData)) {
+
+                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                echo "Email sent to: " . $campaign->user_email . "\n";
+              } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+              }
 
               $campaign->update(['sent' => 1]);
 
@@ -281,7 +290,7 @@ class ProcessCampaigns extends Command
     if ($isOutlookEmail) {
       echo "Outlook email detected: " . $campaign->user_email . "\n";
       $accessToken = OutlookDmiToken::where('company_id', $company_id)
-      ->where('created_at', '>', now()->subMinutes(60))->first();
+        ->where('created_at', '>', now()->subMinutes(60))->first();
       if ($accessToken) {
         echo "Access token found for company ID: " . $company_id . "\n";
 
