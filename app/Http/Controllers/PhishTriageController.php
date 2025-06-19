@@ -294,7 +294,7 @@ class PhishTriageController extends Controller
         Cache::put("outlook_token_$companyId", $data['access_token'], now()->addMinutes(55));
         Cache::put("outlook_refresh_$companyId", $data['refresh_token'], now()->addDays(30));
 
-        return response()->json(['message' => 'Token stored']);
+        return response()->json(['success' => true, 'message' => 'Token stored']);
     }
 
     private function getToken()
