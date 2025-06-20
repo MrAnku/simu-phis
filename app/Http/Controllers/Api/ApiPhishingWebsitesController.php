@@ -544,6 +544,29 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
+    public function websiteText(Request $request)
+    {
+        $url = $request->query('url');
+
+        // Rudimentary safety check
+        if (!$url || !(str_starts_with($url, 'http://') || str_starts_with($url, 'https://'))) {
+            return response()->json(['error' => 'Invalid URL'], 400);
+        }
+
+        try {
+            $res = Http::withoutVerifying()->withOptions(['verify' => false])->get($url);
+
+            if (!$res->ok()) {
+                return response()->json(['error' => 'Upstream responded with ' . $res->status()], $res->status());
+            }
+
+            return response($res->body(), 200)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Proxy fetch failed'], 500);
+        }
+    }
+
     public function cloneWebsite(Request $request)
     {
         ini_set('max_execution_time', 300);
