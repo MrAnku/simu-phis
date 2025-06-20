@@ -285,47 +285,52 @@ class ProcessCampaigns extends Command
 
   private function sendMailConditionally($mailData, $campaign, $company_id)
   {
+    $sent = false;
     // check user email domain is outlook email
     $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
     if ($isOutlookEmail) {
+
       echo "Outlook email detected: " . $campaign->user_email . "\n";
+
       $accessToken = OutlookDmiToken::where('company_id', $company_id)
         ->where('created_at', '>', now()->subMinutes(60))->first();
       if ($accessToken) {
+
         echo "Access token found for company ID: " . $company_id . "\n";
 
         $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
         if ($sent['success'] == true) {
-          $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
-          echo "Email sent to: " . $campaign->user_email . "\n";
+          $sent = true;
         } else {
-          echo "Email not sent to: " . $campaign->user_email . "\n";
+          $sent = false;
         }
       } else {
         OutlookDmiToken::where('company_id', $company_id)->delete();
         echo "Access token expired or not found for company ID: " . $company_id . "\n";
-        echo "No access token found for company ID: " . $company_id . "\n";
         if ($this->sendMail($mailData)) {
-
-          $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-          echo "Email sent to: " . $campaign->user_email . "\n";
+          $sent = true;
         } else {
-          echo "Email not sent to: " . $campaign->user_email . "\n";
+          $sent = false;
         }
       }
     } else {
       echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
       if ($this->sendMail($mailData)) {
 
-        $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-        echo "Email sent to: " . $campaign->user_email . "\n";
+        $sent = true;
       } else {
-        echo "Email not sent to: " . $campaign->user_email . "\n";
+        $sent = false;
       }
     }
+
+    if ($sent) {
+      echo "Email sent successfully to: " . $campaign->user_email . "\n";
+    } else {
+      echo "Email not sent to: " . $campaign->user_email . "\n";
+    }
+
+    $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
   private function generateWebsiteUrl($websiteColumns, $campaign)
