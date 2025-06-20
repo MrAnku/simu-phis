@@ -210,10 +210,10 @@ class ApiTprmController extends Controller
                         ]);
 
 
-                        $requested[] = [
-                            'domain' => $domain,
-                            'message' => __('Domain:') . ' ' . $domain . ' ' . __('verification requested successfully'),
-                        ];
+                        // $requested[] = [
+                        //     'domain' => $domain,
+                        //     'message' => __('Domain:') . ' ' . $domain . ' ' . __('verification requested successfully'),
+                        // ];
                     } else {
                         return response()->json(['success' => false, 'message' => __('Failed to verify domain; partner ID is missing.')], 422);
                     }
@@ -224,24 +224,18 @@ class ApiTprmController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => __('Some domains already exists or are verified by another company and also some new domain verification requested successfully'),
-                    'data' => [
-                        'errors' => $error,
-                        'requested' => $requested
-                    ]
+                    
                 ], 422);
             } else if (count($error) > 0) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Some domains already exists or are verified by another company'),
-                    'data' => [
-                        'errors' => $error
-                    ]
+                    
                 ], 422);
             }
-            log_action("New domain : {$requested['domain']} verification requested");
+            log_action("New domain : verification requested");
             return response()->json([
                 'success' => true,
-                'data' => ['requested' => $requested],
                 'message' => __('New domain verification requested successfully.')
             ], 200);
         } catch (\Exception $e) {
