@@ -12,6 +12,13 @@ use App\Models\DeletedEmployee;
 use App\Services\EmployeeService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampLive;
+use App\Models\AssignedPolicy;
+use App\Models\CampaignLive;
+use App\Models\PolicyCampaignLive;
+use App\Models\QuishingLiveCamp;
+use App\Models\TrainingAssignedUser;
+use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -900,6 +907,8 @@ class ApiEmployeesController extends Controller
                 // Save the updated user
                 $user->save();
             }
+            //update in ai call camp live
+            $this->updateInCampaigns($email, $request->input('usrName'));
 
             log_action("Employee updated : {$user->user_name}");
 
@@ -909,5 +918,45 @@ class ApiEmployeesController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
+    }
+
+    private function updateInCampaigns($email, $name){
+        //ai call campaign live update
+        AiCallCampLive::where('employee_email', $email)
+            ->update([
+                'employee_name' => $name,
+            ]);
+        //assigned policies update
+        AssignedPolicy::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        //email
+        CampaignLive::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        //policy campaign live
+        PolicyCampaignLive::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        //quishing campaign live
+        QuishingLiveCamp::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        //training Assigned
+        TrainingAssignedUser::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        
+            //whatsapp campaign live
+        WaLiveCampaign::where('user_email', $email)
+            ->update([
+                'user_name' => $name,
+            ]);
+        
     }
 }
