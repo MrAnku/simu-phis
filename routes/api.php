@@ -379,6 +379,7 @@ Route::middleware('auth:api')->group(function () {
     //policy campaign
     Route::prefix('policy-campaign')->group(function () {
         Route::post('/create-campaign', [ApiPolicyCampaignController::class, 'create']);
+        Route::get('/detail', [ApiPolicyCampaignController::class, 'detail']);
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 });

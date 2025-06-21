@@ -49,4 +49,23 @@ class ApiPolicyCampaignController extends Controller
             ], 500);
         }
     }
+
+    public function detail(Request $request){
+        try {
+
+            $campaign = PolicyCampaign::with(['campLive', 'assignedPolicies'])
+                ->where('company_id', Auth::user()->company_id)
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'data' => $campaign
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -15,4 +15,13 @@ class PolicyCampaign extends Model
         'company_id',
         'status',
     ];
+
+    public function campLive()
+    {
+        return $this->hasMany(PolicyCampaignLive::class, 'campaign_id', 'campaign_id');
+    }
+
+    public function assignedPolicies(){
+        return $this->hasMany(AssignedPolicy::class, 'campaign_id', 'campaign_id'); 
+    }
 }
