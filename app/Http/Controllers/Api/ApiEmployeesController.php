@@ -872,4 +872,42 @@ class ApiEmployeesController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function updateEmployee(Request $request){
+        $email = $request->route('email');
+        if (!$email) {
+            return response()->json(['success' => false, 'message' => __('Email is required')], 422);
+        }
+        try {
+            $users = Users::where('user_email', $email)->where('company_id', Auth::user()->company_id)->get();
+            if ($users->isEmpty()) {
+                return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
+            }
+
+            $request->validate([
+                'usrName' => 'required|string|max:255',
+                'usrCompany' => 'nullable|string|max:255',
+                'usrJobTitle' => 'nullable|string|max:255',
+                'usrWhatsapp' => 'nullable|digits_between:11,15',
+            ]);
+
+           foreach ($users as $user) {
+                $user->user_name = $request->input('usrName');
+                $user->user_company = !empty($request->input('usrCompany')) ? $request->input('usrCompany') : null;
+                $user->user_job_title = !empty($request->input('usrJobTitle')) ? $request->input('usrJobTitle') : null;
+                $user->whatsapp = !empty($request->input('usrWhatsapp')) ? preg_replace('/\D/', '', $request->input('usrWhatsapp')) : null;
+
+                // Save the updated user
+                $user->save();
+            }
+
+            log_action("Employee updated : {$user->user_name}");
+
+            return response()->json(['success' => true, 'message' => __('Employee updated successfully')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }

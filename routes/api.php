@@ -260,6 +260,7 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/update-ldap-config', [ApiEmployeesController::class, 'updateLdapConfig']);
         Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
+        Route::put('/update/{email?}', [ApiEmployeesController::class, 'updateEmployee']);
     });
 
     Route::prefix('ai-calling')->group(function () {
