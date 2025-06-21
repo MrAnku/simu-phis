@@ -368,6 +368,7 @@ Route::middleware('auth:api')->group(function () {
 
     //policy
     Route::prefix('policy')->group(function () {
+        Route::get('/', [ApiPolicyController::class, 'index']);
         Route::post('/add-policy', [ApiPolicyController::class, 'addPolicy']);
         Route::get('/fetch-assigned-policy', [ApiPolicyController::class, 'fetchAssignedPolicy']);
         Route::put('/accept-policy', [ApiPolicyController::class, 'acceptPolicy']);

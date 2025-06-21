@@ -13,6 +13,22 @@ use Illuminate\Validation\ValidationException;
 
 class ApiPolicyController extends Controller
 {
+    public function index(){
+        try {
+            $policies = Policy::where('company_id', Auth::user()->company_id)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $policies,
+                'message' => 'Policies fetched successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function addPolicy(Request $request)
     {
         try {
