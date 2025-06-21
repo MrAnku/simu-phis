@@ -21,6 +21,15 @@ class PolicyCampaign extends Model
         return $this->hasMany(PolicyCampaignLive::class, 'campaign_id', 'campaign_id');
     }
 
+    public function policyDetail()
+    {
+        return $this->belongsTo(Policy::class, 'policy', 'id');
+    }
+
+    public function groupDetail(){
+        return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
+    }
+
     public function assignedPolicies(){
         return $this->hasMany(AssignedPolicy::class, 'campaign_id', 'campaign_id'); 
     }

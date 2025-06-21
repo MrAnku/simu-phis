@@ -21,7 +21,7 @@ class ApiPolicyCampaignController extends Controller
                 'scheduled_at' => 'required|string',
             ]);
 
-            $campign = PolicyCampaign::create([
+            $campaign = PolicyCampaign::create([
                 'campaign_name' => $request->campaign_name,
                 'campaign_id' => Str::random(6),
                 'users_group' => $request->users_group,
@@ -29,20 +29,20 @@ class ApiPolicyCampaignController extends Controller
                 'scheduled_at' => $request->scheduled_at,
                 'company_id' => Auth::user()->company_id,
             ]);
-            log_action("Policy campaign created for company: " . Auth::user()->company_id);
+            // log_action("Policy campaign created for company: " . Auth::user()->company_id);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Policy campaign created successfully'
+                'message' => 'Policy campaign created successfully',
+                'data' => $campaign
             ], 201);
         } catch (ValidationException $e) {
-            // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => 'Validation error',
+                'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            // Handle the exception
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
@@ -50,16 +50,16 @@ class ApiPolicyCampaignController extends Controller
         }
     }
 
-    public function detail(Request $request){
+    public function detail(Request $request)
+    {
         try {
-
-            $campaign = PolicyCampaign::with(['campLive', 'assignedPolicies'])
+            $campaigns = PolicyCampaign::with(['campLive', 'assignedPolicies', 'policyDetail', 'groupDetail'])
                 ->where('company_id', Auth::user()->company_id)
-                ->firstOrFail();
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $campaign
+                'data' => $campaigns
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
