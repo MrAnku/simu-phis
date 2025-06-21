@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Policy;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\AssignedPolicy;
 use App\Models\PolicyCampaign;
 use App\Models\PolicyCampaignLive;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ApiPolicyController extends Controller
@@ -55,6 +56,55 @@ class ApiPolicyController extends Controller
             ]);
             log_action("Policy created for company : " . Auth::user()->company_name);
             return response()->json(['success' => true, 'message' => 'Policy added successfully'], 201);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function editPolicy(Request $request)
+    {
+        try {
+            $request->validate([
+                'policy_id' => 'required|exists:policies,id',
+                'policy_name' => 'required|string|max:255',
+                'policy_description' => 'required|string',
+                'policy_file' => 'nullable|file|mimes:pdf|max:10240',
+            ]);
+
+            $policy = Policy::findOrFail($request->policy_id);
+
+            if ($request->hasFile('policy_file')) {
+                // Delete the old file from S3 if it exists
+                if ($policy->policy_file) {
+                    $oldFilePath = ltrim($policy->policy_file, '/');
+                    Storage::disk('s3')->delete($oldFilePath);
+                }
+
+                $file = $request->file('policy_file');
+                $randomName = generateRandom(32);
+                $extension = $file->getClientOriginalExtension();
+                $newFilename = $randomName . '.' . $extension;
+
+                $filePath = $file->storeAs('/uploads/policyFile', $newFilename, 's3');
+                $policy->policy_file = "/" . $filePath;
+            }
+
+            $policy->policy_name = $request->policy_name;
+            $policy->policy_description = $request->policy_description;
+            $policy->save();
+
+            log_action("Policy updated : " . $policy->policy_name);
+            return response()->json(['success' => true, 'message' => 'Policy updated successfully'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([

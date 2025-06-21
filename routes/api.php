@@ -370,6 +370,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('policy')->group(function () {
         Route::get('/', [ApiPolicyController::class, 'index']);
         Route::post('/add-policy', [ApiPolicyController::class, 'addPolicy']);
+        Route::post('/edit-policy', [ApiPolicyController::class, 'editPolicy']);
         Route::get('/fetch-assigned-policy', [ApiPolicyController::class, 'fetchAssignedPolicy']);
         Route::put('/accept-policy', [ApiPolicyController::class, 'acceptPolicy']);
         Route::delete('/delete-policy/{encoded_id?}', [ApiPolicyController::class, 'deletePolicy']);
