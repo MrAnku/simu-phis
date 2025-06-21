@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\AssignedPolicy;
 use App\Models\BlueCollarLearnerLoginSession;
+use PhpParser\Node\Expr\Assign;
 
 class LearnerDashController extends Controller
 {
@@ -93,6 +95,47 @@ class LearnerDashController extends Controller
         Session::put('token', $token);
 
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userEmail'));
+    }
+
+    public function policyWithoutLogin(Request $request)
+    {
+        $token = $request->route('token');
+
+
+        // Fetch the token and expiry time from learnerloginsession
+        $session = DB::table('learnerloginsession')
+            ->where('token', $token)
+            ->orderBy('created_at', 'desc') // Ensure the latest session is checked
+            ->first();
+
+        // Check if session exists and if the token is expired
+        if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
+            return view('learning.login', ['msg' => 'Your training session has expired!']); // Stop execution
+        }
+
+        // Decrypt the email
+        $userEmail = decrypt($session->token);
+
+        $assignedPolicies = AssignedPolicy::with('policyData')
+            ->where('user_email', $userEmail)
+            ->get();
+
+        Session::put('token', $token);
+        // Calculate the average score for policies
+        return view('learning.policy-dashboard', compact('assignedPolicies', 'userEmail'));
+    }
+
+    public function acceptPolicy(Request $request)
+    {
+        try {
+            $policyId = $request->input('id');
+            $policyId = base64_decode($policyId);
+            AssignedPolicy::where('id', $policyId)->update(['accepted' => 1, 'accepted_at' => now()]);
+            log_action("Policy with ID {$policyId} accepted by user", 'learner', 'learner');
+            return response()->json(['success' => true, 'message' => 'Policy accepted successfully']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' =>'Invalid request']);
+        }
     }
 
     public function startBlueCollarTraining(Request $request)
@@ -179,8 +222,10 @@ class LearnerDashController extends Controller
 
         $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->exists();
 
-        if (!$hasTraining) {
-            return response()->json(['error' => 'No training has been assigned to this email.'], 500);
+        $hasPolicy = AssignedPolicy::where('user_email', $request->email)->exists();
+
+        if (!$hasTraining && !$hasPolicy) {
+            return response()->json(['error' => 'No training or policy has been assigned to this email.'], 500);
         }
 
         // delete old generated tokens from db
@@ -210,7 +255,12 @@ class LearnerDashController extends Controller
         //         'mail.from.name' => $smtp->from_name,
         //     ]);
         // } else {
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        if ($hasPolicy && !$hasTraining) {
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/policies/' . $token;
+        } else {
+            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        }
+
         // }
 
         // Insert new record into the database

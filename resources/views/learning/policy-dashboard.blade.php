@@ -80,14 +80,15 @@
                             <!-- Page pre-title -->
 
                             <h2 class="page-title">
-                                Learner Dashboard: {{ $userEmail }}
+                                Policy Dashboard: {{ $userEmail }}
                             </h2>
                         </div>
                         <!-- Page title actions -->
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
                                 <span class="d-none d-sm-inline">
-                                    <a href="{{ route('learner.policy.dashboard', Session::get('token')) }}" class="btn"> Policy Dashboard </a>
+                                    <a href="{{ route('learner.training.dashboard', Session::get('token')) }}"
+                                        class="btn"> Training Dashboard </a>
                                 </span>
                             </div>
                         </div>
@@ -100,7 +101,7 @@
                     <div class="row row-deck row-cards">
                         <div class="col-12">
                             <div class="row row-cards">
-                                <div class="col-sm-6 col-lg-3">
+                                <div class="col-sm-6 col-lg-4">
                                     <div class="card card-sm">
                                         <div class="card-body">
                                             <div class="row align-items-center">
@@ -123,15 +124,15 @@
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        {{ __('Average Score') }}: <span
-                                                            dir="ltr">{{ intval($averageScore) }}%</span>
+                                                        {{ __('Policies Assigned') }}: <span
+                                                            dir="ltr">{{ intval($assignedPolicies->count()) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-6 col-lg-3">
+                                <div class="col-sm-6 col-lg-4">
                                     <div class="card card-sm">
                                         <div class="card-body">
                                             <div class="row align-items-center">
@@ -154,15 +155,15 @@
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        {{ __('Assigned Training') }}:
-                                                        {{ count($assignedTrainingCount) }}
+                                                        {{ __('Accepted') }}:
+                                                        {{ $assignedPolicies->where('accepted', 1)->count() }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-6 col-lg-3">
+                                <div class="col-sm-6 col-lg-4">
                                     <div class="card card-sm">
                                         <div class="card-body">
                                             <div class="row align-items-center">
@@ -184,75 +185,15 @@
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        {{ __('Completed Training') }}:
-                                                        {{ count($completedTrainingCount) }}
+                                                        {{ __('Not Accepted') }}:
+                                                        {{ $assignedPolicies->where('accepted', 0)->count() }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-6 col-lg-3">
-                                    <div class="card card-sm">
-                                        <div class="card-body">
-                                            <div class="row align-items-center">
-                                                <div class="col-auto">
-                                                    <span
-                                                        class="bg-facebook text-white avatar"><!-- Download SVG icon from http://tabler-icons.io/i/brand-facebook -->
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="icon icon-tabler icon-tabler-certificate"
-                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                            stroke-width="1.5" stroke="currentColor" fill="none"
-                                                            stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                                            <path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5" />
-                                                            <path
-                                                                d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73" />
-                                                            <path d="M6 9l12 0" />
-                                                            <path d="M6 12l3 0" />
-                                                            <path d="M6 15l2 0" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="font-weight-medium">{{ __('Badge Score') }}: 0</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6 col-lg-3">
-                                    <div class="card card-sm">
-                                        <div class="card-body">
-                                            <div class="row align-items-center">
-                                                <div class="col-auto">
-                                                    <span class="bg-facebook text-white avatar">
-                                                        <!-- Facebook icon or any other icon -->
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="icon icon-tabler icon-tabler-certificate"
-                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                            stroke-width="1.5" stroke="currentColor" fill="none"
-                                                            stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                                            <path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5" />
-                                                            <path
-                                                                d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73" />
-                                                            <path d="M6 9l12 0" />
-                                                            <path d="M6 12l3 0" />
-                                                            <path d="M6 15l2 0" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="font-weight-medium">{{ __('No. of Certificates') }}:
-                                                        {{ $totalCertificates }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
                         <div class="col-12">
@@ -273,84 +214,110 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">{{ __('Assigned Trainings') }}</h3>
+                                    <h3 class="card-title">{{ __('Assigned Policies') }}</h3>
                                 </div>
                                 <div class="card-table table-responsive">
                                     <table class="table table-vcenter">
                                         <thead>
                                             <tr>
-                                                <th>{{ __('Training Module') }}</th>
-                                                <th>{{ __('Estimated Time') }}</th>
-                                                <th>{{ __('Passing Score') }}</th>
-                                                <th>{{ __('Personal Best') }}</th>
+                                                <th>{{ __('Policy Name') }}</th>
+                                                <th>{{ __('Policy Description') }}</th>
+                                                <th>{{ __('Assigned Date') }}</th>
+                                                <th>{{ __('Action') }}</th>
                                             </tr>
                                         </thead>
 
-                                        @forelse ($assignedTrainingCount as $training)
-                                            <tr>
-                                                @if ($training->training_type != 'games')
-                                                    <td class="text-secondary">
-
-                                                        @if ($training->training_type == 'static_training')
-                                                            <a
-                                                                href="{{ route('learner.start.training', [
-                                                                    'training_id' => encrypt($training->training),
-                                                                    'training_lang' => $training->training_lang,
-                                                                    'id' => base64_encode($training->id),
-                                                                ]) }}">
-
-                                                                {{ $training->trainingData->name ?? 'Unknown' }}
-                                                            </a>
-                                                        @elseif($training->training_type == 'ai_training')
-                                                            <a
-                                                                href="{{ route('learner.start.ai.training', [
-                                                                    'topic' => encrypt($training->trainingData->name),
-                                                                    'language' => $training->training_lang,
-                                                                    'id' => base64_encode($training->id),
-                                                                ]) }}">
-
-                                                                {{ $training->trainingData->name ?? 'Unknown' }}
-                                                            </a>
-                                                        @else
-                                                            <a
-                                                                href="{{ route('learn.gamified.training', [
-                                                                    'training_id' => encrypt($training->training),
-                                                                    'id' => base64_encode($training->id),
-                                                                    'lang' => $training->training_lang,
-                                                                ]) }}">
-
-                                                                {{ $training->trainingData->name ?? 'Unknown' }}
-                                                            </a>
-                                                        @endif
-
-
+                                        <tbody>
+                                            @forelse ($assignedPolicies->where('accepted', 0) as $policy)
+                                                <tr>
+                                                    <td class="text-primary">
+                                                        {{ $policy->policyData->policy_name ?? 'Policy not found' }}
                                                     </td>
                                                     <td class="text-secondary">
-                                                        {{ $training->trainingData->estimated_time }}
-                                                        {{ __('Minutes') }}
+                                                        {{ $policy->policyData->policy_description ?? 'Description not found' }}
                                                     </td>
-                                                    <td class="text-secondary">>=
-                                                        {{ $training->trainingData->passing_score }}</td>
-                                                    @if ($training->personal_best < 30)
-                                                        <td class="text-danger"><b>{{ $training->personal_best }}%</b>
-                                                        </td>
-                                                    @else
-                                                        <td class="text-success">
-                                                            <b>{{ $training->personal_best }}%</b>
-                                                        </td>
-                                                    @endif
-                                                @endif
+                                                    <td class="text-secondary">
+                                                        {{ $policy->created_at->format('Y-m-d') ?? 'Date not found' }}
+                                                    </td>
+                                                    <td class="text-secondary">
+                                                        <button type="button" class="btn btn-sm btn-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#policyModal{{ $policy->id }}">
+                                                            {{ __('View Policy') }}
+                                                        </button>
 
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center">
-                                                    {{ __('No new training has been assigned!') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="policyModal{{ $policy->id }}"
+                                                            tabindex="-1"
+                                                            aria-labelledby="policyModalLabel{{ $policy->id }}"
+                                                            aria-hidden="true">
+                                                            <div
+                                                                class="modal-dialog modal-fullscreen modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title"
+                                                                            id="policyModalLabel{{ $policy->id }}">
+                                                                            {{ $policy->policyData->policy_name ?? __('Policy') }}
+                                                                        </h5>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="{{ __('Close') }}"></button>
+                                                                    </div>
+                                                                    <div class="modal-body" style="min-height:400px;">
+                                                                        <iframe
+                                                                            src="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
+                                                                            width="100%" height="100%"
+                                                                            frameborder="0"></iframe>
+                                                                    </div>
+                                                                    <div
+                                                                        class="modal-footer d-flex justify-content-between align-items-center">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox"
+                                                                                id="acceptPolicyCheckbox{{ $policy->id }}">
+                                                                            <label class="form-check-label"
+                                                                                for="acceptPolicyCheckbox{{ $policy->id }}">
+                                                                                {{ __('I have read and accept this policy.') }}
+                                                                            </label>
+                                                                            <script>
+                                                                                document.addEventListener('DOMContentLoaded', function() {
+                                                                                    const checkbox = document.getElementById('acceptPolicyCheckbox{{ $policy->id }}');
+                                                                                    const acceptBtn = document.getElementById('acceptPolicyBtn{{ $policy->id }}');
+                                                                                    if (checkbox && acceptBtn) {
+                                                                                        checkbox.addEventListener('change', function() {
+                                                                                            acceptBtn.disabled = !checkbox.checked;
+                                                                                        });
+                                                                                    }
+                                                                                });
+                                                                            </script>
+                                                                        </div>
+                                                                        <div>
 
+                                                                            <button type="button"
+                                                                                class="btn btn-primary"
+                                                                                onclick="acceptPolicy('{{ base64_encode($policy->id) }}')"
+                                                                                id="acceptPolicyBtn{{ $policy->id }}"
+                                                                                disabled>
+                                                                                {{ __('Accept') }}
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                class="btn btn-secondary"
+                                                                                data-bs-dismiss="modal">{{ __('Close') }}</button>
+                                                                        </div>
+                                                                    </div>
 
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        {{ __('No Policies Assigned') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
 
                                     </table>
                                 </div>
@@ -359,111 +326,43 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">{{ __('Assigned Games') }}</h3>
+                                    <h3 class="card-title">{{ __('Accepted Policies') }}</h3>
                                 </div>
                                 <div class="card-table table-responsive">
                                     <table class="table table-vcenter">
                                         <thead>
                                             <tr>
-                                                <th>{{ __('Game Name') }}</th>
-                                                <th>{{ __('Time Spent on Game Play') }}</th>
-                                                <th>{{ __('Score') }}</th>
+                                                <th>{{ __('Policy Name') }}</th>
+                                                <th>{{ __('Policy Description') }}</th>
+                                                <th>{{ __('File') }}</th>
                                             </tr>
                                         </thead>
 
-                                        @forelse ($assignedTrainingCount as $training)
-                                            <tr>
-                                                @if ($training->training_type == 'games')
-                                                    <td class="text-secondary">
-                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug ?? ''}}/?id={{ base64_encode($training->id) }}"
-                                                            target="_blank">
-                                                            {{ $training->trainingGame->name ?? 'Game not found' }}
-                                                        </a>
-                                                    </td>
-                                                    <td class="text-secondary">
-                                                        {{ sprintf('%02d:%02d', floor($training->game_time / 60), $training->game_time % 60) }}
-                                                    </td>
-
-                                                    @if ($training->personal_best < 30)
-                                                        <td class="text-danger"><b>{{ $training->personal_best }}%</b>
-                                                        </td>
-                                                    @else
-                                                        <td class="text-success">
-                                                            <b>{{ $training->personal_best }}%</b>
-                                                        </td>
-                                                    @endif
-                                                @endif
-
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center">
-                                                    {{ __('No new game has been assigned!') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">{{ __('Completed Training') }}</h3>
-                                </div>
-                                <div class="card-table table-responsive">
-                                    <table class="table table-vcenter">
-                                        <thead>
-                                            <tr>
-                                                <th>{{ __('Training Module') }}</th>
-                                                <th>{{ __('Personal Best') }}</th>
-                                                <th>{{ __('Completion Date') }}</th>
-                                                <th>{{ __('Download Certificate') }}</th>
-                                            </tr>
-                                        </thead>
-                                        @forelse ($completedTrainingCount as $training)
+                                        @forelse ($assignedPolicies->where('accepted', 1) as $policy)
                                             <tr>
                                                 <td class="text-secondary">
-                                                    <a href="#">
-                                                        {{ $training->trainingData->name }}
-                                                    </a>
+                                                    {{ $policy->policyData->policy_name ?? 'Policy not found' }}
                                                 </td>
-                                                <td class="text-success"><b>{{ $training->personal_best }}%</b></td>
-                                                <td class="text-secondary">{{ $training->completion_date }}
+                                                <td class="text-secondary">
+                                                    {{ $policy->policyData->policy_description ?? 'Description not found' }}
                                                 </td>
-                                                <td>
-                                                    <form action="{{ route('learner.download.cert') }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="training_module"
-                                                            value="{{ $training->trainingData->name }}">
-                                                        <input type="hidden" name="training_id"
-                                                            value="{{ $training->training }}">
-                                                        <input type="hidden" name="completion_date"
-                                                            value="{{ $training->completion_date }}">
-                                                        <input type="hidden" name="user_email"
-                                                            value="{{ $userEmail }}">
-                                                        <input type="hidden" name="user_name"
-                                                            value="{{ $training->user_name }}">
-
-                                                        <button type="submit"
-                                                            class="btn btn-primary btn-sm">{{ __('Download') }}</button>
-                                                    </form>
+                                                <td class="text-secondary">
+                                                    <a href="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
+                                                        target="_blank">{{ __('View Policy') }}</a>
                                                 </td>
-
                                             </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="4" class="text-center">
-                                                    {{ __('No new training has been assigned!') }}</td>
+                                                    {{ __('No Policies Accepted') }}</td>
                                             </tr>
                                         @endforelse
-
-
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -490,6 +389,50 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+       
+
+        function acceptPolicy(policyId) {
+            Swal.fire({
+                title: "{{ __('Are you sure?') }}",
+                text: "{{ __('Do you want to accept this policy?') }}",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "{{ __('Yes, Accept Policy!') }}",
+                cancelButtonText: "{{ __('Cancel') }}"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post({
+                        url: '/accept-policy',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: policyId
+                        },
+                        success: function(res) {
+                            if (res.success && res.success === true) {
+                                Swal.fire({
+                                    title: "{{ __('Success!') }}",
+                                    text: "{{ __('Policy accepted successfully.') }}",
+                                    icon: "success"
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: "{{ __('Error!') }}",
+                                    text: res.message || "{{ __('Something went wrong. Please try again.') }}",
+                                    icon: "error"
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 
 
     <script>

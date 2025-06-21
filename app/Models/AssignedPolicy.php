@@ -15,4 +15,8 @@ class AssignedPolicy extends Model
         'accepted_at',
         'company_id',
     ];
+
+    public function policyData(){
+        return $this->belongsTo(Policy::class, 'policy', 'id');
+    }
 }

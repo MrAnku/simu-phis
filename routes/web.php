@@ -77,6 +77,14 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
     Route::get('/training-dashboard/{token}', [LearnerDashController::class, 'trainingWithoutLogin'])
         ->name('learner.training.dashboard');
 
+    Route::get('/policies/{token}', [LearnerDashController::class, 'policyWithoutLogin'])
+        ->name('learner.policy.dashboard');
+
+        Route::post('/accept-policy', [LearnerDashController::class, 'acceptPolicy'])
+            ->name('learner.accept.policy');
+
+    
+
 
 
 
