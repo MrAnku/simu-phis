@@ -175,6 +175,7 @@ class LearnerDashController extends Controller
             ->count();
 
         Session::put('token', $token);
+        Session::put('bluecollar', true);
 
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userWhatsapp'));
     }
@@ -417,14 +418,22 @@ class LearnerDashController extends Controller
 
         $row_id = base64_decode($request->id);
 
-        $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+        if (Session::has('bluecollar')) {
+            $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
+            $user = $rowData->user_whatsapp;
+        } else {
+            $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+            $user = $rowData->user_email;
+        }
+
+        // $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
 
         if ($rowData && $request->trainingScore > $rowData->personal_best) {
             // Update the column if the current value is greater
             $rowData->personal_best = $request->trainingScore;
             $rowData->save();
 
-            log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
+            log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
 
             $passingScore = (int)$rowData->trainingData->passing_score;
 
@@ -433,7 +442,7 @@ class LearnerDashController extends Controller
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
 
-                log_action("{$rowData->user_email} scored {$request->trainingScore}% in training", 'learner', 'learner');
+                log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
             }
         }
 

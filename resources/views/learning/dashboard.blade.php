@@ -80,15 +80,19 @@
                             <!-- Page pre-title -->
 
                             <h2 class="page-title">
-                                Learner Dashboard: {{ $userEmail }}
+                                Learner Dashboard: {{ session()->has('bluecollar') ? $userWhatsapp : $userEmail }}
                             </h2>
                         </div>
                         <!-- Page title actions -->
                         <div class="col-auto ms-auto d-print-none">
                             <div class="btn-list">
-                                <span class="d-none d-sm-inline">
-                                    <a href="{{ route('learner.policy.dashboard', Session::get('token')) }}" class="btn"> Policy Dashboard </a>
-                                </span>
+                                @if (!session()->has('bluecollar'))
+                                    <span class="d-none d-sm-inline">
+                                        <a href="{{ route('learner.policy.dashboard', Session::get('token')) }}"
+                                            class="btn"> Policy Dashboard </a>
+                                    </span>
+                                @endif
+
                             </div>
                         </div>
                     </div>
@@ -375,7 +379,7 @@
                                             <tr>
                                                 @if ($training->training_type == 'games')
                                                     <td class="text-secondary">
-                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug ?? ''}}/?id={{ base64_encode($training->id) }}"
+                                                        <a href="{{ env('TRAINING_GAME_URL') }}/{{ $training->trainingGame->slug ?? '' }}/?id={{ base64_encode($training->id) }}"
                                                             target="_blank">
                                                             {{ $training->trainingGame->name ?? 'Game not found' }}
                                                         </a>
@@ -442,7 +446,7 @@
                                                         <input type="hidden" name="completion_date"
                                                             value="{{ $training->completion_date }}">
                                                         <input type="hidden" name="user_email"
-                                                            value="{{ $userEmail }}">
+                                                            value="{{ session()->has('bluecollar') ? $userWhatsapp : $userEmail }}">
                                                         <input type="hidden" name="user_name"
                                                             value="{{ $training->user_name }}">
 
