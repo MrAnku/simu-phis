@@ -65,6 +65,8 @@ Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middle
 //     }
 // );
 
+Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
+
 
 Route::middleware('auth:api')->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');

@@ -392,6 +392,87 @@ class ApiPhishingEmailsController extends Controller
         }
     }
 
+    public function addEmailTemplateBulk(Request $request)
+    {
+        // XSS check start
+        $input = $request->only('eTempName', 'eSubject');
+
+        foreach ($input as $key => $value) {
+            if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Invalid input detected.')
+                ], 400); // Bad Request
+            }
+        }
+
+        array_walk_recursive($input, function (&$input) {
+            $input = strip_tags($input);
+        });
+        $request->merge($input);
+        // XSS check end
+
+        // Validation
+        $request->validate([
+            'eMailFile' => 'required|file|mimes:html',
+            'eTempName' => 'required|string|max:255',
+            'eSubject' => 'required|string|max:255',
+            'difficulty' => 'required|string|max:30',
+            'eAssoWebsite' => 'required|string|max:255',
+            'eSenderProfile' => 'required|string|max:255',
+        ]);
+
+        
+
+        $eTempName = $request->input('eTempName');
+        $eSubject = $request->input('eSubject');
+        $difficulty = $request->input('difficulty');
+        $eAssoWebsite = $request->input('eAssoWebsite');
+        $eSenderProfile = $request->input('eSenderProfile');
+        $eMailFile = $request->file('eMailFile');
+
+        // Generate a random name for the file
+        $randomName = generateRandom(32);
+        $extension = $eMailFile->getClientOriginalExtension();
+        $newFilename = $randomName . '.' . $extension;
+
+        try {
+            // Move the uploaded file to the target directory
+            $filePath = $request->file('eMailFile')->storeAs('/uploads/phishingMaterial/phishing_emails', $newFilename, 's3');
+
+            // Insert data into the database
+            $isInserted = PhishingEmail::create([
+                'name' => $eTempName,
+                'email_subject' => $eSubject,
+                'difficulty' => $difficulty,
+                'mailBodyFilePath' =>  "/" . $filePath,
+                'website' => $eAssoWebsite,
+                'senderProfile' => $eSenderProfile,
+                'company_id' => 'default',
+            ]);
+
+            if ($isInserted) {
+                // log_action("Email Template Added Successfully");
+                return response()->json([
+                    'status' => true,
+                    'message' => __('Email Template Added Successfully!')
+                ], 201); // Created
+            } else {
+                // log_action("Failed to add email template");
+                return response()->json([
+                    'status' => false,
+                    'message' => __('Failed to add Email Template.')
+                ], 500); // Internal Server Error
+            }
+        } catch (\Exception $e) {
+            // log_action("Failed to add email template");
+            return response()->json([
+                'status' => false,
+                'message' => __('Something went wrong: ') . $e->getMessage()
+            ], 500); // Internal Server Error
+        }
+    }
+
 
     public function generateTemplate(Request $request)
     {
