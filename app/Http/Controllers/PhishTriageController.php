@@ -56,6 +56,14 @@ class PhishTriageController extends Controller
             }
         }
 
+        //check if this email is a quishing email
+        if (!$ourEmail && strpos($body, 'qrcodes') !== false) {
+            $isQuishingEmail = $this->checkQuishingEmail($body);
+            if ($isQuishingEmail) {
+                $ourEmail = true;
+            }
+        }
+
         //check if the reported email is MAIL_USERNAME 
 
         if ($request->input('from') == env('MAIL_USERNAME')) {
@@ -99,10 +107,7 @@ class PhishTriageController extends Controller
 
         $redirectLink = $this->extractRedirectUrls($body, $pattern);
         if (!$redirectLink) {
-            $isQuishingEmail = $this->checkQuishingEmail($body);
-            if ($isQuishingEmail) {
-                return true; // Quishing email detected
-            }
+           
             return false; // No simulation email detected
         }
 
