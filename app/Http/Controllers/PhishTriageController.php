@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use DOMDocument;
 use App\Models\Users;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\DomainVerified;
 use App\Mail\PhishTriageReportMail;
+use App\Models\CampaignLive;
 use App\Models\PhishTriageReportLog;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -37,35 +41,177 @@ class PhishTriageController extends Controller
         } else {
             $companyId = "unknown";
         }
-        // $isEmployee = Users::where('user_email', $userEmail)->first();
-        // if (!$isEmployee) {
-        //     $companyId = "unknown";
-        // }else{
-        //     $companyId = $isEmployee->company_id;
-        // }
-        $PhishTriageReportLog = PhishTriageReportLog::create([
-            'user_email' => $request->input('to')[0],
-            'reported_email' => $request->input('from'),
-            'subject' => $request->input('subject'),
-            'headers' => $request->input('headers'),
-            'body' => $request->input('body'),
-            'company_id' => $companyId
-        ]);
 
-        $company = Company::where('company_id', $companyId)->first();
+        //get the email body
+        $body = $request->input('body');
 
-        $mailData = [
-            'reported_by' => $request->input('to')[0],
-            'from' => $request->input('from'),
-            'subject' => $request->input('subject'),
-            'company_name' => $company->company_name,
-            'reported_at' => $PhishTriageReportLog->created_at,
-        ];
+        //check if the body has mailersend string exists
 
-        Mail::to($company->email)->send(new PhishTriageReportMail($mailData));
+        $ourEmail = false;
+
+        if (strpos($body, 'mailersend') !== false) {
+            $isSimulationEmail = $this->checkSimulationEmail($body);
+            if ($isSimulationEmail) {
+                $ourEmail = true;
+            }
+        }
+
+        //check if the reported email is MAIL_USERNAME 
+
+        if ($request->input('from') == env('MAIL_USERNAME')) {
+            $ourEmail = true;
+        }
+
+
+        if (!$ourEmail) {
+
+
+            $PhishTriageReportLog = PhishTriageReportLog::create([
+                'user_email' => $request->input('to')[0],
+                'reported_email' => $request->input('from'),
+                'subject' => $request->input('subject'),
+                'headers' => $request->input('headers'),
+                'body' => $request->input('body'),
+                'company_id' => $companyId
+            ]);
+
+            $company = Company::where('company_id', $companyId)->first();
+
+            $mailData = [
+                'reported_by' => $request->input('to')[0],
+                'from' => $request->input('from'),
+                'subject' => $request->input('subject'),
+                'company_name' => $company->company_name,
+                'reported_at' => $PhishTriageReportLog->created_at,
+            ];
+
+            Mail::to($company->email)->send(new PhishTriageReportMail($mailData));
+        }
 
         return response()->json(['message' => 'Report logged successfully'], 200);
     }
+
+    private function checkSimulationEmail($body)
+    {
+
+        //get first href value in the body
+        $pattern = '/^https:\/\/.*\.click\.mailersend\.net\/tl\/cws\//';
+
+        $redirectLink = $this->extractRedirectUrls($body, $pattern);
+        if (!$redirectLink) {
+            $isQuishingEmail = $this->checkQuishingEmail($body);
+            if ($isQuishingEmail) {
+                return true; // Quishing email detected
+            }
+            return false; // No simulation email detected
+        }
+
+        $actualUrl = $this->getFinalRedirectUrl($redirectLink);
+
+        //check if actual Url has token and qsh parameters
+        if (strpos($actualUrl, 'token=') !== false && strpos($actualUrl, 'tprm=') === false) {
+            //get token value from the url
+            $parts = parse_url($actualUrl);
+            parse_str($parts['query'], $queryParams);
+
+            // Access the token
+            $token = $queryParams['token'] ?? null;
+            TprmCampaignLive::where('id', $token)->update([
+                'email_reported' => 1
+            ]);
+            return true; // Simulation email detected
+        } else if (strpos($actualUrl, 'usrid=') !== false && strpos($actualUrl, 'token=') === false) {
+            //get token value from the url
+            $parts = parse_url($actualUrl);
+            parse_str($parts['query'], $queryParams);
+
+            // Access the token
+            $token = $queryParams['token'] ?? null;
+            CampaignLive::where('id', $token)->update([
+                'email_reported' => 1
+            ]);
+
+            return true; // Simulation email detected
+        } else {
+            return false; // No simulation email detected
+        }
+    }
+
+    private function checkQuishingEmail($body)
+    {
+        //check if body has a link in this pattern /qrcodes/6853ab5dcaa0f.png?eid=39
+
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($body);
+        libxml_clear_errors();
+
+        $links = $dom->getElementsByTagName('a');
+        $eid = null;
+
+        foreach ($links as $link) {
+            $href = $link->getAttribute('href');
+
+            // ✅ Only process links with 'qrcodes' and 'eid='
+            if (strpos($href, 'qrcodes') !== false && strpos($href, 'eid=') !== false) {
+                $parsedUrl = parse_url($href);
+                parse_str($parsedUrl['query'] ?? '', $params);
+                if (isset($params['eid'])) {
+                    $eid = $params['eid'];
+                    break; // ✅ Stop after finding the first valid eid
+                }
+            }
+        }
+
+        if (!$eid) {
+            return false;
+        }
+
+        QuishingLiveCamp::where('id', $eid)->update([
+            'email_reported' => 1
+        ]);
+
+        return true;
+    }
+
+    private function extractRedirectUrls($html, $matchPattern = null)
+    {
+        $redirectUrls = [];
+
+        // Load HTML
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html); // suppress warnings for malformed HTML
+
+        // Extract all <a> tags
+        $links = $dom->getElementsByTagName('a');
+
+        foreach ($links as $link) {
+            $href = $link->getAttribute('href');
+
+            if ($href) {
+                // Optional: filter specific redirect pattern (e.g., MailerSend)
+                if (!$matchPattern || preg_match($matchPattern, $href)) {
+                    $redirectUrls[] = $href;
+                }
+            }
+        }
+
+        return $redirectUrls[0] ?? null; // Return the first match or null if none found
+    }
+
+    private function getFinalRedirectUrl($url)
+    {
+        $response = Http::withOptions([
+            'allow_redirects' => true, // Enable following redirects
+            'max_redirects' => 10,    // Set max redirects to avoid infinite loops
+            'timeout' => 30,          // Set timeout
+            'verify' => false,        // Disable SSL verification (use cautiously)
+        ])->head($url); // Use HEAD to avoid downloading the response body
+
+        // Get the final URL from the response
+        return $response->effectiveUri();
+    }
+
 
     public function emailsReported(Request $request)
     {
