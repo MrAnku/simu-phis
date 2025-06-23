@@ -853,15 +853,15 @@ class ApiTrainingModuleController extends Controller
             }
             $id = base64_decode($request->route('id'));
 
-            $trainingModuleExists = TrainingModule::where('id', $id)->where('company_id', '!=', 'default')->first();
-            if ($trainingModuleExists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Training Module already exists for this company')
-                ], 422);
-            }
+            // $trainingModuleExists = TrainingModule::where('id', $id)->first();
+            // if ($trainingModuleExists) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => __('Training Module already exists for this company')
+            //     ], 422);
+            // }
 
-            $trainingModule = TrainingModule::where('id', $id)->where('company_id', 'default')->first();
+            $trainingModule = TrainingModule::find($id);
             if (!$trainingModule) {
                 return response()->json([
                     'success' => false,
