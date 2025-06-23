@@ -22,7 +22,13 @@ class ApiQuishingController extends Controller
     {
         try {
             $company_id = Auth::user()->company_id;
-            $campaigns = QuishingCamp::with('userGroupData')->where('company_id', $company_id)->orWhere('company_id', 'default')->get();
+            $campaigns = QuishingCamp::with('userGroupData')
+            ->where(function ($query) use ($company_id) {
+                $query->where('company_id', $company_id)
+                      ->orWhere('company_id', 'default');
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
             $campLive = QuishingLiveCamp::where('company_id', $company_id)
                 ->get();
