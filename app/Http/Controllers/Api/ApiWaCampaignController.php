@@ -147,6 +147,9 @@ class ApiWaCampaignController extends Controller
 
             foreach ($users as $user) {
 
+                if(!$user->whatsapp){
+                    continue;
+                }
                 $camp_live = WaLiveCampaign::create([
                     'campaign_id' => $campaign_id,
                     'campaign_name' => $validated['campaign_name'],
