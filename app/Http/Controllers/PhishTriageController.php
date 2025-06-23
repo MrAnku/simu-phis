@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use DOMDocument;
+ use DOMDocument;
 use App\Models\Users;
 use App\Models\Company;
 use Illuminate\Http\Request;
@@ -66,7 +66,7 @@ class PhishTriageController extends Controller
 
         //check if the reported email is MAIL_USERNAME 
 
-        if ($request->input('from') == env('MAIL_USERNAME')) {
+        if ($request->input('from') == env('MAIL_FROM_ADDRESS')) {
             $ourEmail = true;
         }
 
@@ -101,20 +101,22 @@ class PhishTriageController extends Controller
 
     private function checkSimulationEmail($body)
     {
-
+        // \Log::info('inside checkSimulationEmail');
         //get first href value in the body
         $pattern = '/^https:\/\/.*\.click\.mailersend\.net\/tl\/cws\//';
 
         $redirectLink = $this->extractRedirectUrls($body, $pattern);
         if (!$redirectLink) {
-           
+           // \Log::info('redirect link not found');
             return false; // No simulation email detected
         }
 
+        // \Log::info('redirect link found');
         $actualUrl = $this->getFinalRedirectUrl($redirectLink);
-
+        // \Log::info('actual url ' . $actualUrl); 
         //check if actual Url has token and qsh parameters
-        if (strpos($actualUrl, 'token=') !== false && strpos($actualUrl, 'tprm=') === false) {
+        if (strpos($actualUrl, 'token=') !== false && strpos($actualUrl, 'tprm=') !== false) {
+            // \Log::info('inside tprm block'); 
             //get token value from the url
             $parts = parse_url($actualUrl);
             parse_str($parts['query'], $queryParams);
@@ -124,9 +126,11 @@ class PhishTriageController extends Controller
             TprmCampaignLive::where('id', $token)->update([
                 'email_reported' => 1
             ]);
+            // \Log::info('tprm token' . $token); 
             return true; // Simulation email detected
-        } else if (strpos($actualUrl, 'usrid=') !== false && strpos($actualUrl, 'token=') === false) {
+        } else if (strpos($actualUrl, 'usrid=') !== false && strpos($actualUrl, 'token=') !== false) {
             //get token value from the url
+            // \Log::info('inside email block'); 
             $parts = parse_url($actualUrl);
             parse_str($parts['query'], $queryParams);
 
@@ -135,49 +139,32 @@ class PhishTriageController extends Controller
             CampaignLive::where('id', $token)->update([
                 'email_reported' => 1
             ]);
-
+            // \Log::info('email token' . $token); 
             return true; // Simulation email detected
         } else {
+             // \Log::info('not our email'); 
             return false; // No simulation email detected
         }
     }
 
     private function checkQuishingEmail($body)
-    {
-        //check if body has a link in this pattern /qrcodes/6853ab5dcaa0f.png?eid=39
-
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($body);
-        libxml_clear_errors();
-
-        $links = $dom->getElementsByTagName('a');
-        $eid = null;
-
-        foreach ($links as $link) {
-            $href = $link->getAttribute('href');
-
-            // ✅ Only process links with 'qrcodes' and 'eid='
-            if (strpos($href, 'qrcodes') !== false && strpos($href, 'eid=') !== false) {
-                $parsedUrl = parse_url($href);
-                parse_str($parsedUrl['query'] ?? '', $params);
-                if (isset($params['eid'])) {
-                    $eid = $params['eid'];
-                    break; // ✅ Stop after finding the first valid eid
-                }
-            }
+{
+    // \Log::info('checkQuishingEmail inside');
+    // Regex to match src attributes in img tags containing 'qrcodes' and 'eid='
+    $pattern = '/src=["\'](.*?(?:qrcodes).*?eid=\d+.*?)["\']/i';
+    if (preg_match($pattern, $body, $matches)) {
+        // \Log::info('pattern matched');
+        $src = $matches[1];
+        parse_str(parse_url($src, PHP_URL_QUERY) ?? '', $params);
+        if (isset($params['eid'])) {
+            // \Log::info('eid found');
+            QuishingLiveCamp::where('id', $params['eid'])->update(['email_reported' => '1']);
+            return true;
         }
-
-        if (!$eid) {
-            return false;
-        }
-
-        QuishingLiveCamp::where('id', $eid)->update([
-            'email_reported' => 1
-        ]);
-
-        return true;
     }
+
+    return false;
+}
 
     private function extractRedirectUrls($html, $matchPattern = null)
     {
@@ -479,7 +466,7 @@ class PhishTriageController extends Controller
         ]);
 
         if ($response->failed()) {
-            \Log::error('Failed to obtain application token', ['error' => $response->body()]);
+            // \Log::error('Failed to obtain application token', ['error' => $response->body()]);
             return null;
         }
 
@@ -496,37 +483,37 @@ class PhishTriageController extends Controller
         $action = $request->action;
         $id = $request->id;
 
-        \Log::info('Performing action', ['action' => $action, 'id' => $id]);
+        // \Log::info('Performing action', ['action' => $action, 'id' => $id]);
 
         $reportedEmail = PhishTriageReportLog::find($id);
         if (!$reportedEmail) {
-            \Log::error('Report not found', ['id' => $id]);
+            // \Log::error('Report not found', ['id' => $id]);
             return response()->json(['success' => false, 'message' => 'Report not found'], 404);
         }
 
         // Assume PhishTriageReportLog has a field 'reported_by_email' with the user's email address
         $targetUserEmail = $reportedEmail->user_email;
         if (!$targetUserEmail) {
-            \Log::error('Reported user email not found', ['id' => $id]);
+            // \Log::error('Reported user email not found', ['id' => $id]);
             return response()->json(['success' => false, 'message' => 'Reported user email not found'], 400);
         }
 
         $headerString = $reportedEmail->headers;
-        \Log::info('Email headers', ['headers' => $headerString]);
+        // \Log::info('Email headers', ['headers' => $headerString]);
 
         // Extract header Message-Id
         preg_match('/Message-ID:\s*<([^>]+)>/i', $headerString, $matches);
         if (empty($matches[1])) {
-            \Log::error('Message ID not found in headers', ['headers' => $headerString]);
+            // \Log::error('Message ID not found in headers', ['headers' => $headerString]);
             return response()->json(['success' => false, 'message' => 'Message ID not found in headers'], 404);
         }
         $internetMessageId = "<{$matches[1]}>";
-        \Log::info('Internet Message ID', ['internetMessageId' => $internetMessageId]);
+        // \Log::info('Internet Message ID', ['internetMessageId' => $internetMessageId]);
 
         // Get application-level access token
         $token = $this->getAppToken();
         if (!$token) {
-            \Log::error('Application token not retrieved');
+            // \Log::error('Application token not retrieved');
             return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
         }
 
@@ -538,13 +525,13 @@ class PhishTriageController extends Controller
 
             $graphMessage = $response->json()['value'][0] ?? null;
             if (!$graphMessage) {
-                \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId, 'user' => $targetUserEmail]);
+                // \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId, 'user' => $targetUserEmail]);
                 return response()->json(['success' => false, 'message' => 'Graph message not found'], 404);
             }
             $messageId = $graphMessage['id'];
-            \Log::info('Graph Message ID', ['messageId' => $messageId, 'user' => $targetUserEmail]);
+            // \Log::info('Graph Message ID', ['messageId' => $messageId, 'user' => $targetUserEmail]);
         } catch (\Exception $e) {
-            \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
+            // \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
             return response()->json(['success' => false, 'message' => 'Failed to fetch message: ' . $e->getMessage()], 500);
         }
 
@@ -555,7 +542,7 @@ class PhishTriageController extends Controller
                     $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'inbox'
                     ])->throw();
-                    \Log::info('Move to inbox response', ['status' => $response->status(), 'body' => $response->json()]);
+                    // \Log::info('Move to inbox response', ['status' => $response->status(), 'body' => $response->json()]);
                     $reportedEmail->update(['status' => 'safe']);
                     break;
 
@@ -563,7 +550,7 @@ class PhishTriageController extends Controller
                     $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'junkemail'
                     ])->throw();
-                    \Log::info('Move to spam response', ['status' => $response->status(), 'body' => $response->json()]);
+                    // \Log::info('Move to spam response', ['status' => $response->status(), 'body' => $response->json()]);
                     $reportedEmail->update(['status' => 'spam']);
                     break;
 
@@ -571,16 +558,16 @@ class PhishTriageController extends Controller
                     $response = Http::withToken($token)->post("https://graph.microsoft.com/v1.0/users/$targetUserEmail/messages/$messageId/move", [
                         'destinationId' => 'deleteditems'
                     ])->throw();
-                    \Log::info('Move to deleted response', ['status' => $response->status(), 'body' => $response->json()]);
+                    // \Log::info('Move to deleted response', ['status' => $response->status(), 'body' => $response->json()]);
                     $reportedEmail->update(['status' => 'blocked']);
                     break;
 
                 default:
-                    \Log::error('Invalid action', ['action' => $action]);
+                    // \Log::error('Invalid action', ['action' => $action]);
                     return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
             }
         } catch (\Exception $e) {
-            \Log::error('API or database error', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
+            // \Log::error('API or database error', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
             return response()->json(['success' => false, 'message' => 'Action failed: ' . $e->getMessage()], 500);
         }
 
@@ -589,14 +576,14 @@ class PhishTriageController extends Controller
 
 
 
-    public function listEmails(Request $request)
-    {
-        $token = $this->getToken();
+    // public function listEmails(Request $request)
+    // {
+    //     $token = $this->getToken();
 
-        $response = Http::withToken($token)->get('https://graph.microsoft.com/v1.0/me/messages?$top=10');
+    //     $response = Http::withToken($token)->get('https://graph.microsoft.com/v1.0/me/messages?$top=10');
 
-        return response()->json($response->json());
-    }
+    //     return response()->json($response->json());
+    // }
 
 
     public function findMessageId(Request $request)
