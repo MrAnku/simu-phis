@@ -510,15 +510,7 @@ class ApiPhishingWebsitesController extends Controller
             }
             $id = base64_decode($request->route('id'));
 
-            $phishingWebsiteExists = PhishingWebsite::where('id', $id)->where('company_id', '!=', 'default')->first();
-            if ($phishingWebsiteExists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Phishing Website already exists for this company')
-                ], 422);
-            }
-
-            $phishingEmail = PhishingWebsite::where('id', $id)->where('company_id', 'default')->first();
+            $phishingEmail = PhishingWebsite::where('id', $id)->first();
             if (!$phishingEmail) {
                 return response()->json([
                     'success' => false,
@@ -526,15 +518,16 @@ class ApiPhishingWebsitesController extends Controller
                 ], 422);
             }
 
-            $duplicateTraining = $phishingEmail->replicate(['company_id', 'name']);
-            $duplicateTraining->company_id = Auth::user()->company_id;
-            $duplicateTraining->name = $phishingEmail->name . ' (Copy)';
+            $duplicateWebsite = $phishingEmail->replicate(['company_id', 'name']);
+            $duplicateWebsite->company_id = Auth::user()->company_id;
+            $duplicateWebsite->name = $phishingEmail->name . ' (Copy)';
 
-            $duplicateTraining->save();
+            $duplicateWebsite->save();
 
             return response()->json([
                 'success' => true,
-                'message' => __('Phishing Website duplicated successfully')
+                'message' => __('Phishing Website duplicated successfully'),
+                'data' => $duplicateWebsite
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
