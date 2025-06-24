@@ -129,7 +129,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
-        Route::post('/duplicate/{id?}', [ApiQuishingController::class, 'duplicate']);
+        
     });
 
     //whatsapp campaign routes
@@ -294,6 +294,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/get-template-by-id/{id?}', [ApiQuishingEmailController::class, 'getTemplateById']);
         Route::delete('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
         Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
+        Route::post('/duplicate/{id?}', [ApiQuishingEmailController::class, 'duplicate']);
     });
 
     Route::prefix('phishing-website')->group(function () {
