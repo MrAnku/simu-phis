@@ -705,7 +705,8 @@ EOT;
 
             return response()->json([
                 'success' => true,
-                'message' => __('Phishing Email duplicated successfully')
+                'message' => __('Phishing Email duplicated successfully'),
+                'data' => $duplicateTraining
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
