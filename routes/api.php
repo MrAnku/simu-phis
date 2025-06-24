@@ -299,7 +299,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('phishing-website')->group(function () {
         Route::get('/all', [ApiPhishingWebsitesController::class, 'getAll']);
         Route::get('/', [ApiPhishingWebsitesController::class, 'index']);
-        Route::delete('/delete', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
+        Route::delete('/delete/{encodedId?}', [ApiPhishingWebsitesController::class, 'deleteWebsite']);
         Route::post('/add', [ApiPhishingWebsitesController::class, 'addPhishingWebsite']);
         Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
         Route::post('/update-website', [ApiPhishingWebsitesController::class, 'updateWebsite']);
