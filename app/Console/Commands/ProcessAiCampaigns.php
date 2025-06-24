@@ -6,13 +6,14 @@ use App\Models\Company;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\TrainingModule;
+use App\Models\CompanySettings;
 use Illuminate\Console\Command;
 use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Models\TrainingAssignedUser;
 use App\Services\TrainingAssignedService;
 
 class ProcessAiCampaigns extends Command
@@ -48,6 +49,10 @@ class ProcessAiCampaigns extends Command
         $url = 'https://api.retellai.com/v2/create-phone-call';
 
         foreach ($pendingCalls as $pendingCall) {
+
+            
+            setCompanyTimezone($pendingCall->company_id);
+
             // Make the HTTP request
 
             $response = Http::withHeaders([
@@ -98,8 +103,8 @@ class ProcessAiCampaigns extends Command
 
                             if ($existingRow->training !== null) {
 
-                            $this->assignTraining($existingRow);
-                            $existingRow->update(['training_assigned' => 1]);
+                                $this->assignTraining($existingRow);
+                                $existingRow->update(['training_assigned' => 1]);
                             }
                         }
 
@@ -142,6 +147,8 @@ class ProcessAiCampaigns extends Command
 
     private function assignTraining($campaign)
     {
+        setCompanyTimezone($campaign->company_id);
+        
         $trainingAssignedService = new TrainingAssignedService();
 
         $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->employee_email)

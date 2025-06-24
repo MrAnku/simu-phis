@@ -60,7 +60,8 @@ class EmailBreachCheck extends Command
 
         foreach ($employees as $employee) {
 
-
+            setCompanyTimezone($employee->company_id);
+            
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
@@ -125,6 +126,7 @@ class EmailBreachCheck extends Command
         }
         foreach ($employees as $employee) {
 
+            setCompanyTimezone($employee->company_id);
 
             //scan employee
             $response = Http::withHeaders([

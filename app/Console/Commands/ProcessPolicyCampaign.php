@@ -49,6 +49,8 @@ class ProcessPolicyCampaign extends Command
             return;
         }
         foreach ($companies as $company) {
+            
+            setCompanyTimezone($company->company_id);
 
             $campaigns = PolicyCampaign::where('status', 'pending')
                 ->where('company_id', $company->company_id)
@@ -106,7 +108,7 @@ class ProcessPolicyCampaign extends Command
         }
         foreach ($companies as $company) {
             $company_id = $company->company_id;
-
+            setCompanyTimezone($company->company_id);
             $campaigns = PolicyCampaignLive::where('sent', 0)
                 ->where('company_id', $company_id)
                 ->take(5)

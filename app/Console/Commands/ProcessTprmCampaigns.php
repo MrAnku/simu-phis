@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\TprmActivity;
 use App\Models\TprmCampaign;
 use App\Models\SenderProfile;
+use App\Models\CompanySettings;
 use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\TprmCampaignLive;
@@ -47,13 +48,27 @@ class ProcessTprmCampaigns extends Command
 
   private function tprocessScheduledCampaigns()
   {
-    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
+    $companies = DB::table('company')
+      ->where('approved', 1)
+      ->where('service_status', 1)
+      ->get();
 
-    if (!$companies) {
+    if ($companies->isEmpty()) {
       return;
     }
     foreach ($companies as $company) {
+      
+      setCompanyTimezone($company->company_id);
+
       $company_id = $company->company_id;
+
+      //get timezone from company settings
+      $companySettings = CompanySettings::where('company_id', $company->company_id)->first();
+
+      if ($companySettings) {
+        date_default_timezone_set($companySettings->time_zone);
+        config(['app.timezone' => $companySettings->time_zone]);
+      }
 
       $campaigns = TprmCampaign::where('status', 'pending')
         ->where('company_id', $company_id)
@@ -63,7 +78,6 @@ class ProcessTprmCampaigns extends Command
         foreach ($campaigns as $campaign) {
           $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
           $currentDateTime = Carbon::now();
-
           if ($launchTime->lessThan($currentDateTime)) {
 
             $this->tmakeCampaignLive($campaign->campaign_id);
@@ -84,6 +98,9 @@ class ProcessTprmCampaigns extends Command
     echo "Fetched " . count($companies) . " companies.\n";
 
     foreach ($companies as $company) {
+
+      setCompanyTimezone($company->company_id);
+      
       $company_id = $company->company_id;
       echo "Processing company ID: " . $company_id . "\n";
 

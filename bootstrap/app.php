@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
             'isValidLearnerToken' => \App\Http\Middleware\LearnerTokenValidator::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
+            'timezone' => \App\Http\Middleware\SetUserTimezone::class,
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
             'jwt.auth' => JWTAuthMiddleware::class,
         ]);

@@ -33,7 +33,7 @@ class ProcessSmishing extends Command
     public function handle()
     {
         //get all pending quishing campaigns
-        $companies = Company::where('service_status', 1)->where('approved', true)->get();
+        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
 
         if ($companies->isEmpty()) {
             return;

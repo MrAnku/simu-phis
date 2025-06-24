@@ -27,6 +27,8 @@ class TrackingController extends Controller
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
 
+                setCompanyTimezone($campaignLive->company_id);
+
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
                 log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
@@ -54,6 +56,8 @@ class TrackingController extends Controller
             if ($campaignLive) {
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
+
+                setCompanyTimezone($campaignLive->company_id);
 
                 TprmActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
@@ -127,6 +131,10 @@ class TrackingController extends Controller
                 if ($quishingLive) {
                     $quishingLive->mail_open = '1';
                     $quishingLive->save();
+
+                    setCompanyTimezone($quishingLive->company_id);
+                    
+                    log_action("Quishing QR code scanned by {$quishingLive->user_email}", 'employee', 'employee');
                     QuishingActivity::where('campaign_live_id', $employeeid)->update(['email_viewed_at' => now()]);
                 }
             }

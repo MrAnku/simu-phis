@@ -38,6 +38,7 @@ class SyncLogs extends Command
             return;
         }
         foreach ($companies as $company) {
+            setCompanyTimezone($company->company_id);
             $siemConfig = $company->siemConfig;
             if (!$siemConfig) {
                 continue;

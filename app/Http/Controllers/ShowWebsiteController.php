@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Models\TprmActivity;
+use App\Models\TprmUsers;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
@@ -171,12 +173,16 @@ class ShowWebsiteController extends Controller
     private function assignTrainingByQuishing($campid)
     {
         $campaign = QuishingLiveCamp::where('id', $campid)->first();
+
+        
         if (!$campaign) {
             return response()->json(['error' => 'Invalid campaign or user']);
         }
         if ($campaign->training_module == null) {
             return response()->json(['error' => 'No training module assigned']);
         }
+
+        setCompanyTimezone($campaign->company_id);
 
         //checking assignment
         $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
@@ -205,6 +211,9 @@ class ShowWebsiteController extends Controller
             return response()->json(['error' => 'No training module assigned']);
         }
 
+        setCompanyTimezone($campaign->company_id);
+
+
         //checking assignment
         $all_camp = SmishingCampaign::where('campaign_id', $campaign->campaign_id)->first();
 
@@ -231,6 +240,8 @@ class ShowWebsiteController extends Controller
         if ($campaign->training_module == null) {
             return response()->json(['error' => 'No training module assigned']);
         }
+
+        setCompanyTimezone($campaign->company_id);
 
         //checking assignment
         $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
@@ -451,6 +462,8 @@ class ShowWebsiteController extends Controller
                 return response()->json(['error' => 'No training module assigned']);
             }
 
+            setCompanyTimezone($campaign->company_id);
+
             //checking assignment
             $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
 
@@ -641,6 +654,7 @@ class ShowWebsiteController extends Controller
             return response()->json(['error' => 'No training module assigned']);
         }
 
+        setCompanyTimezone($campaign->company_id);
 
         try {
             $client = new RestClient(
@@ -685,6 +699,10 @@ class ShowWebsiteController extends Controller
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
             $wsh = $request->input('wsh');
+
+            $companyId = Users::where('id', $userid)->value('company_id');
+
+            setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
@@ -811,6 +829,11 @@ class ShowWebsiteController extends Controller
             $campid = $request->input('campid');
             $userid = $request->input('userid');
             TprmCampaignLive::where('id', $campid)->where('emp_compromised', 0)->update(['emp_compromised' => 1]);
+
+            $companyId = TprmUsers::where('id', $userid)->value('company_id');
+
+            setCompanyTimezone($companyId);
+
             $agent = new Agent();
 
             $clientData = [
@@ -844,6 +867,10 @@ class ShowWebsiteController extends Controller
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
             $wsh = $request->input('wsh');
+
+            $companyId = Users::where('id', $userid)->value('company_id');
+
+            setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
@@ -879,6 +906,10 @@ class ShowWebsiteController extends Controller
         if ($request->has('updatePayloadClick')) {
             $campid = $request->input('campid');
             $userid = $request->input('userid');
+
+            $companyId = TprmUsers::where('id', $userid)->value('company_id');
+
+            setCompanyTimezone($companyId);
             //update payload click for TPRM campaigns
             TprmCampaignLive::where('id', $campid)->update(['payload_clicked' => 1]);
             TprmActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);

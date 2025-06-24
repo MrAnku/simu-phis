@@ -44,13 +44,16 @@ class ProcessWhatsappCampaign extends Command
     private function sendWhatsapp()
     {
         //getting companies
-        $companies = Company::where('service_status', 1)->where('approved', true)->get();
+        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
 
         if ($companies->isEmpty()) {
             return;
         }
 
         foreach ($companies as $company) {
+            
+            setCompanyTimezone($company->company_id);
+
             $campaigns = WaLiveCampaign::where('sent', 0)->where('company_id', $company->company_id)->take(5)->get();
             if ($campaigns && $company->whatsappConfig) {
                 // $whatsapp_cloud_api = new WhatsAppCloudApi([

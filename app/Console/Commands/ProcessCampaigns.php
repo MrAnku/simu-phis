@@ -60,12 +60,17 @@ class ProcessCampaigns extends Command
 
   private function processScheduledCampaigns()
   {
-    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
+    $companies = DB::table('company')
+      ->where('approved', 1)
+      ->where('service_status', 1)
+      ->get();
 
-    if (!$companies) {
+    if ($companies->isEmpty()) {
       return;
     }
     foreach ($companies as $company) {
+
+      setCompanyTimezone($company->company_id);
 
       $campaigns = Campaign::where('status', 'pending')
         ->where('company_id', $company->company_id)
@@ -135,12 +140,14 @@ class ProcessCampaigns extends Command
 
   private function sendCampaignLiveEmails()
   {
-    $companies = DB::table('company')->where('approved', true)->where('service_status', true)->get();
+    $companies = DB::table('company')->where('approved', 1)->where('service_status', 1)->get();
 
-    if (!$companies) {
+    if ($companies->isEmpty()) {
       return;
     }
     foreach ($companies as $company) {
+      setCompanyTimezone($company->company_id);
+
       $company_id = $company->company_id;
 
       $campaigns = CampaignLive::where('sent', 0)
@@ -623,6 +630,7 @@ class ProcessCampaigns extends Command
     $companies = Company::all();
 
     foreach ($companies as $company) {
+      setCompanyTimezone($company->company_id);
 
 
       $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;

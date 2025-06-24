@@ -6,6 +6,7 @@ use App\Models\Log;
 use App\Models\Company;
 use App\Models\SiemLog;
 use App\Models\SiemProvider;
+use App\Models\CompanySettings;
 use Illuminate\Support\Facades\DB;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
@@ -443,7 +444,8 @@ if (!function_exists('sendMailUsingDmi')) {
 
 
 if (!function_exists('checkIfOutlookDomain')) {
-    function checkIfOutlookDomain($email) {
+    function checkIfOutlookDomain($email)
+    {
 
         //extract the domain from the email address
         $domain = substr(strrchr($email, "@"), 1);
@@ -475,3 +477,15 @@ if (!function_exists('checkIfOutlookDomain')) {
     }
 }
 
+if (!function_exists('setCompanyTimezone')) {
+    function setCompanyTimezone($companyId)
+    {
+        //get timezone from company settings
+        $companySettings = CompanySettings::where('company_id', $companyId)->first();
+
+        if ($companySettings) {
+            date_default_timezone_set($companySettings->time_zone);
+            config(['app.timezone' => $companySettings->time_zone]);
+        }
+    }
+}

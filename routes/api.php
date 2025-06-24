@@ -68,10 +68,10 @@ Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middle
 Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
 
 
-Route::middleware('auth:api')->get('/dashboard', [ApiDashboardController::class, 'index']);
+Route::middleware(['auth:api', 'timezone'])->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 

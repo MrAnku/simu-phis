@@ -130,7 +130,17 @@ class LearnerDashController extends Controller
         try {
             $policyId = $request->input('id');
             $policyId = base64_decode($policyId);
-            AssignedPolicy::where('id', $policyId)->update(['accepted' => 1, 'accepted_at' => now()]);
+
+            //get company id from assigned policy
+            $assignedPolicy = AssignedPolicy::findOrFail($policyId);
+            if(!$assignedPolicy) {
+                return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+            }
+
+            $companyId = $assignedPolicy->company_id;
+            setCompanyTimezone($companyId);
+
+            $assignedPolicy->update(['accepted' => 1, 'accepted_at' => now()]);
             log_action("Policy with ID {$policyId} accepted by user", 'learner', 'learner');
             return response()->json(['success' => true, 'message' => 'Policy accepted successfully']);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -432,6 +442,10 @@ class LearnerDashController extends Controller
             // Update the column if the current value is greater
             $rowData->personal_best = $request->trainingScore;
             $rowData->save();
+
+           
+
+            setCompanyTimezone($rowData->company_id);
 
             log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
 

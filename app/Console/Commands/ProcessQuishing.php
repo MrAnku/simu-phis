@@ -8,6 +8,7 @@ use App\Mail\QuishingMail;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
+use App\Models\CompanySettings;
 use App\Models\OutlookDmiToken;
 use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
@@ -44,12 +45,16 @@ class ProcessQuishing extends Command
     public function handle()
     {
         //get all pending quishing campaigns
-        $companies = Company::where('service_status', 1)->where('approved', true)->get();
+        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
 
-        if (!$companies) {
+        if ($companies->isEmpty()) {
             return;
         }
         foreach ($companies as $company) {
+
+            setCompanyTimezone($company->company_id);
+
+
             $quishingCampaigns = $company->quishingLiveCamps()->where('sent', '0')->get();
             if (!$quishingCampaigns) {
                 continue;

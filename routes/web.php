@@ -80,13 +80,8 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
     Route::get('/policies/{token}', [LearnerDashController::class, 'policyWithoutLogin'])
         ->name('learner.policy.dashboard');
 
-        Route::post('/accept-policy', [LearnerDashController::class, 'acceptPolicy'])
-            ->name('learner.accept.policy');
-
-    
-
-
-
+    Route::post('/accept-policy', [LearnerDashController::class, 'acceptPolicy'])
+        ->name('learner.accept.policy');
 
 
     Route::get('/start-blue-collar-training/{token}', [LearnerDashController::class, 'startBlueCollarTraining'])
@@ -116,29 +111,9 @@ Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
 
         Route::post('/download-certificate', [LearnerDashController::class, 'downloadCertificate'])->name('learner.download.cert');
     });
-
-
-
-    // Route::post('/download-certificate', [BluecolarController::class, 'bluecollarDownloadCertificate'])->name('learner.download.cert');
-
-
-    // Route::middleware(['isLearnerLoggedIn'])->group(function () {
-
-
-
-    //     Route::get('/ai-training/{topic}/{language}/{id}', [LearnerDashController::class, 'startAiTraining'])->name('learner.start.ai.training');
-    //     Route::get('/loadTrainingContent/{training_id}/{training_lang}', [LearnerDashController::class, 'loadTraining'])->name('learner.load.training');
-
-    //     Route::get('/load-ai-training/{topic}', [AiTrainingController::class, 'generateTraining'])->name('generate.training');
-    //     Route::post('/ai-training/translate-quiz', [AiTrainingController::class, 'translateAiTraining'])->name('translate.ai.training');
-
-    //     Route::get('/gamified/training/{training_id}/{id}/{lang}', [LearnerDashController::class, 'startGamifiedTraining'])->name('learn.gamified.training');
-
-
-
 });
 
-//  ========================== Game Training Routes ===================================
+//  ============= Game Training Routes ===========
 Route::post('game-score', [AdminTrainingGameController::class, 'gameScore'])
     ->name('gamescore')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
@@ -148,11 +123,6 @@ Route::get('/bluecollartraining/{training_id}/{training_lang}/{id}', [BluecolarC
 
 Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft'])->name('login.with.microsoft');
 
-
-
-
-// Route::get('/logout', [LearnerAuthController::class, 'logout'])->name('learner.logout');
-//bluecollar traininglearning portal end
 
 //-------------------miscellaneous routes------------------//
 
