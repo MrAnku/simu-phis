@@ -246,15 +246,7 @@ class ApiQuishingController extends Controller
             }
             $id = base64_decode($request->route('id'));
 
-            $qshTempExists = QshTemplate::where('id', $id)->where('company_id', '!=', 'default')->first();
-            if ($qshTempExists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Quishing Template already exists for this company')
-                ], 422);
-            }
-
-            $qshTemplate = QshTemplate::where('id', $id)->where('company_id', 'default')->first();
+            $qshTemplate = QshTemplate::where('id', $id)->first();
             if (!$qshTemplate) {
                 return response()->json([
                     'success' => false,

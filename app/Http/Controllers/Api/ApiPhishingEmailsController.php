@@ -689,15 +689,7 @@ EOT;
             }
             $id = base64_decode($request->route('id'));
 
-            $phishingEmailExists = PhishingEmail::where('id', $id)->where('company_id', '!=', 'default')->first();
-            if ($phishingEmailExists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Phishing Email already exists for this company')
-                ], 422);
-            }
-
-            $phishingEmail = PhishingEmail::where('id', $id)->where('company_id', 'default')->first();
+            $phishingEmail = PhishingEmail::where('id', $id)->first();
             if (!$phishingEmail) {
                 return response()->json([
                     'success' => false,
