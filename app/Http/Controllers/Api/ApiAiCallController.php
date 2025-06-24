@@ -135,9 +135,9 @@ class ApiAiCallController extends Controller
             $campId = Str::random(6);
 
             //checking if all users have valid mobile number
-            $isvalid = $this->checkValidMobile($request->emp_group);
+            $hasPhoneNo = $this->groupHasPhoneNumber($request->emp_group);
 
-            if (!$isvalid) {
+            if (!$hasPhoneNo) {
                 return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
             }
 
@@ -167,7 +167,7 @@ class ApiAiCallController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
-    private function checkValidMobile($groupid)
+    private function groupHasPhoneNumber($groupid)
     {
         // Retrieve the JSON-encoded users column and decode it
         $userIdsJson = UsersGroup::where('group_id', $groupid)->value('users');
@@ -180,22 +180,22 @@ class ApiAiCallController extends Controller
             return false;
         }
 
-        // Fetch users based on the retrieved IDs
-        $users = Users::whereIn('id', $userIds)->get();
+        // filter users with valid whatsapp numbers
+        $users = Users::whereIn('id', $userIds)
+            ->get();
 
-        // If no users exist in Users table, return false
+        $users = $users->filter(function ($user) {
+            // Check if the whatsapp column is not null
+            return $user->whatsapp !== null;
+        });
+
+        // If no users with valid whatsapp numbers are found, return false
         if ($users->isEmpty()) {
             return false;
         }
 
-        // Check if any user has whatsapp = 0 or null
-        foreach ($users as $user) {
-            if (!empty($user->whatsapp)) {
-                return true;
-            }
-        }
 
-        return false;
+        return true;
     }
 
     private function makeCampaignLive($campaignid)
@@ -211,6 +211,10 @@ class ApiAiCallController extends Controller
             $users = Users::whereIn('id', $userIds)->get();
             if ($users) {
                 foreach ($users as $user) {
+
+                    if($user->whatsapp == null){
+                        continue;
+                    }
 
                     AiCallCampLive::create([
                         'campaign_id' => $campaign->campaign_id,
@@ -385,23 +389,23 @@ class ApiAiCallController extends Controller
                     }
                 } else {
                     $data = json_decode($localReport->call_report, true);
-                    
+
 
 
                     $data['fell_for_simulation'] = false;
 
-                        if (isset($data['transcript_with_tool_calls'])) {
-                            foreach ($data['transcript_with_tool_calls'] as $toolCall) {
-                                if ($toolCall['role'] == 'tool_call_invocation') {
-                                    $arguments = json_decode($toolCall['arguments'], true);
+                    if (isset($data['transcript_with_tool_calls'])) {
+                        foreach ($data['transcript_with_tool_calls'] as $toolCall) {
+                            if ($toolCall['role'] == 'tool_call_invocation') {
+                                $arguments = json_decode($toolCall['arguments'], true);
 
-                                    if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
-                                        $data['fell_for_simulation'] = true;
-                                        break;
-                                    }
+                                if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
+                                    $data['fell_for_simulation'] = true;
+                                    break;
                                 }
                             }
                         }
+                    }
 
 
 
