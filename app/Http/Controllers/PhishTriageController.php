@@ -41,6 +41,9 @@ class PhishTriageController extends Controller
         } else {
             $companyId = "unknown";
         }
+        if($companyId !== 'unknown'){
+            setCompanyTimezone($companyId);
+        }
 
         //get the email body
         $body = $request->input('body');
