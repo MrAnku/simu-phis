@@ -48,4 +48,9 @@ class CampaignLive extends Model
     public function game(){
         return $this->belongsTo(TrainingGame::class, 'training_module', 'id');
     }
+
+    public function campaignActivity()
+    {
+        return $this->belongsTo(EmailCampActivity::class, 'id', 'campaign_live_id');
+    }
 }
