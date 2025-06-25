@@ -50,7 +50,15 @@ class CampaignMail extends Mailable
     {
         return $this->from($this->mailData['from_email'], $this->mailData['from_name'])
                     ->subject($this->mailData['email_subject'])
-                    ->html($this->mailData['mailBody']);
+                    ->html($this->mailData['mailBody'])
+                    ->withSwiftMessage(function ($message) {
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader('X-MS-Exchange-Organization-SkipSafeLinksProcessing', '1');
+                $headers->addTextHeader('X-MS-Exchange-Organization-PhishTraining', 'true');
+                $headers->addTextHeader('X-Simuphish', 'true');
+                $headers->addTextHeader('X-Simuphish-Email', 'sjbfhiuwhuriehwuehihus');
+            });
     }
 
     /**
