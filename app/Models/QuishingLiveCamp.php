@@ -39,5 +39,12 @@ class QuishingLiveCamp extends Model
     {
         return $this->hasOne(QuishingActivity::class, 'campaign_live_id', 'id');
     }
+
+    protected $appends = ['formatted_created_at'];
+
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
     
 }

@@ -47,4 +47,11 @@ class AiCallCampLive extends Model
     public function agentDetail(){
         return $this->belongsTo(AiCallAgent::class, 'agent_id', 'agent_id');
     }
+
+    protected $appends = ['formatted_created_at'];
+
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
 }

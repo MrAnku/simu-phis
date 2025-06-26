@@ -33,5 +33,12 @@ class AiCallCampaign extends Model
     public function trainingName(){
         return $this->hasOne(TrainingModule::class, 'id', 'training');
     }
+
+    protected $appends = ['formatted_created_at'];
+
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
     
 }
