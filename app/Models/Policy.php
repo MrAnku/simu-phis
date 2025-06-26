@@ -10,6 +10,8 @@ class Policy extends Model
         'policy_name',
         'policy_description',
         'policy_file',
+        'has_quiz',
+        'json_quiz',
         'company_id',
     ];
 }

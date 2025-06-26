@@ -37,6 +37,8 @@ class ApiPolicyController extends Controller
                 'policy_name' => 'required|string|max:255',
                 'policy_description' => 'required|string',
                 'policy_file' => 'required|file|mimes:pdf|max:10240',
+                'has_quiz' => 'required|boolean',
+                'json_quiz' => 'nullable|json',
             ]);
 
             $file = $request->file('policy_file');
@@ -48,10 +50,18 @@ class ApiPolicyController extends Controller
 
             $filePath = $request->file('policy_file')->storeAs('/uploads/policyFile', $newFilename, 's3');
 
+            if($request->has_quiz == true){
+                $json_quiz = $request->json_quiz;
+            }else{
+                $json_quiz = null;
+            }
+
             $policy = Policy::create([
                 'policy_name' => $request->policy_name,
                 'policy_description' => $request->policy_description,
                 'policy_file' => "/" . $filePath,
+                'has_quiz' => $request->has_quiz,
+                'json_quiz' => $json_quiz,
                 'company_id' => Auth::user()->company_id,
             ]);
             log_action("Policy created for company : " . Auth::user()->company_name);
