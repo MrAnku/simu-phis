@@ -162,16 +162,31 @@ class ApiPolicyController extends Controller
             $request->validate([
                 'user_email' => 'required|email|exists:users,user_email',
                 'policy' => 'required|exists:policies,id',
+                'json_quiz_response' => 'nullable|json'
             ]);
 
             $user_email = $request->user_email;
             $policy_id = $request->policy;
 
+            $policy = Policy::find($policy_id);
+            if($policy->has_quiz == true){
+                if ($request->json_quiz_response == null) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Quiz response is required for policies with quizzes'
+                    ], 422);
+                }
+                $json_quiz_response = $request->json_quiz_response;
+            }else{
+                $json_quiz_response = null;
+            }
+
             $isUpdated = AssignedPolicy::where('user_email', $user_email)
                 ->where('policy', $policy_id)
                 ->update([
                     'accepted' => true,
-                    'accepted_at' => now()
+                    'accepted_at' => now(),
+                    'json_quiz_response' => $json_quiz_response
                 ]);
 
             if (!$isUpdated) {

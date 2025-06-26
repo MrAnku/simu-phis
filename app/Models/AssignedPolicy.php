@@ -13,6 +13,7 @@ class AssignedPolicy extends Model
         'policy',
         'accepted',
         'accepted_at',
+        'json_quiz_response',
         'company_id',
     ];
 
