@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Str;
+use Exception;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Jobs\CloneWebsiteJob;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Exception;
+use App\Models\WebsiteCloneJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -529,109 +531,49 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
-    public function websiteText(Request $request)
-    {
-        $url = $request->query('url');
-
-        // Rudimentary safety check
-        if (!$url || !(str_starts_with($url, 'http://') || str_starts_with($url, 'https://'))) {
-            return response()->json(['error' => 'Invalid URL'], 400);
-        }
-
-        try {
-            $res = Http::withoutVerifying()->withOptions(['verify' => false])->get($url);
-
-            if (!$res->ok()) {
-                return response()->json(['error' => 'Upstream responded with ' . $res->status()], $res->status());
-            }
-
-            return response($res->body(), 200)
-                ->header('Content-Type', 'text/html; charset=utf-8');
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Proxy fetch failed'], 500);
-        }
-    }
+    
 
     public function cloneWebsite(Request $request)
     {
-        ini_set('max_execution_time', 300);
-
         $request->validate([
-            'url' => 'required|url'
+            'url' => 'required|url',
         ]);
 
         $url = $request->input('url');
+        $companyId = Auth::user()->company_id; // Adjust based on your tenancy setup
 
-        try {
-            $response = Http::get($url);
-            if (!$response->successful()) {
-                return response()->json(['error' => 'Failed to fetch the URL'], 400);
-            }
+        // Dispatch the job
+        // CloneWebsiteJob::dispatch($url, $companyId);
+        WebsiteCloneJob::create([
+            'company_id' => $companyId,
+            'url' => $url,
+            'status' => 'pending',
+        ]);
 
-            $html = $response->body();
-            $crawler = new Crawler($html, $url);
-
-            $baseUrl = parse_url($url, PHP_URL_SCHEME) . '://' . parse_url($url, PHP_URL_HOST);
-
-            $assetUrls = [];
-
-            // Extract asset links
-            $crawler->filter('img, script, link[rel="stylesheet"]')->each(function ($node) use (&$assetUrls, $baseUrl) {
-                $tagName = $node->nodeName();
-                $attr = $tagName === 'link' ? 'href' : 'src';
-                $src = $node->attr($attr);
-                if ($src) {
-                    $absoluteUrl = $this->makeAbsoluteUrl($src, $baseUrl);
-                    $assetUrls[$src] = $absoluteUrl;
-                }
-            });
-
-            // Download and re-upload assets to S3
-            $cloudfrontBaseUrl = env('CLOUDFRONT_URL');
-            $s3Urls = [];
-
-            foreach ($assetUrls as $original => $assetUrl) {
-                $assetResponse = @file_get_contents($assetUrl);
-                if ($assetResponse === false) continue;
-
-                $pathInfo = pathinfo(parse_url($assetUrl, PHP_URL_PATH));
-                $extension = $pathInfo['extension'] ?? 'bin';
-                $s3Path = 'clones/' . uniqid() . '.' . $extension;
-
-                Storage::disk('s3')->put($s3Path, $assetResponse);
-
-                // Use CloudFront URL
-                $s3Urls[$original] = $cloudfrontBaseUrl . '/' . $s3Path;
-            }
-
-            // Replace URLs in HTML
-            foreach ($s3Urls as $old => $new) {
-                $html = str_replace($old, $new, $html);
-            }
-
-            // Save the final HTML
-            $filename = 'cloned_sites/' . md5($url) . '.html';
-            Storage::disk('s3')->put($filename, $html);
-
-            return response()->json([
-                'message' => 'Website cloned successfully.',
-                'file_url' => $cloudfrontBaseUrl . '/' . $filename,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Exception: ' . $e->getMessage()], 500);
-        }
+        return response()->json([
+            'message' => 'Website cloning job has been queued.',
+        ]);
     }
 
-    private function makeAbsoluteUrl($url, $base)
+    public function getClonedWebsites(Request $request): JsonResponse
     {
-        if (preg_match('/^https?:\/\//', $url)) {
-            return $url;
-        } elseif (strpos($url, '//') === 0) {
-            return 'https:' . $url;
-        } elseif (strpos($url, '/') === 0) {
-            return rtrim($base, '/') . $url;
-        } else {
-            return $base . '/' . ltrim($url, '/');
+        try {
+            $companyId = Auth::user()->company_id;
+            $clonedWebsites = WebsiteCloneJob::where('company_id', $companyId)
+                ->paginate(10);
+            return response()->json([
+                'success' => true,
+                'message' => __('Cloned websites fetched successfully.'),
+                'data' => $clonedWebsites,
+            ], 200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
+
+
+    
 }

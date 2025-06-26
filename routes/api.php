@@ -70,7 +70,6 @@ Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'ad
 
 Route::middleware(['auth:api', 'timezone'])->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
-Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
 Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
@@ -305,11 +304,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
         Route::post('/update-website', [ApiPhishingWebsitesController::class, 'updateWebsite']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
-        // Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
+        Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
+        Route::get('/cloned-websites', [ApiPhishingWebsitesController::class, 'getClonedWebsites']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
         Route::post('/duplicate/{id?}', [ApiPhishingWebsitesController::class, 'duplicate']);
-        Route::get('/contenttohtml', [ApiPhishingWebsitesController::class, 'websiteText']);
+        
     });
 
     Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);
