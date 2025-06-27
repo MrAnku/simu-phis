@@ -33,6 +33,9 @@ class ProcessCloningWebsite extends Command
 
         // Create job record
         $jobRecord = WebsiteCloneJob::where('status', 'pending')->first();
+        if (!$jobRecord) {
+            return;
+        }
 
         try {
             $response = Http::get($jobRecord->url);

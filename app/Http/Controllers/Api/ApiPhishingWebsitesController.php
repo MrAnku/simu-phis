@@ -270,7 +270,8 @@ class ApiPhishingWebsitesController extends Controller
             // Step 3: Build full domain
             $subdomain = $request->input('subdomain');
             $domain    = $request->input('domain');
-            $fullDomain = $subdomain ? $subdomain . '.' . $domain : $domain;
+            // $fullDomain = $subdomain ? $subdomain . '.' . $domain : $domain;
+            $fullDomain = $domain;
 
             $company_id = Auth::user()->company_id;
 
