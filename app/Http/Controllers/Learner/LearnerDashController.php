@@ -128,25 +128,41 @@ class LearnerDashController extends Controller
     public function acceptPolicy(Request $request)
     {
         try {
-            $policyId = $request->input('id');
-            $policyId = base64_decode($policyId);
+            $encodedId = $request->input('id');
+            $policyId = base64_decode($encodedId);
 
-            //get company id from assigned policy
             $assignedPolicy = AssignedPolicy::findOrFail($policyId);
-            if(!$assignedPolicy) {
+            if (!$assignedPolicy) {
                 return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
             }
 
             $companyId = $assignedPolicy->company_id;
             setCompanyTimezone($companyId);
 
-            $assignedPolicy->update(['accepted' => 1, 'accepted_at' => now()]);
+            $responses = $request->input('responses', []);
+            if (!is_array($responses)) {
+                return response()->json(['success' => false, 'message' => 'Invalid quiz response format'], 422);
+            }
+
+            $assignedPolicy->update([
+                'accepted' => 1,
+                'accepted_at' => now(),
+                'json_quiz_response' => json_encode($responses),
+            ]);
+
             log_action("Policy with ID {$policyId} accepted by user", 'learner', 'learner');
-            return response()->json(['success' => true, 'message' => 'Policy accepted successfully']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Policy accepted and quiz response saved successfully.'
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['success' => false, 'message' =>'Invalid request']);
+            return response()->json(['success' => false, 'message' => 'Validation error'], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Server error'], 500);
         }
     }
+
 
     public function startBlueCollarTraining(Request $request)
     {
@@ -443,7 +459,7 @@ class LearnerDashController extends Controller
             $rowData->personal_best = $request->trainingScore;
             $rowData->save();
 
-           
+
 
             setCompanyTimezone($rowData->company_id);
 

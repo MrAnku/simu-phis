@@ -240,6 +240,7 @@
                                                         {{ $policy->created_at->format('Y-m-d') ?? 'Date not found' }}
                                                     </td>
                                                     <td class="text-secondary">
+
                                                         <button type="button" class="btn btn-sm btn-primary"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#policyModal{{ $policy->id }}">
@@ -248,64 +249,107 @@
 
                                                         <!-- Modal -->
                                                         <div class="modal fade" id="policyModal{{ $policy->id }}"
-                                                            tabindex="-1"
-                                                            aria-labelledby="policyModalLabel{{ $policy->id }}"
-                                                            aria-hidden="true">
+                                                            tabindex="-1" aria-hidden="true">
                                                             <div
                                                                 class="modal-dialog modal-fullscreen modal-dialog-centered">
                                                                 <div class="modal-content">
+
                                                                     <div class="modal-header">
-                                                                        <h5 class="modal-title"
-                                                                            id="policyModalLabel{{ $policy->id }}">
-                                                                            {{ $policy->policyData->policy_name ?? __('Policy') }}
-                                                                        </h5>
+                                                                        <h5 class="modal-title">Policy Document</h5>
                                                                         <button type="button" class="btn-close"
                                                                             data-bs-dismiss="modal"
-                                                                            aria-label="{{ __('Close') }}"></button>
-                                                                    </div>
-                                                                    <div class="modal-body" style="min-height:400px;">
-                                                                        <iframe
-                                                                            src="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
-                                                                            width="100%" height="100%"
-                                                                            frameborder="0"></iframe>
-                                                                    </div>
-                                                                    <div
-                                                                        class="modal-footer d-flex justify-content-between align-items-center">
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input"
-                                                                                type="checkbox"
-                                                                                id="acceptPolicyCheckbox{{ $policy->id }}">
-                                                                            <label class="form-check-label"
-                                                                                for="acceptPolicyCheckbox{{ $policy->id }}">
-                                                                                {{ __('I have read and accept this policy.') }}
-                                                                            </label>
-                                                                            <script>
-                                                                                document.addEventListener('DOMContentLoaded', function() {
-                                                                                    const checkbox = document.getElementById('acceptPolicyCheckbox{{ $policy->id }}');
-                                                                                    const acceptBtn = document.getElementById('acceptPolicyBtn{{ $policy->id }}');
-                                                                                    if (checkbox && acceptBtn) {
-                                                                                        checkbox.addEventListener('change', function() {
-                                                                                            acceptBtn.disabled = !checkbox.checked;
-                                                                                        });
-                                                                                    }
-                                                                                });
-                                                                            </script>
-                                                                        </div>
-                                                                        <div>
-
-                                                                            <button type="button"
-                                                                                class="btn btn-primary"
-                                                                                onclick="acceptPolicy('{{ base64_encode($policy->id) }}')"
-                                                                                id="acceptPolicyBtn{{ $policy->id }}"
-                                                                                disabled>
-                                                                                {{ __('Accept') }}
-                                                                            </button>
-                                                                            <button type="button"
-                                                                                class="btn btn-secondary"
-                                                                                data-bs-dismiss="modal">{{ __('Close') }}</button>
-                                                                        </div>
+                                                                            aria-label="Close"></button>
                                                                     </div>
 
+                                                                    <div class="modal-body d-flex flex-wrap"
+                                                                        style="min-height:400px; gap: 20px;">
+                                                                        <!-- LEFT SIDE: PDF + Acceptance -->
+                                                                        <div class="flex-grow-1"
+                                                                            style="min-width: 60%;">
+                                                                            <!-- PDF Display -->
+                                                                            <div class="border rounded overflow-hidden"
+                                                                                style="height: 500px;">
+                                                                                <iframe
+                                                                                    src="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
+                                                                                    width="100%" height="100%"
+                                                                                    frameborder="0"
+                                                                                    style="border: none;"></iframe>
+                                                                            </div>
+
+                                                                            <!-- Acceptance Form -->
+                                                                            <form method="POST" action=""
+                                                                                class="mt-4">
+                                                                                @csrf
+                                                                                <div class="form-check mt-3">
+                                                                                    <input type="checkbox"
+                                                                                        class="form-check-input"
+                                                                                        id="agreeCheckbox-{{ $policy->id }}"
+                                                                                        disabled>
+                                                                                    <label class="form-check-label"
+                                                                                        for="agreeCheckbox-{{ $policy->id }}">
+                                                                                        I have read and accept this
+                                                                                        policy
+                                                                                    </label>
+                                                                                </div>
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary"
+                                                                                    onclick="acceptPolicy('{{ base64_encode($policy->id) }}')"
+                                                                                    id="acceptPolicyBtn{{ $policy->id }}"
+                                                                                    disabled>Accept</button>
+                                                                            </form>
+                                                                        </div>
+
+                                                                        <!-- RIGHT SIDE: Quiz -->
+                                                                        <div class="flex-shrink-0"
+                                                                            style="width: 35%; min-width: 300px;">
+                                                                            <h5 class="mb-3">Quiz</h5>
+
+                                                                            @php
+                                                                                $quiz = json_decode(
+                                                                                    $policy->policyData->json_quiz ??
+                                                                                        '[]',
+                                                                                );
+                                                                            @endphp
+
+                                                                            @if ($policy->policyData->has_quiz && $quiz && count($quiz) > 0)
+                                                                                <form
+                                                                                    id="quizForm-{{ $policy->id }}">
+                                                                                    @foreach ($quiz as $index => $question)
+                                                                                        <div class="mb-3">
+                                                                                            <label class="form-label">
+                                                                                                {{ $index + 1 }}.
+                                                                                                {{ $question->question }}
+                                                                                            </label>
+
+
+                                                                                            @foreach ($question->options as $option)
+                                                                                                <div
+                                                                                                    class="form-check">
+                                                                                                    <input
+                                                                                                        class="form-check-input quiz-radio"
+                                                                                                        type="radio"
+                                                                                                        name="answers[{{ $index }}]"
+                                                                                                        value="{{ $option }}"
+                                                                                                        id="q{{ $index }}_{{ md5($option) }}"
+                                                                                                        data-question-index="{{ $index }}"
+                                                                                                        data-question="{{ $question->question }}">
+                                                                                                    <label
+                                                                                                        class="form-check-label"
+                                                                                                        for="q{{ $index }}_{{ md5($option) }}">
+                                                                                                        {{ $option }}
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                            @endforeach
+
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </form>
+                                                                            @else
+                                                                                <p class="text-secondary">No quiz
+                                                                                    available for this policy.</p>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -391,9 +435,55 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-       
+        document.addEventListener("DOMContentLoaded", function() {
+            const modal = document.getElementById("policyModal{{ $policy->id }}");
+            if (!modal) return;
 
-        function acceptPolicy(policyId) {
+            modal.addEventListener("shown.bs.modal", function() {
+                const quizForm = document.querySelector('#quizForm-{{ $policy->id }}');
+                const quizRadios = quizForm.querySelectorAll('.quiz-radio');
+                const totalQuestions = {{ count($quiz ?? []) }};
+                const agreeCheckbox = document.getElementById('agreeCheckbox-{{ $policy->id }}');
+                const acceptBtn = document.getElementById('acceptPolicyBtn{{ $policy->id }}');
+
+                function updateAgreeCheckboxStatus() {
+                    const answered = new Set();
+
+                    quizRadios.forEach(radio => {
+                        if (radio.checked) {
+                            answered.add(radio.dataset.questionIndex);
+                        }
+                    });
+
+                    // Enable "I agree" checkbox only if all questions are answered
+                    agreeCheckbox.disabled = answered.size !== totalQuestions;
+
+                    // Disable Accept button until agree checkbox is checked
+                    if (!agreeCheckbox.disabled && agreeCheckbox.checked) {
+                        acceptBtn.disabled = false;
+                    } else {
+                        acceptBtn.disabled = true;
+                    }
+                }
+
+                // When quiz radio changes
+                quizRadios.forEach(radio => {
+                    radio.addEventListener('change', updateAgreeCheckboxStatus);
+                });
+
+                // When agree checkbox changes
+                agreeCheckbox.addEventListener('change', function() {
+                    acceptBtn.disabled = !this.checked;
+                });
+
+                // Initial state setup
+                updateAgreeCheckboxStatus();
+            });
+        });
+    </script>
+
+    <script>
+        function acceptPolicy(encodedPolicyId) {
             Swal.fire({
                 title: "{{ __('Are you sure?') }}",
                 text: "{{ __('Do you want to accept this policy?') }}",
@@ -405,14 +495,45 @@
                 cancelButtonText: "{{ __('Cancel') }}"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post({
+                    const decodedId = atob(encodedPolicyId); // Decode base64 policy ID
+
+                    // Validate "I agree" checkbox
+                    if (!$(`#agreeCheckbox-${decodedId}`).is(':checked')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Oops...',
+                            text: 'Please check the agreement box to accept the policy.'
+                        });
+                        return;
+                    }
+
+                    // Collect quiz responses
+                    const responses = [];
+                    const radios = $(`#quizForm-${decodedId} .quiz-radio:checked`);
+
+                    radios.each(function() {
+                        responses.push({
+                            question: $(this).data('question'), // ✅ get the question text
+                            answer: $(this).val() // ✅ get the selected answer
+                        });
+                    });
+
+
+                    // Send AJAX request
+                    $.ajax({
                         url: '/accept-policy',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            id: policyId
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            id: encodedPolicyId, // send encoded ID as in your controller
+                            responses: responses,
+                            agreed: true
+                        }),
                         success: function(res) {
-                            if (res.success && res.success === true) {
+                            if (res.success) {
                                 Swal.fire({
                                     title: "{{ __('Success!') }}",
                                     text: "{{ __('Policy accepted successfully.') }}",
@@ -423,10 +544,18 @@
                             } else {
                                 Swal.fire({
                                     title: "{{ __('Error!') }}",
-                                    text: res.message || "{{ __('Something went wrong. Please try again.') }}",
+                                    text: res.message ||
+                                        "Something went wrong. Please try again.",
                                     icon: "error"
                                 });
                             }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: "{{ __('Error!') }}",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error"
+                            });
                         }
                     });
                 }
