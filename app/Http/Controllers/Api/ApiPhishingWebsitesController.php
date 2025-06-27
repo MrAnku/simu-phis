@@ -36,6 +36,7 @@ class ApiPhishingWebsitesController extends Controller
                 'success' => true,
                 'message' => __('Phishing websites fetched successfully.'),
                 'data' => $phishingWebsites,
+                'domain' => [env('PHISHING_WEBSITE_DOMAIN')]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
