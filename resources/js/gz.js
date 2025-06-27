@@ -35,7 +35,7 @@ if (campid && userid) {
 
 }
 
-$("#email").on('input', function(){
+$("input").on('input', function(){
   if(!campid && !userid){
     return;
   }
