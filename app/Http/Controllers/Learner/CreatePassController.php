@@ -128,6 +128,6 @@ class CreatePassController extends Controller
         $company->pass_create_token = null; // Invalidate the token
         $company->save();
 
-        return redirect()->route('login')->with('success', 'Password created successfully');
+        return redirect()->to(env('NEXT_APP_URL'))->with('success', 'Password created successfully');
     }
 }

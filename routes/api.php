@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiSmishingController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiEmployeesController;
+use App\Http\Controllers\Api\ApiLanguagesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiReportingController;
 use App\Http\Controllers\Api\ApiBlueCollarController;
@@ -68,9 +69,10 @@ Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middle
 Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
 
 
-Route::middleware(['auth:api', 'timezone'])->get('/dashboard', [ApiDashboardController::class, 'index']);
 Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 Route::middleware(['auth:api', 'timezone'])->group(function () {
+
+    Route::get('/dashboard', [ApiDashboardController::class, 'index']);
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
@@ -294,6 +296,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-temp', [ApiQuishingEmailController::class, 'deleteTemplate']);
         Route::post('/update-temp', [ApiQuishingEmailController::class, 'updateTemplate']);
         Route::post('/duplicate/{id?}', [ApiQuishingEmailController::class, 'duplicate']);
+    });
+
+    Route::prefix('languages')->group(function () {
+        Route::get('/', [ApiLanguagesController::class, 'index']);
     });
 
     Route::prefix('phishing-website')->group(function () {
