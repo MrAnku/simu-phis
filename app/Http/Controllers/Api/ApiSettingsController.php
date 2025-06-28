@@ -724,4 +724,14 @@ class ApiSettingsController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
+    public function addSubAdmin(Request $request){
+        // return "hii";
+        Company::create([
+            "email" => $request->email,
+            "full_name" => $request->full_name,
+            "company_id" => Auth::user()->company_id,
+
+        ]);
+    }
 }

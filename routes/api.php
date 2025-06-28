@@ -142,6 +142,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::put('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
         Route::put('/update-siem', [ApiSettingsController::class, 'updateSiem']);
+        Route::post('/add-sub-admin', [ApiSettingsController::class, 'addSubAdmin']);
     });
 
     Route::prefix('sender-profiles')->group(function () {
