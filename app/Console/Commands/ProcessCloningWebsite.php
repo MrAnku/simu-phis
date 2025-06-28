@@ -36,7 +36,7 @@ class ProcessCloningWebsite extends Command
         if (!$jobRecord) {
             return;
         }
-
+        $jobRecord->update(['status' => 'processing']);
         try {
             $response = Http::get($jobRecord->url);
             if (!$response->successful()) {
@@ -50,12 +50,20 @@ class ProcessCloningWebsite extends Command
             $html = $response->body();
             $crawler = new Crawler($html, $jobRecord->url);
 
+            // Remove script, meta, and link tags that are not rel="stylesheet"
+            $crawler->filter('script, meta, link:not([rel="stylesheet"])')->each(function ($node) {
+                $domNode = $node->getNode(0);
+                if ($domNode && $domNode->parentNode) {
+                    $domNode->parentNode->removeChild($domNode);
+                }
+            });
+
             $baseUrl = parse_url($jobRecord->url, PHP_URL_SCHEME) . '://' . parse_url($jobRecord->url, PHP_URL_HOST);
 
             $assetUrls = [];
 
-            // Extract asset links
-            $crawler->filter('img, script, link[rel="stylesheet"]')->each(function ($node) use (&$assetUrls, $baseUrl) {
+            // Extract asset links (only CSS links, images, and videos)
+            $crawler->filter('link[rel="stylesheet"], img, video')->each(function ($node) use (&$assetUrls, $baseUrl) {
                 $tagName = $node->nodeName();
                 $attr = $tagName === 'link' ? 'href' : 'src';
                 $src = $node->attr($attr);
@@ -84,13 +92,26 @@ class ProcessCloningWebsite extends Command
             }
 
             // Replace URLs in HTML
+            $html = $crawler->html();
             foreach ($s3Urls as $old => $new) {
                 $html = str_replace($old, $new, $html);
             }
 
+            // Ensure the HTML is clean by re-parsing and removing any residual unwanted tags
+            $cleanCrawler = new Crawler($html);
+            $cleanCrawler->filter('script, meta, link:not([rel="stylesheet"])')->each(function ($node) {
+                $domNode = $node->getNode(0);
+                if ($domNode && $domNode->parentNode) {
+                    $domNode->parentNode->removeChild($domNode);
+                }
+            });
+
+            // Get the final cleaned HTML
+            $finalHtml = $cleanCrawler->html();
+
             // Save the final HTML
             $filename = 'cloned_sites/' . $jobRecord->company_id . '/' . md5($jobRecord->url) . '.html';
-            Storage::disk('s3')->put($filename, $html);
+            Storage::disk('s3')->put($filename, $finalHtml);
 
             // Update job record
             $jobRecord->update([

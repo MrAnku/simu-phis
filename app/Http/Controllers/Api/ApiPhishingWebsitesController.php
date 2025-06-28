@@ -111,46 +111,43 @@ class ApiPhishingWebsitesController extends Controller
 
     public function deleteWebsite(Request $request): JsonResponse
     {
-       try {
-        $id = $request->route('encodedId');
-        $id = base64_decode($id);
+        try {
+            $id = $request->route('encodedId');
+            $id = base64_decode($id);
 
-        $website = PhishingWebsite::where('id', $id)
-        ->where('company_id', Auth::user()->company_id)
-        ->first();
-        if (!$website) {
+            $website = PhishingWebsite::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+            if (!$website) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing website not found.')
+                ], 404);
+            }
+
+            $file = $website->file;
+
+
+            if ($file && Storage::disk('s3')->exists($file)) {
+                Storage::disk('s3')->delete($file);
+            }
+
+            PhishingEmail::where('website', $id)->update(['website' => 0]);
+
+            $website->delete();
+
+            log_action("Phishing website deleted successfully (ID: {$id})");
+
             return response()->json([
-                'success' => false,
-                'message' => __('Phishing website not found.')
-            ], 404);
-        }
-
-        $file = $website->file;
-
-        
-        if ($file && Storage::disk('s3')->exists($file)) {
-            Storage::disk('s3')->delete($file);
-        }
-
-        PhishingEmail::where('website', $id)->update(['website' => 0]);
-
-        $website->delete();
-
-        log_action("Phishing website deleted successfully (ID: {$id})");
-
-        return response()->json([
-            'success' => true,
-            'message' => __('Phishing website deleted successfully.')
-        ], 200);
-        
-
-       } catch(Exception $e) {
+                'success' => true,
+                'message' => __('Phishing website deleted successfully.')
+            ], 200);
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
-       
     }
 
     public function updateWebsite(Request $request): JsonResponse
@@ -323,6 +320,66 @@ class ApiPhishingWebsitesController extends Controller
             ], 500);
         }
     }
+
+    public function saveClonedWebsite(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'webName' => 'required|string|max:255',
+                'domain' => 'required|string|max:255',
+                'website_url' => 'required|string|url'
+            ]);
+            $company_id = Auth::user()->company_id;
+            $webName = $validated['webName'];
+            $domain = $validated['domain'];
+            $websiteUrl = $validated['website_url'];
+
+            $websiteContent = file_get_contents($websiteUrl);
+            if ($websiteContent === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to fetch the website content.')
+                ], 400);
+            }
+            // inject tracking code
+            $injectedCode = '<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+            <script src="js/gz.js"></script>';
+            $modifiedContent = str_replace('</html>', $injectedCode . '</html>', $websiteContent);
+
+            // Save the modified content to a file or database
+            $randomName = generateRandom(32);
+            $newFilename = $randomName . '.html';
+            $filePath = 'uploads/phishingMaterial/phishing_websites/' . $newFilename;
+            Storage::disk('s3')->put($filePath, $modifiedContent);
+            // Save to database
+            $phishingWebsite = new PhishingWebsite();
+            $phishingWebsite->name = $webName;
+            $phishingWebsite->file = $filePath;
+            $phishingWebsite->domain = $domain;
+            $phishingWebsite->company_id = $company_id;
+            $phishingWebsite->save();
+            log_action("Cloned website saved successfully: {$webName}");
+
+            // Return success response
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Cloned website saved successfully.')
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Something went wrong while saving cloned website.'),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
 
@@ -533,7 +590,8 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
-    public function checkWebsiteForClone(Request $request){
+    public function checkWebsiteForClone(Request $request)
+    {
         try {
             $url = $request->input('url');
             if (!$url) {
@@ -586,8 +644,7 @@ class ApiPhishingWebsitesController extends Controller
                 'input_fields' => $inputCount,
                 'html' => $html,
             ], 200);
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
@@ -595,7 +652,7 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
-    
+
 
     public function cloneWebsite(Request $request)
     {
@@ -630,14 +687,11 @@ class ApiPhishingWebsitesController extends Controller
                 'message' => __('Cloned websites fetched successfully.'),
                 'data' => $clonedWebsites,
             ], 200);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }
-
-
-    
 }

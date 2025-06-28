@@ -315,6 +315,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
         Route::post('/check-website-for-clone', [ApiPhishingWebsitesController::class, 'checkWebsiteForClone']);
         Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
+        Route::post('/save-cloned-website', [ApiPhishingWebsitesController::class, 'saveClonedWebsite']);
         Route::get('/cloned-websites', [ApiPhishingWebsitesController::class, 'getClonedWebsites']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
