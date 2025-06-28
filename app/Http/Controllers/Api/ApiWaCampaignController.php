@@ -599,6 +599,7 @@ class ApiWaCampaignController extends Controller
 
             // Make POST request to WhatsApp Cloud API using Http facade
             $response = Http::withToken($accessToken)
+                ->withoutVerifying()
                 ->post($apiUrl, $templateData);
 
             // Check if the request was successful
@@ -668,7 +669,7 @@ class ApiWaCampaignController extends Controller
         $apiUrl = "https://graph.facebook.com/v20.0/{$templateId}";
 
         try {
-            $response = Http::withToken($accessToken)->get($apiUrl);
+            $response = Http::withToken($accessToken)->withoutVerifying()->get($apiUrl);
 
             if ($response->successful()) {
                 $status = $response->json()['status'] ?? 'UNKNOWN';
