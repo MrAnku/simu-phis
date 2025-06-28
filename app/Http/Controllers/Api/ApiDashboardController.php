@@ -19,6 +19,7 @@ use App\Models\AiCallCampLive;
 use App\Models\CampaignReport;
 use App\Models\CompanyLicense;
 use App\Models\TprmUsersGroup;
+use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
@@ -485,62 +486,68 @@ class ApiDashboardController extends Controller
     public function whatsappReport()
     {
         try {
-            // Get the authenticated user's company ID
             $companyId = Auth::user()->company_id;
-
-            // Get current date
             $now = Carbon::now();
-            $months = [];
+            $startDate = $now->copy()->subDays(6)->startOfDay(); // last 7 days including today
 
-            // Generate an array for the previous four months with formatted month and year
-            for ($i = 0; $i < 4; $i++) {
-                $date = $now->copy()->subMonths($i);
-                $monthFormatted = $date->format('M y');
-                $months[$monthFormatted] = [
-                    'link_clicked' => 0,
-                    'emp_compromised' => 0
-                ];
+            // Group by date to avoid duplicate bubbles for the same day
+            $records = WaLiveCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startDate, $now->endOfDay()])
+                ->get(['payload_clicked', 'compromised', 'created_at']);
+
+            // Prepare data grouped by date and type
+            $bubbleData = [];
+            $grouped = [];
+
+            foreach ($records as $record) {
+                $date = Carbon::parse($record->created_at)->format('d M');
+
+                if (!isset($grouped[$date])) {
+                    $grouped[$date] = [
+                        'Link Clicked' => 0,
+                        'Compromised' => 0,
+                    ];
+                }
+
+                if ($record->payload_clicked > 0) {
+                    $grouped[$date]['Link Clicked'] += (int)$record->payload_clicked;
+                }
+                if ($record->compromised > 0) {
+                    $grouped[$date]['Compromised'] += (int)$record->compromised;
+                }
             }
 
-            // Fetch data from the database
-            $data = DB::table('whatsapp_camp_users')
-                ->select(
-                    DB::raw('SUM(link_clicked) as link_clicked'),
-                    DB::raw('SUM(emp_compromised) as emp_compromised'),
-                    DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month')
-                )
-                ->where('created_at', '>=', $now->copy()->subMonths(4)->startOfMonth())
-                ->where('company_id', $companyId)
-                ->groupBy('month')
-                ->orderBy('month', 'asc')
-                ->get();
-
-            // Merge query results into the months array
-            foreach ($data as $item) {
-                $date = Carbon::createFromFormat('Y-m', $item->month);
-                $monthFormatted = $date->format('M y');
-                $months[$monthFormatted] = [
-                    'link_clicked' => (int) $item->link_clicked,
-                    'emp_compromised' => (int) $item->emp_compromised
-                ];
+            // Generate bubble data for each day/type
+            foreach ($grouped as $date => $types) {
+                if ($types['Link Clicked'] > 0) {
+                    $bubbleData[] = [
+                        'x' => rand(10, 17) + (rand(0, 20) / 10),
+                        'y' => round((rand(20, 150) / 100), 2),
+                        'value' => $types['Link Clicked'],
+                        'type' => 'Link Clicked',
+                        'date' => $date,
+                    ];
+                }
+                if ($types['Compromised'] > 0) {
+                    $bubbleData[] = [
+                        'x' => rand(10, 17) + (rand(0, 20) / 10),
+                        'y' => round((rand(20, 150) / 100), 2),
+                        'value' => $types['Compromised'],
+                        'type' => 'Compromised',
+                        'date' => $date,
+                    ];
+                }
             }
-
-            // Prepare the final response structure
-            $chartData = [
-                'months' => array_keys($months),
-                'link_clicked' => array_values(array_column($months, 'link_clicked')),
-                'emp_compromised' => array_values(array_column($months, 'emp_compromised'))
-            ];
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'WhatsApp report retrieved successfully',
-                'data' => $chartData
+                'message' => 'WhatsApp bubble chart data retrieved successfully',
+                'data' => $bubbleData
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to retrieve WhatsApp report',
+                'message' => 'Failed to retrieve WhatsApp bubble chart data',
                 'error' => $e->getMessage()
             ], 500);
         }
