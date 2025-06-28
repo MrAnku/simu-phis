@@ -492,63 +492,70 @@ class ApiDashboardController extends Controller
 
             // Group by date to avoid duplicate bubbles for the same day
             $records = WaLiveCampaign::where('company_id', $companyId)
-                ->whereBetween('created_at', [$startDate, $now->endOfDay()])
-                ->get(['payload_clicked', 'compromised', 'created_at']);
+            ->whereBetween('created_at', [$startDate, $now->endOfDay()])
+            ->get(['payload_clicked', 'compromised', 'created_at']);
 
             // Prepare data grouped by date and type
             $bubbleData = [];
             $grouped = [];
 
             foreach ($records as $record) {
-                $date = Carbon::parse($record->created_at)->format('d M');
+            $date = Carbon::parse($record->created_at)->format('d M');
 
-                if (!isset($grouped[$date])) {
-                    $grouped[$date] = [
-                        'Link Clicked' => 0,
-                        'Compromised' => 0,
-                    ];
-                }
+            if (!isset($grouped[$date])) {
+                $grouped[$date] = [
+                'Link Clicked' => 0,
+                'Compromised' => 0,
+                ];
+            }
 
-                if ($record->payload_clicked > 0) {
-                    $grouped[$date]['Link Clicked'] += (int)$record->payload_clicked;
-                }
-                if ($record->compromised > 0) {
-                    $grouped[$date]['Compromised'] += (int)$record->compromised;
-                }
+            if ($record->payload_clicked > 0) {
+                $grouped[$date]['Link Clicked'] += (int)$record->payload_clicked;
+            }
+            if ($record->compromised > 0) {
+                $grouped[$date]['Compromised'] += (int)$record->compromised;
+            }
             }
 
             // Generate bubble data for each day/type
             foreach ($grouped as $date => $types) {
-                if ($types['Link Clicked'] > 0) {
-                    $bubbleData[] = [
-                        'x' => rand(10, 17) + (rand(0, 20) / 10),
-                        'y' => round((rand(20, 150) / 100), 2),
-                        'value' => $types['Link Clicked'],
-                        'type' => 'Link Clicked',
-                        'date' => $date,
-                    ];
-                }
-                if ($types['Compromised'] > 0) {
-                    $bubbleData[] = [
-                        'x' => rand(10, 17) + (rand(0, 20) / 10),
-                        'y' => round((rand(20, 150) / 100), 2),
-                        'value' => $types['Compromised'],
-                        'type' => 'Compromised',
-                        'date' => $date,
-                    ];
-                }
+            if ($types['Link Clicked'] > 0) {
+                $bubbleData[] = [
+                'x' => rand(10, 17) + (rand(0, 20) / 10),
+                'y' => round((rand(20, 150) / 100), 2),
+                'value' => $types['Link Clicked'],
+                'type' => 'Link Clicked',
+                'date' => $date,
+                ];
+            }
+            if ($types['Compromised'] > 0) {
+                $bubbleData[] = [
+                'x' => rand(10, 17) + (rand(0, 20) / 10),
+                'y' => round((rand(20, 150) / 100), 2),
+                'value' => $types['Compromised'],
+                'type' => 'Compromised',
+                'date' => $date,
+                ];
+            }
+            }
+
+            // Prepare last 7 days array
+            $last7Days = [];
+            for ($i = 6; $i >= 0; $i--) {
+            $last7Days[] = $now->copy()->subDays($i)->format('d M');
             }
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'WhatsApp bubble chart data retrieved successfully',
-                'data' => $bubbleData
+            'status' => 'success',
+            'message' => 'WhatsApp bubble chart data retrieved successfully',
+            'data' => $bubbleData,
+            'last_7_days' => $last7Days
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to retrieve WhatsApp bubble chart data',
-                'error' => $e->getMessage()
+            'status' => 'error',
+            'message' => 'Failed to retrieve WhatsApp bubble chart data',
+            'error' => $e->getMessage()
             ], 500);
         }
     }
