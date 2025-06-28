@@ -653,6 +653,17 @@ class ApiWaCampaignController extends Controller
         }
     }
 
+    public function requestedTemplates(){
+        $companyId = Auth::user()->company_id;
+
+        $templates = RequestWhatsappTemplate::where('company_id', $companyId)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $templates
+        ]);
+    }
+
     public function checkTemplateStatus($templateId)
     {
 

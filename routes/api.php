@@ -146,6 +146,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/new-template', [ApiWaCampaignController::class, 'newTemplate']);
         Route::post('/request-new-template', [ApiWaCampaignController::class, 'requestNewTemplate']);
 
+        Route::get('/requested-templates', [ApiWaCampaignController::class, 'requestedTemplates']);
+
         Route::get('/requested-template/check/{template_id}', [ApiWaCampaignController::class, 'checkTemplateStatus']);
     });
 
