@@ -14,7 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class ApiPolicyController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         try {
             $policies = Policy::where('company_id', Auth::user()->company_id)->get();
             return response()->json([
@@ -50,9 +51,9 @@ class ApiPolicyController extends Controller
 
             $filePath = $request->file('policy_file')->storeAs('/uploads/policyFile', $newFilename, 's3');
 
-            if($request->has_quiz == true){
+            if ($request->has_quiz == true) {
                 $json_quiz = $request->json_quiz;
-            }else{
+            } else {
                 $json_quiz = null;
             }
 
@@ -89,6 +90,8 @@ class ApiPolicyController extends Controller
                 'policy_name' => 'required|string|max:255',
                 'policy_description' => 'required|string',
                 'policy_file' => 'nullable|file|mimes:pdf|max:10240',
+                'has_quiz' => 'required|boolean',
+                 'json_quiz' => 'nullable|json',
             ]);
 
             $policy = Policy::findOrFail($request->policy_id);
@@ -109,6 +112,20 @@ class ApiPolicyController extends Controller
                 $policy->policy_file = "/" . $filePath;
             }
 
+            if ($request->has_quiz == true) {
+                if ($request->json_quiz == null) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Please provide a valid JSON quiz'
+                    ], 422);
+                }
+                $json_quiz = $request->json_quiz;
+            }else{
+                $json_quiz = null;
+            }
+
+            $policy->has_quiz = $request->has_quiz;
+            $policy->json_quiz = $json_quiz;
             $policy->policy_name = $request->policy_name;
             $policy->policy_description = $request->policy_description;
             $policy->save();
@@ -169,7 +186,7 @@ class ApiPolicyController extends Controller
             $policy_id = $request->policy;
 
             $policy = Policy::find($policy_id);
-            if($policy->has_quiz == true){
+            if ($policy->has_quiz == true) {
                 if ($request->json_quiz_response == null) {
                     return response()->json([
                         'success' => false,
@@ -177,7 +194,7 @@ class ApiPolicyController extends Controller
                     ], 422);
                 }
                 $json_quiz_response = $request->json_quiz_response;
-            }else{
+            } else {
                 $json_quiz_response = null;
             }
 
@@ -218,7 +235,7 @@ class ApiPolicyController extends Controller
     public function deletePolicy(Request $request)
     {
         try {
-            if(!$request->route('encoded_id')) {
+            if (!$request->route('encoded_id')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Policy ID is required'
@@ -252,10 +269,10 @@ class ApiPolicyController extends Controller
         }
     }
 
-     public function deletePolicyCampaign(Request $request)
+    public function deletePolicyCampaign(Request $request)
     {
         try {
-            if(!$request->route('campaign_id')) {
+            if (!$request->route('campaign_id')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Campaign ID is required'
@@ -263,7 +280,7 @@ class ApiPolicyController extends Controller
             }
 
             $campaign_id = $request->route('campaign_id');
-           
+
             $policyCampaign = PolicyCampaign::where('campaign_id', $campaign_id)->first();
 
             if (!$policyCampaign) {
