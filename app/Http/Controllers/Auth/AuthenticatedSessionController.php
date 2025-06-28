@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\Settings;
 use Illuminate\Http\Request;
+use App\Models\CompanyLicense;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +28,17 @@ class AuthenticatedSessionController extends Controller
                 'message' => 'Invalid credentials',
             ], 401);
         }
-        
+
         $user = Auth::user();
+
+        $company_license = CompanyLicense::where('company_id', $user->company_id)->first();
+
+        // Check License Expiry
+        if (now()->toDateString() > $company_license->expiry) {
+            Auth::logout($user);
+            return response()->json(['success' => false, 'message' => __('Your License has beeen Expired')], 422);
+        }
+
         $company_settings = Settings::where('company_id', $user->company_id)->first();
         if ($company_settings->mfa == 1) {
             // Store the user ID in the session and logout
@@ -39,9 +49,8 @@ class AuthenticatedSessionController extends Controller
                 'company' => $user,
                 "success" => true
             ]);
-           
         }
-        $cookie = cookie('jwt', $token, 60*24);
+        $cookie = cookie('jwt', $token, 60 * 24);
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),
@@ -62,7 +71,7 @@ class AuthenticatedSessionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully logged out'
-                ])->withCookie($cookie);
+            ])->withCookie($cookie);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
@@ -86,21 +95,20 @@ class AuthenticatedSessionController extends Controller
                 'email' => 'required|email',
             ]);
 
-           $status = Password::sendResetLink(
-            $request->only('email')
-        );
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
 
-        if ($status == Password::RESET_LINK_SENT) {
-             return response()->json([
-                'success' => true,
-                'message' => 'Password reset link sent to your email.',
-            ]);
-        }
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to send password reset link.',
-        ], 500);
- 
+            if ($status == Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password reset link sent to your email.',
+                ]);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send password reset link.',
+            ], 500);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -139,11 +147,10 @@ class AuthenticatedSessionController extends Controller
                 ]);
             }
 
-             return response()->json([
+            return response()->json([
                 'success' => false,
                 'message' => 'Token is invalid or expired.',
             ], 422);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
