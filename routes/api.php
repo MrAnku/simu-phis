@@ -144,6 +144,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/campaign-detail/{campaign_id?}', [ApiWaCampaignController::class, 'fetchCampaign']);
         Route::get('/group-employees/{employee_type?}', [ApiWaCampaignController::class, 'groupUsers']);
         Route::post('/new-template', [ApiWaCampaignController::class, 'newTemplate']);
+        Route::post('/request-new-template', [ApiWaCampaignController::class, 'requestNewTemplate']);
+
+        Route::get('/requested-template/check/{template_id}', [ApiWaCampaignController::class, 'checkTemplateStatus']);
     });
 
     // Phishing Material routes

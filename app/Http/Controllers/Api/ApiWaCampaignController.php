@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Models\BlueCollarGroup;
+use App\Models\WhatsappActivity;
 use App\Models\BlueCollarEmployee;
 use App\Models\WhatsappTempRequest;
 use App\Http\Controllers\Controller;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\CompanyWhatsappConfig;
 use App\Models\CompanyWhatsappTemplate;
-use App\Models\WhatsappActivity;
+use App\Models\RequestWhatsappTemplate;
 use Illuminate\Validation\ValidationException;
 
 class ApiWaCampaignController extends Controller
@@ -147,7 +148,7 @@ class ApiWaCampaignController extends Controller
 
             foreach ($users as $user) {
 
-                if(!$user->whatsapp){
+                if (!$user->whatsapp) {
                     continue;
                 }
                 $camp_live = WaLiveCampaign::create([
@@ -474,8 +475,8 @@ class ApiWaCampaignController extends Controller
             }
             if ($type == "bluecollar") {
                 $result = BlueCollarGroup::where('company_id', $companyId)
-                ->whereHas('bluecollarusers')->get();
-                
+                    ->whereHas('bluecollarusers')->get();
+
                 return response()->json([
                     'success' => true,
                     'message' => __('Groups fetched successfully!'),
@@ -555,6 +556,140 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function requestNewTemplate(Request $request)
+    {
+
+
+        try {
+
+            // Validate the incoming request data
+            $validated = $request->validate([
+                'name' => 'required|string|max:512',
+                'category' => 'required|in:MARKETING,UTILITY,AUTHENTICATION',
+                'components' => 'required|array',
+                'language' => 'required|string|max:20',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $whatsappConfig = CompanyWhatsappConfig::where('company_id', $companyId)->first();
+            if (!$whatsappConfig) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('WhatsApp configuration not found for this company.'),
+                ], 422);
+            }
+
+            // WhatsApp Cloud API endpoint and credentials
+            $accessToken = $whatsappConfig->access_token;
+            $wabaId = $whatsappConfig->business_id;
+            $apiUrl = "https://graph.facebook.com/v20.0/{$wabaId}/message_templates";
+
+            // Prepare the template data
+            $templateData = [
+                'name' => $validated['name'],
+                'category' => $validated['category'],
+                'components' => $validated['components'],
+                'language' => $validated['language'],
+            ];
+
+            // Make POST request to WhatsApp Cloud API using Http facade
+            $response = Http::withToken($accessToken)
+                ->post($apiUrl, $templateData);
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $templateId = $responseData['id'] ?? null;
+
+                if ($templateId) {
+                    // Store the template ID and other details in the local database
+                    RequestWhatsappTemplate::create([
+                        'template_id' => $templateId,
+                        'name' => $validated['name'],
+                        'category' => $validated['category'],
+                        'language' => $validated['language'],
+                        'status' => 'PENDING', // Initial status, to be updated later
+                        'waba_id' => $wabaId,
+                        'company_id' => $companyId,
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'template_id' => $templateId,
+                        'data' => $responseData,
+                        'message' => 'Template request submitted successfully.',
+                    ], 200);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Template ID not returned by WhatsApp API.',
+                ], 500);
+            }
+
+            // Handle API errors
+            return response()->json([
+                'success' => false,
+                'message' => $response->json()['error']['message'] ?? 'Failed to submit template request.',
+            ], $response->status());
+        } catch (ValidationException $e) {
+            // Handle connection or other unexpected errors
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->validator->errors()->first(),
+            ], 500);
+        } catch (\Exception $e) {
+            // Handle connection or other unexpected errors
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function checkTemplateStatus($templateId)
+    {
+
+        $companyId = Auth::user()->company_id;
+
+        $whatsappConfig = CompanyWhatsappConfig::where('company_id', $companyId)->first();
+        if (!$whatsappConfig) {
+            return response()->json([
+                'success' => false,
+                'message' => __('WhatsApp configuration not found for this company.'),
+            ], 422);
+        }
+        $accessToken = $whatsappConfig->access_token;
+        $apiUrl = "https://graph.facebook.com/v20.0/{$templateId}";
+
+        try {
+            $response = Http::withToken($accessToken)->get($apiUrl);
+
+            if ($response->successful()) {
+                $status = $response->json()['status'] ?? 'UNKNOWN';
+                // Update status in the database
+                RequestWhatsappTemplate::where('template_id', $templateId)->update(['status' => $status]);
+
+                return response()->json([
+                    'success' => true,
+                    'template_id' => $templateId,
+                    'status' => $status,
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $response->json()['error']['message'] ?? 'Failed to check template status.',
+            ], $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->getMessage(),
             ], 500);
         }
     }
