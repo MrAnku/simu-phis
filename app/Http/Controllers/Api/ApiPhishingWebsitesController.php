@@ -533,6 +533,68 @@ class ApiPhishingWebsitesController extends Controller
         }
     }
 
+    public function checkWebsiteForClone(Request $request){
+        try {
+            $url = $request->input('url');
+            if (!$url) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('URL is required')
+                ], 422);
+            }
+
+            // Fetch the website content
+            $response = Http::timeout(10)->get($url);
+
+            if ($response->failed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to fetch the website.'),
+                ], 400);
+            }
+
+            $html = $response->body();
+
+            // Check if the HTML is too long (e.g., > 500KB)
+            if (strlen($html) > 500 * 1024) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('The website is too large to clone. Please select a simpler page (like a login or input form).'),
+                ], 400);
+            }
+
+            // Use DomCrawler to check for input fields
+            $crawler = new Crawler($html);
+            $inputCount = $crawler->filter('input')->count();
+
+            // Fallback: If DomCrawler finds no input, try a simple regex search for <input
+            if ($inputCount < 1) {
+                preg_match_all('/<input\b/i', $html, $matches);
+                $inputCount = count($matches[0]);
+            }
+
+            if ($inputCount < 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No input fields found on the page. Please select a page that asks for user input (e.g., login or form page).'),
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Website is suitable for cloning.'),
+                'input_fields' => $inputCount,
+                'html' => $html,
+            ], 200);
+
+        }catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
     
 
     public function cloneWebsite(Request $request)

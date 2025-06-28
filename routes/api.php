@@ -313,6 +313,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/get-website-by-id/{id?}', [ApiPhishingWebsitesController::class, 'getWebsiteById']);
         Route::post('/update-website', [ApiPhishingWebsitesController::class, 'updateWebsite']);
         Route::post('/generate', [ApiPhishingWebsitesController::class, 'generateWebsite']);
+        Route::post('/check-website-for-clone', [ApiPhishingWebsitesController::class, 'checkWebsiteForClone']);
         Route::post('/clone-website', [ApiPhishingWebsitesController::class, 'cloneWebsite']);
         Route::get('/cloned-websites', [ApiPhishingWebsitesController::class, 'getClonedWebsites']);
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
