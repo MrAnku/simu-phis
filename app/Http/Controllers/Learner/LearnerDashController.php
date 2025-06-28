@@ -20,6 +20,7 @@ use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\AssignedPolicy;
 use App\Models\BlueCollarLearnerLoginSession;
 use PhpParser\Node\Expr\Assign;
+use setasign\Fpdi\Fpdi;
 
 class LearnerDashController extends Controller
 {
@@ -482,12 +483,11 @@ class LearnerDashController extends Controller
 
     public function downloadCertificate(Request $request)
     {
-        // Get the necessary input from the request
+        $name = $request->input('user_name');
         $trainingModule = $request->input('training_module');
         $trainingId = $request->input('training_id');
-        $completionDate = $request->input('completion_date');
+        $date = Carbon::parse($request->input('completion_date'))->format('d F, Y');
         $userEmail = $request->input('user_email');
-        $userName = $request->input('user_name');
 
         // Check if the certificate ID already exists for this user and training module
         $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
@@ -495,19 +495,58 @@ class LearnerDashController extends Controller
         // If the certificate ID doesn't exist, generate a new one
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId); // Store the new certificate ID in your database
+            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId);
         }
 
-        // Generate the PDF from the view and include the certificate ID
-        $pdf = Pdf::loadView('learning.certificate', compact('trainingModule', 'completionDate', 'userEmail', 'userName', 'certificateId'))
-            ->setPaper('a4', 'landscape');
+        $pdf = new \setasign\Fpdi\Fpdi();
 
-        // Define the filename with certificate ID
-        $fileName = "{$trainingModule}_Certificate_{$certificateId}.pdf";
+        // Load template
+        $pdf->AddPage('L', 'A4');
+        $pdf->setSourceFile(resource_path('templates/design.pdf'));
+        $template = $pdf->importPage(1);
+        $pdf->useTemplate($template);
+
+        // Set color and fonts
+        $pdf->SetTextColor(26, 13, 171);
+
+        // Limit name length to avoid UI break
+        $maxLength = 15; // Adjust based on font size and layout width
+        if (strlen($name) > $maxLength) {
+            $name = mb_substr($name, 0, $maxLength - 3) . '...';
+        }
+
+        // --------------------------
+        // 1. NAME
+        $pdf->SetFont('Helvetica', '', 50);
+        $pdf->SetTextColor(47, 40, 103);
+        $pdf->SetXY(100, 115);
+        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L'); // 'L' for left-align
+
+        // --------------------------
+        // 2. TRAINING TITLE
+        $pdf->SetFont('Helvetica', '', 16);
+        $pdf->SetTextColor(169, 169, 169);
+        $pdf->SetXY(100, 130);
+        $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
+
+        // --------------------------
+        // 3. DATE centered below the badge
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 165);
+        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
+
+        // 4. CERTIFICATE ID at top right
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 10);
+        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
 
         log_action("Employee downloaded training certificate", 'learner', 'learner');
-        // Return the PDF download response
-        return $pdf->download($fileName);
+
+        return response($pdf->Output('S', 'certificate.pdf'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="certificate.pdf"');
     }
 
     /**
