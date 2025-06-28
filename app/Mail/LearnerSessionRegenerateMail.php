@@ -14,13 +14,15 @@ class LearnerSessionRegenerateMail extends Mailable
     use Queueable, SerializesModels;
 
     public $mailData;
+    public $trainingModules;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($mailData)
+    public function __construct($mailData, $trainingModules)
     {
         $this->mailData = $mailData;
+        $this->trainingModules = $trainingModules;
     }
 
     /**

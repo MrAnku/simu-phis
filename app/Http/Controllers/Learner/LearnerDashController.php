@@ -207,43 +207,6 @@ class LearnerDashController extends Controller
         return view('learning.dashboard', compact('averageScore', 'assignedTrainingCount', 'completedTrainingCount', 'totalCertificates', 'userWhatsapp'));
     }
 
-    public function renewToken(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-
-        // Encrypt email to generate token
-        $token = encrypt($request->email);
-
-        // Construct learning dashboard link
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-
-        // Update existing record where email matches
-        $updated = DB::table('learnerloginsession')
-            ->where('email', $request->email)
-            ->update([
-                'token' => $token,
-                'expiry' => now()->addHours(24), // Change to 'expiry'
-                'updated_at' => now()
-            ]);
-
-
-        // return  $learning_dashboard_link;
-        // Check if email exists, if not return an error
-        if (!$updated) {
-            return response()->json(['message' => 'Email not found in database'], 404);
-        }
-
-        // Prepare email data
-        $mailData = [
-            'learning_site' => $learning_dashboard_link,
-        ];
-
-        // Send email
-        Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData));
-
-        // Return success response
-        return response()->json(['message' => 'Mail sent successfully', 'token' => $token]);
-    }
     public function createNewToken(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -310,8 +273,9 @@ class LearnerDashController extends Controller
             'learning_site' => $learning_dashboard_link,
         ];
 
+        $trainingModules = TrainingModule::where('company_id', 'default')->take(5)->get();
         // Send email
-        Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData));
+        Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
         // Return success response
         return response()->json(['success' => 'Mail sent successfully', 'token' => $token]);
