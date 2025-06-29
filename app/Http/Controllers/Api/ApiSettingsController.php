@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Models\Company;
 use App\Models\Settings;
 use Endroid\QrCode\QrCode;
+use Illuminate\Support\Str;
 use App\Models\SiemProvider;
 use Illuminate\Http\Request;
+use App\Models\CompanySettings;
 use Endroid\QrCode\Color\Color;
+use App\Mail\CreateSubAdminMail;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\WhiteLabelledCompany;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -30,8 +35,8 @@ class ApiSettingsController extends Controller
             $companyId = Auth::user()->company_id;
 
             $all_settings = Company::where('company_id', $companyId)
-            ->with('company_settings', 'company_whiteLabel', 'siemConfig')
-            ->first();
+                ->with('company_settings', 'company_whiteLabel', 'siemConfig')
+                ->first();
 
             if (!$all_settings) {
                 return response()->json([
@@ -595,10 +600,10 @@ class ApiSettingsController extends Controller
                 ->where('company_id', $company_id)
                 ->update(['phish_reporting' => (int)$status]);
 
-                // return response()->json([
-                //     'success' => true,
-                //     "data" => $isUpdated
-                // ]);
+            // return response()->json([
+            //     'success' => true,
+            //     "data" => $isUpdated
+            // ]);
 
             // Step 4: Check if the update was successful
             if ($isUpdated) {
@@ -685,7 +690,7 @@ class ApiSettingsController extends Controller
             foreach ($input as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
-                        'success' => false, 
+                        'success' => false,
                         'message' => __('Invalid input detected.')
                     ], 400);
                 }
@@ -717,7 +722,6 @@ class ApiSettingsController extends Controller
 
                 return response()->json(['success' => true, 'message' => __('SIEM settings updated')]);
             }
-
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
         } catch (\Exception $e) {
@@ -725,13 +729,92 @@ class ApiSettingsController extends Controller
         }
     }
 
-    public function addSubAdmin(Request $request){
-        // return "hii";
-        Company::create([
-            "email" => $request->email,
-            "full_name" => $request->full_name,
-            "company_id" => Auth::user()->company_id,
+    public function addSubAdmin(Request $request)
+    {
+        try {
+            $pocAccount = company::where('company_id', Auth::user()->company_id)
+            ->where('role', Null)
+            ->where('account_type', 'poc')->exists();
 
-        ]);
+            if($pocAccount){
+                return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to a trial account')], 402);
+            }
+            $request->validate([
+                'email' => 'required|email|unique:company,email',
+                'full_name' => 'required|string|max:255',
+            ]);
+
+            $token = Str::random(32);
+            $pass_create_link = env("APP_URL") . "/company/create-password/" . $token;
+
+            $admin = Company::where('company_id', Auth::user()->company_id)->where('role', Null)->first();
+            Company::create([
+                "email" => $request->email,
+                "full_name" => $request->full_name,
+                "company_id" => $admin->company_id,
+                "company_name" => $admin->company_name,
+                "partner_id" => $admin->partner_id,
+                "employees" => $admin->employees,
+                "usedemployees" => $admin->usedemployees,
+                "storage_region" => $admin->storage_region,
+                "role" => 'sub-admin',
+                "account_type" => 'normal',
+                "enabled_feature" => $request->enabled_feature,
+                'pass_create_token' => $token,
+                'created_at' => now(),
+            ]);
+
+            CompanySettings::create([
+                'company_id' => $admin->company_id,
+                "email" => $request->email,
+                'country' => 'IND',
+                'time_zone' => 'Pacific/Midway',
+                'date_format' => 'dd/MM/yyyy',
+                'mfa' => '0',
+                'mfa_secret' => '',
+                'default_phishing_email_lang' => 'en',
+                'default_training_lang' => 'en',
+                'default_notifications_lang' => 'en',
+                'phish_redirect' => 'simuEducation',
+                'phish_redirect_url' => '',
+                'phish_reporting' => '0',
+                'training_assign_remind_freq_days' => '1',
+            ]);
+
+            // Send email with company creation link
+            Mail::to($request->email)->send(new CreateSubAdminMail($request, $this->checkWhitelabeling(), $pass_create_link));
+
+            // Log action
+            log_action("Sub Admin account created and submitted. Sub Admin email: " . $request->email);
+
+            return response()->json(['success' => true, 'message' => __('Sub Admin Created Successfully')]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    private function checkWhitelabeling()
+    {
+        $company = Company::with('partner')->where('company_id', Auth::user()->company_id)->first();
+
+        $partner_id = $company->partner->partner_id;
+      
+        $isWhitelabled = WhiteLabelledCompany::where('partner_id', $partner_id)
+            ->where('approved_by_partner', 1)
+            ->first();
+
+        if ($isWhitelabled) {
+            return [
+                'portal_domain' => $isWhitelabled->domain,
+                'company_name' => $isWhitelabled->company_name
+            ];
+        }
+
+        return [
+            'portal_domain' => 'app.simuphish.com',
+            'company_name' => 'simUphish',
+        ];
     }
 }

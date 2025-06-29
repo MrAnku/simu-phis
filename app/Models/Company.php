@@ -35,7 +35,8 @@ class Company extends Authenticatable implements JWTSubject
         'pass_create_token',
         'created_at',
         'approve_date',
-        'usedemployess'
+        'usedemployees',
+        'role'
     ];
 
     /**

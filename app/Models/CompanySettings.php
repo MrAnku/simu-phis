@@ -14,6 +14,7 @@ class CompanySettings extends Model
 
     protected $fillable = [
         'company_id',
+        'email',
         'country',
         'time_zone',
         'date_format',
