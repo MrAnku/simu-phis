@@ -40,6 +40,12 @@ class ApiQuishingEmailController extends Controller
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
                     })->paginate(9);
+                $default = QshTemplate::with('senderProfile')
+                    ->where('name', 'like', "%$search%")
+                    ->where('company_id', 'default')->paginate(9);
+                $custom = QshTemplate::with('senderProfile')
+                    ->where('name', 'like', "%$search%")
+                    ->where('company_id', $company_id)->paginate(9);    
             } else if($request->has('difficulty')){
 
                  $difficulty = $request->input('difficulty');
@@ -49,6 +55,13 @@ class ApiQuishingEmailController extends Controller
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
                     })->paginate(9);
+
+                $default = QshTemplate::with('senderProfile')
+                    ->where('difficulty', $difficulty)
+                    ->where('company_id', 'default')->paginate(9);
+                $custom = QshTemplate::with('senderProfile')
+                    ->where('difficulty', $difficulty)
+                    ->where('company_id', $company_id)->paginate(9);
                
             } else{
                  // All QshTemplates if no search
@@ -57,11 +70,17 @@ class ApiQuishingEmailController extends Controller
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
                     })->paginate(9);
+                $default = QshTemplate::with('senderProfile')
+                    ->where('company_id', 'default')->paginate(9);
+                $custom = QshTemplate::with('senderProfile')
+                    ->where('company_id', $company_id)->paginate(9);
             }
 
             return response()->json([
                 'status' => true,
                 'quishing_emails' => $quishingEmails,
+                'default' => $default,
+                'custom' => $custom,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

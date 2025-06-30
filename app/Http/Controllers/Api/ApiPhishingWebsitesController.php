@@ -31,11 +31,16 @@ class ApiPhishingWebsitesController extends Controller
             $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')
                 ->paginate(9); // Fetch results as a collection
+            
+            $default = PhishingWebsite::where('company_id', 'default')->paginate(9);
+            $custom = PhishingWebsite::where('company_id', $company_id)->paginate(9);
 
             return response()->json([
                 'success' => true,
                 'message' => __('Phishing websites fetched successfully.'),
                 'data' => $phishingWebsites,
+                'default' => $default,
+                'custom' => $custom,
                 'domain' => [env('PHISHING_WEBSITE_DOMAIN')]
             ], 200);
         } catch (\Exception $e) {
@@ -220,11 +225,20 @@ class ApiPhishingWebsitesController extends Controller
                     $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                 })
                 ->paginate(9);
+            
+            $default = PhishingWebsite::where('company_id', 'default')
+                ->where('name', 'LIKE', '%' . $searchTerm . '%')
+                ->paginate(9);
+            $custom = PhishingWebsite::where('company_id', $company_id)
+                ->where('name', 'LIKE', '%' . $searchTerm . '%')
+                ->paginate(9);
 
             return response()->json([
                 'success' => true,
                 'message' => __('Search results fetched successfully.'),
-                'data' => $phishingWebsites
+                'data' => $phishingWebsites,
+                'default' => $default,
+                'custom' => $custom,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

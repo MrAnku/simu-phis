@@ -103,11 +103,45 @@ class ApiPhishingEmailsController extends Controller
                         return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                     })
                     ->paginate(9);
+                $default = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('difficulty', $request->input('difficulty'))
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', 'default');
+                    })
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(9);
+                $custom = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('difficulty', $request->input('difficulty'))
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id);
+                    })
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(9);
             } else {
                 $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
+                    })
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(9);
+                $default = PhishingEmail::with(['web', 'sender_p'])
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', 'default');
+                    })
+                    ->when($searchTerm, function ($query, $searchTerm) {
+                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                    })
+                    ->paginate(9);
+                $custom = PhishingEmail::with(['web', 'sender_p'])
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id);
                     })
                     ->when($searchTerm, function ($query, $searchTerm) {
                         return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
@@ -122,6 +156,8 @@ class ApiPhishingEmailsController extends Controller
                 'message' => __('Phishing emails fetched successfully'),
                 'data' => [
                     'phishingEmails' => $phishingEmails,
+                    'default' => $default,
+                    'custom' => $custom,
                     'senderProfiles' => $senderProfiles,
                     'phishingWebsites' => $phishingWebsites,
                 ],
