@@ -34,10 +34,20 @@ class ApiPhishingEmailsController extends Controller
                         $query->where('company_id', $company_id)
                             ->orWhere('company_id', 'default');
                     })->paginate(9);
+                $default = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('difficulty', $difficulty)
+                    ->where('company_id', 'default')->paginate(9);
+                $custom = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('difficulty', $difficulty)
+                    ->where('company_id', $company_id)->paginate(9);
             } else {
                 $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
                     ->where('company_id', $company_id)
                     ->orWhere('company_id', 'default')->paginate(9);
+                $default = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('company_id', 'default')->paginate(9);
+                $custom = PhishingEmail::with(['web', 'sender_p'])
+                    ->where('company_id', $company_id)->paginate(9);
             }
 
 
@@ -49,6 +59,8 @@ class ApiPhishingEmailsController extends Controller
                 'message' => __('Phishing data fetched successfully.'),
                 'data' => [
                     'phishingEmails' => $phishingEmails,
+                    'default' => $default,
+                    'custom' => $custom,
                     // 'senderProfiles' => $senderProfiles,
                     // 'phishingWebsites' => $phishingWebsites,
                 ]
