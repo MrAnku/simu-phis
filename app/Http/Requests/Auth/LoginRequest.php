@@ -55,7 +55,7 @@ class LoginRequest extends FormRequest
 
         
         $user = Auth::user();
-        $company_settings = Settings::where('company_id', $user->company_id)->first();
+        $company_settings = Settings::where('email', $user->email)->first();
 
         // Check if user's account is approved or not
         if ($user->approved == 0) {

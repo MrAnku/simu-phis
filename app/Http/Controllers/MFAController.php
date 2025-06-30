@@ -21,10 +21,10 @@ class MFAController extends Controller
     {
         $request->validate([
             'otp' => 'required|string',
-            'company_id' => 'required', // ✅ now expect mfa_id from frontend
+            'email' => 'required|email', // ✅ now expect mfa_id from frontend
         ]);
 
-        $company = Company::where('company_id', $request->company_id)->first();
+        $company = Company::where('email', $request->email)->first();
 
         if (!$company) {
             return response()->json([
@@ -33,7 +33,7 @@ class MFAController extends Controller
             ], 404);
         }
 
-        $settings = Settings::where('company_id', $company->company_id)->first();
+        $settings = Settings::where('email', $company->email)->first();
 
         if (!$settings || !$settings->mfa_secret) {
             return response()->json([

@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         // Check if the user is approved
         $approved = $this->isApproved();
-        if(!$approved){
+        if (!$approved) {
             Auth::logout();
             return response()->json([
                 'success' => false,
@@ -41,7 +41,7 @@ class AuthenticatedSessionController extends Controller
 
         // Check if the service status is approved
         $serviceStatusApproved = $this->isServiceStatusApproved();
-        if(!$serviceStatusApproved){
+        if (!$serviceStatusApproved) {
             Auth::logout();
             return response()->json([
                 'success' => false,
@@ -57,11 +57,18 @@ class AuthenticatedSessionController extends Controller
 
         $mfaEnabled = $this->checkMfa();
         if ($mfaEnabled) {
-            return response()->json([
-                "mfa" => true,
-                'company' => Auth::user(),
-                "success" => true
-            ]);
+            $user = Auth::user();
+            $company_settings = Settings::where('email', $user->email)->first();
+            if ($company_settings->mfa == 1) {
+                // Store the user ID in the session and logout
+                // session(['mfa_user_id' => $user->id]);
+                Auth::logout($user);
+                return response()->json([
+                    "mfa" => true,
+                    'company' => Auth::user(),
+                    "success" => true
+                ]);
+            }
         }
 
         $cookie = cookie('jwt', $token, env('JWT_TTL', 1440)); // Default JWT TTL is 1440 minutes (1 day)
@@ -206,16 +213,17 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         if ($user->approved == 1) {
             return true;
-        }else {
+        } else {
             return false;
         }
     }
 
-    private function isServiceStatusApproved(){
+    private function isServiceStatusApproved()
+    {
         $user = Auth::user();
         if ($user->service_status == 1) {
             return true;
-        }else {
+        } else {
             return false;
         }
     }

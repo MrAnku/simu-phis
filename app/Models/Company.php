@@ -36,7 +36,8 @@ class Company extends Authenticatable implements JWTSubject
         'created_at',
         'approve_date',
         'usedemployees',
-        'role'
+        'role',
+        'enabled_feature'
     ];
 
     /**
@@ -65,7 +66,7 @@ class Company extends Authenticatable implements JWTSubject
     public function company_settings()
     {
 
-        return $this->hasOne(Settings::class, 'company_id', 'company_id');
+        return $this->hasOne(Settings::class, 'email', 'email');
     }
 
     public function partner()

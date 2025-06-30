@@ -32,9 +32,9 @@ class ApiSettingsController extends Controller
     public function index()
     {
         try {
-            $companyId = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
 
-            $all_settings = Company::where('company_id', $companyId)
+            $all_settings = Company::where('email', $companyEmail)
                 ->with('company_settings', 'company_whiteLabel', 'siemConfig')
                 ->first();
 
@@ -85,11 +85,11 @@ class ApiSettingsController extends Controller
                 'dateFormat' => 'required|string|max:255',
             ]);
 
-            $companyId = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
 
             // Update the company settings
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $companyId)
+                ->where('company_id', $companyEmail)
                 ->update([
                     'country' => $validated['country'],
                     'time_zone' => $validated['timeZone'],
@@ -252,7 +252,7 @@ class ApiSettingsController extends Controller
 
                 // Save encrypted secret to company_settings
                 $isUpdated = DB::table('company_settings')
-                    ->where('company_id', $user->company_id)
+                    ->where('email', $user->email)
                     ->update(['mfa_secret' => encrypt($secretKey)]);
 
                 if ($isUpdated) {
@@ -273,7 +273,7 @@ class ApiSettingsController extends Controller
             } else {
                 // Disable MFA
                 $isUpdated = DB::table('company_settings')
-                    ->where('company_id', $user->company_id)
+                    ->where('email', $user->email)
                     ->update([
                         'mfa' => 0,
                         'mfa_secret' => ''
@@ -331,7 +331,7 @@ class ApiSettingsController extends Controller
                 ], 401);
             }
 
-            $userSettings = Settings::where('company_id', $user->company_id)->first();
+            $userSettings = Settings::where('email', $user->email)->first();
 
             if (!$userSettings || !$userSettings->mfa_secret) {
                 return response()->json([
@@ -408,10 +408,10 @@ class ApiSettingsController extends Controller
             $default_train_lang = $request->input('default_train_lang');
             $default_notifi_lang = $request->input('default_notifi_lang');
 
-            $company_id = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
 
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
+                ->where('email', $companyEmail)
                 ->update([
                     'default_phishing_email_lang' => $default_phish_lang,
                     'default_training_lang' => $default_train_lang,
@@ -479,10 +479,10 @@ class ApiSettingsController extends Controller
             $redirect_url = $request->input('redirect_url');
             $redirect_type = $request->input('redirect_type');
 
-            $company_id = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
 
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
+                ->where('email', $companyEmail)
                 ->update([
                     'phish_redirect' => $redirect_type,
                     'phish_redirect_url' => $redirect_url,
@@ -545,11 +545,11 @@ class ApiSettingsController extends Controller
 
             // Step 3: Retrieve 'days' and company_id
             $days = $request->input('days');
-            $company_id = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
 
             // Step 4: Update the database
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
+                ->where('email', $companyEmail)
                 ->update(['training_assign_remind_freq_days' => $days]);
 
             if ($isUpdated) {
@@ -593,11 +593,11 @@ class ApiSettingsController extends Controller
 
             // Step 2: Retrieve 'status' and company_id
             $status = $request->input('status');
-            $company_id = Auth::user()->company_id; // Assuming company_id is stored in session or retrieved from Auth
+            $companyEmail = Auth::user()->email;
 
             // Step 3: Update the database
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $company_id)
+                ->where('email', $companyEmail)
                 ->update(['phish_reporting' => (int)$status]);
 
             // return response()->json([
@@ -731,6 +731,7 @@ class ApiSettingsController extends Controller
 
     public function addSubAdmin(Request $request)
     {
+        // return $request;
         try {
             $pocAccount = company::where('company_id', Auth::user()->company_id)
             ->where('role', Null)
@@ -742,6 +743,7 @@ class ApiSettingsController extends Controller
             $request->validate([
                 'email' => 'required|email|unique:company,email',
                 'full_name' => 'required|string|max:255',
+                'enabled_feature' => 'required|array',
             ]);
 
             $token = Str::random(32);
@@ -758,9 +760,12 @@ class ApiSettingsController extends Controller
                 "usedemployees" => $admin->usedemployees,
                 "storage_region" => $admin->storage_region,
                 "role" => 'sub-admin',
+                "approved" => true,
+                "service_status" => true,
                 "account_type" => 'normal',
-                "enabled_feature" => $request->enabled_feature,
+                "enabled_feature" => json_encode($request->enabled_feature),
                 'pass_create_token' => $token,
+                'approve_date' => now(),
                 'created_at' => now(),
             ]);
 
