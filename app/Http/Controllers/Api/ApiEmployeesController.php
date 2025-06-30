@@ -44,9 +44,12 @@ class ApiEmployeesController extends Controller
                 'success' => true,
                 'data' => [
                     'total_employees' => $totalEmps,
+                    'total_emps_pp' => $this->getEmpPp(),
                     'groups' => $groups,
                     'verified_domains' => $verifiedDomains,
+                    'verified_domains_pp' => $this->getVerifiedDomainsPp(),
                     'not_verified_domains' => $notVerifiedDomains,
+                    'not_verified_domains_pp' => $this->getNotVerifiedDomainsPp(),
                     'all_domains' => $allDomains,
                     'has_outlook_ad_token' => $hasOutlookAdToken
                 ],
@@ -55,6 +58,110 @@ class ApiEmployeesController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error:') . $e->getMessage()], 500);
         }
+    }
+
+    private function getEmpPp(){
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(13)->startOfDay();
+        $endCurrent = $now->endOfDay();
+
+        $currentCount = Users::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->distinct('user_email')
+            ->count('user_email');
+
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(27)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+
+        $prevCount = Users::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->distinct('user_email')
+            ->count('user_email');
+
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            $percent = 0;
+        } elseif ($prevCount == 0) {
+            $percent = 100;
+        } else {
+            $percent = (($currentCount - $prevCount) / $prevCount) * 100;
+        }
+
+        return round($percent, 2);
+    }
+
+    private function getVerifiedDomainsPp(){
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(13)->startOfDay();
+        $endCurrent = $now->endOfDay();
+
+        $currentCount = DomainVerified::where('company_id', $companyId)
+            ->where('verified', 1)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->count();
+
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(27)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+
+        $prevCount = DomainVerified::where('company_id', $companyId)
+            ->where('verified', 1)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->count();
+
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            $percent = 0;
+        } elseif ($prevCount == 0) {
+            $percent = 100;
+        } else {
+            $percent = (($currentCount - $prevCount) / $prevCount) * 100;
+        }
+
+        return round($percent, 2);
+    }
+
+    private function getNotVerifiedDomainsPp(){
+
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(13)->startOfDay();
+        $endCurrent = $now->endOfDay();
+
+        $currentCount = DomainVerified::where('company_id', $companyId)
+            ->where('verified', 0)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->count();
+
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(27)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+
+        $prevCount = DomainVerified::where('company_id', $companyId)
+            ->where('verified', 0)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->count();
+
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            $percent = 0;
+        } elseif ($prevCount == 0) {
+            $percent = 100;
+        } else {
+            $percent = (($currentCount - $prevCount) / $prevCount) * 100;
+        }
+
+        return round($percent, 2);
+
     }
 
     public function allEmployee()
@@ -880,7 +987,8 @@ class ApiEmployeesController extends Controller
         }
     }
 
-    public function updateEmployee(Request $request){
+    public function updateEmployee(Request $request)
+    {
         $email = $request->route('email');
         if (!$email) {
             return response()->json(['success' => false, 'message' => __('Email is required')], 422);
@@ -898,7 +1006,7 @@ class ApiEmployeesController extends Controller
                 'usrWhatsapp' => 'nullable|digits_between:11,15',
             ]);
 
-           foreach ($users as $user) {
+            foreach ($users as $user) {
                 $user->user_name = $request->input('usrName');
                 $user->user_company = !empty($request->input('usrCompany')) ? $request->input('usrCompany') : null;
                 $user->user_job_title = !empty($request->input('usrJobTitle')) ? $request->input('usrJobTitle') : null;
@@ -920,7 +1028,8 @@ class ApiEmployeesController extends Controller
         }
     }
 
-    private function updateInCampaigns($email, $name){
+    private function updateInCampaigns($email, $name)
+    {
         //ai call campaign live update
         AiCallCampLive::where('employee_email', $email)
             ->update([
@@ -951,12 +1060,11 @@ class ApiEmployeesController extends Controller
             ->update([
                 'user_name' => $name,
             ]);
-        
-            //whatsapp campaign live
+
+        //whatsapp campaign live
         WaLiveCampaign::where('user_email', $email)
             ->update([
                 'user_name' => $name,
             ]);
-        
     }
 }

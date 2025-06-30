@@ -14,6 +14,7 @@ use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\DeletedBlueCollarEmployee;
+use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Validator;
 
 class ApiBlueCollarController extends Controller
@@ -27,15 +28,13 @@ class ApiBlueCollarController extends Controller
                 ->where('company_id', $companyId)
                 ->get();
 
-            $totalEmployeeCount = BlueCollarEmployee::where('company_id', $companyId)->get()->count();
-            $totalActiveEmployees = WhatsAppCampaignUser::where("employee_type", "Bluecollar")
+            $totalEmployeeCount = BlueCollarEmployee::where('company_id', $companyId)->count();
+            $totalActiveEmployees = WaLiveCampaign::where("employee_type", "bluecollar")
                 ->where('company_id', $companyId)
-                ->get()
                 ->count();
-            $totalCompromisedEmployees = WhatsAppCampaignUser::where("employee_type", "Bluecollar")
-                ->where("emp_compromised", 1)
+            $totalCompromisedEmployees = WaLiveCampaign::where("employee_type", "bluecollar")
+                ->where("compromised", 1)
                 ->where('company_id', $companyId)
-                ->get()
                 ->count();
 
             $totalEmps = $groups->sum('bluecollarusers_count');
@@ -46,9 +45,12 @@ class ApiBlueCollarController extends Controller
                 'success' => true,
                 'data' => [
                     'total_employee_count' => $totalEmployeeCount,
+                    'total_employee_count_pp' => $this->getEmpPp(),
                     'totalEmps' => $totalEmps,
                     'total_active_employees' => $totalActiveEmployees,
+                    'active_emp_pp' => $this->activeEmpPpBluecollar(),
                     'total_compromised_employees' => $totalCompromisedEmployees,
+                    'compromised_pp' => $this->compromisedPp(),
                     'groups' => $groups,
                     'has_outlook_ad_token' => $hasOutlookAdToken
                 ],
@@ -59,6 +61,109 @@ class ApiBlueCollarController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function activeEmpPpBluecollar()
+    {
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(14)->startOfDay();
+        $endCurrent = $now->copy()->endOfDay();
+
+        $currentCount = WaLiveCampaign::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->where('employee_type', 'bluecollar')
+            ->count();
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(28)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+        $prevCount = WaLiveCampaign::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->where('employee_type', 'bluecollar')
+            ->count();
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            return 0; // No change if both counts are zero
+        } elseif ($prevCount == 0) {
+            return 100; // 100% increase if previous count is zero
+        } elseif ($currentCount == 0) {
+            return -100; // 100% decrease if current count is zero
+        } else {
+            $percentChange = (($currentCount - $prevCount) / $prevCount) *
+                100; // Calculate percent change
+            return round($percentChange, 2); // Round to 2 decimal places
+        }
+    }
+
+    private function compromisedPp(){
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(14)->startOfDay();
+        $endCurrent = $now->copy()->endOfDay();
+
+        $currentCount = WaLiveCampaign::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->where('employee_type', 'bluecollar')
+            ->where('compromised', 1)
+            ->count();
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(28)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+        $prevCount = WaLiveCampaign::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->where('employee_type', 'bluecollar')
+            ->where('compromised', 1)
+            ->count();
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            return 0; // No change if both counts are zero
+        } elseif ($prevCount == 0) {
+            return 100; // 100% increase if previous count is zero
+        } elseif ($currentCount == 0) {
+            return -100; // 100% decrease if current count is zero
+        } else {
+            $percentChange = (($currentCount - $prevCount) / $prevCount) *
+                100; // Calculate percent change
+            return round($percentChange, 2); // Round to 2 decimal places
+        }
+    }
+
+    private function getEmpPp()
+    {
+        $companyId = Auth::user()->company_id;
+
+        // Current 14 days
+        $now = now();
+        $startCurrent = $now->copy()->subDays(14)->startOfDay();
+        $endCurrent = $now->copy()->endOfDay();
+
+        $currentCount = BlueCollarEmployee::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startCurrent, $endCurrent])
+            ->distinct('whatsapp')
+            ->count('whatsapp');
+        // Previous 14 days
+        $startPrev = $now->copy()->subDays(28)->startOfDay();
+        $endPrev = $now->copy()->subDays(14)->endOfDay();
+        $prevCount = BlueCollarEmployee::where('company_id', $companyId)
+            ->whereBetween('created_at', [$startPrev, $endPrev])
+            ->distinct('whatsapp')
+            ->count('whatsapp');
+        // Calculate percent change
+        if ($prevCount == 0 && $currentCount == 0) {
+            return 0; // No change if both counts are zero
+        } elseif ($prevCount == 0) {
+            return 100; // 100% increase if previous count is zero
+        } elseif ($currentCount == 0) {
+            return -100; // 100% decrease if current count is zero
+        } else {
+            $percentChange = (($currentCount - $prevCount) / $prevCount) *
+                100; // Calculate percent change
+            return round($percentChange, 2); // Round to 2 decimal places
         }
     }
 
@@ -127,7 +232,7 @@ class ApiBlueCollarController extends Controller
             if (!$request->route('user_id')) {
                 return response()->json(['success' => false, 'message' => __('User ID is required')], 422);
             }
-             $user = BlueCollarEmployee::find($request->route('user_id'));
+            $user = BlueCollarEmployee::find($request->route('user_id'));
             $user_whatsapp = $user->whatsapp;
             $user_name = $user->user_name;
 
@@ -136,7 +241,7 @@ class ApiBlueCollarController extends Controller
                 $user->delete();
                 $user_whatsapp;
 
-               $emailExists = DeletedBlueCollarEmployee::where('whatsapp', $user_whatsapp)->where('company_id', Auth::user()->company_id)->exists();
+                $emailExists = DeletedBlueCollarEmployee::where('whatsapp', $user_whatsapp)->where('company_id', Auth::user()->company_id)->exists();
                 if (!$emailExists) {
                     DeletedBlueCollarEmployee::create([
                         'whatsapp' => $user_whatsapp,

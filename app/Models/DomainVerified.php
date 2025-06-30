@@ -10,7 +10,6 @@ class DomainVerified extends Model
     use HasFactory;
 
     protected $table = 'verified_domains';
-    public $timestamps = false;
 
     protected $fillable = [
         'domain',
