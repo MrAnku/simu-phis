@@ -29,27 +29,41 @@ class AuthenticatedSessionController extends Controller
             ], 401);
         }
 
-        $user = Auth::user();
+        // Check if the user is approved
+        $approved = $this->isApproved();
+        if(!$approved){
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is not approved yet. Please contact your service provider.',
+            ], 422);
+        }
 
-        $company_license = CompanyLicense::where('company_id', $user->company_id)->first();
+        // Check if the service status is approved
+        $serviceStatusApproved = $this->isServiceStatusApproved();
+        if(!$serviceStatusApproved){
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'message' => 'Your service status is not approved. Please contact your service provider.',
+            ], 422);
+        }
 
-        // Check License Expiry
-        if (now()->toDateString() > $company_license->expiry) {
-            Auth::logout($user);
+        // check License Expiry
+        $licenseExpired = $this->checkLicenseExpiry();
+        if ($licenseExpired) {
             return response()->json(['success' => false, 'message' => __('Your License has beeen Expired')], 422);
         }
 
-        $company_settings = Settings::where('company_id', $user->company_id)->first();
-        if ($company_settings->mfa == 1) {
-            // Store the user ID in the session and logout
-            // session(['mfa_user_id' => $user->id]);
-            Auth::logout($user);
+        $mfaEnabled = $this->checkMfa();
+        if ($mfaEnabled) {
             return response()->json([
                 "mfa" => true,
-                'company' => $user,
+                'company' => Auth::user(),
                 "success" => true
             ]);
         }
+
         $cookie = cookie('jwt', $token, 60 * 24);
         return response()->json([
             'token' => $token,
@@ -161,6 +175,48 @@ class AuthenticatedSessionController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    private function checkLicenseExpiry()
+    {
+        $user = Auth::user();
+        $company_license = CompanyLicense::where('company_id', $user->company_id)->first();
+
+        // Check License Expiry
+        if (now()->toDateString() > $company_license->expiry) {
+            Auth::logout($user);
+            return true;
+        }
+    }
+
+    private function checkMfa()
+    {
+        $user = Auth::user();
+        $company_settings = Settings::where('company_id', $user->company_id)->first();
+        if ($company_settings->mfa == 1) {
+            // Store the user ID in the session and logout
+            Auth::logout($user);
+            return true;
+        }
+    }
+
+    private function isApproved()
+    {
+        $user = Auth::user();
+        if ($user->approved == 1) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    private function isServiceStatusApproved(){
+        $user = Auth::user();
+        if ($user->service_status == 1) {
+            return true;
+        }else {
+            return false;
         }
     }
 }
