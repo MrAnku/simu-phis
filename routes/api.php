@@ -241,6 +241,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/blue-collar-employees', [ApiBlueCollarController::class, 'index']);
         Route::get('/normalemployees', [ApiEmployeesController::class, 'index']);
         Route::get('/employee/{base_encode_id?}', [ApiEmployeesController::class, 'employeeDetail']);
+        Route::get('/detail/{email?}', [ApiEmployeesController::class, 'employeeDetailNew']);
         Route::get('/login-with-microsoft', [ApiOutlookAdController::class, 'loginMicrosoft']);
         Route::get('/microsoft-ad-callback', [ApiOutlookAdController::class, 'handleMicrosoftCallback']);
         Route::get('/fetch-outlook-groups', [ApiOutlookAdController::class, 'fetchGroups']);

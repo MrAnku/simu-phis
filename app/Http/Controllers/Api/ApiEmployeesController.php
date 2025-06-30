@@ -228,6 +228,168 @@ class ApiEmployeesController extends Controller
         }
     }
 
+    
+
+    public function employeeDetailNew(Request $request)
+    {
+        try{
+            $email = $request->route('email');
+            if (!$email) {
+                return response()->json(['success' => false, 'message' => __('Email is required')], 422);
+            }
+            $companyId = Auth::user()->company_id;
+
+            $exist = Users::where('user_email', $email)
+                ->where('company_id', $companyId)
+                ->first();
+            if (!$exist) {
+                return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'personal' => $exist,
+                    'campaigns' => $this->getCampaigns($email),
+                    'training_assigned' => $this->getTrainingAssigned($email),
+                    'security_score' => $this->getSecurityScore($email),
+                ],
+                'message' => __('Employee details retrieved successfully')
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+           
+    }
+
+    private function getCampaigns($email)
+    {
+        
+        // Email Campaigns Summary
+        $emailSummary = [
+            'type' => 'email_summary',
+            'total_campaigns' => CampaignLive::where('user_email', $email)->count(),
+            'total_payload_clicked' => CampaignLive::where('user_email', $email)->where('payload_clicked', 1)->count(),
+            'in_attack' => CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count(),
+        ];
+
+       
+
+        // Quishing Campaigns Summary
+        $quishingSummary = [
+            'type' => 'quishing_summary',
+            'total_campaigns' => QuishingLiveCamp::where('user_email', $email)->count(),
+            'total_qr_scanned' => QuishingLiveCamp::where('user_email', $email)->where('qr_scanned', '1')->count(),
+            'in_attack' => QuishingLiveCamp::where('user_email', $email)->where('compromised', '1')->count(),
+        ];
+
+     
+
+        // WhatsApp Campaigns Summary
+        $waSummary = [
+            'type' => 'whatsapp_summary',
+            'total_campaigns' => WaLiveCampaign::where('user_email', $email)->count(),
+            'total_payload_clicked' => WaLiveCampaign::where('user_email', $email)->where('payload_clicked', 1)->count(),
+            'in_attack' => WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count(),
+        ];
+        // AI Call Campaigns Summary
+        $aiCallSummary = [
+            'type' => 'ai_call_summary',
+            'total_campaigns' => AiCallCampLive::where('employee_email', $email)->count(),
+            'total_calls_sent' => AiCallCampLive::where('employee_email', $email)->where('call_send_response', '!=', null)->count(),
+            'total_calls_responded' => AiCallCampLive::where('employee_email', $email)->where('call_end_response', '!=', null)->count(),
+        ];  
+       
+        return [
+            'email_summary' => $emailSummary,
+            'quishing_summary' => $quishingSummary,
+            'whatsapp_summary' => $waSummary,
+            'ai_call_summary' => $aiCallSummary,
+        ];
+    }
+
+    private function getTrainingAssigned($email)
+    {
+        // total static training assigned
+        $staticTrainingAssigned = TrainingAssignedUser::where('user_email', $email)
+            ->where('training_type', 'static_training')
+            ->count();
+
+        //total ai training assigned
+        $aiTrainingAssigned = TrainingAssignedUser::where('user_email', $email)
+            ->where('training_type', 'ai_training')
+            ->count();
+        
+        // total gamified training assigned
+        $gamifiedTrainingAssigned = TrainingAssignedUser::where('user_email', $email)
+            ->where('training_type', 'gamified')
+            ->count();
+
+        //total games assigned
+        $gamesAssigned = TrainingAssignedUser::where('user_email', $email)
+            ->where('training_type', 'games')
+            ->count();
+        
+        // trainings overdue
+        $overdueTrainings = TrainingAssignedUser::where('user_email', $email)
+            ->whereDate('training_due_date', '<', now())
+            ->where('personal_best', 0)
+            ->count();
+
+        return [
+            'static_training_assigned' => $staticTrainingAssigned,
+            'ai_training_assigned' => $aiTrainingAssigned,
+            'gamified_training_assigned' => $gamifiedTrainingAssigned,
+            'games_assigned' => $gamesAssigned,
+            'overdue_trainings' => $overdueTrainings
+        ];
+
+    }
+
+    private function getSecurityScore($email)
+    {
+        $companyId = Auth::user()->company_id;
+        $totalSimulations = 0;
+        $compromisedSimulations = 0;
+
+        // Email Campaigns
+        $emailTotal = CampaignLive::where('user_email', $email)->count();
+        $emailCompromised = CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count();
+
+        // Quishing Campaigns
+        $quishingTotal = QuishingLiveCamp::where('user_email', $email)->count();
+        $quishingCompromised = QuishingLiveCamp::where('user_email', $email)->where('compromised', 1)->count();
+
+        // WhatsApp Campaigns
+        $waTotal = WaLiveCampaign::where('user_email', $email)->count();
+        $waCompromised = WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count();
+
+        // AI Call Campaigns
+        $aiTotal = AiCallCampLive::where('employee_email', $email)->count();
+        $aiCompromised = AiCallCampLive::where('employee_email', $email)->where('call_end_response', '!=', null)->count();
+
+        $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
+        $compromisedSimulations = $emailCompromised + $quishingCompromised + $waCompromised + $aiCompromised;
+
+        if ($totalSimulations > 0) {
+            $safeSimulations = $totalSimulations - $compromisedSimulations;
+            $percentage = round(($safeSimulations / $totalSimulations) * 100, 2);
+            $riskScore = round(($compromisedSimulations / $totalSimulations) * 100, 2);
+        } else {
+            $percentage = 100;
+            $riskScore = 0;
+        }
+
+        return [
+            'security_score' => $percentage, // out of 100
+            'risk_score' => $riskScore,        // out of 100
+            'total_simulations' => $totalSimulations,
+            'compromised_simulations' => $compromisedSimulations
+        ];
+
+    }
+
     public function sendDomainVerifyOtp(Request $request)
     {
         try {
