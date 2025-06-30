@@ -26,7 +26,15 @@ class ApiAivishingReportController extends Controller
             $months = (int)$months;
 
             $usersArray = UsersGroup::where('group_id', $group)
-                ->where('company_id', $companyId)->first()->users;
+                ->where('company_id', $companyId)->first();
+            if (!$usersArray) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No users found for the specified group',
+                ], 404);
+            }
+            $usersArray = $usersArray->users;
+           
             $usersArray = json_decode($usersArray, true);
 
             if (!$usersArray) {
@@ -362,7 +370,7 @@ class ApiAivishingReportController extends Controller
 
         if ($group && $months) {
             // Fetch all campaigns for the company
-            $groups = UsersGroup::with('aiCampaigns.individualCamps')
+            $groups = UsersGroup::with(['aiCampaigns','aiCampaigns.individualCamps'])
                 ->where('company_id', $companyId)
                 ->where('group_id', $group)
                 ->get();
@@ -402,7 +410,6 @@ class ApiAivishingReportController extends Controller
                 });
                 $callIgnored = $group->aiCampaigns->sum(function ($campaign) {
                     return $campaign->individualCamps->where('status', 'waiting')
-                        ->whereRaw('TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 30')
                         ->count();
                 });
 
