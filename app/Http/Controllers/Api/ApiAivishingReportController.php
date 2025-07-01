@@ -90,9 +90,13 @@ class ApiAivishingReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'calls_in_queue' => $callsInQueue,
+                        'calls_in_queue_pp' => $this->ppDifference('calls_in_queue'),
                         'calls_in_progress' => $callsInProgress,
+                        'calls_in_progress_pp' => $this->ppDifference('calls_in_progress'),
                         'calls_completed' => $callsCompleted,
+                        'calls_completed_pp' => $this->ppDifference('calls_completed'),
                         'transcriptions_logged' => $transcriptionsLogged,
+                        'transcriptions_logged_pp' => $this->ppDifference('transcriptions_logged'),
                     ],
                     "call_events_overtime" => $this->eventsOverTime($usersArray, $months), //done
                     "most_engaged_agent" => $this->mostEngagedAgent($usersArray, $months), //done
@@ -127,9 +131,13 @@ class ApiAivishingReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'calls_in_queue' => $callsInQueue,
+                        'calls_in_queue_pp' => $this->ppDifference('calls_in_queue'),
                         'calls_in_progress' => $callsInProgress,
+                        'calls_in_progress_pp' => $this->ppDifference('calls_in_progress'),
                         'calls_completed' => $callsCompleted,
+                        'calls_completed_pp' => $this->ppDifference('calls_completed'),
                         'transcriptions_logged' => $transcriptionsLogged,
+                        'transcriptions_logged_pp' => $this->ppDifference('transcriptions_logged'),
                     ],
                     "call_events_overtime" => $this->eventsOverTime(), //done
                     "most_engaged_agent" => $this->mostEngagedAgent(), //done
@@ -142,44 +150,67 @@ class ApiAivishingReportController extends Controller
         }
     }
 
-    private function ppDifference()
+    // Calculate percentage point difference for a metric between current and previous period
+    private function ppDifference($metric)
     {
         $companyId = Auth::user()->company_id;
-        $now = Carbon::now();
-        $currentStart = $now->copy()->subDays(7);  // Last 7 days
-        $previousStart = $now->copy()->subDays(14); // Previous 7 days
-        $previousEnd = $now->copy()->subDays(7);
 
-        // Current period
-        $totalCurrent = AiCallCampLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$currentStart, $now])
+        // Define mapping for each metric to its query
+        $metrics = [
+            'calls_in_queue' => function ($start, $end) use ($companyId) {
+                return AiCallCampLive::where('company_id', $companyId)
+                    ->where('call_id', null)
+                    ->whereBetween('created_at', [$start, $end])
+                    ->count();
+            },
+            'calls_in_progress' => function ($start, $end) use ($companyId) {
+                return AiCallCampLive::where('company_id', $companyId)
+                    ->where('status', 'waiting')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->count();
+            },
+            'calls_completed' => function ($start, $end) use ($companyId) {
+                return AiCallCampLive::where('company_id', $companyId)
+                    ->where('status', 'completed')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->count();
+            },
+            'transcriptions_logged' => function ($start, $end) use ($companyId) {
+                return AiCallCampLive::where('company_id', $companyId)
+                    ->where('call_report', '!=', null)
+                    ->whereBetween('created_at', [$start, $end])
+                    ->count();
+            },
+        ];
+
+        if (!isset($metrics[$metric])) {
+            return 0;
+        }
+
+        // Current period: this month
+        $now = now();
+        $currentStart = $now->copy()->startOfMonth();
+        $currentEnd = $now->copy()->endOfMonth();
+
+        // Previous period: last month
+        $prevStart = $now->copy()->subMonth()->startOfMonth();
+        $prevEnd = $now->copy()->subMonth()->endOfMonth();
+
+        $currentValue = $metrics[$metric]($currentStart, $currentEnd);
+        $prevValue = $metrics[$metric]($prevStart, $prevEnd);
+
+        // Calculate total for rate
+        $currentTotal = AiCallCampLive::where('company_id', $companyId)
+            ->whereBetween('created_at', [$currentStart, $currentEnd])
+            ->count();
+        $prevTotal = AiCallCampLive::where('company_id', $companyId)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
             ->count();
 
-        $clickedCurrent = AiCallCampLive::where('company_id', $companyId)
-            ->where('payload_clicked', 1)
-            ->whereBetween('created_at', [$currentStart, $now])
-            ->count();
+        $currentRate = $currentTotal > 0 ? ($currentValue / $currentTotal) * 100 : 0;
+        $prevRate = $prevTotal > 0 ? ($prevValue / $prevTotal) * 100 : 0;
 
-        $clickRateCurrent = $totalCurrent > 0 ? ($clickedCurrent / $totalCurrent) * 100 : 0;
-
-        // Previous period
-        $totalPrevious = AiCallCampLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
-
-        $clickedPrevious = AiCallCampLive::where('company_id', $companyId)
-            ->where('payload_clicked', 1)
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
-
-        $clickRatePrevious = $totalPrevious > 0 ? ($clickedPrevious / $totalPrevious) * 100 : 0;
-
-        // Percentage Point Difference
-        $ppDifference = $clickRateCurrent - $clickRatePrevious;
-
-        // Format result
-        $ppFormatted = number_format($ppDifference, 2) . ' pp';
-        return $ppFormatted;
+        return round($currentRate - $prevRate, 2);
     }
     private function mostEngagedAgent($usersArray = null, $months = null)
     {
