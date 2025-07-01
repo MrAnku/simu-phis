@@ -213,6 +213,11 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     //     Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
     // });
+        Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
+
+        // Awareness and Education Reporting
+        Route::get('/fetch-awareness-edu-report', [ApiReportingController::class, 'fetchAwarenessEduReport']);
+    });
 
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
