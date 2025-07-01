@@ -35,6 +35,14 @@ class ApiQuishingReportController extends Controller
             }
 
             $startDate = now()->subMonths($months)->startOfMonth();
+            $companyCreatedDate = Auth::user()->created_at;
+            $companyCreatedDate = Carbon::parse($companyCreatedDate);
+
+            if ($startDate < $companyCreatedDate) {
+                $months = $companyCreatedDate->diffInMonths(now());
+                $startDate = $companyCreatedDate->startOfMonth();
+                
+            }
             $endDate = now();
 
             $total = QuishingLiveCamp::where('company_id', $companyId)

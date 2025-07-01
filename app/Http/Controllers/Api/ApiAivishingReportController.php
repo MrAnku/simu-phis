@@ -34,7 +34,7 @@ class ApiAivishingReportController extends Controller
                 ], 404);
             }
             $usersArray = $usersArray->users;
-           
+
             $usersArray = json_decode($usersArray, true);
 
             if (!$usersArray) {
@@ -45,6 +45,13 @@ class ApiAivishingReportController extends Controller
             }
 
             $startDate = now()->subMonths($months)->startOfMonth();
+            $companyCreatedDate = Auth::user()->created_at;
+            $companyCreatedDate = Carbon::parse($companyCreatedDate);
+
+            if ($startDate < $companyCreatedDate) {
+                $months = $companyCreatedDate->diffInMonths(now());
+                $startDate = $companyCreatedDate->startOfMonth();
+            }
             $endDate = now();
 
             $total = AiCallCampLive::where('company_id', $companyId)
@@ -370,7 +377,7 @@ class ApiAivishingReportController extends Controller
 
         if ($group && $months) {
             // Fetch all campaigns for the company
-            $groups = UsersGroup::with(['aiCampaigns','aiCampaigns.individualCamps'])
+            $groups = UsersGroup::with(['aiCampaigns', 'aiCampaigns.individualCamps'])
                 ->where('company_id', $companyId)
                 ->where('group_id', $group)
                 ->get();

@@ -863,8 +863,17 @@ class ApiDashboardController extends Controller
                     'message' => 'No users found for the specified group',
                 ], 404);
             }
-
+            //check if the $months is not before the company created date
             $startDate = now()->subMonths($months)->startOfMonth();
+            $companyCreatedDate = Auth::user()->created_at;
+            $companyCreatedDate = Carbon::parse($companyCreatedDate);
+
+            if ($startDate < $companyCreatedDate) {
+                $months = $companyCreatedDate->diffInMonths(now());
+                $startDate = $companyCreatedDate->startOfMonth();
+                
+            }
+
             $endDate = now();
 
             $total = CampaignLive::where('company_id', $companyId)
