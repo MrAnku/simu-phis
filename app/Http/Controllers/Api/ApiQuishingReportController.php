@@ -84,11 +84,16 @@ class ApiQuishingReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'qr_scanned' => $scanned,
+                        'qr_scanned_pp' => $this->ppDifference('qr_scanned'),
                         'reported' => $reportRate,
+                        'reported_pp' => $this->ppDifference('reported'),
                         'ignored' => $ignoreRate,
+                        'ignored_pp' => $this->ppDifference('ignored'),
                         'repeat_scanners' => $repeatScanners,
+                        'repeat_scanners_pp' => $this->ppDifference('repeat_scanners'),
                         'remediation_rate_percent' => $remediationRate,
-                        'pp_difference' => $this->ppDifference(),
+                        'remediation_rate_pp' => $this->ppDifference('remediation_rate_percent'),
+
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime($usersArray, $months),
                     "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
@@ -127,11 +132,15 @@ class ApiQuishingReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'qr_scanned' => $scanned,
+                        'qr_scanned_pp' => $this->ppDifference('qr_scanned'),
                         'reported' => $reportRate,
+                        'reported_pp' => $this->ppDifference('reported'),
                         'ignored' => $ignoreRate,
+                        'ignored_pp' => $this->ppDifference('ignored'),
                         'repeat_scanners' => $repeatScanners,
+                        'repeat_scanners_pp' => $this->ppDifference('repeat_scanners'),
                         'remediation_rate_percent' => $remediationRate,
-                        'pp_difference' => $this->ppDifference(),
+                        'remediation_rate_pp' => $this->ppDifference('remediation_rate_percent'),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
                      "most_engaged_quishing_material" => $this->mostEngagedPhishingMaterial(),
@@ -145,44 +154,105 @@ class ApiQuishingReportController extends Controller
         }
     }
 
-    private function ppDifference()
+    private function ppDifference($type)
     {
         $companyId = Auth::user()->company_id;
-        $now = Carbon::now();
-        $currentStart = $now->copy()->subDays(7);  // Last 7 days
-        $previousStart = $now->copy()->subDays(14); // Previous 7 days
-        $previousEnd = $now->copy()->subDays(7);
 
-        // Current period
-        $totalCurrent = QuishingLiveCamp::where('company_id', $companyId)
+        // Map input type to QuishingLiveCamp fields
+        $types = [
+            'qr_scanned' => function ($query) {
+            return $query->where('qr_scanned', '1');
+            },
+            'reported' => function ($query) {
+            return $query->where('email_reported', '1');
+            },
+            'ignored' => function ($query) {
+            return $query->where('qr_scanned', '0');
+            },
+            'repeat_scanners' => function ($query) {
+            return $query->where('qr_scanned', '1')
+                ->groupBy('user_email')
+                ->havingRaw('COUNT(*) > 1');
+            },
+            'remediation_rate_percent' => function ($query) {
+            return $query->where('email_reported', '1');
+            },
+        ];
+
+        if (!isset($types[$type])) {
+            return 0;
+        }
+
+        $now = now();
+        $currentStart = $now->copy()->subDays(14);
+        $previousStart = $now->copy()->subDays(28);
+
+        // Total for denominator
+        $totalCurrent = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
             ->whereBetween('created_at', [$currentStart, $now])
             ->count();
+        $totalPrevious = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart])
+            ->count();
 
-        $scannedCurrent = QuishingLiveCamp::where('company_id', $companyId)
-            ->where('qr_scanned', '1')
+        // Numerator for each type
+        if ($type === 'repeat_scanners') {
+            $currentValue = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
             ->whereBetween('created_at', [$currentStart, $now])
-            ->count();
-
-        $scanRateCurrent = $totalCurrent > 0 ? ($scannedCurrent / $totalCurrent) * 100 : 0;
-
-        // Previous period
-        $totalPrevious = QuishingLiveCamp::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
-
-        $scannedPrevious = QuishingLiveCamp::where('company_id', $companyId)
             ->where('qr_scanned', '1')
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
+            ->groupBy('user_email')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('user_email')
             ->count();
 
-        $scanRatePrevious = $totalPrevious > 0 ? ($scannedPrevious / $totalPrevious) * 100 : 0;
+            $previousValue = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart])
+            ->where('qr_scanned', '1')
+            ->groupBy('user_email')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('user_email')
+            ->count();
 
-        // Percentage Point Difference
-        $ppDifference = $scanRateCurrent - $scanRatePrevious;
+            // Use total unique users as denominator for repeat scanners
+            $totalCurrent = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$currentStart, $now])
+            ->distinct('user_email')
+            ->count('user_email');
+            $totalPrevious = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart])
+            ->distinct('user_email')
+            ->count('user_email');
 
-        // Format result
-        $ppFormatted = number_format($ppDifference, 2) . ' pp';
-        return $ppFormatted;
+            $currentValue = $totalCurrent > 0 ? ($currentValue / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousValue / $totalPrevious) * 100 : 0;
+        } elseif ($type === 'remediation_rate_percent') {
+            // Remediation rate is reported/total
+            $currentReported = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$currentStart, $now])
+            ->where('email_reported', '1')
+            ->count();
+            $previousReported = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart])
+            ->where('email_reported', '1')
+            ->count();
+
+            $currentValue = $totalCurrent > 0 ? ($currentReported / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousReported / $totalPrevious) * 100 : 0;
+        } else {
+            $currentValue = $types[$type](\App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$currentStart, $now]))->count();
+            $previousValue = $types[$type](\App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart]))->count();
+
+            // For qr_scanned, reported, ignored: use percent of total
+            $currentValue = $totalCurrent > 0 ? ($currentValue / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousValue / $totalPrevious) * 100 : 0;
+        }
+
+        // Calculate percentage point difference
+        $ppDiff = round($currentValue - $previousValue, 2);
+
+        return $ppDiff;
     }
     private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
 
