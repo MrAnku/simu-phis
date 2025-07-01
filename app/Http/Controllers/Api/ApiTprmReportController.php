@@ -85,11 +85,15 @@ class ApiTprmReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'clicked' => $clicked,
+                        'clicked_pp' => $this->ppDifference('clicked'),
                         'reported' => $reportRate,
+                        'reported_pp' => $this->ppDifference('reported'),
                         'ignored' => $ignoreRate,
+                        'ignored_pp' => $this->ppDifference('ignored'),
                         'repeat_clickers' => $repeatClickers,
+                        'repeat_clickers_pp' => $this->ppDifference('repeat_clickers'),
                         'remediation_rate_percent' => $remediationRate,
-                        'pp_difference' => $this->ppDifference(),
+                        'remediation_rate_pp' => $this->ppDifference('remediation_rate'),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime($usersArray, $months),
                     "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial($usersArray, $months),
@@ -128,11 +132,15 @@ class ApiTprmReportController extends Controller
                     "cards" => [
                         'total' => $total,
                         'clicked' => $clicked,
+                        'clicked_pp' => $this->ppDifference('clicked'),
                         'reported' => $reportRate,
+                        'reported_pp' => $this->ppDifference('reported'),
                         'ignored' => $ignoreRate,
+                        'ignored_pp' => $this->ppDifference('ignored'),
                         'repeat_clickers' => $repeatClickers,
+                        'repeat_clickers_pp' => $this->ppDifference('repeat_clickers'),
                         'remediation_rate_percent' => $remediationRate,
-                        'pp_difference' => $this->ppDifference(),
+                        'remediation_rate_pp' => $this->ppDifference('remediation_rate'),
                     ],
                     "phishing_events_overtime" => $this->eventsOverTime(),
                      "most_engaged_phishing_material" => $this->mostEngagedPhishingMaterial(),
@@ -146,45 +154,107 @@ class ApiTprmReportController extends Controller
         }
     }
 
-    private function ppDifference()
+    private function ppDifference($type = null)
     {
         $companyId = Auth::user()->company_id;
-        $now = Carbon::now();
-        $currentStart = $now->copy()->subDays(7);  // Last 7 days
-        $previousStart = $now->copy()->subDays(14); // Previous 7 days
-        $previousEnd = $now->copy()->subDays(7);
 
-        // Current period
-        $totalCurrent = TprmCampaignLive::where('company_id', $companyId)
+        // Define the mapping for each type to its query
+        $types = [
+            'clicked' => function ($query) {
+                return $query->where('payload_clicked', 1);
+            },
+            'reported' => function ($query) {
+                return $query->where('email_reported', 1);
+            },
+            'ignored' => function ($query) {
+                return $query->where('payload_clicked', 0);
+            },
+            'repeat_clickers' => function ($query) {
+                return $query->where('payload_clicked', 1)
+                    ->groupBy('user_email')
+                    ->havingRaw('COUNT(*) > 1');
+            },
+            'remediation_rate' => function ($query) {
+                return $query->where('email_reported', 1);
+            },
+        ];
+
+        if (!isset($types[$type])) {
+            return 0;
+        }
+
+        $now = now();
+        $currentStart = $now->copy()->subDays(14);
+        $previousStart = $now->copy()->subDays(28);
+
+        // Total for denominator
+        $totalCurrent = \App\Models\TprmCampaignLive::where('company_id', $companyId)
             ->whereBetween('created_at', [$currentStart, $now])
             ->count();
-
-        $clickedCurrent = TprmCampaignLive::where('company_id', $companyId)
-            ->where('payload_clicked', 1)
-            ->whereBetween('created_at', [$currentStart, $now])
+        $totalPrevious = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+            ->whereBetween('created_at', [$previousStart, $currentStart])
             ->count();
 
-        $clickRateCurrent = $totalCurrent > 0 ? ($clickedCurrent / $totalCurrent) * 100 : 0;
+        // Numerator for each type
+        if ($type === 'repeat_clickers') {
+            $currentValue = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->where('payload_clicked', 1)
+                ->groupBy('user_email')
+                ->havingRaw('COUNT(*) > 1')
+                ->pluck('user_email')
+                ->count();
 
-        // Previous period
-        $totalPrevious = TprmCampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
+            $previousValue = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->where('payload_clicked', 1)
+                ->groupBy('user_email')
+                ->havingRaw('COUNT(*) > 1')
+                ->pluck('user_email')
+                ->count();
 
-        $clickedPrevious = TprmCampaignLive::where('company_id', $companyId)
-            ->where('payload_clicked', 1)
-            ->whereBetween('created_at', [$previousStart, $previousEnd])
-            ->count();
+            // Use total unique users as denominator for repeat clickers
+            $totalCurrent = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->distinct('user_email')
+                ->count('user_email');
+            $totalPrevious = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->distinct('user_email')
+                ->count('user_email');
 
-        $clickRatePrevious = $totalPrevious > 0 ? ($clickedPrevious / $totalPrevious) * 100 : 0;
+            $currentValue = $totalCurrent > 0 ? ($currentValue / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousValue / $totalPrevious) * 100 : 0;
+        } elseif ($type === 'remediation_rate') {
+            // Remediation rate is reported/total
+            $currentReported = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->where('email_reported', 1)
+                ->count();
+            $previousReported = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->where('email_reported', 1)
+                ->count();
 
-        // Percentage Point Difference
-        $ppDifference = $clickRateCurrent - $clickRatePrevious;
+            $currentValue = $totalCurrent > 0 ? ($currentReported / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousReported / $totalPrevious) * 100 : 0;
+        } else {
+            $currentValue = $types[$type](\App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$currentStart, $now]))->count();
+            $previousValue = $types[$type](\App\Models\TprmCampaignLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$previousStart, $currentStart]))->count();
 
-        // Format result
-        $ppFormatted = number_format($ppDifference, 2) . ' pp';
-        return $ppFormatted;
+            // For clicked, reported, ignored: use percent of total
+            $currentValue = $totalCurrent > 0 ? ($currentValue / $totalCurrent) * 100 : 0;
+            $previousValue = $totalPrevious > 0 ? ($previousValue / $totalPrevious) * 100 : 0;
+        }
+
+        // Calculate percentage point difference
+        $ppDiff = round($currentValue - $previousValue, 2);
+
+        return $ppDiff;
     }
+
     private function mostEngagedPhishingMaterial($usersArray = null, $months = null){
 
         $companyId = Auth::user()->company_id;
