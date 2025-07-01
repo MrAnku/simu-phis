@@ -54,7 +54,7 @@ class ApiIntegrationController extends Controller
                 'whatsapp_config' => $whatsappConfig,
                 'siem_config' => $siemConfig,
                 'ldap_config' => $ldapConfig,
-                'outlook_report_button_xml_url' => 'https://365button.simuphish.com/button.xml',
+                'outlook_report_button_xml_url' => 'https://365button.simuphish.com/button.xml.zip',
                 'has_outlook_token' => $hasOutlookAdToken,
                 'outlook_authenticate_url' => $authenticateUrl,
                 'outlook_dmi_url' => $dmiAuthUrl,
