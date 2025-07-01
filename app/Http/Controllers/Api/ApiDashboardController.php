@@ -60,6 +60,43 @@ class ApiDashboardController extends Controller
         ], 200);
     }
 
+    public function sortByTimeCampaignCard(Request $request){
+        $months = $request->query('months');
+        $campaign = $request->query('campaign');
+        if($campaign == 'email'){
+            $counts = Campaign::where('company_id', Auth::user()->company_id)
+                ->whereBetween('created_at', [now()->subMonths($months), now()])
+                ->count();
+        }else if($campaign == 'whatsapp'){
+            $counts = WaCampaign::where('company_id', Auth::user()->company_id)
+                ->whereBetween('created_at', [now()->subMonths($months), now()])
+                ->count();
+        }else if($campaign == 'ai_vishing'){
+            $counts = AiCallCampaign::where('company_id', Auth::user()->company_id)
+                ->whereBetween('created_at', [now()->subMonths($months), now()])
+                ->count();
+        }else if($campaign == 'quishing'){
+            $counts = QuishingCamp::where('company_id', Auth::user()->company_id)
+                ->whereBetween('created_at', [now()->subMonths($months), now()])
+                ->count();
+        }else if($campaign == 'tprm'){
+            $counts = TprmCampaign::where('company_id', Auth::user()->company_id)
+                ->whereBetween('created_at', [now()->subMonths($months), now()])
+                ->count();  
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Campaign counts fetched successfully',
+            'data' => [
+                'counts' => $counts,
+                'months' => $months,
+                'campaign' => $campaign
+            ]
+        ], 200);
+        
+    }
+
     private function getDivisionScore(){
         $companyId = Auth::user()->company_id;
 

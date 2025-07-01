@@ -73,6 +73,7 @@ Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('aut
 Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::get('/dashboard', [ApiDashboardController::class, 'index']);
+    Route::get('/dashboard/campaign-card/sort-by-time', [ApiDashboardController::class, 'sortByTimeCampaignCard']);
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
