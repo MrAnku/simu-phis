@@ -37,12 +37,13 @@ class ApiWhatsappReportController extends Controller
 
             $startDate = now()->subMonths($months)->startOfMonth();
             $companyCreatedDate = Auth::user()->created_at;
-            $companyCreatedDate = Carbon::parse($companyCreatedDate);
+            if ($companyCreatedDate) {
+                $companyCreatedDate = Carbon::parse($companyCreatedDate);
 
-            if ($startDate < $companyCreatedDate) {
-                $months = $companyCreatedDate->diffInMonths(now());
-                $startDate = $companyCreatedDate->startOfMonth();
-                
+                if ($startDate < $companyCreatedDate) {
+                    $months = $companyCreatedDate->diffInMonths(now());
+                    $startDate = $companyCreatedDate->startOfMonth();
+                }
             }
             $endDate = now();
 

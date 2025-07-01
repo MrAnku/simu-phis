@@ -40,7 +40,7 @@ class ApiDashboardController extends Controller
             ->take(6)
             ->get();
 
-     
+
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
 
         return response()->json([
@@ -60,29 +60,30 @@ class ApiDashboardController extends Controller
         ], 200);
     }
 
-    public function sortByTimeCampaignCard(Request $request){
+    public function sortByTimeCampaignCard(Request $request)
+    {
         $months = $request->query('months');
         $campaign = $request->query('campaign');
-        if($campaign == 'email'){
+        if ($campaign == 'email') {
             $counts = Campaign::where('company_id', Auth::user()->company_id)
                 ->whereBetween('created_at', [now()->subMonths($months), now()])
                 ->count();
-        }else if($campaign == 'whatsapp'){
+        } else if ($campaign == 'whatsapp') {
             $counts = WaCampaign::where('company_id', Auth::user()->company_id)
                 ->whereBetween('created_at', [now()->subMonths($months), now()])
                 ->count();
-        }else if($campaign == 'ai_vishing'){
+        } else if ($campaign == 'ai_vishing') {
             $counts = AiCallCampaign::where('company_id', Auth::user()->company_id)
                 ->whereBetween('created_at', [now()->subMonths($months), now()])
                 ->count();
-        }else if($campaign == 'quishing'){
+        } else if ($campaign == 'quishing') {
             $counts = QuishingCamp::where('company_id', Auth::user()->company_id)
                 ->whereBetween('created_at', [now()->subMonths($months), now()])
                 ->count();
-        }else if($campaign == 'tprm'){
+        } else if ($campaign == 'tprm') {
             $counts = TprmCampaign::where('company_id', Auth::user()->company_id)
                 ->whereBetween('created_at', [now()->subMonths($months), now()])
-                ->count();  
+                ->count();
         }
 
         return response()->json([
@@ -94,21 +95,21 @@ class ApiDashboardController extends Controller
                 'campaign' => $campaign
             ]
         ], 200);
-        
     }
 
-    private function getDivisionScore(){
+    private function getDivisionScore()
+    {
         $companyId = Auth::user()->company_id;
 
         $groupScores = [];
         $groups = UsersGroup::where('company_id', $companyId)->get();
-       
+
         foreach ($groups as $group) {
             $usersArray = json_decode($group->users, true);
             if (!$usersArray || empty($usersArray)) {
                 continue;
             }
-          
+
 
             // Calculate risk score for this group
             $totalSimulations = CampaignLive::where('company_id', $companyId)
@@ -135,7 +136,7 @@ class ApiDashboardController extends Controller
                 ->where('training_assigned', 1)
                 ->count();
 
-          
+
 
             $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
                 ->whereIn('user_id', $usersArray)
@@ -181,7 +182,8 @@ class ApiDashboardController extends Controller
         return $groupScores;
     }
 
-    private function getRiskScoreDistribution(){
+    private function getRiskScoreDistribution()
+    {
         $companyId = Auth::user()->company_id;
 
         $scoreRanges = [
@@ -262,7 +264,8 @@ class ApiDashboardController extends Controller
 
         return $distribution;
     }
-    private function getSimulationActivity(){
+    private function getSimulationActivity()
+    {
         $companyId = Auth::user()->company_id;
 
         $now = Carbon::now();
@@ -297,10 +300,11 @@ class ApiDashboardController extends Controller
         return array_reverse($result);
     }
 
-    private function getEmailAndTrainingCounts(){
+    private function getEmailAndTrainingCounts()
+    {
         $companyId = Auth::user()->company_id;
 
-       //assigned
+        //assigned
         $trainingAssigned = TrainingAssignedUser::where('company_id', $companyId)
             ->count();
 
@@ -314,7 +318,7 @@ class ApiDashboardController extends Controller
         $trainingInProgress = TrainingAssignedUser::where('company_id', $companyId)
             ->where('completed', 0)
             ->count();
-        
+
         //certified
         $trainingCertified = TrainingAssignedUser::where('company_id', $companyId)
             ->where('certificate_id', '!=', null)
@@ -529,70 +533,70 @@ class ApiDashboardController extends Controller
 
             // Group by date to avoid duplicate bubbles for the same day
             $records = WaLiveCampaign::where('company_id', $companyId)
-            ->whereBetween('created_at', [$startDate, $now->endOfDay()])
-            ->get(['payload_clicked', 'compromised', 'created_at']);
+                ->whereBetween('created_at', [$startDate, $now->endOfDay()])
+                ->get(['payload_clicked', 'compromised', 'created_at']);
 
             // Prepare data grouped by date and type
             $bubbleData = [];
             $grouped = [];
 
             foreach ($records as $record) {
-            $date = Carbon::parse($record->created_at)->format('d M');
+                $date = Carbon::parse($record->created_at)->format('d M');
 
-            if (!isset($grouped[$date])) {
-                $grouped[$date] = [
-                'Link Clicked' => 0,
-                'Compromised' => 0,
-                ];
-            }
+                if (!isset($grouped[$date])) {
+                    $grouped[$date] = [
+                        'Link Clicked' => 0,
+                        'Compromised' => 0,
+                    ];
+                }
 
-            if ($record->payload_clicked > 0) {
-                $grouped[$date]['Link Clicked'] += (int)$record->payload_clicked;
-            }
-            if ($record->compromised > 0) {
-                $grouped[$date]['Compromised'] += (int)$record->compromised;
-            }
+                if ($record->payload_clicked > 0) {
+                    $grouped[$date]['Link Clicked'] += (int)$record->payload_clicked;
+                }
+                if ($record->compromised > 0) {
+                    $grouped[$date]['Compromised'] += (int)$record->compromised;
+                }
             }
 
             // Generate bubble data for each day/type
             foreach ($grouped as $date => $types) {
-            if ($types['Link Clicked'] > 0) {
-                $bubbleData[] = [
-                'x' => rand(10, 17) + (rand(0, 20) / 10),
-                'y' => round((rand(20, 150) / 100), 2),
-                'value' => $types['Link Clicked'],
-                'type' => 'Link Clicked',
-                'date' => $date,
-                ];
-            }
-            if ($types['Compromised'] > 0) {
-                $bubbleData[] = [
-                'x' => rand(10, 17) + (rand(0, 20) / 10),
-                'y' => round((rand(20, 150) / 100), 2),
-                'value' => $types['Compromised'],
-                'type' => 'Compromised',
-                'date' => $date,
-                ];
-            }
+                if ($types['Link Clicked'] > 0) {
+                    $bubbleData[] = [
+                        'x' => rand(10, 17) + (rand(0, 20) / 10),
+                        'y' => round((rand(20, 150) / 100), 2),
+                        'value' => $types['Link Clicked'],
+                        'type' => 'Link Clicked',
+                        'date' => $date,
+                    ];
+                }
+                if ($types['Compromised'] > 0) {
+                    $bubbleData[] = [
+                        'x' => rand(10, 17) + (rand(0, 20) / 10),
+                        'y' => round((rand(20, 150) / 100), 2),
+                        'value' => $types['Compromised'],
+                        'type' => 'Compromised',
+                        'date' => $date,
+                    ];
+                }
             }
 
             // Prepare last 7 days array
             $last7Days = [];
             for ($i = 6; $i >= 0; $i--) {
-            $last7Days[] = $now->copy()->subDays($i)->format('d M');
+                $last7Days[] = $now->copy()->subDays($i)->format('d M');
             }
 
             return response()->json([
-            'status' => 'success',
-            'message' => 'WhatsApp bubble chart data retrieved successfully',
-            'data' => $bubbleData,
-            'last_7_days' => $last7Days
+                'status' => 'success',
+                'message' => 'WhatsApp bubble chart data retrieved successfully',
+                'data' => $bubbleData,
+                'last_7_days' => $last7Days
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to retrieve WhatsApp bubble chart data',
-            'error' => $e->getMessage()
+                'status' => 'error',
+                'message' => 'Failed to retrieve WhatsApp bubble chart data',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -804,34 +808,34 @@ class ApiDashboardController extends Controller
 
         foreach ($activityModels as $model) {
             $osCounts['mac'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->platform', 'OS X')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->platform', 'OS X')
+                ->where('company_id', $companyId)
+                ->count();
 
             $osCounts['windows'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->platform', 'Windows')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->platform', 'Windows')
+                ->where('company_id', $companyId)
+                ->count();
 
             $osCounts['android'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->platform', 'Android')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->platform', 'Android')
+                ->where('company_id', $companyId)
+                ->count();
 
             $browserCounts['chrome'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->browser', 'Chrome')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->browser', 'Chrome')
+                ->where('company_id', $companyId)
+                ->count();
 
             $browserCounts['firefox'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->browser', 'Firefox')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->browser', 'Firefox')
+                ->where('company_id', $companyId)
+                ->count();
 
             $browserCounts['edge'] += $model::whereNotNull('client_details')
-            ->whereJsonContains('client_details->browser', 'Edge')
-            ->where('company_id', $companyId)
-            ->count();
+                ->whereJsonContains('client_details->browser', 'Edge')
+                ->where('company_id', $companyId)
+                ->count();
         }
 
         $usage = [
@@ -866,14 +870,14 @@ class ApiDashboardController extends Controller
             //check if the $months is not before the company created date
             $startDate = now()->subMonths($months)->startOfMonth();
             $companyCreatedDate = Auth::user()->created_at;
-            $companyCreatedDate = Carbon::parse($companyCreatedDate);
+            if ($companyCreatedDate) {
+                $companyCreatedDate = Carbon::parse($companyCreatedDate);
 
-            if ($startDate < $companyCreatedDate) {
-                $months = $companyCreatedDate->diffInMonths(now());
-                $startDate = $companyCreatedDate->startOfMonth();
-                
+                if ($startDate < $companyCreatedDate) {
+                    $months = $companyCreatedDate->diffInMonths(now());
+                    $startDate = $companyCreatedDate->startOfMonth();
+                }
             }
-
             $endDate = now();
 
             $total = CampaignLive::where('company_id', $companyId)
