@@ -436,15 +436,15 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const modal = document.getElementById("policyModal{{ $policy->id }}");
+            const modal = document.getElementById("policyModal{{ $policy->id ?? '' }}");
             if (!modal) return;
 
             modal.addEventListener("shown.bs.modal", function() {
-                const quizForm = document.querySelector('#quizForm-{{ $policy->id }}');
+                const quizForm = document.querySelector('#quizForm-{{ $policy->id ?? '' }}');
                 const quizRadios = quizForm.querySelectorAll('.quiz-radio');
                 const totalQuestions = {{ count($quiz ?? []) }};
-                const agreeCheckbox = document.getElementById('agreeCheckbox-{{ $policy->id }}');
-                const acceptBtn = document.getElementById('acceptPolicyBtn{{ $policy->id }}');
+                const agreeCheckbox = document.getElementById('agreeCheckbox-{{ $policy->id ?? '' }}');
+                const acceptBtn = document.getElementById('acceptPolicyBtn{{ $policy->id ?? '' }}');
 
                 function updateAgreeCheckboxStatus() {
                     const answered = new Set();
