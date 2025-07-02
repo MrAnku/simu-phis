@@ -1383,6 +1383,8 @@ class ApiReportingController extends Controller
     {
         $companyId = Auth::user()->company_id;
         $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
+        $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->
+        where('training_started', 0)->count();
         $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
             ->where('completed', 0)
             ->count();
@@ -1396,10 +1398,6 @@ class ApiReportingController extends Controller
         $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
 
         $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
-
-        // $avgEducationDuration = Campaign::where('company_id', $companyId)
-        //     ->avg('days_until_due');
-
 
         $emailCampData = Campaign::where('company_id', $companyId)
             ->pluck('days_until_due');
@@ -1421,15 +1419,31 @@ class ApiReportingController extends Controller
         $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
 
         foreach ($onboardingTrainings as $onboardingTraining) {
-            // return $onboardingTraining->user_id;
-            $group = DB::table('users_group')
-                ->whereRaw("JSON_CONTAINS(users, JSON_QUOTE(?))", [(string) $onboardingTraining->user_id])
-                ->value('group_name');  // Returns single string like "HR Team"
+            // Find the user by email to get their ID
+            $user = Users::where('user_email', $onboardingTraining->user_email)
+                ->where('company_id', $companyId)
+                ->first();
+            
+            $divisionName = null;
+            if ($user) {
+                // Try to get division name using the user's group_id first
+                $divisionName = UsersGroup::where('group_id', $user->group_id)
+                    ->where('company_id', $companyId)
+                    ->value('group_name');
+                
+                // If not found, try the JSON method as fallback
+                if (!$divisionName) {
+                    $divisionName = DB::table('users_group')
+                        ->whereRaw("JSON_CONTAINS(users, JSON_QUOTE(?))", [(string) $user->id])
+                        ->where('company_id', $companyId)
+                        ->value('group_name');
+                }
+            }
 
             $onboardingTrainingDetails[] = [
                 'user_name' => $onboardingTraining->user_name,
                 'user_email' => $onboardingTraining->user_email,
-                'divison' => $group,
+                'divison' => $divisionName,
                 'assigned_date' => $onboardingTraining->assigned_date,
                 'completed_date' => $onboardingTraining->training_due_date,
                 'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
@@ -1444,6 +1458,7 @@ class ApiReportingController extends Controller
             'data' => [
                 'training_statistics' => [
                     'total_assigned_users' => $totalAssignedUsers,
+                    'not_started_training' => $notStartedTraining,
                     'progress_training' => $progressTraining,
                     'completed_training' => $completedTraining,
                 ],

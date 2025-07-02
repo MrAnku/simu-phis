@@ -290,6 +290,7 @@ class LearnerDashController extends Controller
 
     public function startTraining($training_id, $training_lang, $id)
     {
+        TrainingAssignedUser::where('id', base64_decode($id))->update(['training_started' => 1]);
         log_action("Employee started static training", 'learner', 'learner');
         // $training_id = decrypt($training_id);
 

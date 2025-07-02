@@ -21,6 +21,7 @@ class TrainingAssignedUser extends Model
         'certificate_id',
         'company_id',
         'last_reminder_date',
+        'training_started'
         // Add other columns that should be mass assignable
     ];
 
