@@ -30,39 +30,7 @@ class ApiTprmController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-            $allCamps = TprmCampaign::where('company_id', $companyId)->orderBy('id', 'desc')
-                ->paginate(10);
-
-            foreach ($allCamps as $campaign) {
-                switch ($campaign->status) {
-                    case 'pending':
-                        $campaign->status_button = '<button type="button" class="btn btn-warning rounded-pill btn-wave waves-effect waves-light">Pending</button>';
-                        $campaign->reschedule_btn = '<button class="btn btn-icon btn-warning btn-wave waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule" onclick="reschedulecampid(\'' . e($campaign->id) . '\')"><i class="bx bx-time-five"></i></button>';
-                        break;
-
-                    case 'running':
-                        $campaign->status_button = '<button type="button" class="btn btn-success rounded-pill btn-wave waves-effect waves-light">Running</button>';
-                        break;
-
-                    case 'Not Scheduled':
-                        $campaign->status_button = '<button type="button" class="btn btn-warning rounded-pill btn-wave waves-effect waves-light">Not Scheduled</button>';
-                        $campaign->reschedule_btn = '<button class="btn btn-icon btn-warning btn-wave waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#reschedulemodal" title="Re-Schedule" onclick="reschedulecampid(\'' . e($campaign->id) . '\')"><i class="bx bx-time-five"></i></button>';
-                        $campaign->launch_time = '--';
-                        $campaign->camp_name = e($campaign->campaign_name);
-                        break;
-
-                    default:
-                        $campaign->status_button = '<button type="button" class="btn btn-success rounded-pill btn-wave waves-effect waves-light">Completed</button>';
-                        $campaign->relaunch_btn = '<button class="btn btn-icon btn-success btn-wave waves-effect waves-light" onclick="relaunch_camp(\'' . base64_encode($campaign->campaign_id) . '\')" title="Re-Launch"><i class="bx bx-sync"></i></button>';
-                        break;
-                }
-
-                $usersGroup = TprmUsersGroup::where('group_id', $campaign->users_group)
-                    ->where('company_id', $companyId)
-                    ->first();
-
-                $campaign->users_group_name = $usersGroup ? e($usersGroup->group_name) : 'N/A'; //doubt
-            }
+            $allCamps = TprmCampaign::where('company_id', $companyId)->orderBy('id', 'desc')->get();
 
             // Fetch users groups and phishing emails, and pass to view
             $usersGroups = $this->fetchUsersGroups(); //doubt
@@ -78,7 +46,9 @@ class ApiTprmController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'allCamps' => $allCamps,
+                    'allCamps' => [
+                        'data' => $allCamps,
+                    ],
                     'usersGroups' => $usersGroups,
                     'phishingEmails' => $phishingEmails,
                     'allDomains' => $allDomains,
