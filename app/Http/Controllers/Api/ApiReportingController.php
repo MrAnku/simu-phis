@@ -1413,7 +1413,7 @@ class ApiReportingController extends Controller
             $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
 
             $certifiedUsersRate = TrainingAssignedUser::where('company_id', $companyId)
-            ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
+                ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
 
             $emailCampData = Campaign::where('company_id', $companyId)
                 ->pluck('days_until_due');
@@ -1431,38 +1431,34 @@ class ApiReportingController extends Controller
             $avgOverallDuration = $avgEducationDuration;
 
             $trainingAssignReminderDays = (int) CompanySettings::where('email', Auth::user()->email)
-            ->value('training_assign_remind_freq_days');
+                ->value('training_assign_remind_freq_days');
 
             $onboardingTrainingDetails = [];
 
             $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
 
             foreach ($onboardingTrainings as $onboardingTraining) {
-                // Find the user by email to get their ID
-                $user = Users::where('user_email', $onboardingTraining->user_email)
-                    ->where('company_id', $companyId)
-                    ->first();
+                $groupName = null;
 
-                $divisionName = null;
-                if ($user) {
-                    // Try to get division name using the user's group_id first
-                    $divisionName = UsersGroup::where('group_id', $user->group_id)
-                        ->where('company_id', $companyId)
-                        ->value('group_name');
+                $userGroups = UsersGroup::where('company_id', $companyId)->get();
 
-                    // If not found, try the JSON method as fallback
-                    if (!$divisionName) {
-                        $divisionName = DB::table('users_group')
-                            ->whereRaw("JSON_CONTAINS(users, JSON_QUOTE(?))", [(string) $user->id])
-                            ->where('company_id', $companyId)
-                            ->value('group_name');
+                foreach ($userGroups as $group) {
+                    $users = json_decode($group->users, true);
+                    if (!$users) {
+                        continue;
+                    }
+                    foreach ($users as $user) {
+                        if ($onboardingTraining->user_id == $user) {
+                            $groupName = $group->group_name;
+                            break 2; // Break out of both loops if a match is found
+                        }
                     }
                 }
 
                 $onboardingTrainingDetails[] = [
                     'user_name' => $onboardingTraining->user_name,
                     'user_email' => $onboardingTraining->user_email,
-                    'divison' => $divisionName,
+                    'divison' => $groupName ?? null,
                     'assigned_date' => $onboardingTraining->assigned_date,
                     'completed_date' => $onboardingTraining->training_due_date,
                     'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
