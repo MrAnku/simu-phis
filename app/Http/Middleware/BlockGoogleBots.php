@@ -53,6 +53,7 @@ class BlockGoogleBots
                     Log::info('Blocked Google Bot', ['ip' => $clientIp, 'user_agent' => $userAgent]);
                     abort(404, 'Not Found');
                 }
+                abort(404, 'Not Found');
             }
         }
 
