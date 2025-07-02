@@ -85,6 +85,15 @@ class ApiWaCampaignController extends Controller
                 'variables' => 'required|array'
             ]);
 
+            //check if the selected users group has users has whatsapp number
+            if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No employees with WhatsApp number found in the selected division.'),
+                ], 422);
+            }
+
+
             if ($validated['schedule_type'] == 'immediately') {
                 return $this->handleImmediateCampaign($validated);
             } else {
@@ -101,6 +110,27 @@ class ApiWaCampaignController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function atLeastOneUserWithWhatsapp($groupid)
+    {
+        $hasWhatsapp = false;
+        $usersGroup = UsersGroup::where('group_id', $groupid)
+            ->where('company_id', Auth::user()->company_id)
+            ->first();
+        if ($usersGroup) {
+            $userIdsJson = $usersGroup->users;
+            $userIds = json_decode($userIdsJson, true);
+            $users = Users::whereIn('id', $userIds)->get();
+            foreach ($users as $user) {
+                if ($user->whatsapp) {
+                    $hasWhatsapp = true;
+                    break;
+                }
+            }
+        }
+
+        return $hasWhatsapp;
     }
 
     private function handleImmediateCampaign($validated)
@@ -303,12 +333,12 @@ class ApiWaCampaignController extends Controller
                 $campaign->training_modules = $training_modules_data;
             });
 
-            if ($campaigns->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Campaign not found!'),
-                ], 404);
-            }
+            // if ($campaigns->isEmpty()) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => __('Campaign not found!'),
+            //     ], 404);
+            // }
 
             return response()->json([
                 'success' => true,
@@ -653,7 +683,8 @@ class ApiWaCampaignController extends Controller
         }
     }
 
-    public function requestedTemplates(){
+    public function requestedTemplates()
+    {
         $companyId = Auth::user()->company_id;
 
         $templates = RequestWhatsappTemplate::where('company_id', $companyId)->get();
