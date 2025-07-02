@@ -29,7 +29,7 @@ class ApiAiCallController extends Controller
 
             $empGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
             $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
-            $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->paginate(10);
+            $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->get();
             $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
             $phone_numbers = $this->getPhoneNumbers();
 
@@ -40,7 +40,9 @@ class ApiAiCallController extends Controller
                     'agents' => $agents,
                     'phone_numbers' => $phone_numbers,
                     'empGroups' => $empGroups,
-                    'campaigns' => $campaigns,
+                    'campaigns' => [
+                        'data' => $campaigns
+                    ],
                     'trainings' => $trainings
                 ],
                 'message' => __('AI Call Campaigns fetched successfully')
