@@ -1547,4 +1547,40 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
+
+    public function fetchUsersReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $allUsers = Users::where('company_id', $companyId)->get();
+            $userDetails = [];
+
+            foreach ($allUsers as $user) {
+                $userDetails[] = [
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    // 'division' => $user->group ? $user->group->group_name : 'N/A',
+                    'user_job_title' => $user->user_job_title,
+                    'whatsapp_no' => $user->whatsapp,
+                    'breach_scan_date' => $user->breach_scan_date ?? null,
+                    'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+                    'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Users report fetched successfully'),
+                'data' => [
+                    'total_users' => count($allUsers),
+                    'user_details' => $userDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 }
