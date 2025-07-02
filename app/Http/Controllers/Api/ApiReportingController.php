@@ -22,6 +22,7 @@ use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\CompanyLicense;
+use App\Models\CompanySettings;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
 use App\Models\QuishingCamp;
@@ -1385,19 +1386,34 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
             $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
             $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
+
+            $notStartedTrainingRate = $totalAssignedUsers > 0 ? round($notStartedTraining / $totalAssignedUsers * 100) : 0;
+
             $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('completed', 0)
                 ->count();
+
+            $progressTrainingRate = $totalAssignedUsers > 0 ? round($progressTraining / $totalAssignedUsers * 100) : 0;
+
             $completedTraining = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('completed', 1)
                 ->count();
-            $avgEduScore = TrainingAssignedUser::where('company_id', $companyId)
+
+            $completedTrainingRate = $totalAssignedUsers > 0 ? round($completedTraining / $totalAssignedUsers * 100) : 0;
+
+            $usersWhoScored = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('personal_best', '>=', 10)
-                ->avg('personal_best');
+                ->count();
+
+            $educatedUserRate = $usersWhoScored / $totalAssignedUsers * 100;
+
             $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
             $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
 
             $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
+
+            $certifiedUsersRate = TrainingAssignedUser::where('company_id', $companyId)
+            ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
 
             $emailCampData = Campaign::where('company_id', $companyId)
                 ->pluck('days_until_due');
@@ -1413,6 +1429,9 @@ class ApiReportingController extends Controller
             $avgEducationDuration = round($merged->avg(), 2);
 
             $avgOverallDuration = $avgEducationDuration;
+
+            $trainingAssignReminderDays = (int) CompanySettings::where('email', Auth::user()->email)
+            ->value('training_assign_remind_freq_days');
 
             $onboardingTrainingDetails = [];
 
@@ -1459,16 +1478,21 @@ class ApiReportingController extends Controller
                     'training_statistics' => [
                         'total_assigned_users' => $totalAssignedUsers,
                         'not_started_training' => $notStartedTraining,
+                        'not_started_training_rate' => $notStartedTrainingRate,
                         'progress_training' => $progressTraining,
+                        'progress_training_rate' => $progressTrainingRate,
                         'completed_training' => $completedTraining,
+                        'completed_training_rate' => $completedTrainingRate
                     ],
                     'general_statistics' => [
-                        'avg_edu_score' => round($avgEduScore, 2),
-                        'roles_responsibility_percent' => $rolesResponsilbilityPercent
+                        'educated_user_percent' => round($educatedUserRate, 2),
+                        'roles_responsibility_percent' => $rolesResponsilbilityPercent,
+                        'certified_users_percent' => round($certifiedUsersRate)
                     ],
                     'education_duration_statistics' => [
                         'avg_education_duration' => round($avgEducationDuration),
-                        'avg_overall_duration' => round($avgOverallDuration)
+                        'avg_overall_duration' => round($avgOverallDuration),
+                        'training_assign_reminder_days' => $trainingAssignReminderDays
                     ],
                     'onboardingTrainingDetails' => $onboardingTrainingDetails
                 ]
@@ -1481,7 +1505,8 @@ class ApiReportingController extends Controller
         }
     }
 
-    public function fetchDivisionUsersReport() {
+    public function fetchDivisionUsersReport()
+    {
         try {
             $companyId = Auth::user()->company_id;
             $userGroups = UsersGroup::where('company_id', $companyId)->get();
@@ -1489,12 +1514,12 @@ class ApiReportingController extends Controller
             $totalDivisionUser = 0;
             $divisionUserDetails = [];
 
-            foreach ($userGroups as $group){
+            foreach ($userGroups as $group) {
                 $users = json_decode($group->users, true);
-                if(!$users) {
+                if (!$users) {
                     continue;
                 }
-                foreach($users as $user){
+                foreach ($users as $user) {
                     $user = Users::where('id', $user)->where('company_id', $companyId)->first();
                     if (!$user) {
                         continue;
@@ -1519,7 +1544,6 @@ class ApiReportingController extends Controller
                     'division_user_details' => $divisionUserDetails
                 ]
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1528,4 +1552,3 @@ class ApiReportingController extends Controller
         }
     }
 }
-            
