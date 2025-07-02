@@ -1381,97 +1381,151 @@ class ApiReportingController extends Controller
 
     public function fetchAwarenessEduReport()
     {
-        $companyId = Auth::user()->company_id;
-        $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
-        $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->
-        where('training_started', 0)->count();
-        $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
-            ->where('completed', 0)
-            ->count();
-        $completedTraining = TrainingAssignedUser::where('company_id', $companyId)
-            ->where('completed', 1)
-            ->count();
-        $avgEduScore = TrainingAssignedUser::where('company_id', $companyId)
-            ->where('personal_best', '>=', 10)
-            ->avg('personal_best');
-        $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
-        $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
+        try {
+            $companyId = Auth::user()->company_id;
+            $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
+            $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
+            $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 0)
+                ->count();
+            $completedTraining = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 1)
+                ->count();
+            $avgEduScore = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('personal_best', '>=', 10)
+                ->avg('personal_best');
+            $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
+            $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
 
-        $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
+            $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
 
-        $emailCampData = Campaign::where('company_id', $companyId)
-            ->pluck('days_until_due');
+            $emailCampData = Campaign::where('company_id', $companyId)
+                ->pluck('days_until_due');
 
 
-        $quishCampData = QuishingCamp::where('company_id', $companyId)
-            ->pluck('days_until_due');
+            $quishCampData = QuishingCamp::where('company_id', $companyId)
+                ->pluck('days_until_due');
 
-        $waCampData = WaCampaign::where('company_id', $companyId)
-            ->pluck('days_until_due');
+            $waCampData = WaCampaign::where('company_id', $companyId)
+                ->pluck('days_until_due');
 
-        $merged = $emailCampData->merge($quishCampData)->merge($waCampData);
-        $avgEducationDuration = round($merged->avg(), 2);
+            $merged = $emailCampData->merge($quishCampData)->merge($waCampData);
+            $avgEducationDuration = round($merged->avg(), 2);
 
-        $avgOverallDuration = $avgEducationDuration;
+            $avgOverallDuration = $avgEducationDuration;
 
-        $onboardingTrainingDetails = [];
+            $onboardingTrainingDetails = [];
 
-        $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
 
-        foreach ($onboardingTrainings as $onboardingTraining) {
-            // Find the user by email to get their ID
-            $user = Users::where('user_email', $onboardingTraining->user_email)
-                ->where('company_id', $companyId)
-                ->first();
-            
-            $divisionName = null;
-            if ($user) {
-                // Try to get division name using the user's group_id first
-                $divisionName = UsersGroup::where('group_id', $user->group_id)
+            foreach ($onboardingTrainings as $onboardingTraining) {
+                // Find the user by email to get their ID
+                $user = Users::where('user_email', $onboardingTraining->user_email)
                     ->where('company_id', $companyId)
-                    ->value('group_name');
-                
-                // If not found, try the JSON method as fallback
-                if (!$divisionName) {
-                    $divisionName = DB::table('users_group')
-                        ->whereRaw("JSON_CONTAINS(users, JSON_QUOTE(?))", [(string) $user->id])
+                    ->first();
+
+                $divisionName = null;
+                if ($user) {
+                    // Try to get division name using the user's group_id first
+                    $divisionName = UsersGroup::where('group_id', $user->group_id)
                         ->where('company_id', $companyId)
                         ->value('group_name');
+
+                    // If not found, try the JSON method as fallback
+                    if (!$divisionName) {
+                        $divisionName = DB::table('users_group')
+                            ->whereRaw("JSON_CONTAINS(users, JSON_QUOTE(?))", [(string) $user->id])
+                            ->where('company_id', $companyId)
+                            ->value('group_name');
+                    }
                 }
+
+                $onboardingTrainingDetails[] = [
+                    'user_name' => $onboardingTraining->user_name,
+                    'user_email' => $onboardingTraining->user_email,
+                    'divison' => $divisionName,
+                    'assigned_date' => $onboardingTraining->assigned_date,
+                    'completed_date' => $onboardingTraining->training_due_date,
+                    'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
+                    'outstanding_training_count' => TrainingAssignedUser::where('user_email', $onboardingTraining->user_email)
+                        ->where('personal_best', '>=', 70)->count(),
+                ];
             }
 
-            $onboardingTrainingDetails[] = [
-                'user_name' => $onboardingTraining->user_name,
-                'user_email' => $onboardingTraining->user_email,
-                'divison' => $divisionName,
-                'assigned_date' => $onboardingTraining->assigned_date,
-                'completed_date' => $onboardingTraining->training_due_date,
-                'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
-                'outstanding_training_count' => TrainingAssignedUser::where('user_email', $onboardingTraining->user_email)
-                    ->where('personal_best', '>=', 70)->count(),
-            ];
+            return response()->json([
+                'success' => true,
+                'message' => __('Awareness and Education report fetched successfully'),
+                'data' => [
+                    'training_statistics' => [
+                        'total_assigned_users' => $totalAssignedUsers,
+                        'not_started_training' => $notStartedTraining,
+                        'progress_training' => $progressTraining,
+                        'completed_training' => $completedTraining,
+                    ],
+                    'general_statistics' => [
+                        'avg_edu_score' => round($avgEduScore, 2),
+                        'roles_responsibility_percent' => $rolesResponsilbilityPercent
+                    ],
+                    'education_duration_statistics' => [
+                        'avg_education_duration' => round($avgEducationDuration),
+                        'avg_overall_duration' => round($avgOverallDuration)
+                    ],
+                    'onboardingTrainingDetails' => $onboardingTrainingDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
+    }
 
-        return response()->json([
-            'success' => true,
-            'message' => __('Awareness and Education report fetched successfully'),
-            'data' => [
-                'training_statistics' => [
-                    'total_assigned_users' => $totalAssignedUsers,
-                    'not_started_training' => $notStartedTraining,
-                    'progress_training' => $progressTraining,
-                    'completed_training' => $completedTraining,
-                ],
-                'general_statistics' => [
-                    'avg_edu_score' => round($avgEduScore, 2),
-                    'roles_responsibility_percent' => $rolesResponsilbilityPercent
-                ],
-                'education_duration_statistics' => [
-                    'avg_education_duration' => round($avgEducationDuration),
-                    'avg_overall_duration' => round($avgOverallDuration)
-                ],
-                'onboardingTrainingDetails' => $onboardingTrainingDetails
-            ]
-        ], 200);
+    public function fetchDivisionUsersReport() {
+        try {
+            $companyId = Auth::user()->company_id;
+            $userGroups = UsersGroup::where('company_id', $companyId)->get();
+
+            $totalDivisionUser = 0;
+            $divisionUserDetails = [];
+
+            foreach ($userGroups as $group){
+                $users = json_decode($group->users, true);
+                if(!$users) {
+                    continue;
+                }
+                foreach($users as $user){
+                    $user = Users::where('id', $user)->where('company_id', $companyId)->first();
+                    if (!$user) {
+                        continue;
+                    }
+
+                    $divisionUserDetails[] = [
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        'division' => $group->group_name,
+                        'user_job_title' => $user->user_job_title,
+                        'whatsapp_no' => $user->whatsapp,
+                    ];
+                }
+                $totalDivisionUser = $totalDivisionUser + count($users);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Division users report fetched successfully'),
+                'data' => [
+                    'total_division_users' => $totalDivisionUser,
+                    'division_user_details' => $divisionUserDetails
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 }
+            

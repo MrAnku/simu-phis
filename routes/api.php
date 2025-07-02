@@ -217,6 +217,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         // Awareness and Education Reporting
         Route::get('/fetch-awareness-edu-report', [ApiReportingController::class, 'fetchAwarenessEduReport']);
+
+        // Division Reporting
+        Route::get('/fetch-division-users-report', [ApiReportingController::class, 'fetchDivisionUsersReport']);
     });
 
     Route::prefix('employees')->group(function () {
