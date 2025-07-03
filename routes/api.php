@@ -42,6 +42,7 @@ use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
 
