@@ -51,6 +51,26 @@ class ApiAiCallController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function aiAgents(){
+        try {
+            $companyId = Auth::user()->company_id;
+
+            
+            $default = AiCallAgent::where('company_id', 'default')->get();
+            $custom = AiCallAgent::where('company_id', $companyId)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'default' => $default,
+                    'custom' => $custom
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
     private function getPhoneNumbers()
     {
         // Make the HTTP request
