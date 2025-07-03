@@ -141,11 +141,15 @@ class LearnerDashController extends Controller
             $companyId = $assignedPolicy->company_id;
             setCompanyTimezone($companyId);
 
-            $responses = $request->input('responses', []);
-            if (!is_array($responses)) {
-                return response()->json(['success' => false, 'message' => 'Invalid quiz response format'], 422);
-            }
+            $responses = null;
+            if ($request->input('responses')) {
+                $responses = $request->input('responses');
 
+                if (!is_array($responses)) {
+                    return response()->json(['success' => false, 'message' => 'Invalid quiz response format'], 422);
+                }
+            }
+            
             $assignedPolicy->update([
                 'accepted' => 1,
                 'accepted_at' => now(),
