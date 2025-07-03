@@ -62,17 +62,17 @@ class ApiTrainingModuleController extends Controller
 
             // List of filterable columns
             $filterable = [
-            'category',
-            'training_type',
-            'core_behaviour',
-            'content_type',
-            'language',
-            'security',
-            'role',
-            'duration',
-            'tags',
-            'program_resources',
-            'industry',
+                'category',
+                'training_type',
+                'core_behaviour',
+                'content_type',
+                'language',
+                'security',
+                'role',
+                'duration',
+                'tags',
+                'program_resources',
+                'industry',
             ];
 
             // Collect filters from request
@@ -82,38 +82,46 @@ class ApiTrainingModuleController extends Controller
             $search = $request->query('search');
             $perPage = (int) $request->query('per_page', 12);
             $page = (int) $request->query('page', 1);
+            $type = $request->query('type');
 
-            $query = TrainingModule::where(function ($query) use ($companyId) {
-            $query->where('company_id', $companyId)
-                ->orWhere('company_id', 'default');
-            });
+            if ($type == 'default') {
+                $query = TrainingModule::where('company_id', 'default');
+            } else if($type == 'custom'){
+                $query = TrainingModule::where('company_id', $companyId);
+            }else{
+                $query = TrainingModule::where(function ($query) use ($companyId) {
+                    $query->where('company_id', $companyId)
+                        ->orWhere('company_id', 'default');
+                });
+            }
+
 
             // Apply filters
             foreach ($filters as $key => $value) {
-            if (!is_null($value) && $value !== '') {
-                $query->where($key, $value);
-            }
+                if (!is_null($value) && $value !== '') {
+                    $query->where($key, $value);
+                }
             }
 
             // Apply search
             if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            });
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                });
             }
 
             // Paginate results
             $trainingModules = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
-            'success' => true,
-            'message' => __('Training modules fetched successfully'),
-            'data' => $trainingModules,
+                'success' => true,
+                'message' => __('Training modules fetched successfully'),
+                'data' => $trainingModules,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-            'success' => false,
-            'message' => __('Error: ') . $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
