@@ -1,20 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
-use App\Http\Controllers\SupportController;
-// use App\Http\Controllers\Api\ApiBlueCollarController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\OutlookAdController;
-use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\Api\ApiAiCallController;
 use App\Http\Controllers\Api\ApiPolicyController;
-use App\Http\Controllers\SenderProfileController;
 use App\Http\Controllers\Api\ApiSupportController;
-use App\Http\Controllers\TrainingModuleController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiSettingsController;
@@ -29,8 +21,6 @@ use App\Http\Controllers\Api\ApiTprmReportController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Api\ApiIntegrationController;
-use App\Http\Controllers\Api\ApiShowWebsiteController;
-use App\Http\Controllers\Api\AivishingReportController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
@@ -51,21 +41,6 @@ Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPass
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
 Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
 
-// Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
-
-
-// Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
-//     function () {
-//         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
-//     }
-// );
-
-// Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(
-//     function () {
-//         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
-//     }
-// );
-
 Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
 
 
@@ -78,13 +53,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
     Route::put('/save-outlook-dmi-code', [ApiOutlookAdController::class, 'saveOutlookDmiCode']);
-    // Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->group(
-    //     function () {
-    //         Route::get('{dynamicvalue}', [ApiShowWebsiteController::class, 'index']);
-    //     }
-    // );
-    // Dashboard routes
-    // Route::prefix('dashboard')->group(function () {
+   
     Route::get('/get-pie-data', [ApiDashboardController::class, 'getPieData']);
     Route::get('/get-line-chart-data', [ApiDashboardController::class, 'getLineChartData']);
     Route::get('/get-whats-chart-data', [ApiDashboardController::class, 'whatsappReport']);
@@ -205,35 +174,35 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-ticket', [ApiSupportController::class, 'createTicket']);
     });
 
-    Route::prefix('reporting')->group(function () {
-        Route::get('/', [ApiReportingController::class, 'index']);
-        Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
-        Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
-        Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
-        Route::get('/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'fetchCampaignReport']);
-        Route::get('/whatsappfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
-        Route::get('/aicallingfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
-        Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
-        Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
+    // Route::prefix('reporting')->group(function () {
+    //     Route::get('/', [ApiReportingController::class, 'index']);
+    //     Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
+    //     Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
+    //     Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
+    //     Route::get('/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'fetchCampaignReport']);
+    //     Route::get('/whatsappfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
+    //     Route::get('/aicallingfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
+    //     Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
+    //     Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
 
-        Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
+    //     Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
 
-        Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
+    //     Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
 
-        Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
+    //     Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
 
-        Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
+    //     Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
 
-        Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
+    //     Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
 
-        Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
+    //     Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
 
-        Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
+    //     Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
 
-        Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
+    //     Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
 
-        Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
-    });
+    //     Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
+    // });
 
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
