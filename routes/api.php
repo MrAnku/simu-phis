@@ -131,7 +131,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
-        
     });
 
     //whatsapp campaign routes
@@ -272,6 +271,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
         Route::put('/update/{email?}', [ApiEmployeesController::class, 'updateEmployee']);
     });
+    Route::prefix('ai-agents')->group(function () {
+        Route::get('/', [ApiAiCallController::class, 'aiAgents']);
+    });
 
     Route::prefix('ai-calling')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'index']);
@@ -324,7 +326,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/search-website', [ApiPhishingWebsitesController::class, 'searchWebsite']);
         Route::post('/save-generate', [ApiPhishingWebsitesController::class, 'saveGeneratedSite']);
         Route::post('/duplicate/{id?}', [ApiPhishingWebsitesController::class, 'duplicate']);
-        
     });
 
     Route::get('/human-risk-intelligence', [ApiDarkWebMonitoringController::class, 'index']);

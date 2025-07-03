@@ -283,7 +283,7 @@ class LearnerDashController extends Controller
         Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
         // Return success response
-        return response()->json(['success' => 'Mail sent successfully', 'token' => $token]);
+        return response()->json(['success' => 'Mail sent successfully']);
     }
 
 
