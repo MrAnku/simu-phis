@@ -25,6 +25,9 @@ use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Api\InforgraphicsController;
 use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\Api\ApiIntegrationController;
+use App\Http\Controllers\Api\ApiShowWebsiteController;
+use App\Http\Controllers\LearnApi\ApiLearnControlller;
+use App\Http\Controllers\Api\AivishingReportController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
@@ -463,4 +466,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/', [ApiCompanyLogsController::class, 'index']);
         
     });
+});
+
+Route::prefix('learn')->group(function () {
+    Route::post('/login-with-token', [ApiLearnControlller::class, 'loginWithToken']);
+    Route::post('/create-new-token/{email?}', [ApiLearnControlller::class, 'createNewToken']);
 });
