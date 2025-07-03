@@ -1,7 +1,7 @@
 @php
-if (session('locale')) {
-App::setLocale(session('locale'));
-}
+    if (session('locale')) {
+        App::setLocale(session('locale'));
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -28,6 +28,14 @@ App::setLocale(session('locale'));
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+
+
 
     <style>
         @import url("https://rsms.me/inter/inter.css");
@@ -41,33 +49,32 @@ App::setLocale(session('locale'));
             font-feature-settings: "cv03", "cv04", "cv11";
         }
 
-        <style>
-    .option-hover:hover {
-        background-color: #f1f5ff !important;
-        transition: background-color 0.3s ease;
-    }
+        <style>.option-hover:hover {
+            background-color: #f1f5ff !important;
+            transition: background-color 0.3s ease;
+        }
 
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
 
-    .form-check-input:focus {
-        box-shadow: none;
-    }
+        .form-check-input:focus {
+            box-shadow: none;
+        }
 
-    .quiz-container h6 {
-        font-size: 1rem;
-    }
+        .quiz-container h6 {
+            font-size: 1rem;
+        }
 
-    .quiz-container .form-check-label {
-        font-size: 0.95rem;
-    }
+        .quiz-container .form-check-label {
+            font-size: 0.95rem;
+        }
 
-    .quiz-container .form-check {
-        cursor: pointer;
-    }
-</style>
+        .quiz-container .form-check {
+            cursor: pointer;
+        }
+    </style>
 
     </style>
 </head>
@@ -153,8 +160,8 @@ App::setLocale(session('locale'));
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium">
-                                                        {{ __('Policies Assigned') }}: <span dir="ltr">{{
-                                                            intval($assignedPolicies->count()) }}</span>
+                                                        {{ __('Policies Assigned') }}: <span
+                                                            dir="ltr">{{ intval($assignedPolicies->count()) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -232,8 +239,9 @@ App::setLocale(session('locale'));
                                         <div class="col-10">
                                             <h3 class="h1">{{ __('Badges Achieved') }}</h3>
                                             <div class="markdown text-secondary">
-                                                <a href="#" target="_blank" rel="noopener">{{ __('Looking to earn more
-                                                    badges?') }}</a>
+                                                <a href="#" target="_blank"
+                                                    rel="noopener">{{ __('Looking to earn more
+                                                                                                                                                                                                                badges?') }}</a>
                                             </div>
                                         </div>
                                     </div>
@@ -258,140 +266,201 @@ App::setLocale(session('locale'));
 
                                         <tbody>
                                             @forelse ($assignedPolicies->where('accepted', 0) as $policy)
-                                            <tr>
-                                                <td class="text-primary">
-                                                    {{ $policy->policyData->policy_name ?? 'Policy not found' }}
-                                                </td>
-                                                <td class="text-secondary">
-                                                    {{ $policy->policyData->policy_description ??
-                                                    'Description not
-                                                    found' }}
-                                                </td>
-                                                <td class="text-secondary">
-                                                    {{ $policy->created_at->format('Y-m-d') ?? 'Date not found' }}
-                                                </td>
-                                                <td class="text-secondary">
+                                                <tr>
+                                                    <td class="text-primary">
+                                                        {{ $policy->policyData->policy_name ?? 'Policy not found' }}
+                                                    </td>
+                                                    <td class="text-secondary">
+                                                        {{ $policy->policyData->policy_description ??
+                                                            'Description not
+                                                                                                                                                                                                                            found' }}
+                                                    </td>
+                                                    <td class="text-secondary">
+                                                        {{ $policy->created_at->format('Y-m-d') ?? 'Date not found' }}
+                                                    </td>
+                                                    <td class="text-secondary">
 
 
-                                                    <!-- Button to open modal -->
-                                                <button type="button" class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#policyModal{{ $policy->id }}">
-                                                    {{ __('View Policy') }}
-                                                </button>
+                                                        <!-- Button to open modal -->
+                                                        <button type="button" class="btn btn-sm btn-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#policyModal{{ $policy->id }}">
+                                                            {{ __('View Policy') }}
+                                                        </button>
 
-                                                <!-- Modal -->
-                                                <div class="modal fade" id="policyModal{{ $policy->id }}" tabindex="-1" aria-hidden="true">
-                                                    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Policy Document</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-
-                                                            <div class="modal-body p-4" style="min-height: 400px;">
-                                                                @php
-                                                                    $quiz = json_decode($policy->policyData->json_quiz ?? '[]');
-                                                                    $hasQuiz = $policy->policyData->has_quiz && $quiz && count($quiz) > 0;
-                                                                @endphp
-
-                                                                <!-- STEP 1: PDF VIEW -->
-                                                                <div id="pdfSection-{{ $policy->id }}">
-                                                                    <div class="border rounded overflow-hidden mb-4" style="height: 80vh;">
-                                                                        <iframe
-                                                                            src="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
-                                                                            width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="policyModal{{ $policy->id }}"
+                                                            tabindex="-1" aria-hidden="true">
+                                                            <div
+                                                                class="modal-dialog modal-fullscreen modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Policy Document</h5>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
                                                                     </div>
 
-                                                                    <!-- Accept Section Always Below PDF -->
-                                                                    <form method="POST" action="">
-                                                                        @csrf
-                                                                        <div class="form-check mt-3">
-                                                                            <input type="checkbox" class="form-check-input"
-                                                                                id="agreeCheckbox-{{ $policy->id }}"
-                                                                                onchange="toggleAcceptBtn('{{ $policy->id }}')">
-                                                                            <label class="form-check-label" for="agreeCheckbox-{{ $policy->id }}">
-                                                                                I have read and accept this policy
-                                                                            </label>
+                                                                    <div class="modal-body p-4"
+                                                                        style="min-height: 400px;">
+                                                                        @php
+                                                                            $quiz = json_decode(
+                                                                                $policy->policyData->json_quiz ?? '[]',
+                                                                            );
+                                                                            $hasQuiz =
+                                                                                $policy->policyData->has_quiz &&
+                                                                                $quiz &&
+                                                                                count($quiz) > 0;
+                                                                        @endphp
+
+                                                                        <!-- STEP 1: PDF VIEW -->
+                                                                        <div id="pdfSection-{{ $policy->id }}">
+                                                                            {{-- <div class="border rounded overflow-hidden mb-4"
+                                                                                style="height: 80vh;"> --}}
+
+
+
+
+
+                                                                            {{-- <div class="border rounded overflow-hidden mb-4"
+                                                                                    style="">
+                                                                                   <canvas  id="pdfViewer-{{ $policy->id }}" style="width: 100%;"></canvas>
+                                                                                </div> --}}
+                                                                            <div class="border rounded overflow-hidden mb-4"
+                                                                                style="height: 80vh;">
+                                                                                <iframe
+                                                                                    src="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
+                                                                                    width="100%" height="100%"
+                                                                                    frameborder="0"
+                                                                                    style="border: none;"></iframe>
+                                                                            </div>
+
+
+
+
+
+
+
+
+                                                                            {{-- </div> --}}
+
+                                                                            <!-- Accept Section Always Below PDF -->
+                                                                            <form method="POST" action="">
+                                                                                @csrf
+                                                                                <div class="form-check mt-3">
+                                                                                    <input type="checkbox"
+                                                                                        class="form-check-input"
+                                                                                        id="agreeCheckbox-{{ $policy->id }}"
+                                                                                        onchange="toggleAcceptBtn('{{ $policy->id }}')">
+                                                                                    <label class="form-check-label"
+                                                                                        for="agreeCheckbox-{{ $policy->id }}">
+                                                                                        I have read and accept this
+                                                                                        policy
+                                                                                    </label>
+                                                                                </div>
+
+                                                                                <button type="button"
+                                                                                    class="btn btn-success mt-3"
+                                                                                    onclick="handleAcceptClick('{{ base64_encode($policy->id) }}', {{ $hasQuiz ? 'true' : 'false' }})"
+                                                                                    id="acceptPolicyBtn{{ $policy->id }}"
+                                                                                    disabled>
+                                                                                    Accept
+                                                                                </button>
+                                                                            </form>
                                                                         </div>
 
-                                                                        <button type="button"
-                                                                            class="btn btn-success mt-3"
-                                                                            onclick="handleAcceptClick('{{ base64_encode($policy->id) }}', {{ $hasQuiz ? 'true' : 'false' }})"
-                                                                            id="acceptPolicyBtn{{ $policy->id }}"
-                                                                            disabled>
-                                                                            Accept
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
+                                                                        <!-- STEP 2: QUIZ -->
 
-                                                                <!-- STEP 2: QUIZ -->
-                                                                
-                                                                @if ($hasQuiz)
-                                                                    <div id="quizSection-{{ $policy->id }}" style="display: none;">
-                                                                        <div class="d-flex justify-content-center">
-                                                                            <div class="quiz-container" style="max-width: 750px; width: 100%;">
-                                                                                <h4 class="mb-4 text-center fw-semibold border-bottom pb-2 text-dark">📝 Policy Acknowledgement Quiz</h4>
+                                                                        @if ($hasQuiz)
+                                                                            <div id="quizSection-{{ $policy->id }}"
+                                                                                style="display: none;">
+                                                                                <div
+                                                                                    class="d-flex justify-content-center">
+                                                                                    <div class="quiz-container"
+                                                                                        style="max-width: 750px; width: 100%;">
+                                                                                        <h4
+                                                                                            class="mb-4 text-center fw-semibold border-bottom pb-2 text-dark">
+                                                                                            📝 Policy Acknowledgement
+                                                                                            Quiz</h4>
 
-                                                                                <form id="quizForm-{{ $policy->id }}">
-                                                                                    @foreach ($quiz as $index => $question)
-                                                                                        <div class="card border-0 shadow-sm mb-4">
-                                                                                            <div class="card-body p-4">
-                                                                                                <div class="d-flex align-items-start">
-                                                                                                    <div class="me-3 fs-4 text-primary">Q{{ $index + 1 }}.</div>
-                                                                                                    <div class="flex-grow-1">
-                                                                                                        <h6 class="fw-bold text-dark mb-3">{{ $question->question }}</h6>
+                                                                                        <form
+                                                                                            id="quizForm-{{ $policy->id }}">
+                                                                                            @foreach ($quiz as $index => $question)
+                                                                                                <div
+                                                                                                    class="card border-0 shadow-sm mb-4">
+                                                                                                    <div
+                                                                                                        class="card-body p-4">
+                                                                                                        <div
+                                                                                                            class="d-flex align-items-start">
+                                                                                                            <div
+                                                                                                                class="me-3 fs-4 text-primary">
+                                                                                                                Q{{ $index + 1 }}.
+                                                                                                            </div>
+                                                                                                            <div
+                                                                                                                class="flex-grow-1">
+                                                                                                                <h6
+                                                                                                                    class="fw-bold text-dark mb-3">
+                                                                                                                    {{ $question->question }}
+                                                                                                                </h6>
 
-                                                                                                        <div class="row g-5">
-                                                                                                            @foreach ($question->options as $option)
-                                                                                                                <div class="col-md-6">
-                                                                                                                    <div class="form-check p-3 border rounded d-flex align-items-center option-hover">
-                                                                                                                        <input class="form-check-input me-2 quiz-radio-{{ $policy->id }}"
-                                                                                                                            type="radio"
-                                                                                                                            name="answers[{{ $index }}]"
-                                                                                                                            value="{{ $option }}"
-                                                                                                                            id="q{{ $index }}_{{ md5($option) }}"
-                                                                                                                            data-question-index="{{ $index }}"
-                                                                                                                            data-question="{{ $question->question }}">
-                                                                                                                        <label class="form-check-label mb-0 text-secondary" for="q{{ $index }}_{{ md5($option) }}">
-                                                                                                                            {{ $option }}
-                                                                                                                        </label>
-                                                                                                                    </div>
+                                                                                                                <div
+                                                                                                                    class="row g-5">
+                                                                                                                    @foreach ($question->options as $option)
+                                                                                                                        <div
+                                                                                                                            class="col-md-6">
+                                                                                                                            <div
+                                                                                                                                class="form-check p-3 border rounded d-flex align-items-center option-hover">
+                                                                                                                                <input
+                                                                                                                                    class="form-check-input me-2 quiz-radio-{{ $policy->id }}"
+                                                                                                                                    type="radio"
+                                                                                                                                    name="answers[{{ $index }}]"
+                                                                                                                                    value="{{ $option }}"
+                                                                                                                                    id="q{{ $index }}_{{ md5($option) }}"
+                                                                                                                                    data-question-index="{{ $index }}"
+                                                                                                                                    data-question="{{ $question->question }}">
+                                                                                                                                <label
+                                                                                                                                    class="form-check-label mb-0 text-secondary"
+                                                                                                                                    for="q{{ $index }}_{{ md5($option) }}">
+                                                                                                                                    {{ $option }}
+                                                                                                                                </label>
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
                                                                                                                 </div>
-                                                                                                            @endforeach
-                                                                                                        </div>
 
+                                                                                                            </div>
+                                                                                                        </div>
                                                                                                     </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    @endforeach
-                                                                                </form>
+                                                                                            @endforeach
+                                                                                        </form>
 
-                                                                                <div class="text-end mt-4">
-                                                                                    <button type="button"
-                                                                                        class="btn btn-primary px-4 py-2"
-                                                                                        onclick="submitQuizAnswers('{{ base64_encode($policy->id) }}')">
-                                                                                        <i class="bi bi-check-circle me-1"></i> Submit Quiz & Accept
-                                                                                    </button>
+                                                                                        <div class="text-end mt-4">
+                                                                                            <button type="button"
+                                                                                                class="btn btn-primary px-4 py-2"
+                                                                                                onclick="submitQuizAnswers('{{ base64_encode($policy->id) }}')">
+                                                                                                <i
+                                                                                                    class="bi bi-check-circle me-1"></i>
+                                                                                                Submit Quiz & Accept
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
+                                                                        @endif
                                                                     </div>
-                                                                @endif
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
 
-                                                    {{-- =================== --}}
-                                                </td>
-                                            </tr>
+                                                        {{-- =================== --}}
+                                                    </td>
+                                                </tr>
                                             @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center">
-                                                    {{ __('No Policies Assigned') }}</td>
-                                            </tr>
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        {{ __('No Policies Assigned') }}</td>
+                                                </tr>
                                             @endforelse
                                         </tbody>
 
@@ -415,23 +484,23 @@ App::setLocale(session('locale'));
                                         </thead>
 
                                         @forelse ($assignedPolicies->where('accepted', 1) as $policy)
-                                        <tr>
-                                            <td class="text-secondary">
-                                                {{ $policy->policyData->policy_name ?? 'Policy not found' }}
-                                            </td>
-                                            <td class="text-secondary">
-                                                {{ $policy->policyData->policy_description ?? 'Description not found' }}
-                                            </td>
-                                            <td class="text-secondary">
-                                                <a href="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
-                                                    target="_blank">{{ __('View Policy') }}</a>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td class="text-secondary">
+                                                    {{ $policy->policyData->policy_name ?? 'Policy not found' }}
+                                                </td>
+                                                <td class="text-secondary">
+                                                    {{ $policy->policyData->policy_description ?? 'Description not found' }}
+                                                </td>
+                                                <td class="text-secondary">
+                                                    <a href="{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}"
+                                                        target="_blank">{{ __('View Policy') }}</a>
+                                                </td>
+                                            </tr>
                                         @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center">
-                                                {{ __('No Policies Accepted') }}</td>
-                                        </tr>
+                                            <tr>
+                                                <td colspan="4" class="text-center">
+                                                    {{ __('No Policies Accepted') }}</td>
+                                            </tr>
                                         @endforelse
                                         </tbody>
                                     </table>
@@ -714,6 +783,41 @@ App::setLocale(session('locale'));
         }
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // const pdfUrl = "{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}";
+            const pdfUrl = "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf";
+
+            const canvas = document.getElementById("pdfViewer-{{ $policy->id }}");
+            const ctx = canvas.getContext("2d");
+
+            console.log("PDF URL:", pdfUrl);
+            console.log("Canvas Element:", canvas);
+            console.log("Canvas Context:", ctx);
+
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            loadingTask.promise.then(function(pdf) {
+                pdf.getPage(1).then(function(page) {
+                    const viewport = page.getViewport({
+                        scale: 1.5
+                    });
+                    const canvas = document.getElementById("pdfViewer-{{ $policy->id }}");
+                    const context = canvas.getContext("2d");
+
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    page.render(renderContext);
+                });
+            }).catch(function(error) {
+                console.error("Error rendering PDF:", error);
+            });
+        });
+    </script>
 </body>
 
 </html>
