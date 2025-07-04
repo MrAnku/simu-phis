@@ -34,6 +34,9 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\WhiteLabelController;
+
+Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
