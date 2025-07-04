@@ -4,23 +4,24 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Users;
 use App\Models\UsersGroup;
+use App\Models\CampaignLive;
 use Illuminate\Http\Request;
-use App\Models\DomainVerified;
-use App\Models\OutlookAdToken;
-use App\Models\BlueCollarGroup;
-use App\Models\DeletedEmployee;
-use App\Services\EmployeeService;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
-use App\Models\CampaignLive;
-use App\Models\PolicyCampaignLive;
-use App\Models\QuishingLiveCamp;
-use App\Models\TrainingAssignedUser;
+use App\Models\DomainVerified;
+use App\Models\OutlookAdToken;
 use App\Models\WaLiveCampaign;
+use App\Models\BlueCollarGroup;
+use App\Models\DeletedEmployee;
+use App\Models\QuishingLiveCamp;
+use App\Services\EmployeeService;
+use App\Models\PolicyCampaignLive;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Services\CheckWhitelabelService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -459,6 +460,11 @@ class ApiEmployeesController extends Controller
 
     private function domainVerificationMail($email, $code)
     {
+        $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
+        $isWhitelabeled = new CheckWhitelabelService($companyId);
+        if($isWhitelabeled->isCompanyWhitelabeled()) {
+            $isWhitelabeled->updateSmtpConfig();
+        }
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
             $message->to($email)->subject('Domain Verification');
         });

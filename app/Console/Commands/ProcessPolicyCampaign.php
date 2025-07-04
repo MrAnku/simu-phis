@@ -4,15 +4,16 @@ namespace App\Console\Commands;
 
 use Carbon\Carbon;
 use App\Models\Users;
+use App\Models\Policy;
 use App\Models\UsersGroup;
+use App\Models\AssignedPolicy;
 use App\Models\PolicyCampaign;
 use Illuminate\Console\Command;
 use App\Mail\PolicyCampaignEmail;
-use App\Models\AssignedPolicy;
-use App\Models\Policy;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Services\CheckWhitelabelService;
 
 class ProcessPolicyCampaign extends Command
 {
@@ -49,7 +50,7 @@ class ProcessPolicyCampaign extends Command
             return;
         }
         foreach ($companies as $company) {
-            
+
             setCompanyTimezone($company->company_id);
 
             $campaigns = PolicyCampaign::where('status', 'pending')
@@ -115,14 +116,18 @@ class ProcessPolicyCampaign extends Command
                 ->get();
 
             if ($campaigns->isEmpty()) {
-               
+
                 continue;
+            }
+            $isWhitelabeled = new CheckWhitelabelService($company_id);
+            if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $isWhitelabeled->updateSmtpConfig();
             }
 
             foreach ($campaigns as $campaign) {
-                
+
                 $policy = Policy::where('id', $campaign->policy)->first();
-               
+
                 $mailData = [
                     'user_name' => $campaign->user_name,
                     'company_name' => env('APP_NAME'),
@@ -175,7 +180,6 @@ class ProcessPolicyCampaign extends Command
             if ($live->isEmpty()) {
                 $campaign->update(['status' => 'completed']);
             }
-
         }
     }
 }

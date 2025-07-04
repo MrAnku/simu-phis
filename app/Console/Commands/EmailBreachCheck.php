@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BreachAlertEmployeeMail;
+use App\Services\CheckWhitelabelService;
 
 class EmailBreachCheck extends Command
 {
@@ -61,7 +62,7 @@ class EmailBreachCheck extends Command
         foreach ($employees as $employee) {
 
             setCompanyTimezone($employee->company_id);
-            
+
             //scan employee
             $response = Http::withHeaders([
                 'hibp-api-key' => env('HIBP_API_KEY')
@@ -101,6 +102,10 @@ class EmailBreachCheck extends Command
 
                 // send Email Notification
                 try {
+                    $isWhitelabeled = new CheckWhitelabelService($company->company_id);
+                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                        $isWhitelabeled->updateSmtpConfig();
+                    }
                     Mail::to($employee->user_email)->send(new BreachAlertEmployeeMail($employee, $breachData));
                     echo "Breach Alert sent successfully to " . $employee->user_email . "\n";
 

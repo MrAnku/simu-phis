@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
+use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\BlueCollarLearnerLoginSession;
 
@@ -149,7 +150,7 @@ class LearnerDashController extends Controller
                     return response()->json(['success' => false, 'message' => 'Invalid quiz response format'], 422);
                 }
             }
-            
+
             $assignedPolicy->update([
                 'accepted' => 1,
                 'accepted_at' => now(),
@@ -216,9 +217,9 @@ class LearnerDashController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->exists();
+        $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->first();
 
-        $hasPolicy = AssignedPolicy::where('user_email', $request->email)->exists();
+        $hasPolicy = AssignedPolicy::where('user_email', $request->email)->first();
 
         if (!$hasTraining && !$hasPolicy) {
             return response()->json(['error' => 'No training or policy has been assigned to this email.'], 500);
@@ -229,35 +230,28 @@ class LearnerDashController extends Controller
 
         // Encrypt email to generate token
         $token = encrypt($request->email);
-
-        // Check white label and Construct learning dashboard link
-        // $trainingAssignedUser = TrainingAssignedUser::where('user_email', $request->email)->first();
-
-        // $whiteLabelled = WhiteLabelledCompany::where('company_id', $trainingAssignedUser->company_id)
-        //     ->where('approved_by_partner', 1)
-        //     ->where('service_status', 1)
-        //     ->first();
-
-        // if ($whiteLabelled) {
-        //     $learning_dashboard_link = $whiteLabelled->learn_domain . '/training-dashboard/' . $token;
-
-        //     $smtp =  WhiteLabelledSmtp::where('company_id', $trainingAssignedUser->company_id)
-        //         ->first();
-        //     config([
-        //         'mail.mailers.smtp.host' => $smtp->smtp_host,
-        //         'mail.mailers.smtp.username' => $smtp->smtp_username,
-        //         'mail.mailers.smtp.password' => $smtp->smtp_password,
-        //         'mail.from.address' => $smtp->from_address,
-        //         'mail.from.name' => $smtp->from_name,
-        //     ]);
-        // } else {
-        if ($hasPolicy && !$hasTraining) {
-            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/policies/' . $token;
-        } else {
-            $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+        if($hasTraining){
+            $companyId = $hasTraining->company_id;
         }
-
-        // }
+        if($hasPolicy){
+            $companyId = $hasPolicy->company_id;
+        } 
+        
+        $isWhitelabeled = new CheckWhitelabelService($companyId);
+        if ($isWhitelabeled->isCompanyWhitelabeled()) {
+            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+            $learn_domain = "https://" . $whitelabelData->learn_domain;
+            $isWhitelabeled->updateSmtpConfig();
+        }else{
+            $learn_domain = env('SIMUPHISH_LEARNING_URL');
+        }
+  
+       
+        if ($hasPolicy && !$hasTraining) {
+            $learning_dashboard_link = $learn_domain . '/policies/' . $token;
+        } else {
+            $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
+        }
 
         // Insert new record into the database
         $inserted = DB::table('learnerloginsession')->insert([
@@ -278,7 +272,7 @@ class LearnerDashController extends Controller
             'learning_site' => $learning_dashboard_link,
         ];
 
-        $trainingModules = TrainingModule::where('company_id', 'default')->take(5)->get();
+        $trainingModules = TrainingModule::where('company_id', 'default')->inRandomOrder()->take(5)->get();
         // Send email
         Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
@@ -488,6 +482,11 @@ class LearnerDashController extends Controller
                 ];
 
                 $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email);
+
+                $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                    $isWhitelabeled->updateSmtpConfig();
+                }
 
                 Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 

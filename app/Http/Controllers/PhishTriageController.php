@@ -5,17 +5,18 @@ namespace App\Http\Controllers;
  use DOMDocument;
 use App\Models\Users;
 use App\Models\Company;
+use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\DomainVerified;
-use App\Mail\PhishTriageReportMail;
-use App\Models\CampaignLive;
-use App\Models\PhishTriageReportLog;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
+use App\Mail\PhishTriageReportMail;
+use App\Models\PhishTriageReportLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use App\Services\CheckWhitelabelService;
 
 class PhishTriageController extends Controller
 {
@@ -95,6 +96,11 @@ class PhishTriageController extends Controller
                 'company_name' => $company->company_name,
                 'reported_at' => $PhishTriageReportLog->created_at,
             ];
+
+            $isWhitelabeled = new CheckWhitelabelService($companyId);
+            if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $isWhitelabeled->updateSmtpConfig();
+            }
 
             Mail::to($company->email)->send(new PhishTriageReportMail($mailData));
         }
