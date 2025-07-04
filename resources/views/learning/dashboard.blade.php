@@ -13,9 +13,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>
-        Learning | {{ env('APP_NAME') }}
+        Learning | {{ session('companyName') }}
     </title>
-    <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon" />
+    <link rel="icon" href="{{ session('companyFavicon') }}" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="/dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -55,7 +55,7 @@
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                     <a href="#">
-                        <img src="/assets/images/simu-logo-dark.png" alt="{{ env('APP_NAME') }}"
+                        <img src="{{ session('companyLogoDark') }}" alt="{{ session('companyName') }}"
                             class="navbar-brand-image" style="width: 181px; height: auto;" />
                     </a>
                 </h1>
@@ -478,7 +478,7 @@
                             <ul class="list-inline list-inline-dots mb-0">
                                 <li class="list-inline-item">
                                     {{ __('Copyright') }} &copy; {{ date('Y') }}
-                                    <a href="." class="link-secondary">{{ env('APP_NAME') }}</a>.
+                                    <a href="." class="link-secondary">{{ session('companyName') }}</a>.
                                     {{ __('All rights reserved.') }}
                                 </li>
                             </ul>

@@ -20,7 +20,7 @@ Route::post('/company/create-password', [CreatePassController::class, 'storeComp
 //---------------learning portal routes------------//
 
 
-Route::domain(env('SIMUPHISH_LEARNING_URL'))->group(function () {
+Route::domain(checkWhiteLabelDomain())->group(function () {
 
     Route::get('/', [LearnerAuthController::class, 'index'])->name('learner.loginPage');
 

@@ -353,25 +353,47 @@ if (!function_exists('langName')) {
     }
 }
 
-if (!function_exists('learnDomain')) {
+if (!function_exists('checkWhiteLabelDomain')) {
 
-    function learnDomain()
+    function checkWhiteLabelDomain()
     {
         if (Schema::hasTable('white_labelled_companies')) {
             $host = request()->getHost();
-            $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)->first();
+            $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
 
             if ($companyBranding) {
                 $domain = $companyBranding->learn_domain;
+
+                //store company branding in session
+                session([
+                    'companyLogoDark' => env('CLOUDFRONT_URL') . $companyBranding->dark_logo,
+                    'companyLogoLight' => env('CLOUDFRONT_URL') . $companyBranding->light_logo,
+                    'companyFavicon' => env('CLOUDFRONT_URL') . $companyBranding->favicon,
+                    'companyName' => $companyBranding->company_name,
+                    'companyDomain' => "https://" . $companyBranding->domain . "/",
+                    'companyLearnDomain' => "https://" . $companyBranding->learn_domain . "/"
+                ]);
+
             } else {
                 $domain = env('SIMUPHISH_LEARNING_URL');
+                //store default company branding in session
+                session([
+                    'companyLogoDark' => env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png',
+                    'companyLogoLight' => env('CLOUDFRONT_URL') . '/assets/images/simu-logo.png',
+                    'companyFavicon' => env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png',
+                    'companyName' => env('APP_NAME'),
+                    'companyDomain' => env('SIMUPHISH_URL'),
+                    'companyLearnDomain' => env('SIMUPHISH_LEARNING_URL')
+                ]);
             }
 
             return $domain;
         }
     }
 }
-
 
 if (!function_exists('sendMailUsingDmi')) {
     function sendMailUsingDmi($accessToken, $mailData)

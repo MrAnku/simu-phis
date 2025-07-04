@@ -77,7 +77,7 @@
 </head>
 <body>
     <div class="container">
-        <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="Company Logo" class="logo">
+        <img src="{{ $mailData['company_dark_logo'] }}" alt="Company Logo" class="logo">
         <h1>Session Successfully Reinitialized!</h1>
         <h2>Your training session has been re-generated.<br>
              Kindly click the link below to start your training.
@@ -96,7 +96,7 @@
         </ul>
         @endif
         <div class="footer">
-            <a href="#" style=" color: #000000;  text-decoration: none; " target="_blank">Copyright © {{ date('Y') }} {{ env('APP_NAME') }} | All rights reserved</a>
+            <a href="#" style=" color: #000000;  text-decoration: none; " target="_blank">Copyright © {{ date('Y') }} {{ $mailData['company_name'] }} | All rights reserved</a>
         </div>
     </div>
 </body>

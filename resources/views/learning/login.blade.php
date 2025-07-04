@@ -5,9 +5,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Login | {{env('APP_NAME')}} Learning</title>
+    <title>Login | {{session('companyName')}} Learning</title>
 
-    <link rel="icon" href="/assets/images/simu-icon.png" type="image/x-icon" />
+    <link rel="icon" href="{{ session('companyFavicon') }}" type="image/x-icon" />
 
     <!-- CSS files -->
     <link href="/dist/css/tabler.min.css?1685973381" rel="stylesheet" />
@@ -39,7 +39,7 @@
             <div class="text-center mb-4">
                 <a href="." class="navbar-brand navbar-brand-autodark">
                     {{-- <img src="" width="150" alt="Logo" class="navbar-brand-image"> --}}
-                    <img src="/assets/images/simu-logo-dark.png" alt="logo" class="navbar-brand-image">
+                    <img src="{{ session('companyLogoDark') }}" alt="logo" class="navbar-brand-image">
                 </a>
             </div>
             <div class="card card-md">
@@ -58,26 +58,7 @@
                         <div class="mb-3">
                             <p id="responseMessage" class="text-center" style="margin-top: 15px; font-size: 14px; color: green;"></p>
                         </div>
-                        {{-- <div class="mb-2">
-              <label class="form-label">
-                Password
-                <span class="form-label-description">
-                  <a href="{{route('learner.forgot.pass')}}">I forgot password</a>
-                </span>
-              </label>
-              <div class="input-group input-group-flat">
-                <input type="password" class="form-control" name="password" placeholder="Your password" autocomplete="off">
-                <span class="input-group-text">
-                  <a href="#" class="link-secondary" title="Show password" data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                      <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                    </svg>
-                  </a>
-                </span>
-              </div>
-            </div> --}}
+                      
 
                         <div class="form-footer">
                             <button type="submit" name="signIn" class="btn btn-primary w-100">Regenerate</button>
@@ -85,9 +66,7 @@
                     </form>
                 </div>
             </div>
-            <!-- <div class="text-center text-secondary mt-3">
-          Don't have account yet? <a href="./sign-up.html" tabindex="-1">Sign up</a>
-        </div> -->
+           
         </div>
     </div>
     <!-- Libs JS -->

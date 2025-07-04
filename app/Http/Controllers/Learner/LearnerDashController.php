@@ -242,8 +242,13 @@ class LearnerDashController extends Controller
             $whitelabelData = $isWhitelabeled->getWhiteLabelData();
             $learn_domain = "https://" . $whitelabelData->learn_domain;
             $isWhitelabeled->updateSmtpConfig();
+            $companyName = $whitelabelData->company_name;
+            $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
         }else{
             $learn_domain = env('SIMUPHISH_LEARNING_URL');
+            $companyName = env('APP_NAME');
+            $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+
         }
   
        
@@ -270,6 +275,8 @@ class LearnerDashController extends Controller
         // Prepare email data
         $mailData = [
             'learning_site' => $learning_dashboard_link,
+            'company_name' => $companyName,
+            'company_dark_logo' => $companyDarkLogo
         ];
 
         $trainingModules = TrainingModule::where('company_id', 'default')->inRandomOrder()->take(5)->get();
