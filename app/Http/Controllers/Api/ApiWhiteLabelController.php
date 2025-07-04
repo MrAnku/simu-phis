@@ -7,8 +7,10 @@ use App\Models\WhiteLabelledSmtp;
 use App\Http\Controllers\Controller;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\Mailer\Transport\Smtp\SmtpTransport;
 
 class ApiWhiteLabelController extends Controller
 {
@@ -64,6 +66,23 @@ class ApiWhiteLabelController extends Controller
                 ], 422);
             }
 
+            // Check SMTP connection
+            $smtpCredentials = [
+                'smtp_host' => $request->smtp_host,
+                'smtp_port' => $request->smtp_port,
+                'smtp_username' => $request->smtp_username,
+                'smtp_password' => $request->smtp_password,
+                'smtp_encryption' => $request->smtp_encryption,
+                'from_address' => $request->from_address,
+                'from_name' => $request->from_name,
+            ];
+            if (!$this->checkSmtpConnection($smtpCredentials)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid SMTP credentials.'
+                ], 422);
+            }
+
             $companyId = Auth::user()->company_id;
 
             $randomName = generateRandom(10);
@@ -107,10 +126,10 @@ class ApiWhiteLabelController extends Controller
                     'company_id' => Auth::user()->company_id,
                 ]);
 
-                log_action("White label created for company : " . Auth::user()->company_name);
+                log_action("White label request submitted for the company : " . Auth::user()->company_name);
                 return response()->json([
                     'status' => 'success',
-                    'message' => __('White label created successfully.')
+                    'message' => __('Whitelabelling request submitted successfully.')
                 ], 201);
             }
         } catch (ValidationException $e) {
@@ -127,4 +146,41 @@ class ApiWhiteLabelController extends Controller
             ], 500);
         }
     }
+
+    //private method to test the smtp connection to check the SMTP credentials
+    private function checkSmtpConnection($credentials)
+    {
+        try {
+            // Temporarily override mail config
+            $backup = config('mail.mailers.smtp');
+
+            config([
+            'mail.mailers.smtp.host' => $credentials['smtp_host'],
+            'mail.mailers.smtp.port' => $credentials['smtp_port'],
+            'mail.mailers.smtp.username' => $credentials['smtp_username'],
+            'mail.mailers.smtp.password' => $credentials['smtp_password'],
+            'mail.mailers.smtp.encryption' => $credentials['smtp_encryption'],
+            'mail.from.address' => $credentials['from_address'],
+            'mail.from.name' => $credentials['from_name'],
+            ]);
+
+            Mail::raw('This is a test email.', function ($message) use ($credentials) {
+            $message->from($credentials['from_address'], $credentials['from_name']);
+            $message->to($credentials['from_address']);
+            $message->subject('Test Email');
+            });
+
+            // Restore original config
+            config(['mail.mailers.smtp' => $backup]);
+
+            return true;
+        } catch (\Exception $e) {
+            // Restore original config in case of error
+            if (isset($backup)) {
+            config(['mail.mailers.smtp' => $backup]);
+            }
+            return false;
+        }
+    }
+    
 }
