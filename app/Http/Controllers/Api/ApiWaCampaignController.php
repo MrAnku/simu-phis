@@ -86,13 +86,14 @@ class ApiWaCampaignController extends Controller
             ]);
 
             //check if the selected users group has users has whatsapp number
-            if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
+           if($request->employee_type == 'normal'){
+             if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
                 return response()->json([
                     'success' => false,
                     'message' => __('No employees with WhatsApp number found in the selected division.'),
                 ], 422);
             }
-
+           }
 
             if ($validated['schedule_type'] == 'immediately') {
                 return $this->handleImmediateCampaign($validated);
