@@ -7,12 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
-use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
-use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use App\Mail\LearnerSessionRegenerateMail;
 use Illuminate\Validation\ValidationException;
 
@@ -33,12 +32,43 @@ class ApiLearnControlller extends Controller
             if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Token expired'
+                    'message' => 'Your training session has expired!'
                 ], 422);
             }
 
+            // Decrypt the email
+            $userEmail = decrypt($session->token);
+
+            $averageScore = DB::table('training_assigned_users')
+                ->where('user_email', $userEmail)
+                ->avg('personal_best');
+
+            $assignedTraining = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $userEmail)
+                ->where('completed', 0)
+                ->get();
+
+            $completedTraining = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $userEmail)
+                ->where('completed', 1)
+                ->get();
+
+            $totalCertificates = TrainingAssignedUser::where('user_email', $userEmail)
+                ->where('completed', 1)
+                ->where('personal_best', 100)
+                ->count();
+
+            Session::put('token', $token);
+
             return response()->json([
                 'status' => true,
+                'data' => [
+                    'email' => $userEmail,
+                    'average_score' => $averageScore,
+                    'assigned_training' => $assignedTraining,
+                    'completed_training' => $completedTraining,
+                    'total_certificates' => $totalCertificates,
+                ],
                 'message' => 'You can Login now'
             ], 200);
         } catch (ValidationException $e) {
@@ -67,7 +97,7 @@ class ApiLearnControlller extends Controller
             $hasPolicy = AssignedPolicy::where('user_email', $email)->exists();
 
             if (!$hasTraining && !$hasPolicy) {
-                return response()->json(['error' => 'No training or policy has been assigned to this email.'], 500);
+                return response()->json(['error' => 'No training or policy has been assigned to this email.'], 422);
             }
 
             // delete old generated tokens from db
@@ -93,7 +123,7 @@ class ApiLearnControlller extends Controller
 
             // Check if the record was inserted successfully
             if (!$inserted) {
-                return response()->json(['status' => 'error', 'message' => 'Failed to create token'], 500);
+                return response()->json(['status' => 'error', 'message' => 'Failed to create token'], 422);
             }
 
             // Prepare email data
