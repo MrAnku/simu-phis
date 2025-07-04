@@ -21,6 +21,7 @@ use App\Models\WhatsAppCampaignUser;
 use App\Models\WhatsappCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\BlueCollarTrainingUser;
 use App\Models\CompanyLicense;
 use App\Models\CompanySettings;
 use App\Models\PhishingEmail;
@@ -28,6 +29,7 @@ use App\Models\PhishingWebsite;
 use App\Models\QuishingCamp;
 use App\Models\UsersGroup;
 use App\Models\WaCampaign;
+use App\Models\WaLiveCampaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
@@ -1565,6 +1567,21 @@ class ApiReportingController extends Controller
                     'breach_scan_date' => $user->breach_scan_date ?? null,
                     'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
                     'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+                    'totalEmailCampaigns' => CampaignLive::where('user_email', $user->user_email)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    'totalEmailTrainings' => TrainingAssignedUser::where('user_email', $user->user_email)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    // 'totalWhatsAppCampaigns' => WaLiveCampaign::where('user_email', $user->user_email)
+                    //     ->where('company_id', $companyId)
+                    //     ->count(),
+                    // 'totalWhatsappTrainings' => BlueCollarTrainingUser::where('user_email', $user->user_email)
+                    //     ->where('company_id', $companyId)
+                    //     ->count(),
+                    'totalAiVishingCampaigns' => AiCallCampLive::where('employee_email', $user->user_email)
+                        ->where('company_id', $companyId)
+                        ->count()
                 ];
             }
 
