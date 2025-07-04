@@ -471,4 +471,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 Route::prefix('learn')->group(function () {
     Route::post('/login-with-token', [ApiLearnControlller::class, 'loginWithToken']);
     Route::post('/create-new-token', [ApiLearnControlller::class, 'createNewToken']);
+
+    Route::get('/get-normal-emp-tranings', [ApiLearnControlller::class, 'getNormalEmpTranings']);
+    Route::get('/get-blue-collar-emp-tranings', [ApiLearnControlller::class, 'getBlueCollarEmpTranings']);
 });

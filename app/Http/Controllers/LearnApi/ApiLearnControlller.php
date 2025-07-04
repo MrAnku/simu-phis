@@ -13,6 +13,9 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\BlueCollarEmployee;
+use App\Models\BlueCollarTrainingUser;
+use App\Models\Users;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnControlller extends Controller
@@ -137,6 +140,99 @@ class ApiLearnControlller extends Controller
 
             // Return success response
             return response()->json(['status' => true, 'message' => 'Mail sent successfully'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getNormalEmpTranings(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            $user = Users::where('user_email', $request->email)->first();
+            if(!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No user found with this email.'
+                ], 404);
+            }
+
+            $assignedTrainings = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $request->email)
+                ->where('completed', 0)->get();
+
+            $completedTrainings = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $request->email)
+                ->where('completed', 1)->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'email' => $request->email,
+                    'assigned_trainings' => $assignedTrainings,
+                    'completed_trainings' => $completedTrainings,
+                ],
+                'message' => 'Courses fetched successfully for ' . $request->email
+            ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBlueCollarEmpTranings(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer',
+            ]);
+
+            $blueCollarUser = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
+            if(!$blueCollarUser) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No blue collar employee found with this WhatsApp number.'
+                ], 404);
+            }
+            $assignedTrainings = BlueCollarTrainingUser::with('trainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)
+                ->where('completed', 0)->get();
+
+            $completedTrainings = BlueCollarTrainingUser::with('trainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)
+                ->where('completed', 1)->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'user_whatsapp' => $request->user_whatsapp,
+                    'assigned_trainings' => $assignedTrainings,
+                    'completed_trainings' => $completedTrainings,
+                ],
+                'message' => 'Courses fetched successfully for blue collar employee'
+            ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
