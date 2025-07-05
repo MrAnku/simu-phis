@@ -90,6 +90,84 @@ class ApiQuishingEmailController extends Controller
         }
     }
 
+    public function addQuishingTemplateBulk(Request $request)
+    {
+        try {
+            // XSS check
+            $input = $request->only('template_name', 'template_subject');
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => __('Invalid input detected.')
+                    ], 400);
+                }
+            }
+            array_walk_recursive($input, function (&$value) {
+                $value = strip_tags($value);
+            });
+            $request->merge($input);
+
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'template_name' => 'required|min:5|max:255',
+                'template_subject' => 'required|min:5|max:255',
+                'difficulty' => 'required',
+                'associated_website' => 'required|exists:phishing_websites,id',
+                'sender_profile' => 'required|exists:senderprofile,id',
+                'template_file' => 'required|mimes:html|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' =>  __('Error: ') . $validator->errors()->first()
+                ], 422);
+            }
+
+            // Read file contents
+            $templateContent = file_get_contents($request->file('template_file')->getRealPath());
+
+            // Check for placeholders
+            if (strpos($templateContent, '{{user_name}}') === false || strpos($templateContent, '{{qr_code}}') === false) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')
+                ], 422);
+            }
+
+            // Store the file
+            $randomName = generateRandom(32);
+            $extension = $request->file('template_file')->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
+
+            $filePath = $request->file('template_file')->storeAs('/uploads/quishing_templates', $newFilename, 's3');
+
+            // Create template
+            QshTemplate::create([
+                'name' => $request->template_name,
+                'email_subject' => $request->template_subject,
+                'difficulty' => $request->difficulty,
+                'file' => "/" . $filePath,
+                'website' => $request->associated_website,
+                'sender_profile' => $request->sender_profile,
+                'company_id' => 'default',
+            ]);
+
+            // log_action("Template added : {$request->template_name}");
+            return response()->json([
+                'status' => true,
+                'message' => __('Template added successfully.')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => __('Failed to add template.'),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function addTemplate(Request $request)
     {
         try {
