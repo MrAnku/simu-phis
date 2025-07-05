@@ -24,11 +24,9 @@ class ApiLearnControlller extends Controller
     {
         try {
             $request->validate([
-                'training_dashboard_link' => 'required|url',
+                'token' => 'required',
             ]);
-            $url = $request->training_dashboard_link;
-            $segments = Str::of(parse_url($url, PHP_URL_PATH))->explode('/');
-            $token = $segments[2] ?? null;
+            $token = $request->token;
 
             $session = DB::table('learnerloginsession')->where('token', $token)->orderBy('created_at', 'desc') // Ensure the latest session is checked
                 ->first();
