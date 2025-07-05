@@ -240,8 +240,7 @@
                                             <h3 class="h1">{{ __('Badges Achieved') }}</h3>
                                             <div class="markdown text-secondary">
                                                 <a href="#" target="_blank"
-                                                    rel="noopener">{{ __('Looking to earn more
-                                                                                                                                                                                                                badges?') }}</a>
+                                                    rel="noopener">{{ __('Looking to earn more badges?') }}</a>
                                             </div>
                                         </div>
                                     </div>
@@ -272,8 +271,7 @@
                                                     </td>
                                                     <td class="text-secondary">
                                                         {{ $policy->policyData->policy_description ??
-                                                            'Description not
-                                                                                                                                                                                                                            found' }}
+                                                            'Description not found' }}
                                                     </td>
                                                     <td class="text-secondary">
                                                         {{ $policy->created_at->format('Y-m-d') ?? 'Date not found' }}
@@ -345,12 +343,11 @@
                                                                             {{-- </div> --}}
 
                                                                             <!-- Accept Section Always Below PDF -->
-                                                                            <form method="POST" action="">
+                                                    <form method="POST" action="">
                                                                                 @csrf
-                                                                                <div class="form-check mt-3">
-                                                                                    <input type="checkbox"
-                                                                                        class="form-check-input"
-                                                                                        id="agreeCheckbox-{{ $policy->id }}"
+                                                            <div class="form-check mt-3">
+                                                        <input type="checkbox" class="form-check-input"
+                                                            id="agreeCheckbox-{{ $policy->id }}"
                                                                                         onchange="toggleAcceptBtn('{{ $policy->id }}')">
                                                                                     <label class="form-check-label"
                                                                                         for="agreeCheckbox-{{ $policy->id }}">
@@ -383,35 +380,24 @@
                                                                                             📝 Policy Acknowledgement
                                                                                             Quiz</h4>
 
-                                                                                        <form
-                                                                                            id="quizForm-{{ $policy->id }}">
-                                                                                            @foreach ($quiz as $index => $question)
-                                                                                                <div
-                                                                                                    class="card border-0 shadow-sm mb-4">
-                                                                                                    <div
-                                                                                                        class="card-body p-4">
-                                                                                                        <div
-                                                                                                            class="d-flex align-items-start">
-                                                                                                            <div
-                                                                                                                class="me-3 fs-4 text-primary">
-                                                                                                                Q{{ $index + 1 }}.
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="flex-grow-1">
-                                                                                                                <h6
-                                                                                                                    class="fw-bold text-dark mb-3">
+<form id="quizForm-{{ $policy->id }}">
+    @foreach ($quiz as $index => $question)
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3 fs-4 text-primary">
+                        Q{{ $index + 1 }}.
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold text-dark mb-3">
                                                                                                                     {{ $question->question }}
                                                                                                                 </h6>
 
-                                                                                                                <div
-                                                                                                                    class="row g-5">
+                        <div class="row g-5">
                                                                                                                     @foreach ($question->options as $option)
-                                                                                                                        <div
-                                                                                                                            class="col-md-6">
-                                                                                                                            <div
-                                                                                                                                class="form-check p-3 border rounded d-flex align-items-center option-hover">
-                                                                                                                                <input
-                                                                                                                                    class="form-check-input me-2 quiz-radio-{{ $policy->id }}"
+                                                                                                                        <div class="col-md-6">
+                                                                                                                            <div class="form-check p-3 border rounded d-flex align-items-center option-hover">
+                                                                                                                                <input class="form-check-input me-2 quiz-radio-{{ $policy->id }}"
                                                                                                                                     type="radio"
                                                                                                                                     name="answers[{{ $index }}]"
                                                                                                                                     value="{{ $option }}"
@@ -433,19 +419,17 @@
                                                                                                     </div>
                                                                                                 </div>
                                                                                             @endforeach
-                                                                                        </form>
+    </form>
 
-                                                                                        <div class="text-end mt-4">
-                                                                                            <button type="button"
-                                                                                                class="btn btn-primary px-4 py-2"
-                                                                                                onclick="submitQuizAnswers('{{ base64_encode($policy->id) }}')">
-                                                                                                <i
-                                                                                                    class="bi bi-check-circle me-1"></i>
-                                                                                                Submit Quiz & Accept
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
+    <div class="text-end mt-4">
+        <button type="button"
+            class="btn btn-primary px-4 py-2"
+            onclick="submitQuizAnswers('{{ base64_encode($policy->id) }}')">
+            <i class="bi bi-check-circle me-1"></i>
+            Submit Quiz & Accept
+        </button>
+    </div>
+</div>
                                                                             </div>
                                                                         @endif
                                                                     </div>
@@ -453,7 +437,6 @@
                                                             </div>
                                                         </div>
 
-                                                        {{-- =================== --}}
                                                     </td>
                                                 </tr>
                                             @empty
@@ -783,7 +766,7 @@
         }
     </script>
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             // const pdfUrl = "{{ env('CLOUDFRONT_URL') . $policy->policyData->policy_file }}";
             const pdfUrl = "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf";
@@ -817,7 +800,7 @@
                 console.error("Error rendering PDF:", error);
             });
         });
-    </script>
+    </script> --}}
 </body>
 
 </html>
