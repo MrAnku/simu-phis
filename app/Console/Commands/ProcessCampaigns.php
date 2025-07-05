@@ -173,7 +173,11 @@ class ProcessCampaigns extends Command
         }
 
         if ($campaign->phishing_material) {
-          $phishingMaterial = DB::table('phishing_emails')->find($campaign->phishing_material);
+          $phishingMaterial = DB::table('phishing_emails')
+          ->where('id', $campaign->phishing_material)
+          ->where('website', '!=', 0)
+          ->where('senderProfile', '!=', 0)
+          ->first();
 
           if ($phishingMaterial) {
             $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
