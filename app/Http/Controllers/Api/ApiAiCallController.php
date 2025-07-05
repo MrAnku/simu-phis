@@ -52,6 +52,57 @@ class ApiAiCallController extends Controller
         }
     }
 
+    public function testAiAgent(Request $request)
+    {
+        try{
+            $validated = $request->validate([
+                'agent_id' => 'required|exists:ai_call_agents,agent_id',
+                'from_phone' => ['required'],
+                'to_phone' => ['required', 'regex:/^\+?[1-9]\d{1,14}$/']
+            ]);
+
+            $url = 'https://api.retellai.com/v2/create-phone-call';
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('RETELL_API_KEY'),
+            ])
+                ->withOptions(['verify' => false])
+                ->post($url, [
+                    'from_number' => $validated['from_phone'],
+                    'to_number' => $validated['to_phone'],
+                    'override_agent_id' => $validated['agent_id']
+                ]);
+
+            // Check for a successful response
+            if ($response->successful()) {
+               log_action("AI Vishing Agent test call initiated for agent id {$validated['agent_id']} and phone number {$validated['to_phone']}");
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Test call initiated successfully.')
+                ], 200);
+            } else {
+                // Handle the error, e.g., log the error or throw an exception
+                log_action("Error while initiating AI Vishing Agent test call for agent id {$validated['agent_id']} and phone number {$validated['to_phone']}");
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Error: ') . $response->body()
+                ], 422);
+            }
+
+           
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => __('Validation Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function aiAgents(){
         try {
             $companyId = Auth::user()->company_id;
