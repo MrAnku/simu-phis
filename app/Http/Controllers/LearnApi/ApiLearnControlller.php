@@ -23,10 +23,14 @@ class ApiLearnControlller extends Controller
     public function loginWithToken(Request $request)
     {
         try {
-            $request->validate([
-                'token' => 'required',
-            ]);
-            $token = $request->token;
+            $token = $request->query('token');
+
+            if (!$token) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Token is required!'
+                ], 422);
+            }
 
             $session = DB::table('learnerloginsession')->where('token', $token)->orderBy('created_at', 'desc') // Ensure the latest session is checked
                 ->first();
@@ -161,7 +165,7 @@ class ApiLearnControlller extends Controller
             ]);
 
             $user = Users::where('user_email', $request->email)->first();
-            if(!$user) {
+            if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'No user found with this email.'
@@ -208,7 +212,7 @@ class ApiLearnControlller extends Controller
             ]);
 
             $blueCollarUser = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
-            if(!$blueCollarUser) {
+            if (!$blueCollarUser) {
                 return response()->json([
                     'status' => false,
                     'message' => 'No blue collar employee found with this WhatsApp number.'
