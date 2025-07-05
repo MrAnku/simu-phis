@@ -29,9 +29,9 @@ class BlueCollarEmployee extends Model
         'company_id'
     ];
 
-    public function userGroup(): BelongsTo
+    public function blueCollarGroup(): BelongsTo
     {
-        return $this->belongsTo(UsersGroup::class, 'group_id', 'group_id');
+        return $this->belongsTo(BlueCollarGroup::class, 'group_id', 'group_id');
     }
 
     public function campaigns(): HasMany

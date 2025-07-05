@@ -184,7 +184,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-ticket', [ApiSupportController::class, 'createTicket']);
     });
 
-    // Route::prefix('reporting')->group(function () {
+    Route::prefix('reporting')->group(function () {
     //     Route::get('/', [ApiReportingController::class, 'index']);
     //     Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
     //     Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
