@@ -246,6 +246,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('ai-agents')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'aiAgents']);
         Route::post('/test-agent', [ApiAiCallController::class, 'testAiAgent']);
+        Route::delete('/delete-agent/{agent_id}', [ApiAiCallController::class, 'deleteAiAgent']);
     });
 
     Route::prefix('ai-calling')->group(function () {

@@ -54,7 +54,7 @@ class ApiAiCallController extends Controller
 
     public function testAiAgent(Request $request)
     {
-        try{
+        try {
             $validated = $request->validate([
                 'agent_id' => 'required|exists:ai_call_agents,agent_id',
                 'from_phone' => ['required'],
@@ -75,7 +75,7 @@ class ApiAiCallController extends Controller
 
             // Check for a successful response
             if ($response->successful()) {
-               log_action("AI Vishing Agent test call initiated for agent id {$validated['agent_id']} and phone number {$validated['to_phone']}");
+                log_action("AI Vishing Agent test call initiated for agent id {$validated['agent_id']} and phone number {$validated['to_phone']}");
                 return response()->json([
                     'success' => true,
                     'message' => __('Test call initiated successfully.')
@@ -88,26 +88,25 @@ class ApiAiCallController extends Controller
                     'message' => __('Error: ') . $response->body()
                 ], 422);
             }
-
-           
         } catch (ValidationException $e) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => __('Validation Error: ') . $e->validator->errors()->first()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
 
-    public function aiAgents(){
+    public function aiAgents()
+    {
         try {
             $companyId = Auth::user()->company_id;
 
-            
+
             $default = AiCallAgent::where('company_id', 'default')->get();
             $custom = AiCallAgent::where('company_id', $companyId)->get();
 
@@ -140,6 +139,39 @@ class ApiAiCallController extends Controller
                 'status' => $response->status(),
                 'message' => $response->body()
             ];
+        }
+    }
+
+    public function deleteAiAgent(Request $request)
+    {
+        try {
+            $agentId = $request->route('agent_id');
+
+            if (!$agentId) {
+                return response()->json(['success' => false, 'message' => __('Agent ID is required')], 422);
+            }
+
+            $agent = AiCallAgent::where('agent_id', $agentId)->where('company_id', Auth::user()->company_id)->first();
+
+            if (!$agent) {
+                return response()->json(['success' => false, 'message' => __('Agent not found')], 404);
+            }
+
+            //delete from retell api
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('RETELL_API_KEY'),
+            ])->withOptions(['verify' => false])->delete("https://api.retellai.com/delete-agent/{$agentId}");
+
+            if ($response->successful()) {
+                $agent->delete();
+                log_action("AI Vishing Agent deleted: {$agent->agent_name}");
+                return response()->json(['success' => true, 'message' => __('Agent deleted successfully')], 200);
+            } else {
+                log_action("Error while deleting AI Vishing Agent: {$response->body()}");
+                return response()->json(['success' => false, 'message' => __('Error: ') . $response->body()], 422);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -285,7 +317,7 @@ class ApiAiCallController extends Controller
             if ($users) {
                 foreach ($users as $user) {
 
-                    if($user->whatsapp == null){
+                    if ($user->whatsapp == null) {
                         continue;
                     }
 
