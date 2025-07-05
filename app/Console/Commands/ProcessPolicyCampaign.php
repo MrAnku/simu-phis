@@ -121,7 +121,16 @@ class ProcessPolicyCampaign extends Command
             }
             $isWhitelabeled = new CheckWhitelabelService($company_id);
             if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $whiteLableData = $isWhitelabeled->getWhiteLabelData();
+                $companyName = $whiteLableData->company_name;
+                $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
+                $learnDomain = "https://" . $whiteLableData->learn_domain;
                 $isWhitelabeled->updateSmtpConfig();
+                
+            }else{
+                $companyName = env('APP_NAME');
+                $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
+                $learnDomain = env('SIMUPHISH_LEARNING_URL');
             }
 
             foreach ($campaigns as $campaign) {
@@ -130,12 +139,12 @@ class ProcessPolicyCampaign extends Command
 
                 $mailData = [
                     'user_name' => $campaign->user_name,
-                    'company_name' => env('APP_NAME'),
+                    'company_name' => $companyName,
                     'assigned_at' => $campaign->created_at,
                     'policy_name' => $policy->policy_name,
-                    'logo' => "/assets/images/simu-logo-dark.png",
+                    'logo' => $companyLogo,
                     'company_id' => $campaign->company_id,
-                    'learn_domain' => env('SIMUPHISH_LEARNING_URL'),
+                    'learn_domain' => $learnDomain,
                 ];
 
                 $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
