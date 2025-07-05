@@ -1511,18 +1511,94 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
             $userGroups = UsersGroup::where('company_id', $companyId)->get();
 
-            $totalDivisionUser = 0;
+            $scoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'verygood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
             $divisionUserDetails = [];
+
+            $totalUsers = \App\Models\Users::where('company_id', $companyId)->count();
+            if ($totalUsers === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('No users found for this company'),
+                    'data' => [
+                        'total_division_users' => 0,
+                        'division_user_details' => [],
+                    ]
+                ], 200);
+            }
 
             foreach ($userGroups as $group) {
                 $users = json_decode($group->users, true);
                 if (!$users) {
                     continue;
                 }
-                foreach ($users as $user) {
-                    $user = Users::where('id', $user)->where('company_id', $companyId)->first();
+
+                foreach ($users as $userId) {
+                    $user = Users::where('id', $userId)
+                        ->where('company_id', $companyId)
+                        ->first();
+
                     if (!$user) {
                         continue;
+                    }
+
+                    // Email simulation
+                    $totalSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    // Quishing simulation
+                    $totalQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('compromised', '1')
+                        ->count();
+
+                    // TPRM simulation
+                    $totalTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    // WhatsApp simulation
+                    $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('compromised', 1)
+                        ->count();
+
+                    // Final counts
+                    $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+                    $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+                    $riskScore = $totalAll > 0
+                        ? 100 - round(($compromisedAll / $totalAll) * 100)
+                        : 100; // If no simulations, assume excellent
+
+                    // Determine risk level
+                    $riskLevel = 'unknown';
+                    foreach ($scoreRanges as $label => [$min, $max]) {
+                        if ($riskScore >= $min && $riskScore <= $max) {
+                            $riskLevel = $label;
+                            break;
+                        }
                     }
 
                     $divisionUserDetails[] = [
@@ -1531,16 +1607,17 @@ class ApiReportingController extends Controller
                         'division' => $group->group_name,
                         'user_job_title' => $user->user_job_title,
                         'whatsapp_no' => $user->whatsapp,
+                        'risk_score' => $riskScore,
+                        'risk_level' => $riskLevel,
                     ];
                 }
-                $totalDivisionUser = $totalDivisionUser + count($users);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => __('Division users report fetched successfully'),
                 'data' => [
-                    'total_division_users' => $totalDivisionUser,
+                    'total_division_users' => count($divisionUserDetails),
                     'division_user_details' => $divisionUserDetails
                 ]
             ], 200);
@@ -1551,6 +1628,7 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
+
 
     public function fetchUsersReport()
     {
