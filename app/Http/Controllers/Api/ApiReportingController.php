@@ -1434,7 +1434,7 @@ class ApiReportingController extends Controller
 
             $avgOverallDuration = $avgEducationDuration;
 
-            $trainingAssignReminderDays = (int) CompanySettings::where('email', Auth::user()->email)
+            $trainingAssignReminderDays = (int) CompanySettings::where('company_id', $companyId)
                 ->value('training_assign_remind_freq_days');
 
             $onboardingTrainingDetails = [];
