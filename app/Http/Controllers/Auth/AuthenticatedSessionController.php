@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
             Auth::logout();
             return response()->json([
                 'success' => false,
-                'message' => 'Your service status is not approved. Please contact your service provider.',
+                'message' => 'Your services are on hold. Please contact your service provider.',
             ], 422);
         }
 
@@ -64,7 +64,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        $cookie = cookie('jwt', $token, 60 * 24);
+        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440)); // Default JWT TTL is 1440 minutes (1 day)
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),

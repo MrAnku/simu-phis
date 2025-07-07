@@ -48,7 +48,7 @@ class MFAController extends Controller
         if ($valid) {
             Auth::login($company);
             $token = JWTAuth::fromUser($company);
-            $cookie = cookie('jwt', $token, 60 * 24);
+            $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
 
             return response()->json([
                 'token' => $token,
