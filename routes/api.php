@@ -232,6 +232,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         // Policy Reporting
         Route::get('/fetch policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
+
+        // Course Summary Reporting
+        Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
     });
 
     Route::prefix('employees')->group(function () {

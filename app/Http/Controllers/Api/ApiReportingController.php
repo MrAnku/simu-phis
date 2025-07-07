@@ -1973,4 +1973,59 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
+
+    public function fetchCourseSummaryReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)->get();
+
+            foreach ($assignedCourses as $course) {
+                $trainingId = (int) $course->training;
+
+                $training = TrainingModule::find($trainingId);
+                $courseDetails[] = [
+
+                    'course_title' => $training->name,
+                    'users_assigned' => TrainingAssignedUser::where('training', $course->training)
+                        ->where('completed', 0)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    'users_completed' => TrainingAssignedUser::where('training', $course->training)
+                        ->where('completed', 1)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    'users_in_progress' => TrainingAssignedUser::where('training', $course->training)
+                        ->where('training_started', 1)
+                        ->where('personal_best', '>', 0)
+                        ->where('completed', 0)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    'users_not_started' => TrainingAssignedUser::where('training', $course->training)
+                        ->where('training_started', 0)
+                        ->where('company_id', $companyId)
+                        ->count(),
+                    'avg_score' => round(TrainingAssignedUser::where('training', $course->training)
+                        ->where('training_started', 1)
+                        ->where('company_id', $companyId)
+                        ->avg('personal_best') ?? 0),
+
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Course summary report fetched successfully'),
+                'data' => [
+                    'courses' => $courseDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 }
