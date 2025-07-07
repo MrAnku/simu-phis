@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\LearnApi;
 
+use App\Models\Users;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
+use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Session;
-use App\Mail\LearnerSessionRegenerateMail;
-use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarTrainingUser;
-use App\Models\Users;
+use Illuminate\Support\Facades\Session;
+use App\Services\CheckWhitelabelService;
+use App\Mail\LearnerSessionRegenerateMail;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnControlller extends Controller
@@ -94,32 +95,54 @@ class ApiLearnControlller extends Controller
     public function createNewToken(Request $request)
     {
         try {
-            $email = $request->query('email');
             $request->validate(['email' => 'required|email']);
 
-            $hasTraining = TrainingAssignedUser::where('user_email', $email)->exists();
+            $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->first();
 
-            $hasPolicy = AssignedPolicy::where('user_email', $email)->exists();
+            $hasPolicy = AssignedPolicy::where('user_email', $request->email)->first();
 
             if (!$hasTraining && !$hasPolicy) {
-                return response()->json(['error' => 'No training or policy has been assigned to this email.'], 422);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No training or policy has been assigned to this email.'
+                ], 422);
             }
 
             // delete old generated tokens from db
-            DB::table('learnerloginsession')->where('email', $email)->delete();
+            DB::table('learnerloginsession')->where('email', $request->email)->delete();
 
             // Encrypt email to generate token
-            $token = encrypt($email);
+            $token = encrypt($request->email);
+            if ($hasTraining) {
+                $companyId = $hasTraining->company_id;
+            }
+            if ($hasPolicy) {
+                $companyId = $hasPolicy->company_id;
+            }
+
+            $isWhitelabeled = new CheckWhitelabelService($companyId);
+            if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                $learn_domain = "https://" . $whitelabelData->learn_domain;
+                $isWhitelabeled->updateSmtpConfig();
+                $companyName = $whitelabelData->company_name;
+                $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            } else {
+                $learn_domain = env('SIMUPHISH_LEARNING_URL');
+                $companyName = env('APP_NAME');
+                $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+            }
+
 
             if ($hasPolicy && !$hasTraining) {
-                $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/policies/' . $token;
+                $learning_dashboard_link = $learn_domain . '/policies/' . $token;
             } else {
-                $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
+                $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
             }
 
             // Insert new record into the database
             $inserted = DB::table('learnerloginsession')->insert([
-                'email' => $email,
+                'email' => $request->email,
                 'token' => $token,
                 'expiry' => now()->addHours(24),
                 'created_at' => now(),
@@ -128,17 +151,22 @@ class ApiLearnControlller extends Controller
 
             // Check if the record was inserted successfully
             if (!$inserted) {
-                return response()->json(['status' => 'error', 'message' => 'Failed to create token'], 422);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Failed to create token'
+                ], 422);
             }
 
             // Prepare email data
             $mailData = [
                 'learning_site' => $learning_dashboard_link,
+                'company_name' => $companyName,
+                'company_dark_logo' => $companyDarkLogo
             ];
 
-            $trainingModules = TrainingModule::where('company_id', 'default')->take(5)->get();
+            $trainingModules = TrainingModule::where('company_id', 'default')->inRandomOrder()->take(5)->get();
             // Send email
-            Mail::to($email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
+            Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
             // Return success response
             return response()->json(['status' => true, 'message' => 'Mail sent successfully'], 200);
