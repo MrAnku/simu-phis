@@ -462,10 +462,15 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 
-     // Media
-     Route::prefix('media')->group(function () {
+    // Media
+    Route::prefix('media')->group(function () {
         Route::post('/upload_file', [ApiMediaController::class, 'uploadFile']);
         Route::get('/fetch_files', [ApiMediaController::class, 'fetchFiles']);
+    });
+
+    // Scorm Training
+    Route::prefix('scorm-training')->group(function () {
+        Route::post('/add-scorm-training', [ApiScormTrainingController::class, 'addScormTraining']);
     });
 });
 
