@@ -231,7 +231,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/fetch-games-report', [ApiReportingController::class, 'fetchGamesReport']);
 
         // Policy Reporting
-        Route::get('/fetch policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
+        Route::get('/fetch-policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
 
         // Course Summary Reporting
         Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
