@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
-use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\PhishTriageController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Api\InforgraphicsController;
 use App\Http\Controllers\Api\ApiCompanyLogsController;
+use App\Http\Controllers\LearnApi\ApiMediaController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
 use App\Http\Controllers\LearnApi\ApiLearnControlller;
@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\SSOController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -461,10 +462,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 
-    //company logs
-    Route::prefix('company-logs')->group(function () {
-        Route::get('/', [ApiCompanyLogsController::class, 'index']);
-        
+     // Media
+     Route::prefix('media')->group(function () {
+        Route::post('/upload_file', [ApiMediaController::class, 'uploadFile']);
+        Route::get('/fetch_files', [ApiMediaController::class, 'fetchFiles']);
     });
 });
 
