@@ -184,7 +184,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-ticket', [ApiSupportController::class, 'createTicket']);
     });
 
-    Route::prefix('reporting')->group(function () {
+    Route::prefix('report')->group(function () {
     //     Route::get('/', [ApiReportingController::class, 'index']);
     //     Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
     //     Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
@@ -223,6 +223,15 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         // Users Reporting
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
+
+        // Training Reporting
+        Route::get('/fetch-training-report', [ApiReportingController::class, 'fetchTrainingReport']);
+
+        // Games Reporting
+        Route::get('/fetch-games-report', [ApiReportingController::class, 'fetchGamesReport']);
+
+        // Policy Reporting
+        Route::get('/fetch policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
     });
 
     Route::prefix('employees')->group(function () {

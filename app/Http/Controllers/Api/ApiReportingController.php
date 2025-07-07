@@ -2,37 +2,39 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use App\Models\Users;
-use App\Models\TprmUsers;
+use App\Models\Policy;
 use App\Models\Campaign;
-use App\Models\TprmCampaign;
-use App\Models\TprmCampaignReport;
-use App\Models\CampaignLive;
-use App\Models\TprmCampaignLive;
-use Illuminate\Http\Request;
-use App\Models\CampaignReport;
-use App\Models\TrainingModule;
-use Illuminate\Support\Facades\DB;
-use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\Auth;
-use App\Models\WhatsAppCampaignUser;
-use App\Models\WhatsappCampaign;
-use App\Models\AiCallCampaign;
-use App\Models\AiCallCampLive;
-use App\Models\BlueCollarEmployee;
-use App\Models\BlueCollarTrainingUser;
-use App\Models\CompanyLicense;
-use App\Models\CompanySettings;
-use App\Models\PhishingEmail;
-use App\Models\PhishingWebsite;
-use App\Models\QuishingCamp;
-use App\Models\QuishingLiveCamp;
+use App\Models\TprmUsers;
 use App\Models\UsersGroup;
 use App\Models\WaCampaign;
+use App\Models\CampaignLive;
+use App\Models\QuishingCamp;
+use App\Models\TprmCampaign;
+use App\Models\TrainingGame;
+use Illuminate\Http\Request;
+use App\Models\PhishingEmail;
+use App\Models\AiCallCampaign;
+use App\Models\AiCallCampLive;
+use App\Models\CampaignReport;
+use App\Models\CompanyLicense;
+use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
+use App\Models\CompanySettings;
+use App\Models\PhishingWebsite;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
+use App\Models\WhatsappCampaign;
 use Illuminate\Http\JsonResponse;
+use App\Models\BlueCollarEmployee;
+use App\Models\TprmCampaignReport;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\TrainingAssignedUser;
+use App\Models\WhatsAppCampaignUser;
+use Illuminate\Support\Facades\Auth;
+use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -1853,6 +1855,115 @@ class ApiReportingController extends Controller
                 'data' => [
                     'total_users' => $totalNormalUsers + $totalBlueCollarUsers,
                     'user_details' => $userDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchTrainingReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $trainingModules = TrainingModule::where('company_id', $companyId)->get();
+            foreach ($trainingModules as $trainingModule) {
+                $trainings[] = [
+                    'name' => $trainingModule->name,
+                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->count(),
+                    'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)->count(),
+                    'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)->count(),
+                    'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)->count(),
+                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)->count()
+
+                ];
+            }
+            return response()->json([
+                'seuccess' => true,
+                'mssage' => __('Training report fetched successfully'),
+                'data' => [
+                    'trainings' => $trainings
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchGamesReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $trainingGames = TrainingGame::where('company_id', $companyId)->get();
+            foreach ($trainingGames as $trainingGame) {
+                $games[] = [
+                    'name' => $trainingGame->name,
+                    'total_assigned_games' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->count(),
+                    'games_completed' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->where('completed', 1)->count(),
+                    'in_progress_games' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->where('training_started', 1)->count(),
+                    'total_no_of_simulations' => CampaignLive::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training_type', 'games')->where('training', $trainingGame->id)->count(),
+                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                    'game_completion_time_in_seconds' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->value('game_time') ?: 0,
+                ];
+            }
+            return response()->json([
+                'success' => true,
+                'message' => __('Games report fetched successfully'),
+                'data' => [
+                    'games' => $games
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchPoliciesReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $policies = Policy::where('company_id', $companyId)->get();
+
+            if ($policies->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No policies found for this company'),
+                    'data' => []
+                ], 404);
+            }
+
+            $policyDetails = [];
+            foreach ($policies as $policy) {
+                $policyDetails[] = [
+                    'policy_name' => $policy->policy_name,
+                    'policy_description' => $policy->policy_description,
+                    'has_quiz' => $policy->has_quiz ? 'Yes' : 'No',
+                    'created_at' => $policy->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Policies report fetched successfully'),
+                'data' => [
+                    'policies' => $policyDetails
                 ]
             ], 200);
         } catch (\Exception $e) {
