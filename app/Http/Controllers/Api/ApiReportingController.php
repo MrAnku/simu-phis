@@ -1871,6 +1871,7 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
 
             $trainingModules = TrainingModule::where('company_id', $companyId)->get();
+            $trainings = [];
             foreach ($trainingModules as $trainingModule) {
                 $trainings[] = [
                     'name' => $trainingModule->name,
@@ -1906,6 +1907,7 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
 
             $trainingGames = TrainingGame::where('company_id', $companyId)->get();
+            $games = [];
             foreach ($trainingGames as $trainingGame) {
                 $games[] = [
                     'name' => $trainingGame->name,
