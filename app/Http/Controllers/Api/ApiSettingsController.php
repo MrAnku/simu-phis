@@ -886,7 +886,7 @@ class ApiSettingsController extends Controller
     {
         try {
             $request->validate([
-                'email' => 'required|email,exists:company,email',
+                'email' => 'required|email|exists:company,email',
             ]);
 
             $subAdmin = Company::where('company_id', Auth::user()->company_id)
