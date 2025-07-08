@@ -1989,7 +1989,7 @@ class ApiReportingController extends Controller
                 $training = TrainingModule::find($trainingId);
                 $courseDetails[] = [
 
-                    'course_title' => $training->name,
+                    'course_title' => $training->name ?? 'Anonymous Course',
                     'users_assigned' => TrainingAssignedUser::where('training', $course->training)
                         ->where('completed', 0)
                         ->where('company_id', $companyId)
