@@ -14,16 +14,20 @@ class CreateSubAdminMail extends Mailable
     use Queueable, SerializesModels;
 
     public $company;
-    public $branding;
+    public $companyName;
+    public $companyLogo;
+    public $portalDomain;
     public $pass_create_link;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($company, $branding, $pass_create_link)
+    public function __construct($company, $companyName, $companyLogo, $portalDomain, $pass_create_link)
     {
         $this->company = $company;
-        $this->branding = $branding;
+        $this->companyName = $companyName;
+        $this->companyLogo = $companyLogo;
+        $this->portalDomain = $portalDomain;
         $this->pass_create_link = $pass_create_link;
     }
 
@@ -33,7 +37,7 @@ class CreateSubAdminMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Create Sub Admin Mail',
+            subject: 'Welcome to ' . $this->companyName . ' as Sub Admin',
         );
     }
 

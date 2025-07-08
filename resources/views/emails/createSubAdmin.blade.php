@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Sub Admin - simUphish</title>
+    <title>Welcome Sub Admin - {{ $companyName }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,7 +73,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/images/simu-logo-dark.png') }}" alt="{{ $branding['company_name'] }} Logo">
+            <img src="{{ $companyLogo }}" alt="{{ $companyName }} Logo">
         </div>
 
         <div>
@@ -81,22 +81,22 @@
         </div>
 
         <div class="content">
-            <p>Hello and welcome to <strong>{{ $branding['company_name'] }}</strong>! We’re excited to have you on board as a Sub Admin.</p>
+            <p>Hello and welcome to <strong>{{ $companyName }}</strong>! We’re excited to have you on board as a Sub Admin.</p>
             <p>To get started, please create your password using the link below. Once your account is approved, you'll be able to access the dashboard and start managing your responsibilities.</p>
 
             <div class="credentials">
-                <p>Portal: <a href="{{ $branding['portal_domain'] }}" target="_blank">{{ $branding['portal_domain'] }}</a></p>
+                <p>Portal: <a href="{{ $portalDomain }}" target="_blank">{{ $portalDomain }}</a></p>
                 <p>Username: {{ $company->email }}</p>
                 <p><a href="{{ $pass_create_link }}" target="_blank">Click here to create your password</a></p>
             </div>
 
             <p>If you have any questions, feel free to reach out to our support team.</p>
             <p>Thanks again and welcome aboard!</p>
-            <p>— Team {{ $branding['company_name'] }}</p>
+            <p>— Team {{ $companyName }}</p>
         </div>
 
         <div class="footer">
-            &copy; {{ date('Y') }} {{ $branding['company_name'] }}. All rights reserved.
+            &copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.
         </div>
     </div>
 </body>

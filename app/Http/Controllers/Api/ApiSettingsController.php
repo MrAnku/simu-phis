@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
+use App\Services\CheckWhitelabelService;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UpdatePasswordRequest;
@@ -733,23 +734,23 @@ class ApiSettingsController extends Controller
     {
         // return $request;
         try {
-            $pocAccount = company::where('company_id', Auth::user()->company_id)
-            ->where('role', Null)
+            $pocAccount = Company::where('company_id', Auth::user()->company_id)
+            ->where('role', null)
             ->where('account_type', 'poc')->exists();
 
             if($pocAccount){
-                return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to a trial account')], 402);
+                return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to this account')], 402);
             }
             $request->validate([
                 'email' => 'required|email|unique:company,email',
                 'full_name' => 'required|string|max:255',
-                'enabled_feature' => 'required|array',
+                'enabled_feature' => 'nullable|array',
             ]);
 
             $token = Str::random(32);
-            $pass_create_link = env("APP_URL") . "/company/create-password/" . $token;
+            $pass_create_link = env("NEXT_APP_URL") . "/company/create-password/" . $token;
 
-            $admin = Company::where('company_id', Auth::user()->company_id)->where('role', Null)->first();
+            $admin = Company::where('company_id', Auth::user()->company_id)->where('role', null)->first();
             Company::create([
                 "email" => $request->email,
                 "full_name" => $request->full_name,
@@ -760,10 +761,10 @@ class ApiSettingsController extends Controller
                 "usedemployees" => $admin->usedemployees,
                 "storage_region" => $admin->storage_region,
                 "role" => 'sub-admin',
-                "approved" => true,
-                "service_status" => true,
+                "approved" => 1,
+                "service_status" => 1,
                 "account_type" => 'normal',
-                "enabled_feature" => json_encode($request->enabled_feature),
+                "enabled_feature" => $request->enabled_feature !== null ? json_encode($request->enabled_feature) : null,
                 'pass_create_token' => $token,
                 'approve_date' => now(),
                 'created_at' => now(),
@@ -772,7 +773,7 @@ class ApiSettingsController extends Controller
             CompanySettings::create([
                 'company_id' => $admin->company_id,
                 "email" => $request->email,
-                'country' => 'IND',
+                'country' => $admin->storage_region,
                 'time_zone' => 'Pacific/Midway',
                 'date_format' => 'dd/MM/yyyy',
                 'mfa' => '0',
@@ -786,8 +787,30 @@ class ApiSettingsController extends Controller
                 'training_assign_remind_freq_days' => '1',
             ]);
 
+            $isWhitelabeled = new CheckWhitelabelService($admin->company_id);
+            if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $whiteLableData = $isWhitelabeled->getWhiteLabelData();
+                $companyName = $whiteLableData->company_name;
+                $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
+                $pass_create_link = "https://" . $whiteLableData->domain . "/company/create-password/" . $token;
+                $portalDomain = "https://" . $whiteLableData->domain;
+
+                $isWhitelabeled->updateSmtpConfig();
+                
+            }else{
+                $companyName = env('APP_NAME');
+                $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
+                $portalDomain = env('NEXT_APP_URL');
+            }
+
             // Send email with company creation link
-            Mail::to($request->email)->send(new CreateSubAdminMail($request, $this->checkWhitelabeling(), $pass_create_link));
+            Mail::to($request->email)->send(new CreateSubAdminMail(
+                $request,
+                $companyName,
+                $companyLogo,
+                $portalDomain,
+                $pass_create_link
+            ));
 
             // Log action
             log_action("Sub Admin account created and submitted. Sub Admin email: " . $request->email);
