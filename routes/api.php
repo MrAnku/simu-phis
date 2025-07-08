@@ -147,6 +147,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::put('/update-mfa', [ApiSettingsController::class, 'updateMFA']);
         Route::post('/verify-mfa', [ApiSettingsController::class, 'verifyMFA']);
         Route::put('/update-siem', [ApiSettingsController::class, 'updateSiem']);
+        Route::get('/sub-admins', [ApiSettingsController::class, 'subAdmins']);
+        Route::put('/sub-admins/change-service-status', [ApiSettingsController::class, 'changeServiceStatus']);
+        Route::delete('/sub-admins/delete-sub-admin', [ApiSettingsController::class, 'deleteSubAdmin']);
         Route::post('/add-sub-admin', [ApiSettingsController::class, 'addSubAdmin']);
     });
 

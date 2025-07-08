@@ -823,6 +823,100 @@ class ApiSettingsController extends Controller
         }
     }
 
+    public function subAdmins(){
+        try {
+            $subAdmins = Company::where('company_id', Auth::user()->company_id)
+                ->where('role', 'sub-admin')
+                ->get(['email', 'full_name', 'enabled_feature', 'service_status', 'created_at']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $subAdmins
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred ') .  $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function changeServiceStatus(Request $request)
+    {
+       try {
+           $request->validate([
+               'email' => 'required|email,exists:company,email',
+               'service_status' => 'required',
+           ]);
+
+           $subAdmin = Company::where('company_id', Auth::user()->company_id)
+               ->where('role', 'sub-admin')
+               ->where('email', $request->email)
+               ->first();
+
+           if (!$subAdmin) {
+               return response()->json([
+                   'success' => false,
+                   'message' => __('Sub-admin not found')
+               ], 404);
+           }
+
+           $subAdmin->service_status = $request->service_status;
+           $subAdmin->save();
+
+           if($request->service_status == 1){
+            $msg = 'Subadmin account activated successfully';
+           }else{
+            $msg = 'Subadmin account deactivated successfully';
+           }
+           log_action($msg);
+
+           return response()->json([
+               'success' => true,
+               'message' => __('Sub-admin status updated successfully')
+           ]);
+       } catch (ValidationException $e) {
+           return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+       } catch (\Exception $e) {
+           return response()->json(['success' => false, 'message' => $e->getMessage()]);
+       }
+    }
+
+    public function deleteSubAdmin(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email,exists:company,email',
+            ]);
+
+            $subAdmin = Company::where('company_id', Auth::user()->company_id)
+                ->where('role', 'sub-admin')
+                ->where('email', $request->email)
+                ->first();
+
+            if (!$subAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Sub-admin not found')
+                ], 404);
+            }
+
+            $subAdmin->delete();
+            CompanySettings::where('email', $request->email)->delete();
+
+            log_action("Sub Admin deleted: " . $request->email);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Sub-admin deleted successfully')
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
     private function checkWhitelabeling()
     {
         $company = Company::with('partner')->where('company_id', Auth::user()->company_id)->first();
