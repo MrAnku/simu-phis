@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\LearnApi;
 
 use App\Models\Users;
+use setasign\Fpdi\Fpdi;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
+use App\Mail\TrainingCompleteMail;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -275,6 +277,152 @@ class ApiLearnControlller extends Controller
                 'status' => 'error',
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function updateTrainingScore(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'trainingScore' => 'required|integer',
+                'encoded_id' => 'required',
+            ]);
+
+            $row_id = base64_decode($request->encoded_id);
+
+            if (Session::has('bluecollar')) {
+                $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
+                $user = $rowData->user_whatsapp;
+            } else {
+                $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+                $user = $rowData->user_email;
+            }
+
+            if ($rowData && $request->trainingScore > $rowData->personal_best) {
+                // Update the column if the current value is greater
+                $rowData->personal_best = $request->trainingScore;
+                $rowData->save();
+
+                setCompanyTimezone($rowData->company_id);
+
+                log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
+
+                $passingScore = (int)$rowData->trainingData->passing_score;
+
+                if ($request->trainingScore >= $passingScore) {
+                    $rowData->completed = 1;
+                    $rowData->completion_date = now()->format('Y-m-d');
+                    $rowData->save();
+
+                    // Send email
+                    $learnSiteAndLogo = checkWhitelabeled($rowData->company_id);
+
+                    $mailData = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->trainingData->name,
+                        'training_score' => $request->trainingScore,
+                        'company_name' => $learnSiteAndLogo['company_name'],
+                        'logo' => $learnSiteAndLogo['logo']
+                    ];
+
+                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email);
+
+                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                        $isWhitelabeled->updateSmtpConfig();
+                    }
+
+                    Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
+
+                    log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
+                }
+            }
+            return response()->json(['status' => true, 'message' => 'Score updated'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail)
+    {
+        $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
+        if (!$certificateId) {
+            $certificateId = $this->generateCertificateId();
+            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId);
+        }
+
+        $pdf = new Fpdi();
+        $pdf->AddPage('L', 'A4');
+        $pdf->setSourceFile(resource_path('templates/design.pdf'));
+        $template = $pdf->importPage(1);
+        $pdf->useTemplate($template);
+
+        // Format and limit name
+        if (strlen($name) > 15) {
+            $name = mb_substr($name, 0, 12) . '...';
+        }
+
+        $pdf->SetFont('Helvetica', '', 50);
+        $pdf->SetTextColor(47, 40, 103);
+        $pdf->SetXY(100, 115);
+        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
+
+        $pdf->SetFont('Helvetica', '', 16);
+        $pdf->SetTextColor(169, 169, 169);
+        $pdf->SetXY(100, 130);
+        $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
+
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 165);
+        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
+
+        $pdf->SetXY(240, 10);
+        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
+
+        return $pdf->Output('S'); // Output as string
+    }
+
+    private function getCertificateId($trainingModule, $userEmail, $trainingId)
+    {
+        // Check the database for an existing certificate ID for this user and training module
+        $certificate = TrainingAssignedUser::where('training', $trainingId)
+            ->where('user_email', $userEmail)
+            ->first();
+        return $certificate ? $certificate->certificate_id : null;
+    }
+
+    private function generateCertificateId()
+    {
+        // Generate a unique random ID. You can adjust the format as needed.
+        return strtoupper(uniqid('CERT-'));
+    }
+
+    private function storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId)
+    {
+        // Find the existing record based on training module and userEmail
+        $assignedUser = TrainingAssignedUser::where('training', $trainingId)
+            ->where('user_email', $userEmail)
+            ->first();
+
+        // Check if the record was found
+        if ($assignedUser) {
+
+            // Update only the certificate_id (no need to touch campaign_id)
+            $assignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
         }
     }
 }

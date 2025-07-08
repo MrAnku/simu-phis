@@ -480,4 +480,6 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/get-normal-emp-tranings', [ApiLearnControlller::class, 'getNormalEmpTranings']);
     Route::get('/get-blue-collar-emp-tranings', [ApiLearnControlller::class, 'getBlueCollarEmpTranings']);
+
+    Route::post('/update-training-score', [ApiLearnControlller::class, 'updateTrainingScore']);
 });
