@@ -38,6 +38,11 @@ use App\Http\Controllers\WhiteLabelController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
+
+Route::post('company/create-password/token-check', [AuthenticatedSessionController::class, 'tokenCheck']);
+
+Route::post('company/create-password', [AuthenticatedSessionController::class, 'createPassword']);
+
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPassword']);

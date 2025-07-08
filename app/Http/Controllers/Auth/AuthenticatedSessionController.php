@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Company;
 use App\Models\Settings;
 use Illuminate\Http\Request;
 use App\Models\CompanyLicense;
@@ -79,6 +80,66 @@ class AuthenticatedSessionController extends Controller
             "message" => "Logged in successfully",
             "mfa" => false,
         ])->withCookie($cookie);
+    }
+
+    public function tokenCheck(Request $request): JsonResponse
+    {
+        //has valid token
+        $token = $request->token;
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token is required',
+            ], 422);
+        }
+        $validToken = Company::where('pass_create_token', $token)->where('password', null)->first();
+        if(!$validToken){
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid Token or Token Expired',
+            ], 422);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Valid Token'
+        ]);
+    }
+
+    public function createPassword(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'token' => 'required',
+                'password' => 'required|confirmed|min:8',
+            ]);
+
+            $company = Company::where('pass_create_token', $request->token)->first();
+            if (!$company) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session expired or invalid token',
+                ], 404);
+            }
+
+            $company->password = bcrypt($request->password);
+            $company->pass_create_token = null;
+            $company->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password created successfully',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
