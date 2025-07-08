@@ -14,6 +14,7 @@ use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
@@ -316,22 +317,30 @@ class ApiLearnControlller extends Controller
                     $rowData->save();
 
                     // Send email
-                    $learnSiteAndLogo = checkWhitelabeled($rowData->company_id);
+                   
+                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                        $companyName = $whitelabelData->company_name;
+                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
+                        $isWhitelabeled->updateSmtpConfig();
+                    } else {
+                        $companyName = env('APP_NAME');
+                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+                    }
 
                     $mailData = [
                         'user_name' => $rowData->user_name,
                         'training_name' => $rowData->trainingData->name,
                         'training_score' => $request->trainingScore,
-                        'company_name' => $learnSiteAndLogo['company_name'],
-                        'logo' => $learnSiteAndLogo['logo']
+                        'company_name' => $companyName,
+                        'logo' => $companyLogo
                     ];
 
-                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email);
+                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
 
-                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                        $isWhitelabeled->updateSmtpConfig();
-                    }
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 
@@ -354,7 +363,7 @@ class ApiLearnControlller extends Controller
         }
     }
 
-    public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail)
+    public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail, $logo, $favIcon)
     {
         $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
         if (!$certificateId) {
@@ -368,21 +377,24 @@ class ApiLearnControlller extends Controller
         $template = $pdf->importPage(1);
         $pdf->useTemplate($template);
 
-        // Format and limit name
+        // Truncate name if too long
         if (strlen($name) > 15) {
             $name = mb_substr($name, 0, 12) . '...';
         }
 
+        // Add user name
         $pdf->SetFont('Helvetica', '', 50);
         $pdf->SetTextColor(47, 40, 103);
         $pdf->SetXY(100, 115);
         $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
 
+        // Add training module
         $pdf->SetFont('Helvetica', '', 16);
         $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 130);
+        $pdf->SetXY(100, 135);
         $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
 
+        // Add date and certificate ID
         $pdf->SetFont('Helvetica', '', 10);
         $pdf->SetTextColor(120, 120, 120);
         $pdf->SetXY(240, 165);
@@ -391,8 +403,19 @@ class ApiLearnControlller extends Controller
         $pdf->SetXY(240, 10);
         $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
 
-        return $pdf->Output('S'); // Output as string
+        if ($logo || file_exists($logo)) {
+            // 1. Top-left corner (e.g., branding)
+            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
+        }
+
+        // 2. Bottom-center badge
+        $pdf->Image($favIcon, 110, 163, 15, 15);
+
+        return $pdf->Output('S');
     }
+
+
+
 
     private function getCertificateId($trainingModule, $userEmail, $trainingId)
     {
