@@ -10,10 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
-<<<<<<< HEAD
 use App\Models\ScormAssignedUser;
-=======
->>>>>>> af9cf4d (Create update training score api)
 use App\Mail\TrainingCompleteMail;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
@@ -404,7 +401,6 @@ class ApiLearnControlller extends Controller
                     $rowData->save();
 
                     // Send email
-
                     $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                     if ($isWhitelabeled->isCompanyWhitelabeled()) {
                         $whitelabelData = $isWhitelabeled->getWhiteLabelData();
