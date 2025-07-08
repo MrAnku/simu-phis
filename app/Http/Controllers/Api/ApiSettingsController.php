@@ -845,7 +845,7 @@ class ApiSettingsController extends Controller
     {
        try {
            $request->validate([
-               'email' => 'required|email,exists:company,email',
+               'email' => 'required|email|exists:company,email',
                'service_status' => 'required',
            ]);
 
