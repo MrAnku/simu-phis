@@ -230,13 +230,13 @@ class LearnerDashController extends Controller
 
         // Encrypt email to generate token
         $token = encrypt($request->email);
-        if($hasTraining){
+        if ($hasTraining) {
             $companyId = $hasTraining->company_id;
         }
-        if($hasPolicy){
+        if ($hasPolicy) {
             $companyId = $hasPolicy->company_id;
-        } 
-        
+        }
+
         $isWhitelabeled = new CheckWhitelabelService($companyId);
         if ($isWhitelabeled->isCompanyWhitelabeled()) {
             $whitelabelData = $isWhitelabeled->getWhiteLabelData();
@@ -244,14 +244,13 @@ class LearnerDashController extends Controller
             $isWhitelabeled->updateSmtpConfig();
             $companyName = $whitelabelData->company_name;
             $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-        }else{
+        } else {
             $learn_domain = env('SIMUPHISH_LEARNING_URL');
             $companyName = env('APP_NAME');
             $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-
         }
-  
-       
+
+
         if ($hasPolicy && !$hasTraining) {
             $learning_dashboard_link = $learn_domain . '/policies/' . $token;
         } else {
@@ -404,7 +403,7 @@ class LearnerDashController extends Controller
         }
     }
 
-    public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail)
+    public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail, $logo)
     {
         $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
         if (!$certificateId) {
@@ -418,7 +417,7 @@ class LearnerDashController extends Controller
         $template = $pdf->importPage(1);
         $pdf->useTemplate($template);
 
-        // Format and limit name
+        // Name
         if (strlen($name) > 15) {
             $name = mb_substr($name, 0, 12) . '...';
         }
@@ -428,21 +427,31 @@ class LearnerDashController extends Controller
         $pdf->SetXY(100, 115);
         $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
 
+        // Training info
         $pdf->SetFont('Helvetica', '', 16);
         $pdf->SetTextColor(169, 169, 169);
         $pdf->SetXY(100, 130);
         $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
 
+        // Date
         $pdf->SetFont('Helvetica', '', 10);
         $pdf->SetTextColor(120, 120, 120);
         $pdf->SetXY(240, 165);
         $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
 
+        // Certificate ID
         $pdf->SetXY(240, 10);
         $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
 
-        return $pdf->Output('S'); // Output as string
+        // ✅ Insert dynamic logo (bottom left area)
+        if ($logo && file_exists($logo)) {
+            // You may adjust coordinates (X, Y) and size (W, H) as needed
+            $pdf->Image($logo, 90, 150, 30, 30); // X=90, Y=150, Width=30mm, Height=30mm
+        }
+
+        return $pdf->Output('S'); // Return as string
     }
+
 
     public function updateTrainingScore(Request $request)
     {
@@ -481,6 +490,7 @@ class LearnerDashController extends Controller
                 // Send email
                 $learnSiteAndLogo = checkWhitelabeled($rowData->company_id);
 
+                // return $learnSiteAndLogo['logo'];
                 $mailData = [
                     'user_name' => $rowData->user_name,
                     'training_name' => $rowData->trainingData->name,
@@ -489,7 +499,7 @@ class LearnerDashController extends Controller
                     'logo' => $learnSiteAndLogo['logo']
                 ];
 
-                $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email);
+                $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $learnSiteAndLogo['logo']);
 
                 $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                 if ($isWhitelabeled->isCompanyWhitelabeled()) {
@@ -511,6 +521,23 @@ class LearnerDashController extends Controller
         $trainingId = $request->input('training_id');
         $date = Carbon::parse($request->input('completion_date'))->format('d F, Y');
         $userEmail = $request->input('user_email');
+
+
+        $companyId = TrainingAssignedUser::where('user_email', $userEmail)->value('company_id');
+
+        $isWhitelabeled = new CheckWhitelabelService($companyId);
+        if ($isWhitelabeled->isCompanyWhitelabeled()) {
+            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+            // $companyName = $whitelabelData->company_name;
+            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
+            $isWhitelabeled->updateSmtpConfig();
+        } else {
+            // $companyName = env('APP_NAME');
+            $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+            $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+        }
+
 
         // Check if the certificate ID already exists for this user and training module
         $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
@@ -549,7 +576,7 @@ class LearnerDashController extends Controller
         // 2. TRAINING TITLE
         $pdf->SetFont('Helvetica', '', 16);
         $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 130);
+        $pdf->SetXY(100, 135);
         $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
 
         // --------------------------
@@ -564,6 +591,14 @@ class LearnerDashController extends Controller
         $pdf->SetTextColor(120, 120, 120);
         $pdf->SetXY(240, 10);
         $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
+
+        if ($companyLogo || file_exists($companyLogo)) {
+            // 1. Top-left corner (e.g., branding)
+            $pdf->Image($companyLogo, 100, 12, 50); // X=15, Y=12, Width=40mm           
+        }
+
+        // 2. Bottom-center badge
+        $pdf->Image($favIcon, 110, 163, 15, 15);
 
         log_action("Employee downloaded training certificate", 'learner', 'learner');
 
