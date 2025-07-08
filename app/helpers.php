@@ -7,13 +7,11 @@ use App\Models\Company;
 use App\Models\SiemLog;
 use App\Models\SiemProvider;
 use App\Models\CompanySettings;
-use Illuminate\Support\Facades\DB;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Request;
 
 if (!function_exists('isActiveRoute')) {
     function isActiveRoute($route, $output = 'active')

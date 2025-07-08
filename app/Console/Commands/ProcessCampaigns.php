@@ -12,21 +12,14 @@ use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use App\Models\SenderProfile;
 use App\Models\CampaignReport;
-use App\Models\TrainingModule;
-use App\Models\CompanySettings;
 use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
-use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\OutlookDmiToken;
 use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rules\Email;
-use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 
 class ProcessCampaigns extends Command

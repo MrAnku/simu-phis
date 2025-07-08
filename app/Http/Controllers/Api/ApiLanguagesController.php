@@ -38,12 +38,12 @@ class ApiLanguagesController extends Controller
             'sv' => 'Swedish',
             'ur' => 'Urdu',
         ];
-        $companyId = Auth::user()->company_id;
-        $defaultPhishingLanguage = CompanySettings::where('company_id', $companyId)->first()->default_phishing_email_lang;
+        $email = Auth::user()->email;
+        $defaultPhishingLanguage = CompanySettings::where('email', $email)->first()->default_phishing_email_lang;
 
-        $defaultTrainingLanguage = CompanySettings::where('company_id', $companyId)->first()->default_training_lang;
+        $defaultTrainingLanguage = CompanySettings::where('email', $email)->first()->default_training_lang;
 
-        $defaultNotificationLanguage = CompanySettings::where('company_id', $companyId)->first()->default_notifications_lang;
+        $defaultNotificationLanguage = CompanySettings::where('email', $email)->first()->default_notifications_lang;
 
         return response()->json([
             'success' => true,

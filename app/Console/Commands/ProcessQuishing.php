@@ -4,23 +4,18 @@ namespace App\Console\Commands;
 
 use App\Models\Company;
 use App\Mail\CampaignMail;
-use App\Mail\QuishingMail;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
-use App\Models\CompanySettings;
 use App\Models\OutlookDmiToken;
 use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
 use App\Models\QuishingActivity;
-use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
-use Illuminate\Support\Facades\Storage;
 use Endroid\QrCode\ErrorCorrectionLevel;
 
 class ProcessQuishing extends Command

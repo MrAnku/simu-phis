@@ -2,18 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Company;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
-use App\Models\TrainingModule;
-use App\Models\CompanySettings;
 use Illuminate\Console\Command;
-use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
-use App\Mail\TrainingAssignedEmail;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use App\Services\TrainingAssignedService;
 
 class ProcessAiCampaigns extends Command

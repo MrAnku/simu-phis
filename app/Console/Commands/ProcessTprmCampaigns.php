@@ -9,14 +9,12 @@ use Illuminate\Support\Str;
 use App\Models\TprmActivity;
 use App\Models\TprmCampaign;
 use App\Models\SenderProfile;
-use App\Models\CompanySettings;
 use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\TprmCampaignLive;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
@@ -61,14 +59,6 @@ class ProcessTprmCampaigns extends Command
       setCompanyTimezone($company->company_id);
 
       $company_id = $company->company_id;
-
-      //get timezone from company settings
-      $companySettings = CompanySettings::where('company_id', $company->company_id)->first();
-
-      if ($companySettings) {
-        date_default_timezone_set($companySettings->time_zone);
-        config(['app.timezone' => $companySettings->time_zone]);
-      }
 
       $campaigns = TprmCampaign::where('status', 'pending')
         ->where('company_id', $company_id)
