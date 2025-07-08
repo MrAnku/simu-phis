@@ -1870,7 +1870,9 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
-            $trainingModules = TrainingModule::where('company_id', $companyId)->get();
+            $trainingModules = TrainingModule::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->get();
             $trainings = [];
             foreach ($trainingModules as $trainingModule) {
                 $trainings[] = [
