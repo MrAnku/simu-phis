@@ -1992,6 +1992,15 @@ class ApiReportingController extends Controller
                 $trainingId = (int) $course->training;
 
                 $training = TrainingModule::find($trainingId);
+                $DueDateDetails = [
+                    'count_of_training_due_date' => TrainingAssignedUser::where('training', $course->training)
+                        ->where('training_started', 0)
+                        ->where('training_due_date', '<', date('Y-m-d'))
+                        ->where('company_id', $companyId)
+                        ->count(),
+
+                ];
+
                 $courseDetails[] = [
 
                     'course_title' => $training->name ?? 'Anonymous Course',
@@ -2025,7 +2034,8 @@ class ApiReportingController extends Controller
                 'success' => true,
                 'message' => __('Course summary report fetched successfully'),
                 'data' => [
-                    'courses' => $courseDetails
+                    'courses' => $courseDetails,
+                    'training_due_date_details' => $DueDateDetails
                 ]
             ], 200);
         } catch (\Exception $e) {

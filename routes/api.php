@@ -62,10 +62,11 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
     Route::put('/save-outlook-dmi-code', [ApiOutlookAdController::class, 'saveOutlookDmiCode']);
-   
+
     Route::get('/get-pie-data', [ApiDashboardController::class, 'getPieData']);
     Route::get('/get-line-chart-data', [ApiDashboardController::class, 'getLineChartData']);
     Route::get('/get-whats-chart-data', [ApiDashboardController::class, 'whatsappReport']);
+    Route::get('/get-ai-chart-data', [ApiDashboardController::class, 'aiCallReport']);
     Route::get('/get-payload-click-data', [ApiDashboardController::class, 'getPayloadClickData']);
     Route::get('/get-email-reported-data', [ApiDashboardController::class, 'getEmailReportedData']);
     Route::get('/get-package-data', [ApiDashboardController::class, 'getPackage']);
@@ -188,34 +189,34 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     });
 
     Route::prefix('report')->group(function () {
-    //     Route::get('/', [ApiReportingController::class, 'index']);
-    //     Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
-    //     Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
-    //     Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
-    //     Route::get('/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'fetchCampaignReport']);
-    //     Route::get('/whatsappfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
-    //     Route::get('/aicallingfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
-    //     Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
-    //     Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
+        //     Route::get('/', [ApiReportingController::class, 'index']);
+        //     Route::get('/getChartData', [ApiReportingController::class, 'getChartData']);
+        //     Route::get('/wgetChartData', [ApiReportingController::class, 'wgetChartData']);
+        //     Route::get('/cgetChartData', [ApiReportingController::class, 'cgetChartData']);
+        //     Route::get('/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'fetchCampaignReport']);
+        //     Route::get('/whatsappfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampaignReport']);
+        //     Route::get('/aicallingfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampaignReport']);
+        //     Route::get('/tprmfetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampaignReport']);
+        //     Route::get('/fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'fetchCampReportByUsers']);
 
-    //     Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
+        //     Route::get('/tprm-fetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tprmfetchCampReportByUsers']);
 
-    //     Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
+        //     Route::get('/aicallingfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampReportByUsers']);
 
-    //     Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
+        //     Route::get('/whatsappfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampReportByUsers']);
 
-    //     Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
+        //     Route::get('/fetch-camp-training-details/{campaignId}', [ApiReportingController::class, 'fetchCampTrainingDetails']);
 
-    //     Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
+        //     Route::get('/aicallingfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetails']);
 
-    //     Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
+        //     Route::get('/whatsappfetch-camp-training-details/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetails']);
 
-    //     Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
+        //     Route::get('/fetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'fetchCampTrainingDetailsIndividual']);
 
-    //     Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
+        //     Route::get('/aicallingfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'aicallingfetchCampTrainingDetailsIndividual']);
 
-    //     Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
-    // });
+        //     Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
+        // });
         Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
 
         // Awareness and Education Reporting

@@ -193,7 +193,7 @@ class ApiDashboardController extends Controller
             'verygood' => [61, 80],
             'excellent' => [81, 100],
         ];
- 
+
         $distribution = [
             'poor' => 0,
             'fair' => 0,
@@ -600,6 +600,87 @@ class ApiDashboardController extends Controller
             ], 500);
         }
     }
+    public function aiCallReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $now = Carbon::now();
+            $startDate = $now->copy()->subDays(6)->startOfDay(); // last 7 days including today
+
+            // Fetch records for the last 7 days
+            $records = AiCallCampLive::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startDate, $now->endOfDay()])
+                ->get(['training_assigned', 'call_send_response', 'call_end_response', 'call_report', 'status', 'created_at']);
+
+            // Prepare last 7 days array
+            $last7Days = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $last7Days[] = $now->copy()->subDays($i)->format('Y-m-d');
+            }
+
+            // Initialize counts for each day with new naming
+            $result = [];
+            foreach ($last7Days as $date) {
+                $result[$date] = [
+                    'training_assigned' => 0,
+                    'calls_completed' => 0,
+                    'calls_pending' => 0,
+                    'calls_waiting' => 0,
+                    'calls_sent' => 0,
+                    'calls_responded' => 0,
+                    'transcription_logged' => 0,
+                ];
+            }
+
+            // Count records for each day with new keys
+            foreach ($records as $record) {
+                $date = Carbon::parse($record->created_at)->format('Y-m-d');
+                if (!isset($result[$date])) continue;
+                if ($record->training_assigned == 1) {
+                    $result[$date]['training_assigned']++;
+                }
+                if ($record->status === 'completed') {
+                    $result[$date]['calls_completed']++;
+                }
+                if ($record->status === 'pending') {
+                    $result[$date]['calls_pending']++;
+                }
+                if ($record->status === 'waiting') {
+                    $result[$date]['calls_waiting']++;
+                }
+                if ($record->call_send_response !== null) {
+                    $result[$date]['calls_sent']++;
+                }
+                if ($record->call_end_response !== null) {
+                    $result[$date]['calls_responded']++;
+                }
+                if ($record->call_report !== null) {
+                    $result[$date]['transcription_logged']++;
+                }
+            }
+
+            // Format output for frontend (array of days)
+            $output = [];
+            foreach ($last7Days as $date) {
+                $output[] = array_merge(['date' => Carbon::parse($date)->format('d M')], $result[$date]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ai chart data retrieved successfully',
+                'data' => $output,
+                'last_7_days' => array_map(function ($d) {
+                    return Carbon::parse($d)->format('d M');
+                }, $last7Days)
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve ai chart data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function getPayloadClickData()
     {
@@ -994,21 +1075,21 @@ class ApiDashboardController extends Controller
         // Define the mapping for each type to its query
         $types = [
             'clicked' => function ($query) {
-            return $query->where('payload_clicked', 1);
+                return $query->where('payload_clicked', 1);
             },
             'reported' => function ($query) {
-            return $query->where('email_reported', 1);
+                return $query->where('email_reported', 1);
             },
             'ignored' => function ($query) {
-            return $query->where('payload_clicked', 0);
+                return $query->where('payload_clicked', 0);
             },
             'repeat_clickers' => function ($query) {
-            return $query->where('payload_clicked', 1)
-                ->groupBy('user_email')
-                ->havingRaw('COUNT(*) > 1');
+                return $query->where('payload_clicked', 1)
+                    ->groupBy('user_email')
+                    ->havingRaw('COUNT(*) > 1');
             },
             'remediation_rate' => function ($query) {
-            return $query->where('email_reported', 1);
+                return $query->where('email_reported', 1);
             },
         ];
 
@@ -1031,48 +1112,48 @@ class ApiDashboardController extends Controller
         // Numerator for each type
         if ($type === 'repeat_clickers') {
             $currentValue = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$currentStart, $now])
-            ->where('payload_clicked', 1)
-            ->groupBy('user_email')
-            ->havingRaw('COUNT(*) > 1')
-            ->pluck('user_email')
-            ->count();
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->where('payload_clicked', 1)
+                ->groupBy('user_email')
+                ->havingRaw('COUNT(*) > 1')
+                ->pluck('user_email')
+                ->count();
 
             $previousValue = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $currentStart])
-            ->where('payload_clicked', 1)
-            ->groupBy('user_email')
-            ->havingRaw('COUNT(*) > 1')
-            ->pluck('user_email')
-            ->count();
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->where('payload_clicked', 1)
+                ->groupBy('user_email')
+                ->havingRaw('COUNT(*) > 1')
+                ->pluck('user_email')
+                ->count();
 
             // Use total unique users as denominator for repeat clickers
             $totalCurrent = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$currentStart, $now])
-            ->distinct('user_email')
-            ->count('user_email');
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->distinct('user_email')
+                ->count('user_email');
             $totalPrevious = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $currentStart])
-            ->distinct('user_email')
-            ->count('user_email');
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->distinct('user_email')
+                ->count('user_email');
         } elseif ($type === 'remediation_rate') {
             // Remediation rate is reported/total
             $currentReported = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$currentStart, $now])
-            ->where('email_reported', 1)
-            ->count();
+                ->whereBetween('created_at', [$currentStart, $now])
+                ->where('email_reported', 1)
+                ->count();
             $previousReported = \App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $currentStart])
-            ->where('email_reported', 1)
-            ->count();
+                ->whereBetween('created_at', [$previousStart, $currentStart])
+                ->where('email_reported', 1)
+                ->count();
 
             $currentValue = $totalCurrent > 0 ? ($currentReported / $totalCurrent) * 100 : 0;
             $previousValue = $totalPrevious > 0 ? ($previousReported / $totalPrevious) * 100 : 0;
         } else {
             $currentValue = $types[$type](\App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$currentStart, $now]))->count();
+                ->whereBetween('created_at', [$currentStart, $now]))->count();
             $previousValue = $types[$type](\App\Models\CampaignLive::where('company_id', $companyId)
-            ->whereBetween('created_at', [$previousStart, $currentStart]))->count();
+                ->whereBetween('created_at', [$previousStart, $currentStart]))->count();
 
             // For clicked, reported, ignored: use percent of total
             $currentValue = $totalCurrent > 0 ? ($currentValue / $totalCurrent) * 100 : 0;
