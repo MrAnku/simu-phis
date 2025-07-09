@@ -71,15 +71,23 @@ class AuthenticatedSessionController extends Controller
                 ]);
             }
         }
+        $enabledFeatures = Company::where('company_id', Auth::user()->company_id)->value('enabled_feature');
+        
+        if (!$enabledFeatures) {
+            $enabledFeatures = 'null'; // Default to null if no features are enabled
+        }
 
-        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440)); // Default JWT TTL is 1440 minutes (1 day)
+        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440)); 
+        $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
+        
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),
             "success" => true,
             "message" => "Logged in successfully",
             "mfa" => false,
-        ])->withCookie($cookie);
+        ])->withCookie($cookie)
+          ->withCookie($enabledFeatureCookie);
     }
 
     public function tokenCheck(Request $request): JsonResponse
@@ -150,10 +158,12 @@ class AuthenticatedSessionController extends Controller
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
             $cookie = cookie('jwt', null, -1);
+            $enabledFeatureCookie = cookie('enabled_feature', null, -1);
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully logged out'
-            ])->withCookie($cookie);
+            ])->withCookie($cookie)
+              ->withCookie($enabledFeatureCookie);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
