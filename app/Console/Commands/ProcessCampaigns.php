@@ -183,6 +183,12 @@ class ProcessCampaigns extends Command
               // Use Storage facade to get the mail body from S3
               $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
 
+              // if failed to open stream
+              if ($mailBody === false) {
+                echo "Failed to open stream for mail body file: " . $phishingMaterial->mailBodyFilePath . "\n";
+                continue;
+              }
+
               $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
               $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
               $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);

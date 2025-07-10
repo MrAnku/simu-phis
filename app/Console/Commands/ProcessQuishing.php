@@ -67,16 +67,21 @@ class ProcessQuishing extends Command
                     //prepare mail body
                     $mailData = $this->prepareMailBody($campaign, $quishingTemplate->senderProfile()->first(), $quishingTemplate, $qrcodeLink);
 
+                    if (!$mailData) {
+                        echo "Failed to open stream for mail body campaign ID: {$campaign->id}\n";
+                        continue;
+                    }
+
                     //send mail
                     $mailSent = $this->sendMail($mailData);
                     // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
                     if ($mailSent) {
 
-                    QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                        QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
-                    echo "Mail sent to {$campaign->user_email} \n";
-                    $campaign->sent = '1';
-                    $campaign->save();
+                        echo "Mail sent to {$campaign->user_email} \n";
+                        $campaign->sent = '1';
+                        $campaign->save();
                     }
                 }
             }
@@ -132,6 +137,12 @@ class ProcessQuishing extends Command
 
         // $mailBody = Storage::disk('s3')->get($quishingMaterial->file);
         $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $quishingMaterial->file);
+
+        // if failed to open stream
+        if ($mailBody === false) {
+            echo "Failed to open stream for mail body file: " . $quishingMaterial->file . "\n";
+            return false;
+        }
 
         $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         $mailBody = str_replace('{{qr_code}}', '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">', $mailBody);

@@ -155,6 +155,12 @@ class ProcessTprmCampaigns extends Command
               $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
               $mailBody = file_get_contents($mailBody);
 
+              // if failed to open stream
+              if ($mailBody === false) {
+                echo "Failed to open stream for mail body file: " . $phishingMaterial->mailBodyFilePath . "\n";
+                continue;
+              }
+
               // Perform replacements in mail body
               $mailBody = str_replace('{{website_url}}', $websiteFilePath, $mailBody);
               $mailBody = str_replace('{{user_name}}', $user_Name, $mailBody);
