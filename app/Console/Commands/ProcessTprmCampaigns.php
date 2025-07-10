@@ -152,12 +152,10 @@ class ProcessTprmCampaigns extends Command
 
               echo "Final URL with query string: " . $websiteFilePath . "\n";
 
-              $mailBody = public_path('storage/' . $phishingMaterial->mailBodyFilePath);
-              $mailBody = file_get_contents($mailBody);
-
-              // if failed to open stream
-              if ($mailBody === false) {
-                echo "Failed to open stream for mail body file: " . $phishingMaterial->mailBodyFilePath . "\n";
+              try{
+                $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
+              } catch (\Exception $e) {
+                echo "Error fetching mail body: " . $e->getMessage() . "\n";
                 continue;
               }
 

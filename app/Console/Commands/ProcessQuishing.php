@@ -64,13 +64,19 @@ class ProcessQuishing extends Command
                     //get qrcode link
                     $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
 
-                    //prepare mail body
-                    $mailData = $this->prepareMailBody($campaign, $quishingTemplate->senderProfile()->first(), $quishingTemplate, $qrcodeLink);
-
-                    if (!$mailData) {
-                        echo "Failed to open stream for mail body campaign ID: {$campaign->id}\n";
+                    try {
+                        //prepare mail body
+                        $mailData = $this->prepareMailBody(
+                            $campaign,
+                            $quishingTemplate->senderProfile()->first(),
+                            $quishingTemplate,
+                            $qrcodeLink
+                        );
+                    } catch (\Exception $e) {
+                        echo "Error: " . $e->getMessage() . "\n";
                         continue;
                     }
+
 
                     //send mail
                     $mailSent = $this->sendMail($mailData);

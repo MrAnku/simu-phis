@@ -180,14 +180,13 @@ class ProcessCampaigns extends Command
 
               $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
 
-              // Use Storage facade to get the mail body from S3
-              $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
-
-              // if failed to open stream
-              if ($mailBody === false) {
-                echo "Failed to open stream for mail body file: " . $phishingMaterial->mailBodyFilePath . "\n";
+              try{
+                $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
+              } catch (\Exception $e) {
+                echo "Error fetching mail body: " . $e->getMessage() . "\n";
                 continue;
               }
+
 
               $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
               $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
