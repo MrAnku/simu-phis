@@ -272,16 +272,20 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         // Users Reporting
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
 
-         Route::get('/fetch-users-reporting', [ApiReportingController::class, 'fetchUsersReporting']);
+        Route::get('/fetch-users-reporting', [ApiReportingController::class, 'fetchUsersReporting']);
 
         // Training Reporting
         Route::get('/fetch-training-report', [ApiReportingController::class, 'fetchTrainingReport']);
+
+        Route::get('/fetch-training-reporting', [ApiReportingController::class, 'fetchTrainingReporting']);
 
         // Games Reporting
         Route::get('/fetch-games-report', [ApiReportingController::class, 'fetchGamesReport']);
 
         // Policy Reporting
         Route::get('/fetch-policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
+
+         Route::get('/fetch-policies-reporting', [ApiReportingController::class, 'fetchPoliciesReporting']);
 
         // Course Summary Reporting
         Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);

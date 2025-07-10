@@ -31,6 +31,7 @@ use App\Models\BlueCollarEmployee;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\AssignedPolicy;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
@@ -1559,7 +1560,7 @@ class ApiReportingController extends Controller
             $trainingAssignReminderDays = (int) CompanySettings::where('company_id', $companyId)
                 ->value('training_assign_remind_freq_days');
 
-                $users = Users::where('company_id', $companyId)
+            $users = Users::where('company_id', $companyId)
                 ->whereIn('user_email', function ($query) use ($companyId) {
                     $query->select('user_email')
                         ->from('training_assigned_users')
@@ -2303,6 +2304,91 @@ class ApiReportingController extends Controller
         }
     }
 
+    public function fetchTrainingReporting()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
+                $query->where('company_id', $companyId)
+                    ->orWhere('company_id', 'default');
+            })
+                ->whereHas('trainingAssigned')
+                ->get();
+            $trainings = [];
+            foreach ($trainingModules as $trainingModule) {
+                $trainings[] = [
+                    'name' => $trainingModule->name,
+                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->count(),
+                    'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)->count(),
+                    'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)->count(),
+                    'total_overdue_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)
+                        ->where('training_due_date', '<=', now())
+                        ->count(),
+                    'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)->count(),
+                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)->count(),
+                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)->count(),
+                    'assigned_date' => TrainingAssignedUser::where('training', $trainingModule->id)->value('assigned_date'),
+                    'training_due_date' => TrainingAssignedUser::where('training', $trainingModule->id)->value('training_due_date'),
+                    'training_started' => TrainingAssignedUser::where('training', $trainingModule->id)
+                        ->where('training_started', 1) ? 'Yes' : 'No',
+                    'personal_best' => TrainingAssignedUser::where('training', $trainingModule->id)
+                        ->value('personal_best'),
+                    'no_of_certificates' => TrainingAssignedUser::where('training', $trainingModule->id)
+                        ->whereNotNull('certificate_id')
+                        ->count(),
+
+                ];
+            }
+
+            $latestTrainings = TrainingModule::where(function ($query) use ($companyId) {
+                $query->where('company_id', $companyId)
+                    ->orWhere('company_id', 'default');
+            })
+                ->whereHas('trainingAssigned')
+                ->limit(6)
+                ->get();
+
+            foreach ($latestTrainings as $latestTraining) {
+                $latestTrainingsAssigmentStatus[] = [
+                    'training_name' => $latestTraining->name,
+                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $latestTraining->id)->count(),
+                    'completed_trainings' => TrainingAssignedUser::where('training', $latestTraining->id)->where('completed', 1)->count(),
+                    'in_progress_trainings' => TrainingAssignedUser::where('training', $latestTraining->id)->where('training_started', 1)->count(),
+                    'total_overdue_trainings' => TrainingAssignedUser::where('training', $latestTraining->id)
+                        ->where('training_due_date', '<=', now())
+                        ->count(),
+                ];
+
+                $latestTrainingSimulationTypes[] = [
+                    'total_no_of_simulations' => CampaignLive::where('training_module', $latestTraining->id)->count(),
+                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $latestTraining->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $latestTraining->id)->count(),
+                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $latestTraining->id)->count(),
+                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $latestTraining->id)->count(),
+                ];
+            }
+
+
+            return response()->json([
+                'seuccess' => true,
+                'mssage' => __('Training report fetched successfully'),
+                'data' => [
+                    'trainings' => $trainings,
+                    'latest_trainings_assignment_status' => $latestTrainingsAssigmentStatus,
+                    'latest_training_simulation_types' => $latestTrainingSimulationTypes
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function fetchGamesReport()
     {
         try {
@@ -2368,6 +2454,62 @@ class ApiReportingController extends Controller
                 'message' => __('Policies report fetched successfully'),
                 'data' => [
                     'policies' => $policyDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchPoliciesReporting()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $policies = Policy::where('company_id', $companyId)->get();
+
+            if ($policies->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No policies found for this company'),
+                    'data' => []
+                ], 404);
+            }
+
+            $policyDetails = [];
+            foreach ($policies as $policy) {
+                $policyDetails[] = [
+                    'policy_name' => $policy->policy_name,
+                    'policy_description' => $policy->policy_description,
+                    'has_quiz' => $policy->has_quiz ? 'Yes' : 'No',
+                    'created_at' => $policy->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            $assignedPolicies = AssignedPolicy::where('company_id', $companyId)->get();
+            $assignedPolicyDetails = [];
+            foreach ($assignedPolicies as $assignedPolicy) {
+                $assignedPolicyDetails[] = [
+                    'policy_name' => Policy::find($assignedPolicy->policy)->policy_name,
+                    'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
+                    'accepted_date' => $assignedPolicy->accepted_at
+                        ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
+                        : 'Not Accepted',
+                    'user_email' => $assignedPolicy->user_email,
+                    'user_name' => $assignedPolicy->user_name,
+                    'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Policies report fetched successfully'),
+                'data' => [
+                    'policies' => $policyDetails,
+                    'assigned_policies' => $assignedPolicyDetails
                 ]
             ], 200);
         } catch (\Exception $e) {
