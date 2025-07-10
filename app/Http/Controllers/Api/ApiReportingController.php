@@ -1441,10 +1441,7 @@ class ApiReportingController extends Controller
 
             $onboardingTrainingDetails = [];
 
-            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)
-            ->take(5)
-            ->get();
-
+            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
             foreach ($onboardingTrainings as $onboardingTraining) {
                 $groupName = null;
 
@@ -1472,6 +1469,146 @@ class ApiReportingController extends Controller
                     'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
                     'outstanding_training_count' => TrainingAssignedUser::where('user_email', $onboardingTraining->user_email)
                         ->where('personal_best', '>=', 70)->count(),
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Awareness and Education report fetched successfully'),
+                'data' => [
+                    'training_statistics' => [
+                        'total_assigned_users' => $totalAssignedUsers,
+                        'not_started_training' => $notStartedTraining,
+                        'not_started_training_rate' => $notStartedTrainingRate,
+                        'progress_training' => $progressTraining,
+                        'progress_training_rate' => $progressTrainingRate,
+                        'completed_training' => $completedTraining,
+                        'completed_training_rate' => $completedTrainingRate
+                    ],
+                    'general_statistics' => [
+                        'educated_user_percent' => round($educatedUserRate, 2),
+                        'roles_responsibility_percent' => $rolesResponsilbilityPercent,
+                        'certified_users_percent' => round($certifiedUsersRate)
+                    ],
+                    'education_duration_statistics' => [
+                        'avg_education_duration' => round($avgEducationDuration),
+                        'avg_overall_duration' => round($avgOverallDuration),
+                        'training_assign_reminder_days' => $trainingAssignReminderDays
+                    ],
+                    'onboardingTrainingDetails' => $onboardingTrainingDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchAwarenessEduReporting()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
+            $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
+
+            $notStartedTrainingRate = $totalAssignedUsers > 0 ? round($notStartedTraining / $totalAssignedUsers * 100) : 0;
+
+            $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 0)
+                ->count();
+
+            $progressTrainingRate = $totalAssignedUsers > 0 ? round($progressTraining / $totalAssignedUsers * 100) : 0;
+
+            $completedTraining = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 1)
+                ->count();
+
+            $completedTrainingRate = $totalAssignedUsers > 0 ? round($completedTraining / $totalAssignedUsers * 100) : 0;
+
+            $usersWhoScored = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('personal_best', '>=', 10)
+                ->count();
+
+            $educatedUserRate = $usersWhoScored / $totalAssignedUsers * 100;
+
+            $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
+            $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
+
+            $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
+
+            $certifiedUsersRate = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
+
+            $emailCampData = Campaign::where('company_id', $companyId)
+                ->pluck('days_until_due');
+
+
+            $quishCampData = QuishingCamp::where('company_id', $companyId)
+                ->pluck('days_until_due');
+
+            $waCampData = WaCampaign::where('company_id', $companyId)
+                ->pluck('days_until_due');
+
+            $merged = $emailCampData->merge($quishCampData)->merge($waCampData);
+            $avgEducationDuration = round($merged->avg(), 2);
+
+            $avgOverallDuration = $avgEducationDuration;
+
+            $trainingAssignReminderDays = (int) CompanySettings::where('company_id', $companyId)
+                ->value('training_assign_remind_freq_days');
+
+                $users = Users::where('company_id', $companyId)
+                ->whereIn('user_email', function ($query) use ($companyId) {
+                    $query->select('user_email')
+                        ->from('training_assigned_users')
+                        ->where('company_id', $companyId);
+                })
+                ->get();
+
+
+            $onboardingTrainingDetails = [];
+
+            foreach ($users as $user) {
+                // Get group name
+                $group = UsersGroup::whereJsonContains('users', $user->id)->first();
+                $groupName = $group ? $group->group_name : null;
+
+                // Get all trainings for this user
+                $trainings = TrainingAssignedUser::where('company_id', $companyId)
+                    ->where('user_email', $user->user_email)
+                    ->get();
+
+                $totalAssignedTrainings = $trainings->count();
+                $totalCompletedTrainings = $trainings->where('completed', 1)->count();
+                $totalCertificates = $trainings->whereNotNull('certificate_id')->count();
+                $outstandingTrainingCount = $trainings->where('personal_best', '>=', 70)->count();
+
+                $assignedTrainings = [];
+                foreach ($trainings as $training) {
+                    $assignedTrainings[] = [
+                        'training_name' => $training->trainingData->name,
+                        'assigned_date' => $training->assigned_date,
+                        'completion_date' => $training->completion_date,
+                        'passing_score' => $training->trainingData->passing_score,
+                        'personal_best' => $training->personal_best,
+                        'certificate_id' => $training->certificate_id,
+                        'training_started' => $training->training_started == 1 ? 'Yes' : 'No',
+                        'status' => $training->completed == 1 ? 'Complete' : 'In Progress',
+                        'training_due_date' => $training->training_due_date,
+                    ];
+                }
+
+                $onboardingTrainingDetails[] = [
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    'division' => $groupName,
+                    'total_assigned_trainings' => $totalAssignedTrainings,
+                    'assigned_trainings' => $assignedTrainings,
+                    'total_completed_trainings' => $totalCompletedTrainings,
+                    'total_certificates' => $totalCertificates,
+                    'outstanding_training_count' => $outstandingTrainingCount,
                 ];
             }
 
@@ -1876,8 +2013,8 @@ class ApiReportingController extends Controller
                 $query->where('company_id', $companyId)
                     ->orWhere('company_id', 'default');
             })
-            ->whereHas('trainingAssigned')
-            ->get();
+                ->whereHas('trainingAssigned')
+                ->get();
             $trainings = [];
             foreach ($trainingModules as $trainingModule) {
                 $trainings[] = [
