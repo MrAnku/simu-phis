@@ -2004,6 +2004,264 @@ class ApiReportingController extends Controller
         }
     }
 
+    public function fetchUsersReporting()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            // Fetch all distinct users by email
+            $allUsers = Users::where('company_id', $companyId)
+                ->whereIn('id', function ($query) use ($companyId) {
+                    $query->selectRaw('MIN(id)')
+                        ->from('users')
+                        ->where('company_id', $companyId)
+                        ->groupBy('user_email');
+                })
+                ->get();
+
+            // Fetch top 6 users for risk score calculation (latest users)
+            $top6Users = Users::where('company_id', $companyId)
+                ->whereIn('id', function ($query) use ($companyId) {
+                    $query->selectRaw('MIN(id)')
+                        ->from('users')
+                        ->where('company_id', $companyId)
+                        ->groupBy('user_email');
+                })
+                ->orderBy('created_at', 'desc')
+                ->limit(6)
+                ->get()
+                ->keyBy('id'); // For quick lookup
+
+            $riskScores = [];
+            $riskScoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'verygood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
+            $userDetails = [];
+
+            foreach ($allUsers as $user) {
+                // Group
+                $group = UsersGroup::whereJsonContains('users', $user->id)->first();
+                $groupName = $group ? $group->group_name : null;
+
+                // Campaigns
+                $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
+                    ->where('company_id', $companyId);
+
+                $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
+                    ->where('company_id', $companyId);
+
+                $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
+                    ->where('company_id', $companyId);
+
+                $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+                    ->where('company_id', $companyId);
+
+                $totalSimulations = $emailCampaigns->count();
+                $compromisedSimulations = (clone $emailCampaigns)->where('emp_compromised', 1)->count();
+
+                $totalQuishing = $quishingCampaigns->count();
+                $compromisedQuishing = (clone $quishingCampaigns)->where('compromised', 1)->count();
+
+                $totalTprm = $tprmCampaigns->count();
+                $compromisedTprm = (clone $tprmCampaigns)->where('emp_compromised', 1)->count();
+
+                $totalWhatsapp = $whatsappCampaigns->count();
+                $compromisedWhatsapp = (clone $whatsappCampaigns)->where('compromised', 1)->count();
+
+                // Risk score calculation for top 6 users only
+                $riskScore = null;
+                $riskLevel = null;
+
+                if ($top6Users->has($user->id)) {
+                    $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+                    $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+                    $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+                    // Determine risk level
+                    foreach ($riskScoreRanges as $label => [$min, $max]) {
+                        if ($riskScore >= $min && $riskScore <= $max) {
+                            $riskLevel = $label;
+                            break;
+                        }
+                    }
+
+                    $riskScores[] = $riskScore;
+
+                    $top6RiskUsers[] = [
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        'risk_score' => $riskScore,
+                        'risk_level' => $riskLevel,
+                    ];
+                }
+
+                $userDetails[] = [
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    'whatsapp_no' => $user->whatsapp,
+                    'user_type' => 'normal',
+                    'division' => $groupName,
+                    'user_job_title' => $user->user_job_title,
+                    'breach_scan_date' => $user->breach_scan_date ?? null,
+                    'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+                    'user_created_at' => $user->created_at->format('Y-m-d'),
+                    'risk_score' => $riskScore,
+                    'risk_level' => $riskLevel,
+                    'campaigns' => [
+                        'email' => [
+                            'totalCampaigns' => $totalSimulations,
+                            'totalTrainings' => TrainingAssignedUser::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->count(),
+                            'payload_clicked' => CampaignLive::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('payload_clicked', 1)
+                                ->count(),
+                            'compromised' => $compromisedSimulations,
+                            'email_reported' => CampaignLive::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('email_reported', 1)
+                                ->count(),
+                        ],
+                        'whatsapp' => [
+                            'totalCampaigns' => 0,
+                            'totalTrainings' => 0,
+                            'payload_clicked' => 0,
+                            'compromised' => 0,
+                        ],
+                        'ai_vishing' => [
+                            'totalCampaigns' => AiCallCampLive::where('employee_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->count(),
+                            'totalTrainings' => AiCallCampLive::where('employee_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('training_assigned', 1)
+                                ->count(),
+                            'call_send' => AiCallCampLive::where('employee_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->whereNotNull('call_send_response')
+                                ->count(),
+                            'call_reported' => AiCallCampLive::where('employee_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->whereNotNull('call_report')
+                                ->count(),
+                        ],
+                        'quishing' => [
+                            'totalCampaigns' => $totalQuishing,
+                            'totalTrainings' => QuishingLiveCamp::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('training_assigned', 1)
+                                ->count(),
+                            'qr_scanned' => QuishingLiveCamp::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('qr_scanned', 1)
+                                ->count(),
+                            'compromised' => $compromisedQuishing,
+                            'email_reported' => QuishingLiveCamp::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('email_reported', 1)
+                                ->count(),
+                        ],
+                        'tprm' => [
+                            'totalCampaigns' => $totalTprm,
+                            'totalTrainings' => TprmCampaignLive::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('training_assigned', 1)
+                                ->count(),
+                            'payload_clicked' => TprmCampaignLive::where('user_email', $user->user_email)
+                                ->where('company_id', $companyId)
+                                ->where('payload_clicked', 1)
+                                ->count(),
+                            'compromised' => $compromisedTprm,
+                        ],
+                    ],
+                ];
+            }
+
+            // Blue Collar Users
+            $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
+            foreach ($blueCollarUsers as $user) {
+                $userDetails[] = [
+                    'user_name' => $user->user_name,
+                    'user_email' => 'N/A',
+                    'whatsapp_no' => $user->whatsapp,
+                    'user_type' => 'blue-collar',
+                    'division' => $user->blueCollarGroup->group_name,
+                    'user_job_title' => $user->user_job_title,
+                    'breach_scan_date' => $user->breach_scan_date ?? null,
+                    'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+                    'user_created_at' => $user->created_at->format('Y-m-d'),
+                    'campaigns' => [
+                        'email' => [
+                            'totalCampaigns' => 0,
+                            'totalTrainings' => 0,
+                            'payload_clicked' => 0,
+                            'compromised' => 0,
+                            'email_reported' => 0,
+                        ],
+                        'whatsapp' => [
+                            'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                ->where('company_id', $companyId)
+                                ->count(),
+                            'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+                                ->where('company_id', $companyId)
+                                ->count(),
+                            'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                ->where('company_id', $companyId)
+                                ->where('payload_clicked', 1)
+                                ->count(),
+                            'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                ->where('company_id', $companyId)
+                                ->where('compromised', 1)
+                                ->count(),
+                        ],
+                        'ai_vishing' => [
+                            'totalCampaigns' => 0,
+                            'totalTrainings' => 0,
+                            'call_send' => 0,
+                            'call_reported' => 0,
+                        ],
+                        'quishing' => [
+                            'totalCampaigns' => 0,
+                            'totalTrainings' => 0,
+                            'qr_scanned' => 0,
+                            'compromised' => 0,
+                            'email_reported' => 0,
+                        ],
+                        'tprm' => [
+                            'totalCampaigns' => 0,
+                            'totalTrainings' => 0,
+                            'payload_clicked' => 0,
+                            'compromised' => 0,
+                        ],
+                    ],
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Users report fetched successfully'),
+                'data' => [
+                    'total_users' => count($userDetails),
+                    'user_details' => $userDetails,
+                    'top_6_user_risk_scores' => $top6RiskUsers
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function fetchTrainingReport()
     {
         try {
