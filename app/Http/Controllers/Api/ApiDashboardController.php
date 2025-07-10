@@ -675,9 +675,8 @@ class ApiDashboardController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to retrieve ai chart data',
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'Error: '. $e->getMessage()
             ], 500);
         }
     }

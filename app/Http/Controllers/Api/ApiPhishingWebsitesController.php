@@ -31,7 +31,7 @@ class ApiPhishingWebsitesController extends Controller
             $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')
                 ->paginate(9); // Fetch results as a collection
-            
+
             $default = PhishingWebsite::where('company_id', 'default')->paginate(9);
             $custom = PhishingWebsite::where('company_id', $company_id)->paginate(9);
 
@@ -225,7 +225,7 @@ class ApiPhishingWebsitesController extends Controller
                     $query->where('name', 'LIKE', '%' . $searchTerm . '%');
                 })
                 ->paginate(9);
-            
+
             $default = PhishingWebsite::where('company_id', 'default')
                 ->where('name', 'LIKE', '%' . $searchTerm . '%')
                 ->paginate(9);
@@ -395,6 +395,56 @@ class ApiPhishingWebsitesController extends Controller
     }
 
 
+    public function deleteClonedWebsite(Request $request): JsonResponse
+    {
+        try {
+            $id = $request->route('encodedId');
+            if (!$id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Cloned website ID is required')
+                ], 422);
+            }
+
+            $id = base64_decode($id);
+
+            $clonedWebsite = WebsiteCloneJob::find($id);
+            if (!$clonedWebsite) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Cloned website not found')
+                ], 404);
+            }
+
+            $fileUrl = $clonedWebsite->file_url;
+
+            // Parse the S3 path from the file_url (strip domain and leading slash)
+            $parsedUrl = parse_url($fileUrl, PHP_URL_PATH);
+            $s3Path = ltrim($parsedUrl, '/');
+
+
+            // delete the main HTML file
+            if (Storage::disk('s3')->exists($s3Path)) {
+                Storage::disk('s3')->delete($s3Path);
+            }
+
+
+            // Delete the database record
+            $clonedWebsite->delete();
+
+            log_action("Cloned website deleted successfully (ID: {$id})");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Cloned Website deleted successfully.')
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     public function generateWebsite(Request $request)

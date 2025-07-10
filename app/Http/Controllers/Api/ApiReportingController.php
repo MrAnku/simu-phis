@@ -1441,7 +1441,9 @@ class ApiReportingController extends Controller
 
             $onboardingTrainingDetails = [];
 
-            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)
+            ->take(5)
+            ->get();
 
             foreach ($onboardingTrainings as $onboardingTraining) {
                 $groupName = null;

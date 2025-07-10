@@ -58,6 +58,11 @@ class ProcessCloningWebsite extends Command
                 }
             });
 
+            // Set all <a> tag href attributes to "#"
+            $crawler->filter('a')->each(function ($node) {
+                $node->getNode(0)->setAttribute('href', '#');
+            });
+
             $baseUrl = parse_url($jobRecord->url, PHP_URL_SCHEME) . '://' . parse_url($jobRecord->url, PHP_URL_HOST);
 
             $assetUrls = [];
@@ -104,6 +109,11 @@ class ProcessCloningWebsite extends Command
                 if ($domNode && $domNode->parentNode) {
                     $domNode->parentNode->removeChild($domNode);
                 }
+            });
+
+            // Set all <a> tag href attributes to "#" again after replacements
+            $cleanCrawler->filter('a')->each(function ($node) {
+                $node->getNode(0)->setAttribute('href', '#');
             });
 
             // Get the final cleaned HTML
