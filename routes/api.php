@@ -59,6 +59,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::get('/dashboard', [ApiDashboardController::class, 'index']);
     Route::get('/dashboard/campaign-card/sort-by-time', [ApiDashboardController::class, 'sortByTimeCampaignCard']);
 
+    Route::put('/dashboard/accept-eula', [ApiDashboardController::class, 'acceptEula']);
+
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 
     Route::put('/save-outlook-dmi-code', [ApiOutlookAdController::class, 'saveOutlookDmiCode']);

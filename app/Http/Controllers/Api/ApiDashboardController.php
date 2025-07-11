@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
 use App\Models\Users;
+use App\Models\Company;
 use App\Models\Campaign;
-use App\Models\TprmUsers;
 use App\Models\UsersGroup;
 use App\Models\WaCampaign;
 use App\Models\CampaignLive;
@@ -16,14 +16,9 @@ use App\Models\BreachedEmail;
 use App\Models\PhishingEmail;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
-use App\Models\CampaignReport;
 use App\Models\CompanyLicense;
-use App\Models\TprmUsersGroup;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
-use App\Models\TprmCampaignLive;
-use App\Models\EmailCampActivity;
-use App\Models\TpmrVerifiedDomain;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
@@ -57,6 +52,31 @@ class ApiDashboardController extends Controller
                 'breachedEmails' => $breachedEmails,
                 'usageCounts' => $this->osBrowserUsage()
             ]
+        ], 200);
+    }
+
+    public function acceptEula(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+
+        $action = $request->input('action');
+
+        if($action !== 'accepted') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid action'
+            ], 400);
+        }
+
+        // Update the company's EULA acceptance status
+        Company::where('company_id', $companyId)->update([
+            'eula_accepted' => 1,
+            'eula_accepted_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'EULA accepted successfully'
         ], 200);
     }
 
