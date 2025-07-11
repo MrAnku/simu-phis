@@ -36,7 +36,7 @@ class ApiScormTrainingController extends Controller
             $darkLogoFilename = $randomName . '.' . $extension;
 
 
-            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 'local');
+            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 's3');
 
             if ($extractTo) {
                 // Extract ZIP
