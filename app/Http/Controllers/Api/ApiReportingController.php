@@ -1559,7 +1559,7 @@ class ApiReportingController extends Controller
 
             $avgOverallDuration = $avgEducationDuration;
 
-            $trainingAssignReminderDays = (int) CompanySettings::where('company_id', $companyId)
+            $trainingAssignReminderFreqDays = (int) CompanySettings::where('company_id', $companyId)
                 ->value('training_assign_remind_freq_days');
 
             $users = Users::where('company_id', $companyId)
@@ -1592,14 +1592,18 @@ class ApiReportingController extends Controller
                 foreach ($trainings as $training) {
                     $assignedTrainings[] = [
                         'training_name' => $training->trainingData->name,
+                        'training_type' => $training->training_type,
                         'assigned_date' => $training->assigned_date,
+                         'training_started' => $training->training_started == 1 ? 'Yes' : 'No',
+                         'passing_score' => $training->trainingData->passing_score,
+                         'training_due_date' => $training->training_due_date,
+                         'json_quiz' => $training->trainingData->json_quiz,
+                         'is_completed' => $training->completed == 1 ? 'Yes' : 'No',
                         'completion_date' => $training->completion_date,
-                        'passing_score' => $training->trainingData->passing_score,
                         'personal_best' => $training->personal_best,
                         'certificate_id' => $training->certificate_id,
-                        'training_started' => $training->training_started == 1 ? 'Yes' : 'No',
-                        'status' => $training->completed == 1 ? 'Complete' : 'In Progress',
-                        'training_due_date' => $training->training_due_date,
+                        'last_reminder_date' => $training->last_reminder_date,
+                        'status' => $training->completed == 1 ? 'Completed' : 'In Progress',
                     ];
                 }
 
@@ -1611,7 +1615,7 @@ class ApiReportingController extends Controller
                     'assigned_trainings' => $assignedTrainings,
                     'total_completed_trainings' => $totalCompletedTrainings,
                     'total_certificates' => $totalCertificates,
-                    'outstanding_training_count' => $outstandingTrainingCount,
+                    'count_of_outstanding_training' => $outstandingTrainingCount,
                 ];
             }
 
@@ -1636,7 +1640,7 @@ class ApiReportingController extends Controller
                     'education_duration_statistics' => [
                         'avg_education_duration' => round($avgEducationDuration),
                         'avg_overall_duration' => round($avgOverallDuration),
-                        'training_assign_reminder_days' => $trainingAssignReminderDays
+                        'training_assign_reminder_freq_days' => $trainingAssignReminderFreqDays
                     ],
                     'onboardingTrainingDetails' => $onboardingTrainingDetails
                 ]
