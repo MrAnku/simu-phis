@@ -6,13 +6,8 @@ use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarGroup;
 use App\Models\BluecollarTrainingInitiator;
 use App\Models\BlueCollarTrainingUser;
-use App\Models\Campaign;
-use App\Models\CampaignLive;
-use App\Models\CampaignReport;
-use App\Models\DomainVerified;
+
 use App\Models\OutlookAdToken;
-use App\Models\TrainingAssignedUser;
-use App\Models\TrainingModule;
 use App\Models\UsersGroup;
 use App\Models\WhatsappCampaign;
 use App\Models\WhatsAppCampaignUser;

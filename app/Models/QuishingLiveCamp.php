@@ -17,6 +17,7 @@ class QuishingLiveCamp extends Model
         'training_lang',
         'training_type',
         'quishing_material',
+        'sender_profile',
         'quishing_lang',
         'sent',
         'mail_open',

@@ -4,16 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Users;
 use Plivo\RestClient;
-use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\Settings;
 use App\Models\WaCampaign;
-use Illuminate\Support\Str;
 use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
 use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
-use App\Models\CampaignReport;
 use App\Models\WaLiveCampaign;
 use App\Models\PhishingWebsite;
 use App\Models\QuishingActivity;
@@ -22,21 +19,15 @@ use App\Models\SmishingCampaign;
 use App\Models\WhatsappActivity;
 use \App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
-use App\Models\NewLearnerPassword;
 use Illuminate\Support\Facades\DB;
-use App\Mail\TrainingAssignedEmail;
 use App\Models\BlueCollarLearnerLoginSession;
 use App\Models\SmishingLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use App\Services\TrainingAssignedService;
 use App\Models\TprmActivity;
 use App\Models\TprmUsers;
-use Illuminate\Foundation\Auth\User;
-use Illuminate\Validation\ValidationException;
 
 class ShowWebsiteController extends Controller
 {
@@ -474,18 +465,14 @@ class ShowWebsiteController extends Controller
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 
-                // Update campaign_reports table
-                $updateReport = CampaignReport::where('campaign_id', $campaign->campaign_id)
-                    ->increment('training_assigned');
+                
             } else {
                 $this->assignSingleTraining($campaign);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 
-                // Update campaign_reports table
-                $updateReport = CampaignReport::where('campaign_id', $campaign->campaign_id)
-                    ->increment('training_assigned');
+               
             }
         }
     }
@@ -892,7 +879,6 @@ class ShowWebsiteController extends Controller
             if ($campaign) {
                 $campaign->update(['payload_clicked' => 1]);
 
-                CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('payloads_clicked');
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 

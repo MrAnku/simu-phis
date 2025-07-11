@@ -246,90 +246,7 @@ class ApiTprmController extends Controller
 
             log_action("Domain deleted : {$domain}");
             return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
-            // $tprmUserGroup = TprmUsersGroup::where('group_name', $domain)
-            //     ->where('company_id', Auth::user()->company_id)->first();
-
-            // if (!$tprmUserGroup) {
-            //     return response()->json(['success' => false, 'message' => __('Domain not found')], 404);
-            // }
-
-            // if ($tprmUserGroup) {
-            //     $group_id = $tprmUserGroup->group_id;
-            //     $tprmUserGroup->delete();
-
-            //     $tprmUsers = TprmUsers::where('group_id', $group_id)->get();
-
-            //     foreach ($tprmUsers as $tprmUser) {
-            //         $tprmUser->delete();
-            //     }
-            //     $tprmCampaign = TprmCampaign::where('users_group', $group_id)->first();
-
-            //     if ($tprmCampaign) {
-
-            //         $tprmCampaignId = $tprmCampaign->campaign_id;
-            //         $tprmCampaign->delete();
-            //         $TprmLiveCampaigns = TprmCampaignLive::where('campaign_id', $tprmCampaignId)->get();
-
-            //         foreach ($TprmLiveCampaigns as $TprmLiveCampaign) {
-            //             $TprmLiveCampaign->delete();
-            //         }
-            //     }
-            // }
-
-            // DB::beginTransaction();
-
-            // try {
-            //     // 1. Delete users associated with the domain
-            //     $users = TprmUsers::where('user_email', 'LIKE', '%' . $domain)->get();
-            //     foreach ($users as $user) {
-
-            //         // Delete user-related data
-            //         DB::table('user_login')->where('user_id', $user->id)->delete();
-            //         // Delete the user record itself
-            //         $user->delete();
-            //     }
-
-            //     // 2. Delete user groups associated with the domain (use `group_name` instead of `domain`)
-            //     $userGroups = TprmUsersGroup::where('group_name', $domain)->get();
-            //     foreach ($userGroups as $group) {
-            //         $groupId = $group->group_id;
-            //         $companyId = Auth::user()->company_id;
-
-
-            //         // Delete all users in the group
-            //         TprmUsers::where('group_id', $groupId)->delete();
-
-            //         // Delete the group itself
-            //         $group->delete();
-
-            //         // 3. Delete campaigns associated with this user group
-            //         $campaigns = TprmCampaign::where('users_group', $groupId)
-            //             ->where('company_id', $companyId)
-            //             ->get();
-
-            //         foreach ($campaigns as $campaign) {
-            //             $campaignId = $campaign->campaign_id;
-
-            //             // Delete campaign records from all associated tables
-            //             TprmCampaign::where('campaign_id', $campaignId)
-            //                 ->where('company_id', $companyId)
-            //                 ->delete();
-            //             TprmCampaignLive::where('campaign_id', $campaignId)
-            //                 ->where('company_id', $companyId)
-            //                 ->delete();
-            //             TprmCampaignReport::where('campaign_id', $campaignId)
-            //                 ->where('company_id', $companyId)
-            //                 ->delete();
-            //         }
-            //     }
-
-            //     // 4. Finally, delete the domain itself
-            //     TpmrVerifiedDomain::where('domain', $domain)->delete();
-
-            //     // Commit the transaction if all deletions are successful
-            //     DB::commit();
-
-            //     return response()->json(['success' => true, 'message' => __('Domain and associated data deleted successfully')], 200);
+           
         } catch (\Exception $e) {
             // Rollback the transaction if an error occurs
             DB::rollBack();
@@ -355,16 +272,13 @@ class ApiTprmController extends Controller
                     return response()->json(['success' => false, 'message' => __('Invalid input detected.')], 422);
                 }
             }
-            array_walk_recursive($input, function (&$input) {
-                $input = strip_tags($input);
-            });
-            $request->merge($input);
-
+           
             //xss check end
             $campName = $request->input('camp_name');
             $usersGroup = $request->input('users_group');
             $emailLang = $request->input('email_lang');
             $phishMaterial = $request->input('phish_material');
+            $senderProfile = $request->sender_profile;
             $companyId = Auth::user()->company_id;
 
 
@@ -403,6 +317,7 @@ class ApiTprmController extends Controller
                     'user_email' => $user->user_email,
                     'launch_time' => $launchTimeFormatted,
                     'phishing_material' => $phishMaterial,
+                    'sender_profile' => $senderProfile ?? null,
                     'email_lang' => $emailLang,
                     'sent' => '0',
                     'company_id' => $companyId,
@@ -415,22 +330,13 @@ class ApiTprmController extends Controller
                 ]);
             }
 
-            TprmCampaignReport::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $campName,
-                'campaign_type' => 'Phishing',
-                'status' => 'running',
-                'email_lang' => $emailLang,
-                'scheduled_date' => $launchTimeFormatted,
-                'company_id' => $companyId,
-            ]);
-
             TprmCampaign::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $campName,
                 'campaign_type' => 'Phishing',
                 'users_group' => $usersGroup,
                 'phishing_material' => $phishMaterial,
+                'sender_profile' => $senderProfile ?? null,
                 'email_lang' => $emailLang,
                 'launch_time' => $launchTimeFormatted,
                 'launch_type' => 'immediately',

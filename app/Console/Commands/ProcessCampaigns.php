@@ -109,6 +109,7 @@ class ProcessCampaigns extends Command
           'training_type' => $campaign->training_type ?? null,
           'launch_time' => $campaign->launch_time,
           'phishing_material' => $campaign->phishing_material == null ? null : json_decode($campaign->phishing_material, true)[array_rand(json_decode($campaign->phishing_material, true))],
+          'sender_profile' => $campaign->sender_profile ?? null,
           'email_lang' => $campaign->email_lang ?? null,
           'sent' => '0',
           'company_id' => $campaign->company_id,
@@ -124,9 +125,7 @@ class ProcessCampaigns extends Command
       // Update the campaign status to 'running'
       $campaign->update(['status' => 'running']);
 
-      // Update the status in CampaignReport
-      CampaignReport::where('campaign_id', $campaignid)->update(['status' => 'running']);
-
+     
       echo 'Campaign is live';
     }
   }
@@ -173,7 +172,13 @@ class ProcessCampaigns extends Command
           ->first();
 
           if ($phishingMaterial) {
-            $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            if($campaign->sender_profile !== null){
+              $senderProfile = SenderProfile::find($campaign->sender_profile);
+            }else{
+              // If sender_profile is not set in campaign, use the one from phishing material
+              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            }
+
             $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
 
             if ($senderProfile && $websiteColumns) {
@@ -226,7 +231,7 @@ class ProcessCampaigns extends Command
 
               $campaign->update(['sent' => 1]);
 
-              CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('emails_delivered');
+             
             } else {
               echo "sender profile or website is not associated";
             }
@@ -486,8 +491,7 @@ class ProcessCampaigns extends Command
 
       if ($checkSent == 0) {
         Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-        CampaignReport::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-
+      
         echo 'Campaign completed';
       }
     }
@@ -527,16 +531,9 @@ class ProcessCampaigns extends Command
 
               $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
 
-              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
-                'status' => 'pending',
-                'scheduled_date' => $launchTime->format("m/d/Y g:i A")
-              ]);
+             
             } else {
               $recurrCampaign->update(['status' => 'completed']);
-
-              CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
-                'status' => 'completed'
-              ]);
             }
           } else {
 
@@ -559,10 +556,6 @@ class ProcessCampaigns extends Command
 
             $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
 
-            CampaignReport::where('campaign_id', $recurrCampaign->campaign_id)->update([
-              'status' => 'pending',
-              'scheduled_date' => $launchTime->format("m/d/Y g:i A")
-            ]);
           }
         }
       }

@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
-use App\Models\CampaignReport;
 use App\Models\TrainingModule;
 use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
@@ -194,6 +193,7 @@ class ApiCampaignController extends Controller
                 'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
                 'launch_time' => $launchTimeFormatted,
                 'phishing_material' => ($data['campaign_type'] == 'Training') ? null : $data['phish_material'][array_rand($data['phish_material'])],
+                'sender_profile' => $data['sender_profile'] ?? null,
                 'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
                 'sent' => '0',
                 'company_id' => $companyId,
@@ -206,17 +206,7 @@ class ApiCampaignController extends Controller
             ]);
         }
 
-        CampaignReport::create([
-            'campaign_id' => $campId,
-            'campaign_name' => $data['camp_name'],
-            'campaign_type' => $data['campaign_type'],
-            'status' => 'running',
-            'email_lang' => $data['email_lang'],
-            'training_lang' => $data['trainingLang'],
-            'days_until_due' => $data['days_until_due'],
-            'scheduled_date' => $launchTimeFormatted,
-            'company_id' => $companyId,
-        ]);
+       
 
         Campaign::create([
             'campaign_id' => $campId,
@@ -229,6 +219,7 @@ class ApiCampaignController extends Controller
             'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
             'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
             'phishing_material' => ($data['campaign_type'] == 'Training') ? null : json_encode($data['phish_material']),
+            'sender_profile' => $data['sender_profile'] ?? null,
             'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
             'launch_time' => $launchTimeFormatted,
             'launch_type' => 'immediately',
@@ -269,6 +260,7 @@ class ApiCampaignController extends Controller
             'training_type' => $data['training_type'],
             'days_until_due' => $data['days_until_due'],
             'phishing_material' => $data['phish_material'] == '' ? null : json_encode($data['phish_material']),
+            'sender_profile' => $data['sender_profile'] ?? null,
             'email_lang' => $data['email_lang'],
             'launch_time' => $launchTime,
             'launch_type' => 'scheduled',
@@ -281,17 +273,7 @@ class ApiCampaignController extends Controller
             'company_id' => $companyId,
         ]);
 
-        CampaignReport::create([
-            'campaign_id' => $campId,
-            'campaign_name' => $data['camp_name'],
-            'campaign_type' => $data['campaign_type'],
-            'days_until_due' => $data['days_until_due'],
-            'status' => 'pending',
-            'email_lang' => $data['email_lang'],
-            'training_lang' => $data['trainingLang'],
-            'scheduled_date' => $launchTime,
-            'company_id' => $companyId,
-        ]);
+      
 
         log_action('Email campaign scheduled');
 
@@ -385,9 +367,7 @@ class ApiCampaignController extends Controller
                 ->where('company_id', $companyId)
                 ->delete();
 
-            CampaignReport::where('campaign_id', $campid)
-                ->where('company_id', $companyId)
-                ->delete();
+           
 
             EmailCampActivity::where('campaign_id', $campid)
                 ->where('company_id', $companyId)
@@ -507,62 +487,27 @@ class ApiCampaignController extends Controller
 
             $company_id = Auth::user()->company_id;
 
-            Campaign::where('campaign_id', $campid)->update([
+            Campaign::where('campaign_id', $campid)
+            ->where('company_id', $company_id)
+            ->update([
                 'launch_time' => $formattedDateTime,
                 'status' => 'running'
             ]);
 
-            CampaignReport::where('campaign_id', $campid)
-                ->where('company_id', $company_id)
-                ->update([
-                    'scheduled_date' => $formattedDateTime,
-                    'status' => 'running',
-                    'emails_delivered' => 0,
-                    'emails_viewed' => 0,
-                    'payloads_clicked' => 0,
-                    'emp_compromised' => 0,
-                    'email_reported' => 0,
-                    'training_assigned' => 0,
-                    'training_completed' => 0,
-                ]);
-
-            //deleting old campaign live
-            CampaignLive::where('campaign_id', $campid)->delete();
-
-            $campaign = Campaign::where('campaign_id', $campid)->first();
-
-            $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
-            $userIds = json_decode($userIdsJson, true);
-            $users = Users::whereIn('id', $userIds)->get();
-
-            // $users = User::where('group_id', $campaign->users_group)->get();
-
-            if ($users->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('No employees available in this group')
-                ], 422);
-            }
-
-            foreach ($users as $user) {
-
-                CampaignLive::create([
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => ($campaign->training_module == null) ? null : json_decode($campaign->training_module, true)[array_rand(json_decode($campaign->training_module, true))],
-                    'days_until_due' => $campaign->days_until_due ?? null,
-                    'training_lang' => $campaign->training_lang ?? null,
-                    'training_type' => $campaign->training_type ?? null,
-                    'launch_time' => $formattedDateTime,
-                    'phishing_material' => $campaign->phishing_material == null ? null : json_decode($campaign->phishing_material, true)[array_rand(json_decode($campaign->phishing_material, true))],
-                    'email_lang' => $campaign->email_lang ?? null,
-                    'sent' => '0',
-                    'company_id' => $company_id,
-                ]);
-            }
+            // Update campaign_live table
+            CampaignLive::where('campaign_id', $campid)
+            ->where('company_id', $company_id)
+            ->update([
+                'launch_time' => $formattedDateTime,
+                'sent' => '0',
+                'mail_open' => '0',
+                'payload_clicked' => '0',
+                'emp_compromised' => '0',
+                'email_reported' => '0',
+                'training_assigned' => '0',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
             log_action('Email campaign relaunched');
             return response()->json([
@@ -664,26 +609,7 @@ class ApiCampaignController extends Controller
 
                 $campaign = $isLive['campaign'];
 
-                $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->first();
-
-                if (!$isreportexist) {
-                    CampaignReport::create([
-                        'campaign_id' => $campaign->campaign_id,
-                        'campaign_name' => $campaign->campaign_name,
-                        'campaign_type' => $campaign->campaign_type,
-                        'status' => 'running',
-                        'email_lang' => $campaign->email_lang,
-                        'training_lang' => $campaign->training_lang,
-                        'days_until_due' => $campaign->days_until_due,
-                        'scheduled_date' => $launchTime,
-                        'company_id' => $companyId,
-                    ]);
-                } else {
-                    CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
-                        'scheduled_date' => $launchTime,
-                        'status' => 'running'
-                    ]);
-                }
+               
             }
 
             if ($request->schedule_type == 'scheduled') {
@@ -718,27 +644,7 @@ class ApiCampaignController extends Controller
                 $campaign->status = 'pending';
                 $campaign->save();
 
-                $isreportexist = CampaignReport::where('campaign_id', $campaign->campaign_id)->where('company_id', Auth::user()->company_id)
-                    ->first();
-
-                if (!$isreportexist) {
-                    CampaignReport::create([
-                        'campaign_id' => $campaign->campaign_id,
-                        'campaign_name' => $campaign->campaign_name,
-                        'campaign_type' => $campaign->campaign_type,
-                        'status' => 'pending',
-                        'email_lang' => $campaign->email_lang,
-                        'training_lang' => $campaign->training_lang,
-                        'days_until_due' => $campaign->days_until_due,
-                        'scheduled_date' => $launchTime,
-                        'company_id' => $companyId,
-                    ]);
-                } else {
-                    CampaignReport::where('campaign_id', $campaign->campaign_id)->update([
-                        'scheduled_date' => $launchTime,
-                        'status' => 'pending'
-                    ]);
-                }
+                
             }
 
             log_action('Email campaign rescheduled');
@@ -802,6 +708,7 @@ class ApiCampaignController extends Controller
                 'training_type' => $campaign->training_type ?? null,
                 'launch_time' => $launch_time,
                 'phishing_material' => $campaign->phishing_material !== null ? json_decode($campaign->phishing_material)[array_rand(json_decode($campaign->phishing_material))] : null,
+                'sender_profile' => $campaign->sender_profile ?? null,
                 'email_lang' => $campaign->email_lang ?? null,
                 'sent' => '0',
                 'company_id' => $companyId,
@@ -920,7 +827,6 @@ class ApiCampaignController extends Controller
                 'completion_date' => now()
             ]);
 
-            $reportUpdate = CampaignReport::where('campaign_id', $trainingAssigned->campaign_id)->increment('training_completed');
 
             log_action("Training marked as completed to {$trainingAssigned->user_email}");
 

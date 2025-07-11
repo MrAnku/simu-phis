@@ -23,6 +23,7 @@ class Campaign extends Model
         'training_lang',
         'training_type',
         'phishing_material',
+        'sender_profile',
         'email_lang',
         'launch_time',
         'launch_type',

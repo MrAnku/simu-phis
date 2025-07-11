@@ -23,6 +23,7 @@ class CampaignLive extends Model
         'training_type',
         'launch_time',
         'phishing_material',
+        'sender_profile',
         'email_lang',
         'sent',
         'mail_open',

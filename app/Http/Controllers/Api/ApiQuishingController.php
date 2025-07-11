@@ -101,6 +101,7 @@ class ApiQuishingController extends Controller
                 'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
 
                 'quishing_material'  => !empty($quishingMaterials) ? json_encode($quishingMaterials) : null,
+                'sender_profile'   => $request->sender_profile ?? null,
                 'quishing_lang'      => $request->quishing_language ?? null,
                 'status'             => 'running',
                 'company_id'         => Auth::user()->company_id,
@@ -123,6 +124,7 @@ class ApiQuishingController extends Controller
                     'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
 
                     'quishing_material'  => $quishingMaterials[array_rand($quishingMaterials)],
+                    'sender_profile'     => $request->sender_profile ?? null,
 
                     'quishing_lang'      => $request->quishing_language ?? null,
                     'company_id'         => Auth::user()->company_id,

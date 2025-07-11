@@ -119,7 +119,14 @@ class ProcessTprmCampaigns extends Command
 
           if ($phishingMaterial) {
             echo "Found phishing material for campaign.\n";
-            $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            // Check if sender_profile is set in campaign, otherwise use the one from phishing material
+            if ($campaign->sender_profile !== null) {
+              $senderProfile = SenderProfile::find($campaign->sender_profile);
+            } else {
+              // If sender_profile is not set in campaign, use the one from phishing material
+              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            }
+            
             $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
 
             if ($senderProfile && $websiteColumns) {

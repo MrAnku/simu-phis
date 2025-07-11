@@ -17,6 +17,7 @@ class QuishingCamp extends Model
         'training_lang',
         'training_type',
         'quishing_material',
+        'sender_profile',
         'quishing_lang',
         'status',
         'company_id',

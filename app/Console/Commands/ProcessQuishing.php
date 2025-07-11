@@ -7,6 +7,7 @@ use App\Mail\CampaignMail;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
+use App\Models\SenderProfile;
 use App\Models\OutlookDmiToken;
 use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
@@ -51,7 +52,7 @@ class ProcessQuishing extends Command
 
 
             $quishingCampaigns = $company->quishingLiveCamps()->where('sent', '0')->get();
-            if (!$quishingCampaigns) {
+            if ($quishingCampaigns->isEmpty()) {
                 continue;
             }
             foreach ($quishingCampaigns as $campaign) {
@@ -64,11 +65,18 @@ class ProcessQuishing extends Command
                     //get qrcode link
                     $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
 
+                    //check if the campaign has sender profile
+                    if ($campaign->sender_profile !== null) {
+                        $senderProfile = SenderProfile::find($campaign->sender_profile);
+                    } else {
+                        $senderProfile = $quishingTemplate->senderProfile()->first();
+                    }
+
                     try {
                         //prepare mail body
                         $mailData = $this->prepareMailBody(
                             $campaign,
-                            $quishingTemplate->senderProfile()->first(),
+                            $senderProfile,
                             $quishingTemplate,
                             $qrcodeLink
                         );

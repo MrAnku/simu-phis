@@ -19,6 +19,7 @@ class TprmCampaign extends Model
         'training_module',
         'training_lang',
         'phishing_material',
+        'sender_profile',
         'email_lang',
         'launch_time',
         'launch_type',
