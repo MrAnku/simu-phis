@@ -269,6 +269,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         // Division Reporting
         Route::get('/fetch-division-users-report', [ApiReportingController::class, 'fetchDivisionUsersReport']);
 
+         Route::get('/fetch-division-users-reporting', [ApiReportingController::class, 'fetchDivisionUsersReporting']);
+
         // Users Reporting
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
 

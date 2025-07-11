@@ -17,10 +17,12 @@ use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\AssignedPolicy;
 use App\Models\CampaignReport;
 use App\Models\CompanyLicense;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
+use App\Models\BlueCollarGroup;
 use App\Models\CompanySettings;
 use App\Models\PhishingWebsite;
 use App\Models\QuishingLiveCamp;
@@ -31,7 +33,6 @@ use App\Models\BlueCollarEmployee;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\AssignedPolicy;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
@@ -1766,6 +1767,133 @@ class ApiReportingController extends Controller
                 'message' => __('Division users report fetched successfully'),
                 'data' => [
                     'total_division_users' => count($divisionUserDetails),
+                    'division_user_details' => $divisionUserDetails
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchDivisionUsersReporting()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $userGroups = UsersGroup::where('company_id', $companyId)->get();
+
+            $scoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'verygood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
+            $divisionUserDetails = [];
+
+            $totalUsers = \App\Models\Users::where('company_id', $companyId)->count();
+            if ($totalUsers === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('No users found for this company'),
+                    'data' => [
+                        'total_division_users' => 0,
+                        'division_user_details' => [],
+                    ]
+                ], 200);
+            }
+
+            foreach ($userGroups as $group) {
+                $users = json_decode($group->users, true);
+                if (!$users) {
+                    continue;
+                }
+
+                foreach ($users as $userId) {
+                    $user = Users::where('id', $userId)
+                        ->where('company_id', $companyId)
+                        ->first();
+
+                    if (!$user) {
+                        continue;
+                    }
+
+                    // Email simulation
+                    $totalSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedSimulations = \App\Models\CampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    // Quishing simulation
+                    $totalQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('compromised', '1')
+                        ->count();
+
+                    // TPRM simulation
+                    $totalTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    // WhatsApp simulation
+                    $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->count();
+                    $compromisedWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+                        ->where('user_id', $user->id)
+                        ->where('compromised', 1)
+                        ->count();
+
+                    // Final counts
+                    $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+                    $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+                    $riskScore = $totalAll > 0
+                        ? 100 - round(($compromisedAll / $totalAll) * 100)
+                        : 100; // If no simulations, assume excellent
+
+                    // Determine risk level
+                    $riskLevel = 'unknown';
+                    foreach ($scoreRanges as $label => [$min, $max]) {
+                        if ($riskScore >= $min && $riskScore <= $max) {
+                            $riskLevel = $label;
+                            break;
+                        }
+                    }
+
+                    $divisionUserDetails[] = [
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        'division' => $group->group_name,
+                        'user_job_title' => $user->user_job_title,
+                        'whatsapp_no' => $user->whatsapp,
+                        'risk_score' => $riskScore,
+                        'risk_level' => $riskLevel,
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Division users report fetched successfully'),
+                'data' => [
+                    'total_normal_divisions' => count($userGroups),
+                    'total_blue_collar_divisions' => BlueCollarGroup::where('company_id', $companyId)->count(),
+                    'total_normal_users' => count($divisionUserDetails),
+                    'total_blue_collar_users' => BlueCollarEmployee::where('company_id', $companyId)->count(),
                     'division_user_details' => $divisionUserDetails
                 ]
             ], 200);
