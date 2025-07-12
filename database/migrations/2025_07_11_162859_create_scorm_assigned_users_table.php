@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('user_email');
             $table->unsignedBigInteger('scorm');
             $table->boolean('scorm_started')->default(false);
-            $table->unsignedInteger('personal_best');
+            $table->unsignedInteger('personal_best')->default(0);
             $table->string('grade')->nullable();
             $table->string('completed')->default(false);
             $table->string('assigned_date')->nullable();

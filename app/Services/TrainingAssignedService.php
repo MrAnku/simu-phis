@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
+use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
@@ -25,7 +26,7 @@ class TrainingAssignedService
 
         // Check if the company is whitelabeled
         $isWhitelabeled = new CheckWhitelabelService($campData['company_id']);
-        if($isWhitelabeled->isCompanyWhitelabeled()) {
+        if ($isWhitelabeled->isCompanyWhitelabeled()) {
 
             $whitelabelData = $isWhitelabeled->getWhiteLabelData();
 
@@ -38,7 +39,7 @@ class TrainingAssignedService
 
             $isWhitelabeled->updateSmtpConfig();
         }
-       
+
 
         DB::table('learnerloginsession')
             ->insert([
@@ -59,12 +60,29 @@ class TrainingAssignedService
 
         $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
 
-        $trainingNames = $allAssignedTrainings->map(function ($training) {
-            if ($training->training_type == 'games') {
-                return $training->trainingGame->name;
-            }
-            return $training->trainingData->name;
-        });
+        $scormTrainings = ScormAssignedUser::with('scormTrainingData')->where('user_email', $campData['user_email'])->get();
+
+        $trainingNames = collect();
+
+        if ($allAssignedTrainings->isNotEmpty()){
+            $trainingNames = $allAssignedTrainings->map(function ($training) {
+                if ($training->training_type == 'games') {
+                    return $training->trainingGame->name;
+                }
+                return $training->trainingData->name;
+            });
+        }
+
+
+        if ($scormTrainings->isNotEmpty()){
+            $scormNames = $scormTrainings->map(function ($training) {
+    
+                return $training->scormTrainingData->name;
+            });
+        }
+
+        $trainingNames = $trainingNames->merge($scormNames)->filter();
+
 
         $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 

@@ -9,8 +9,6 @@ class ScormAssignedUser extends Model
 {
     use HasFactory;
 
-    protected $table = 'scorm_assigned_users';
-
      protected $fillable = [
         'campaign_id',
         'user_id',
@@ -26,6 +24,10 @@ class ScormAssignedUser extends Model
         'completion_date',
         'company_id',
         'certificate_id',
-        'last_reminder_date',
+        'last_reminder_date'
     ];
+
+      public function scormTrainingData(){
+        return $this->belongsTo(ScormTraining::class, 'scorm', 'id');
+    }
 }

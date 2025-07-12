@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
+use App\Models\OutlookDmiToken;
+use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
 use App\Services\CampaignTrainingService;
@@ -158,18 +160,98 @@ class ProcessCampaigns extends Command
       foreach ($campaigns as $campaign) {
 
         if ($campaign->phishing_material == null) {
-          try {
-            $this->sendOnlyTraining($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending training: " . $e->getMessage() . "\n";
+
+          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+          if ($all_camp->training_assignment == 'all') {
+
+            $trainingModules = [];
+            $scormTrainings = [];
+
+            if ($all_camp->training_module !== null) {
+              $trainingModules = json_decode($all_camp->training_module, true);
+            }
+
+            if ($all_camp->scorm_training !== null) {
+              $scormTrainings = json_decode($all_camp->scorm_training, true);
+            }
+            $this->assignTraining($campaign, $trainingModules, $scormTrainings);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+          } else {
+            $this->assignTraining($campaign);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
           }
         }
 
         if ($campaign->phishing_material) {
-          try {
-            $this->sendPhishingEmail($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending phishing email: " . $e->getMessage() . "\n";
+          $phishingMaterial = DB::table('phishing_emails')
+            ->where('id', $campaign->phishing_material)
+            ->where('website', '!=', 0)
+            ->where('senderProfile', '!=', 0)
+            ->first();
+
+          if ($phishingMaterial) {
+            if ($campaign->sender_profile !== null) {
+              $senderProfile = SenderProfile::find($campaign->sender_profile);
+            } else {
+              // If sender_profile is not set in campaign, use the one from phishing material
+              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            }
+
+            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
+
+            if ($senderProfile && $websiteColumns) {
+
+              $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
+
+              try {
+                $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
+              } catch (\Exception $e) {
+                echo "Error fetching mail body: " . $e->getMessage() . "\n";
+                continue;
+              }
+
+
+              $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
+              $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+
+              if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
+
+                $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
+              }
+
+              if ($campaign->email_lang == 'am') {
+
+                $mailBody = $this->translateHtmlToAmharic($mailBody);
+              }
+
+              $mailData = [
+                'email' => $campaign->user_email,
+                'from_name' => $senderProfile->from_name,
+                'email_subject' => $phishingMaterial->email_subject,
+                'mailBody' => $mailBody,
+                'from_email' => $senderProfile->from_email,
+                'sendMailHost' => $senderProfile->host,
+                'sendMailUserName' => $senderProfile->username,
+                'sendMailPassword' => $senderProfile->password,
+              ];
+
+              // $this->sendMailConditionally($mailData, $campaign, $company_id);
+
+              if ($this->sendMail($mailData)) {
+
+                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                echo "Email sent to: " . $campaign->user_email . "\n";
+              } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+              }
+
+              $campaign->update(['sent' => 1]);
+            } else {
+              echo "sender profile or website is not associated";
+            }
           }
         }
       }
@@ -347,7 +429,211 @@ class ProcessCampaigns extends Command
     $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
-  
+  private function generateWebsiteUrl($websiteColumns, $campaign)
+  {
+    // Generate random parts
+    $randomString1 = Str::random(6);
+    $randomString2 = Str::random(10);
+    $slugName = Str::slug($websiteColumns->name);
+
+    // Construct the base URL
+    $baseUrl = "https://{$randomString1}.{$websiteColumns->domain}/{$randomString2}";
+
+    // Define query parameters
+    $params = [
+      'v' => 'r',
+      'c' => Str::random(10),
+      'p' => $websiteColumns->id,
+      'l' => $slugName,
+      'token' => $campaign->id,
+      'usrid' => $campaign->user_id
+    ];
+
+    // Build query string and final URL
+    $queryString = http_build_query($params);
+    $websiteFilePath = $baseUrl . '?' . $queryString;
+
+    return $websiteFilePath;
+  }
+
+  private function assignTraining($campaign, $trainingModules = null, $scormTrainings = null)
+  {
+    if ($trainingModules !== null || $scormTrainings !== null) {
+      $this->assignAllTrainings($campaign, $trainingModules, $scormTrainings);
+    } else {
+      $this->assignSingleTraining($campaign);
+    }
+  }
+
+  private function assignAllTrainings($campaign, $trainingModules = null, $scormTrainings = null)
+  {
+    $trainingAssignedService = new TrainingAssignedService();
+
+    if ($trainingModules !== null) {
+      foreach ($trainingModules as $training) {
+
+        //check if this training is already assigned to this user
+        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
+          ->where('training', $training)
+          ->first();
+
+        if (!$assignedTraining) {
+          //call assignNewTraining from service method
+          $campData = [
+            'campaign_id' => $campaign->campaign_id,
+            'user_id' => $campaign->user_id,
+            'user_name' => $campaign->user_name,
+            'user_email' => $campaign->user_email,
+            'training' => $training,
+            'training_lang' => $campaign->training_lang,
+            'training_type' => $campaign->training_type,
+            'assigned_date' => now()->toDateString(),
+            'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+            'company_id' => $campaign->company_id
+          ];
+
+          $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+          if ($trainingAssigned['status'] == true) {
+            echo $trainingAssigned['msg'];
+          } else {
+            echo 'Failed to assign training to ' . $campaign->user_email;
+          }
+        }
+      }
+    }
+
+    if ($scormTrainings !== null) {
+      foreach ($scormTrainings as $training) {
+
+        //check if this training is already assigned to this user
+        $assignedTraining = ScormAssignedUser::where('user_email', $campaign->user_email)
+          ->where('scorm', $training)
+          ->first();
+
+        if (!$assignedTraining) {
+          //call assignNewTraining from service method
+          $campData = [
+            'campaign_id' => $campaign->campaign_id,
+            'user_id' => $campaign->user_id,
+            'user_name' => $campaign->user_name,
+            'user_email' => $campaign->user_email,
+            'scorm' => $training,
+            'assigned_date' => now()->toDateString(),
+            'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+            'company_id' => $campaign->company_id
+          ];
+
+          $scormAssigned = DB::table('scorm_assigned_users')
+            ->insert($campData);
+
+          if ($scormAssigned) {
+            echo "New Scorm training assigned successfully \n";
+          } else {
+            echo 'Failed to assign training to ' . $campaign->user_email;
+          }
+        }
+      }
+    }
+
+    //send mail to user
+    $campData = [
+      'user_name' => $campaign->user_name,
+      'user_email' => $campaign->user_email,
+      'company_id' => $campaign->company_id
+    ];
+    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+    if ($isMailSent['status'] == true) {
+      echo $isMailSent['msg'];
+    } else {
+      echo 'Failed to send mail to ' . $campaign->user_email;
+    }
+  }
+
+  private function assignSingleTraining($campaign)
+  {
+    $trainingAssignedService = new TrainingAssignedService();
+
+    // $assignedTrainingModule = null;
+    if($campaign->training_module !== null){
+      $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->user_email)
+        ->where('training', $campaign->training_module)
+        ->first();
+   
+
+    if (!$assignedTrainingModule) {
+      //call assignNewTraining from service method
+      $campData = [
+        'campaign_id' => $campaign->campaign_id,
+        'user_id' => $campaign->user_id,
+        'user_name' => $campaign->user_name,
+        'user_email' => $campaign->user_email,
+        'training' => $campaign->training_module,
+        'training_lang' => $campaign->training_lang,
+        'training_type' => $campaign->training_type,
+        'assigned_date' => now()->toDateString(),
+        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+        'company_id' => $campaign->company_id
+      ];
+
+      $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+      if ($trainingAssigned['status'] == true) {
+        echo $trainingAssigned['msg'];
+      } else {
+        echo 'Failed to assign training to ' . $campaign->user_email;
+      }
+    }
+  }
+
+    if($campaign->scorm_training !== null){
+      $assignedScormTraining = ScormAssignedUser::where('user_email', $campaign->user_email)
+        ->where('scorm', $campaign->scorm_training)
+        ->first();
+    }
+
+     if (!$assignedScormTraining) {
+      //call assignNewTraining from service method
+      $campData = [
+        'campaign_id' => $campaign->campaign_id,
+        'user_id' => $campaign->user_id,
+        'user_name' => $campaign->user_name,
+        'user_email' => $campaign->user_email,
+        'scorm' => $campaign->scorm_training,
+        'assigned_date' => now()->toDateString(),
+        'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+        'company_id' => $campaign->company_id
+      ];
+
+          $scormAssigned = DB::table('scorm_assigned_users')
+            ->insert($campData);
+
+          if ($scormAssigned) {
+            echo "New Scorm training assigned successfully \n";
+          } else {
+            echo 'Failed to assign training to ' . $campaign->user_email;
+          }
+    }
+
+
+
+
+
+    //send mail to user
+    $campData = [
+      'user_name' => $campaign->user_name,
+      'user_email' => $campaign->user_email,
+      'company_id' => $campaign->company_id
+    ];
+    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+    if ($isMailSent['status'] == true) {
+      echo $isMailSent['msg'];
+    } else {
+      echo 'Failed to send mail to ' . $campaign->user_email;
+    }
+  }
 
   private function updateRunningCampaigns()
   {

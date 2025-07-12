@@ -31,7 +31,8 @@ class CampaignLive extends Model
         'emp_compromised',
         'email_reported',
         'training_assigned',
-        'company_id'
+        'company_id',
+        'scorm_training'
     ];
 
     public function camp(){

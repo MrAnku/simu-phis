@@ -33,7 +33,8 @@ class Campaign extends Model
         'timeZone',
         'expire_after',
         'status',
-        'company_id'
+        'company_id',
+        'scorm_training'
     ];
 
     public function trainingModules()
