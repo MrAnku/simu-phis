@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
+use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
 use App\Services\CampaignTrainingService;
+use App\Services\TrainingAssignedService;
 
 class ProcessCampaigns extends Command
 {
@@ -159,18 +161,98 @@ class ProcessCampaigns extends Command
       foreach ($campaigns as $campaign) {
 
         if ($campaign->phishing_material == null) {
-          try {
-            $this->sendOnlyTraining($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending training: " . $e->getMessage() . "\n";
+
+          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+          if ($all_camp->training_assignment == 'all') {
+
+            $trainingModules = [];
+            $scormTrainings = [];
+
+            if ($all_camp->training_module !== null) {
+              $trainingModules = json_decode($all_camp->training_module, true);
+            }
+
+            if ($all_camp->scorm_training !== null) {
+              $scormTrainings = json_decode($all_camp->scorm_training, true);
+            }
+            $this->assignTraining($campaign, $trainingModules, $scormTrainings);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+          } else {
+            $this->assignTraining($campaign);
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
           }
         }
 
         if ($campaign->phishing_material) {
-          try {
-            $this->sendPhishingEmail($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending phishing email: " . $e->getMessage() . "\n";
+          $phishingMaterial = DB::table('phishing_emails')
+            ->where('id', $campaign->phishing_material)
+            ->where('website', '!=', 0)
+            ->where('senderProfile', '!=', 0)
+            ->first();
+
+          if ($phishingMaterial) {
+            if ($campaign->sender_profile !== null) {
+              $senderProfile = SenderProfile::find($campaign->sender_profile);
+            } else {
+              // If sender_profile is not set in campaign, use the one from phishing material
+              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+            }
+
+            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
+
+            if ($senderProfile && $websiteColumns) {
+
+              $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
+
+              try {
+                $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
+              } catch (\Exception $e) {
+                echo "Error fetching mail body: " . $e->getMessage() . "\n";
+                continue;
+              }
+
+
+              $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
+              $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+
+              if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
+
+                $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
+              }
+
+              if ($campaign->email_lang == 'am') {
+
+                $mailBody = $this->translateHtmlToAmharic($mailBody);
+              }
+
+              $mailData = [
+                'email' => $campaign->user_email,
+                'from_name' => $senderProfile->from_name,
+                'email_subject' => $phishingMaterial->email_subject,
+                'mailBody' => $mailBody,
+                'from_email' => $senderProfile->from_email,
+                'sendMailHost' => $senderProfile->host,
+                'sendMailUserName' => $senderProfile->username,
+                'sendMailPassword' => $senderProfile->password,
+              ];
+
+              // $this->sendMailConditionally($mailData, $campaign, $company_id);
+
+              if ($this->sendMail($mailData)) {
+
+                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                echo "Email sent to: " . $campaign->user_email . "\n";
+              } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+              }
+
+              $campaign->update(['sent' => 1]);
+            } else {
+              echo "sender profile or website is not associated";
+            }
           }
         }
       }
