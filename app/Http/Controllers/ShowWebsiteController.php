@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Users;
 use Plivo\RestClient;
 use App\Models\Campaign;
-use App\Models\Settings;
+use App\Models\TprmUsers;
 use App\Models\WaCampaign;
 use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
 use App\Models\QuishingCamp;
+use App\Models\TprmActivity;
 use Illuminate\Http\Request;
 use App\Models\WaLiveCampaign;
+use App\Models\CompanySettings;
 use App\Models\PhishingWebsite;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
@@ -20,14 +22,12 @@ use App\Models\WhatsappActivity;
 use \App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
-use App\Models\BlueCollarLearnerLoginSession;
 use App\Models\SmishingLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use App\Services\TrainingAssignedService;
-use App\Models\TprmActivity;
-use App\Models\TprmUsers;
+use App\Models\BlueCollarLearnerLoginSession;
 
 class ShowWebsiteController extends Controller
 {
@@ -125,7 +125,7 @@ class ShowWebsiteController extends Controller
             $campDetail = CampaignLive::find($campid);
         }
         if ($campDetail) {
-            $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
+            $companySetting = CompanySettings::where('company_id', $campDetail->company_id)->first();
 
             if ($companySetting) {
                 $arr = [
@@ -146,7 +146,7 @@ class ShowWebsiteController extends Controller
         $campDetail = TprmCampaignLive::find($campid);
 
         if ($campDetail) {
-            $companySetting = Settings::where('company_id', $campDetail->company_id)->first();
+            $companySetting = CompanySettings::where('company_id', $campDetail->company_id)->first();
 
             if ($companySetting) {
                 $arr = [

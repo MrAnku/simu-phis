@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\Company;
-use App\Models\Settings;
 use Illuminate\Http\Request;
 use App\Models\CompanyLicense;
+use App\Models\CompanySettings;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +59,7 @@ class AuthenticatedSessionController extends Controller
         $mfaEnabled = $this->checkMfa();
         if ($mfaEnabled) {
             $user = Auth::user();
-            $company_settings = Settings::where('email', $user->email)->first();
+            $company_settings = CompanySettings::where('email', $user->email)->first();
             if ($company_settings->mfa == 1) {
                 // Store the user ID in the session and logout
                 // session(['mfa_user_id' => $user->id]);
@@ -271,7 +271,7 @@ class AuthenticatedSessionController extends Controller
     private function checkMfa()
     {
         $user = Auth::user();
-        $company_settings = Settings::where('company_id', $user->company_id)->first();
+        $company_settings = CompanySettings::where('email', $user->email)->first();
         if ($company_settings->mfa == 1) {
             // Store the user ID in the session and logout
             Auth::logout($user);

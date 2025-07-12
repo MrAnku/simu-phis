@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\WhiteLabelController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
@@ -44,6 +45,10 @@ Route::post('company/create-password/token-check', [AuthenticatedSessionControll
 Route::post('company/create-password', [AuthenticatedSessionController::class, 'createPassword']);
 
 Route::post('login', [AuthenticatedSessionController::class, 'login']);
+
+
+Route::get('sso/validate', [SSOController::class, 'ssoValidate']);
+
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPassword']);
 Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);

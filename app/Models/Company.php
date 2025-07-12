@@ -66,7 +66,7 @@ class Company extends Authenticatable implements JWTSubject
     public function company_settings()
     {
 
-        return $this->hasOne(Settings::class, 'email', 'email');
+        return $this->hasOne(CompanySettings::class, 'email', 'email');
     }
 
     public function partner()

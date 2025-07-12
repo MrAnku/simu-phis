@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Models\Settings;
+use Illuminate\Support\Str;
+use App\Models\CompanySettings;
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -55,7 +55,7 @@ class LoginRequest extends FormRequest
 
         
         $user = Auth::user();
-        $company_settings = Settings::where('email', $user->email)->first();
+        $company_settings = CompanySettings::where('email', $user->email)->first();
 
         // Check if user's account is approved or not
         if ($user->approved == 0) {

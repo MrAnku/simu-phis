@@ -13,6 +13,8 @@ class Settings extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'company_id',
+        'email',
         'country',
         'time_zone',
         'date_format',

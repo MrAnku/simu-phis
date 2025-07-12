@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\Settings;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CompanySettings;
 use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class MFAController extends Controller
@@ -33,7 +33,7 @@ class MFAController extends Controller
             ], 404);
         }
 
-        $settings = Settings::where('email', $company->email)->first();
+        $settings = CompanySettings::where('email', $company->email)->first();
 
         if (!$settings || !$settings->mfa_secret) {
             return response()->json([

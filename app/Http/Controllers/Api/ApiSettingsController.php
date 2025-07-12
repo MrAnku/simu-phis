@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Company;
-use App\Models\Settings;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
@@ -332,7 +331,7 @@ class ApiSettingsController extends Controller
                 ], 401);
             }
 
-            $userSettings = Settings::where('email', $user->email)->first();
+            $userSettings = CompanySettings::where('email', $user->email)->first();
 
             if (!$userSettings || !$userSettings->mfa_secret) {
                 return response()->json([
