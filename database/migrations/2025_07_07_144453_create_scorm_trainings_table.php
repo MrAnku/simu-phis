@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
+            $table->string('category')->nullable();
             $table->string('file_path');
             $table->string('company_id');
             $table->integer('passing_score');

@@ -9,6 +9,7 @@ class ScormTraining extends Model
    protected $fillable = [
         'name',
         'description',
+        'category',
         'file_path',
         'company_id',
         'passing_score',

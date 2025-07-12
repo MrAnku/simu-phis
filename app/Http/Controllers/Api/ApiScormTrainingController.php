@@ -17,6 +17,7 @@ class ApiScormTrainingController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
+                'category' => 'nullable|string',
                 'scorm_file' => 'required|file|mimes:zip|max:921600',
                 'passing_score' => 'required|numeric',
                 'entry_point' => 'nullable|string|max:255',
@@ -33,7 +34,7 @@ class ApiScormTrainingController extends Controller
             $darkLogoFilename = $randomName . '.' . $extension;
 
 
-            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 's3');
+            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 'local');
 
             if ($extractTo) {
                 // Extract ZIP
@@ -45,6 +46,7 @@ class ApiScormTrainingController extends Controller
                     $scormTraining = ScormTraining::create([
                         'name' => $request->name,
                         'description' => $request->description,
+                        'category' => $request->category,
                         'file_path' => "uploads/scorm_package/{$companyId}/{$slug}/",
                         'company_id' => $companyId,
                         'entry_point' => $request->entry_point,
