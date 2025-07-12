@@ -76,12 +76,12 @@ class ApiScormTrainingController extends Controller
             $scormTrainings = ScormTraining::where('company_id', $companyId)
                 ->get();
 
-                if($scormTrainings->isEmpty()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('No Scorm trainings found for this company.')
-                    ], 422);
-                }
+            if ($scormTrainings->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No Scorm trainings found for this company.')
+                ], 422);
+            }
 
             return response()->json([
                 'success' => true,
@@ -93,28 +93,31 @@ class ApiScormTrainingController extends Controller
         }
     }
 
-    public function fetchAssignedScormTrainings(Request $request){
-        try{
+    public function fetchAssignedScormTrainings(Request $request)
+    {
+        try {
             $request->validate([
                 'email' => 'required|email|exists:users,user_email',
             ]);
-            $scormAssignedTrainings = ScormAssignedUser::where('user_email', $request->email)
+
+            $email = $request->query('email');
+
+            $scormAssignedTrainings = ScormAssignedUser::where('user_email', $email)
                 ->with(['scormTrainingData'])
                 ->get();
 
-                if($scormAssignedTrainings->isEmpty()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('No Scorm trainings assigned found for this user.')
-                    ], 422);
-                }
+            if ($scormAssignedTrainings->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No Scorm trainings assigned found for this user.')
+                ], 422);
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => __('Assigned Scorm trainings retrieved successfully'),
                 'data' => $scormAssignedTrainings
             ], 200);
-                
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
