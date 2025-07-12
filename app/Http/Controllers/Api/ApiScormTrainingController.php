@@ -6,8 +6,10 @@ use ZipArchive;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ScormTraining;
+use App\Models\ScormAssignedUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ApiScormTrainingController extends Controller
 {
@@ -86,6 +88,35 @@ class ApiScormTrainingController extends Controller
                 'message' => __('Scorm trainings retrieved successfully'),
                 'data' => $scormTrainings
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchAssignedScormTrainings(Request $request){
+        try{
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+            $scormAssignedTrainings = ScormAssignedUser::where('user_email', $request->email)
+                ->with(['scormTrainingData'])
+                ->get();
+
+                if($scormAssignedTrainings->isEmpty()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('No Scorm trainings assigned found for this user.')
+                    ], 422);
+                }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Assigned Scorm trainings retrieved successfully'),
+                'data' => $scormAssignedTrainings
+            ], 200);
+                
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
