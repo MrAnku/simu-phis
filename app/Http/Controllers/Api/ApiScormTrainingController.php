@@ -66,21 +66,28 @@ class ApiScormTrainingController extends Controller
         }
     }
 
-    // public function fetchScormTrainings(Request $request)
-    // {
-    //     try {
-    //         $companyId = Auth::user()->company_id;
+    public function fetchScormTrainings(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
 
-    //         $scormTrainings = ScormTraining::where('company_id', $companyId)
-    //             ->get();
+            $scormTrainings = ScormTraining::where('company_id', $companyId)
+                ->get();
 
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => __('Scorm trainings retrieved successfully'),
-    //             'data' => $scormTrainings
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
-    //     }
-    // }
+                if($scormTrainings->isEmpty()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('No Scorm trainings found for this company.')
+                    ], 422);
+                }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scorm trainings retrieved successfully'),
+                'data' => $scormTrainings
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }
