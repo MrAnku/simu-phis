@@ -26,7 +26,7 @@ class ApiIntegrationController extends Controller
             ->first();
         $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
         if (!$hasOutlookAdToken) {
-            $authenticateUrl = env('OUTLOOK_AUTH_URL');
+            $authenticateUrl = $this->generateLoginUrl();
         } else {
             $authenticateUrl = null;
         }
@@ -60,5 +60,19 @@ class ApiIntegrationController extends Controller
                 'outlook_dmi_url' => $dmiAuthUrl,
             ]
         ]);
+    }
+
+    private function generateLoginUrl()
+    {
+        $authUrl = env('MS_AUTHORITY') . "authorize?" . http_build_query([
+            "client_id" => env('MS_CLIENT_ID'),
+            "response_type" => "code",
+            "redirect_uri" => env('MS_REDIRECT_URI'),
+            "response_mode" => "query",
+            "scope" => "openid profile email User.Read Directory.Read.All",
+            "state" => csrf_token() // Use CSRF token for security
+        ]);
+
+        return $authUrl;
     }
 }
