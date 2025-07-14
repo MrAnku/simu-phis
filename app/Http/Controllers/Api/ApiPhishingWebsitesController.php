@@ -417,16 +417,19 @@ class ApiPhishingWebsitesController extends Controller
             }
 
             $fileUrl = $clonedWebsite->file_url;
+            if ($fileUrl) {
+                // Parse the S3 path from the file_url (strip domain and leading slash)
+                $parsedUrl = parse_url($fileUrl, PHP_URL_PATH);
+                $s3Path = ltrim($parsedUrl, '/');
 
-            // Parse the S3 path from the file_url (strip domain and leading slash)
-            $parsedUrl = parse_url($fileUrl, PHP_URL_PATH);
-            $s3Path = ltrim($parsedUrl, '/');
 
-
-            // delete the main HTML file
-            if (Storage::disk('s3')->exists($s3Path)) {
-                Storage::disk('s3')->delete($s3Path);
+                // delete the main HTML file
+                if (Storage::disk('s3')->exists($s3Path)) {
+                    Storage::disk('s3')->delete($s3Path);
+                }
             }
+
+
 
 
             // Delete the database record
