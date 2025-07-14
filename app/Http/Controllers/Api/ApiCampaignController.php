@@ -120,7 +120,14 @@ class ApiCampaignController extends Controller
                 }
             }
 
-
+            if ($validated['campaign_type'] == 'Training' || $validated['campaign_type'] == 'Phishing & Training') {
+                if (empty($validated['training_mod']) && empty($validated['scorm_training'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Please select either Training Module or Scorm Training')
+                    ], 422);
+                }
+            }
 
             $campId = Str::random(6);
             $launchType = $validated['schType'];
@@ -190,7 +197,8 @@ class ApiCampaignController extends Controller
                 'user_id' => $user->id,
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
-                'training_module' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_mod'][array_rand($data['training_mod'])],
+                'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_module']) ? null : $data['training_mod'][array_rand($data['training_mod'])],
+                'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : $data['scorm_training'][array_rand($data['scorm_training'])],
                 'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
                 'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
                 'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
@@ -209,14 +217,15 @@ class ApiCampaignController extends Controller
             ]);
         }
 
-       
+
 
         Campaign::create([
             'campaign_id' => $campId,
             'campaign_name' => $data['camp_name'],
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
-            'training_module' => ($data['campaign_type'] == 'Phishing') ? null : json_encode($data['training_mod']),
+            'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_module']) ? null : json_encode($data['training_mod']),
+            'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
             'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
             'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
@@ -258,6 +267,7 @@ class ApiCampaignController extends Controller
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
             'training_module' => ($data['campaign_type'] == 'Phishing') ? null : json_encode($data['training_mod']),
+            'scorm_training' => ($data['campaign_type'] == 'Phishing') ? null : json_encode($data['scorm_training']),
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
             'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
             'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
@@ -276,7 +286,7 @@ class ApiCampaignController extends Controller
             'company_id' => $companyId,
         ]);
 
-      
+
 
         log_action('Email campaign scheduled');
 
@@ -327,6 +337,8 @@ class ApiCampaignController extends Controller
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
             'training_module' => ($data['campaign_type'] == 'Phishing') ? null : json_encode($data['training_mod']),
+            'scorm_training' => ($data['campaign_type'] == 'Phishing') ? null : json_encode($data['scorm_training']),
+
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
             'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
             'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
@@ -371,7 +383,7 @@ class ApiCampaignController extends Controller
                 ->where('company_id', $companyId)
                 ->delete();
 
-           
+
 
             EmailCampActivity::where('campaign_id', $campid)
                 ->where('company_id', $companyId)
@@ -383,7 +395,7 @@ class ApiCampaignController extends Controller
                 'message' => __('Campaign deleted successfully!')
             ]);
         } catch (\Exception $e) {
-             
+
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
@@ -493,26 +505,26 @@ class ApiCampaignController extends Controller
             $company_id = Auth::user()->company_id;
 
             Campaign::where('campaign_id', $campid)
-            ->where('company_id', $company_id)
-            ->update([
-                'launch_time' => $formattedDateTime,
-                'status' => 'running'
-            ]);
+                ->where('company_id', $company_id)
+                ->update([
+                    'launch_time' => $formattedDateTime,
+                    'status' => 'running'
+                ]);
 
             // Update campaign_live table
             CampaignLive::where('campaign_id', $campid)
-            ->where('company_id', $company_id)
-            ->update([
-                'launch_time' => $formattedDateTime,
-                'sent' => '0',
-                'mail_open' => '0',
-                'payload_clicked' => '0',
-                'emp_compromised' => '0',
-                'email_reported' => '0',
-                'training_assigned' => '0',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+                ->where('company_id', $company_id)
+                ->update([
+                    'launch_time' => $formattedDateTime,
+                    'sent' => '0',
+                    'mail_open' => '0',
+                    'payload_clicked' => '0',
+                    'emp_compromised' => '0',
+                    'email_reported' => '0',
+                    'training_assigned' => '0',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
 
             log_action('Email campaign relaunched');
             return response()->json([
@@ -613,8 +625,6 @@ class ApiCampaignController extends Controller
                 }
 
                 $campaign = $isLive['campaign'];
-
-               
             }
 
             if ($request->schedule_type == 'scheduled') {
@@ -648,8 +658,6 @@ class ApiCampaignController extends Controller
                 $campaign->expire_after = $expire_after;
                 $campaign->status = 'pending';
                 $campaign->save();
-
-                
             }
 
             log_action('Email campaign rescheduled');
@@ -709,6 +717,7 @@ class ApiCampaignController extends Controller
                 'user_name' => $user->user_name,
                 'user_email' => $user->user_email,
                 'training_module' => $campaign->training_module !== null ? json_decode($campaign->training_module)[array_rand(json_decode($campaign->training_module))] : null,
+                'scorm_training' => $campaign->scorm_training !== null ? json_decode($campaign->scorm_training)[array_rand(json_decode($campaign->scorm_training))] : null,
                 'days_until_due' => $campaign->days_until_due ?? null,
                 'training_lang' => $campaign->training_lang ?? null,
                 'training_type' => $campaign->training_type ?? null,
@@ -906,9 +915,9 @@ class ApiCampaignController extends Controller
         $games = [];
         foreach ($assignedTrainings as $assignedTraining) {
             if ($assignedTraining->training_type == 'games') {
-            $games[] = $assignedTraining->trainingGame->name;
+                $games[] = $assignedTraining->trainingGame->name;
             } else {
-            $trainings[] = $assignedTraining->trainingData->name;
+                $trainings[] = $assignedTraining->trainingData->name;
             }
         }
         $assignedTrainings = [
