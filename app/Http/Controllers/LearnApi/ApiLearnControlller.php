@@ -48,35 +48,24 @@ class ApiLearnControlller extends Controller
             // Decrypt the email
             $userEmail = decrypt($session->token);
 
-            $averageScore = DB::table('training_assigned_users')
-                ->where('user_email', $userEmail)
-                ->avg('personal_best');
-
-            $assignedTraining = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $userEmail)
-                ->where('completed', 0)
-                ->get();
-
-            $completedTraining = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $userEmail)
-                ->where('completed', 1)
-                ->get();
-
-            $totalCertificates = TrainingAssignedUser::where('user_email', $userEmail)
-                ->where('completed', 1)
-                ->where('personal_best', 100)
-                ->count();
-
             Session::put('token', $token);
+
+            $isNormalEmployee = Users::where('user_email', $userEmail)->exists();
+
+            if($isNormalEmployee == 1){
+                $employeeType = 'normal';
+                $userName = Users::where('user_email', $userEmail)->value('user_name');
+            }else{
+                $employeeType = 'bluecollar';
+                $userName = BlueCollarEmployee::where('whatsapp', $userEmail)->value('user_name');
+            }
 
             return response()->json([
                 'status' => true,
                 'data' => [
                     'email' => $userEmail,
-                    'average_score' => $averageScore,
-                    'assigned_training' => $assignedTraining,
-                    'completed_training' => $completedTraining,
-                    'total_certificates' => $totalCertificates,
+                    'employee_type' => $employeeType,
+                    'user_name' => $userName,
                 ],
                 'message' => 'You can Login now'
             ], 200);
