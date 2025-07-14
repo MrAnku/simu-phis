@@ -52,10 +52,10 @@ class ApiLearnControlller extends Controller
 
             $isNormalEmployee = Users::where('user_email', $userEmail)->exists();
 
-            if($isNormalEmployee == 1){
+            if ($isNormalEmployee == 1) {
                 $employeeType = 'normal';
                 $userName = Users::where('user_email', $userEmail)->value('user_name');
-            }else{
+            } else {
                 $employeeType = 'bluecollar';
                 $userName = BlueCollarEmployee::where('whatsapp', $userEmail)->value('user_name');
             }
@@ -200,12 +200,27 @@ class ApiLearnControlller extends Controller
                 ->where('user_email', $request->email)
                 ->where('completed', 1)->get();
 
+            $inProgressTrainings = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $request->email)
+                ->where('training_started', 1)
+                ->where('completed', 0)->get();
+
             return response()->json([
                 'status' => true,
                 'data' => [
                     'email' => $request->email,
                     'assigned_trainings' => $assignedTrainings,
                     'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'total_trainings' => TrainingAssignedUser::with('trainingData')
+                        ->where('user_email', $request->email)->count(),
+                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_completed_trainings' => $completedTrainings->count(),
+                    'total_in_progress_trainings' => $inProgressTrainings->count(),
+                    'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
+                        ->where('user_email', $request->email)
+                        ->where('training_started', 1)
+                        ->where('completed', 0)->avg('personal_best')),
                 ],
                 'message' => 'Courses fetched successfully for ' . $request->email
             ], 200);
@@ -306,7 +321,7 @@ class ApiLearnControlller extends Controller
                     $rowData->save();
 
                     // Send email
-                   
+
                     $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                     if ($isWhitelabeled->isCompanyWhitelabeled()) {
                         $whitelabelData = $isWhitelabeled->getWhiteLabelData();
