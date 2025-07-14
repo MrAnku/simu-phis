@@ -12,15 +12,17 @@ use Illuminate\Support\Str;
 use App\Models\CampaignLive;
 use App\Models\SenderProfile;
 use App\Models\CampaignReport;
+use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
-use App\Models\OutlookDmiToken;
+use App\Models\PhishingEmail;
+use App\Models\PhishingWebsite;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Services\TrainingAssignedService;
+use App\Services\CampaignTrainingService;
 
 class ProcessCampaigns extends Command
 {
@@ -125,7 +127,7 @@ class ProcessCampaigns extends Command
       // Update the campaign status to 'running'
       $campaign->update(['status' => 'running']);
 
-     
+
       echo 'Campaign is live';
     }
   }
@@ -150,95 +152,140 @@ class ProcessCampaigns extends Command
       foreach ($campaigns as $campaign) {
 
         if ($campaign->phishing_material == null) {
-
-          $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-
-          if ($all_camp->training_assignment == 'all') {
-
-            $trainings = json_decode($all_camp->training_module, true);
-            $this->assignTraining($campaign, $trainings);
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-          } else {
-            $this->assignTraining($campaign);
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+          try {
+            $this->sendOnlyTraining($campaign);
+          } catch (\Exception $e) {
+            echo "Error sending training: " . $e->getMessage() . "\n";
           }
         }
 
         if ($campaign->phishing_material) {
-          $phishingMaterial = DB::table('phishing_emails')
-          ->where('id', $campaign->phishing_material)
-          ->where('website', '!=', 0)
-          ->where('senderProfile', '!=', 0)
-          ->first();
-
-          if ($phishingMaterial) {
-            if($campaign->sender_profile !== null){
-              $senderProfile = SenderProfile::find($campaign->sender_profile);
-            }else{
-              // If sender_profile is not set in campaign, use the one from phishing material
-              $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
-            }
-
-            $websiteColumns = DB::table('phishing_websites')->find($phishingMaterial->website);
-
-            if ($senderProfile && $websiteColumns) {
-
-              $websiteUrl =  $this->generateWebsiteUrl($websiteColumns, $campaign);
-
-              try{
-                $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
-              } catch (\Exception $e) {
-                echo "Error fetching mail body: " . $e->getMessage() . "\n";
-                continue;
-              }
-
-
-              $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-              $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-              $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
-
-              if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
-
-                $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
-              }
-
-              if ($campaign->email_lang == 'am') {
-
-                $mailBody = $this->translateHtmlToAmharic($mailBody);
-              }
-
-              $mailData = [
-                'email' => $campaign->user_email,
-                'from_name' => $senderProfile->from_name,
-                'email_subject' => $phishingMaterial->email_subject,
-                'mailBody' => $mailBody,
-                'from_email' => $senderProfile->from_email,
-                'sendMailHost' => $senderProfile->host,
-                'sendMailUserName' => $senderProfile->username,
-                'sendMailPassword' => $senderProfile->password,
-              ];
-
-              // $this->sendMailConditionally($mailData, $campaign, $company_id);
-
-              if ($this->sendMail($mailData)) {
-
-                $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                echo "Email sent to: " . $campaign->user_email . "\n";
-              } else {
-                echo "Email not sent to: " . $campaign->user_email . "\n";
-              }
-
-              $campaign->update(['sent' => 1]);
-
-             
-            } else {
-              echo "sender profile or website is not associated";
-            }
+          try {
+            $this->sendPhishingEmail($campaign);
+          } catch (\Exception $e) {
+            echo "Error sending phishing email: " . $e->getMessage() . "\n";
           }
         }
       }
     }
+  }
+
+  private function sendOnlyTraining($campaign)
+  {
+    $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+    if ($all_camp->training_assignment == 'all') {
+
+      $trainings = json_decode($all_camp->training_module, true);
+      // $this->assignTraining($campaign, $trainings);
+      $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
+
+      if ($sent) {
+        echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
+      } else {
+        echo 'Failed to assign training to ' . $campaign->user_email . "\n";
+      }
+
+      $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+    } else {
+
+      //incase if the assignment is random
+
+      $sent = CampaignTrainingService::assignTraining($campaign);
+
+      if ($sent) {
+        echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
+      } else {
+        echo 'Failed to assign training to ' . $campaign->user_email . "\n";
+      }
+      $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+    }
+  }
+
+  private function sendPhishingEmail($campaign)
+  {
+    if ($campaign->phishing_material) {
+      $phishingMaterial = PhishingEmail::where('id', $campaign->phishing_material)
+        ->where('website', '!=', 0)
+        ->where('senderProfile', '!=', 0)
+        ->first();
+
+      if (!$phishingMaterial) {
+        return;
+      }
+
+      if ($campaign->sender_profile !== null) {
+        $senderProfile = SenderProfile::find($campaign->sender_profile);
+      } else {
+        // If sender_profile is not set in campaign, use the one from phishing material
+        $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
+      }
+
+      $website = PhishingWebsite::find($phishingMaterial->website);
+
+      if (!$senderProfile || !$website) {
+        echo "Sender profile or website is not associated with the phishing material.\n";
+        return;
+      }
+
+      $mailBody = $this->prepareMailBody(
+        $website,
+        $phishingMaterial,
+        $campaign
+      );
+
+      $mailData = [
+        'email' => $campaign->user_email,
+        'from_name' => $senderProfile->from_name,
+        'email_subject' => $phishingMaterial->email_subject,
+        'mailBody' => $mailBody,
+        'from_email' => $senderProfile->from_email,
+        'sendMailHost' => $senderProfile->host,
+        'sendMailUserName' => $senderProfile->username,
+        'sendMailPassword' => $senderProfile->password,
+      ];
+
+      // $this->sendMailConditionally($mailData, $campaign, $company_id);
+
+      if ($this->sendMail($mailData)) {
+
+        $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+        echo "Email sent to: " . $campaign->user_email . "\n";
+      } else {
+        echo "Email not sent to: " . $campaign->user_email . "\n";
+      }
+
+      $campaign->update(['sent' => 1]);
+    }
+  }
+
+  private function prepareMailBody($website, $phishingMaterial, $campaign)
+  {
+    $websiteUrl =  getWebsiteUrl($website, $campaign);
+
+    try {
+      $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
+    } catch (\Exception $e) {
+      echo "Error fetching mail body: " . $e->getMessage() . "\n";
+    }
+
+
+    $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
+    $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+    $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+
+    if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
+
+      $mailBody = $this->changeEmailLang($mailBody, $campaign->email_lang);
+    }
+
+    if ($campaign->email_lang == 'am') {
+
+      $mailBody = $this->translateHtmlToAmharic($mailBody);
+    }
+
+    return $mailBody;
   }
 
   private function translateHtmlToAmharic(string $htmlContent): ?string
@@ -347,139 +394,7 @@ class ProcessCampaigns extends Command
     $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
-  private function generateWebsiteUrl($websiteColumns, $campaign)
-  {
-    // Generate random parts
-    $randomString1 = Str::random(6);
-    $randomString2 = Str::random(10);
-    $slugName = Str::slug($websiteColumns->name);
-
-    // Construct the base URL
-    $baseUrl = "https://{$randomString1}.{$websiteColumns->domain}/{$randomString2}";
-
-    // Define query parameters
-    $params = [
-      'v' => 'r',
-      'c' => Str::random(10),
-      'p' => $websiteColumns->id,
-      'l' => $slugName,
-      'token' => $campaign->id,
-      'usrid' => $campaign->user_id
-    ];
-
-    // Build query string and final URL
-    $queryString = http_build_query($params);
-    $websiteFilePath = $baseUrl . '?' . $queryString;
-
-    return $websiteFilePath;
-  }
-
-  private function assignTraining($campaign, $trainings = null)
-  {
-    if ($trainings !== null) {
-      $this->assignAllTrainings($campaign, $trainings);
-    } else {
-      $this->assignSingleTraining($campaign);
-    }
-  }
-
-  private function assignAllTrainings($campaign, $trainings)
-  {
-    $trainingAssignedService = new TrainingAssignedService();
-
-    foreach ($trainings as $training) {
-
-      //check if this training is already assigned to this user
-      $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
-        ->where('training', $training)
-        ->first();
-
-      if (!$assignedTraining) {
-        //call assignNewTraining from service method
-        $campData = [
-          'campaign_id' => $campaign->campaign_id,
-          'user_id' => $campaign->user_id,
-          'user_name' => $campaign->user_name,
-          'user_email' => $campaign->user_email,
-          'training' => $training,
-          'training_lang' => $campaign->training_lang,
-          'training_type' => $campaign->training_type,
-          'assigned_date' => now()->toDateString(),
-          'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-          'company_id' => $campaign->company_id
-        ];
-
-        $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-        if ($trainingAssigned['status'] == true) {
-          echo $trainingAssigned['msg'];
-        } else {
-          echo 'Failed to assign training to ' . $campaign->user_email;
-        }
-      }
-    }
-
-    //send mail to user
-    $campData = [
-      'user_name' => $campaign->user_name,
-      'user_email' => $campaign->user_email,
-      'company_id' => $campaign->company_id
-    ];
-    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-    if ($isMailSent['status'] == true) {
-      echo $isMailSent['msg'];
-    } else {
-      echo 'Failed to send mail to ' . $campaign->user_email;
-    }
-  }
-
-  private function assignSingleTraining($campaign)
-  {
-    $trainingAssignedService = new TrainingAssignedService();
-
-    $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
-      ->where('training', $campaign->training_module)
-      ->first();
-
-    if (!$assignedTraining) {
-      //call assignNewTraining from service method
-      $campData = [
-        'campaign_id' => $campaign->campaign_id,
-        'user_id' => $campaign->user_id,
-        'user_name' => $campaign->user_name,
-        'user_email' => $campaign->user_email,
-        'training' => $campaign->training_module,
-        'training_lang' => $campaign->training_lang,
-        'training_type' => $campaign->training_type,
-        'assigned_date' => now()->toDateString(),
-        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        'company_id' => $campaign->company_id
-      ];
-
-      $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-      if ($trainingAssigned['status'] == true) {
-        echo $trainingAssigned['msg'];
-      } else {
-        echo 'Failed to assign training to ' . $campaign->user_email;
-      }
-    }
-
-    //send mail to user
-    $campData = [
-      'user_name' => $campaign->user_name,
-      'user_email' => $campaign->user_email,
-      'company_id' => $campaign->company_id
-    ];
-    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-    if ($isMailSent['status'] == true) {
-      echo $isMailSent['msg'];
-    } else {
-      echo 'Failed to send mail to ' . $campaign->user_email;
-    }
-  }
+  
 
   private function updateRunningCampaigns()
   {
@@ -491,7 +406,7 @@ class ProcessCampaigns extends Command
 
       if ($checkSent == 0) {
         Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-      
+
         echo 'Campaign completed';
       }
     }
@@ -530,8 +445,6 @@ class ProcessCampaigns extends Command
               }
 
               $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-
-             
             } else {
               $recurrCampaign->update(['status' => 'completed']);
             }
@@ -555,7 +468,6 @@ class ProcessCampaigns extends Command
             }
 
             $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-
           }
         }
       }

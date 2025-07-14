@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\WhiteLabelController;
@@ -109,6 +110,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
         Route::put('/complete-training/{encodedTrainingId?}', [ApiCampaignController::class, 'completeTraining']);
         Route::delete('/remove-training/{encodedTrainingId?}', [ApiCampaignController::class, 'removeTraining']);
+    });
+
+    Route::prefix('no-activity-users')->group(function () {
+        Route::post('/send-training', [NoActivityUsersController::class, 'sendTrainingWithoutActivity']);
     });
 
     //quishing campaign routes

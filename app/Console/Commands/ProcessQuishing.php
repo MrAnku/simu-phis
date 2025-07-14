@@ -60,7 +60,7 @@ class ProcessQuishing extends Command
                 $quishingTemplate = $campaign->templateData()->first();
                 if ($quishingTemplate->website !== null && $quishingTemplate->sender_profile !== null) {
                     $phishingWebsite = $quishingTemplate->website()->first();
-                    $websiteUrl = $this->getWebsiteUrl($phishingWebsite, $campaign);
+                    $websiteUrl = getWebsiteUrl($phishingWebsite, $campaign, 'qsh');
 
                     //get qrcode link
                     $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
@@ -261,33 +261,6 @@ class ProcessQuishing extends Command
         }
     }
 
-    private function getWebsiteUrl($phishingWebsite, $campaign)
-    {
-        // Generate random parts
-        $randomString1 = Str::random(6);
-        $randomString2 = Str::random(10);
-        $slugName = Str::slug($phishingWebsite->name);
-
-        // Construct the base URL
-        $baseUrl = "https://{$randomString1}.{$phishingWebsite->domain}/{$randomString2}";
-
-        // Define query parameters
-        $params = [
-            'v' => 'r',
-            'c' => Str::random(10),
-            'p' => $phishingWebsite->id,
-            'l' => $slugName,
-            'token' => $campaign->id,
-            'usrid' => $campaign->user_id,
-            'qsh' => base64_encode($campaign->id)
-        ];
-
-        // Build query string and final URL
-        $queryString = http_build_query($params);
-        $websiteFilePath = $baseUrl . '?' . $queryString;
-
-        return $websiteFilePath;
-    }
 
     private function getQRlink($email, $redirectUrl, $campLiveId)
     {

@@ -70,7 +70,7 @@ class ProcessWhatsappCampaign extends Command
 
                     $website_link = [
                         'type' => 'text',
-                        'text' => $this->getWebsiteUrl($website, $campaign),
+                        'text' => getWebsiteUrl($website, $campaign, 'wsh'),
                     ];
 
                     $variables = json_decode($campaign->variables, true);
@@ -124,31 +124,4 @@ class ProcessWhatsappCampaign extends Command
         }
     }
 
-    private function getWebsiteUrl($phishingWebsite, $campaign)
-    {
-        // Generate random parts
-        $randomString1 = Str::random(6);
-        $randomString2 = Str::random(10);
-        $slugName = Str::slug($phishingWebsite->name);
-
-        // Construct the base URL
-        $baseUrl = "https://{$randomString1}.{$phishingWebsite->domain}/{$randomString2}";
-
-        // Define query parameters
-        $params = [
-            'v' => 'r',
-            'c' => Str::random(10),
-            'p' => $phishingWebsite->id,
-            'l' => $slugName,
-            'token' => $campaign->id,
-            'usrid' => $campaign->user_id,
-            'wsh' => base64_encode($campaign->id)
-        ];
-
-        // Build query string and final URL
-        $queryString = http_build_query($params);
-        $websiteFilePath = $baseUrl . '?' . $queryString;
-
-        return $websiteFilePath;
-    }
 }

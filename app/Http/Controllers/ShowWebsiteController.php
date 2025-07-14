@@ -23,9 +23,9 @@ use \App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
 use App\Models\SmishingLiveCampaign;
-use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use App\Services\CampaignTrainingService;
 use App\Services\TrainingAssignedService;
 use App\Models\BlueCollarLearnerLoginSession;
 
@@ -180,12 +180,12 @@ class ShowWebsiteController extends Controller
 
         if ($all_camp->training_assignment == 'all') {
             $trainings = json_decode($all_camp->training_module, true);
-            $this->assignAllTrainings($campaign, $trainings);
+            $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
 
             // Update campaign_live table
             $campaign->update(['sent' => '1', 'training_assigned' => '1']);
         } else {
-            $this->assignSingleTraining($campaign);
+            $sent = CampaignTrainingService::assignTraining($campaign);
 
             // Update campaign_live table
             $campaign->update(['sent' => '1', 'training_assigned' => '1']);
@@ -210,12 +210,12 @@ class ShowWebsiteController extends Controller
 
         if ($all_camp->training_assignment == 'all') {
             $trainings = json_decode($all_camp->training_module, true);
-            $this->assignAllTrainings($campaign, $trainings, true);
+            $sent = CampaignTrainingService::assignTraining($campaign, $trainings, true);
 
             // Update campaign_live table
             $campaign->update(['training_assigned' => 1]);
         } else {
-            $this->assignSingleTraining($campaign, true);
+            $sent = CampaignTrainingService::assignTraining($campaign, null, true);
 
             // Update campaign_live table
             $campaign->update(['training_assigned' => 1]);
@@ -240,12 +240,12 @@ class ShowWebsiteController extends Controller
         if ($campaign->employee_type == 'normal') {
             if ($all_camp->training_assignment == 'all') {
                 $trainings = json_decode($all_camp->training_module, true);
-                $this->assignAllTrainings($campaign, $trainings);
+                $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             } else {
-                $this->assignSingleTraining($campaign);
+                $sent = CampaignTrainingService::assignTraining($campaign);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -460,14 +460,13 @@ class ShowWebsiteController extends Controller
 
             if ($all_camp->training_assignment == 'all') {
                 $trainings = json_decode($all_camp->training_module, true);
-                $this->assignAllTrainings($campaign, $trainings);
+                $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
 
-                
             } else {
-                $this->assignSingleTraining($campaign);
+                $sent = CampaignTrainingService::assignTraining($campaign);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -477,117 +476,6 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function assignAllTrainings($campaign, $trainings, $smishing = false)
-    {
-        $trainingAssignedService = new TrainingAssignedService();
-
-        if ($smishing) {
-            $user_email = Users::find($campaign->user_id)->user_email;
-        } else {
-            $user_email = $campaign->user_email;
-        }
-
-        foreach ($trainings as $training) {
-
-            //check if this training is already assigned to this user
-            $assignedTraining = TrainingAssignedUser::where('user_email', $user_email)
-                ->where('training', $training)
-                ->first();
-
-            if (!$assignedTraining) {
-                //call assignNewTraining from service method
-                $campData = [
-                    'campaign_id' => $campaign->campaign_id,
-                    'user_id' => $campaign->user_id,
-                    'user_name' => $campaign->user_name,
-                    'user_email' => $user_email,
-                    'training' => $training,
-                    'training_lang' => $campaign->training_lang,
-                    'training_type' => $campaign->training_type,
-                    'assigned_date' => now()->toDateString(),
-                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                    'company_id' => $campaign->company_id
-                ];
-
-                $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-                if ($trainingAssigned['status'] == true) {
-                    echo $trainingAssigned['msg'];
-                } else {
-                    echo 'Failed to assign training to ' . $user_email;
-                }
-            }
-        }
-
-        //send mail to user
-        $campData = [
-            'user_name' => $campaign->user_name,
-            'user_email' => $user_email,
-            'company_id' => $campaign->company_id
-        ];
-        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-        if ($isMailSent['status'] == true) {
-
-            echo $isMailSent['msg'];
-        } else {
-            echo 'Failed to send mail to ' . $user_email;
-        }
-    }
-
-    private function assignSingleTraining($campaign, $smishing = false)
-
-    {
-        $trainingAssignedService = new TrainingAssignedService();
-
-        if ($smishing) {
-            $user_email = Users::find($campaign->user_id)->user_email;
-        } else {
-            $user_email = $campaign->user_email;
-        }
-
-        $assignedTraining = TrainingAssignedUser::where('user_email', $user_email)
-            ->where('training', $campaign->training_module)
-            ->first();
-
-        if (!$assignedTraining) {
-            //call assignNewTraining from service method
-            $campData = [
-                'campaign_id' => $campaign->campaign_id,
-                'user_id' => $campaign->user_id,
-                'user_name' => $campaign->user_name,
-                'user_email' => $user_email,
-                'training' => $campaign->training_module,
-                'training_lang' => $campaign->training_lang,
-                'training_type' => $campaign->training_type,
-                'assigned_date' => now()->toDateString(),
-                'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                'company_id' => $campaign->company_id
-            ];
-
-            $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-            if ($trainingAssigned['status'] == true) {
-                echo $trainingAssigned['msg'];
-            } else {
-                echo 'Failed to assign training to ' . $user_email;
-            }
-        }
-
-        //send mail to user
-        $campData = [
-            'user_name' => $campaign->user_name,
-            'user_email' => $user_email,
-            'company_id' => $campaign->company_id
-        ];
-        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-        if ($isMailSent['status'] == true) {
-            echo $isMailSent['msg'];
-        } else {
-            echo 'Failed to send mail to ' . $user_email;
-        }
-    }
 
     private function sendAlertSms($campaign)
     {

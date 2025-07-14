@@ -5,6 +5,7 @@
 use App\Models\Log;
 use App\Models\Company;
 use App\Models\SiemLog;
+use Illuminate\Support\Str;
 use App\Models\SiemProvider;
 use App\Models\CompanySettings;
 use App\Models\WhiteLabelledCompany;
@@ -358,9 +359,9 @@ if (!function_exists('checkWhiteLabelDomain')) {
         if (Schema::hasTable('white_labelled_companies')) {
             $host = request()->getHost();
             $companyBranding = WhiteLabelledCompany::where('learn_domain', $host)
-            ->where('approved_by_partner', 1)
-            ->where('service_status', 1)
-            ->first();
+                ->where('approved_by_partner', 1)
+                ->where('service_status', 1)
+                ->first();
 
             if ($companyBranding) {
                 $domain = $companyBranding->learn_domain;
@@ -374,7 +375,6 @@ if (!function_exists('checkWhiteLabelDomain')) {
                     'companyDomain' => "https://" . $companyBranding->domain . "/",
                     'companyLearnDomain' => "https://" . $companyBranding->learn_domain . "/"
                 ]);
-
             } else {
                 $domain = env('SIMUPHISH_LEARNING_URL');
                 //store default company branding in session
@@ -488,5 +488,37 @@ if (!function_exists('setCompanyTimezone')) {
             date_default_timezone_set($companySettings->time_zone);
             config(['app.timezone' => $companySettings->time_zone]);
         }
+    }
+}
+if (!function_exists('getWebsiteUrl')) {
+    function getWebsiteUrl($website, $campaign, $campaignType = null)
+    {
+        // Generate random parts
+        $randomString1 = Str::random(6);
+        $randomString2 = Str::random(10);
+        $slugName = Str::slug($website->name);
+
+        // Construct the base URL
+        $baseUrl = "https://{$randomString1}." . env('PHISHING_WEBSITE_DOMAIN') . "/{$randomString2}";
+
+        // Define query parameters
+        $params = [
+            'v' => 'r',
+            'c' => Str::random(10),
+            'p' => $website->id,
+            'l' => $slugName,
+            'token' => $campaign->id,
+            'usrid' => $campaign->user_id
+        ];
+
+        if($campaignType !== null){
+            $params[$campaignType] = Str::random(3);
+        }
+
+        // Build query string and final URL
+        $queryString = http_build_query($params);
+        $websiteFilePath = $baseUrl . '?' . $queryString;
+
+        return $websiteFilePath;
     }
 }
