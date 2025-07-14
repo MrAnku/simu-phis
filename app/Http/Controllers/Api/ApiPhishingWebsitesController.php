@@ -748,6 +748,7 @@ class ApiPhishingWebsitesController extends Controller
         try {
             $companyId = Auth::user()->company_id;
             $clonedWebsites = WebsiteCloneJob::where('company_id', $companyId)
+                ->orderBy('created_at', 'desc')
                 ->get();
             return response()->json([
                 'success' => true,
