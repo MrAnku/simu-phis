@@ -261,12 +261,27 @@ class ApiLearnControlller extends Controller
                 ->where('user_whatsapp', $request->user_whatsapp)
                 ->where('completed', 1)->get();
 
+            $inProgressTrainings = BlueCollarTrainingUser::with('trainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)
+                 ->where('training_started', 1)
+                ->where('completed', 0)->get();
+
             return response()->json([
                 'status' => true,
                 'data' => [
                     'user_whatsapp' => $request->user_whatsapp,
                     'assigned_trainings' => $assignedTrainings,
                     'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'total_trainings' => BlueCollarTrainingUser::with('trainingData')
+                        ->where('user_whatsapp', $request->user_whatsapp)->count(),
+                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_completed_trainings' => $completedTrainings->count(),
+                    'total_in_progress_trainings' => $inProgressTrainings->count(),
+                    'avg_in_progress_trainings' => round(BlueCollarTrainingUser::with('trainingData')
+                        ->where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->where('completed', 0)->avg('personal_best')),
                 ],
                 'message' => 'Courses fetched successfully for blue collar employee'
             ], 200);

@@ -26,6 +26,8 @@ class BlueCollarTrainingUser extends Model
         'completion_date',
         'company_id',
         'certificate_id',
+        'training_started',
+        'grade',
     ];
 
     public function trainingModule()
