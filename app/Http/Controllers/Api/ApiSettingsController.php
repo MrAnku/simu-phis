@@ -89,7 +89,7 @@ class ApiSettingsController extends Controller
 
             // Update the company settings
             $isUpdated = DB::table('company_settings')
-                ->where('company_id', $companyEmail)
+                ->where('email', $companyEmail)
                 ->update([
                     'country' => $validated['country'],
                     'time_zone' => $validated['timeZone'],
