@@ -263,7 +263,7 @@ class ApiLearnControlller extends Controller
 
             $inProgressTrainings = BlueCollarTrainingUser::with('trainingData')
                 ->where('user_whatsapp', $request->user_whatsapp)
-                 ->where('training_started', 1)
+                ->where('training_started', 1)
                 ->where('completed', 0)->get();
 
             return response()->json([
@@ -433,9 +433,6 @@ class ApiLearnControlller extends Controller
         return $pdf->Output('S');
     }
 
-
-
-
     private function getCertificateId($trainingModule, $userEmail, $trainingId)
     {
         // Check the database for an existing certificate ID for this user and training module
@@ -466,5 +463,106 @@ class ApiLearnControlller extends Controller
                 'certificate_id' => $certificateId,
             ]);
         }
+    }
+
+    public function downloadCertificate(Request $request)
+    {
+        $request->validate([
+            'user_name' => 'required|string|max:255',
+            'training_module' => 'required|integer',
+            'training_id' => 'required|integer',
+            'completion_date' => 'required|date',
+            'user_email' => 'required|email',
+        ]);
+
+        $name = $request->user_name;
+        $trainingModule = $request->training_module;
+        $trainingId = $request->training_id;
+        $date = Carbon::parse($request->completion_date)->format('d F, Y');
+        $userEmail = $request->user_email;
+
+
+        $companyId = TrainingAssignedUser::where('user_email', $userEmail)->value('company_id');
+
+        $isWhitelabeled = new CheckWhitelabelService($companyId);
+        if ($isWhitelabeled->isCompanyWhitelabeled()) {
+            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+            // $companyName = $whitelabelData->company_name;
+            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
+            $isWhitelabeled->updateSmtpConfig();
+        } else {
+            // $companyName = env('APP_NAME');
+            $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+            $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+        }
+
+
+        // Check if the certificate ID already exists for this user and training module
+        $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
+
+        // If the certificate ID doesn't exist, generate a new one
+        if (!$certificateId) {
+            $certificateId = $this->generateCertificateId();
+            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId);
+        }
+
+        $pdf = new \setasign\Fpdi\Fpdi();
+
+        // Load template
+        $pdf->AddPage('L', 'A4');
+        $pdf->setSourceFile(resource_path('templates/design.pdf'));
+        $template = $pdf->importPage(1);
+        $pdf->useTemplate($template);
+
+        // Set color and fonts
+        $pdf->SetTextColor(26, 13, 171);
+
+        // Limit name length to avoid UI break
+        $maxLength = 15; // Adjust based on font size and layout width
+        if (strlen($name) > $maxLength) {
+            $name = mb_substr($name, 0, $maxLength - 3) . '...';
+        }
+
+        // --------------------------
+        // 1. NAME
+        $pdf->SetFont('Helvetica', '', 50);
+        $pdf->SetTextColor(47, 40, 103);
+        $pdf->SetXY(100, 115);
+        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L'); // 'L' for left-align
+
+        // --------------------------
+        // 2. TRAINING TITLE
+        $pdf->SetFont('Helvetica', '', 16);
+        $pdf->SetTextColor(169, 169, 169);
+        $pdf->SetXY(100, 135);
+        $pdf->Cell(210, 10, "For completing $trainingModule", 0, 1, 'L');
+
+        // --------------------------
+        // 3. DATE centered below the badge
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 165);
+        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
+
+        // 4. CERTIFICATE ID at top right
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 10);
+        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
+
+        if ($companyLogo || file_exists($companyLogo)) {
+            // 1. Top-left corner (e.g., branding)
+            $pdf->Image($companyLogo, 100, 12, 50); // X=15, Y=12, Width=40mm           
+        }
+
+        // 2. Bottom-center badge
+        $pdf->Image($favIcon, 110, 163, 15, 15);
+
+        log_action("Employee downloaded training certificate", 'learner', 'learner');
+
+        return response($pdf->Output('S', 'certificate.pdf'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="certificate.pdf"');
     }
 }
