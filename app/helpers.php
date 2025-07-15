@@ -5,12 +5,14 @@
 use App\Models\Log;
 use App\Models\Company;
 use App\Models\SiemLog;
+use App\Mail\CampaignMail;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
 use App\Models\CompanySettings;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -511,7 +513,7 @@ if (!function_exists('getWebsiteUrl')) {
             'usrid' => $campaign->user_id
         ];
 
-        if($campaignType !== null){
+        if ($campaignType !== null) {
             $params[$campaignType] = Str::random(3);
         }
 
@@ -520,5 +522,124 @@ if (!function_exists('getWebsiteUrl')) {
         $websiteFilePath = $baseUrl . '?' . $queryString;
 
         return $websiteFilePath;
+    }
+}
+
+if (!function_exists('changeEmailLang')) {
+    function changeEmailLang($emailBody, $email_lang)
+    {
+        $tempFile = tmpfile();
+        fwrite($tempFile, $emailBody);
+        $meta = stream_get_meta_data($tempFile);
+        $tempFilePath = $meta['uri'];
+
+        $response = Http::withoutVerifying()
+            ->timeout(60)
+            ->attach('file', file_get_contents($tempFilePath), 'email.html')
+            ->post('https://translate.sparrow.host/translate_file', [
+                'source' => 'en',
+                'target' => $email_lang,
+            ]);
+
+        fclose($tempFile);
+
+        if ($response->failed()) {
+            echo 'Failed to fetch translation: ' . $response->body();
+            return $emailBody;
+        }
+
+        $responseData = $response->json();
+        $translatedUrl = $responseData['translatedFileUrl'] ?? null;
+
+        if (!$translatedUrl) {
+            echo 'No translated URL found in response.';
+            return $emailBody;
+        }
+
+        $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
+
+        $translatedContent = file_get_contents($translatedUrl);
+
+
+        return $translatedContent;
+    }
+}
+
+if (!function_exists('translateHtmlToAmharic')) {
+    function translateHtmlToAmharic(string $htmlContent): ?string
+    {
+        $apiKey = env('OPENAI_API_KEY');
+        $endpoint = 'https://api.openai.com/v1/chat/completions';
+
+        // Step 1: Split HTML into chunks (e.g., by <div> or <p>)
+        $chunks = preg_split('/(?=<div|<p|<section|<article|<table|<ul|<ol|<h[1-6])/i', $htmlContent, -1, PREG_SPLIT_NO_EMPTY);
+
+        $translatedChunks = [];
+
+        foreach ($chunks as $index => $chunk) {
+            $messages = [
+                [
+                    "role" => "system",
+                    "content" => "You are a professional translator. Translate only the visible text in the HTML into Amharic. Do not alter the structure, tags, attributes, or inline styles."
+                ],
+                [
+                    "role" => "user",
+                    "content" => "Translate this HTML into Amharic, keeping the HTML unchanged:\n\n$chunk"
+                ]
+            ];
+
+            try {
+                $response = Http::timeout(60)
+                    ->retry(3, 5000)
+                    ->withHeaders([
+                        'Authorization' => "Bearer {$apiKey}",
+                        'Content-Type'  => 'application/json',
+                    ])->post($endpoint, [
+                        'model' => 'gpt-4o',
+                        'messages' => $messages,
+                        'temperature' => 0.2,
+                        'max_tokens' => 2048,
+                    ]);
+
+                if ($response->successful()) {
+                    $translatedChunk = $response->json()['choices'][0]['message']['content'] ?? '';
+                    $translatedChunks[] = $translatedChunk;
+                } else {
+                    \Log::error("Chunk $index failed", ['status' => $response->status(), 'body' => $response->body()]);
+                    $translatedChunks[] = $chunk; // fallback to original
+                }
+
+                // Sleep to avoid hitting rate limits
+                sleep(1);
+            } catch (\Exception $e) {
+                \Log::error("Chunk $index exception", ['error' => $e->getMessage()]);
+                $translatedChunks[] = $chunk; // fallback to original
+            }
+        }
+
+        // Step 3: Combine all translated chunks
+        return implode('', $translatedChunks);
+    }
+}
+
+if (!function_exists('sendPhishingMail')) {
+    function sendPhishingMail($mailData)
+    {
+
+        // Set mail configuration dynamically
+        config([
+            'mail.mailers.smtp.host' => $mailData['sendMailHost'],
+            'mail.mailers.smtp.username' => $mailData['sendMailUserName'],
+            'mail.mailers.smtp.password' => $mailData['sendMailPassword'],
+        ]);
+
+
+        try {
+            Mail::to($mailData['email'])->send(new CampaignMail($mailData));
+            return true;
+        } catch (\Exception $e) {
+            echo 'Error sending email: ' . $e->getMessage() . "\n";
+            return false;
+        }
     }
 }

@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Company;
-use App\Mail\CampaignMail;
 use Endroid\QrCode\QrCode;
-use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
 use App\Models\SenderProfile;
 use App\Models\OutlookDmiToken;
@@ -13,8 +11,6 @@ use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
 use App\Models\QuishingActivity;
 use Endroid\QrCode\Writer\PngWriter;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -50,8 +46,10 @@ class ProcessQuishing extends Command
 
             setCompanyTimezone($company->company_id);
 
+            $quishingCampaigns = $company->quishingLiveCamps()
+            ->where('sent', '0')
+            ->get();
 
-            $quishingCampaigns = $company->quishingLiveCamps()->where('sent', '0')->get();
             if ($quishingCampaigns->isEmpty()) {
                 continue;
             }
@@ -87,7 +85,7 @@ class ProcessQuishing extends Command
 
 
                     //send mail
-                    $mailSent = $this->sendMail($mailData);
+                    $mailSent = sendPhishingMail($mailData);
                     // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
                     if ($mailSent) {
 
@@ -124,7 +122,7 @@ class ProcessQuishing extends Command
                 }
             } else {
                 echo "No access token found for company ID: " . $company_id . "\n";
-                if ($this->sendMail($mailData)) {
+                if (sendPhishingMail($mailData)) {
 
                     $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
@@ -135,7 +133,7 @@ class ProcessQuishing extends Command
             }
         } else {
             echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-            if ($this->sendMail($mailData)) {
+            if (sendPhishingMail($mailData)) {
 
                 $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
@@ -164,12 +162,12 @@ class ProcessQuishing extends Command
 
         if ($campaign->quishing_lang !== 'en' && $campaign->quishing_lang !== 'am') {
 
-            $mailBody = $this->changeEmailLang($mailBody, $campaign->quishing_lang);
+            $mailBody = changeEmailLang($mailBody, $campaign->quishing_lang);
         }
 
         if ($campaign->quishing_lang == 'am') {
 
-            $mailBody = $this->translateHtmlToAmharic($mailBody);
+            $mailBody = translateHtmlToAmharic($mailBody);
         }
 
         $mailData = [
@@ -185,82 +183,6 @@ class ProcessQuishing extends Command
 
         return $mailData;
     }
-
-    private function translateHtmlToAmharic(string $htmlContent): ?string
-    {
-        $apiKey = env('OPENAI_API_KEY');
-        $endpoint = 'https://api.openai.com/v1/chat/completions';
-
-        // Step 1: Split HTML into chunks (e.g., by <div> or <p>)
-        $chunks = preg_split('/(?=<div|<p|<section|<article|<table|<ul|<ol|<h[1-6])/i', $htmlContent, -1, PREG_SPLIT_NO_EMPTY);
-
-        $translatedChunks = [];
-
-        foreach ($chunks as $index => $chunk) {
-            $messages = [
-                [
-                    "role" => "system",
-                    "content" => "You are a professional translator. Translate only the visible text in the HTML into Amharic. Do not alter the structure, tags, attributes, or inline styles."
-                ],
-                [
-                    "role" => "user",
-                    "content" => "Translate this HTML into Amharic, keeping the HTML unchanged:\n\n$chunk"
-                ]
-            ];
-
-            try {
-                $response = Http::timeout(60)
-                    ->retry(3, 5000)
-                    ->withHeaders([
-                        'Authorization' => "Bearer {$apiKey}",
-                        'Content-Type'  => 'application/json',
-                    ])->post($endpoint, [
-                        'model' => 'gpt-4o',
-                        'messages' => $messages,
-                        'temperature' => 0.2,
-                        'max_tokens' => 2048,
-                    ]);
-
-                if ($response->successful()) {
-                    $translatedChunk = $response->json()['choices'][0]['message']['content'] ?? '';
-                    $translatedChunks[] = $translatedChunk;
-                } else {
-                    \Log::error("Chunk $index failed", ['status' => $response->status(), 'body' => $response->body()]);
-                    $translatedChunks[] = $chunk; // fallback to original
-                }
-
-                // Sleep to avoid hitting rate limits
-                sleep(1);
-            } catch (\Exception $e) {
-                \Log::error("Chunk $index exception", ['error' => $e->getMessage()]);
-                $translatedChunks[] = $chunk; // fallback to original
-            }
-        }
-
-        // Step 3: Combine all translated chunks
-        return implode('', $translatedChunks);
-    }
-
-    private function sendMail($mailData)
-    {
-
-        // Set mail configuration dynamically
-        config([
-            'mail.mailers.smtp.host' => $mailData['sendMailHost'],
-            'mail.mailers.smtp.username' => $mailData['sendMailUserName'],
-            'mail.mailers.smtp.password' => $mailData['sendMailPassword'],
-        ]);
-
-
-        try {
-            Mail::to($mailData['email'])->send(new CampaignMail($mailData));
-            return true;
-        } catch (\Exception $e) {
-
-            return false;
-        }
-    }
-
 
     private function getQRlink($email, $redirectUrl, $campLiveId)
     {
@@ -296,43 +218,7 @@ class ProcessQuishing extends Command
         return $qrCodeUrl;
     }
 
-    public function changeEmailLang($emailBody, $email_lang)
-    {
-        $tempFile = tmpfile();
-        fwrite($tempFile, $emailBody);
-        $meta = stream_get_meta_data($tempFile);
-        $tempFilePath = $meta['uri'];
 
-        $response = Http::withoutVerifying()
-            ->timeout(60)
-            ->attach('file', file_get_contents($tempFilePath), 'email.html')
-            ->post('https://translate.sparrow.host/translate_file', [
-                'source' => 'en',
-                'target' => $email_lang,
-            ]);
-
-        fclose($tempFile);
-
-        if ($response->failed()) {
-            echo 'Failed to fetch translation: ' . $response->body();
-            return $emailBody;
-        }
-
-        $responseData = $response->json();
-        $translatedUrl = $responseData['translatedFileUrl'] ?? null;
-
-        if (!$translatedUrl) {
-            echo 'No translated URL found in response.';
-            return $emailBody;
-        }
-
-        $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
-
-        $translatedContent = file_get_contents($translatedUrl);
-
-
-        return $translatedContent;
-    }
 
     private function checkCompletedCampaigns()
     {

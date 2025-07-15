@@ -246,7 +246,7 @@ class ApiCampaignController extends Controller
             $data['schBetRange'],
             $data['schTimeStart'],
             $data['schTimeEnd'],
-            $data['schTimeZone']
+            config('app.timezone', 'Asia/Kolkata')
         );
 
         Campaign::create([
