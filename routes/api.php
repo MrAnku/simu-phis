@@ -116,6 +116,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/send-training', [NoActivityUsersController::class, 'sendTrainingWithoutActivity']);
     });
 
+    Route::prefix('assigned-trainings')->group(function () {
+        Route::get('/email/{email?}', [ApiCampaignController::class, 'getAssignedTrainings']);
+    });
+
     //quishing campaign routes
     Route::prefix('quishing-campaign')->group(function () {
         Route::get('/', [ApiQuishingController::class, 'index']);

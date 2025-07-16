@@ -879,4 +879,40 @@ class ApiCampaignController extends Controller
             ], 500);
         }
     }
+
+    public function getAssignedTrainings(Request $request)
+    {
+        $email = $request->route('email');
+
+        if (!$email) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Email is required')
+            ], 422);
+        }
+
+        $assignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')
+            ->where('user_email', $email)
+            ->where('company_id', Auth::user()->company_id)
+            ->get();
+
+        $trainings = [];
+        $games = [];
+        foreach ($assignedTrainings as $assignedTraining) {
+            if ($assignedTraining->training_type == 'games') {
+            $games[] = $assignedTraining->trainingGame->name;
+            } else {
+            $trainings[] = $assignedTraining->trainingData->name;
+            }
+        }
+        $assignedTrainings = [
+            'trainings' => $trainings,
+            'games' => $games,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $assignedTrainings
+        ]);
+    }
 }
