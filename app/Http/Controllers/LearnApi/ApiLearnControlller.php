@@ -314,9 +314,21 @@ class ApiLearnControlller extends Controller
 
             if (Session::has('bluecollar')) {
                 $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
+                if (!$rowData) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Training not found.'
+                    ], 404);
+                }
                 $user = $rowData->user_whatsapp;
             } else {
                 $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+                if(!$rowData) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Training not found.'
+                    ], 404);
+                }
                 $user = $rowData->user_email;
             }
 
@@ -396,9 +408,21 @@ class ApiLearnControlller extends Controller
 
             if (Session::has('bluecollar')) {
                 $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
+                if(!$rowData) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Training not found.'
+                    ], 404);
+                }
                 $user = $rowData->user_whatsapp;
             } else {
                 $rowData = ScormAssignedUser::with('scormTrainingData')->find($row_id);
+                if (!$rowData) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Training not found.'
+                    ], 404);
+                }
                 $user = $rowData->user_email;
             }
 
@@ -545,19 +569,17 @@ class ApiLearnControlller extends Controller
                 'certificate_id' => $certificateId,
             ]);
         }
-
-        if (!$trainingAssignedUser) {
-            $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
+       
+         $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
                 ->where('user_email', $userEmail)
                 ->first();
-        }
 
-        if ($scormAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $scormAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
-        }
+            if ($scormAssignedUser) {
+                // Update only the certificate_id (no need to touch campaign_id)
+                $scormAssignedUser->update([
+                    'certificate_id' => $certificateId,
+                ]);
+            }
     }
 
     public function downloadCertificate(Request $request)
