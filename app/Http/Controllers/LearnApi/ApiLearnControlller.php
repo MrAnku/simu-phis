@@ -20,6 +20,7 @@ use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\ScormAssignedUser;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnControlller extends Controller
@@ -382,6 +383,88 @@ class ApiLearnControlller extends Controller
         }
     }
 
+    public function updateScormTrainingScore(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'scormTrainingScore' => 'required|integer',
+                'encoded_id' => 'required',
+            ]);
+
+            $row_id = base64_decode($request->encoded_id);
+
+            if (Session::has('bluecollar')) {
+                $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
+                $user = $rowData->user_whatsapp;
+            } else {
+                $rowData = ScormAssignedUser::with('scormTrainingData')->find($row_id);
+                $user = $rowData->user_email;
+            }
+
+            if ($rowData && $request->scormTrainingScore > $rowData->personal_best) {
+                // Update the column if the current value is greater
+                $rowData->personal_best = $request->scormTrainingScore;
+                $rowData->save();
+
+                setCompanyTimezone($rowData->company_id);
+
+                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+
+                $passingScore = (int)$rowData->scormTrainingData->passing_score;
+
+                if ($request->scormTrainingScore >= $passingScore) {
+                    $rowData->completed = 1;
+                    $rowData->completion_date = now()->format('Y-m-d');
+                    $rowData->save();
+
+                    // Send email
+
+                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                        $companyName = $whitelabelData->company_name;
+                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
+                        $isWhitelabeled->updateSmtpConfig();
+                    } else {
+                        $companyName = env('APP_NAME');
+                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+                    }
+
+                    $mailData = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->scormTrainingData->name,
+                        'training_score' => $request->scormTrainingScore,
+                        'company_name' => $companyName,
+                        'logo' => $companyLogo
+                    ];
+
+                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
+
+
+                    Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
+
+                    log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                }
+            }
+            return response()->json(['status' => true, 'message' => 'Score updated'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail, $logo, $favIcon)
     {
         $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
@@ -451,18 +534,32 @@ class ApiLearnControlller extends Controller
     private function storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId)
     {
         // Find the existing record based on training module and userEmail
-        $assignedUser = TrainingAssignedUser::where('training', $trainingId)
+        $trainingAssignedUser = TrainingAssignedUser::where('training', $trainingId)
             ->where('user_email', $userEmail)
             ->first();
 
-        // Check if the record was found
-        if ($assignedUser) {
-
+             // Check if the record was found
+        if ($trainingAssignedUser) {
             // Update only the certificate_id (no need to touch campaign_id)
-            $assignedUser->update([
+            $trainingAssignedUser->update([
                 'certificate_id' => $certificateId,
             ]);
         }
+
+        if (!$trainingAssignedUser) {
+            $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
+                ->where('user_email', $userEmail)
+                ->first();
+        }
+
+         if ($scormAssignedUser) {
+            // Update only the certificate_id (no need to touch campaign_id)
+            $scormAssignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+        }
+
+       
     }
 
     public function downloadCertificate(Request $request)
