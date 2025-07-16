@@ -49,10 +49,18 @@ class TprmCampaign extends Model
         return $this->hasMany(TprmActivity::class, 'campaign_id', 'campaign_id');
     }
 
-    protected $appends = ['formatted_created_at'];
+    protected $appends = ['formatted_created_at', 'domain'];
 
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
+
+    public function getDomainAttribute()
+    {
+        return $this->belongsTo(TprmUsersGroup::class, 'users_group', 'group_id')
+            ->select('group_name')
+            ->first()
+            ->group_name ?? null;
     }
 }
