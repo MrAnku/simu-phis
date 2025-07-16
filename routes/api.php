@@ -482,9 +482,9 @@ Route::prefix('learn')->group(function () {
     Route::get('/get-normal-emp-tranings', [ApiLearnControlller::class, 'getNormalEmpTranings']);
     Route::get('/get-blue-collar-emp-tranings', [ApiLearnControlller::class, 'getBlueCollarEmpTranings']);
     Route::post('/update-training-score', [ApiLearnControlller::class, 'updateTrainingScore']);
-    Route::get('/fetch-assigned-scorm-trainings', [ApiScormTrainingController::class, 'fetchAssignedScormTrainings']);
+    Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnControlller::class, 'fetchNormalEmpScormTrainings']);
 
-     Route::post('/download-certificate', [ApiLearnControlller::class, 'downloadCertificate']);
+    Route::post('/download-certificate', [ApiLearnControlller::class, 'downloadCertificate']);
 
-      Route::post('/update-scorm-training-score', [ApiLearnControlller::class, 'updateScormTrainingScore']);
+    Route::post('/update-scorm-training-score', [ApiLearnControlller::class, 'updateScormTrainingScore']);
 });
