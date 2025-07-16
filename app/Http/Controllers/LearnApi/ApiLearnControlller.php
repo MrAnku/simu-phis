@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\ScormAssignedUser;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnControlller extends Controller
@@ -719,6 +720,21 @@ class ApiLearnControlller extends Controller
                 'certificate_id' => $certificateId,
             ]);
         }
+
+        if (!$trainingAssignedUser) {
+            $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
+                ->where('user_email', $userEmail)
+                ->first();
+        }
+
+         if ($scormAssignedUser) {
+            // Update only the certificate_id (no need to touch campaign_id)
+            $scormAssignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+        }
+
+       
     }
 
     private function storeScormCertificateId($userEmail, $certificateId, $scorm)
