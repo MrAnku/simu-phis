@@ -39,10 +39,18 @@ class ApiWaCampaignController extends Controller
                 $templates = json_decode($hasTemplates->template, true)['data'];
             }
 
-            $campaigns = WaCampaign::with(['trainingData', 'userGroupData'])
+            $campaigns = WaCampaign::with(['trainingData'])
                 ->where('company_id', $company_id)
                 ->orderByDesc('id')
                 ->get();
+            $campaigns->each(function ($campaign) {
+                if ($campaign->employee_type == 'normal') {
+                    $campaign->user_group_data = $campaign->userGroupData()->first();
+                } else {
+                    $campaign->user_group_data = BlueCollarGroup::where('group_id', $campaign->users_group)->first();
+                }
+            });
+
             $trainings = TrainingModule::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')->get();
 
@@ -86,14 +94,14 @@ class ApiWaCampaignController extends Controller
             ]);
 
             //check if the selected users group has users has whatsapp number
-           if($request->employee_type == 'normal'){
-             if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('No employees with WhatsApp number found in the selected division.'),
-                ], 422);
+            if ($request->employee_type == 'normal') {
+                if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('No employees with WhatsApp number found in the selected division.'),
+                    ], 422);
+                }
             }
-           }
 
             if ($validated['schedule_type'] == 'immediately') {
                 return $this->handleImmediateCampaign($validated);
@@ -412,7 +420,6 @@ class ApiWaCampaignController extends Controller
                 $config->update($validated);
             } else {
                 CompanyWhatsappConfig::create($validated);
-               
             }
 
             log_action("Whatsapp Configuration Updated");
