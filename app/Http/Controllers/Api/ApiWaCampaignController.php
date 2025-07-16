@@ -411,10 +411,8 @@ class ApiWaCampaignController extends Controller
             if ($config) {
                 $config->update($validated);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Configuration not found!'),
-                ], 422);
+                CompanyWhatsappConfig::create($validated);
+               
             }
 
             log_action("Whatsapp Configuration Updated");
