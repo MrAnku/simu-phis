@@ -727,14 +727,12 @@ class ApiLearnControlller extends Controller
                 ->first();
         }
 
-         if ($scormAssignedUser) {
+        if ($scormAssignedUser) {
             // Update only the certificate_id (no need to touch campaign_id)
             $scormAssignedUser->update([
                 'certificate_id' => $certificateId,
             ]);
         }
-
-       
     }
 
     private function storeScormCertificateId($userEmail, $certificateId, $scorm)
@@ -1179,6 +1177,54 @@ class ApiLearnControlller extends Controller
                 'data' => [
                     'badges' => $badges,
                     'certificates' => $certificates,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchNormalEmpScormTrainings(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $email = $request->query('email');
+
+            $assignedTrainings = ScormAssignedUser::with('scormTrainingData')
+                ->where('user_email', $request->email)
+                ->where('completed', 0)->get();
+
+            $completedTrainings = ScormAssignedUser::with('scormTrainingData')
+                ->where('user_email', $request->email)
+                ->where('completed', 1)->get();
+
+            $inProgressTrainings = ScormAssignedUser::with('scormTrainingData')
+                ->where('user_email', $request->email)
+                ->where('scorm_started', 1)
+                ->where('completed', 0)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scorm trainings retrieved successfully'),
+                'data' => [
+                    'email' => $email,
+                    'assigned_trainings' => $assignedTrainings,
+                    'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'total_trainings' => ScormAssignedUser::with('scormTrainingData')
+                        ->where('user_email', $email)->count(),
+                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_completed_trainings' => $completedTrainings->count(),
+                    'total_in_progress_trainings' => $inProgressTrainings->count(),
+                    'avg_in_progress_trainings' => round(ScormAssignedUser::with('scormTrainingData')
+                        ->where('user_email', $email)
+                        ->where('scorm_started', 1)
+                        ->where('completed', 0)->avg('personal_best')),
                 ]
             ], 200);
         } catch (ValidationException $e) {
