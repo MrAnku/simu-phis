@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Api\InforgraphicsController;
 use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
@@ -126,6 +127,13 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
+    });
+
+    //inforgraphics 
+    Route::prefix('infographics')->group(function () {
+        Route::get('/', [InforgraphicsController::class, 'index']);
+        Route::post('/save', [InforgraphicsController::class, 'saveInfographics']);
+
     });
 
     //whatsapp campaign routes
