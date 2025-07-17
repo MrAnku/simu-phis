@@ -21,7 +21,10 @@ class InforgraphicsController extends Controller
                 'data' => $infographics
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch infographics'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch infographics'
+            ], 500);
         }
     }
 
