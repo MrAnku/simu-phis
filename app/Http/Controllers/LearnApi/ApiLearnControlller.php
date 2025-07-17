@@ -323,7 +323,7 @@ class ApiLearnControlller extends Controller
                 $user = $rowData->user_whatsapp;
             } else {
                 $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
-                if(!$rowData) {
+                if (!$rowData) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Training not found.'
@@ -408,7 +408,7 @@ class ApiLearnControlller extends Controller
 
             if (Session::has('bluecollar')) {
                 $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
-                if(!$rowData) {
+                if (!$rowData) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Training not found.'
@@ -491,10 +491,10 @@ class ApiLearnControlller extends Controller
 
     public function generateCertificatePdf($name, $trainingModule, $trainingId, $date, $userEmail, $logo, $favIcon)
     {
-        $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
+        $certificateId = $this->getCertificateId($userEmail, $trainingId);
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId);
+            $this->storeCertificateId($userEmail, $certificateId, $trainingId);
         }
 
         $pdf = new Fpdi();
@@ -540,12 +540,13 @@ class ApiLearnControlller extends Controller
         return $pdf->Output('S');
     }
 
-    private function getCertificateId($trainingModule, $userEmail, $trainingId)
+    private function getCertificateId($userEmail, $trainingId)
     {
         // Check the database for an existing certificate ID for this user and training module
         $certificate = TrainingAssignedUser::where('training', $trainingId)
             ->where('user_email', $userEmail)
             ->first();
+
         return $certificate ? $certificate->certificate_id : null;
     }
 
@@ -555,7 +556,7 @@ class ApiLearnControlller extends Controller
         return strtoupper(uniqid('CERT-'));
     }
 
-    private function storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId)
+    private function storeCertificateId($userEmail, $certificateId, $trainingId)
     {
         // Find the existing record based on training module and userEmail
         $trainingAssignedUser = TrainingAssignedUser::where('training', $trainingId)
@@ -569,17 +570,17 @@ class ApiLearnControlller extends Controller
                 'certificate_id' => $certificateId,
             ]);
         }
-       
-         $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
-                ->where('user_email', $userEmail)
-                ->first();
 
-            if ($scormAssignedUser) {
-                // Update only the certificate_id (no need to touch campaign_id)
-                $scormAssignedUser->update([
-                    'certificate_id' => $certificateId,
-                ]);
-            }
+        $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
+            ->where('user_email', $userEmail)
+            ->first();
+
+        if ($scormAssignedUser) {
+            // Update only the certificate_id (no need to touch campaign_id)
+            $scormAssignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+        }
     }
 
     public function downloadCertificate(Request $request)
@@ -598,8 +599,7 @@ class ApiLearnControlller extends Controller
         $date = Carbon::parse($request->completion_date)->format('d F, Y');
         $userEmail = $request->user_email;
 
-
-        $companyId = TrainingAssignedUser::where('user_email', $userEmail)->value('company_id');
+        $companyId = Users::where('user_email', $userEmail)->value('company_id');
 
         $isWhitelabeled = new CheckWhitelabelService($companyId);
         if ($isWhitelabeled->isCompanyWhitelabeled()) {
@@ -616,12 +616,12 @@ class ApiLearnControlller extends Controller
 
 
         // Check if the certificate ID already exists for this user and training module
-        $certificateId = $this->getCertificateId($trainingModule, $userEmail, $trainingId);
+        $certificateId = $this->getCertificateId($userEmail, $trainingId);
 
         // If the certificate ID doesn't exist, generate a new one
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($trainingModule, $userEmail, $certificateId, $trainingId);
+            $this->storeCertificateId($userEmail, $certificateId, $trainingId);
         }
 
         $pdf = new \setasign\Fpdi\Fpdi();

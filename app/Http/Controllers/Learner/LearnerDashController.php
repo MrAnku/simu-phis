@@ -13,6 +13,7 @@ use App\Models\WhiteLabelledSmtp;
 use App\Mail\TrainingCompleteMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
@@ -299,12 +300,72 @@ class LearnerDashController extends Controller
         // return view('learning.training', ['trainingid' => $training_id, 'training_lang' => $training_lang, 'id' => $id]);
     }
 
+    // public function loadTraining($training_id, $training_lang)
+    // {
+    //     // Decode the ID
+    //     $id = decrypt($training_id);
+    //     $training_lang = $training_lang;
+
+    //     // Validate the ID
+    //     if ($id === false) {
+    //         return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
+    //     }
+
+    //     // Fetch the training data
+    //     $trainingData = TrainingModule::find($id);
+
+    //     // Check if the training module exists
+    //     if (!$trainingData) {
+    //         return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
+    //     }
+
+    //     if ($trainingData->training_type == 'static_training') {
+
+    //         // Access the module_language attribute
+    //         $moduleLanguage = $training_lang;
+
+    //         // You can now use $moduleLanguage as needed
+    //         if ($moduleLanguage !== 'en') {
+
+    //             $jsonQuiz = json_decode($trainingData->json_quiz, true);
+
+    //             // $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
+    //             // $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+
+    //             $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+
+    //             $translatedJson_quiz = json_decode($translatedJson_quiz, true);
+    //             $translatedJson_quiz = changeTranslatedQuizVideoUrl($translatedJson_quiz, $moduleLanguage);
+
+    //             $trainingData->json_quiz = json_encode($translatedJson_quiz, JSON_UNESCAPED_UNICODE);
+    //             // var_dump($trainingData);
+    //             // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+    //         }
+
+    //         // Pass data to the view
+    //         return response()->json(['status' => 1, 'jsonData' => $trainingData]);
+    //     }
+
+    //     if ($trainingData->training_type == 'gamified') {
+    //         $moduleLanguage = $training_lang;
+
+    //         if ($moduleLanguage !== 'en') {
+    //             $quizInArray = json_decode($trainingData->json_quiz, true);
+    //             $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+    //             return $this->translateJsonData($quizInArray, $moduleLanguage);
+    //         }
+
+    //         return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+    //     }
+    // }
+
+
     public function loadTraining($training_id, $training_lang)
-    {
+{
+    try {
         // Decode the ID
         $id = decrypt($training_id);
-        $training_lang = $training_lang;
-
+        
         // Validate the ID
         if ($id === false) {
             return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
@@ -319,29 +380,27 @@ class LearnerDashController extends Controller
         }
 
         if ($trainingData->training_type == 'static_training') {
-
-            // Access the module_language attribute
             $moduleLanguage = $training_lang;
 
-            // You can now use $moduleLanguage as needed
             if ($moduleLanguage !== 'en') {
-
-                $jsonQuiz = json_decode($trainingData->json_quiz, true);
-
-                // $translatedArray = translateArrayValues($jsonQuiz, $moduleLanguage);
-                // $translatedJson_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
-
-                $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
-
-                $translatedJson_quiz = json_decode($translatedJson_quiz, true);
-                $translatedJson_quiz = changeTranslatedQuizVideoUrl($translatedJson_quiz, $moduleLanguage);
-
-                $trainingData->json_quiz = json_encode($translatedJson_quiz, JSON_UNESCAPED_UNICODE);
-                // var_dump($trainingData);
-                // echo json_encode($trainingData, JSON_UNESCAPED_UNICODE);
+                try {
+                    $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+                    $translatedArray = json_decode($translatedJson_quiz, true);
+                    
+                    if ($translatedArray) {
+                        $translatedArray = changeTranslatedQuizVideoUrl($translatedArray, $moduleLanguage);
+                        $trainingData->json_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Translation failed in loadTraining', [
+                        'error' => $e->getMessage(),
+                        'training_id' => $id,
+                        'lang' => $moduleLanguage
+                    ]);
+                    // Continue with original content if translation fails
+                }
             }
 
-            // Pass data to the view
             return response()->json(['status' => 1, 'jsonData' => $trainingData]);
         }
 
@@ -349,57 +408,267 @@ class LearnerDashController extends Controller
             $moduleLanguage = $training_lang;
 
             if ($moduleLanguage !== 'en') {
-                $quizInArray = json_decode($trainingData->json_quiz, true);
-                $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
-                return $this->translateJsonData($quizInArray, $moduleLanguage);
+                try {
+                    $quizInArray = json_decode($trainingData->json_quiz, true);
+                    $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                    return $this->translateJsonData($quizInArray, $moduleLanguage);
+                } catch (\Exception $e) {
+                    Log::error('Gamified translation failed', [
+                        'error' => $e->getMessage(),
+                        'training_id' => $id,
+                        'lang' => $moduleLanguage
+                    ]);
+                    return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+                }
             }
 
             return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
         }
+    } catch (\Exception $e) {
+        Log::error('loadTraining failed', [
+           'error' => $e->getMessage(),
+            'training_id' => $training_id,
+            'lang' => $training_lang
+        ]);
+        return response()->json(['status' => 0, 'msg' => 'An error occurred while loading the training module.']);
     }
+}
+
+    // private function translateJsonData($json, $lang)
+    // {
+    //     try {
+    //         $prompt = "Translate the following JSON data to " . langName($lang) . " language. The output should only contain JSON data:\n\n" . json_encode($json);
+
+    //         $response = Http::withOptions(['verify' => false])->withHeaders([
+    //             'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+    //         ])->post('https://api.openai.com/v1/chat/completions', [
+    //             'model' => 'gpt-3.5-turbo',
+    //             'messages' => [
+    //                 ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
+    //                 ['role' => 'user', 'content' => $prompt],
+    //             ],
+    //             'max_tokens' => 1500,
+    //             'temperature' => 0.7,
+    //         ]);
+
+    //         if ($response->failed()) {
+
+    //             log_action("Failed to translate JSON data on topic of prompt: {$prompt}", 'learner', 'learner');
+
+    //             return response()->json([
+    //                 'status' => 0,
+    //                 'msg' => $response->body(),
+    //             ]);
+    //         }
+
+    //         $translatedJson = $response['choices'][0]['message']['content'];
+
+    //         log_action("JSON data translated using AI on topic of prompt: {$prompt}", 'learner', 'learner');
+
+    //         return response()->json([
+    //             'status' => 1,
+    //             'jsonData' => json_decode($translatedJson, true),
+    //         ]);
+    //     } catch (\Exception $e) {
+
+    //         log_action("Failed to translate JSON data", 'learner', 'learner');
+
+    //         return response()->json([
+    //             'status' => 0,
+    //             'msg' => $e->getMessage(),
+    //         ]);
+    //     }
+    // }
+
+
 
     private function translateJsonData($json, $lang)
     {
         try {
-            $prompt = "Translate the following JSON data to " . langName($lang) . " language. The output should only contain JSON data:\n\n" . json_encode($json);
+            $langName = langName($lang);
 
-            $response = Http::withOptions(['verify' => false])->withHeaders([
-                'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
-            ])->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-3.5-turbo',
-                'messages' => [
-                    ['role' => 'system', 'content' => 'You are an expert JSON translator. Always provide valid JSON data.'],
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-                'max_tokens' => 1500,
-                'temperature' => 0.7,
+            // Debug: Check what language name is being used
+            Log::info("Translation attempt", [
+                'lang_code' => $lang,
+                'lang_name' => $langName,
+                'input_json' => $json
+            ]);
+
+            // Special handling for Amharic
+            $isAmharic = strtolower($langName) === 'amharic' || $lang === 'am' || $lang === 'amh';
+
+            if ($isAmharic) {
+                // More specific prompt for Amharic
+                $prompt = "Translate the text values in this JSON to Amharic (አማርኛ). " .
+                    "Keep the JSON structure exactly the same. Only translate the VALUES, not the KEYS. " .
+                    "Use proper Amharic script (Ge'ez script). " .
+                    "Return ONLY the JSON, no explanations:\n\n" .
+                    json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            } else {
+                $prompt = "Translate ONLY the text values in the following JSON to {$langName}. " .
+                    "Keep all JSON structure and keys exactly the same. " .
+                    "Return only valid JSON:\n\n" .
+                    json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            }
+
+            // Use different models based on language complexity
+            $model = $isAmharic ? 'gpt-4' : 'gpt-3.5-turbo';
+
+            Log::info("Using model and prompt", [
+                'model' => $model,
+                'is_amharic' => $isAmharic,
+                'prompt_length' => strlen($prompt)
+            ]);
+
+            $response = Http::withOptions(['verify' => false])
+                ->timeout(60) // Longer timeout for complex translations
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . env("OPENAI_API_KEY"),
+                    'Content-Type' => 'application/json',
+                ])->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $isAmharic ?
+                                'You are an expert Amharic translator. You must translate English text to proper Amharic (አማርኛ) using Ge\'ez script. Return only valid JSON with translated values.' :
+                                'You are an expert translator. Return only valid JSON with translated text values. Preserve all JSON structure and keys exactly.'
+                        ],
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                    'max_tokens' => $isAmharic ? 3000 : 2000,
+                    'temperature' => 0.2, // Very low for consistency
+                ]);
+
+            // Debug API response
+            Log::info("API Response Status", [
+                'status' => $response->status(),
+                'successful' => $response->successful()
             ]);
 
             if ($response->failed()) {
+                $errorDetails = [
+                    'status' => $response->status(),
+                    'headers' => $response->headers(),
+                    'body' => $response->body(),
+                    'lang' => $lang
+                ];
 
-                log_action("Failed to translate JSON data on topic of prompt: {$prompt}", 'learner', 'learner');
+                Log::error("Translation API failed", $errorDetails);
+                log_action("Failed to translate JSON data for language: {$langName}", 'learner', 'learner');
 
                 return response()->json([
                     'status' => 0,
-                    'msg' => $response->body(),
+                    'msg' => 'Translation service failed. Status: ' . $response->status(),
+                    'debug' => $errorDetails
                 ]);
             }
 
-            $translatedJson = $response['choices'][0]['message']['content'];
+            $responseData = $response->json();
 
-            log_action("JSON data translated using AI on topic of prompt: {$prompt}", 'learner', 'learner');
+            // Debug full response
+            Log::info("Full API Response", ['response' => $responseData]);
+
+            if (!isset($responseData['choices'][0]['message']['content'])) {
+                Log::error("Invalid API response structure", ['response' => $responseData]);
+                return response()->json([
+                    'status' => 0,
+                    'msg' => 'Invalid response structure from translation service',
+                    'debug' => $responseData
+                ]);
+            }
+
+            $translatedContent = trim($responseData['choices'][0]['message']['content']);
+
+            // Debug raw translated content
+            Log::info("Raw translated content", [
+                'content' => $translatedContent,
+                'length' => strlen($translatedContent)
+            ]);
+
+            // Clean up the response more aggressively
+            $translatedContent = preg_replace('/^```json\s*/i', '', $translatedContent);
+            $translatedContent = preg_replace('/^```\s*/i', '', $translatedContent);
+            $translatedContent = preg_replace('/\s*```$/i', '', $translatedContent);
+
+            // Remove any explanatory text before/after JSON
+            if (preg_match('/\{.*\}/s', $translatedContent, $matches)) {
+                $translatedContent = $matches[0];
+            }
+
+            Log::info("Cleaned translated content", [
+                'content' => $translatedContent
+            ]);
+
+            // Validate JSON
+            $translatedData = json_decode($translatedContent, true);
+            $jsonError = json_last_error();
+
+            if ($jsonError !== JSON_ERROR_NONE) {
+                Log::error("JSON decode error", [
+                    'error' => json_last_error_msg(),
+                    'error_code' => $jsonError,
+                    'content' => $translatedContent,
+                    'lang' => $lang
+                ]);
+
+                // Try to fix common JSON issues
+                $fixedContent = $this->attemptJsonFix($translatedContent);
+                if ($fixedContent) {
+                    $translatedData = json_decode($fixedContent, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        Log::info("JSON fixed successfully");
+                    } else {
+                        return response()->json([
+                            'status' => 0,
+                            'msg' => 'Invalid JSON returned: ' . json_last_error_msg(),
+                            'debug' => [
+                                'original_content' => $translatedContent,
+                                'fixed_content' => $fixedContent
+                            ]
+                        ]);
+                    }
+                } else {
+                    return response()->json([
+                        'status' => 0,
+                        'msg' => 'Invalid JSON returned: ' . json_last_error_msg(),
+                        'debug' => ['content' => $translatedContent]
+                    ]);
+                }
+            }
+
+            // Validate that we actually got translations
+            if ($isAmharic && $this->validateAmharicTranslation($json, $translatedData)) {
+                Log::info("Amharic translation validation passed");
+            } elseif ($isAmharic) {
+                Log::warning("Amharic translation may not contain proper Amharic text");
+            }
+
+            log_action("JSON data successfully translated to {$langName}", 'learner', 'learner');
 
             return response()->json([
                 'status' => 1,
-                'jsonData' => json_decode($translatedJson, true),
+                'jsonData' => $translatedData,
             ]);
         } catch (\Exception $e) {
+            Log::error("Translation exception", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'lang' => $lang,
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
 
-            log_action("Failed to translate JSON data", 'learner', 'learner');
+            log_action("Exception during JSON translation: " . $e->getMessage(), 'learner', 'learner');
 
             return response()->json([
                 'status' => 0,
-                'msg' => $e->getMessage(),
+                'msg' => 'Translation failed: ' . $e->getMessage(),
+                'debug' => [
+                    'exception_class' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ]
             ]);
         }
     }
@@ -453,6 +722,51 @@ class LearnerDashController extends Controller
         return $pdf->Output('S'); // Return as string
     }
 
+    private function attemptJsonFix($content)
+    {
+        // Remove BOM if present
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+
+        // Fix common JSON issues
+        $fixes = [
+            // Remove trailing commas
+            '/,(\s*[}\]])/m' => '$1',
+            // Fix unescaped quotes in strings (basic attempt)
+            '/([^\\\\])"([^"]*)"([^,}\]:])/' => '$1\\"$2\\"$3',
+        ];
+
+        foreach ($fixes as $pattern => $replacement) {
+            $content = preg_replace($pattern, $replacement, $content);
+        }
+
+        // Test if it's valid now
+        json_decode($content);
+        return json_last_error() === JSON_ERROR_NONE ? $content : false;
+    }
+
+    private function validateAmharicTranslation($original, $translated)
+    {
+        // Check if the translated content contains Amharic characters
+        $hasAmharic = false;
+
+        foreach ($translated as $key => $value) {
+            if (is_string($value)) {
+                // Check for Ge'ez script characters (Amharic uses Unicode range 1200-137F)
+                if (preg_match('/[\x{1200}-\x{137F}]/u', $value)) {
+                    $hasAmharic = true;
+                    break;
+                }
+            } elseif (is_array($value)) {
+                // Recursively check nested arrays
+                if ($this->validateAmharicTranslation([], $value)) {
+                    $hasAmharic = true;
+                    break;
+                }
+            }
+        }
+
+        return $hasAmharic;
+    }
 
     public function updateTrainingScore(Request $request)
     {
