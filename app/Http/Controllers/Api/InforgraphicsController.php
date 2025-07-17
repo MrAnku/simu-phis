@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Users;
+use App\Models\UsersGroup;
+use Illuminate\Support\Str;
 use App\Models\Inforgraphic;
 use Illuminate\Http\Request;
+use App\Models\InfoGraphicCampaign;
 use App\Http\Controllers\Controller;
+use App\Models\InfoGraphicLiveCampaign;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -12,7 +17,7 @@ class InforgraphicsController extends Controller
 {
     public function index()
     {
-        try{
+        try {
             $infographics = Inforgraphic::where('company_id', Auth::user()->company_id)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -30,7 +35,7 @@ class InforgraphicsController extends Controller
 
     public function saveInfographics(Request $request)
     {
-        try{
+        try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -56,18 +61,172 @@ class InforgraphicsController extends Controller
                 'success' => true,
                 'message' => 'Inforgraphic saved successfully'
             ]);
-
-            
-        }catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed: ' . $e->validator->errors()->first(),
             ], 422);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed: ' . $e->getMessage()
             ], 422);
+        }
+    }
+
+    public function createCampaign(Request $request)
+    {
+        try {
+            $request->validate([
+                'campaign_name' => 'required|string|max:255',
+                'users_group' => 'required|string',
+                'infographics' => 'required|array',
+                'scheduled_at' => 'required|string',
+            ]);
+            // check if scheduled_at is less than current time then the status will be running else pending
+            $scheduledAt = strtotime($request->scheduled_at);
+            $currentTime = time();
+            $status = $scheduledAt < $currentTime ? 'running' : 'pending';
+
+
+
+            $campaign = InfoGraphicCampaign::create([
+                'campaign_name' => $request->campaign_name,
+                'campaign_id' => Str::random(6),
+                'users_group' => $request->users_group,
+                'inforgraphics' => json_encode($request->infographics),
+                'status' => $status,
+                'scheduled_at' => $request->scheduled_at,
+                'company_id' => Auth::user()->company_id,
+            ]);
+            //send the employees to live table if status is running
+            if ($status === 'running') {
+                // Retrieve the users in the specified group
+                $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
+                    ->where('company_id', Auth::user()->company_id)
+                    ->value('users');
+
+                $userIds = json_decode($userIdsJson, true);
+                $users = Users::whereIn('id', $userIds)->get();
+
+                // $users = Users::where('group_id', $campaign->users_group)->get();
+
+                // Check if users exist in the group
+                if ($users->isEmpty()) {
+                    return response()->json(['success' => false, 'message' => __('No employees available in this group')], 404);
+                }
+
+                // Iterate through the users and create CampaignLive entries
+                foreach ($users as $user) {
+                    $campaign->campLive()->create([
+                        'campaign_id' => $campaign->campaign_id,
+                        'campaign_name' => $campaign->campaign_name,
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        'sent' => 0,
+                        'infographic' => collect($request->infographics)->random(),
+                        'company_id' => Auth::user()->company_id,
+                    ]);
+                }
+            }
+            log_action("Infographic campaign created for company:");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Infographic campaign created successfully',
+                'data' => $campaign
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function campaignIndex()
+    {
+        try {
+            $campaigns = InfoGraphicCampaign::where('company_id', Auth::user()->company_id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return response()->json([
+                'success' => true,
+                'data' => $campaigns
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch campaigns: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function campaignDetail($campaign_id)
+    {
+        if (!$campaign_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Campaign ID is required'
+            ], 400);
+        }
+
+        try {
+            $campaign = InfoGraphicCampaign::with('campLive', 'campLive.infographicData')
+                ->where('campaign_id', $campaign_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Campaign not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $campaign
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch campaign details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+  
+
+    public function deleteCampaign($campaign_id)
+    {
+        try {
+            if (!$campaign_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Campaign ID is required'
+                ], 400);
+            }
+            InfoGraphicCampaign::where('campaign_id', $campaign_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
+
+            InfoGraphicLiveCampaign::where('campaign_id', $campaign_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Campaign deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete campaign: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

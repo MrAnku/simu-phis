@@ -16,6 +16,11 @@ class PolicyCampaign extends Model
         'status',
     ];
 
+    public function getScheduledAtAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value)->format('d M Y h:i A') : null;
+    }
+
     public function campLive()
     {
         return $this->hasMany(PolicyCampaignLive::class, 'campaign_id', 'campaign_id');

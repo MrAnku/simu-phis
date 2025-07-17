@@ -136,6 +136,14 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     });
 
+    Route::prefix('infographics-campaign')->group(function () {
+        Route::get('/', [InforgraphicsController::class, 'campaignIndex']);
+        Route::post('/create-campaign', [InforgraphicsController::class, 'createCampaign']);
+        Route::get('/detail/{campaign_id?}', [InforgraphicsController::class, 'campaignDetail']);
+        Route::delete('/delete-campaign/{campaign_id?}', [InforgraphicsController::class, 'deleteCampaign']);
+
+    });
+
     //whatsapp campaign routes
     Route::prefix('whatsapp-campaign')->group(function () {
         Route::get('/', [ApiWaCampaignController::class, 'index']);

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Inforgraphic extends Model
 {
     protected $fillable = [
+        'id',
         'name',
         'description',
         'category',
