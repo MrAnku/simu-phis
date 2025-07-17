@@ -747,7 +747,7 @@ class ApiLearnControlller extends Controller
             ->header('Content-Disposition', 'attachment; filename="certificate.pdf"');
     }
 
-     public function downloadScormCertificate(Request $request)
+    public function downloadScormCertificate(Request $request)
     {
         $request->validate([
             'user_name' => 'required|string|max:255',
@@ -886,6 +886,55 @@ class ApiLearnControlller extends Controller
                         ->where('user_email', $email)
                         ->where('scorm_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchScoreBoard(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $request->email)->get();
+
+            $allAssignedScorms = ScormAssignedUser::where('user_email', $request->email)->get();
+
+            foreach($allAssignedTrainingMods as $trainingMod) {
+                $allAssignedTrainings[] = [
+                    'training_name' => $trainingMod->trainingData->name,
+                    'score' => $trainingMod->personal_best,
+                    'completed' => $trainingMod->completed ? 'Yes' : 'No',
+                    'training_due_date' => $trainingMod->training_due_date,
+                    'completion_date' => $trainingMod->completion_date,
+                    'training_type' => 'Training Module',
+                ];
+            }
+
+            foreach($allAssignedScorms as $scorm) {
+                $allAssignedTrainings[] = [
+                    'training_name' => $scorm->scormTrainingData->name,
+                    'score' => $scorm->personal_best,
+                    'completed' => $scorm->completed ? 'Yes' : 'No',
+                    'training_due_date' => $scorm->scorm_due_date,
+                    'completion_date' => $scorm->completion_date,
+                    'training_type' => 'Scorm',
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scoreboard retrieved successfully'),
+                'data' => [
+                    'scoreboard' => $allAssignedTrainings ?? [],
+                    'total_trainings' => count($allAssignedTrainings),
+                    'avg_score' => count($allAssignedTrainings) > 0 ? round(array_sum(array_column($allAssignedTrainings, 'score')) / count($allAssignedTrainings)) : 0,
                 ]
             ], 200);
         } catch (ValidationException $e) {

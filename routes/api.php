@@ -486,7 +486,9 @@ Route::prefix('learn')->group(function () {
 
     Route::post('/download-training-certificate', [ApiLearnControlller::class, 'downloadTrainingCertificate']);
 
-     Route::post('/download-scorm-certificate', [ApiLearnControlller::class, 'downloadScormCertificate']);
+    Route::post('/download-scorm-certificate', [ApiLearnControlller::class, 'downloadScormCertificate']);
 
     Route::post('/update-scorm-training-score', [ApiLearnControlller::class, 'updateScormTrainingScore']);
+
+    Route::get('/fetch-score-board', [ApiLearnControlller::class, 'fetchScoreBoard']);
 });
