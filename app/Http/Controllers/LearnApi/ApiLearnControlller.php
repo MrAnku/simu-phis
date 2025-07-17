@@ -1243,7 +1243,7 @@ class ApiLearnControlller extends Controller
 
             $allAssignedScorms = ScormAssignedUser::where('user_email', $request->email)->get();
 
-            foreach($allAssignedTrainingMods as $trainingMod) {
+            foreach ($allAssignedTrainingMods as $trainingMod) {
                 $allAssignedTrainings[] = [
                     'training_name' => $trainingMod->trainingData->name,
                     'score' => $trainingMod->personal_best,
@@ -1254,7 +1254,7 @@ class ApiLearnControlller extends Controller
                 ];
             }
 
-            foreach($allAssignedScorms as $scorm) {
+            foreach ($allAssignedScorms as $scorm) {
                 $allAssignedTrainings[] = [
                     'training_name' => $scorm->scormTrainingData->name,
                     'score' => $scorm->personal_best,
@@ -1272,6 +1272,56 @@ class ApiLearnControlller extends Controller
                     'scoreboard' => $allAssignedTrainings ?? [],
                     'total_trainings' => count($allAssignedTrainings),
                     'avg_score' => count($allAssignedTrainings) > 0 ? round(array_sum(array_column($allAssignedTrainings, 'score')) / count($allAssignedTrainings)) : 0,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchLeaderBoard(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $currentUserEmail = $request->email;
+
+            $trainingUsers = TrainingAssignedUser::where('personal_best', '>', 0)->get();
+            $scormUsers = ScormAssignedUser::where('personal_best', '>', 0)->get();
+
+            $allUsers = $trainingUsers->merge($scormUsers);
+
+            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
+                $average = $group->avg('personal_best');
+
+                return [
+                    'email' => $email,
+                    'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                    'average_score' => round($average, 2),
+                ];
+            })->sortByDesc('average_score')->values();
+
+
+            // Add leaderboard rank
+            $leaderboard = $grouped->map(function ($user, $index) {
+                $user['leaderboard_rank'] = $index + 1;
+                return $user;
+            });
+
+            $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Leaderboard retrieved successfully'),
+                'data' => [
+                    'leaderboard' => $leaderboard,
+                    'total_users' => $leaderboard->count(),
+                    'avg_score' => $leaderboard->count() > 0 ? round($leaderboard->avg('average_score'), 2) : 0,
+                    'current_user_rank' => $currentUserRank,
                 ]
             ], 200);
         } catch (ValidationException $e) {
