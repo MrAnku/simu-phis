@@ -719,17 +719,17 @@ class ApiLearnControlller extends Controller
                 'certificate_id' => $certificateId,
             ]);
         }
-       
-         $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
-                ->where('user_email', $userEmail)
-                ->first();
 
-            if ($scormAssignedUser) {
-                // Update only the certificate_id (no need to touch campaign_id)
-                $scormAssignedUser->update([
-                    'certificate_id' => $certificateId,
-                ]);
-            }
+        $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
+            ->where('user_email', $userEmail)
+            ->first();
+
+        if ($scormAssignedUser) {
+            // Update only the certificate_id (no need to touch campaign_id)
+            $scormAssignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+        }
     }
 
     private function storeScormCertificateId($userEmail, $certificateId, $scorm)
