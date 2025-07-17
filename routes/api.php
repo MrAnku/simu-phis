@@ -491,4 +491,6 @@ Route::prefix('learn')->group(function () {
     Route::post('/update-scorm-training-score', [ApiLearnControlller::class, 'updateScormTrainingScore']);
 
     Route::get('/fetch-score-board', [ApiLearnControlller::class, 'fetchScoreBoard']);
+
+     Route::get('/fetch-leader-board', [ApiLearnControlller::class, 'fetchLeaderBoard']);
 });
