@@ -9,8 +9,9 @@ use App\Models\Inforgraphic;
 use Illuminate\Http\Request;
 use App\Models\InfoGraphicCampaign;
 use App\Http\Controllers\Controller;
-use App\Models\InfoGraphicLiveCampaign;
 use Illuminate\Support\Facades\Auth;
+use App\Models\InfoGraphicLiveCampaign;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class InforgraphicsController extends Controller
@@ -71,6 +72,43 @@ class InforgraphicsController extends Controller
                 'success' => false,
                 'message' => 'Validation failed: ' . $e->getMessage()
             ], 422);
+        }
+    }
+
+    public function deleteInfographics(Request $request)
+    {
+        try {
+           $id = $request->route('encodedId');
+            if (!$id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Infographic ID is required'
+                ], 400);
+            }
+            $id = base64_decode($id);
+
+            $infographic = Inforgraphic::findOrFail($id);
+
+            //delete the file from S3
+            if ($infographic->file_path) {
+                $filePath = ltrim($infographic->file_path, '/');
+                Storage::disk('s3')->delete($filePath);
+            }
+            $infographic->delete();
+
+           InfoGraphicLiveCampaign::where('infographic', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inforgraphic deleted successfully'
+            ]);
+        }  catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
         }
     }
 

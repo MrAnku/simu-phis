@@ -133,6 +133,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('infographics')->group(function () {
         Route::get('/', [InforgraphicsController::class, 'index']);
         Route::post('/save', [InforgraphicsController::class, 'saveInfographics']);
+        Route::delete('/delete/{encodedId?}', [InforgraphicsController::class, 'deleteInfographics']);
 
     });
 
