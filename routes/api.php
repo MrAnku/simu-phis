@@ -492,5 +492,5 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/fetch-score-board', [ApiLearnControlller::class, 'fetchScoreBoard']);
 
-     Route::get('/fetch-leader-board', [ApiLearnControlller::class, 'fetchLeaderBoard']);
+    Route::get('/fetch-leader-board', [ApiLearnControlller::class, 'fetchLeaderBoard']);
 });

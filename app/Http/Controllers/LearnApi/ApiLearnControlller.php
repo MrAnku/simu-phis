@@ -953,8 +953,8 @@ class ApiLearnControlller extends Controller
 
             $currentUserEmail = $request->email;
 
-            $trainingUsers = TrainingAssignedUser::where('personal_best', '>', 0)->get();
-            $scormUsers = ScormAssignedUser::where('personal_best', '>', 0)->get();
+            $trainingUsers = TrainingAssignedUser::all();
+            $scormUsers = ScormAssignedUser::all();
 
             $allUsers = $trainingUsers->merge($scormUsers);
 
@@ -983,7 +983,6 @@ class ApiLearnControlller extends Controller
                 'data' => [
                     'leaderboard' => $leaderboard,
                     'total_users' => $leaderboard->count(),
-                    'avg_score' => $leaderboard->count() > 0 ? round($leaderboard->avg('average_score'), 2) : 0,
                     'current_user_rank' => $currentUserRank,
                 ]
             ], 200);
