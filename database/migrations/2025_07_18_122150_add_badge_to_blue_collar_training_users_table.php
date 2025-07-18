@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('blue_collar_training_users', function (Blueprint $table) {
-              $table->json('badge')->nullable()->after('grade');
+              $table->string('badge')->nullable()->after('grade');
         });
     }
 
