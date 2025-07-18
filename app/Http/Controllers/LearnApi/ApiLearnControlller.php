@@ -1228,4 +1228,53 @@ class ApiLearnControlller extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function fetchTrainingAchievements(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $allBadgeIds = [];
+
+            // Collect badge IDs from training
+            $trainingWithBadges = TrainingAssignedUser::where('user_email', $request->email)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($trainingWithBadges as $training) {
+                $badgeIds = json_decode($training->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Collect badge IDs from SCORM
+            $scormWithBadges = ScormAssignedUser::where('user_email', $request->email)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($scormWithBadges as $scorm) {
+                $badgeIds = json_decode($scorm->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Remove duplicate badge IDs
+            $uniqueBadgeIds = array_unique($allBadgeIds);
+
+            // Fetch badges
+            $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training achivements retrieved successfully'),
+                'data' => [
+                    'badges' => $badges,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }
