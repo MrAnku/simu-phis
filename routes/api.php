@@ -497,4 +497,6 @@ Route::prefix('learn')->group(function () {
     Route::get('/fetch-training-grades', [ApiLearnControlller::class, 'fetchTrainingGrades']);
 
     Route::get('/fetch-training-badges', [ApiLearnControlller::class, 'fetchTrainingBadges']);
+
+    Route::get('/fetch-training-goals', [ApiLearnControlller::class, 'fetchTrainingGoals']);
 });
