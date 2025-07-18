@@ -1182,5 +1182,4 @@ class ApiLearnControlller extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
-
 }
