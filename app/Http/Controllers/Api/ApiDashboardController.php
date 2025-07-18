@@ -653,17 +653,17 @@ class ApiDashboardController extends Controller
             foreach ($records as $record) {
                 $date = Carbon::parse($record->created_at)->format('Y-m-d');
                 if (!isset($result[$date])) continue;
-                if ($record->sent > 0) {
-                    $result[$date]['sent'] += (int)$record->sent;
+                if ($record->sent == 1) {
+                    $result[$date]['sent'] += 1;
                 }
-                if ($record->payload_clicked > 0) {
-                    $result[$date]['payload_clicked'] += (int)$record->payload_clicked;
+                if ($record->payload_clicked == 1) {
+                    $result[$date]['payload_clicked'] += 1;
                 }
-                if ($record->compromised > 0) {
-                    $result[$date]['compromised'] += (int)$record->compromised;
+                if ($record->compromised == 1) {
+                    $result[$date]['compromised'] += 1;
                 }
-                if ($record->training_assigned > 0) {
-                    $result[$date]['training_assigned'] += (int)$record->training_assigned;
+                if ($record->training_assigned == 1) {
+                    $result[$date]['training_assigned'] += 1;
                 }
             }
 
@@ -688,6 +688,7 @@ class ApiDashboardController extends Controller
             ], 500);
         }
     }
+
     public function aiCallReport()
     {
         try {
@@ -698,7 +699,7 @@ class ApiDashboardController extends Controller
             // Fetch records for the last 7 days
             $records = AiCallCampLive::where('company_id', $companyId)
                 ->whereBetween('created_at', [$startDate, $now->endOfDay()])
-                ->get(['training_assigned', 'call_send_response', 'call_end_response', 'call_report', 'status', 'created_at']);
+                ->get(['training_assigned', 'call_send_response', 'call_end_response', 'call_report', 'status', 'compromised', 'created_at']);
 
             // Prepare last 7 days array
             $last7Days = [];
@@ -717,6 +718,7 @@ class ApiDashboardController extends Controller
                     'calls_sent' => 0,
                     'calls_responded' => 0,
                     'transcription_logged' => 0,
+                    'compromised' => 0,
                 ];
             }
 
@@ -744,6 +746,9 @@ class ApiDashboardController extends Controller
                 }
                 if ($record->call_report !== null) {
                     $result[$date]['transcription_logged']++;
+                }
+                if ($record->compromised == 1) {
+                    $result[$date]['compromised']++;
                 }
             }
 
