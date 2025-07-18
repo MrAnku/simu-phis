@@ -335,6 +335,20 @@ class ApiLearnControlller extends Controller
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
+
+                // Assign Grade based on score
+                if ($request->trainingScore >= 90) {
+                    $rowData->grade = 'A+';
+                } elseif ($request->trainingScore >= 80) {
+                    $rowData->grade = 'A';
+                } elseif ($request->trainingScore >= 70) {
+                    $rowData->grade = 'B';
+                } elseif ($request->trainingScore >= 60) {
+                    $rowData->grade = 'C';
+                } else {
+                    $rowData->grade = 'D';
+                }
+
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -429,6 +443,20 @@ class ApiLearnControlller extends Controller
             if ($rowData && $request->scormTrainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->scormTrainingScore;
+
+                // Assign Grade based on score
+                if ($request->scormTrainingScore >= 90) {
+                    $rowData->grade = 'A+';
+                } elseif ($request->scormTrainingScore >= 80) {
+                    $rowData->grade = 'A';
+                } elseif ($request->scormTrainingScore >= 70) {
+                    $rowData->grade = 'B';
+                } elseif ($request->scormTrainingScore >= 60) {
+                    $rowData->grade = 'C';
+                } else {
+                    $rowData->grade = 'D';
+                }
+
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -977,6 +1005,9 @@ class ApiLearnControlller extends Controller
 
             $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
 
+            // Limit to top 10 users for leaderboard
+            $leaderboard = $leaderboard->take(10);
+
             return response()->json([
                 'success' => true,
                 'message' => __('Leaderboard retrieved successfully'),
@@ -984,6 +1015,87 @@ class ApiLearnControlller extends Controller
                     'leaderboard' => $leaderboard,
                     'total_users' => $leaderboard->count(),
                     'current_user_rank' => $currentUserRank,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingGrades(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $trainingUsers = TrainingAssignedUser::where('user_email', $request->email)
+                ->where('personal_best', '>', 0)->get();
+             
+            $assignedTrainingModules = [];
+            $assignedScormModules = [];
+
+            foreach ($trainingUsers as $user) {
+                $assignedTrainingModules[] = [
+                    'training_name' => $user->trainingData->name,
+                    'score' => $user->personal_best,
+                    'grade' => $user->grade,
+                    'assigned_date' => $user->assigned_date,
+                ];
+            }
+            $avgTrainingScore = count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0;
+            if($avgTrainingScore >= 90) {
+                $avgTrainingGrade = 'A+';
+            } elseif ($avgTrainingScore >= 80) {
+                $avgTrainingGrade = 'A';
+            } elseif ($avgTrainingScore >= 70) {
+                $avgTrainingGrade = 'B';
+            } elseif ($avgTrainingScore >= 60) {
+                $avgTrainingGrade = 'C';
+            } else {
+                $avgTrainingGrade = 'D';
+            }
+
+            $scormUsers = ScormAssignedUser::where('user_email', $request->email)
+                ->where('personal_best', '>', 0)->get();
+
+            foreach ($scormUsers as $user) {
+                $assignedScormModules[] = [
+                    'scorm_name' => $user->scormTrainingData->name,
+                    'score' => $user->personal_best,
+                    'grade' => $user->grade,
+                    'assigned_date' => $user->assigned_date,
+                ];
+            }
+
+            $avgScormScore = count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0;
+            
+            if($avgScormScore >= 90) {
+                $avgScormGrade = 'A+';
+            } elseif ($avgScormScore >= 80) {
+                $avgScormGrade = 'A';
+            } elseif ($avgScormScore >= 70) {
+                $avgScormGrade = 'B';
+            } elseif ($avgScormScore >= 60) {
+                $avgScormGrade = 'C';
+            } else {
+                $avgScormGrade = 'D';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training grades retrieved successfully'),
+                'data' => [
+                    'assigned_training_modules' => $assignedTrainingModules ?? [],
+                    'total_assigned_training_mod' => count($assignedTrainingModules),
+                     'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
+                    'avg_training_grade' => $avgTrainingGrade,
+                    'assigned_scorm_modules' => $assignedScormModules ?? [],
+                    'total_assigned_scorm_mod' => count($assignedScormModules),
+                    'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
+                    'avg_scorm_grade' => $avgScormGrade,
                 ]
             ], 200);
         } catch (ValidationException $e) {
