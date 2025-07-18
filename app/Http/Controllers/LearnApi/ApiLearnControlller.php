@@ -1063,7 +1063,7 @@ class ApiLearnControlller extends Controller
 
             foreach ($scormUsers as $user) {
                 $assignedScormModules[] = [
-                    'scorm_name' => $user->scormTrainingData->name,
+                    'training_name' => $user->scormTrainingData->name,
                     'score' => $user->personal_best,
                     'grade' => $user->grade,
                     'assigned_date' => $user->assigned_date,
