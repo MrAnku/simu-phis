@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call(RegionDbSeeder::class);
         $this->call(BreachedEmailSeeder::class);
+        $this->call(BadgeSeeder::class);
     }
 }

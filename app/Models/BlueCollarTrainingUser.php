@@ -28,6 +28,7 @@ class BlueCollarTrainingUser extends Model
         'certificate_id',
         'training_started',
         'grade',
+        'badge',
     ];
 
     public function trainingModule()
