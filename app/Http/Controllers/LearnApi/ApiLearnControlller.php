@@ -1197,15 +1197,11 @@ class ApiLearnControlller extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $trainingGoals = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->get();
+            $trainingGoals = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->get();
 
-            $completedTrainings = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)
-                ->where('completed', 1)->get();
+            $scormGoals = ScormAssignedUser::with('scormTrainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->get();
 
-            $inCompleteTrainings = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)
-                ->where('training_started', 1)->where('completed', 0)->get();
-
-            $scormGoals = ScormAssignedUser::with('scormTrainingData')->where('user_email', $request->email)->get();
+            $activeGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->where('training_started', 1)->get();
 
             return response()->json([
                 'success' => true,
@@ -1213,11 +1209,13 @@ class ApiLearnControlller extends Controller
                 'data' => [
                     'all_training_goals' => $trainingGoals ?? [],
                     'all_scorm_goals' => $scormGoals ?? [],
+                    'active_goals' => $activeGoals ?? [],
+                    'total_active_goals' => count($activeGoals),
+                    'avg_progress_training' => round(TrainingAssignedUser::with('trainingData')
+                        ->where('user_email', $request->email)
+                        ->where('training_started', 1)
+                        ->where('completed', 1)->avg('personal_best')),
                     'total_training_goals' => count($trainingGoals) + count($scormGoals),
-                    'completed_trainings' => $completedTrainings ?? [],
-                    'incomplete_trainings' => $inCompleteTrainings ?? [],
-                    'total_completed_trainings' => count($completedTrainings),
-                    'total_in_progress_trainings' => count($inCompleteTrainings),
                     'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
                         ->where('user_email', $request->email)
                         ->where('training_started', 1)
