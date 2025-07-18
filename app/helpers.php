@@ -3,6 +3,7 @@
 // app/Helpers/helpers.php
 
 use App\Models\Log;
+use App\Models\Badge;
 use App\Models\Company;
 use App\Models\SiemLog;
 use App\Mail\CampaignMail;
@@ -708,5 +709,34 @@ if (!function_exists('sendPhishingMail')) {
             echo 'Error sending email: ' . $e->getMessage() . "\n";
             return false;
         }
+    }
+}
+
+if (!function_exists('getMatchingBadge')) {
+    function getMatchingBadge($criteria_type, $criteria_value)
+    {
+        $badges = Badge::where('criteria_type', $criteria_type)->get();
+
+        foreach ($badges as $badge) {
+            if (compare($criteria_value, $badge->criteria_operator, $badge->criteria_value)) {
+                return $badge->id; // return first matched badge
+            }
+        }
+
+        return null; // no match
+    }
+}
+
+if (!function_exists('compare')) {
+    function compare($actual, $operator, $expected)
+    {
+        return match ($operator) {
+            '>=' => $actual >= $expected,
+            '>'  => $actual > $expected,
+            '='  => $actual == $expected,
+            '<=' => $actual <= $expected,
+            '<'  => $actual < $expected,
+            default => false,
+        };
     }
 }

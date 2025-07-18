@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\LearnApi;
 
+use App\Models\Badge;
 use App\Models\Users;
 use setasign\Fpdi\Fpdi;
 use Illuminate\Support\Str;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
+use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +22,6 @@ use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
-use App\Models\ScormAssignedUser;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnControlller extends Controller
@@ -349,6 +350,21 @@ class ApiLearnControlller extends Controller
                     $rowData->grade = 'D';
                 }
 
+                $badge = getMatchingBadge('score', $request->trainingScore);
+                // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                if ($badge) {
+                    // Decode existing badges (or empty array if null)
+                    $existingBadges = json_decode($rowData->badge, true) ?? [];
+
+                    // Avoid duplicates
+                    if (!in_array($badge, $existingBadges)) {
+                        $existingBadges[] = $badge; // Add new badge
+                    }
+
+                    // Save back to the model
+                    $rowData->badge = json_encode($existingBadges);
+                }
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -360,6 +376,25 @@ class ApiLearnControlller extends Controller
                 if ($request->trainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $rowData->user_email)
+                        ->where('completed', 1)->count();
+
+                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
+                    // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                    if ($badge) {
+                        // Decode existing badges (or empty array if null)
+                        $existingBadges = json_decode($rowData->badge, true) ?? [];
+
+                        // Avoid duplicates
+                        if (!in_array($badge, $existingBadges)) {
+                            $existingBadges[] = $badge; // Add new badge
+                        }
+
+                        // Save back to the model
+                        $rowData->badge = json_encode($existingBadges);
+                    }
                     $rowData->save();
 
                     // Send email
@@ -1033,7 +1068,7 @@ class ApiLearnControlller extends Controller
 
             $trainingUsers = TrainingAssignedUser::where('user_email', $request->email)
                 ->where('personal_best', '>', 0)->get();
-             
+
             $assignedTrainingModules = [];
             $assignedScormModules = [];
 
@@ -1046,7 +1081,7 @@ class ApiLearnControlller extends Controller
                 ];
             }
             $avgTrainingScore = count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0;
-            if($avgTrainingScore >= 90) {
+            if ($avgTrainingScore >= 90) {
                 $avgTrainingGrade = 'A+';
             } elseif ($avgTrainingScore >= 80) {
                 $avgTrainingGrade = 'A';
@@ -1071,8 +1106,8 @@ class ApiLearnControlller extends Controller
             }
 
             $avgScormScore = count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0;
-            
-            if($avgScormScore >= 90) {
+
+            if ($avgScormScore >= 90) {
                 $avgScormGrade = 'A+';
             } elseif ($avgScormScore >= 80) {
                 $avgScormGrade = 'A';
@@ -1090,12 +1125,51 @@ class ApiLearnControlller extends Controller
                 'data' => [
                     'assigned_training_modules' => $assignedTrainingModules ?? [],
                     'total_assigned_training_mod' => count($assignedTrainingModules),
-                     'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
+                    'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
                     'avg_training_grade' => $avgTrainingGrade,
                     'assigned_scorm_modules' => $assignedScormModules ?? [],
                     'total_assigned_scorm_mod' => count($assignedScormModules),
                     'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
                     'avg_scorm_grade' => $avgScormGrade,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingBadges(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+            $trainingWithBadges = TrainingAssignedUser::where('user_email', $request->email)
+                ->where('badge', '!=', null)->get();
+
+            $trainingBadges = [];
+            foreach ($trainingWithBadges as $training) {
+                // Decode badge array
+                $badgeIds = json_decode($training->badge, true) ?? [];
+
+                // Fetch all badge records
+                $badges = Badge::whereIn('id', $badgeIds)->get();
+
+                $trainingBadges[] = [
+                    'training_name' => $training->trainingData->name,
+                    'training_type' => $training->trainingData->training_type,
+                    'badges' => $badges,
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training badges retrieved successfully'),
+                'data' => [
+                    'training_badges' => $trainingBadges ?? [],
+                    'total_trainings_with_badges' => count($trainingBadges),
                 ]
             ], 200);
         } catch (ValidationException $e) {
