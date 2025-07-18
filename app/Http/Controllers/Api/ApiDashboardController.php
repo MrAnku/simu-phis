@@ -776,53 +776,68 @@ class ApiDashboardController extends Controller
         ];
     }
 
-    public function getLineChartData2()
+    public function riskComparison()
     {
-        try {
-            // Get the current date and the date 10 days ago
-            $endDate = Carbon::now();
-            $startDate = $endDate->copy()->subDays(10);
+        $companyId = Auth::user()->company_id;
 
-            // Initialize an empty array to hold the results
-            $data = [];
+        // Email Simulation
+        $totalEmail = \App\Models\CampaignLive::where('company_id', $companyId)->count();
+        $compromisedEmail = \App\Models\CampaignLive::where('company_id', $companyId)
+            ->where('emp_compromised', 1)
+            ->count();
 
-            // Loop through each day from start date to end date
-            for ($date = $startDate; $date <= $endDate; $date->addDay()) {
-                // Format the date
-                $formattedDate = $date->format('Y-m-d');
+        // Quishing Simulation
+        $totalQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)->count();
+        $compromisedQuishing = \App\Models\QuishingLiveCamp::where('company_id', $companyId)
+            ->where('compromised', '1')
+            ->count();
 
-                // Fetch data from all_campaigns by converting launch_time to date
-                $allCampaignsCount = DB::table('all_campaigns')
-                    ->whereDate(DB::raw("STR_TO_DATE(launch_time, '%m/%d/%Y %h:%i %p')"), $date->format('Y-m-d'))
-                    ->where('company_id', Auth::user()->company_id)
-                    ->count();
+        // WhatsApp Simulation
+        $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)->count();
+        $compromisedWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
+            ->where('compromised', 1)
+            ->count();
 
-                // Fetch data from whatsapp_campaigns where created_at matches the current date
-                $whatsappCampaignsCount = DB::table('whatsapp_campaigns')
-                    ->whereDate('created_at', $date->format('Y-m-d'))
-                    ->where('company_id', Auth::user()->company_id)
-                    ->count();
+        // AI Vishing Simulation
+        $totalAiVishing = \App\Models\AiCallCampLive::where('company_id', $companyId)->count();
+        $compromisedAiVishing = \App\Models\AiCallCampLive::where('company_id', $companyId)
+            ->where('compromised', 1)
+            ->count();
 
-                // Add the results to the data array
-                $data[] = [
-                    'date' => $date->format('d M'), // e.g., "12 Mar"
-                    'all_campaigns' => $allCampaignsCount,
-                    'whatsapp_campaigns' => $whatsappCampaignsCount,
-                ];
-            }
+        // Calculate risk score for each type
+        $riskScores = [
+            'email' => $totalEmail > 0 ? 100 - round(($compromisedEmail / $totalEmail) * 100, 2) : 100,
+            'quishing' => $totalQuishing > 0 ? 100 - round(($compromisedQuishing / $totalQuishing) * 100, 2) : 100,
+            'whatsapp' => $totalWhatsapp > 0 ? 100 - round(($compromisedWhatsapp / $totalWhatsapp) * 100, 2) : 100,
+            'ai_vishing' => $totalAiVishing > 0 ? 100 - round(($compromisedAiVishing / $totalAiVishing) * 100, 2) : 100,
+        ];
 
-            // Return response as JSON
-            return response()->json([
-                'success' => true,
-                'message' => 'Line chart data retrieved successfully',
-                'data' => $data,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching data: ' . $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Risk comparison data retrieved successfully',
+            'data' => [
+                'email' => [
+                    'total' => $totalEmail,
+                    'compromised' => $compromisedEmail,
+                    'risk_score' => $riskScores['email'],
+                ],
+                'quishing' => [
+                    'total' => $totalQuishing,
+                    'compromised' => $compromisedQuishing,
+                    'risk_score' => $riskScores['quishing'],
+                ],
+                'whatsapp' => [
+                    'total' => $totalWhatsapp,
+                    'compromised' => $compromisedWhatsapp,
+                    'risk_score' => $riskScores['whatsapp'],
+                ],
+                'ai_vishing' => [
+                    'total' => $totalAiVishing,
+                    'compromised' => $compromisedAiVishing,
+                    'risk_score' => $riskScores['ai_vishing'],
+                ],
+            ]
+        ], 200);
     }
 
     public function getTotalAssets()

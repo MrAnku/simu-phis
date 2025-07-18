@@ -108,6 +108,7 @@ class ProcessAiCampaigns extends Command
                         DB::table('ai_call_camp_live')->where('id', $existingRow->id)->update([
                             // 'call_time' => $logJson['start_timestamp'] ?? null,
                             'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training !== null ? 1 : 0,
+                            'compromised' => $logJson['args']['fell_for_simulation'] == true ? 1 : 0,
                             'status' => 'completed',
                             'call_end_response' => $updatedJson
                         ]);

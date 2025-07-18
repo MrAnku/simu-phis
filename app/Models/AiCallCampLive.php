@@ -26,6 +26,7 @@ class AiCallCampLive extends Model
         'call_id',
         'status',
         'training_assigned',
+        'compromised',
         'call_send_response',
         'call_end_response',
         'call_report',

@@ -80,6 +80,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::get('/get-email-reported-data', [ApiDashboardController::class, 'getEmailReportedData']);
     Route::get('/get-package-data', [ApiDashboardController::class, 'getPackage']);
     Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
+    Route::get('/risk-comparison', [ApiDashboardController::class, 'riskComparison']);
 
     //card reports
     Route::prefix('simulation-report')->group(function () {
