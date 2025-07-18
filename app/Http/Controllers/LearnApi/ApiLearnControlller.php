@@ -1164,6 +1164,21 @@ class ApiLearnControlller extends Controller
                 ];
             }
 
+            $scormWithBadges = ScormAssignedUser::where('user_email', $request->email)
+                ->where('badge', '!=', null)->get();
+
+            foreach ($scormWithBadges as $scorm) {
+                // Decode badge array
+                $badgeIds = json_decode($scorm->badge, true) ?? [];
+                // Fetch all badge records
+                $badges = Badge::whereIn('id', $badgeIds)->get();
+                $trainingBadges[] = [
+                    'training_name' => $scorm->scormTrainingData->name,
+                    'training_type' => 'Scorm',
+                    'badges' => $badges,
+                ];
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => __('Training badges retrieved successfully'),
