@@ -14,12 +14,15 @@ use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use Illuminate\Validation\ValidationException;
@@ -422,6 +425,17 @@ class ApiLearnControlller extends Controller
 
                     $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
 
+                    $emailFolder = $rowData->user_email;
+                    $pdfFileName = 'certificate_' . time() . '.pdf';
+                    $relativePath = 'certificates/' . $emailFolder . '/' . $pdfFileName;
+
+
+                    // Save using Storage
+                    Storage::disk('public')->put($relativePath, $pdfContent);
+                    $certificate_full_path = Storage::disk('public')->path($relativePath);
+
+                    $rowData->certificate_path = $certificate_full_path;
+                    $rowData->save();
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 
@@ -529,6 +543,18 @@ class ApiLearnControlller extends Controller
                     ];
 
                     $pdfContent = $this->generateScormCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
+
+                    $emailFolder = $rowData->user_email;
+                    $pdfFileName = 'certificate_' . time() . '.pdf';
+                    $relativePath = 'certificates/' . $emailFolder . '/' . $pdfFileName;
+
+
+                    // Save using Storage
+                    Storage::disk('public')->put($relativePath, $pdfContent);
+                    $certificate_full_path = Storage::disk('public')->path($relativePath);
+
+                    $rowData->certificate_path = $certificate_full_path;
+                    $rowData->save();
 
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
@@ -713,201 +739,65 @@ class ApiLearnControlller extends Controller
     public function downloadTrainingCertificate(Request $request)
     {
         $request->validate([
-            'user_name' => 'required|string|max:255',
-            'training_name' => 'required|string',
             'training_id' => 'required|integer',
-            'completion_date' => 'required|date',
             'user_email' => 'required|email',
         ]);
 
-        $name = $request->user_name;
-        $trainingModuleName = $request->training_name;
-        $trainingId = $request->training_id;
-        $date = Carbon::parse($request->completion_date)->format('d F, Y');
-        $userEmail = $request->user_email;
+        $training = TrainingAssignedUser::find($request->training_id);
 
-        $companyId = Users::where('user_email', $userEmail)->value('company_id');
-
-        $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-            // $companyName = $whitelabelData->company_name;
-            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-            $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-            $isWhitelabeled->updateSmtpConfig();
-        } else {
-            // $companyName = env('APP_NAME');
-            $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-            $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+        if($training == null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training not found.'),
+            ], 404);
         }
 
-
-        // Check if the certificate ID already exists for this user and training module
-        $certificateId = $this->getCertificateId($userEmail, $trainingId);
-
-        // If the certificate ID doesn't exist, generate a new one
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($userEmail, $certificateId, $trainingId);
+        if($training->completed == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training is not completed yet.'),
+            ], 422);
         }
 
-        $pdf = new \setasign\Fpdi\Fpdi();
-
-        // Load template
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
-
-        // Set color and fonts
-        $pdf->SetTextColor(26, 13, 171);
-
-        // Limit name length to avoid UI break
-        $maxLength = 15; // Adjust based on font size and layout width
-        if (strlen($name) > $maxLength) {
-            $name = mb_substr($name, 0, $maxLength - 3) . '...';
-        }
-
-        // --------------------------
-        // 1. NAME
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L'); // 'L' for left-align
-
-        // --------------------------
-        // 2. TRAINING TITLE
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $trainingModuleName", 0, 1, 'L');
-
-        // --------------------------
-        // 3. DATE centered below the badge
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
-
-        // 4. CERTIFICATE ID at top right
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
-
-        if ($companyLogo || file_exists($companyLogo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($companyLogo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
-
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
-
-        log_action("Employee downloaded training certificate", 'learner', 'learner');
-
-        return response($pdf->Output('S', 'certificate.pdf'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="certificate.pdf"');
+         return response()->json([
+                'success' => true,
+                'message' => __('Certificate Path retrieved successfully'),
+                'data' => [
+                    'certificate_path' => $training->certificate_path,
+                ]
+            ], 200); 
     }
 
     public function downloadScormCertificate(Request $request)
     {
         $request->validate([
-            'user_name' => 'required|string|max:255',
-            'scorm_name' => 'required|string',
             'scorm_id' => 'required|integer',
-            'completion_date' => 'required|date',
             'user_email' => 'required|email',
         ]);
 
-        $name = $request->user_name;
-        $scormName = $request->scorm_name;
-        $scorm = $request->scorm_id;
-        $date = Carbon::parse($request->completion_date)->format('d F, Y');
-        $userEmail = $request->user_email;
+         $training = ScormAssignedUser::find($request->scorm_id);
 
-        $companyId = Users::where('user_email', $userEmail)->value('company_id');
-
-        $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-            // $companyName = $whitelabelData->company_name;
-            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-            $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-            $isWhitelabeled->updateSmtpConfig();
-        } else {
-            // $companyName = env('APP_NAME');
-            $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-            $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+        if($training == null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Scorm not found.'),
+            ], 404);
         }
 
-
-        // Check if the certificate ID already exists for this user and training module
-        $certificateId = $this->getScormCertificateId($userEmail, $scorm);
-
-        // If the certificate ID doesn't exist, generate a new one
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeScormCertificateId($userEmail, $certificateId, $scorm);
+        if($training->completed == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Scorm is not completed yet.'),
+            ], 422);
         }
 
-        $pdf = new \setasign\Fpdi\Fpdi();
-
-        // Load template
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
-
-        // Set color and fonts
-        $pdf->SetTextColor(26, 13, 171);
-
-        // Limit name length to avoid UI break
-        $maxLength = 15; // Adjust based on font size and layout width
-        if (strlen($name) > $maxLength) {
-            $name = mb_substr($name, 0, $maxLength - 3) . '...';
-        }
-
-        // --------------------------
-        // 1. NAME
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L'); // 'L' for left-align
-
-        // --------------------------
-        // 2. TRAINING TITLE
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $scormName", 0, 1, 'L');
-
-        // --------------------------
-        // 3. DATE centered below the badge
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
-
-        // 4. CERTIFICATE ID at top right
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
-
-        if ($companyLogo || file_exists($companyLogo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($companyLogo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
-
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
-
-        log_action("Employee downloaded training certificate", 'learner', 'learner');
-
-        return response($pdf->Output('S', 'certificate.pdf'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="certificate.pdf"');
+         return response()->json([
+                'success' => true,
+                'message' => __('Certificate Path retrieved successfully'),
+                'data' => [
+                    'certificate_path' => $training->certificate_path,
+                ]
+            ], 200); 
     }
 
     public function fetchNormalEmpScormTrainings(Request $request)
