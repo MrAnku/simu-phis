@@ -1146,45 +1146,41 @@ class ApiLearnControlller extends Controller
             $request->validate([
                 'email' => 'required|email|exists:users,user_email',
             ]);
+
+            $allBadgeIds = [];
+
+            // Collect badge IDs from training
             $trainingWithBadges = TrainingAssignedUser::where('user_email', $request->email)
-                ->where('badge', '!=', null)->get();
+                ->whereNotNull('badge')
+                ->get();
 
-            $trainingBadges = [];
             foreach ($trainingWithBadges as $training) {
-                // Decode badge array
                 $badgeIds = json_decode($training->badge, true) ?? [];
-
-                // Fetch all badge records
-                $badges = Badge::whereIn('id', $badgeIds)->get();
-
-                $trainingBadges[] = [
-                    'training_name' => $training->trainingData->name,
-                    'training_type' => $training->trainingData->training_type,
-                    'badges' => $badges,
-                ];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
             }
 
+            // Collect badge IDs from SCORM
             $scormWithBadges = ScormAssignedUser::where('user_email', $request->email)
-                ->where('badge', '!=', null)->get();
+                ->whereNotNull('badge')
+                ->get();
 
             foreach ($scormWithBadges as $scorm) {
-                // Decode badge array
                 $badgeIds = json_decode($scorm->badge, true) ?? [];
-                // Fetch all badge records
-                $badges = Badge::whereIn('id', $badgeIds)->get();
-                $trainingBadges[] = [
-                    'training_name' => $scorm->scormTrainingData->name,
-                    'training_type' => 'Scorm',
-                    'badges' => $badges,
-                ];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
             }
+
+            // Remove duplicate badge IDs
+            $uniqueBadgeIds = array_unique($allBadgeIds);
+
+            // Fetch badges
+            $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
 
             return response()->json([
                 'success' => true,
-                'message' => __('Training badges retrieved successfully'),
+                'message' => __('Badges retrieved successfully'),
                 'data' => [
-                    'training_badges' => $trainingBadges ?? [],
-                    'total_trainings_with_badges' => count($trainingBadges),
+                    'badges' => $badges,
+                    'total_badges' => count($badges),
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -1194,8 +1190,9 @@ class ApiLearnControlller extends Controller
         }
     }
 
-    public function fetchTrainingGoals(Request $request){
-        try{
+    public function fetchTrainingGoals(Request $request)
+    {
+        try {
             $request->validate([
                 'email' => 'required|email|exists:users,user_email',
             ]);
@@ -1203,10 +1200,10 @@ class ApiLearnControlller extends Controller
             $trainingGoals = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->get();
 
             $completedTrainings = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)
-            ->where('completed', 1)->get();
+                ->where('completed', 1)->get();
 
             $inCompleteTrainings = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)
-            ->where('training_started', 1)->where('completed', 0)->get();
+                ->where('training_started', 1)->where('completed', 0)->get();
 
             $scormGoals = ScormAssignedUser::with('scormTrainingData')->where('user_email', $request->email)->get();
 
@@ -1227,7 +1224,7 @@ class ApiLearnControlller extends Controller
                         ->where('completed', 0)->avg('personal_best')),
                 ]
             ], 200);
-        }catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
