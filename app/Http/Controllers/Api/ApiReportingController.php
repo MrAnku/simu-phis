@@ -2613,16 +2613,6 @@ class ApiReportingController extends Controller
                 ], 404);
             }
 
-            $policyDetails = [];
-            foreach ($policies as $policy) {
-                $policyDetails[] = [
-                    'policy_name' => $policy->policy_name,
-                    'policy_description' => $policy->policy_description,
-                    'has_quiz' => $policy->has_quiz ? 'Yes' : 'No',
-                    'created_at' => $policy->created_at->format('Y-m-d H:i:s'),
-                ];
-            }
-
             $assignedPolicies = AssignedPolicy::where('company_id', $companyId)->get();
             $assignedPolicyDetails = [];
             foreach ($assignedPolicies as $assignedPolicy) {
@@ -2642,7 +2632,6 @@ class ApiReportingController extends Controller
                 'success' => true,
                 'message' => __('Policies report fetched successfully'),
                 'data' => [
-                    'policies' => $policyDetails,
                     'assigned_policies' => $assignedPolicyDetails
                 ]
             ], 200);
