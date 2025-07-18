@@ -620,6 +620,74 @@ class ApiDashboardController extends Controller
             ], 500);
         }
     }
+
+    public function whatsappReportNew(){
+        try {
+            $companyId = Auth::user()->company_id;
+            $now = Carbon::now();
+            $startDate = $now->copy()->subDays(6)->startOfDay(); // last 7 days including today
+
+            // Fetch records for the last 7 days
+            $records = WaLiveCampaign::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startDate, $now->endOfDay()])
+                ->get(['sent', 'payload_clicked', 'compromised', 'training_assigned', 'created_at']);
+
+            // Prepare last 7 days array
+            $last7Days = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $last7Days[] = $now->copy()->subDays($i)->format('Y-m-d');
+            }
+
+            // Initialize counts for each day
+            $result = [];
+            foreach ($last7Days as $date) {
+                $result[$date] = [
+                    'sent' => 0,
+                    'payload_clicked' => 0,
+                    'compromised' => 0,
+                    'training_assigned' => 0,
+                ];
+            }
+
+            // Count records for each day
+            foreach ($records as $record) {
+                $date = Carbon::parse($record->created_at)->format('Y-m-d');
+                if (!isset($result[$date])) continue;
+                if ($record->sent > 0) {
+                    $result[$date]['sent'] += (int)$record->sent;
+                }
+                if ($record->payload_clicked > 0) {
+                    $result[$date]['payload_clicked'] += (int)$record->payload_clicked;
+                }
+                if ($record->compromised > 0) {
+                    $result[$date]['compromised'] += (int)$record->compromised;
+                }
+                if ($record->training_assigned > 0) {
+                    $result[$date]['training_assigned'] += (int)$record->training_assigned;
+                }
+            }
+
+            // Format output for frontend (array of days)
+            $output = [];
+            foreach ($last7Days as $date) {
+                $output[] = array_merge(['date' => Carbon::parse($date)->format('d M')], $result[$date]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'WhatsApp chart data retrieved successfully',
+                'data' => $output,
+                'last_7_days' => array_map(function ($d) {
+                    return Carbon::parse($d)->format('d M');
+                }, $last7Days)
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: '. $e->getMessage()
+            ], 500);
+        }
+    }
     public function aiCallReport()
     {
         try {

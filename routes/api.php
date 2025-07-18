@@ -74,12 +74,20 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::get('/get-pie-data', [ApiDashboardController::class, 'getPieData']);
     Route::get('/get-line-chart-data', [ApiDashboardController::class, 'getLineChartData']);
+    //old
     Route::get('/get-whats-chart-data', [ApiDashboardController::class, 'whatsappReport']);
+
+    //new
+    Route::get('/whatsapp-campaign-report', [ApiDashboardController::class, 'whatsappReportNew']);
+
     Route::get('/get-ai-chart-data', [ApiDashboardController::class, 'aiCallReport']);
     Route::get('/get-payload-click-data', [ApiDashboardController::class, 'getPayloadClickData']);
     Route::get('/get-email-reported-data', [ApiDashboardController::class, 'getEmailReportedData']);
     Route::get('/get-package-data', [ApiDashboardController::class, 'getPackage']);
+
+    //old
     Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
+    //new
     Route::get('/risk-comparison', [ApiDashboardController::class, 'riskComparison']);
 
     //card reports
