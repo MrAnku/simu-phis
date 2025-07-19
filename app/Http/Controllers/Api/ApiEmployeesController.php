@@ -61,6 +61,24 @@ class ApiEmployeesController extends Controller
         }
     }
 
+    public function getGroups()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $groups = UsersGroup::where('company_id', $companyId)
+                ->withCount('users')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $groups,
+                'message' => __('User groups retrieved successfully')
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error:') . $e->getMessage()], 500);
+        }
+    }
+
     private function getEmpPp(){
         $companyId = Auth::user()->company_id;
 

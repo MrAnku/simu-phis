@@ -295,6 +295,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::prefix('employees')->group(function () {
         Route::get('/', [ApiEmployeesController::class, 'index']);
+        Route::get('/groups', [ApiEmployeesController::class, 'getGroups']);
         Route::get('/all-employees', [ApiEmployeesController::class, 'allEmployee']);
         Route::get('/blue-collar-employees', [ApiBlueCollarController::class, 'index']);
         Route::get('/normalemployees', [ApiEmployeesController::class, 'index']);
