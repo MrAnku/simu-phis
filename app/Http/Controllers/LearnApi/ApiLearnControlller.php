@@ -197,9 +197,8 @@ class ApiLearnControlller extends Controller
                 ], 404);
             }
 
-            $assignedTrainings = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $request->email)
-                ->where('completed', 0)->get();
+            $allAssignedTrainings = TrainingAssignedUser::with('trainingData')
+                ->where('user_email', $request->email)->get();
 
             $completedTrainings = TrainingAssignedUser::with('trainingData')
                 ->where('user_email', $request->email)
@@ -214,12 +213,12 @@ class ApiLearnControlller extends Controller
                 'success' => true,
                 'data' => [
                     'email' => $request->email,
-                    'assigned_trainings' => $assignedTrainings,
+                    'assigned_trainings' => $allAssignedTrainings,
                     'completed_trainings' => $completedTrainings,
                     'in_progress_trainings' => $inProgressTrainings,
                     'total_trainings' => TrainingAssignedUser::with('trainingData')
                         ->where('user_email', $request->email)->count(),
-                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_assigned_trainings' => $allAssignedTrainings->count(),
                     'total_completed_trainings' => $completedTrainings->count(),
                     'total_in_progress_trainings' => $inProgressTrainings->count(),
                     'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
