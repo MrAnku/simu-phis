@@ -502,4 +502,6 @@ Route::prefix('learn')->group(function () {
     Route::get('/fetch-training-goals', [ApiLearnControlller::class, 'fetchTrainingGoals']);
 
     Route::get('/fetch-training-achievements', [ApiLearnControlller::class, 'fetchTrainingAchievements']);
+
+    Route::get('/fetch-all-assigned-trainings', [ApiLearnControlller::class, 'fetchAllAssignedTrainings']);
 });

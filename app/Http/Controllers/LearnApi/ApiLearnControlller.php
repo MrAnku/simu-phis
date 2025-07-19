@@ -1182,4 +1182,53 @@ class ApiLearnControlller extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function fetchAllAssignedTrainings(Request $request){
+        try{
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $assignedTrainings = TrainingAssignedUser::where('user_email', $request->email)
+                ->with('trainingData')
+                ->where('personal_best', '>', 0)
+                ->get();
+
+                foreach($assignedTrainings as $training){
+                    $allAssignments[] = [
+                        'training_name' => $training->trainingData->name,
+                        'type' => $training->trainingData->training_type,
+                        'score' => $training->personal_best,
+                        'assigned_date' => $training->assigned_date,
+                        'grade' => $training->grade,
+                    ];
+                }
+
+                $assignedScorm = ScormAssignedUser::where('user_email', $request->email)
+                ->with('scormTrainingData')
+                ->where('personal_best', '>', 0)
+                ->get();
+
+
+                foreach($assignedScorm as $scorm){
+                    $allAssignments[] = [
+                        'training_name' => $scorm->scormTrainingData->name,
+                        'type' => 'Scorm',
+                        'score' => $scorm->personal_best,
+                        'assigned_date' => $scorm->assigned_date,
+                        'grade' => $scorm->grade,
+                    ];
+                }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Assigned trainings retrieved successfully'),
+                'data' => $allAssignments
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }
