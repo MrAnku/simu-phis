@@ -363,7 +363,7 @@ class ApiPhishingWebsitesController extends Controller
             // Save the modified content to a file or database
             $randomName = generateRandom(32);
             $newFilename = $randomName . '.html';
-            $filePath = 'uploads/phishingMaterial/phishing_websites/' . $newFilename;
+            $filePath = '/uploads/phishingMaterial/phishing_websites/' . $newFilename;
             Storage::disk('s3')->put($filePath, $modifiedContent);
             // Save to database
             $phishingWebsite = new PhishingWebsite();
