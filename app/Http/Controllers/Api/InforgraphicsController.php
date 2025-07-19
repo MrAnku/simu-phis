@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\InfoGraphicLiveCampaign;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
 class InforgraphicsController extends Controller
 {
@@ -60,7 +61,7 @@ class InforgraphicsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inforgraphic saved successfully'
+                'message' => 'Infographic saved successfully'
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -70,7 +71,7 @@ class InforgraphicsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage()
             ], 422);
         }
     }
@@ -122,9 +123,9 @@ class InforgraphicsController extends Controller
                 'scheduled_at' => 'required|string',
             ]);
             // check if scheduled_at is less than current time then the status will be running else pending
-            $scheduledAt = strtotime($request->scheduled_at);
-            $currentTime = time();
-            $status = $scheduledAt < $currentTime ? 'running' : 'pending';
+            $scheduledAt = Carbon::parse($request->scheduled_at);
+            $currentTime = Carbon::now();
+            $status = $scheduledAt->lessThanOrEqualTo($currentTime) ? 'running' : 'pending';
 
 
 
