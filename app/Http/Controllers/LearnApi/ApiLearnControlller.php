@@ -426,14 +426,14 @@ class ApiLearnControlller extends Controller
 
                     $emailFolder = $rowData->user_email;
                     $pdfFileName = 'certificate_' . time() . '.pdf';
-                    $relativePath =  '/' . 'certificates/' . $emailFolder . '/' . $pdfFileName;
+                    $relativePath =  'certificates/' . $emailFolder . '/' . $pdfFileName;
 
 
                     // Save using Storage
                     Storage::disk('s3')->put($relativePath, $pdfContent);
                     $certificate_full_path = Storage::disk('s3')->path($relativePath);
 
-                    $rowData->certificate_path = $certificate_full_path;
+                    $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
