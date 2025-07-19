@@ -1242,4 +1242,58 @@ class ApiLearnControlller extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function startTrainingModule(Request $request){
+        try{
+            $request->validate([
+                'training_id' => 'required|integer',
+            ]);
+
+            $training = TrainingAssignedUser::find($request->training_id);
+
+            if (!$training) {
+                return response()->json(['success' => false, 'message' => __('Training not found.')], 404);
+            }
+
+            if ($training->completed == 1) {
+                return response()->json(['success' => false, 'message' => __('Training already completed.')], 422);
+            }
+
+            $training->training_started = 1;
+            $training->save();
+
+            return response()->json(['success' => true, 'message' => __('Training started successfully.')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function startScorm(Request $request){
+        try{
+            $request->validate([
+                'scorm_id' => 'required|integer',
+            ]);
+
+            $scorm = ScormAssignedUser::find($request->scorm_id);
+
+            if (!$scorm) {
+                return response()->json(['success' => false, 'message' => __('Scorm not found.')], 404);
+            }
+
+            if ($scorm->completed == 1) {
+                return response()->json(['success' => false, 'message' => __('Scorm already completed.')], 422);
+            }
+
+            $scorm->scorm_started = 1;
+            $scorm->save();
+
+            return response()->json(['success' => true, 'message' => __('Scorm started successfully.')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('training_assigned_users', function (Blueprint $table) {
-            $table->json('badge')->nullable()->after('grade');
+            $table->longText('badge')->nullable()->after('grade');
         });
 
         // $allUsers = TrainingAssignedUser::all();
