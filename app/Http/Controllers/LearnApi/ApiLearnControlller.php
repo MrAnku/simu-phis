@@ -745,27 +745,27 @@ class ApiLearnControlller extends Controller
 
         $training = TrainingAssignedUser::find($request->training_id);
 
-        if($training == null) {
+        if ($training == null) {
             return response()->json([
                 'success' => false,
                 'message' => __('Training not found.'),
             ], 404);
         }
 
-        if($training->completed == 0) {
+        if ($training->completed == 0) {
             return response()->json([
                 'success' => false,
                 'message' => __('Training is not completed yet.'),
             ], 422);
         }
 
-         return response()->json([
-                'success' => true,
-                'message' => __('Certificate Path retrieved successfully'),
-                'data' => [
-                    'certificate_path' => $training->certificate_path,
-                ]
-            ], 200); 
+        return response()->json([
+            'success' => true,
+            'message' => __('Certificate Path retrieved successfully'),
+            'data' => [
+                'certificate_path' => $training->certificate_path,
+            ]
+        ], 200);
     }
 
     public function downloadScormCertificate(Request $request)
@@ -775,29 +775,29 @@ class ApiLearnControlller extends Controller
             'user_email' => 'required|email',
         ]);
 
-         $training = ScormAssignedUser::find($request->scorm_id);
+        $training = ScormAssignedUser::find($request->scorm_id);
 
-        if($training == null) {
+        if ($training == null) {
             return response()->json([
                 'success' => false,
                 'message' => __('Scorm not found.'),
             ], 404);
         }
 
-        if($training->completed == 0) {
+        if ($training->completed == 0) {
             return response()->json([
                 'success' => false,
                 'message' => __('Scorm is not completed yet.'),
             ], 422);
         }
 
-         return response()->json([
-                'success' => true,
-                'message' => __('Certificate Path retrieved successfully'),
-                'data' => [
-                    'certificate_path' => $training->certificate_path,
-                ]
-            ], 200); 
+        return response()->json([
+            'success' => true,
+            'message' => __('Certificate Path retrieved successfully'),
+            'data' => [
+                'certificate_path' => $training->certificate_path,
+            ]
+        ], 200);
     }
 
     public function fetchNormalEmpScormTrainings(Request $request)
@@ -1154,11 +1154,16 @@ class ApiLearnControlller extends Controller
             // Fetch badges
             $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
 
+            $certificates = TrainingAssignedUser::where('user_email', $request->email)
+                ->where('certificate_path', '!=', null)
+                ->pluck('certificate_path');
+
             return response()->json([
                 'success' => true,
                 'message' => __('Training achivements retrieved successfully'),
                 'data' => [
                     'badges' => $badges,
+                    'certificates' => $certificates,
                 ]
             ], 200);
         } catch (ValidationException $e) {
