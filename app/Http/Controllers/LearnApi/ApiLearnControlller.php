@@ -1031,6 +1031,17 @@ class ApiLearnControlller extends Controller
                     'total_assigned_scorm_mod' => count($assignedScormModules),
                     'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
                     'avg_scorm_grade' => $avgScormGrade,
+                    'total_trainings' => count($assignedTrainingModules) + count($assignedScormModules),
+                    'total_passed_trainings' => TrainingAssignedUser::where('user_email', $request->email)
+                        ->where('completed', 1)->count() + ScormAssignedUser::where('user_email', $request->email)
+                        ->where('completed', 1)->count(),
+                    'current_avg' => (TrainingAssignedUser::where('user_email', $request->email)
+                    ->where('training_started', 1)
+                        ->sum('personal_best') + ScormAssignedUser::where('user_email', $request->email)
+                        ->where('scorm_started', 1)
+                        ->sum('personal_best')) / (TrainingAssignedUser::where('user_email', $request->email)
+                        ->count() + ScormAssignedUser::where('user_email', $request->email)
+                        ->count()),
                 ]
             ], 200);
         } catch (ValidationException $e) {
