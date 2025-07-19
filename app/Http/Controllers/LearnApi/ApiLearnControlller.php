@@ -197,7 +197,7 @@ class ApiLearnControlller extends Controller
                 ], 404);
             }
 
-            $allAssignedTrainings = TrainingAssignedUser::with('trainingData')
+            $allTrainings = TrainingAssignedUser::with('trainingData')
                 ->where('user_email', $request->email)->get();
 
             $completedTrainings = TrainingAssignedUser::with('trainingData')
@@ -213,12 +213,12 @@ class ApiLearnControlller extends Controller
                 'success' => true,
                 'data' => [
                     'email' => $request->email,
-                    'assigned_trainings' => $allAssignedTrainings,
+                    'all_trainings' => $allTrainings,
                     'completed_trainings' => $completedTrainings,
                     'in_progress_trainings' => $inProgressTrainings,
                     'total_trainings' => TrainingAssignedUser::with('trainingData')
                         ->where('user_email', $request->email)->count(),
-                    'total_assigned_trainings' => $allAssignedTrainings->count(),
+                    'total_trainings' => $allTrainings->count(),
                     'total_completed_trainings' => $completedTrainings->count(),
                     'total_in_progress_trainings' => $inProgressTrainings->count(),
                     'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
@@ -257,9 +257,8 @@ class ApiLearnControlller extends Controller
                     'message' => 'No blue collar employee found with this WhatsApp number.'
                 ], 404);
             }
-            $assignedTrainings = BlueCollarTrainingUser::with('trainingData')
-                ->where('user_whatsapp', $request->user_whatsapp)
-                ->where('completed', 0)->get();
+            $allTrainings = BlueCollarTrainingUser::with('trainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)->get();
 
             $completedTrainings = BlueCollarTrainingUser::with('trainingData')
                 ->where('user_whatsapp', $request->user_whatsapp)
@@ -274,12 +273,12 @@ class ApiLearnControlller extends Controller
                 'success' => true,
                 'data' => [
                     'user_whatsapp' => $request->user_whatsapp,
-                    'assigned_trainings' => $assignedTrainings,
+                    'all_trainings' => $allTrainings,
                     'completed_trainings' => $completedTrainings,
                     'in_progress_trainings' => $inProgressTrainings,
                     'total_trainings' => BlueCollarTrainingUser::with('trainingData')
                         ->where('user_whatsapp', $request->user_whatsapp)->count(),
-                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_trainings' => $allTrainings->count(),
                     'total_completed_trainings' => $completedTrainings->count(),
                     'total_in_progress_trainings' => $inProgressTrainings->count(),
                     'avg_in_progress_trainings' => round(BlueCollarTrainingUser::with('trainingData')
@@ -818,9 +817,8 @@ class ApiLearnControlller extends Controller
 
             $email = $request->query('email');
 
-            $assignedTrainings = ScormAssignedUser::with('scormTrainingData')
-                ->where('user_email', $request->email)
-                ->where('completed', 0)->get();
+            $allTrainings = ScormAssignedUser::with('scormTrainingData')
+                ->where('user_email', $request->email)->get();
 
             $completedTrainings = ScormAssignedUser::with('scormTrainingData')
                 ->where('user_email', $request->email)
@@ -836,12 +834,12 @@ class ApiLearnControlller extends Controller
                 'message' => __('Scorm trainings retrieved successfully'),
                 'data' => [
                     'email' => $email,
-                    'assigned_trainings' => $assignedTrainings,
+                    'all_trainings' => $allTrainings,
                     'completed_trainings' => $completedTrainings,
                     'in_progress_trainings' => $inProgressTrainings,
                     'total_trainings' => ScormAssignedUser::with('scormTrainingData')
                         ->where('user_email', $email)->count(),
-                    'total_assigned_trainings' => $assignedTrainings->count(),
+                    'total_trainings' => $allTrainings->count(),
                     'total_completed_trainings' => $completedTrainings->count(),
                     'total_in_progress_trainings' => $inProgressTrainings->count(),
                     'avg_in_progress_trainings' => round(ScormAssignedUser::with('scormTrainingData')
