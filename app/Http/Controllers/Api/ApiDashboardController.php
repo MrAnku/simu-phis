@@ -79,6 +79,26 @@ class ApiDashboardController extends Controller
             'message' => 'EULA accepted successfully'
         ], 200);
     }
+    public function tourTaken(Request $request)
+    {
+
+        $companyId = Auth::user()->company_id;
+        $action = $request->input('action');
+        if ($action !== 'taken') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid action'
+            ], 400);
+        }
+        // Update the company's tour status
+        Company::where('company_id', $companyId)->update([
+            'tour_taken' => 1,
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Tour taken successfully'
+        ], 200);
+    }
 
     public function sortByTimeCampaignCard(Request $request)
     {
