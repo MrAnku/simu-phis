@@ -27,7 +27,7 @@ return new class extends Migration
                         }
                     }
                     // update the users column with the new array
-                    $group->users = json_encode($newArray);
+                    $group->users = empty($newArray) ? null : json_encode($newArray);
                     $group->save();
                 } 
             }

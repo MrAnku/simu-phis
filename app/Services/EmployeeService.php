@@ -15,9 +15,15 @@ use App\Models\CampaignReport;
 use App\Models\CompanyLicense;
 use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
+use App\Models\InfoGraphicCampaign;
+use App\Models\PolicyCampaign;
 use App\Models\QuishingLiveCamp;
+use App\Models\SmishingCampaign;
+use App\Models\SmishingLiveCampaign;
 use App\Models\WhatsappCampaign;
 use App\Models\TrainingAssignedUser;
+use App\Models\WaCampaign;
+use App\Models\WaLiveCampaign;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 
@@ -153,7 +159,10 @@ class EmployeeService
         AiCallCampaign::where('emp_group', $groupId)->delete();
 
         QuishingCamp::where('users_group', $groupId)->delete();
-        WhatsappCampaign::where('user_group', $groupId)->delete();
+        WaCampaign::where('users_group', $groupId)->delete();
+        SmishingCampaign::where('users_group', $groupId)->delete();
+        PolicyCampaign::where('users_group', $groupId)->delete();
+        InfoGraphicCampaign::where('users_group', $groupId)->delete();
     }
     public function deleteEmployeeById($employeeId)
     {
@@ -172,11 +181,15 @@ class EmployeeService
 
 
             //delete from whatsapp campaign live
-            WhatsAppCampaignUser::where('user_id', $user->id)->delete();
+            WaLiveCampaign::where('user_id', $user->id)->delete();
 
 
             //delete from quishing campaign live
             QuishingLiveCamp::where('user_id', $user->id)->delete();
+
+
+            //delete from smishing live campaign
+            SmishingLiveCampaign::where('user_id', $user->id)->delete();
 
 
             //delete from training assigned table

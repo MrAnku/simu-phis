@@ -6,6 +6,7 @@ use App\Models\Company;
 use Illuminate\Support\Str;
 use App\Models\WaLiveCampaign;
 use App\Models\PhishingWebsite;
+use App\Models\WaCampaign;
 use Illuminate\Console\Command;
 use App\Models\WhatsappActivity;
 use Illuminate\Support\Facades\Http;
@@ -33,6 +34,7 @@ class ProcessWhatsappCampaign extends Command
     {
         // $this->checkScheduledCampaigns();
         $this->sendWhatsapp();
+        $this->checkCompletedCampaigns();
     }
 
     private function sendWhatsapp()
@@ -120,6 +122,26 @@ class ProcessWhatsappCampaign extends Command
                         echo $th->getMessage();
                     }
                 }
+            }
+        }
+    }
+
+    private function checkCompletedCampaigns()
+    {
+        $campaigns = WaCampaign::where('status', 'running')
+            ->get();
+        if ($campaigns->isEmpty()) {
+            return;
+        }
+
+        foreach ($campaigns as $campaign) {
+            $liveCampaigns = WaLiveCampaign::where('campaign_id', $campaign->campaign_id)
+                ->where('sent', 0)
+                ->count();
+            if ($liveCampaigns == 0) {
+                $campaign->status = 'completed';
+                $campaign->save();
+                echo "Campaign " . $campaign->name . " has been marked as completed.\n";
             }
         }
     }
