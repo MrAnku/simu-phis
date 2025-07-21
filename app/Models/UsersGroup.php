@@ -13,6 +13,9 @@ class UsersGroup extends Model
     protected $table = 'users_group';
     public $timestamps = false;
 
+    //append the users_count attribute
+    protected $appends = ['users_count'];
+
     protected $fillable = [
         'group_id',
         'group_name',
@@ -39,6 +42,6 @@ class UsersGroup extends Model
     public function getUsersCountAttribute(): int
     {
         $users = json_decode($this->users, true);
-        return is_array($users) ? count($users) : 0;
+        return is_array($users) ? Users::whereIn('id', $users)->count() : 0;
     }
 }

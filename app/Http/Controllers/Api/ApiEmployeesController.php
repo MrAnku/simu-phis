@@ -31,7 +31,7 @@ class ApiEmployeesController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-            $groups = UsersGroup::withCount('users')->where('company_id', $companyId)->get();
+            $groups = UsersGroup::where('company_id', $companyId)->get();
 
             $totalEmps = Users::where('company_id', $companyId)->pluck('user_email')->unique()->count();
             $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
@@ -542,7 +542,7 @@ class ApiEmployeesController extends Controller
 
             DB::transaction(function () use ($domain) {
                 // Delete users with the domain
-                Users::where('user_email', 'LIKE', '%' . $domain)->delete();
+                // Users::where('user_email', 'LIKE', '%' . $domain)->delete();
 
                 // Delete the domain
                 DomainVerified::where('domain', $domain)->delete();
