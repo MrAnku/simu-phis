@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\SenderProfile;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ApiSenderProfileController extends Controller
 {
@@ -181,6 +182,63 @@ class ApiSenderProfileController extends Controller
                 'success' => false,
                 'message' => __('An error occurred while adding the sender profile.'),
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function saveMailSenderProfile(Request $request)
+    {
+        try {
+            $request->validate([
+                'pName' => 'required|string|max:255',
+                'from_name' => 'required|string|max:255',
+                'from_email' => 'required|email|max:255',
+                'domain' => 'required|string|max:255',
+            ]);
+
+            if($request->domain == 'secure-accessmail.com') {
+                $host = env('MAILSENDER_HOST');
+                $username = env('MAILSENDER_USERNAME_SECURE_ACCESSMAIL', 'secure-accessmail-username');
+                $password = env('MAILSENDER_PASSWORD_SECURE_ACCESSMAIL');
+            }
+            elseif($request->domain == 'securitynotice.org') {
+                $host = env('MAILSENDER_HOST');
+                $username = env('MAILSENDER_USERNAME_SECURITY_NOTICE', 'security-notice-username');
+                $password = env('MAILSENDER_PASSWORD_SECURITY_NOTICE');
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Invalid domain provided.'),
+                ], 400); // Bad Request
+            }
+            $senderProfile = new SenderProfile();
+            $senderProfile->profile_name = $request->pName;
+            $senderProfile->from_name = $request->from_name;
+            $senderProfile->from_email = $request->from_email;
+            $senderProfile->host = $host;
+            $senderProfile->username = $username;
+            $senderProfile->password = $password;
+            $senderProfile->company_id = Auth::user()->company_id;  
+
+            if ($senderProfile->save()) {
+                log_action("Mail sender profile saved successfully");
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Mail sender profile saved successfully!'),
+                ], 201); // Created
+            }
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
+            ], 422);
+        } catch (\Exception $e) {
+            log_action("Exception while saving mail sender profile: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }
