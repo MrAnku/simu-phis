@@ -42,7 +42,7 @@ class InforgraphicsController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'category' => 'required|string|max:255',
-                'file' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+                'file' => 'required|file|mimes:jpg,jpeg,png|max:6048',
             ]);
 
             $file = $request->file('file');
