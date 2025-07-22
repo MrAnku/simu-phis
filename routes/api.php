@@ -70,7 +70,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::put('/dashboard/accept-eula', [ApiDashboardController::class, 'acceptEula']);
 
-    Route::put('/dashboard/tour-taken', [ApiDashboardController::class, 'tourTaken']);
+    Route::get('/tour-taken/check', [ApiDashboardController::class, 'tourTakenCheck']);
+
+    Route::put('/tour-taken', [ApiDashboardController::class, 'tourTaken']);
 
     Route::put('/save-outlook-code', [ApiOutlookAdController::class, 'saveOutlookCode']);
 

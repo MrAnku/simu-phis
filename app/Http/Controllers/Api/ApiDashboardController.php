@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\UsersGroup;
 use App\Models\WaCampaign;
+use App\Models\CompanyTour;
 use App\Models\CampaignLive;
 use App\Models\QuishingCamp;
 use App\Models\TprmCampaign;
@@ -61,7 +62,7 @@ class ApiDashboardController extends Controller
 
         $action = $request->input('action');
 
-        if($action !== 'accepted') {
+        if ($action !== 'accepted') {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid action'
@@ -80,22 +81,48 @@ class ApiDashboardController extends Controller
             'message' => 'EULA accepted successfully'
         ], 200);
     }
+
+    public function tourTakenCheck(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+        $tour = CompanyTour::where('company_id', $companyId)->first();
+        return response()->json([
+            'success' => true,
+            'message' => 'Tour status fetched successfully',
+            'data' => $tour
+        ], 200);
+    }
     public function tourTaken(Request $request)
     {
 
         $companyId = Auth::user()->company_id;
         $action = $request->input('action');
+        $page = $request->input('page');
         if ($action !== 'taken') {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid action'
             ], 400);
         }
-        // Update the company's tour status
-        Company::where('company_id', $companyId)->update([
-            'tour_taken' => 1,
-        ]);
-        log_action("Platform tour taken");
+        if ($page == 'dashboard' && $action == 'taken') {
+            CompanyTour::where('company_id', $companyId)->update([
+                'dashboard' => 1
+            ]);
+            log_action("Platform dashboard tour taken");
+        }
+        if ($page == 'sidebar' && $action == 'taken') {
+            CompanyTour::where('company_id', $companyId)->update([
+                'sidebar' => 1
+            ]);
+            log_action("Platform sidebar tour taken");
+        }
+        if ($page == 'settings' && $action == 'taken') {
+            CompanyTour::where('company_id', $companyId)->update([
+                'settings' => 1
+            ]);
+            log_action("Platform settings tour taken");
+        }
+        
         return response()->json([
             'success' => true,
             'message' => 'Tour taken successfully'
@@ -643,7 +670,8 @@ class ApiDashboardController extends Controller
         }
     }
 
-    public function whatsappReportNew(){
+    public function whatsappReportNew()
+    {
         try {
             $companyId = Auth::user()->company_id;
             $now = Carbon::now();
@@ -706,7 +734,7 @@ class ApiDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '. $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -791,7 +819,7 @@ class ApiDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '. $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -1121,7 +1149,7 @@ class ApiDashboardController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
-            log_action('email simulation report visited for last ' . $months . ' months');  
+            log_action('email simulation report visited for last ' . $months . ' months');
 
             return response()->json([
                 'success' => true,
