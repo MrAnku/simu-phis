@@ -452,7 +452,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     //company logs
     Route::prefix('company-logs')->group(function () {
         Route::get('/', [ApiCompanyLogsController::class, 'index']);
-        Route::get('/{id}', [ApiCompanyLogsController::class, 'show']);
-        Route::delete('/{id}', [ApiCompanyLogsController::class, 'destroy']);
+        
     });
 });
