@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
+use App\Http\Controllers\Auth\SSOController;
+use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\Api\ApiAiCallController;
@@ -20,8 +22,11 @@ use App\Http\Controllers\Api\ApiBlueCollarController;
 use App\Http\Controllers\Api\ApiTprmReportController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
+use App\Http\Controllers\Api\InforgraphicsController;
+use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiNewReportingController;
+use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
@@ -29,15 +34,12 @@ use App\Http\Controllers\Api\ApiPolicyCampaignController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
+use App\Http\Controllers\Api\WhatsappTemplatesController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
-use App\Http\Controllers\Api\InforgraphicsController;
-use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\SSOController;
-use App\Http\Controllers\WhiteLabelController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -445,5 +447,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-campaign', [ApiPolicyCampaignController::class, 'create']);
         Route::get('/detail', [ApiPolicyCampaignController::class, 'detail']);
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
+    });
+
+    //company logs
+    Route::prefix('company-logs')->group(function () {
+        Route::get('/', [ApiCompanyLogsController::class, 'index']);
+        Route::get('/{id}', [ApiCompanyLogsController::class, 'show']);
+        Route::delete('/{id}', [ApiCompanyLogsController::class, 'destroy']);
     });
 });
