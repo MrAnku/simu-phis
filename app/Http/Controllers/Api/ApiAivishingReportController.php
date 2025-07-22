@@ -83,6 +83,8 @@ class ApiAivishingReportController extends Controller
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
+            log_action("AI Vishing simulation report retrived for last $months months");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Ai vishing report retrieved successfully',

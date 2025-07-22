@@ -78,6 +78,7 @@ class ApiTprmReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+            log_action("TPRM simulation report retrieved for last $months months");
             return response()->json([
                 'success' => true,
                 'message' => 'Tprm simulation report retrieved successfully',
@@ -124,6 +125,8 @@ class ApiTprmReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+
+            log_action("Quishing simulation report retrived for all time");
 
             return response()->json([
                 'success' => true,

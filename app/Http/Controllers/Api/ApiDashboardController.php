@@ -37,7 +37,7 @@ class ApiDashboardController extends Controller
 
 
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
-
+        log_action("Dashboard accessed");
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -73,6 +73,7 @@ class ApiDashboardController extends Controller
             'eula_accepted' => 1,
             'eula_accepted_at' => now()
         ]);
+        log_action("EULA accepted at " . now());
 
         return response()->json([
             'success' => true,
@@ -94,6 +95,7 @@ class ApiDashboardController extends Controller
         Company::where('company_id', $companyId)->update([
             'tour_taken' => 1,
         ]);
+        log_action("Platform tour taken");
         return response()->json([
             'success' => true,
             'message' => 'Tour taken successfully'
@@ -1119,6 +1121,8 @@ class ApiDashboardController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+            log_action('email simulation report visited for last ' . $months . ' months');  
+
             return response()->json([
                 'success' => true,
                 'message' => 'Email simulation report retrieved successfully',
@@ -1165,6 +1169,8 @@ class ApiDashboardController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+
+            log_action('email simulation report visited for all time');
 
             return response()->json([
                 'success' => true,

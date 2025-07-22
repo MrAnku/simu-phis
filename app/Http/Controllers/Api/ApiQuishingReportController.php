@@ -77,6 +77,9 @@ class ApiQuishingReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+
+            log_action("Quishing simulation report retrived for last $months months");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Quishing simulation report retrieved successfully',
@@ -124,6 +127,8 @@ class ApiQuishingReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($reportRate / $total) * 100, 2) : 0;
+
+            log_action("Quishing simulation report for all time");
 
             return response()->json([
                 'success' => true,

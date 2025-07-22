@@ -60,7 +60,7 @@ class NoActivityUsersController extends Controller
             }
 
             $this->updateCampaignLive($campaignUser, $request->type);
-
+            log_action("Training assigned successfully to $campaignUser->user_email");
             return response()->json([
                 'success' => true,
                 'message' => 'Training assigned successfully',

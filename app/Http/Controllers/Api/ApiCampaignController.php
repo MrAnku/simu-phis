@@ -49,7 +49,7 @@ class ApiCampaignController extends Controller
                 ->limit(9)
                 ->get();
 
-
+            log_action("Email Campaign page visited");
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign data retrieved successfully.'),
@@ -126,17 +126,20 @@ class ApiCampaignController extends Controller
             $launchType = $validated['schType'];
 
             if ($launchType === 'immediately') {
+                log_action("Email campaign created");
                 return $this->handleImmediateLaunch($validated, $campId, $companyId);
             }
 
             if ($launchType === 'scheduled') {
+                log_action("Email campaign scheduled");
                 return $this->handleScheduledLaunch($validated, $campId, $companyId);
             }
 
             if ($launchType === 'schLater') {
+                log_action("Email campaign saved for scheduling later");
                 return $this->handleLaterLaunch($validated, $campId, $companyId);
             }
-
+            log_action("Email campaign launched with invalid launch type");
             return response()->json([
                 'success' => false,
                 'message' => __('Invalid launch type')
@@ -379,6 +382,7 @@ class ApiCampaignController extends Controller
                 'message' => __('Campaign deleted successfully!')
             ]);
         } catch (\Exception $e) {
+             
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
@@ -406,7 +410,7 @@ class ApiCampaignController extends Controller
                     'message' => __('Campaign not found')
                 ], 404);
             }
-
+            log_action("Email campaign details retrieved for campaign id $campid");
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign details retrieved successfully'),
@@ -654,6 +658,7 @@ class ApiCampaignController extends Controller
                 'message' => __('Campaign rescheduled successfully!')
             ]);
         } catch (ValidationException $e) {
+            log_action('Validation error occured while creating email campaign');
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first()
@@ -909,6 +914,7 @@ class ApiCampaignController extends Controller
             'trainings' => $trainings,
             'games' => $games,
         ];
+        log_action("fetched all assigned trainings of user $email");
 
         return response()->json([
             'success' => true,

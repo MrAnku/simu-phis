@@ -83,6 +83,7 @@ class ApiWhatsappReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($ignoreRate / $total) * 100, 2) : 0;
+            log_action("Whatsapp simulation report retrived for last $months months");
             return response()->json([
                 'success' => true,
                 'message' => 'Whatsapp simulation report retrieved successfully',
@@ -127,7 +128,7 @@ class ApiWhatsappReportController extends Controller
                 ->count();
 
             $remediationRate = $total > 0 ? round(($ignoreRate / $total) * 100, 2) : 0;
-
+            log_action("Whatsapp simulation report retrived for all time");
             return response()->json([
                 'success' => true,
                 'message' => 'Email simulation report retrieved successfully',
