@@ -199,11 +199,15 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     });
 
     Route::prefix('sender-profiles')->group(function () {
+        //old
         Route::get('/', [ApiSenderProfileController::class, 'index']);
+        //new
+        Route::get('/index', [ApiSenderProfileController::class, 'index2']);
         Route::post('/add', [ApiSenderProfileController::class, 'addSenderProfile']);
-        Route::post('/save-mail-sender-profile', [ApiSenderProfileController::class, 'saveMailSenderProfile']);
+        Route::post('/save/manual', [ApiSenderProfileController::class, 'saveManualSenderProfile']);
+        Route::post('/save/managed', [ApiSenderProfileController::class, 'saveManagedSenderProfile']);
         Route::delete('/delete', [ApiSenderProfileController::class, 'deleteSenderProfile']);
-        Route::post('/update/{id}', [ApiSenderProfileController::class, 'updateSenderProfile']);
+        Route::put('/update/{id?}', [ApiSenderProfileController::class, 'updateSenderProfile']);
     });
 
     Route::prefix('integration')->group(function () {
