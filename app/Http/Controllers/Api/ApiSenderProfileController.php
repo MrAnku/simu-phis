@@ -49,7 +49,7 @@ class ApiSenderProfileController extends Controller
         try {
             $company_id = Auth::user()->company_id;
 
-           $default = SenderProfile::where('company_id', 'default')->first();
+           $default = SenderProfile::where('company_id', 'default')->get();
            $custom = SenderProfile::where('company_id', $company_id)->get();
 
             return response()->json([
