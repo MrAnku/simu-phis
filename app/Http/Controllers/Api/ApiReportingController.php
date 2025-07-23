@@ -2412,14 +2412,30 @@ class ApiReportingController extends Controller
             foreach ($trainingModules as $trainingModule) {
                 $trainings[] = [
                     'name' => $trainingModule->name,
-                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->count(),
-                    'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)->count(),
-                    'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)->count(),
-                    'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)->count(),
-                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)->count(),
-                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)->count(),
-                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)->count(),
-                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)->count()
+                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count(),
+                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)
+                    ->where('company_id', $companyId)
+                    ->count()
 
                 ];
             }
