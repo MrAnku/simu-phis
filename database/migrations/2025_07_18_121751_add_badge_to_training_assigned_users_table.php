@@ -15,45 +15,6 @@ return new class extends Migration
         Schema::table('training_assigned_users', function (Blueprint $table) {
             $table->longText('badge')->nullable()->after('grade');
         });
-
-        // $allUsers = TrainingAssignedUser::all();
-        // foreach ($allUsers as $user) {
-        //     $badge = getMatchingBadge('score', $user->personal_best);
-        //     // This helper function accepts a criteria type and value, and returns the first matching badge
-
-        //     if ($badge) {
-        //         // Decode existing badges (or empty array if null)
-        //         $existingBadges = json_decode($user->badge, true) ?? [];
-
-        //         // Avoid duplicates
-        //         if (!in_array($badge, $existingBadges)) {
-        //             $existingBadges[] = $badge; // Add new badge
-        //         }
-
-        //         // Save back to the model
-        //         $user->badge = json_encode($existingBadges);
-        //     }
-
-        //     $user->save();
-
-        //     $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $user->user_email)
-        //         ->where('completed', 1)->count();
-
-        //     $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
-        //     if ($badge) {
-        //         // Decode existing badges (or empty array if null)
-        //         $existingBadges = json_decode($user->badge, true) ?? [];
-
-        //         // Avoid duplicates
-        //         if (!in_array($badge, $existingBadges)) {
-        //             $existingBadges[] = $badge; // Add new badge
-        //         }
-
-        //         // Save back to the model
-        //         $user->badge = json_encode($existingBadges);
-        //     }
-        //     $user->save();
-        // }
     }
 
     /**
