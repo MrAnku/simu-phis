@@ -505,6 +505,7 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
 
+
     Route::get('/fetch-all-assigned-trainings', [ApiLearnController::class, 'fetchAllAssignedTrainings']);
 
     Route::put('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
@@ -515,4 +516,6 @@ Route::prefix('learn')->group(function () {
     Route::get('/fetch-assigned-policies', [ApiLearnPolicyController::class, 'fetchAssignedPolicies']);
 
     Route::put('/accept-policy', [ApiLearnPolicyController::class, 'acceptPolicy']);
+
+    Route::get('/policy-login-with-token', [ApiLearnPolicyController::class, 'policyLoginWithToken']);
 });

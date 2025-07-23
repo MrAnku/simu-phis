@@ -4,7 +4,12 @@ namespace App\Http\Controllers\LearnApi;
 
 use App\Http\Controllers\Controller;
 use App\Models\AssignedPolicy;
+use App\Models\BlueCollarEmployee;
+use App\Models\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\S8upport\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnPolicyController extends Controller
@@ -79,6 +84,66 @@ class ApiLearnPolicyController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Policy accepted and quiz response saved successfully.'
+            ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+     public function policyLoginWithToken(Request $request)
+    {
+        try {
+            $token = $request->query('token');
+
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token is required!'
+                ], 422);
+            }
+
+            $session = DB::table('learnerloginsession')->where('token', $token)->orderBy('created_at', 'desc') // Ensure the latest session is checked
+                ->first();
+            if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your policy session has expired!'
+                ], 422);
+            }
+
+            // Decrypt the email
+            $userEmail = decrypt($session->token);
+
+            Session::put('token', $token);
+
+            $isNormalEmployee = Users::where('user_email', $userEmail)->exists();
+
+            if ($isNormalEmployee == 1) {
+                $employeeType = 'normal';
+                $userName = Users::where('user_email', $userEmail)->value('user_name');
+            } else {
+                $employeeType = 'bluecollar';
+                $userName = BlueCollarEmployee::where('whatsapp', $userEmail)->value('user_name');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'email' => $userEmail,
+                    'employee_type' => $employeeType,
+                    'user_name' => $userName,
+                ],
+                'message' => 'You can Login now'
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
