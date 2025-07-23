@@ -513,4 +513,6 @@ Route::prefix('learn')->group(function () {
 
     // Policy api
     Route::get('/fetch-assigned-policies', [ApiLearnPolicyController::class, 'fetchAssignedPolicies']);
+
+    Route::put('/accept-policy', [ApiLearnPolicyController::class, 'acceptPolicy']);
 });
