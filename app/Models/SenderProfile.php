@@ -14,6 +14,7 @@ class SenderProfile extends Model
 
     protected $fillable = [
         'profile_name',
+        'type',
         'from_name',
         'from_email',
         'host',

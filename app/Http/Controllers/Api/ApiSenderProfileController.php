@@ -301,6 +301,7 @@ class ApiSenderProfileController extends Controller
 
             $senderProfile = new SenderProfile();
             $senderProfile->profile_name = $request->input('pName');
+            $senderProfile->type = 'managed';
             $senderProfile->from_name = $request->input('from_name');
             $senderProfile->from_email = $request->input('from_email');
             $senderProfile->host = $host;
