@@ -472,7 +472,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     // Scorm Training
     Route::prefix('scorm-training')->group(function () {
         Route::post('/add-scorm-training', [ApiScormTrainingController::class, 'addScormTraining']);
-        Route::get('/fetch-scorm-trainings', [ApiScormTrainingController::class, 'fetchScormTrainings']);
     });
 });
 
@@ -482,30 +481,4 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/get-normal-emp-tranings', [ApiLearnControlller::class, 'getNormalEmpTranings']);
     Route::get('/get-blue-collar-emp-tranings', [ApiLearnControlller::class, 'getBlueCollarEmpTranings']);
-    Route::post('/update-training-score', [ApiLearnControlller::class, 'updateTrainingScore']);
-    Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnControlller::class, 'fetchNormalEmpScormTrainings']);
-
-    Route::post('/download-training-certificate', [ApiLearnControlller::class, 'downloadTrainingCertificate']);
-
-    Route::post('/download-scorm-certificate', [ApiLearnControlller::class, 'downloadScormCertificate']);
-
-    Route::post('/update-scorm-training-score', [ApiLearnControlller::class, 'updateScormTrainingScore']);
-
-    Route::get('/fetch-score-board', [ApiLearnControlller::class, 'fetchScoreBoard']);
-
-    Route::get('/fetch-leader-board', [ApiLearnControlller::class, 'fetchLeaderBoard']);
-
-    Route::get('/fetch-training-grades', [ApiLearnControlller::class, 'fetchTrainingGrades']);
-
-    Route::get('/fetch-training-badges', [ApiLearnControlller::class, 'fetchTrainingBadges']);
-
-    Route::get('/fetch-training-goals', [ApiLearnControlller::class, 'fetchTrainingGoals']);
-
-    Route::get('/fetch-training-achievements', [ApiLearnControlller::class, 'fetchTrainingAchievements']);
-
-    Route::get('/fetch-all-assigned-trainings', [ApiLearnControlller::class, 'fetchAllAssignedTrainings']);
-
-    Route::put('/start-training-module', [ApiLearnControlller::class, 'startTrainingModule']);
-
-    Route::put('/start-scorm', [ApiLearnControlller::class, 'startScorm']);
 });
