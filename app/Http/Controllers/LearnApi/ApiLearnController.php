@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\LearnApi;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
 use App\Models\Badge;
 use App\Models\Users;
 use setasign\Fpdi\Fpdi;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
@@ -14,11 +15,7 @@ use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
-use App\Models\WhiteLabelledCompany;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
@@ -27,9 +24,9 @@ use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use Illuminate\Validation\ValidationException;
 
-class ApiLearnControlller extends Controller
+class ApiLearnController extends Controller
 {
-    public function loginWithToken(Request $request)
+      public function loginWithToken(Request $request)
     {
         try {
             $token = $request->query('token');

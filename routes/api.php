@@ -26,7 +26,6 @@ use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\LearnApi\ApiMediaController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiShowWebsiteController;
-use App\Http\Controllers\LearnApi\ApiLearnControlller;
 use App\Http\Controllers\Api\AivishingReportController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\NoActivityUsersController;
@@ -45,6 +44,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
+use App\Http\Controllers\LearnApi\ApiLearnController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -477,9 +477,29 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 });
 
 Route::prefix('learn')->group(function () {
-    Route::get('/login-with-token', [ApiLearnControlller::class, 'loginWithToken']);
-    Route::post('/create-new-token', [ApiLearnControlller::class, 'createNewToken']);
+    Route::get('/login-with-token', [ApiLearnController::class, 'loginWithToken']);
+    Route::post('/create-new-token', [ApiLearnController::class, 'createNewToken']);
 
-    Route::get('/get-normal-emp-tranings', [ApiLearnControlller::class, 'getNormalEmpTranings']);
-    Route::get('/get-blue-collar-emp-tranings', [ApiLearnControlller::class, 'getBlueCollarEmpTranings']);
+    Route::get('/get-normal-emp-tranings', [ApiLearnController::class, 'getNormalEmpTranings']);
+    Route::get('/get-blue-collar-emp-tranings', [ApiLearnController::class, 'getBlueCollarEmpTranings']);
+    Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
+    Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnController::class, 'fetchNormalEmpScormTrainings']);
+
+    Route::post('/download-training-certificate', [ApiLearnController::class, 'downloadTrainingCertificate']);
+
+    Route::post('/download-scorm-certificate', [ApiLearnController::class, 'downloadScormCertificate']);
+
+    Route::post('/update-scorm-training-score', [ApiLearnController::class, 'updateScormTrainingScore']);
+
+    Route::get('/fetch-score-board', [ApiLearnController::class, 'fetchScoreBoard']);
+
+    Route::get('/fetch-leader-board', [ApiLearnController::class, 'fetchLeaderBoard']);
+
+    Route::get('/fetch-training-grades', [ApiLearnController::class, 'fetchTrainingGrades']);
+
+    Route::get('/fetch-training-badges', [ApiLearnController::class, 'fetchTrainingBadges']);
+
+    Route::get('/fetch-training-goals', [ApiLearnController::class, 'fetchTrainingGoals']);
+
+    Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
 });
