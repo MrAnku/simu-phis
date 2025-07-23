@@ -158,7 +158,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/', [InforgraphicsController::class, 'index']);
         Route::post('/save', [InforgraphicsController::class, 'saveInfographics']);
         Route::delete('/delete/{encodedId?}', [InforgraphicsController::class, 'deleteInfographics']);
-
     });
 
     Route::prefix('infographics-campaign')->group(function () {
@@ -166,7 +165,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/create-campaign', [InforgraphicsController::class, 'createCampaign']);
         Route::get('/detail/{campaign_id?}', [InforgraphicsController::class, 'campaignDetail']);
         Route::delete('/delete-campaign/{campaign_id?}', [InforgraphicsController::class, 'deleteCampaign']);
-
     });
 
     //whatsapp campaign routes
@@ -502,4 +500,13 @@ Route::prefix('learn')->group(function () {
     Route::get('/fetch-training-goals', [ApiLearnController::class, 'fetchTrainingGoals']);
 
     Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
+
+    Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
+
+
+    Route::get('/fetch-all-assigned-trainings', [ApiLearnController::class, 'fetchAllAssignedTrainings']);
+
+    Route::get('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
+
+    Route::get('/start-scorm', [ApiLearnController::class, 'startScorm']);
 });

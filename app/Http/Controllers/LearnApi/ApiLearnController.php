@@ -26,7 +26,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
 {
-      public function loginWithToken(Request $request)
+    public function loginWithToken(Request $request)
     {
         try {
             $token = $request->query('token');
@@ -1032,7 +1032,7 @@ class ApiLearnController extends Controller
                         ->where('completed', 1)->count() + ScormAssignedUser::where('user_email', $request->email)
                         ->where('completed', 1)->count(),
                     'current_avg' => (TrainingAssignedUser::where('user_email', $request->email)
-                    ->where('training_started', 1)
+                        ->where('training_started', 1)
                         ->sum('personal_best') + ScormAssignedUser::where('user_email', $request->email)
                         ->where('scorm_started', 1)
                         ->sum('personal_best')) / (TrainingAssignedUser::where('user_email', $request->email)
@@ -1190,8 +1190,9 @@ class ApiLearnController extends Controller
         }
     }
 
-    public function fetchAllAssignedTrainings(Request $request){
-        try{
+    public function fetchAllAssignedTrainings(Request $request)
+    {
+        try {
             $request->validate([
                 'email' => 'required|email|exists:users,user_email',
             ]);
@@ -1201,31 +1202,31 @@ class ApiLearnController extends Controller
                 ->where('personal_best', '>', 0)
                 ->get();
 
-                foreach($assignedTrainings as $training){
-                    $allAssignments[] = [
-                        'training_name' => $training->trainingData->name,
-                        'type' => $training->trainingData->training_type,
-                        'score' => $training->personal_best,
-                        'assigned_date' => $training->assigned_date,
-                        'grade' => $training->grade,
-                    ];
-                }
+            foreach ($assignedTrainings as $training) {
+                $allAssignments[] = [
+                    'training_name' => $training->trainingData->name,
+                    'type' => $training->trainingData->training_type,
+                    'score' => $training->personal_best,
+                    'assigned_date' => $training->assigned_date,
+                    'grade' => $training->grade,
+                ];
+            }
 
-                $assignedScorm = ScormAssignedUser::where('user_email', $request->email)
+            $assignedScorm = ScormAssignedUser::where('user_email', $request->email)
                 ->with('scormTrainingData')
                 ->where('personal_best', '>', 0)
                 ->get();
 
 
-                foreach($assignedScorm as $scorm){
-                    $allAssignments[] = [
-                        'training_name' => $scorm->scormTrainingData->name,
-                        'type' => 'Scorm',
-                        'score' => $scorm->personal_best,
-                        'assigned_date' => $scorm->assigned_date,
-                        'grade' => $scorm->grade,
-                    ];
-                }
+            foreach ($assignedScorm as $scorm) {
+                $allAssignments[] = [
+                    'training_name' => $scorm->scormTrainingData->name,
+                    'type' => 'Scorm',
+                    'score' => $scorm->personal_best,
+                    'assigned_date' => $scorm->assigned_date,
+                    'grade' => $scorm->grade,
+                ];
+            }
 
             return response()->json([
                 'success' => true,
@@ -1239,8 +1240,9 @@ class ApiLearnController extends Controller
         }
     }
 
-    public function startTrainingModule(Request $request){
-        try{
+    public function startTrainingModule(Request $request)
+    {
+        try {
             $request->validate([
                 'training_id' => 'required|integer',
             ]);
@@ -1266,8 +1268,9 @@ class ApiLearnController extends Controller
         }
     }
 
-    public function startScorm(Request $request){
-        try{
+    public function startScorm(Request $request)
+    {
+        try {
             $request->validate([
                 'scorm_id' => 'required|integer',
             ]);
