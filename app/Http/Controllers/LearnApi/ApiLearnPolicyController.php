@@ -8,7 +8,7 @@ use App\Models\BlueCollarEmployee;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\S8upport\Facades\DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
