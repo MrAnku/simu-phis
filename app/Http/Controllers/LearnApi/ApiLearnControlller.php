@@ -913,8 +913,10 @@ class ApiLearnControlller extends Controller
 
             $currentUserEmail = $request->email;
 
-            $trainingUsers = TrainingAssignedUser::all();
-            $scormUsers = ScormAssignedUser::all();
+            $companyId = Users::where('user_email', $request->email)->value('company_id');
+
+            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
 
             $allUsers = $trainingUsers->merge($scormUsers);
 
