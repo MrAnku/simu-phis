@@ -45,6 +45,8 @@ use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\LearnApi\ApiLearnController;
+use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
+use App\Http\Controllers\LearnApi\ApiPolicyController as LearnApiApiPolicyController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -503,10 +505,12 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
 
-
     Route::get('/fetch-all-assigned-trainings', [ApiLearnController::class, 'fetchAllAssignedTrainings']);
 
     Route::put('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
 
     Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
+
+    // Policy api
+    Route::get('/fetch-assigned-policies', [ApiLearnPolicyController::class, 'fetchAssignedPolicies']);
 });
