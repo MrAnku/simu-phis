@@ -506,7 +506,7 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/fetch-all-assigned-trainings', [ApiLearnController::class, 'fetchAllAssignedTrainings']);
 
-    Route::get('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
+    Route::put('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
 
-    Route::get('/start-scorm', [ApiLearnController::class, 'startScorm']);
+    Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
 });
