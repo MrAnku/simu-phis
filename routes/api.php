@@ -47,6 +47,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiNotificationsController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Api\ApiTriggerController;
+use App\Http\Controllers\Api\CustomisedReportingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
@@ -342,6 +343,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
             Route::get('/qcsf-report', [ApiComplianceController::class, 'qcsfReport']);
             Route::get('/ocert-report', [ApiComplianceController::class, 'ocertReport']);
         });
+    });
+
+    Route::prefix('customised-reporting')->group(function () {
+        Route::get('/', [CustomisedReportingController::class, 'index']);
+        Route::post('/add-card', [CustomisedReportingController::class, 'addCard']);
+        Route::put('/add-widgets', [CustomisedReportingController::class, 'addWidgets']);
     });
 
     Route::prefix('employees')->group(function () {
