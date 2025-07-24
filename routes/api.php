@@ -518,4 +518,6 @@ Route::prefix('learn')->group(function () {
     Route::put('/accept-policy', [ApiLearnPolicyController::class, 'acceptPolicy']);
 
     Route::get('/policy-login-with-token', [ApiLearnPolicyController::class, 'policyLoginWithToken']);
+
+    Route::get('/fetch-accepted-policies', [ApiLearnPolicyController::class, 'fetchAcceptedPolicies']);
 });

@@ -100,7 +100,7 @@ class ApiLearnPolicyController extends Controller
         }
     }
 
-     public function policyLoginWithToken(Request $request)
+    public function policyLoginWithToken(Request $request)
     {
         try {
             $token = $request->query('token');
@@ -145,6 +145,39 @@ class ApiLearnPolicyController extends Controller
                 ],
                 'message' => 'You can Login now'
             ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchAcceptedPolicies(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+            $email = $request->email;
+            $acceptedPolicies = AssignedPolicy::with('policyData')->where('user_email', $email)
+            ->where('accepted', 1)->get();
+
+            if ($acceptedPolicies->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No policy has been accepted by this email.'
+                ], 422);
+            }
+
+            return response()->json(['success' => true, 'data' => $acceptedPolicies, 'message' => 'Accepted Policies fetched successfully'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
