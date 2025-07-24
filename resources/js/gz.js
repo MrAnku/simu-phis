@@ -23,7 +23,7 @@ if (campid && userid) {
         redirectUrl = res.redirect_url;
       } else {
         $.ajax({
-          url: "/show/ap",
+          url: "/show/ap?lang=" + res.lang,
           dataType: "html",
           success: function (data) {
             // Replace entire HTML content with fetched content

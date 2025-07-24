@@ -99,10 +99,15 @@ class ShowWebsiteController extends Controller
         return response($content)->header('Content-Type', 'application/javascript');
     }
 
-    public function showAlertPage()
+    public function showAlertPage(Request $request)
     {
+        $lang = $request->query('lang');
+        if($lang && $lang != 'en'){
+            $filePath = resource_path("oopsPage/alertPage_{$lang}.html");
+        }else{
+            $filePath = resource_path("oopsPage/alertPage.html");
+        }
 
-        $filePath = public_path("assets/t/alertPage.html");
         $content = File::get($filePath);
 
         log_action('Email phishing | Employee fell for simulation', 'employee', 'employee');
@@ -130,7 +135,8 @@ class ShowWebsiteController extends Controller
             if ($companySetting) {
                 $arr = [
                     'redirect' => $companySetting->phish_redirect,
-                    'redirect_url' => $companySetting->phish_redirect_url
+                    'redirect_url' => $companySetting->phish_redirect_url,
+                    'lang' => $companySetting->default_notifications_lang,
                 ];
 
                 return response()->json($arr);
@@ -151,7 +157,8 @@ class ShowWebsiteController extends Controller
             if ($companySetting) {
                 $arr = [
                     'redirect' => $companySetting->phish_redirect,
-                    'redirect_url' => $companySetting->phish_redirect_url
+                    'redirect_url' => $companySetting->phish_redirect_url,
+                    'lang' => $companySetting->default_notifications_lang,
                 ];
 
                 return response()->json($arr);
