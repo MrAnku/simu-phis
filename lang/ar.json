@@ -1110,5 +1110,20 @@
     "By enabling TPRM, SimUphish will": "من خلال تفعيل TPRM، ستقوم simUphish بما يلي",
     "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "لن تتضمن المحاكاة أبدًا أي محتوى ضار أو برامج ضارة أو جمع فعلي لبيانات الاعتماد. وهي مخصصة فقط للتوعية وتحليل السلوك",
     "New Blue Collar Division created successfully": "تم إنشاء قسم العمالة الزرقاء الجديد بنجاح",
-    "Blue Collar Division deleted successfully": "تم حذف قسم العمالة الزرقاء بنجاح"
+    "Blue Collar Division deleted successfully": "تم حذف قسم العمالة الزرقاء بنجاح",
+    "Training has been assigned!": "تم تعيين التدريب!",
+    "Hi :name,": "مرحبًا :name،",
+    "Your organization has enrolled you in a training session after you encountered a simulated phishing exercise.": "قامت مؤسستك بتسجيلك في دورة تدريبية بعد أن واجهت تجربة تصيد احتيالي محاكاة.",
+    "Click the link below to start your training:": "اضغط على الرابط أدناه لبدء التدريب:",
+    "Start Training Now": "ابدأ التدريب الآن",
+    "Session Successfully Reinitialized!": "تمت إعادة تهيئة الجلسة بنجاح!",
+    "Your training session has been re-generated.": "تمت إعادة إنشاء جلسة التدريب الخاصة بك.",
+    "Kindly click the link below to start your training.": "يرجى النقر على الرابط أدناه لبدء التدريب.",
+    "Popular Trainings": "التدريبات الشائعة",
+    "Hello": "مرحبًا",
+    "A New Policy has been assigned to you. Kindly Login to the learning portal, read the policy carefully, and take action accordingly.": "تم تعيين سياسة جديدة لك. يرجى تسجيل الدخول إلى بوابة التعلم، وقراءة السياسة بعناية، واتخاذ الإجراء المناسب.",
+    "Policy Assignment Notification": "إشعار تعيين السياسة",
+    "Policy Name:": "اسم السياسة:",
+    "Assigned On:": "تاريخ التعيين:",
+    "Login to Learning Portal": "تسجيل الدخول إلى بوابة التعلم"
 }

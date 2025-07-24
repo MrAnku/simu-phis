@@ -1107,5 +1107,21 @@
     "By enabling TPRM, SimUphish will": "При активации TPRM, SimUphish будет",
     "Simulations will never include harmful content, malware, or actual credential harvesting. They are strictly for awareness and behavioral analysis": "Симуляции никогда не будут содержать вредоносный контент, вредоносное ПО или реальный сбор учетных данных. Они предназначены исключительно для повышения осведомленности и анализа поведения",
     "New Blue Collar Division created successfully": "Новый отдел синих воротничков успешно создан",
-    "Blue Collar Division deleted successfully": "Отдел синих воротничков успешно удалён"
+    "Blue Collar Division deleted successfully": "Отдел синих воротничков успешно удалён",
+    "Training has been assigned!": "Обучение назначено!",
+    "Hi :name,": "Привет :name,",
+    "Your organization has enrolled you in a training session after you encountered a simulated phishing exercise.": "Ваша организация записала вас на учебное занятие после того, как вы столкнулись с симулированным фишингом.",
+    "Click the link below to start your training:": "Нажмите на ссылку ниже, чтобы начать обучение:",
+    "Start Training Now": "Начать обучение сейчас",
+    "Session Successfully Reinitialized!": "Сессия успешно перезапущена!",
+    "Your training session has been re-generated.": "Ваша учебная сессия была перегенерирована.",
+    "Kindly click the link below to start your training.": "Пожалуйста, нажмите на ссылку ниже, чтобы начать обучение.",
+    "Popular Trainings": "Популярные тренинги",
+    "Hello": "Здравствуйте",
+    "A New Policy has been assigned to you. Kindly Login to the learning portal, read the policy carefully, and take action accordingly.": "Вам назначена новая политика. Пожалуйста, войдите в учебный портал, внимательно ознакомьтесь с политикой и выполните соответствующие действия.",
+    "Policy Assignment Notification": "Уведомление о назначении политики",
+    "Policy Name:": "Название политики:",
+    "Assigned On:": "Назначено:",
+    "Login to Learning Portal": "Войти в учебный портал"
+
 }

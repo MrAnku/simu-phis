@@ -3,11 +3,12 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\App;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class LearnerSessionRegenerateMail extends Mailable
 {
@@ -23,6 +24,11 @@ class LearnerSessionRegenerateMail extends Mailable
     {
         $this->mailData = $mailData;
         $this->trainingModules = $trainingModules;
+
+        $language = checkNotificationLanguage($mailData['company_id']);
+        if ($language !== 'en') {
+            App::setLocale($language);
+        }
     }
 
     /**

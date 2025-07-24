@@ -275,7 +275,8 @@ class LearnerDashController extends Controller
         $mailData = [
             'learning_site' => $learning_dashboard_link,
             'company_name' => $companyName,
-            'company_dark_logo' => $companyDarkLogo
+            'company_dark_logo' => $companyDarkLogo,
+            'company_id' => $companyId,
         ];
 
         $trainingModules = TrainingModule::where('company_id', 'default')->inRandomOrder()->take(5)->get();

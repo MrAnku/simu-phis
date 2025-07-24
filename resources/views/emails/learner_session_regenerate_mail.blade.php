@@ -78,14 +78,14 @@
 <body>
     <div class="container">
         <img src="{{ $mailData['company_dark_logo'] }}" alt="Company Logo" class="logo">
-        <h1>Session Successfully Reinitialized!</h1>
-        <h2>Your training session has been re-generated.<br>
-             Kindly click the link below to start your training.
+        <h1>{{ __('Session Successfully Reinitialized!') }}</h1>
+        <h2>{{ __('Your training session has been re-generated.') }}<br>
+             {{ __('Kindly click the link below to start your training.') }}
         </h2>
         <div style="text-align:center;">
-            <a href="{{ $mailData['learning_site'] }}" class="btn" target="_blank">Start Training Now</a>
+            <a href="{{ $mailData['learning_site'] }}" class="btn" target="_blank">{{ __('Start Training Now') }}</a>
         </div>
-	<h4>Popular Trainings</h4>
+	<h4>{{ __('Popular Trainings') }}</h4>
         @if(!empty($trainingModules))
         <ul class="trainings">
             @foreach ($trainingModules as $trainingModule)

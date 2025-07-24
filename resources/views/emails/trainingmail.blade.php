@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Training Assigned</title>
@@ -12,31 +13,36 @@
             font-family: 'Fira Sans', Arial, sans-serif;
             color: #222;
         }
+
         .container {
             max-width: 480px;
             margin: 40px auto;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             padding: 32px 24px;
         }
+
         .logo {
             display: block;
             margin: 0 auto 24px auto;
             max-width: 120px;
         }
+
         h1 {
             color: #000000;
             font-size: 2rem;
             margin: 0 0 12px 0;
             text-align: center;
         }
+
         h2 {
             font-size: 1.1rem;
             font-weight: 400;
             margin: 0 0 24px 0;
             text-align: center;
         }
+
         .btn {
             display: inline-block;
             background: #000000;
@@ -48,11 +54,13 @@
             margin: 24px auto 0 auto;
             text-align: center;
         }
+
         .trainings {
             margin: 32px 0 0 0;
             padding: 0;
             list-style: none;
         }
+
         .trainings li {
             background: #f1f3fa;
             border-radius: 4px;
@@ -63,11 +71,13 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .trainings a {
             color: #000000;
             text-decoration: none;
             font-size: 1.1em;
         }
+
         .footer {
             text-align: center;
             font-size: 0.95em;
@@ -75,29 +85,37 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <img src="{{ $mailData['logo'] }}" alt="Company Logo" class="logo">
-        <h1>Training has been assigned!</h1>
-        <h2>Hi {{ $mailData['user_name'] }},<br>
-             Your organization has enrolled you in a training session after you encountered a simulated phishing exercise.<br>
-            Click the link below to start your training:
+        <h1>{{ __('Training has been assigned!') }}</h1>
+        <h2>
+            {{ __('Hi :name,', ['name' => $mailData['user_name']]) }}
+            <br>
+            {{ __('Your organization has enrolled you in a training session after you encountered a simulated phishing exercise.') }}
+            <br>
+            {{ __('Click the link below to start your training:') }}
         </h2>
         <div style="text-align:center;">
-            <a href="{{ $mailData['learning_site'] }}" class="btn" target="_blank">Start Training Now</a>
+            <a href="{{ $mailData['learning_site'] }}" class="btn" target="_blank">
+                {{ __('Start Training Now') }}
+            </a>
         </div>
-        @if(!empty($trainingNames))
-        <ul class="trainings">
-            @foreach ($trainingNames as $trainingName)
-                <li>
-                    <span>{{ $trainingName }}</span>
-                </li>
-            @endforeach
-        </ul>
+        @if (!empty($trainingNames))
+            <ul class="trainings">
+                @foreach ($trainingNames as $trainingName)
+                    <li>
+                        <span>{{ $trainingName }}</span>
+                    </li>
+                @endforeach
+            </ul>
         @endif
         <div class="footer">
-            <a href="#" style=" color: #000000;  text-decoration: none; " target="_blank">Copyright © {{ date('Y') }} {{ $mailData['company_name'] }} | All rights reserved</a>
+            <a href="#" style=" color: #000000;  text-decoration: none; " target="_blank">Copyright ©
+                {{ date('Y') }} {{ $mailData['company_name'] }} | All rights reserved</a>
         </div>
     </div>
 </body>
+
 </html>

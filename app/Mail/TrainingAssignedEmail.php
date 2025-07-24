@@ -4,8 +4,9 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use App\Models\WhiteLabelledCompany;
 use App\Models\WhiteLabelledSmtp;
+use Illuminate\Support\Facades\App;
+use App\Models\WhiteLabelledCompany;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Queue\SerializesModels;
@@ -27,7 +28,10 @@ class TrainingAssignedEmail extends Mailable
         $this->mailData = $mailData;
         $this->trainingNames = $trainingNames;
 
-        
+        $language = checkNotificationLanguage($mailData['company_id']);
+        if ($language !== 'en') {
+            App::setLocale($language);
+        }
     }
 
     /**

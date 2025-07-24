@@ -75,18 +75,18 @@
 
     <div class="container">
         <div class="logo">
-            <img src="{{ asset('/assets/images/simu-logo-dark.png') }}" style="width: 200px;" alt="simUphish Logo">
+            <img src="{{ asset('/assets/images/simu-logo-dark.png') }}" style="width: 200px;" alt="company Logo">
         </div>
 
         <div class="content">
-            <p><strong>Hello {{ $mailData['user_name'] }},</strong></p>
-            <p>A New Policy has been assigned to you. Kindly Login to the learning portal, read the policy carefully, and take action accordingly.</p>
+            <p><strong>{{__('Hello')}} {{ $mailData['user_name'] }},</strong></p>
+            <p>{{__('A New Policy has been assigned to you. Kindly Login to the learning portal, read the policy carefully, and take action accordingly.')}}</p>
 
             <div class="report-box">
-                <p><strong>Policy Assignment Notification</strong></p>
-                <p>📄 <span class="label">Policy Name:</span> {{ $mailData['policy_name'] }}</p>
-                <p>📅 <span class="label">Assigned On:</span> {{ $mailData['assigned_at'] }}</p>
-                <a href="{{ env('SIMUPHISH_LEARNING_URL') }}" class="button">Login to Learning Portal</a>
+                <p><strong>{{__('Policy Assignment Notification')}}</strong></p>
+                <p>📄 <span class="label">{{__('Policy Name:')}}</span> {{ $mailData['policy_name'] }}</p>
+                <p>📅 <span class="label">{{__('Assigned On:')}}</span> {{ $mailData['assigned_at'] }}</p>
+                <a href="{{ env('SIMUPHISH_LEARNING_URL') }}" class="button">{{__('Login to Learning Portal')}}</a>
             </div>
         </div>
 

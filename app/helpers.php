@@ -565,6 +565,20 @@ if (!function_exists('changeEmailLang')) {
     }
 }
 
+if (!function_exists('checkNotificationLanguage')) {
+    function checkNotificationLanguage($companyId)
+    {
+        $company = CompanySettings::where('company_id', $companyId)->first();
+        if ($company && $company->default_notifications_lang) {
+            return $company->default_notifications_lang;
+        }
+
+        // Default to English if no language is set
+        return 'en';
+    }
+
+}
+
 if (!function_exists('translateHtmlToAmharic')) {
     function translateHtmlToAmharic(string $htmlContent): ?string
     {
