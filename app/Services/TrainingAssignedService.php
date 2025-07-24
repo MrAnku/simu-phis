@@ -63,6 +63,7 @@ class TrainingAssignedService
         $scormTrainings = ScormAssignedUser::with('scormTrainingData')->where('user_email', $campData['user_email'])->get();
 
         $trainingNames = collect();
+        $scormNames = collect();
 
         if ($allAssignedTrainings->isNotEmpty()){
             $trainingNames = $allAssignedTrainings->map(function ($training) {
