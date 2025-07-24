@@ -382,31 +382,12 @@ class ApiBlueCollarController extends Controller
 
             // Find all users in the group
             $users = BlueCollarEmployee::where('group_id', $grpId)->get();
-
             if ($users->isNotEmpty()) {
                 foreach ($users as $user) {
                     BlueCollarTrainingUser::where('user_id', $user->id)->delete();
                 }
             }
 
-            // Check if any campaigns are using this group
-            $campaigns = WhatsappCampaign::where('user_group', $grpId)
-                ->where('company_id', $companyId)
-                ->get();
-
-
-            if ($campaigns->isNotEmpty()) {
-                foreach ($campaigns as $campaign) {
-                    WhatsappCampaign::where('camp_id', $campaign->camp_id)
-                        ->where('company_id', $companyId)
-                        ->delete();
-
-                    WhatsAppCampaignUser::where('camp_id', $campaign->camp_id)
-                        ->where('company_id', $companyId)
-                        ->delete();
-                }
-            }
-            // return $users;
             // Delete employees in the group regardless of campaigns
             BlueCollarEmployee::where('group_id', $grpId)->delete();
 

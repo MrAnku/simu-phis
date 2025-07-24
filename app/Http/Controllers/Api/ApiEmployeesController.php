@@ -717,8 +717,8 @@ class ApiEmployeesController extends Controller
             ]);
             $user_email = $request->input('user_email');
 
-            $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
-            $user_name = $user->user_name;
+            // $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
+            // $user_name = $user->user_name;
 
             $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
             if ($users->isEmpty()) {
