@@ -1393,64 +1393,86 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
             $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
-            $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
 
+            // Handle case when there are no assigned users
+            if ($totalAssignedUsers === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('No users assigned to training for this company'),
+                    'data' => [
+                        'training_statistics' => [
+                            'total_assigned_users' => 0,
+                            'not_started_training' => 0,
+                            'not_started_training_rate' => 0,
+                            'progress_training' => 0,
+                            'progress_training_rate' => 0,
+                            'completed_training' => 0,
+                            'completed_training_rate' => 0
+                        ],
+                        'general_statistics' => [
+                            'educated_user_percent' => 0,
+                            'roles_responsibility_percent' => 0,
+                            'certified_users_percent' => 0
+                        ],
+                        'education_duration_statistics' => [
+                            'avg_education_duration' => 0,
+                            'avg_overall_duration' => 0,
+                            'training_assign_reminder_days' => 0
+                        ],
+                        'onboardingTrainingDetails' => []
+                    ]
+                ], 200);
+            }
+
+            $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
             $notStartedTrainingRate = $totalAssignedUsers > 0 ? round($notStartedTraining / $totalAssignedUsers * 100) : 0;
 
             $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('completed', 0)
                 ->count();
-
             $progressTrainingRate = $totalAssignedUsers > 0 ? round($progressTraining / $totalAssignedUsers * 100) : 0;
 
             $completedTraining = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('completed', 1)
                 ->count();
-
             $completedTrainingRate = $totalAssignedUsers > 0 ? round($completedTraining / $totalAssignedUsers * 100) : 0;
 
             $usersWhoScored = TrainingAssignedUser::where('company_id', $companyId)
                 ->where('personal_best', '>=', 10)
                 ->count();
-
-            $educatedUserRate = $usersWhoScored / $totalAssignedUsers * 100;
+            $educatedUserRate = $totalAssignedUsers > 0 ? $usersWhoScored / $totalAssignedUsers * 100 : 0;
 
             $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
-            $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
+            $totalEmployees = $companyLicense
+                ? ($companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees)
+                : 0;
+            $rolesResponsilbilityPercent = ($totalEmployees > 0) ? round($completedTraining / $totalEmployees * 100) : 0;
 
-            $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
-
-            $certifiedUsersRate = TrainingAssignedUser::where('company_id', $companyId)
-                ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
+            $certifiedUsersRate = $totalAssignedUsers > 0
+                ? TrainingAssignedUser::where('company_id', $companyId)
+                    ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100
+                : 0;
 
             $emailCampData = Campaign::where('company_id', $companyId)
                 ->pluck('days_until_due');
-
-
             $quishCampData = QuishingCamp::where('company_id', $companyId)
                 ->pluck('days_until_due');
-
             $waCampData = WaCampaign::where('company_id', $companyId)
                 ->pluck('days_until_due');
-
             $merged = $emailCampData->merge($quishCampData)->merge($waCampData);
-            $avgEducationDuration = round($merged->avg(), 2);
-
+            $avgEducationDuration = $merged->count() > 0 ? round($merged->avg(), 2) : 0;
             $avgOverallDuration = $avgEducationDuration;
 
             $trainingAssignReminderDays = (int) CompanySettings::where('company_id', $companyId)
-                ->value('training_assign_remind_freq_days');
+                ->value('training_assign_remind_freq_days') ?? 0;
 
             $onboardingTrainingDetails = [];
-
             $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)
                 ->take(5)
                 ->get();
             foreach ($onboardingTrainings as $onboardingTraining) {
                 $groupName = null;
-
                 $userGroups = UsersGroup::where('company_id', $companyId)->get();
-
                 foreach ($userGroups as $group) {
                     $users = json_decode($group->users, true);
                     if (!$users) {
@@ -1459,11 +1481,10 @@ class ApiReportingController extends Controller
                     foreach ($users as $user) {
                         if ($onboardingTraining->user_id == $user) {
                             $groupName = $group->group_name;
-                            break 2; // Break out of both loops if a match is found
+                            break 2;
                         }
                     }
                 }
-
                 $onboardingTrainingDetails[] = [
                     'user_name' => $onboardingTraining->user_name,
                     'user_email' => $onboardingTraining->user_email,
@@ -1922,6 +1943,81 @@ class ApiReportingController extends Controller
                 'excellent' => [81, 100],
             ];
 
+            // Handle case when there are no users
+            if ($totalNormalUsers === 0) {
+                $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
+                $totalBlueCollarUsers = count($blueCollarUsers);
+                $userDetails = [];
+                foreach ($blueCollarUsers as $user) {
+                    $riskScore = 100;
+                    $riskLevel = 'excellent';
+                    $userDetails[] = [
+                        'user_name' => $user->user_name,
+                        'user_email' => '',
+                        'whatsapp_no' => $user->whatsapp,
+                        'user_type' => 'blue-collar',
+                        'division' => $user->blueCollarGroup->group_name,
+                        'user_job_title' => $user->user_job_title,
+                        'breach_scan_date' => $user->breach_scan_date ?? null,
+                        'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+                        'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+                        'campaigns' => [
+                            'email' => [
+                                'totalCampaigns' => 0,
+                                'totalTrainings' => 0,
+                                'payload_clicked' => 0,
+                                'compromised' => 0,
+                                'email_reported' => 0,
+                            ],
+                            'whatsapp' => [
+                                'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                    ->where('company_id', $companyId)
+                                    ->count(),
+                                'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+                                    ->where('company_id', $companyId)
+                                    ->count(),
+                                'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                    ->where('company_id', $companyId)
+                                    ->where('payload_clicked', 1)
+                                    ->count(),
+                                'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+                                    ->where('company_id', $companyId)
+                                    ->where('compromised', 1)
+                                    ->count(),
+                            ],
+                            'ai_vishing' => [
+                                'totalCampaigns' => 0,
+                                'totalTrainings' => 0,
+                                'call_send' => 0,
+                                'call_reported' => 0,
+                            ],
+                            'quishing' => [
+                                'totalCampaigns' => 0,
+                                'totalTrainings' => 0,
+                                'qr_scanned' => 0,
+                                'compromised' => 0,
+                                'email_reported' => 0,
+                            ],
+                            'tprm' => [
+                                'totalCampaigns' => 0,
+                                'totalTrainings' => 0,
+                                'payload_clicked' => 0,
+                                'compromised' => 0,
+                            ],
+                        ],
+                        'risk_score' => $riskScore,
+                        'risk_level' => $riskLevel,
+                    ];
+                }
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Users report fetched successfully'),
+                    'data' => [
+                        'total_users' => $totalBlueCollarUsers,
+                        'user_details' => $userDetails
+                    ]
+                ], 200);
+            }
 
             foreach ($allUsers as $user) {
 
@@ -2665,6 +2761,22 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
 
             $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)->get();
+
+            $courseDetails = [];
+            $DueDateDetails = [
+                'count_of_training_due_date' => 0
+            ];
+
+            if ($assignedCourses->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('No course assignments found'),
+                    'data' => [
+                        'courses' => [],
+                        'training_due_date_details' => $DueDateDetails
+                    ]
+                ], 200);
+            }
 
             foreach ($assignedCourses as $course) {
                 $trainingId = (int) $course->training;
