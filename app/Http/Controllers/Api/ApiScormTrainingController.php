@@ -36,7 +36,7 @@ class ApiScormTrainingController extends Controller
             $darkLogoFilename = $randomName . '.' . $extension;
 
 
-            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 'local');
+            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 's3');
 
             if ($extractTo) {
                 // Extract ZIP
@@ -49,7 +49,7 @@ class ApiScormTrainingController extends Controller
                         'name' => $request->name,
                         'description' => $request->description,
                         'category' => $request->category,
-                        'file_path' => "uploads/scorm_package/{$companyId}/{$slug}/",
+                        'file_path' => "/uploads/scorm_package/{$companyId}/{$slug}/",
                         'company_id' => $companyId,
                         'entry_point' => $request->entry_point,
                         'passing_score' => $request->passing_score,
