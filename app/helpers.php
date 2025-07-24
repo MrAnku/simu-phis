@@ -133,98 +133,6 @@ if (!function_exists('translateQuizUsingAi')) {
     // }
 
 
-   function translateQuizUsingAi($quiz, $targetLang)
-{
-    $apiKey = env('OPENAI_API_KEY');
-    $apiEndpoint = "https://api.openai.com/v1/chat/completions";
-
-    $quizJson = json_encode($quiz, JSON_UNESCAPED_UNICODE);
-    
-    // Check if payload is too large (> 100KB)
-    if (strlen($quizJson) > 102400) {
-        // For large payloads, try chunked translation
-        return translateQuizInChunks($quiz, $targetLang);
-    }
-
-    $isAmharic = (stripos($targetLang, 'amharic') !== false || $targetLang == 'am');
-
-    // Improved prompt for Amharic
-    if ($isAmharic) {
-        $prompt = "Translate this quiz JSON to Amharic (አማርኛ). Rules:
-1. Only translate text content inside quotes
-2. Keep all JSON keys unchanged
-3. Keep 'qtype', 'correctOption', 'videoUrl' values unchanged
-4. Use proper Ethiopian Amharic script
-5. Return ONLY valid JSON, no markdown or explanations
-
-JSON to translate:
-{$quizJson}";
-    } else {
-        $prompt = "Translate this quiz to {$targetLang}. Only translate text values, keep JSON structure and keys unchanged. Keep 'qtype', 'correctOption', 'videoUrl' unchanged. Return only valid JSON: {$quizJson}";
-    }
-
-    $requestBody = [
-        "model" => $isAmharic ? "gpt-4o-mini" : "gpt-4o-mini", // Use same model for consistency
-        "messages" => [["role" => "user", "content" => $prompt]],
-        "temperature" => 0.1, // Lower temperature for more consistent output
-        "max_tokens" => $isAmharic ? 4000 : 3000
-    ];
-
-    try {
-        $response = Http::timeout(180) // Increased timeout to 3 minutes
-            ->withHeaders([
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => 'Bearer ' . $apiKey,
-            ])
-            ->retry(2, 1000) // Retry 2 times with 1 second delay
-            ->post($apiEndpoint, $requestBody);
-
-        if ($response->failed()) {
-            // \Log::error('OpenAI API failed', [
-            //     'status' => $response->status(),
-            //     'body' => $response->body(),
-            //     'lang' => $targetLang
-            // ]);
-            return $quiz;
-        }
-
-        $responseData = $response->json();
-        $translatedQuiz = $responseData['choices'][0]['message']['content'] ?? null;
-
-        if (!$translatedQuiz) {
-            // \Log::error('Empty translation response', ['lang' => $targetLang]);
-            return $quiz;
-        }
-
-        // Clean response more thoroughly
-        $translatedQuiz = trim($translatedQuiz);
-        $translatedQuiz = preg_replace('/^```json\s*/', '', $translatedQuiz);
-        $translatedQuiz = preg_replace('/\s*```$/', '', $translatedQuiz);
-        $translatedQuiz = preg_replace('/^```\s*/', '', $translatedQuiz);
-
-        // Validate JSON
-        $decoded = json_decode($translatedQuiz, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            // \Log::error('Invalid JSON response', [
-            //     'error' => json_last_error_msg(),
-            //     'response' => substr($translatedQuiz, 0, 500),
-            //     'lang' => $targetLang
-            // ]);
-            return $quiz;
-        }
-
-        return $translatedQuiz;
-
-    } catch (\Exception $e) {
-        // \Log::error('Translation exception', [
-        //     'message' => $e->getMessage(),
-        //     'lang' => $targetLang
-        // ]);
-        return $quiz;
-    }
-}
-
-
 function translateQuizInChunks($quiz, $targetLang)
 {
     $quizArray = json_decode($quiz, true);
@@ -844,4 +752,5 @@ if (!function_exists('compare')) {
             default => false,
         };
     }
+}
 }
