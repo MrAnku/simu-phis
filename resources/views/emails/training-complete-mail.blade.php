@@ -69,16 +69,16 @@
     <div class="container">
         <img src="{{ $mailData['logo'] }}" alt="Company Logo" class="logo">
 
-        <h1> Congratulations, Training Completed!</h1>
+        <h1> {{ __('Congratulations, Training Completed!') }}</h1>
 
         <h2>
-            Hi {{ $mailData['user_name'] }},<br>
-            You’ve successfully completed your assigned training. Keep up the great work!
+            {{ __('Hi') }} {{ $mailData['user_name'] }},<br>
+            {{ __('You’ve successfully completed your assigned training. Keep up the great work!') }}
         </h2>
 
         <div class="info">
-            <p><strong>Training Name:</strong> {{ $mailData['training_name'] }}</p>
-            <p><strong>Training Score:</strong> {{ $mailData['training_score'] }}%</p>
+            <p><strong>{{ __('Training Name:') }}</strong> {{ $mailData['training_name'] }}</p>
+            <p><strong>{{ __('Training Score:') }}</strong> {{ $mailData['training_score'] }}%</p>
         </div>
         <div class="footer">
             <a href="#" style="color: #000000; text-decoration: none;" target="_blank">

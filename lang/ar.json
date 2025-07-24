@@ -1125,5 +1125,9 @@
     "Policy Assignment Notification": "إشعار تعيين السياسة",
     "Policy Name:": "اسم السياسة:",
     "Assigned On:": "تاريخ التعيين:",
-    "Login to Learning Portal": "تسجيل الدخول إلى بوابة التعلم"
+    "Login to Learning Portal": "تسجيل الدخول إلى بوابة التعلم",
+    "Congratulations, Training Completed!": "تهانينا، تم إكمال التدريب!",
+    "You’ve successfully completed your assigned training. Keep up the great work!": "لقد أكملت تدريبك المعين بنجاح. استمر في العمل الرائع!",
+    "Training Name:": "اسم التدريب:",
+    "Training Score:": "نتيجة التدريب:"
 }

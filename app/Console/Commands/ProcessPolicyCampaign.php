@@ -146,8 +146,11 @@ class ProcessPolicyCampaign extends Command
                     'company_id' => $campaign->company_id,
                     'learn_domain' => $learnDomain,
                 ];
-
-                $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
+                try{
+                    $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
+                }catch(\Exception $e){
+                    echo 'Failed to send email: ' . $e->getMessage() . "\n";
+                }
 
                 if ($isMailSent) {
                     echo 'Email sent to ' . $campaign->user_email . "\n";

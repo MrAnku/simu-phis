@@ -488,24 +488,43 @@ class LearnerDashController extends Controller
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
 
-                // Send email
-                $learnSiteAndLogo = checkWhitelabeled($rowData->company_id);
-
-                // return $learnSiteAndLogo['logo'];
-                $mailData = [
-                    'user_name' => $rowData->user_name,
-                    'training_name' => $rowData->trainingData->name,
-                    'training_score' => $request->trainingScore,
-                    'company_name' => $learnSiteAndLogo['company_name'],
-                    'logo' => $learnSiteAndLogo['logo']
-                ];
-
-                $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $learnSiteAndLogo['logo']);
-
                 $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                 if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                    
+                    $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                    $mailData = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->trainingData->name,
+                        'training_score' => $request->trainingScore,
+                        'company_name' => $whitelabelData->company_name,
+                        'logo' => env('CLOUDFRONT_URL') . $whitelabelData->dark_logo,
+                        'company_id' => $rowData->company_id,
+                    ];
+
                     $isWhitelabeled->updateSmtpConfig();
+                } else {
+                    // return $learnSiteAndLogo['logo'];
+                    $mailData = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->trainingData->name,
+                        'training_score' => $request->trainingScore,
+                        'company_name' => env('APP_NAME'),
+                        'logo' => env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png',
+                        'company_id' => $rowData->company_id,
+                    ];
                 }
+
+
+                $pdfContent = $this->generateCertificatePdf(
+                    $rowData->user_name, 
+                    $rowData->trainingData->name, 
+                    $rowData->training, 
+                    $rowData->completion_date, 
+                    $rowData->user_email, 
+                    $mailData['logo']
+                );
+
+
 
                 Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 

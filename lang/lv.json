@@ -13,5 +13,9 @@
   "Policy Assignment Notification": "إشعار تعيين السياسة",
   "Policy Name:": "Politikas pavadinājums:",
   "Assigned On:": "Pievienots:",
-  "Login to Learning Portal": "Pieslēgties mācību portālam"
+  "Login to Learning Portal": "Pieslēgties mācību portālam",
+  "Congratulations, Training Completed!": "Sveicieni, apmācība pabeigta!",
+    "You’ve successfully completed your assigned training. Keep up the great work!": "Jūs sēkmingi pabeidzāt savu piešķirto apmācību. Turpiniet lielisko darbu!",
+    "Training Name:": "Apmācības nosaukums:",
+    "Training Score:": "Apmācības rezultāts:"
 }

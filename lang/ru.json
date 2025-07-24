@@ -1122,6 +1122,10 @@
     "Policy Assignment Notification": "Уведомление о назначении политики",
     "Policy Name:": "Название политики:",
     "Assigned On:": "Назначено:",
-    "Login to Learning Portal": "Войти в учебный портал"
+    "Login to Learning Portal": "Войти в учебный портал",
+    "Congratulations, Training Completed!": "Поздравляем, обучение завершено!",
+    "You’ve successfully completed your assigned training. Keep up the great work!": "Вы успешно завершили назначенное вам обучение. Продолжайте в том же духе!",
+    "Training Name:": "Название обучения:",
+    "Training Score:": "Результат обучения:"
 
 }

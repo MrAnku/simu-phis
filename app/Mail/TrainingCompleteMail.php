@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\App;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
@@ -23,6 +24,11 @@ class TrainingCompleteMail extends Mailable
     {
         $this->mailData = $mailData;
         $this->pdfContent = $pdfContent;
+
+        $language = checkNotificationLanguage($mailData['company_id']);
+        if ($language !== 'en') {
+            App::setLocale($language);
+        }
     }
 
     /**
@@ -31,7 +37,7 @@ class TrainingCompleteMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Training Complete Mail',
+            subject: 'Training Completed',
         );
     }
 

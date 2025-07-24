@@ -13,5 +13,9 @@
   "Policy Assignment Notification": "Politikos priskyrimo pranešimas",
   "Policy Name:": "Politikos pavadinimas:",
   "Assigned On:": "Priskirta:",
-  "Login to Learning Portal": "Prisijungti prie mokymosi portalo"
+  "Login to Learning Portal": "Prisijungti prie mokymosi portalo",
+  "Congratulations, Training Completed!": "Sveikiname, mokymai baigti!",
+    "You’ve successfully completed your assigned training. Keep up the great work!": "Jūs sėkmingai baigėte savo priskirtą mokymą. Tęskite puikų darbą!",
+    "Training Name:": "Mokymo pavadinimas:",
+    "Training Score:": "Mokymo rezultatas:"
 }

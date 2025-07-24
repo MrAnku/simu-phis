@@ -13,5 +13,9 @@
   "Policy Assignment Notification": "Notificación de Asignación de Política",
   "Policy Name:": "Nombre de la política:",
   "Assigned On:": "Fecha de asignación:",
-  "Login to Learning Portal": "Iniciar sesión en el portal de aprendizaje"
+  "Login to Learning Portal": "Iniciar sesión en el portal de aprendizaje",
+  "Congratulations, Training Completed!": "¡Felicidades, capacitación completada!",
+  "You’ve successfully completed your assigned training. Keep up the great work!": "Has completado con éxito tu capacitación asignada. ¡Sigue con el gran trabajo!",
+  "Training Name:": "Nombre de la capacitación:",
+  "Training Score:": "Puntuación de la capacitación:"
 }

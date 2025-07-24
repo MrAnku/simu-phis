@@ -13,5 +13,9 @@
   "Policy Assignment Notification": "Benachrichtigung über die Zuweisung der Richtlinie",
   "Policy Name:": "Richtlinienname:",
   "Assigned On:": "Zugewiesen am:",
-  "Login to Learning Portal": "Anmelden am Lernportal"
+  "Login to Learning Portal": "Anmelden am Lernportal",
+  "Congratulations, Training Completed!": "Herzlichen Glückwunsch, Training abgeschlossen!",
+  "You’ve successfully completed your assigned training. Keep up the great work!": "Sie haben Ihr zugewiesenes Training erfolgreich abgeschlossen. Machen Sie weiter so!",
+  "Training Name:": "Name des Trainings:",
+  "Training Score:": "Ergebnis des Trainings:"
 }

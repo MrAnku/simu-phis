@@ -75,7 +75,7 @@
 
     <div class="container">
         <div class="logo">
-            <img src="{{ asset('/assets/images/simu-logo-dark.png') }}" style="width: 200px;" alt="company Logo">
+            <img src="{{ $mailData['logo'] }}" style="width: 200px;" alt="company Logo">
         </div>
 
         <div class="content">
@@ -86,13 +86,13 @@
                 <p><strong>{{__('Policy Assignment Notification')}}</strong></p>
                 <p>📄 <span class="label">{{__('Policy Name:')}}</span> {{ $mailData['policy_name'] }}</p>
                 <p>📅 <span class="label">{{__('Assigned On:')}}</span> {{ $mailData['assigned_at'] }}</p>
-                <a href="{{ env('SIMUPHISH_LEARNING_URL') }}" class="button">{{__('Login to Learning Portal')}}</a>
+                <a href="{{ $mailData['learn_domain'] }}" class="button">{{__('Login to Learning Portal')}}</a>
             </div>
         </div>
 
         <div class="footer">
             <p>
-                <a href="https://simuphish.com/" target="_blank">Copyright © {{ date('Y') }} simUphish | All rights reserved</a>
+                <a href="#" target="_blank">Copyright © {{ date('Y') }} {{ $mailData['company_name'] }} | All rights reserved</a>
             </p>
         </div>
     </div>
