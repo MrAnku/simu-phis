@@ -26,6 +26,7 @@ class QuishingLiveCamp extends Model
         'email_reported',
         'training_assigned',
         'company_id',
+        'scorm_training'
     ];
 
     public function trainingData(){

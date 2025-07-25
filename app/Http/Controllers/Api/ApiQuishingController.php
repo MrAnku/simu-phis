@@ -60,7 +60,7 @@ class ApiQuishingController extends Controller
     {
         try {
             // XSS attack prevention
-            $campData = $request->except(['quishing_materials', 'training_modules']);
+            $campData = $request->except(['quishing_materials', 'training_modules', 'scorm_training']);
             foreach ($campData as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
@@ -74,6 +74,7 @@ class ApiQuishingController extends Controller
             // $trainingModules = json_decode($request->training_modules, true);
             // $quishingMaterials = json_decode($request->quishing_materials, true);
             $trainingModules = $request->training_modules;
+            $scormTrainings = $request->scorm_training;
             $quishingMaterials = $request->quishing_materials;
 
             $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
@@ -95,7 +96,8 @@ class ApiQuishingController extends Controller
                 'campaign_type'      => $request->campaign_type,
                 'users_group'        => $request->employee_group,
 
-                'training_module'    => $request->campaign_type === 'quishing' ? null : json_encode($trainingModules),
+                'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules) ? null : json_encode($trainingModules),
+                'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings) ? null : json_encode($scormTrainings),
                 'training_assignment' => $request->campaign_type === 'quishing' ? null : $request->training_assignment,
                 'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
                 'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
@@ -116,9 +118,13 @@ class ApiQuishingController extends Controller
                     'user_name'          => $user->user_name,
                     'user_email'         => $user->user_email,
 
-                    'training_module'    => $request->campaign_type === 'quishing'
+                    'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules)
                         ? null
                         : $trainingModules[array_rand($trainingModules)],
+
+                    'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings)
+                        ? null
+                        : $scormTrainings[array_rand($scormTrainings)],
 
                     'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
                     'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,

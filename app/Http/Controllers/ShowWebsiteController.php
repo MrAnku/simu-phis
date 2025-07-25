@@ -189,8 +189,20 @@ class ShowWebsiteController extends Controller
         $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
 
         if ($all_camp->training_assignment == 'all') {
-            $trainings = json_decode($all_camp->training_module, true);
-            $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
+           
+
+            $trainingModules = [];
+            $scormTrainings = [];
+
+            if ($all_camp->training_module !== null) {
+                $trainingModules = json_decode($all_camp->training_module, true);
+            }
+
+            if ($all_camp->scorm_training !== null) {
+                $scormTrainings = json_decode($all_camp->scorm_training, true);
+            }
+
+            $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
 
             // Update campaign_live table
             $campaign->update(['sent' => '1', 'training_assigned' => '1']);

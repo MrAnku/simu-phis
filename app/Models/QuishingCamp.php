@@ -21,6 +21,7 @@ class QuishingCamp extends Model
         'quishing_lang',
         'status',
         'company_id',
+        'scorm_training'
     ];
 
     public function trainingModules()
