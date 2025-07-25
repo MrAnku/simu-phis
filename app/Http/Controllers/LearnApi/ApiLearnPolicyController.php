@@ -22,7 +22,8 @@ class ApiLearnPolicyController extends Controller
                 'email' => 'required|email'
             ]);
             $email = $request->email;
-            $assignedPolicies = AssignedPolicy::with('policyData')->where('user_email', $email)->get();
+            $assignedPolicies = AssignedPolicy::with('policyData')->where('user_email', $email)
+            ->where('accepted', 0)->get();
 
             if ($assignedPolicies->isEmpty()) {
                 return response()->json([
