@@ -5,6 +5,7 @@ namespace App\Http\Controllers\LearnApi;
 use App\Http\Controllers\Controller;
 use App\Models\AssignedPolicy;
 use App\Models\BlueCollarEmployee;
+use App\Models\Policy;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -51,7 +52,6 @@ class ApiLearnPolicyController extends Controller
         try {
             $request->validate([
                 'encoded_id' => 'required',
-                'json_quiz_response' => 'required'
             ]);
             $encodedId = $request->input('encoded_id');
             $policyId = base64_decode($encodedId);
@@ -59,6 +59,14 @@ class ApiLearnPolicyController extends Controller
             $assignedPolicy = AssignedPolicy::find($policyId);
             if (!$assignedPolicy) {
                 return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+            }
+
+            $policy = Policy::where('id', $assignedPolicy->policy)->first();
+
+            if($policy->has_quiz == 1){
+                $request->validate([
+                    'json_quiz_response' => 'required'
+                ]);
             }
 
             $companyId = $assignedPolicy->company_id;
