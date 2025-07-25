@@ -24,6 +24,7 @@ class WaCampaign extends Model
         'status',
         'variables',
         'company_id',
+        'scorm_training',
     ];
 
     public function trainingModules()

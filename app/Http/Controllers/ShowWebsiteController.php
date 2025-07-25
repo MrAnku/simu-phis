@@ -175,7 +175,7 @@ class ShowWebsiteController extends Controller
     {
         $campaign = QuishingLiveCamp::where('id', $campid)->first();
 
-        
+
         if (!$campaign) {
             return response()->json(['error' => 'Invalid campaign or user']);
         }
@@ -249,8 +249,21 @@ class ShowWebsiteController extends Controller
 
         if ($campaign->employee_type == 'normal') {
             if ($all_camp->training_assignment == 'all') {
-                $trainings = json_decode($all_camp->training_module, true);
-                $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
+
+                $trainingModules = [];
+                $scormTrainings = [];
+
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+
+
+                $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -366,7 +379,7 @@ class ShowWebsiteController extends Controller
         $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
 
-          $token = encrypt($campaign->user_phone);
+        $token = encrypt($campaign->user_phone);
 
 
         $whatsapp_data = [
@@ -389,7 +402,7 @@ class ShowWebsiteController extends Controller
             ]
         ];
 
-         // Insert new record into the database
+        // Insert new record into the database
 
         $inserted = BlueCollarLearnerLoginSession::insert([
             'whatsapp_number' => $campaign->user_phone,
@@ -474,14 +487,11 @@ class ShowWebsiteController extends Controller
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
             } else {
                 $sent = CampaignTrainingService::assignTraining($campaign);
 
                 // Update campaign_live table
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-
-               
             }
         }
     }

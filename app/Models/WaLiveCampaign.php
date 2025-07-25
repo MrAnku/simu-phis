@@ -28,6 +28,7 @@ class WaLiveCampaign extends Model
         'compromised',
         'training_assigned',
         'company_id',
+        'scorm_training',
     ];
 
     public function phishingWebsite()
