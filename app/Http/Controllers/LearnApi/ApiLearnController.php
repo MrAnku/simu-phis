@@ -1087,6 +1087,7 @@ class ApiLearnController extends Controller
                 'data' => [
                     'badges' => $badges,
                     'total_badges' => count($badges),
+                    'total_unlock_badges' => Badge::where('id', '!=', $uniqueBadgeIds)->count()
                 ]
             ], 200);
         } catch (ValidationException $e) {
