@@ -520,4 +520,7 @@ Route::prefix('learn')->group(function () {
     Route::get('/policy-login-with-token', [ApiLearnPolicyController::class, 'policyLoginWithToken']);
 
     Route::get('/fetch-accepted-policies', [ApiLearnPolicyController::class, 'fetchAcceptedPolicies']);
+
+    // Translate traning lang
+    Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
 });
