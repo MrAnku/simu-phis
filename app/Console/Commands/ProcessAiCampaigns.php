@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\ScormAssignedUser;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
@@ -44,7 +45,7 @@ class ProcessAiCampaigns extends Command
 
         foreach ($pendingCalls as $pendingCall) {
 
-            
+
             setCompanyTimezone($pendingCall->company_id);
 
             // Make the HTTP request
@@ -143,37 +144,38 @@ class ProcessAiCampaigns extends Command
     private function assignTraining($campaign)
     {
         setCompanyTimezone($campaign->company_id);
-        
+
         $trainingAssignedService = new TrainingAssignedService();
 
-        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->employee_email)
-            ->where('training', $campaign->training)
-            ->first();
+        if ($campaign->training !== null) {
+            $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->employee_email)
+                ->where('training', $campaign->training)
+                ->first();
 
-        if (!$assignedTraining) {
-            //call assignNewTraining from service method
-            $campData = [
-                'campaign_id' => $campaign->campaign_id,
-                'user_id' => $campaign->user_id,
-                'user_name' => $campaign->employee_name,
-                'user_email' => $campaign->employee_email,
-                'training' => $campaign->training,
-                'training_lang' => $campaign->training_lang,
-                'training_type' => $campaign->training_type,
-                'assigned_date' => now()->toDateString(),
-                'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                'company_id' => $campaign->company_id
-            ];
+            if (!$assignedTrainingModule) {
+                //call assignNewTraining from service method
+                $campData = [
+                    'campaign_id' => $campaign->campaign_id,
+                    'user_id' => $campaign->user_id,
+                    'user_name' => $campaign->employee_name,
+                    'user_email' => $campaign->employee_email,
+                    'training' => $campaign->training,
+                    'training_lang' => $campaign->training_lang,
+                    'training_type' => $campaign->training_type,
+                    'assigned_date' => now()->toDateString(),
+                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                    'company_id' => $campaign->company_id
+                ];
 
-            $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+                 $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
-            if ($trainingAssigned['status'] == true) {
+                 if ($trainingAssigned['status'] == true) {
                 echo $trainingAssigned['msg'];
             } else {
                 echo 'Failed to assign training to ' . $campaign->employee_email;
             }
         }else{
-            $assignedTraining->update(
+            $assignedTrainingModule->update(
                 [
                     'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                     'training_lang' => $campaign->training_lang,
@@ -181,6 +183,33 @@ class ProcessAiCampaigns extends Command
                     'assigned_date' => now()->toDateString()
                 ]
             );
+            }
+        }
+
+        if ($campaign->scorm_training !== null) {
+            $assignedTrainingModule = ScormAssignedUser::where('user_email', $campaign->employee_email)
+                ->where('scorm', $campaign->scorm_training)
+                ->first();
+
+            if (!$assignedTrainingModule) {
+                //call assignNewTraining from service method
+                $campData = [
+                    'campaign_id' => $campaign->campaign_id,
+                    'user_id' => $campaign->user_id,
+                    'user_name' => $campaign->employee_name,
+                    'user_email' => $campaign->employee_email,
+                    'scorm' => $campaign->scorm_training,
+                    'assigned_date' => now()->toDateString(),
+                    'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                    'company_id' => $campaign->company_id
+                ];
+
+                DB::table('scorm_assigned_users')
+                    ->insert($campData);
+
+                echo 'Scorm assigned successfully to ' . $campaign->employee_email . "\n";
+
+            }
         }
 
         //send mail to user

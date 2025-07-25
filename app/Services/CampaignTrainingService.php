@@ -53,15 +53,18 @@ class CampaignTrainingService
                         'company_id' => $campaign->company_id
                     ];
 
-                    $trainingAssignedService->assignNewTraining($campData);
-
-                    // if ($trainingAssigned['status'] == true) {
-                    //     return true;
-                    // } else {
-                    //     return false;
-                    // }
-                }
+                $trainingAssignedService->assignNewTraining($campData);
+            } else {
+                $assignedTraining->update(
+                    [
+                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                        'training_lang' => $campaign->training_lang,
+                        'training_type' => $campaign->training_type,
+                        'assigned_date' => now()->toDateString()
+                    ]
+                );
             }
+        }
         }
 
         if (!empty($scormTrainings)) {
@@ -149,15 +152,18 @@ class CampaignTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                $trainingAssignedService->assignNewTraining($campData);
-
-                // if ($trainingAssigned['status'] == true) {
-                //     return true;
-                // } else {
-                //     return false;
-                // }
-            }
+            $trainingAssignedService->assignNewTraining($campData);
+        } else {
+            $assignedTrainingModule->update(
+                [
+                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                    'training_lang' => $campaign->training_lang,
+                    'training_type' => $campaign->training_type,
+                    'assigned_date' => now()->toDateString()
+                ]
+            );
         }
+    }
 
 
         if ($campaign->scorm_training !== null) {

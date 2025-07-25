@@ -23,7 +23,8 @@ class AiCallCampaign extends Model
         'ai_agent_name',
         'phone_no',
         'status',
-        'company_id'
+        'company_id',
+        'scorm_training'
     ];
 
     public function individualCamps(){
