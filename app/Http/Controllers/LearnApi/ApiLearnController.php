@@ -129,12 +129,7 @@ class ApiLearnController extends Controller
                 $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
             }
 
-
-            if ($hasPolicy && !$hasTraining) {
-                $learning_dashboard_link = $learn_domain . '/policies/' . $token;
-            } else {
-                $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
-            }
+            $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
 
             // Insert new record into the database
             $inserted = DB::table('learnerloginsession')->insert([
@@ -862,10 +857,11 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $request->email)->get();
+            $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $request->email)->where('training_started', 1)->get();
 
-            $allAssignedScorms = ScormAssignedUser::where('user_email', $request->email)->get();
+            $allAssignedScorms = ScormAssignedUser::where('user_email', $request->email)->where('scorm_started', 1)->get();
 
+            $allAssignedTrainings = [];
             foreach ($allAssignedTrainingMods as $trainingMod) {
                 $allAssignedTrainings[] = [
                     'training_name' => $trainingMod->trainingData->name,
