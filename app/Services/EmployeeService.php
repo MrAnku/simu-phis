@@ -7,6 +7,7 @@ use App\Models\Campaign;
 use App\Models\UsersGroup;
 use App\Models\QuishingCamp;
 use App\Models\AiCallCampaign;
+use App\Models\AssignedPolicy;
 use App\Models\CompanyLicense;
 use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
@@ -117,10 +118,16 @@ class EmployeeService
         if (!$group) {
             return [
                 'status' => 0,
-                'msg' => __('Group not found')
+                'msg' => __('Division not found')
             ];
         }
-        $this->deleteCampaignsByGroupId($groupId);
+        $exists = $this->checkCampaignsExists($groupId);
+        if ($exists) {
+            return [
+                'status' => 0,
+                'msg' => __('This division is associated with campaigns, please delete campaigns first')
+            ];
+        }
         //delete this group users also
         if ($group->users !== null) {
             $usersArray = json_decode($group->users, true);
@@ -134,20 +141,33 @@ class EmployeeService
             'msg' => __('Division deleted successfully')
         ];
     }
-    public function deleteCampaignsByGroupId($groupId)
+    public function checkCampaignsExists($groupId)
     {
+        $companyId = Auth::user()->company_id;
+        $campaigns = [
+            Campaign::class,
+            QuishingCamp::class,
+            AiCallCampaign::class,
+            PolicyCampaign::class,
+            SmishingCampaign::class,
+            WaCampaign::class,
+            InfoGraphicCampaign::class
+        ];
 
-
-
-        Campaign::where('users_group', $groupId)->delete();
-        AiCallCampaign::where('emp_group', $groupId)->delete();
-
-        QuishingCamp::where('users_group', $groupId)->delete();
-        WaCampaign::where('users_group', $groupId)->delete();
-        SmishingCampaign::where('users_group', $groupId)->delete();
-        PolicyCampaign::where('users_group', $groupId)->delete();
-        InfoGraphicCampaign::where('users_group', $groupId)->delete();
+        foreach ($campaigns as $campaign) {
+            if ($campaign == AiCallCampaign::class) {
+                if ($campaign::where('emp_group', $groupId)->exists()) {
+                    return true;
+                }
+            } else {
+                if ($campaign::where('users_group', $groupId)->where('company_id', $companyId)->exists()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+
     public function deleteEmployeeById($employeeId)
     {
 
@@ -155,38 +175,6 @@ class EmployeeService
         // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
 
         if ($user) {
-
-            // //delete from email campaign live
-            // CampaignLive::where('user_id', $user->id)->delete();
-
-
-            // //delete ai campaign live
-            // AiCallCampLive::where('user_id', $user->id)->delete();
-
-
-            // //delete from whatsapp campaign live
-            // WaLiveCampaign::where('user_id', $user->id)->delete();
-
-
-            // //delete from quishing campaign live
-            // QuishingLiveCamp::where('user_id', $user->id)->delete();
-
-
-            // //delete from smishing live campaign
-            // SmishingLiveCampaign::where('user_id', $user->id)->delete();
-
-
-            //delete from training assigned table
-            TrainingAssignedUser::where('user_id', $user->id)->delete();
-
-            //delete from user login table
-            // UserLogin::where('user_id', $user->id)->delete();
-
-            //checking if this is the last email
-            // $emailsExists = Users::where('user_email', $user->user_email)->where('company_id', Auth::user()->company_id)->count();
-            // if ($emailsExists == 1) {
-            //     BreachedEmail::where('email', $user->user_email)->delete();
-            // }
 
             //remove this id users column array from all groups
             $groups = UsersGroup::where('company_id', Auth::user()->company_id)->get();
@@ -212,6 +200,16 @@ class EmployeeService
 
             $user->delete();
         }
+    }
+    public function deleteAssignedTrainingAndPolicy($email)
+    {
+
+        TrainingAssignedUser::where('user_email', $email)
+            ->where('company_id', Auth::user()->company_id)
+            ->delete();
+        AssignedPolicy::where('user_email', $email)
+            ->where('company_id', Auth::user()->company_id)
+            ->delete();
     }
 
     public function emailExistsInGroup($groupId, $email)

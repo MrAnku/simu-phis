@@ -18,6 +18,7 @@ use App\Services\EmployeeService;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\InfoGraphicLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -79,7 +80,8 @@ class ApiEmployeesController extends Controller
         }
     }
 
-    private function getEmpPp(){
+    private function getEmpPp()
+    {
         $companyId = Auth::user()->company_id;
 
         // Current 14 days
@@ -113,7 +115,8 @@ class ApiEmployeesController extends Controller
         return round($percent, 2);
     }
 
-    private function getVerifiedDomainsPp(){
+    private function getVerifiedDomainsPp()
+    {
         $companyId = Auth::user()->company_id;
 
         // Current 14 days
@@ -147,7 +150,8 @@ class ApiEmployeesController extends Controller
         return round($percent, 2);
     }
 
-    private function getNotVerifiedDomainsPp(){
+    private function getNotVerifiedDomainsPp()
+    {
 
         $companyId = Auth::user()->company_id;
 
@@ -180,7 +184,6 @@ class ApiEmployeesController extends Controller
         }
 
         return round($percent, 2);
-
     }
 
     public function allEmployee()
@@ -247,11 +250,11 @@ class ApiEmployeesController extends Controller
         }
     }
 
-    
+
 
     public function employeeDetailNew(Request $request)
     {
-        try{
+        try {
             $email = $request->route('email');
             if (!$email) {
                 return response()->json(['success' => false, 'message' => __('Email is required')], 422);
@@ -275,16 +278,14 @@ class ApiEmployeesController extends Controller
                 ],
                 'message' => __('Employee details retrieved successfully')
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
-           
     }
 
     private function getCampaigns($email)
     {
-        
+
         // Email Campaigns Summary
         $emailSummary = [
             'type' => 'email_summary',
@@ -293,7 +294,7 @@ class ApiEmployeesController extends Controller
             'in_attack' => CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count(),
         ];
 
-       
+
 
         // Quishing Campaigns Summary
         $quishingSummary = [
@@ -303,7 +304,7 @@ class ApiEmployeesController extends Controller
             'in_attack' => QuishingLiveCamp::where('user_email', $email)->where('compromised', '1')->count(),
         ];
 
-     
+
 
         // WhatsApp Campaigns Summary
         $waSummary = [
@@ -318,8 +319,8 @@ class ApiEmployeesController extends Controller
             'total_campaigns' => AiCallCampLive::where('employee_email', $email)->count(),
             'total_calls_sent' => AiCallCampLive::where('employee_email', $email)->where('call_send_response', '!=', null)->count(),
             'total_calls_responded' => AiCallCampLive::where('employee_email', $email)->where('call_end_response', '!=', null)->count(),
-        ];  
-       
+        ];
+
         return [
             'email_summary' => $emailSummary,
             'quishing_summary' => $quishingSummary,
@@ -339,7 +340,7 @@ class ApiEmployeesController extends Controller
         $aiTrainingAssigned = TrainingAssignedUser::where('user_email', $email)
             ->where('training_type', 'ai_training')
             ->count();
-        
+
         // total gamified training assigned
         $gamifiedTrainingAssigned = TrainingAssignedUser::where('user_email', $email)
             ->where('training_type', 'gamified')
@@ -349,7 +350,7 @@ class ApiEmployeesController extends Controller
         $gamesAssigned = TrainingAssignedUser::where('user_email', $email)
             ->where('training_type', 'games')
             ->count();
-        
+
         // trainings overdue
         $overdueTrainings = TrainingAssignedUser::where('user_email', $email)
             ->whereDate('training_due_date', '<', now())
@@ -363,7 +364,6 @@ class ApiEmployeesController extends Controller
             'games_assigned' => $gamesAssigned,
             'overdue_trainings' => $overdueTrainings
         ];
-
     }
 
     private function getSecurityScore($email)
@@ -406,7 +406,6 @@ class ApiEmployeesController extends Controller
             'total_simulations' => $totalSimulations,
             'compromised_simulations' => $compromisedSimulations
         ];
-
     }
 
     public function sendDomainVerifyOtp(Request $request)
@@ -480,7 +479,7 @@ class ApiEmployeesController extends Controller
     {
         $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
         $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if($isWhitelabeled->isCompanyWhitelabeled()) {
+        if ($isWhitelabeled->isCompanyWhitelabeled()) {
             $isWhitelabeled->updateSmtpConfig();
         }
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
@@ -717,10 +716,10 @@ class ApiEmployeesController extends Controller
             ]);
             $user_email = $request->input('user_email');
 
-            // $user = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->first();
-            // $user_name = $user->user_name;
+            $users = Users::where('user_email', $user_email)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
 
-            $users = Users::where('user_email', $user_email)->where('company_id', Auth::user()->company_id)->get();
             if ($users->isEmpty()) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
@@ -732,6 +731,10 @@ class ApiEmployeesController extends Controller
                     return response()->json(['success' => false, 'message' => __('Failed to delete employee')]);
                 }
             }
+
+            //delete assigned training and policy
+            $employee->deleteAssignedTrainingAndPolicy($user_email);
+
             $emailExists = DeletedEmployee::where('email', $user_email)->where('company_id', Auth::user()->company_id)->exists();
             if (!$emailExists) {
                 DeletedEmployee::create([
@@ -973,9 +976,9 @@ class ApiEmployeesController extends Controller
             if ($deleted['status'] == 1) {
 
                 log_action("Employee Group deleted");
-                return response()->json(['success' => true, 'msg' => $deleted['msg']], 200);
+                return response()->json(['success' => true, 'message' => $deleted['msg']], 200);
             } else {
-                return response()->json(['success' => false, 'msg' => $deleted['msg']], 404);
+                return response()->json(['success' => false, 'message' => $deleted['msg']], 422);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -1216,39 +1219,54 @@ class ApiEmployeesController extends Controller
 
     private function updateInCampaigns($email, $name)
     {
+        $companyId = Auth::user()->company_id;
         //ai call campaign live update
         AiCallCampLive::where('employee_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'employee_name' => $name,
             ]);
         //assigned policies update
         AssignedPolicy::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);
         //email
         CampaignLive::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);
         //policy campaign live
         PolicyCampaignLive::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);
         //quishing campaign live
         QuishingLiveCamp::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);
         //training Assigned
         TrainingAssignedUser::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);
 
         //whatsapp campaign live
         WaLiveCampaign::where('user_email', $email)
+            ->where('company_id', $companyId)
+            ->update([
+                'user_name' => $name,
+            ]);
+
+        //infographics campaign live
+        InfoGraphicLiveCampaign::where('user_email', $email)
+            ->where('company_id', $companyId)
             ->update([
                 'user_name' => $name,
             ]);

@@ -87,7 +87,17 @@ class ProcessCampaigns extends Command
   {
     $campaign = Campaign::where('campaign_id', $campaignid)->first();
 
+    // check if the group exists
+    $group = UsersGroup::where('group_id', $campaign->users_group)->first();
+    if (!$group) {
+      echo "Group not found for campaign ID: " . $campaignid . "\n";
+      return;
+    }
     $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+    if (!$userIdsJson) {
+      echo "No users found in group for campaign ID: " . $campaignid . "\n";
+      return;
+    }
     $userIds = json_decode($userIdsJson, true);
     $users = Users::whereIn('id', $userIds)->get();
     // $users = Users::where('group_id', $campaign->users_group)->get();

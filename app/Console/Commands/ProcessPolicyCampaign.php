@@ -78,7 +78,18 @@ class ProcessPolicyCampaign extends Command
     {
         $campaign = PolicyCampaign::where('campaign_id', $campaignid)->first();
 
+        // check if the group exists
+        $group = UsersGroup::where('group_id', $campaign->users_group)->first();
+        if (!$group) {
+            echo "Group not found for campaign ID: " . $campaignid . "\n";
+            return;
+        }
+
         $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+        if (!$userIdsJson) {
+            echo "No users found in group for campaign ID: " . $campaignid . "\n";
+            return;
+        }
         $userIds = json_decode($userIdsJson, true);
         $users = Users::whereIn('id', $userIds)->get();
 
@@ -126,8 +137,7 @@ class ProcessPolicyCampaign extends Command
                 $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
                 $learnDomain = "https://" . $whiteLableData->learn_domain;
                 $isWhitelabeled->updateSmtpConfig();
-                
-            }else{
+            } else {
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
                 $learnDomain = env('SIMUPHISH_LEARNING_URL');
@@ -146,9 +156,9 @@ class ProcessPolicyCampaign extends Command
                     'company_id' => $campaign->company_id,
                     'learn_domain' => $learnDomain,
                 ];
-                try{
+                try {
                     $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     echo 'Failed to send email: ' . $e->getMessage() . "\n";
                 }
 
