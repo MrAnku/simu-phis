@@ -64,8 +64,8 @@ class ApiTprmController extends Controller
     {
         $companyId = Auth::user()->company_id;
         return TprmUsersGroup::where('company_id', $companyId)
-        ->whereHas('users')
-        ->get();
+            ->whereHas('users')
+            ->get();
     }
     public function fetchPhishingEmails()
     {
@@ -194,13 +194,13 @@ class ApiTprmController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => __('Some domains already exists or are verified by another company and also some new domain verification requested successfully'),
-                    
+
                 ], 422);
             } else if (count($error) > 0) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Some domains already exists or are verified by another company'),
-                    
+
                 ], 422);
             }
             log_action("New domain : verification requested");
@@ -230,16 +230,40 @@ class ApiTprmController extends Controller
             if (!$domain) {
                 return response()->json(['success' => false, 'message' => __('Domain is required')], 404);
             }
+
+            //check if any campaign is running to this domain
+            $exists = $this->checkCampaignExists($domain);
+            if ($exists) {
+                return response()->json(['success' => false, 'message' => __('Cannot delete domain as it is associated with an active campaign')], 422);
+            }
+
             TpmrVerifiedDomain::where('domain', $domain)->where('company_id', Auth::user()->company_id)->delete();
 
 
             log_action("TPRM Domain deleted : {$domain}");
             return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
-           
         } catch (\Exception $e) {
             log_action("TPRM Domain delete failed");
             return response()->json(['success' => false, 'message' => __('An error occurred: ') . $e->getMessage()], 500);
         }
+    }
+
+    private function checkCampaignExists($domain)
+    {
+        $companyId = Auth::user()->company_id;
+        $campaigns = TprmCampaign::where('company_id', $companyId)->get();
+        if ($campaigns->isEmpty()) {
+            return false;
+        }
+        $groupIds = $campaigns->pluck('users_group')->toArray();
+        foreach ($groupIds as $groupId) {
+            $group = TprmUsersGroup::where('group_id', $groupId)->where('company_id', $companyId)->first();
+            if ($group && $group->group_name == $domain) {
+                return true; // Campaign exists for the domain
+            }
+        }
+
+        return false;
     }
 
     public function createCampaign(Request $request)
@@ -258,7 +282,7 @@ class ApiTprmController extends Controller
                     return response()->json(['success' => false, 'message' => __('Invalid input detected.')], 422);
                 }
             }
-           
+
             //xss check end
             $campName = $request->input('camp_name');
             $usersGroup = $request->input('users_group');
@@ -743,7 +767,6 @@ class ApiTprmController extends Controller
             if (!$user) {
                 return response()->json(['success' => false, 'message' => __('TPRM Employee not found')], 404);
             }
-            TprmCampaignLive::where('user_id', $user->id)->where('company_id', Auth::user()->company_id)->delete();
 
             $user->delete();
 
