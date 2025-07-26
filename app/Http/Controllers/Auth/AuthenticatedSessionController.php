@@ -8,7 +8,11 @@ use App\Models\CompanyLicense;
 use App\Models\CompanySettings;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetMail;
+use App\Models\Otp;
+use App\Services\CheckWhitelabelService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
@@ -72,14 +76,14 @@ class AuthenticatedSessionController extends Controller
             }
         }
         $enabledFeatures = Company::where('company_id', Auth::user()->company_id)->value('enabled_feature');
-        
+
         if (!$enabledFeatures) {
             $enabledFeatures = 'null'; // Default to null if no features are enabled
         }
 
-        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440)); 
+        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
         $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
-        
+
         return response()->json([
             'token' => $token,
             'company' => Auth::user(),
@@ -87,7 +91,7 @@ class AuthenticatedSessionController extends Controller
             "message" => "Logged in successfully",
             "mfa" => false,
         ])->withCookie($cookie)
-          ->withCookie($enabledFeatureCookie);
+            ->withCookie($enabledFeatureCookie);
     }
 
     public function tokenCheck(Request $request): JsonResponse
@@ -101,7 +105,7 @@ class AuthenticatedSessionController extends Controller
             ], 422);
         }
         $validToken = Company::where('pass_create_token', $token)->where('password', null)->first();
-        if(!$validToken){
+        if (!$validToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid Token or Token Expired',
@@ -163,7 +167,7 @@ class AuthenticatedSessionController extends Controller
                 'success' => true,
                 'message' => 'Successfully logged out'
             ])->withCookie($cookie)
-              ->withCookie($enabledFeatureCookie);
+                ->withCookie($enabledFeatureCookie);
         } catch (JWTException $e) {
             return response()->json([
                 'success' => false,
@@ -184,23 +188,104 @@ class AuthenticatedSessionController extends Controller
     {
         try {
             $request->validate([
-                'email' => 'required|email',
+                'email' => 'required|email|exists:company,email',
             ]);
 
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
+            $company = Company::where('email', $request->email)->first();
 
-            if ($status == Password::RESET_LINK_SENT) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Password reset link sent to your email.',
+            $companyId = $company->company_id;
+
+            $recordExists = Otp::where('email', $request->email)->exists();
+
+            $otp = rand(100000, 999999);
+
+            if ($recordExists) {
+                Otp::where('email', $request->email)->update([
+                    'otp' => $otp,
+                    'otp_expiry' => now()->addMinutes(10)
+                ]);
+            } else {
+                Otp::create([
+                    'email' => $request->email,
+                    'company_id' => $companyId,
+                    'otp' => $otp,
+                    'otp_expiry' => now()->addMinutes(10)
                 ]);
             }
+
+            $isWhitelabeled = new CheckWhitelabelService($companyId);
+            if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                $isWhitelabeled->updateSmtpConfig();
+                $companyName = $whitelabelData->company_name;
+                $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            } else {
+                $companyName = env('APP_NAME');
+                $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+            }
+
+            // Prepare email data
+            $mailData = [
+                'company_name' => $companyName,
+                'company_dark_logo' => $companyDarkLogo,
+                'email' => $request->email,
+                'otp' => $otp,
+                'full_name' => $company->full_name
+            ];
+
+            $mailSent = Mail::to($request->email)->send(new PasswordResetMail($mailData));
+
+            if ($mailSent) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'OTP has been sent successfully'
+                ], 200);
+            }
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send password reset link.',
+                'message' => $e->validator->errors()->first(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function verifyOTP(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:company,email',
+                'otp' => 'required|integer|digits:6'
+            ]);
+
+            $otp = Otp::where('email', $request->email)->first();
+            
+            if ($otp->otp != $request->otp) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'OTP did not match'
+                ], 422);
+            }
+
+            if ($otp->otp_expiry < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'OTP Expired'
+                ], 422);
+            }
+
+            if ($otp->otp == $request->otp) {
+                if ($otp->otp_expiry > now()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'OTP verfied successfully'
+                    ], 200);
+                }
+            }
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -218,31 +303,21 @@ class AuthenticatedSessionController extends Controller
     {
         try {
             $request->validate([
-                'token' => 'required',
-                'email' => 'required|email',
+                'email' => 'required|email|exists:company,email',
                 'password' => 'required|confirmed|min:8',
             ]);
 
-            $status = Password::reset(
-                $request->only('email', 'password', 'password_confirmation', 'token'),
-                function ($user) use ($request) {
-                    $user->forceFill([
-                        'password' => bcrypt($request->password),
-                    ])->save();
-                }
-            );
+            $updated = Company::where('email', $request->email)->update([
+                'password' => bcrypt($request->password),
+            ]);
 
-            if ($status == Password::PASSWORD_RESET) {
+            if($updated){      
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Password has been reset successfully.',
-                ]);
+                    'success' => false,
+                    'message' => 'Password changed successfully',
+                ], 200);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Token is invalid or expired.',
-            ], 422);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
