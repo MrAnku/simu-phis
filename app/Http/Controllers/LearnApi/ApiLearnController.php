@@ -970,7 +970,7 @@ class ApiLearnController extends Controller
 
             foreach ($trainingUsers as $user) {
                 $assignedTrainingModules[] = [
-                    'training_name' => $user->trainingData->name,
+                    'training_name' => $user->training_type == 'games' ? $user->trainingGame->name : $user->trainingData->name,
                     'score' => $user->personal_best,
                     'grade' => $user->grade,
                     'assigned_date' => $user->assigned_date,
