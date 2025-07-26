@@ -20,18 +20,19 @@ class ApiDarkWebMonitoringController extends Controller
 
             if ($breachedEmails->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __("No Breached Emails Found")
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
+                'message' => __("Breached Emails Retrieved Successfully"),
                 'data' => $breachedEmails
             ], 200); // OK
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
