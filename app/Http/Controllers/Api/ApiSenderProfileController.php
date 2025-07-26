@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Campaign;
 use App\Models\CampaignLive;
+use App\Models\QuishingCamp;
+use App\Models\TprmCampaign;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
 use App\Models\SenderProfile;
-use App\Http\Controllers\Controller;
-use App\Models\QuishingCamp;
 use App\Models\QuishingLiveCamp;
-use App\Models\TprmCampaign;
 use App\Models\TprmCampaignLive;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -35,7 +36,7 @@ class ApiSenderProfileController extends Controller
             ], 200); // ✅ 200 OK
 
         } catch (\Exception $e) {
-           
+
             return response()->json([
                 'success' => false,
                 'message' => __('An error occurred while fetching sender profiles.'),
@@ -45,12 +46,13 @@ class ApiSenderProfileController extends Controller
     }
 
     //new
-    public function index2(){
+    public function index2()
+    {
         try {
             $company_id = Auth::user()->company_id;
 
-           $default = SenderProfile::where('company_id', 'default')->get();
-           $custom = SenderProfile::where('company_id', $company_id)->get();
+            $default = SenderProfile::where('company_id', 'default')->get();
+            $custom = SenderProfile::where('company_id', $company_id)->get();
 
             return response()->json([
                 'success' => true,
@@ -62,7 +64,7 @@ class ApiSenderProfileController extends Controller
             ], 200); // ✅ 200 OK
 
         } catch (\Exception $e) {
-           
+
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage(),
@@ -117,7 +119,7 @@ class ApiSenderProfileController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => __('Error: '). $e->getMessage(),
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -200,7 +202,7 @@ class ApiSenderProfileController extends Controller
         }
     }
 
-   public function saveManualSenderProfile(Request $request)
+    public function saveManualSenderProfile(Request $request)
     {
         try {
             // XSS Check start
@@ -224,6 +226,28 @@ class ApiSenderProfileController extends Controller
                 'smtp_username' => 'required|string|max:255',
                 'smtp_password' => 'required|string|max:255',
             ]);
+
+            //test the smtp by sending a test email
+            config([
+                'mail.host' => $request->input('smtp_host'),
+                'mail.username' => $request->input('smtp_username'),
+                'mail.password' => $request->input('smtp_password'),
+                'mail.from.address' => $request->input('from_email'),
+                'mail.from.name' => $request->input('from_name'),
+            ]);
+
+            try {
+                // Send a test email
+                Mail::raw('This is a test email', function ($message) {
+                    $message->to('test@yopmail.com')
+                        ->subject('Test Email');
+                });
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Invalid SMTP configuration. Please check your SMTP settings.'),
+                ], 500);
+            }
 
 
             $senderProfile = new SenderProfile();
@@ -289,11 +313,11 @@ class ApiSenderProfileController extends Controller
                 'domain' => 'required|in:secure-accessmail.com,securitynotice.org'
             ]);
 
-            if($request->domain == 'secure-accessmail.com'){
+            if ($request->domain == 'secure-accessmail.com') {
                 $host = env('MAILSENDER_HOST');
                 $username = env('MAILSENDER_USERNAME_SECURE_ACCESSMAIL');
                 $password = env('MAILSENDER_PASSWORD_SECURE_ACCESSMAIL');
-            } elseif($request->domain == 'securitynotice.org') {
+            } elseif ($request->domain == 'securitynotice.org') {
                 $host = env('MAILSENDER_HOST');
                 $username = env('MAILSENDER_USERNAME_SECURITY_NOTICE');
                 $password = env('MAILSENDER_PASSWORD_SECURITY_NOTICE');
@@ -385,7 +409,7 @@ class ApiSenderProfileController extends Controller
             }
             // XSS check end
             $id = $request->route('id');
-            if(!$id){
+            if (!$id) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Sender profile ID is required.'),
@@ -393,7 +417,7 @@ class ApiSenderProfileController extends Controller
             }
             $id = base64_decode($id);
             $type = $request->input('type');
-            if($type === 'managed'){
+            if ($type === 'managed') {
                 $profileName = $request->input('pName');
                 $fromName = $request->input('from_name');
                 $fromEmail = $request->input('from_email');
@@ -409,8 +433,7 @@ class ApiSenderProfileController extends Controller
                     'success' => true,
                     'message' => __('Sender Profile Updated Successfully!'),
                 ], 200); // ✅ 200 OK
-            }
-            else {
+            } else {
                 $profileName = $request->input('pName');
                 $fromName = $request->input('from_name');
                 $fromEmail = $request->input('from_email');
@@ -433,8 +456,6 @@ class ApiSenderProfileController extends Controller
                     'message' => __('Sender Profile Updated Successfully!'),
                 ], 200); // ✅ 200 OK
             }
-
-          
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
