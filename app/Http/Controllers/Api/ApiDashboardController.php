@@ -156,7 +156,7 @@ class ApiDashboardController extends Controller
         }
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Campaign counts fetched successfully',
             'data' => [
                 'counts' => $counts,

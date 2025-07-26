@@ -183,7 +183,7 @@ class ApiPhishingEmailsController extends Controller
         // Check if campaignId exists
         if (!$id) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Template id is required.')
             ], 400);
         }
@@ -193,19 +193,19 @@ class ApiPhishingEmailsController extends Controller
 
             if (!$phishingEmail) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Phishing email template not found.')
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Phishing email template found.'),
                 'data' => $phishingEmail
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -301,34 +301,20 @@ class ApiPhishingEmailsController extends Controller
     {
         try {
             $request->validate([
-                'tempid' => 'required|integer|exists:phishing_emails,id',
-                'filelocation' => 'required|string'
+                'tempid' => 'required|integer|exists:phishing_emails,id'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first(),
-                'errors' => "Validation Error"
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
             ], 422);
         }
 
-        $company_id = Auth::user()->company_id;
         $tempid = $request->input('tempid');
-        $filelocation = $request->input('filelocation');
-        $fileAbsolutePath = storage_path('app/public/' . $filelocation);
 
         try {
             $template = PhishingEmail::where('id', $tempid)->first();
             $isDeleted = $template->delete();
-
-            // Delete related Campaigns
-            Campaign::where('phishing_material', $tempid)
-                ->where('company_id', $company_id)
-                ->delete();
-
-            CampaignLive::where('phishing_material', $tempid)
-                ->where('company_id', $company_id)
-                ->delete();
 
             // Delete the file from S3
             Storage::disk('s3')->delete($template->mailBodyFilePath);
@@ -337,14 +323,14 @@ class ApiPhishingEmailsController extends Controller
                 log_action("Email Template (ID: $tempid) deleted successfully");
 
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => __('Email Template deleted successfully.')
                 ], 200);
             } else {
                 log_action("Failed to delete Email Template (ID: $tempid)");
 
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Failed to delete Email Template.')
                 ], 500);
             }
@@ -352,9 +338,8 @@ class ApiPhishingEmailsController extends Controller
             log_action("Exception while deleting template: " . $e->getMessage());
 
             return response()->json([
-                'status' => false,
-                'message' => __('Something went wrong.'),
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }

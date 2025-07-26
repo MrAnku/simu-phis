@@ -176,15 +176,12 @@ class ApiQuishingEmailController extends Controller
             foreach ($input as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
-                        'status' => false,
+                        'success' => false,
                         'message' => __('Invalid input detected.')
                     ], 400);
                 }
             }
-            array_walk_recursive($input, function (&$value) {
-                $value = strip_tags($value);
-            });
-            $request->merge($input);
+           
 
             // Validation
             $validator = Validator::make($request->all(), [
@@ -198,7 +195,7 @@ class ApiQuishingEmailController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' =>  __('Error: ') . $validator->errors()->first()
                 ], 422);
             }
@@ -209,7 +206,7 @@ class ApiQuishingEmailController extends Controller
             // Check for placeholders
             if (strpos($templateContent, '{{user_name}}') === false || strpos($templateContent, '{{qr_code}}') === false) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')
                 ], 422);
             }
@@ -234,14 +231,13 @@ class ApiQuishingEmailController extends Controller
 
             log_action("Template added : {$request->template_name}");
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Template added successfully.')
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => __('Failed to add template.'),
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -292,7 +288,7 @@ class ApiQuishingEmailController extends Controller
         // Check if campaignId exists
         if (!$id) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Template id is required.')
             ], 400);
         }
@@ -302,19 +298,19 @@ class ApiQuishingEmailController extends Controller
 
             if (!$qshTemplate) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Quishing email template not found.')
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Quishing email template found.'),
                 'data' => $qshTemplate
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
@@ -329,9 +325,8 @@ class ApiQuishingEmailController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
+                'success' => false,
+                'message' => "Error: " . $validator->errors()->first(),
             ], 422);
         }
         try {
@@ -345,7 +340,7 @@ class ApiQuishingEmailController extends Controller
 
             if (!$template) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Template not found.')
                 ], 404);
             }
@@ -359,14 +354,13 @@ class ApiQuishingEmailController extends Controller
             log_action("Template deleted : {$template_name}");
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Template deleted successfully.')
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => __('Something went wrong.'),
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
