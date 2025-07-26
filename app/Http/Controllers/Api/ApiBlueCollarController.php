@@ -14,6 +14,7 @@ use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\DeletedBlueCollarEmployee;
+use App\Models\WaCampaign;
 use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Validator;
 
@@ -98,7 +99,8 @@ class ApiBlueCollarController extends Controller
         }
     }
 
-    private function compromisedPp(){
+    private function compromisedPp()
+    {
         $companyId = Auth::user()->company_id;
 
         // Current 14 days
@@ -233,28 +235,30 @@ class ApiBlueCollarController extends Controller
                 return response()->json(['success' => false, 'message' => __('User ID is required')], 422);
             }
             $user = BlueCollarEmployee::find($request->route('user_id'));
-            $user_whatsapp = $user->whatsapp;
-            $user_name = $user->user_name;
 
             if ($user) {
 
                 $user->delete();
-                $user_whatsapp;
+                BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+                    ->where('company_id', Auth::user()->company_id)
+                    ->delete();
 
-                $emailExists = DeletedBlueCollarEmployee::where('whatsapp', $user_whatsapp)->where('company_id', Auth::user()->company_id)->exists();
+                $emailExists = DeletedBlueCollarEmployee::where('whatsapp', $user->whatsapp)
+                    ->where('company_id', Auth::user()->company_id)
+                    ->exists();
                 if (!$emailExists) {
                     DeletedBlueCollarEmployee::create([
-                        'whatsapp' => $user_whatsapp,
+                        'whatsapp' => $user->whatsapp,
                         'company_id' => Auth::user()->company_id,
                     ]);
                 }
 
-                log_action("Blue Collar User deleted : {$user_name}");
+                log_action("Blue Collar User deleted : {$user->user_name}");
 
-                return response()->json(['success' => true, 'message' => __('User deleted successfully')], 200);
+                return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
             } else {
-                log_action("User not found to delete");
-                return response()->json(['success' => false, 'message' => __('User not found')], 404);
+                log_action("Employee not found to delete");
+                return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
@@ -369,27 +373,30 @@ class ApiBlueCollarController extends Controller
             $group = BlueCollarGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)
                 ->first();
-            $group_name = $group->group_name;
+
             if (!$group) {
                 return response()->json(['success' => false, 'message' => __('Group not found')], 404);
             }
 
-            log_action("Blue Collar group deleted : {$group_name}");
+            log_action("Blue Collar group deleted : {$group->group_name}");
+
+            $existsCampaign = WaCampaign::where('users_group', $grpId)
+                ->where('company_id', $companyId)
+                ->exists();
+            if ($existsCampaign) {
+                return response()->json(['success' => false, 'message' => __('This division is associated with a campaign delete campaign first')], 422);
+            }
 
             BlueCollarGroup::where('group_id', $grpId)
                 ->where('company_id', $companyId)
                 ->delete();
 
-            // Find all users in the group
-            $users = BlueCollarEmployee::where('group_id', $grpId)->get();
-            if ($users->isNotEmpty()) {
-                foreach ($users as $user) {
-                    BlueCollarTrainingUser::where('user_id', $user->id)->delete();
-                }
-            }
-
             // Delete employees in the group regardless of campaigns
-            BlueCollarEmployee::where('group_id', $grpId)->delete();
+            $users = BlueCollarEmployee::where('group_id', $grpId)->get();
+            $whatsapp = $users->pluck('whatsapp')->toArray();
+            BlueCollarTrainingUser::whereIn('user_whatsapp', $whatsapp)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
 
             DB::commit();
             return response()->json(['success' => true, 'message' => __('Blue Collar Division deleted successfully')], 200);

@@ -232,27 +232,13 @@ class ApiTprmController extends Controller
             }
             TpmrVerifiedDomain::where('domain', $domain)->where('company_id', Auth::user()->company_id)->delete();
 
-            $groupExist = TprmUsersGroup::where('group_name', $domain)->first();
-            if ($groupExist) {
-                TprmUsers::where('group_id', $groupExist->group_id)->delete();
-                $campExist = TprmCampaign::where('users_group', $groupExist->group_id)->first();
-                if ($campExist) {
-                    TprmCampaignLive::where('campaign_id', $campExist->campaign_id)->delete();
-                    TprmCampaignReport::where('campaign_id', $campExist->campaign_id)->delete();
-                    $campExist->delete();
-                }
-                $groupExist->delete();
-            }
 
-            log_action("Domain deleted : {$domain}");
+            log_action("TPRM Domain deleted : {$domain}");
             return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
            
         } catch (\Exception $e) {
-            // Rollback the transaction if an error occurs
-            DB::rollBack();
+            log_action("TPRM Domain delete failed : {$domain}");
             return response()->json(['success' => false, 'message' => __('An error occurred: ') . $e->getMessage()], 500);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
