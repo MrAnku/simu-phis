@@ -237,7 +237,7 @@ class ApiTprmController extends Controller
             return response()->json(['success' => true, 'message' => __('Domain deleted successfully')], 200);
            
         } catch (\Exception $e) {
-            log_action("TPRM Domain delete failed : {$domain}");
+            log_action("TPRM Domain delete failed");
             return response()->json(['success' => false, 'message' => __('An error occurred: ') . $e->getMessage()], 500);
         }
     }
