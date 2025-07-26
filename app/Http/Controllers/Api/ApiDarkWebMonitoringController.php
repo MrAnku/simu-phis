@@ -18,13 +18,6 @@ class ApiDarkWebMonitoringController extends Controller
                 ->where('company_id', $company_id)
                 ->get();
 
-            if ($breachedEmails->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __("No Breached Emails Found")
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => __("Breached Emails Retrieved Successfully"),
