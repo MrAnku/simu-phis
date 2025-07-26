@@ -523,4 +523,9 @@ Route::prefix('learn')->group(function () {
 
     // Translate traning lang
     Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
+
+    // Fetch Assigned Games
+    Route::get('/fetch-assigned-games', [ApiLearnController::class, 'fetchAssignedGames']);
+
+    Route::post('update-game-score', [ApiLearnController::class, 'updateGameScore']);
 });

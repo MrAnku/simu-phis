@@ -13,6 +13,7 @@ class TrainingGame extends Model
         'name',
         'slug',
         'cover_image',
-        'company_id'
+        'company_id',
+        'passing_score'
     ];
 }

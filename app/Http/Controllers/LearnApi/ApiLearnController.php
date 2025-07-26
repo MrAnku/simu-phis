@@ -193,16 +193,17 @@ class ApiLearnController extends Controller
             }
 
             $allTrainings = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $request->email)->get();
+                ->where('user_email', $request->email)
+                ->where('training_type', '!=', 'games')->get();
 
             $completedTrainings = TrainingAssignedUser::with('trainingData')
                 ->where('user_email', $request->email)
-                ->where('completed', 1)->get();
+                ->where('completed', 1)->where('training_type', '!=', 'games')->get();
 
             $inProgressTrainings = TrainingAssignedUser::with('trainingData')
                 ->where('user_email', $request->email)
                 ->where('training_started', 1)
-                ->where('completed', 0)->get();
+                ->where('completed', 0)->where('training_type', '!=', 'games')->get();
 
             return response()->json([
                 'success' => true,
@@ -219,7 +220,7 @@ class ApiLearnController extends Controller
                     'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
                         ->where('user_email', $request->email)
                         ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best')),
+                        ->where('completed', 0)->where('training_type', '!=', 'games')->avg('personal_best')),
                 ],
                 'message' => 'Courses fetched successfully for ' . $request->email
             ], 200);
@@ -1639,5 +1640,143 @@ class ApiLearnController extends Controller
         // Test if it's valid now
         json_decode($content);
         return json_last_error() === JSON_ERROR_NONE ? $content : false;
+    }
+
+    public function fetchAssignedGames(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            $user = Users::where('user_email', $request->email)->first();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No user found with this email.'
+                ], 404);
+            }
+
+            $allTrainings = TrainingAssignedUser::with('trainingGame')
+                ->where('user_email', $request->email)
+                ->where('training_type', 'games')->get();
+
+            $completedTrainings = TrainingAssignedUser::with('trainingGame')
+                ->where('user_email', $request->email)
+                ->where('completed', 1)->where('training_type', 'games')->get();
+
+            $inProgressTrainings = TrainingAssignedUser::with('trainingGame')
+                ->where('user_email', $request->email)
+                ->where('training_started', 1)
+                ->where('completed', 0)->where('training_type', 'games')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'email' => $request->email,
+                    'all_trainings' => $allTrainings,
+                    'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'total_trainings' => TrainingAssignedUser::with('trainingGame')
+                        ->where('user_email', $request->email)->count(),
+                    'total_trainings' => $allTrainings->count(),
+                    'total_completed_trainings' => $completedTrainings->count(),
+                    'total_in_progress_trainings' => $inProgressTrainings->count(),
+                    'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingGame')
+                        ->where('user_email', $request->email)
+                        ->where('training_started', 1)
+                        ->where('completed', 0)->where('training_type', 'games')->avg('personal_best')),
+                ],
+                'message' => 'Games fetched successfully for ' . $request->email
+            ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateGameScore(Request $request)
+    {
+        try {
+            $assignedUserId = base64_decode($request->assignedUserId);
+            $assignedUser = TrainingAssignedUser::where('id', $assignedUserId)->first();
+            if ($assignedUser->personal_best < $request->score) {
+                $assignedUser->personal_best = $request->score;
+            }
+            $assignedUser->game_time = $request->timeConsumed;
+
+            // Assign Grade based on score
+            if ($request->score >= 90) {
+                $assignedUser->grade = 'A+';
+            } elseif ($request->score >= 80) {
+                $assignedUser->grade = 'A';
+            } elseif ($request->score >= 70) {
+                $assignedUser->grade = 'B';
+            } elseif ($request->score >= 60) {
+                $assignedUser->grade = 'C';
+            } else {
+                $assignedUser->grade = 'D';
+            }
+
+            $badge = getMatchingBadge('score', $request->score);
+            // This helper function accepts a criteria type and value, and returns the first matching badge
+
+            if ($badge) {
+                // Decode existing badges (or empty array if null)
+                $existingBadges = json_decode($assignedUser->badge, true) ?? [];
+
+                // Avoid duplicates
+                if (!in_array($badge, $existingBadges)) {
+                    $existingBadges[] = $badge; // Add new badge
+                }
+
+                // Save back to the model
+                $assignedUser->badge = json_encode($existingBadges);
+            }
+
+            if ($assignedUser->trainingGame->passing_score <= $request->score) {
+                $assignedUser->completed = 1;
+                $assignedUser->completion_date = now()->format('Y-m-d');
+
+                $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $assignedUser->user_email)
+                    ->where('completed', 1)->count();
+
+                $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
+                // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                if ($badge) {
+                    // Decode existing badges (or empty array if null)
+                    $existingBadges = json_decode($assignedUser->badge, true) ?? [];
+
+                    // Avoid duplicates
+                    if (!in_array($badge, $existingBadges)) {
+                        $existingBadges[] = $badge; // Add new badge
+                    }
+
+                    // Save back to the model
+                    $assignedUser->badge = json_encode($existingBadges);
+                }
+            }
+            $assignedUser->save();
+            return response()->json([
+                'success' => true,
+                'message' => 'Game Score updated successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
