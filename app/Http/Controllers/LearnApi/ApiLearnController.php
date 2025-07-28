@@ -1589,7 +1589,7 @@ class ApiLearnController extends Controller
             }
 
             log_action("JSON data successfully translated to {$langName}", 'learner', 'learner');
-            return response()->json(['success' => true, 'message' => 'Translated Json retreived successfully', 'data' => $translatedData],  422);
+            return response()->json(['success' => true, 'message' => 'Translated Json retreived successfully', 'data' => $translatedData],  200);
 
             // return response()->json([
             //     'status' => 1,
