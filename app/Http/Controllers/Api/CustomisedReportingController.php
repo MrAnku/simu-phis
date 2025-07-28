@@ -102,32 +102,59 @@ class CustomisedReportingController extends Controller
             $type = $request->query('type');
             $cardData = [];
             if ($type == 'employees') {
-                $cardData = Users::where('company_id', $companyId)
+                $cardData['title'] = __('Employees');
+                $cardData['period'] = __('Last 30 Days');
+                $cardData['value'] = Users::where('company_id', $companyId)
                     ->distinct('user_email')
-                    ->count('user_email');
+                    ->count();
+                $totalEmployees = Users::where('company_id', $companyId)
+                    ->distinct('user_email')
+                    ->count();
+
+                // Example: fraction = percentage of employees added in last 30 days
+                $employeesLast30Days = Users::where('company_id', $companyId)
+                    ->where('created_at', '>=', now()->subDays(30))
+                    ->distinct('user_email')
+                    ->count();
+
+                $cardData['fraction'] = $totalEmployees > 0 ? round(($employeesLast30Days / $totalEmployees) * 100, 2) : 0;
+                $cardData['pp'] = $employeesLast30Days;
+                $cardData['icon'] = 'LucideUsers';
+                $cardData['iconColor'] = 'text-blue-500';
             }
             if ($type == 'assigned_trainings') {
-                $cardData = TrainingAssignedUser::where('company_id', $companyId)
-                    ->count();
+                $cardData['title'] = __('Assigned Trainings');
+                $cardData['period'] = __('Total');
+                $cardData['value'] = TrainingAssignedUser::where('company_id', $companyId)->count();
+                $cardData['icon'] = 'LucideBookOpen';
+                $cardData['iconColor'] = 'text-green-500';
             }
             if ($type == 'assigned_policies') {
-                $cardData = AssignedPolicy::where('company_id', $companyId)
-                    ->count();
+                $cardData['title'] = __('Assigned Policies');
+                $cardData['period'] = __('Total');
+                $cardData['value'] = AssignedPolicy::where('company_id', $companyId)->count();
+                $cardData['icon'] = 'LucideFileText';
+                $cardData['iconColor'] = 'text-yellow-500';
             }
             if ($type == 'compromised_employees') {
-                $cardData = CampaignLive::where('company_id', $companyId)
+                $compromisedCount = CampaignLive::where('company_id', $companyId)
                     ->where('emp_compromised', 1)
                     ->count();
-                $cardData += QuishingLiveCamp::where('company_id', $companyId)
+                $compromisedCount += QuishingLiveCamp::where('company_id', $companyId)
                     ->where('compromised', '1')
                     ->count();
-                $cardData += WaLiveCampaign::where('company_id', $companyId)
+                $compromisedCount += WaLiveCampaign::where('company_id', $companyId)
+                    ->where('compromised', 1)
+                    ->count();
+                $compromisedCount += AiCallCampLive::where('company_id', $companyId)
                     ->where('compromised', 1)
                     ->count();
 
-                $cardData += AiCallCampLive::where('company_id', $companyId)
-                    ->where('compromised', 1)
-                    ->count();
+                $cardData['title'] = __('Compromised Employees');
+                $cardData['period'] = __('Total');
+                $cardData['value'] = $compromisedCount;
+                $cardData['icon'] = 'LucideAlertTriangle';
+                $cardData['iconColor'] = 'text-red-500';
             }
 
             return response()->json([
