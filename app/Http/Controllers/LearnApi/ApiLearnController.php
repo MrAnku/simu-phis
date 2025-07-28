@@ -220,7 +220,7 @@ class ApiLearnController extends Controller
                     'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
                         ->where('user_email', $request->email)
                         ->where('training_started', 1)
-                        ->where('completed', 0)->where('training_type', '!=', 'games')->avg('personal_best')),
+                        ->where('completed', 0)->avg('personal_best')),
                 ],
                 'message' => 'Courses fetched successfully for ' . $request->email
             ], 200);
@@ -875,12 +875,12 @@ class ApiLearnController extends Controller
             $allAssignedTrainings = [];
             foreach ($allAssignedTrainingMods as $trainingMod) {
                 $allAssignedTrainings[] = [
-                    'training_name' => $trainingMod->trainingData->name,
+                    'training_name' => $trainingMod->training_type == 'games' ? $trainingMod->trainingGame->name : $trainingMod->trainingData->name,
                     'score' => $trainingMod->personal_best,
                     'completed' => $trainingMod->completed ? 'Yes' : 'No',
                     'training_due_date' => $trainingMod->training_due_date,
                     'completion_date' => $trainingMod->completion_date,
-                    'training_type' => 'Training Module',
+                    'training_type' => $trainingMod->training_type,
                 ];
             }
 
@@ -973,7 +973,8 @@ class ApiLearnController extends Controller
             ]);
 
             $trainingUsers = TrainingAssignedUser::where('user_email', $request->email)
-                ->where('personal_best', '>', 0)->get();
+                ->where('training_started', 1)
+                ->where('grade', '!=', 'null')->get();
 
             $assignedTrainingModules = [];
             $assignedScormModules = [];
@@ -1000,7 +1001,8 @@ class ApiLearnController extends Controller
             }
 
             $scormUsers = ScormAssignedUser::where('user_email', $request->email)
-                ->where('personal_best', '>', 0)->get();
+                ->where('scorm_started', 1)
+                ->where('grade', '!=', 'null')->get();
 
             foreach ($scormUsers as $user) {
                 $assignedScormModules[] = [
@@ -1041,13 +1043,23 @@ class ApiLearnController extends Controller
                     'total_passed_trainings' => TrainingAssignedUser::where('user_email', $request->email)
                         ->where('completed', 1)->count() + ScormAssignedUser::where('user_email', $request->email)
                         ->where('completed', 1)->count(),
-                    'current_avg' => (TrainingAssignedUser::where('user_email', $request->email)
+                    'current_avg' => (
+                        TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
-                        ->sum('personal_best') + ScormAssignedUser::where('user_email', $request->email)
+                        ->sum('personal_best')
+                        +
+                        ScormAssignedUser::where('user_email', $request->email)
                         ->where('scorm_started', 1)
-                        ->sum('personal_best')) / (TrainingAssignedUser::where('user_email', $request->email)
-                        ->count() + ScormAssignedUser::where('user_email', $request->email)
-                        ->count()),
+                        ->sum('personal_best')
+                    ) / max(1, (
+                        TrainingAssignedUser::where('user_email', $request->email)
+                        ->where('training_started', 1)
+                        ->count()
+                        +
+                        ScormAssignedUser::where('user_email', $request->email)
+                        ->where('scorm_started', 1)
+                        ->count()
+                    )),
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -1115,11 +1127,19 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $trainingGoals = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->get();
+            $nonGameGoals = TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->get();
+
+            $gameGoals = TrainingAssignedUser::with('trainingGame')->where('user_email', $request->email)->where('training_type',  'games')->where('personal_best', '<', 70)->get();
+
+            $trainingGoals = $nonGameGoals->concat($gameGoals);
 
             $scormGoals = ScormAssignedUser::with('scormTrainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->get();
 
-            $activeGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->where('training_started', 1)->get();
+            $activeNonGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+
+            $activeGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type',  'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+
+            $activeGoals = $activeNonGameGoals->concat($activeGameGoals);
 
             return response()->json([
                 'success' => true,
@@ -1129,13 +1149,11 @@ class ApiLearnController extends Controller
                     'all_scorm_goals' => $scormGoals ?? [],
                     'active_goals' => $activeGoals ?? [],
                     'total_active_goals' => count($activeGoals),
-                    'avg_progress_training' => round(TrainingAssignedUser::with('trainingData')
-                        ->where('user_email', $request->email)
+                    'avg_progress_training' => round(TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
                         ->where('completed', 1)->avg('personal_best')),
                     'total_training_goals' => count($trainingGoals) + count($scormGoals),
-                    'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
-                        ->where('user_email', $request->email)
+                    'avg_in_progress_trainings' => round(TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
                 ]
@@ -1210,22 +1228,20 @@ class ApiLearnController extends Controller
 
             $assignedTrainings = TrainingAssignedUser::where('user_email', $request->email)
                 ->with('trainingData')
-                ->where('personal_best', '>', 0)
                 ->get();
 
             foreach ($assignedTrainings as $training) {
                 $allAssignments[] = [
-                    'training_name' => $training->trainingData->name,
-                    'type' => $training->trainingData->training_type,
+                    'training_name' => $training->training_type == 'games' ? $training->trainingGame->name : $training->trainingData->name,
+                    'type' => $training->training_type == 'games' ? 'games' : $training->trainingData->training_type,
                     'score' => $training->personal_best,
                     'assigned_date' => $training->assigned_date,
-                    'grade' => $training->grade,
+                    'grade' => $training->grade ?? 'N/A',
                 ];
             }
 
             $assignedScorm = ScormAssignedUser::where('user_email', $request->email)
                 ->with('scormTrainingData')
-                ->where('personal_best', '>', 0)
                 ->get();
 
 
@@ -1235,7 +1251,7 @@ class ApiLearnController extends Controller
                     'type' => 'Scorm',
                     'score' => $scorm->personal_best,
                     'assigned_date' => $scorm->assigned_date,
-                    'grade' => $scorm->grade,
+                    'grade' => $scorm->grade ?? 'N/A',
                 ];
             }
 
