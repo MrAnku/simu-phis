@@ -330,6 +330,11 @@ class ApiLearnController extends Controller
                 $user = $rowData->user_email;
             }
 
+            if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
+                $rowData->grade = 'F';
+                $rowData->save();
+            }
+
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
@@ -480,6 +485,11 @@ class ApiLearnController extends Controller
                     ], 404);
                 }
                 $user = $rowData->user_email;
+            }
+
+            if ($request->scormTrainingScore == 0 && $rowData->personal_best == 0) {
+                $rowData->grade = 'F';
+                $rowData->save();
             }
 
             if ($rowData && $request->scormTrainingScore > $rowData->personal_best) {
