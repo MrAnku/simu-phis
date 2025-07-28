@@ -418,7 +418,8 @@ class ApiLearnController extends Controller
                         'training_name' => $rowData->trainingData->name,
                         'training_score' => $request->trainingScore,
                         'company_name' => $companyName,
-                        'logo' => $companyLogo
+                        'logo' => $companyLogo,
+                        'company_id' => $rowData->company_id
                     ];
 
                     $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
@@ -542,7 +543,8 @@ class ApiLearnController extends Controller
                         'training_name' => $rowData->scormTrainingData->name,
                         'training_score' => $request->scormTrainingScore,
                         'company_name' => $companyName,
-                        'logo' => $companyLogo
+                        'logo' => $companyLogo,
+                        'company_id' => $rowData->company_id
                     ];
 
                     $pdfContent = $this->generateScormCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
