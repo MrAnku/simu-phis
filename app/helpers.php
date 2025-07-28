@@ -256,6 +256,20 @@ if (!function_exists('changeVideoLanguage')) {
         return $newUrl;
     }
 }
+if (!function_exists('getClientIp')) {
+    function getClientIp()
+    {
+        $forwarded = request()->header('X-Forwarded-For');
+        if ($forwarded) {
+            // May contain multiple IPs: client, proxy1, proxy2...
+            $ips = explode(',', $forwarded);
+            return trim($ips[0]); // First is the actual client IP
+        }
+
+        return request()->ip(); // fallback
+    }
+}
+
 
 if (!function_exists('log_action')) {
     function log_action($details, $role = 'company', $role_id = null)
@@ -267,7 +281,7 @@ if (!function_exists('log_action')) {
             'role' => $role,
             'msg' => $details,
             'role_id' => $role_id,
-            'ip_address' => request()->ip(),
+            'ip_address' => getClientIp(),
             'user_agent' => request()->userAgent(),
         ]);
 
@@ -576,7 +590,6 @@ if (!function_exists('checkNotificationLanguage')) {
         // Default to English if no language is set
         return 'en';
     }
-
 }
 
 if (!function_exists('translateHtmlToAmharic')) {
