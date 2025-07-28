@@ -528,4 +528,8 @@ Route::prefix('learn')->group(function () {
     Route::get('/fetch-assigned-games', [ApiLearnController::class, 'fetchAssignedGames']);
 
     Route::post('update-game-score', [ApiLearnController::class, 'updateGameScore']);
+
+    // AI Training
+    Route::get('/load-ai-training', [ApiLearnController::class, 'generateAiTraining'])->name('generate.training');
+    Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining'])->name('translate.ai.training');
 });
