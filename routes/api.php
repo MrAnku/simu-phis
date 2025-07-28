@@ -349,6 +349,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/', [CustomisedReportingController::class, 'index']);
         Route::post('/add-card', [CustomisedReportingController::class, 'addCard']);
         Route::put('/add-widgets', [CustomisedReportingController::class, 'addWidgets']);
+
+        //get routes
+        Route::get('/card', [CustomisedReportingController::class, 'cardData']);
+
     });
 
     Route::prefix('employees')->group(function () {
