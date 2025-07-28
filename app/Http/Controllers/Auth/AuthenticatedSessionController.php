@@ -62,18 +62,13 @@ class AuthenticatedSessionController extends Controller
 
         $mfaEnabled = $this->checkMfa();
         if ($mfaEnabled) {
-            $user = Auth::user();
-            $company_settings = CompanySettings::where('email', $user->email)->first();
-            if ($company_settings->mfa == 1) {
-                // Store the user ID in the session and logout
-                // session(['mfa_user_id' => $user->id]);
-                Auth::logout($user);
-                return response()->json([
-                    "mfa" => true,
-                    'company' => Auth::user(),
-                    "success" => true
-                ]);
-            }
+
+            Auth::logout(Auth::user());
+            return response()->json([
+                "mfa" => true,
+                'company' => Auth::user(),
+                "success" => true
+            ]);
         }
         $enabledFeatures = Company::where('company_id', Auth::user()->company_id)->value('enabled_feature');
 
@@ -263,7 +258,7 @@ class AuthenticatedSessionController extends Controller
             ]);
 
             $otp = Otp::where('email', $request->email)->first();
-            
+
             if ($otp->otp != $request->otp) {
                 return response()->json([
                     'success' => false,
@@ -311,13 +306,12 @@ class AuthenticatedSessionController extends Controller
                 'password' => bcrypt($request->password),
             ]);
 
-            if($updated){      
+            if ($updated) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Password changed successfully',
                 ], 200);
             }
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -349,7 +343,7 @@ class AuthenticatedSessionController extends Controller
         $company_settings = CompanySettings::where('email', $user->email)->first();
         if ($company_settings->mfa == 1) {
             // Store the user ID in the session and logout
-            Auth::logout($user);
+            // Auth::logout($user);
             return true;
         }
     }

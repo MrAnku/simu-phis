@@ -111,17 +111,12 @@ class SSOController extends Controller
 
         // Check MFA
         if ($this->checkMfa()) {
-            $user = Auth::user();
-            $company_settings = CompanySettings::where('email', $user->email)->first();
-
-            if ($company_settings && $company_settings->mfa == 1) {
-                Auth::logout($user);
-                return response()->json([
-                    "mfa" => true,
-                    'company' => $user,
-                    "success" => true
-                ]);
-            }
+            Auth::logout(Auth::user());
+            return response()->json([
+                "mfa" => true,
+                'company' => Auth::user(),
+                "success" => true
+            ]);
         }
 
         // Get enabled features
@@ -144,7 +139,7 @@ class SSOController extends Controller
         $company_settings = CompanySettings::where('email', $user->email)->first();
         if ($company_settings->mfa == 1) {
             // Store the user ID in the session and logout
-            Auth::logout($user);
+            // Auth::logout($user);
             return true;
         }
     }
