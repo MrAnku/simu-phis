@@ -1556,15 +1556,19 @@ class ApiReportingController extends Controller
                 ->where('personal_best', '>=', 10)
                 ->count();
 
-            $educatedUserRate = $usersWhoScored / $totalAssignedUsers * 100;
+            $educatedUserRate = $totalAssignedUsers > 0 ? ($usersWhoScored / $totalAssignedUsers * 100) : 0;
 
             $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
-            $totalEmployees = $companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees;
+            $totalEmployees = $companyLicense
+                ? ($companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees)
+                : 0;
 
-            $rolesResponsilbilityPercent = round($completedTraining  / $totalEmployees * 100);
+            $rolesResponsilbilityPercent = ($totalEmployees > 0) ? round($completedTraining / $totalEmployees * 100) : 0;
 
-            $certifiedUsersRate = TrainingAssignedUser::where('company_id', $companyId)
-                ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100;
+            $certifiedUsersRate = $totalAssignedUsers > 0
+                ? TrainingAssignedUser::where('company_id', $companyId)
+                    ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100
+                : 0;
 
             $emailCampData = Campaign::where('company_id', $companyId)
                 ->pluck('days_until_due');
