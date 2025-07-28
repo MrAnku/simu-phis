@@ -37,7 +37,7 @@ class ApiWhiteLabelController extends Controller
             $whiteLabelExists = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->exists();
             if ($whiteLabelExists) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'White Label already added for your company.'
                 ], 422);
             }
@@ -45,7 +45,7 @@ class ApiWhiteLabelController extends Controller
             $domainExists = WhiteLabelledCompany::where('domain', $request->domain)->exists();
             if ($domainExists) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'Domain already added by another company.'
                 ], 422);
             }
@@ -53,7 +53,7 @@ class ApiWhiteLabelController extends Controller
             $learnDomainExists = WhiteLabelledCompany::where('learn_domain', $request->learn_domain)->exists();
             if ($learnDomainExists) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'Learn domain already added by another company.'
                 ], 422);
             }
@@ -61,7 +61,7 @@ class ApiWhiteLabelController extends Controller
             $smtpUsernameExists = WhiteLabelledSmtp::where('smtp_username', $request->smtp_username)->exists();
             if ($smtpUsernameExists) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'SMTP username already added by another company.'
                 ], 422);
             }
@@ -78,7 +78,7 @@ class ApiWhiteLabelController extends Controller
             ];
             if (!$this->checkSmtpConnection($smtpCredentials)) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'Invalid SMTP credentials.'
                 ], 422);
             }
@@ -128,20 +128,20 @@ class ApiWhiteLabelController extends Controller
 
                 log_action("White label request submitted for the company : " . Auth::user()->company_name);
                 return response()->json([
-                    'status' => 'success',
+                    'success' => true,
                     'message' => __('Whitelabelling request submitted successfully.')
                 ], 201);
             }
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }

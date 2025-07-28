@@ -84,7 +84,7 @@ class ApiPhishingWebsitesController extends Controller
         // Check if campaignId exists
         if (!$id) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Website id is required.')
             ], 400);
         }
@@ -94,19 +94,19 @@ class ApiPhishingWebsitesController extends Controller
 
             if (!$website) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Website not found.')
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
+                'success' => true,
                 'message' => __('Website template found.'),
                 'data' => $website
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }

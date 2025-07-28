@@ -260,14 +260,14 @@ class ApiSettingsController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'msg' => "MFA QR code generated successfully.",
+                        'message' => "MFA QR code generated successfully.",
                         'QR_Image' => $QR_Image,
                         'secretKey' => encrypt($secretKey)
                     ], 200);
                 } else {
                     return response()->json([
                         'success' => false,
-                        'msg' => __('Failed to enable MFA.')
+                        'message' => __('Failed to enable MFA.')
                     ], 500);
                 }
             } else {
@@ -284,14 +284,14 @@ class ApiSettingsController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'msg' => __('Multi-Factor Authentication is disabled.')
+                        'message' => __('Multi-Factor Authentication is disabled.')
                     ], 200);
                 } else {
                     log_action("Failed to disable MFA");
 
                     return response()->json([
                         'success' => false,
-                        'msg' => __('Failed to disable MFA.')
+                        'message' => __('Failed to disable MFA.')
                     ], 500);
                 }
             }
@@ -300,8 +300,7 @@ class ApiSettingsController extends Controller
 
             return response()->json([
                 'success' => false,
-                'msg' => __('An error occurred while updating MFA.'),
-                'error' => $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }
