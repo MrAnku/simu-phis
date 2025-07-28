@@ -313,7 +313,7 @@ class AuthenticatedSessionController extends Controller
 
             if($updated){      
                 return response()->json([
-                    'success' => false,
+                    'success' => true,
                     'message' => 'Password changed successfully',
                 ], 200);
             }
