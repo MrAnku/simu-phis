@@ -111,10 +111,13 @@ class SSOController extends Controller
 
         // Check MFA
         if ($this->checkMfa()) {
+            $email = Auth::user()->email;
             Auth::logout(Auth::user());
             return response()->json([
                 "mfa" => true,
-                'company' => Auth::user(),
+                'company' => [
+                    'email' => $email,
+                ],
                 "success" => true
             ]);
         }
