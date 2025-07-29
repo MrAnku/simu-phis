@@ -13,7 +13,7 @@ class CampaignTrainingService
     public static function assignTraining($campaign, $trainingModules = null, $smishing = false, $scormTrainings = null)
     {
 
-        if ($trainingModules !== null) {
+        if ($trainingModules !== null || $scormTrainings !== null) {
             return self::assignAllTrainings($campaign, $trainingModules, $smishing, $scormTrainings);
         } else {
             return self::assignSingleTraining($campaign, $smishing);

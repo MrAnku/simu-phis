@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiLearnBlueCollarController extends Controller
 {
-      public function createNewToken(Request $request)
+    public function createNewToken(Request $request)
     {
         try {
             $request->validate(['user_whatsapp' => 'required|integer']);
@@ -52,6 +52,8 @@ class ApiLearnBlueCollarController extends Controller
             //     $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
             // }
 
+
+
             $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
 
             // Insert new record into the database
@@ -71,60 +73,55 @@ class ApiLearnBlueCollarController extends Controller
                 ], 422);
             }
 
+            // WhatsApp API Configuration
+            $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
+            $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
+            $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
+
+            $token = encrypt($request->user_whatsapp);
 
 
-            // $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-
-
-             // WhatsApp API Configuration
-        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
-        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
-        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
-
-        $token = encrypt($request->user_whatsapp);
-
-
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $request->user_whatsapp, // Replace with actual user phone number
-            "type" => "template",
-            "template" => [
-                "name" => "training_message",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => 'SANA'],
-                            ["type" => "text", "text" => 'ABCD'],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token],
+            $whatsapp_data = [
+                "messaging_product" => "whatsapp",
+                "to" => $request->user_whatsapp,
+                "type" => "template",
+                "template" => [
+                    "name" => "session_regenerate",
+                    "language" => ["code" => "en"], // or "en_US" if that's what you used
+                    "components" => [
+                        [
+                            "type" => "body",
+                            "parameters" => [
+                                ["type" => "text", "text" => 'Sana'], // {{1}} - user name
+                                ["type" => "text", "text" => 'Your training session has been regenerated.'], // {{2}} - custom message
+                                ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token], // {{3}} - training link
+                            ]
                         ]
                     ]
                 ]
-            ]
-        ];
+            ];
 
 
-         // Send WhatsApp message
+            // Send WhatsApp message
 
-        $whatsapp_response = Http::withHeaders([
-            "Authorization" => "Bearer {$access_token}",
-            "Content-Type" => "application/json"
-        ])->withOptions([
-            'verify' => false
-        ])->post($whatsapp_url, $whatsapp_data);
+            $whatsapp_response = Http::withHeaders([
+                "Authorization" => "Bearer {$access_token}",
+                "Content-Type" => "application/json"
+            ])->withOptions([
+                'verify' => false
+            ])->post($whatsapp_url, $whatsapp_data);
 
 
-        if ($whatsapp_response->successful()) {
-            // log_action("Bluecolar training Reminder Sent | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
-            return response()->json(['success' => __('Session regenerate sent via WhatsApp')]);
-        } else {
-            return response()->json([
-                'error' => __('Failed to send WhatsApp message'),
-                'status' => $whatsapp_response->status(),
-                'response' => $whatsapp_response->body()
-            ], 500);
-        }
+            if ($whatsapp_response->successful()) {
+                // log_action("Bluecolar training Reminder Sent | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
+                return response()->json(['success' => __('Session regenerate sent via WhatsApp')]);
+            } else {
+                return response()->json([
+                    'error' => __('Failed to send WhatsApp message'),
+                    'status' => $whatsapp_response->status(),
+                    'response' => $whatsapp_response->body()
+                ], 500);
+            }
 
 
 

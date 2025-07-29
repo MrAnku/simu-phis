@@ -6,6 +6,7 @@ use App\Models\Company;
 use InvalidArgumentException;
 use App\Models\WhiteLabelledSmtp;
 use App\Models\WhiteLabelledCompany;
+use App\Models\WhiteLabelledWhatsappConfig;
 
 class CheckWhitelabelService
 {
@@ -56,8 +57,12 @@ class CheckWhitelabelService
                 'mail.from.address' => $smtpData->from_address,
                 'mail.from.name' => $smtpData->from_name,
             ]);
-        } 
+        }
     }
 
-
+    public function geṭWhatsappConfig(): object
+    {
+        return WhiteLabelledWhatsappConfig::where('company_id', $this->companyId)
+            ->first();
+    }
 }

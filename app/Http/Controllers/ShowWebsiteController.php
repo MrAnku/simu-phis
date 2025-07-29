@@ -189,7 +189,7 @@ class ShowWebsiteController extends Controller
         $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
 
         if ($all_camp->training_assignment == 'all') {
-           
+
 
             $trainingModules = [];
             $scormTrainings = [];
@@ -287,17 +287,31 @@ class ShowWebsiteController extends Controller
             }
         } else {
 
-            // assign training to bluecollar employees
-            $trainingAssigned = DB::table('blue_collar_training_users')
-                ->where('user_whatsapp', $campaign->user_phone)
-                ->where('training', $campaign->training_module)
-                ->first();
+            $trainingAssigned = null;
+            $scormAssigned = null;
 
-            if ($trainingAssigned) {
+            // assign training to bluecollar employees
+            if ($all_camp->training_module !== null) {
+                $trainingAssigned = DB::table('blue_collar_training_users')
+                    ->where('user_whatsapp', $all_camp->user_phone)
+                    ->where('training', $all_camp->training_module)
+                    ->first();
+            }
+
+            if ($all_camp->training_module !== null) {
+                $scormAssigned = DB::table('blue_collar_scorm_assigned_users')
+                    ->where('user_whatsapp', $all_camp->user_phone)
+                    ->where('scorm', $all_camp->scorm_training)
+                    ->first();
+            }
+
+
+            if ($trainingAssigned && $scormAssigned) {
                 // return "Send Remainder";
                 return $this->whatsappSendTrainingReminder($campaign, $trainingAssigned->id);
             } else {
                 // return "Assign Training";
+                // echo "kk";
                 return $this->whatsappAssignFirstTraining($campaign);
             }
         }
@@ -305,21 +319,35 @@ class ShowWebsiteController extends Controller
 
     private function whatsappAssignFirstTraining($campaign)
     {
-        $training_assigned = DB::table('blue_collar_training_users')
-            ->insertGetId([
-                'campaign_id' => $campaign->campaign_id,
-                'user_id' => $campaign->user_id,
-                'user_name' => $campaign->user_name,
-                'user_whatsapp' => $campaign->user_phone,
-                'training' => $campaign->training_module,
-                'training_lang' => $campaign->training_lang,
-                'training_type' => $campaign->training_type,
-                'assigned_date' => now()->toDateString(),
-                'training_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
-                'company_id' => $campaign->company_id
-            ]);
+        if ($campaign->training_module !== null) {
+            $training_assigned = DB::table('blue_collar_training_users')
+                ->insertGetId([
+                    'campaign_id' => $campaign->campaign_id,
+                    'user_id' => $campaign->user_id,
+                    'user_name' => $campaign->user_name,
+                    'user_whatsapp' => $campaign->user_phone,
+                    'training' => $campaign->training_module,
+                    'training_lang' => $campaign->training_lang,
+                    'training_type' => $campaign->training_type,
+                    'assigned_date' => now()->toDateString(),
+                    'training_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
+                    'company_id' => $campaign->company_id
+                ]);
+        }
 
-
+        if ($campaign->scorm_training !== null) {
+            $training_assigned = DB::table('blue_collar_scorm_assigned_users')
+                ->insertGetId([
+                    'campaign_id' => $campaign->campaign_id,
+                    'user_id' => $campaign->user_id,
+                    'user_name' => $campaign->user_name,
+                    'user_whatsapp' => $campaign->user_phone,
+                    'scorm' => $campaign->scorm_training,
+                    'assigned_date' => now()->toDateString(),
+                    'scorm_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
+                    'company_id' => $campaign->company_id
+                ]);
+        }
 
         if (!$training_assigned) {
             return response()->json(['error' => __('Failed to assign training')]);
@@ -471,6 +499,7 @@ class ShowWebsiteController extends Controller
                 return;
             }
             if ($wsh == 1) {
+                echo "jkj";
                 $this->assignTrainingByWhatsapp($campid);
                 return;
             }
