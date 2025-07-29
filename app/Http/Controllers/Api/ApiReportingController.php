@@ -1817,7 +1817,7 @@ class ApiReportingController extends Controller
                 'excellent' => [81, 100],
             ];
 
-            $divisionUserDetails = [];
+            $divisionGroupDetails = [];
 
             $totalUsers = \App\Models\Users::where('company_id', $companyId)->count();
             if ($totalUsers === 0) {
@@ -1825,8 +1825,9 @@ class ApiReportingController extends Controller
                     'success' => true,
                     'message' => __('No users found for this company'),
                     'data' => [
-                        'total_division_users' => 0,
-                        'division_user_details' => [],
+                        'total_divisions' => 0,
+                        'division_group_details' => [],
+                        'campaigns_last_7_days' => [],
                     ]
                 ], 200);
             }
@@ -1836,6 +1837,10 @@ class ApiReportingController extends Controller
                 if (!$users) {
                     continue;
                 }
+
+                $groupTotalUsers = 0;
+                $groupTotalSimulations = 0;
+                $groupTotalCompromisedSimulations = 0;
 
                 foreach ($users as $userId) {
                     $user = Users::where('id', $userId)
@@ -1864,15 +1869,6 @@ class ApiReportingController extends Controller
                         ->where('compromised', '1')
                         ->count();
 
-                    // TPRM simulation
-                    $totalTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
-                        ->where('user_id', $user->id)
-                        ->count();
-                    $compromisedTprm = \App\Models\TprmCampaignLive::where('company_id', $companyId)
-                        ->where('user_id', $user->id)
-                        ->where('emp_compromised', 1)
-                        ->count();
-
                     // WhatsApp simulation
                     $totalWhatsapp = \App\Models\WaLiveCampaign::where('company_id', $companyId)
                         ->where('user_id', $user->id)
@@ -1882,44 +1878,169 @@ class ApiReportingController extends Controller
                         ->where('compromised', 1)
                         ->count();
 
-                    // Final counts
-                    $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-                    $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+                    // Final counts (Tprm removed)
+                    $totalAll = $totalSimulations + $totalQuishing + $totalWhatsapp;
+                    $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedWhatsapp;
 
-                    $riskScore = $totalAll > 0
-                        ? 100 - round(($compromisedAll / $totalAll) * 100)
-                        : 100; // If no simulations, assume excellent
-
-                    // Determine risk level
-                    $riskLevel = 'unknown';
-                    foreach ($scoreRanges as $label => [$min, $max]) {
-                        if ($riskScore >= $min && $riskScore <= $max) {
-                            $riskLevel = $label;
-                            break;
-                        }
-                    }
-
-                    $divisionUserDetails[] = [
-                        'user_name' => $user->user_name,
-                        'user_email' => $user->user_email,
-                        'division' => $group->group_name,
-                        'user_job_title' => $user->user_job_title,
-                        'whatsapp_no' => $user->whatsapp,
-                        'risk_score' => $riskScore,
-                        'risk_level' => $riskLevel,
-                    ];
+                    // For group stats
+                    $groupTotalUsers++;
+                    $groupTotalSimulations += $totalAll;
+                    $groupTotalCompromisedSimulations += $compromisedAll;
                 }
+
+                // Campaigns ran in this group (by group id in campaigns)
+                $campaignsRan = \App\Models\Campaign::where('users_group', $group->group_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+
+                // Compromised rate and performance score
+                $compromisedRate = $groupTotalSimulations > 0
+                    ? round(($groupTotalCompromisedSimulations / $groupTotalSimulations) * 100, 2)
+                    : 0;
+
+                $performanceScore = $groupTotalSimulations > 0
+                    ? 100 - $compromisedRate
+                    : 100;
+
+                // Group risk score (average of user risk scores in group)
+                $groupRiskScore = $groupTotalUsers > 0
+                    ? round($groupTotalSimulations > 0 ? 100 - (($groupTotalCompromisedSimulations / $groupTotalSimulations) * 100) : 100, 2)
+                    : 100;
+
+                // Group risk level
+                $groupRiskLevel = 'unknown';
+                foreach ($scoreRanges as $label => [$min, $max]) {
+                    if ($groupRiskScore >= $min && $groupRiskScore <= $max) {
+                        $groupRiskLevel = $label;
+                        break;
+                    }
+                }
+
+                $divisionGroupDetails[] = [
+                    'group_name' => $group->group_name,
+                    'group_id' => $group->group_id,
+                    'total_users' => $groupTotalUsers,
+                    'total_campaigns' => $campaignsRan,
+                    'total_simulations' => $groupTotalSimulations,
+                    'total_compromised' => $groupTotalCompromisedSimulations,
+                    'compromised_rate' => $compromisedRate,
+                    'performance_score' => $performanceScore,
+                    'risk_score' => $groupRiskScore,
+                    'risk_level' => $groupRiskLevel,
+                ];
+            }
+
+            // Campaigns in last 7 days with type and compromised rate
+            $sevenDaysAgo = now()->subDays(7)->startOfDay();
+            $campaignsLast7Days = [];
+
+            // Email campaigns
+            $emailCampaigns = \App\Models\Campaign::where('company_id', $companyId)
+                ->whereDate('created_at', '>=', $sevenDaysAgo)
+                ->get();
+
+            foreach ($emailCampaigns as $camp) {
+                $total = \App\Models\CampaignLive::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+                $compromised = \App\Models\CampaignLive::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->where('emp_compromised', 1)
+                    ->count();
+                $rate = $total > 0 ? round(($compromised / $total) * 100, 2) : 0;
+                $campaignsLast7Days[] = [
+                    'campaign_id' => $camp->campaign_id,
+                    'campaign_name' => $camp->campaign_name,
+                    'campaign_type' => 'email',
+                    'total_users' => $total,
+                    'compromised_users' => $compromised,
+                    'compromised_rate' => $rate,
+                    'created_at' => $camp->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            // Quishing campaigns
+            $quishingCampaigns = \App\Models\QuishingCamp::where('company_id', $companyId)
+                ->whereDate('created_at', '>=', $sevenDaysAgo)
+                ->get();
+
+            foreach ($quishingCampaigns as $camp) {
+                $total = \App\Models\QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+                $compromised = \App\Models\QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->where('compromised', '1')
+                    ->count();
+                $rate = $total > 0 ? round(($compromised / $total) * 100, 2) : 0;
+                $campaignsLast7Days[] = [
+                    'campaign_id' => $camp->campaign_id,
+                    'campaign_name' => $camp->campaign_name,
+                    'campaign_type' => 'quishing',
+                    'total_users' => $total,
+                    'compromised_users' => $compromised,
+                    'compromised_rate' => $rate,
+                    'created_at' => $camp->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            // WhatsApp campaigns
+            $waCampaigns = \App\Models\WaCampaign::where('company_id', $companyId)
+                ->whereDate('created_at', '>=', $sevenDaysAgo)
+                ->get();
+
+            foreach ($waCampaigns as $camp) {
+                $total = \App\Models\WaLiveCampaign::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+                $compromised = \App\Models\WaLiveCampaign::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->where('compromised', 1)
+                    ->count();
+                $rate = $total > 0 ? round(($compromised / $total) * 100, 2) : 0;
+                $campaignsLast7Days[] = [
+                    'campaign_id' => $camp->campaign_id,
+                    'campaign_name' => $camp->campaign_name,
+                    'campaign_type' => 'whatsapp',
+                    'total_users' => $total,
+                    'compromised_users' => $compromised,
+                    'compromised_rate' => $rate,
+                    'created_at' => $camp->created_at->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            // TPRM campaigns
+            $tprmCampaigns = \App\Models\TprmCampaign::where('company_id', $companyId)
+                ->whereDate('created_at', '>=', $sevenDaysAgo)
+                ->get();
+
+            foreach ($tprmCampaigns as $camp) {
+                $total = \App\Models\TprmCampaignLive::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->count();
+                $compromised = \App\Models\TprmCampaignLive::where('campaign_id', $camp->campaign_id)
+                    ->where('company_id', $companyId)
+                    ->where('emp_compromised', 1)
+                    ->count();
+                $rate = $total > 0 ? round(($compromised / $total) * 100, 2) : 0;
+                $campaignsLast7Days[] = [
+                    'campaign_id' => $camp->campaign_id,
+                    'campaign_name' => $camp->campaign_name,
+                    'campaign_type' => 'tprm',
+                    'total_users' => $total,
+                    'compromised_users' => $compromised,
+                    'compromised_rate' => $rate,
+                    'created_at' => $camp->created_at->format('Y-m-d H:i:s'),
+                ];
             }
 
             return response()->json([
                 'success' => true,
                 'message' => __('Division users report fetched successfully'),
                 'data' => [
-                    'total_normal_divisions' => count($userGroups),
-                    'total_blue_collar_divisions' => BlueCollarGroup::where('company_id', $companyId)->count(),
-                    'total_normal_users' => count($divisionUserDetails),
-                    'total_blue_collar_users' => BlueCollarEmployee::where('company_id', $companyId)->count(),
-                    'division_user_details' => $divisionUserDetails
+                    'total_divisions' => count($userGroups),
+                    'division_group_details' => $divisionGroupDetails,
+                    'campaigns_last_7_days' => $campaignsLast7Days,
                 ]
             ], 200);
         } catch (\Exception $e) {
