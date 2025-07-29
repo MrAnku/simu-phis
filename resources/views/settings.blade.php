@@ -1358,8 +1358,7 @@
 
     {{-- -------------------Modals------------------------ --}}
 
-    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="mfaModal" tabindex="-1" aria-labelledby="exampleModalLgLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1865,7 +1864,6 @@
                 var provider_url = $('#provider_url').val();
                 var auth_token = $('#auth_token').val();
                 var status = $('#seimStatus').is(':checked') ? 1 : 0;
-
                 if ((provider == 'webhook' || provider == 'splunk') && provider_url.endsWith('/')) {
                     Swal.fire({
                         title: "{{ __('Please enter a valid URL') }}",

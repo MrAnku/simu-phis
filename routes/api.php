@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
+use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
 use App\Http\Controllers\LearnApi\ApiPolicyController as LearnApiApiPolicyController;
@@ -532,4 +533,7 @@ Route::prefix('learn')->group(function () {
     // AI Training
     Route::get('/load-ai-training', [ApiLearnController::class, 'generateAiTraining'])->name('generate.training');
     Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining'])->name('translate.ai.training');
+
+    // For Blue Collar
+    Route::post('/blue-collar/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
 });
