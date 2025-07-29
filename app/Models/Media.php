@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
-   protected $fillable = [
+
+    protected $table = 'medias';
+
+    protected $fillable = [
         'file_path',
         'file_name',
         'file_size',
