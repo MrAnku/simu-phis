@@ -4,13 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Users;
 use App\Models\Company;
-use App\Mail\BreachMail;
 use App\Models\BreachedEmail;
 use Illuminate\Console\Command;
-use App\Models\WhiteLabelledSmtp;
 use App\Mail\BreachAlertAdminMail;
-use App\Models\WhiteLabelledCompany;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BreachAlertEmployeeMail;
@@ -48,11 +44,7 @@ class EmailBreachCheck extends Command
     {
         //scan new employees
         $employees = Users::where('breach_scan_date', null)
-            ->whereIn('id', function ($query) {
-                $query->selectRaw('MAX(id)')
-                    ->from('users')
-                    ->groupBy('user_email');
-            })
+            ->distinct('user_email')
             ->take(7)
             ->get();
         if ($employees->isEmpty()) {
@@ -84,22 +76,7 @@ class EmailBreachCheck extends Command
 
                 $company = Company::where('company_id', $employee->company_id)->first();
 
-                $iswhitelabelled = WhiteLabelledCompany::where('company_id', $employee->company_id)
-                    ->where('approved_by_partner', 1)
-                    ->where('service_status', 1)
-                    ->first();
-                if ($iswhitelabelled) {
-                    $smtp =  WhiteLabelledSmtp::where('company_id', $employee->company_id)
-                        ->first();
-                    config([
-                        'mail.mailers.smtp.host' => $smtp->smtp_host,
-                        'mail.mailers.smtp.username' => $smtp->smtp_username,
-                        'mail.mailers.smtp.password' => $smtp->smtp_password,
-                        'mail.from.address' => $smtp->from_address,
-                        'mail.from.name' => $smtp->from_name,
-                    ]);
-                }
-
+               
                 // send Email Notification
                 try {
                     $isWhitelabeled = new CheckWhitelabelService($company->company_id);
@@ -125,7 +102,10 @@ class EmailBreachCheck extends Command
     private function scanOldUsers()
     {
         //scan old employees
-        $employees = Users::where('breach_scan_date', '<', now()->subDays(10))->take(7)->get();
+        $employees = Users::where('breach_scan_date', '<', now()->subDays(10))
+        ->distinct('user_email')
+        ->take(7)
+        ->get();
         if ($employees->isEmpty()) {
             return;
         }
