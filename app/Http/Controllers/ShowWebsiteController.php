@@ -102,9 +102,12 @@ class ShowWebsiteController extends Controller
     public function showAlertPage(Request $request)
     {
         $lang = $request->query('lang');
-        if($lang && $lang != 'en'){
+        if ($lang && $lang != 'en') {
             $filePath = resource_path("oopsPage/alertPage_{$lang}.html");
-        }else{
+            if (!File::exists($filePath)) {
+            $filePath = resource_path("oopsPage/alertPage.html");
+            }
+        } else {
             $filePath = resource_path("oopsPage/alertPage.html");
         }
 

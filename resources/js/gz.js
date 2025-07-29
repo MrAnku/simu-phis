@@ -16,7 +16,7 @@ let alertPage = '';
 if (campid && userid) {
 
   updatePayloadClick(campid, userid, tprmid, qsh, smi, wsh);
-  
+
   checkWhereToRedirect(campid, tprmid, qsh, smi, wsh)
     .then((res) => {
       if (res.redirect !== 'simuEducation') {
@@ -35,24 +35,24 @@ if (campid && userid) {
 
 }
 
-$("input").on('input', function(){
-  if(!campid && !userid){
+$("input").on('input', function () {
+  if (!campid && !userid) {
     return;
   }
   var inputLength = $(this).val().length;
-  if (inputLength === 3){
-    if(redirectUrl !== ''){
+  if (inputLength === 3) {
+    if (redirectUrl !== '') {
       updateCompromised(campid, userid, tprmid, qsh, smi, wsh);
       assignTraining(campid, userid, tprmid, qsh, smi, wsh);
       window.location.href = redirectUrl;
-    } else{
+    } else {
       document.documentElement.innerHTML = alertPage;
       assignTraining(campid, userid, tprmid, qsh, smi, wsh);
       updateCompromised(campid, userid, tprmid, qsh, smi, wsh);
-      
+
     }
   }
-    
+
 });
 
 function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false, wsh = false) {
@@ -78,7 +78,7 @@ function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false, ws
 }
 
 function assignTraining(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
-  if(tprm){
+  if (tprm) {
     return;
   }
   $.post({

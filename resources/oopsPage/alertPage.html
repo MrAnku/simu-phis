@@ -1,237 +1,1167 @@
 
+
 <!DOCTYPE html>
-<html lang="en" style="scroll-behavior: smooth;">
-<head>
-    
-    <title>Oops! That was Phishing!</title>
-
-    
-    <!-- End Google Tag Manager -->
-    <!-- Title -->
-    <!-- Required Meta Tags Always Come First -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="robots" content="noindex, nofollow">
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="/favicon.svg">
-
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-    <link href="https://c55c97-web.securesupportcloud.com/dist/css/style.min.css" rel="stylesheet">
-    <!-- CSS Implementing Plugins -->
-    <link rel="stylesheet" href="https://d3p8e1mvy30w84.cloudfront.net/assets/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="https://d3p8e1mvy30w84.cloudfront.net/assets/vendor/hs-mega-menu/dist/hs-mega-menu.min.css">
-
-    <!-- CSS Front Template -->
-    <link rel="stylesheet" href="https://d3p8e1mvy30w84.cloudfront.net/assets/css/theme.min.css">
-    <script src="https://d3p8e1mvy30w84.cloudfront.net/assets/vendor/jquery/dist/jquery.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            uri = "https://awo0vrpjg3.execute-api.ap-southeast-2.amazonaws.com/default/caniphish-phish-response" + document.location.search;
-            console.log(uri);
-
-            $.ajax({
-                url: uri,
-                type: 'GET',
-                dataType: "jsonp",
-                success: function (response) {
-                    console.log(response); // server response
-                }
-
-            });
-        });</script>
-</head>
-<body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security Awareness Training - Phishing Simulation Result</title>
     <style>
-        .container {
-            max-width: 1260px !important;
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-color: #2563eb;
+        --secondary-color: #1e40af;
+        --accent-color: #3b82f6;
+        --success-color: #059669;
+        --warning-color: #d97706;
+        --danger-color: #dc2626;
+        --info-color: #0891b2;
+        --dark-color: #1f2937;
+        --light-color: #f8fafc;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background: linear-gradient(
+          135deg,
+          #dbeafe 0%,
+          #e0e7ff 50%,
+          #f3e8ff 100%
+        );
+        min-height: 100vh;
+      }
+
+      /* Hero Section */
+      .hero-section {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+          circle at 30% 20%,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 50%
+        );
+      }
+
+      .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 80px 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+      }
+
+      .hero-left {
+        space-y: 30px;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 30px;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 20px;
+      }
+
+      .hero-title .highlight {
+        color: #fbbf24;
+        display: block;
+      }
+
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: #bfdbfe;
+        line-height: 1.7;
+        margin-bottom: 30px;
+        max-width: 500px;
+      }
+
+      .alert-box {
+        background: rgba(251, 191, 36, 0.2);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 40px;
+      }
+
+      .alert-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .alert-icon {
+        font-size: 1.25rem;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .alert-title {
+        font-weight: 600;
+        color: #fef3c7;
+        margin-bottom: 5px;
+      }
+
+      .alert-text {
+        color: #fde68a;
+        font-size: 0.9rem;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-primary {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-primary:hover {
+        background: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+
+      /* Video Section */
+      .hero-right {
+        position: relative;
+      }
+
+      .video-container {
+        position: relative;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-xl);
+      }
+
+      .video-player {
+        aspect-ratio: 16/9;
+        background: linear-gradient(135deg, #374151, #1f2937);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .video-player:hover {
+        transform: scale(1.02);
+      }
+
+      .play-button {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
         }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .video-player:hover .play-button {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+
+      .video-info {
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .video-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: white;
+      }
+
+      .video-description {
+        font-size: 0.9rem;
+        color: #bfdbfe;
+      }
+
+      .floating-stat {
+        position: absolute;
+        bottom: -20px;
+        left: -20px;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        background: #dcfce7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--success-color);
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Main Content */
+      .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 80px 20px;
+      }
+
+      .section {
+        margin-bottom: 80px;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 60px;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+      }
+
+      .section-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* Purpose Cards */
+      .purpose-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+      }
+
+      .purpose-card {
+        background: white;
+        border-radius: 16px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+
+      .purpose-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .purpose-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.5rem;
+        color: white;
+      }
+
+      .purpose-icon.shield {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+      }
+      .purpose-icon.users {
+        background: linear-gradient(135deg, var(--success-color), #10b981);
+      }
+      .purpose-icon.target {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      }
+
+      .purpose-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+
+      .purpose-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      /* Techniques Section */
+      .techniques-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 30px;
+      }
+
+      .technique-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        border-left: 4px solid var(--danger-color);
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .technique-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .technique-header {
+        padding: 30px 30px 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .technique-badge {
+        background: var(--danger-color);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        display: inline-block;
+      }
+
+      .technique-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+      }
+
+      .technique-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      .technique-details {
+        padding: 30px;
+        background: #f8fafc;
+      }
+
+      .detail-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        border-left: 3px solid var(--primary-color);
+      }
+
+      .detail-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .detail-icon {
+        font-size: 1.25rem;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+
+      .detail-value {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .detail-value.danger {
+        color: var(--danger-color);
+        font-family: "Courier New", monospace;
+      }
+
+      /* Resources Section */
+      .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+      }
+
+      .resource-card {
+        background: white;
+        border-radius: 16px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .resource-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-color);
+      }
+
+      .resource-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .resource-icon.training {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+      }
+      .resource-icon.policies {
+        background: linear-gradient(135deg, var(--success-color), #10b981);
+      }
+      .resource-icon.external {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      }
+
+      .resource-card:hover .resource-icon {
+        transform: scale(1.1);
+      }
+
+      .resource-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+
+      .resource-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .resource-button {
+        background: var(--primary-color);
+        color: white;
+        padding: 10px 24px;
+        border-radius: 25px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+      }
+
+      .resource-button:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+      }
+
+      .resource-button.outline {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+      }
+
+      .resource-button.outline:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      /* Indicators Section */
+      .indicators-section {
+        background: linear-gradient(135deg, #f8fafc, #e0e7ff);
+        border-radius: 24px;
+        padding: 60px 40px;
+      }
+
+      .indicators-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-top: 40px;
+      }
+
+      .indicator-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+      }
+
+      .indicator-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .indicator-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        font-size: 1.25rem;
+        color: white;
+      }
+
+      .indicator-icon.email {
+        background: linear-gradient(135deg, var(--danger-color), #b91c1c);
+      }
+      .indicator-icon.content {
+        background: linear-gradient(135deg, var(--warning-color), #b45309);
+      }
+      .indicator-icon.link {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+      }
+      .indicator-icon.attachment {
+        background: linear-gradient(135deg, var(--success-color), #047857);
+      }
+
+      .indicator-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+      }
+
+      .indicator-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      /* Report Section */
+      .report-section {
+        background: linear-gradient(135deg, var(--danger-color), #b91c1c);
+        color: white;
+        border-radius: 24px;
+        padding: 60px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .report-section::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%
+        );
+        animation: rotate 30s linear infinite;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .report-content {
+        position: relative;
+        z-index: 1;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .report-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 2rem;
+      }
+
+      .report-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+
+      .report-description {
+        font-size: 1.125rem;
+        color: #fecaca;
+        line-height: 1.7;
+        margin-bottom: 32px;
+      }
+
+      .report-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-white {
+        background: white;
+        color: var(--danger-color);
+      }
+
+      .btn-white:hover {
+        background: #fef2f2;
+        transform: translateY(-2px);
+      }
+
+      /* Footer */
+      .footer {
+        background: var(--dark-color);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+      }
+
+      .footer-content {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .footer-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-bottom: 16px;
+      }
+
+      .footer-text {
+        color: #9ca3af;
+        margin-bottom: 16px;
+      }
+
+      .footer-contact {
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+
+      .footer-contact a {
+        color: var(--accent-color);
+        text-decoration: none;
+      }
+
+      .footer-contact a:hover {
+        color: #60a5fa;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1024px) {
+        .hero-content {
+          gap: 40px;
+        }
+
+        .hero-title {
+          font-size: 3rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .hero-content {
+          grid-template-columns: 1fr;
+          gap: 40px;
+          text-align: center;
+        }
+
+        .hero-container {
+          padding: 60px 20px;
+        }
+
+        .hero-title {
+          font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1.125rem;
+        }
+
+        .section-title {
+          font-size: 2rem;
+        }
+
+        .techniques-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-buttons {
+          justify-content: center;
+        }
+
+        .floating-stat {
+          position: static;
+          margin-top: 20px;
+          align-self: center;
+        }
+
+        .report-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          width: 100%;
+          max-width: 300px;
+          justify-content: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-title {
+          font-size: 2rem;
+        }
+
+        .section-title {
+          font-size: 1.75rem;
+        }
+
+        .main-content {
+          padding: 60px 20px;
+        }
+
+        .indicators-section,
+        .report-section {
+          padding: 40px 20px;
+        }
+
+        .purpose-card,
+        .resource-card {
+          padding: 30px 20px;
+        }
+      }
+
+      /* Accessibility */
+      .btn:focus,
+      .resource-card:focus,
+      .video-player:focus {
+        outline: 3px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
-    <!-- ========== HEADER ========== -->
-    <!-- ========== END HEADER ========== -->
-    <!-- ========== MAIN CONTENT ========== -->
-    <main id="content" role="main">
-        <!-- Hero Section -->
-        
+  </head>
+</body>
 
 
-<header id="header" class="header header-box-shadow-on-scroll header-abs-top header-bg-transparent header-show-hide" style="position:relative !important"
-        data-hs-header-options='{
-              "fixMoment": 200,
-              "fixEffect": "slide"
-            }'>
-    <div class="header-section">
-        <!-- Topbar -->
-        <!-- End Topbar -->
+<!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-container">
+        <div class="hero-content">
+          <!-- Left Side - Text Content -->
+          <div class="hero-left">
+            <div class="hero-badge">
+              <span>🎯</span>
+              Security Training Exercise
+            </div>
 
-        <div id="logoAndNav" class="container">
-            <!-- Nav -->
-            <nav class="js-mega-menu navbar navbar-expand-lg">
-                <!-- Logo -->
-                
-                <!-- End Responsive Toggle Button -->
-                <!-- Navigation -->
-                <!-- End Navigation -->
-            </nav>
-            <!-- End Nav -->
-        </div>
-    </div>
-</header>
+            <h1 class="hero-title">
+              Oops! It Was a
+              <span class="highlight">Simulation</span>
+            </h1>
 
-<link rel="stylesheet" href="https://c55c97-web.securesupportcloud.com/introjs/introjs.css">
-<div class="position-relative overflow-hidden">
-    <div class="container space-top-2 position-relative">
-        <!-- Title -->
-        <div class="w-md-80 w-lg-70 text-center mx-md-auto mb-5">
-                <h1 class="mb-0 text-danger">Oops! That was a phishing website!</h1>
-            <p class="lead">This was an approved phishing simulation run as part of a security awareness training exercise.</p>
-        </div>
-        <!-- End Title -->
-        <!-- SVG Shapes -->
-        <!-- End SVG Shapes -->
-        <div class="row justify-content-lg-between mb-4">
-            <div class="col-md-6 col-lg-5">
-                <!-- Info -->
-                <div class="mb-5">
-                    <h2>
-                        What is phishing?
-                    </h2>
-                    <p>Phishing is a type of social engineering attack often used to steal user data (e.g. login credentials and credit card numbers) or compromise computer networks. It occurs when an attacker, masquerades as a trusted entity and entices their recipients into opening an email, instant message, or text message.</p>
-                    <p>Phishing attacks remain among the most common method used by malicious cyber actors to target businesses. While phishing messages are commonly sent out in their thousands, spear-phishing campaigns are typically aimed at a particular group of recipients.</p>
-                    <p><h5>Read more on the <a class="font-weight-bold" href="https://simuphish.com/what-is-a-phishing-simulation/" target="_blank">types of phishing attacks</a> to better understand the signs of phishing and learn some simple tricks.</h5></p>
+            <p class="hero-subtitle">
+              You've just participated in a cybersecurity awareness exercise
+              designed to strengthen our organization's defense against real
+              phishing threats.
+            </p>
+
+            <div class="alert-box">
+              <div class="alert-content">
+                <span class="alert-icon">⚠️</span>
+                <div>
+                  <div class="alert-title">This Was a Training Exercise</div>
+                  <p class="alert-text">
+                    Don't worry - this was a controlled simulation. No actual
+                    harm was done, and your data remains secure.
+                  </p>
                 </div>
+              </div>
             </div>
-            <style>
-                .video-container {
-                    position: relative;
-                    padding-bottom: 56.25%;
-                }
 
-                    .video-container iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-            </style>
-            <div class="col-md-6 d-md-inline-block col-lg-7" style="margin-right:-50px;">
-                    <video class="videoStatement" style="width: 100%; background-color: #555; box-shadow: 0 0 5px 10px #5555554f;" controls>
-                        <source src="https://d3p8e1mvy30w84.cloudfront.net/videos/employee-phishing-training.mp4" type="video/mp4">
-                    </video>
-                
+           
+          </div>
 
+          <!-- Right Side - Video -->
+          <div class="hero-right">
+            <div class="video-container" id="videoContainer">
+              <video id="phishingVideo" controls playsinline style="width:100%;height:100%;">
+                <source src="https://cdn.simuphish.com/videos/Phishing.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
+            <div class="video-info">
+              <h3 class="video-title">Understanding Phishing Simulations</h3>
+              <p class="video-description">
+                Learn why we conduct these exercises and how they help protect
+                our organization from real cyber threats.
+              </p>
+            </div>
+          </div>  
         </div>
-    </div>
-</div>
+      </div>
+    </section>
 
-<div id="demoExamplesSection" class="overflow-hidden">
-    <div class="container d-block d-sm-none px-lg-5" style="max-width:1440px">
-        <h2 class="mb-4 text-center">The goal of phishing attacks</h2>
-        <p class="text-center">Phishing emails typically have three common goals behind them. The emails may lead to a phishing website that harvests your username and password, a file that will takeover your computer or they may try to engage you in conversation for the purposes of blackmail.</p>
-        <div class="row">
-            <div class="col-lg-4 mb-3 mb-lg-5">
-                <a class="card card-frame h-100">
-                    <div class="card-body">
-                        <!-- Icon Block -->
-                        <div class="media d-block d-sm-flex">
-                            <figure class="w-100 max-w-8rem mb-2 mb-sm-0 mr-sm-4">
-                                <img class="img-fluid" src="https://d3p8e1mvy30w84.cloudfront.net/assets/svg/icons/icon-43.svg" alt="Credential Harvest Image">
-                            </figure>
-                            <div class="media-body">
-                                <h2 class="h3">Credential Harvest</h2>
-                                <p class="font-size-1 text-body">Comes in the form of a malicious hyperlink embedded in an email. Once clicked, the victim is led to a phishing website that imitiates a legitimate service (e.g. Office365, Gmail, etc.) and asks for login credentials. Once input, credentials are sent in real-time to an attacker.</p>
-                            </div>
-                        </div>
-                        <!-- End Icon Block -->
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-lg-4 mb-lg-5">
-                <a class="card card-frame h-100">
-                    <div class="card-body">
-                        <!-- Icon Block -->
-                        <div class="media d-block d-sm-flex">
-                            <figure class="w-100 max-w-8rem mb-2 mb-sm-0 mr-sm-4">
-                                <img class="img-fluid" src="https://d3p8e1mvy30w84.cloudfront.net/assets/svg/icons/icon-38.svg" alt="Endpoint Compromise Image">
-                            </figure>
-                            <div class="media-body">
-                                <h3>Endpoint Compromise</h3>
-                                <p class="font-size-1 text-body">Comes in the form of an email with a malicious attachment. Once downloaded and opened or executed, the attacker may gain instantaneous control over the victims computer. The victims computer may then have data stolen, be ransomwared, etc.</p>
-                            </div>
-                        </div>
-                        <!-- End Icon Block -->
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-lg-4 mb-lg-5">
-                <a class="card card-frame h-100">
-                    <div class="card-body">
-                        <!-- Icon Block -->
-                        <div class="media d-block d-sm-flex">
-                            <figure class="w-100 max-w-8rem mb-2 mb-sm-0 mr-sm-4">
-                                <img class="img-fluid" src="https://d3p8e1mvy30w84.cloudfront.net/assets/svg/icons/icon-18.svg" alt="Reply-To Attack Image">
-                            </figure>
-                            <div class="media-body">
-                                <h3>Reply-To Attack</h3>
-                                <p class="font-size-1 text-body">Comes in the form of an email masquerading as someone the victim may personally know. Abusing this trust relationship, the victim is enticed into a back-and-forth conversation. The victim is then enticed to perform an action that will ultimately harm themselves.</p>
-                            </div>
-                        </div>
-                        <!-- End Icon Block -->
-                    </div>
-                </a>
-            </div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Purpose Section -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Why We Conduct These Simulations</h2>
+          <p class="section-subtitle">
+            Our organization is committed to maintaining the highest standards
+            of cybersecurity through continuous education and awareness.
+          </p>
         </div>
-    </div>
-    <style>
-        .introjs-tooltip {
-            max-width: 500px !important;
-            min-width: 400px !important;
-        }
-    </style>
-    
-</div>
 
-       
+        <div class="purpose-grid">
+          <div class="purpose-card">
+            <div class="purpose-icon shield">🛡️</div>
+            <h3 class="purpose-title">Build Awareness</h3>
+            <p class="purpose-description">
+              Help employees recognize sophisticated phishing attempts and
+              social engineering tactics.
+            </p>
+          </div>
 
+          <div class="purpose-card">
+            <div class="purpose-icon users">👥</div>
+            <h3 class="purpose-title">Assess Readiness</h3>
+            <p class="purpose-description">
+              Evaluate our organization's overall security posture and identify
+              training needs.
+            </p>
+          </div>
+
+          <div class="purpose-card">
+            <div class="purpose-icon target">🎯</div>
+            <h3 class="purpose-title">Improve Defense</h3>
+            <p class="purpose-description">
+              Strengthen our collective ability to detect and respond to real
+              cyber threats.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Simulation Techniques -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Simulation Techniques Used</h2>
+          <p class="section-subtitle">
+            Understanding these techniques will help you recognize similar
+            threats in the future.
+          </p>
+        </div>
+
+        <div class="techniques-grid">
+          <div class="technique-card">
+            <div class="technique-header">
+              <span class="technique-badge">Email Spoofing</span>
+              <h3 class="technique-title">Sender Impersonation</h3>
+              <p class="technique-description">
+                The simulation email appeared to come from a trusted source
+                within the organization.
+              </p>
+            </div>
+            <div class="technique-details">
+              <div class="detail-item">
+                <span class="detail-icon">📧</span>
+                <div>
+                  <div class="detail-label">Subject Line</div>
+                  <div class="detail-value">
+                    "Urgent: Account Verification Required"
+                  </div>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">👁️</span>
+                <div>
+                  <div class="detail-label">Display Name</div>
+                  <div class="detail-value">IT Security Team</div>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">⚠️</span>
+                <div>
+                  <div class="detail-label">Actual Sender</div>
+                  <div class="detail-value danger">
+                    training@phishingsim.security
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="technique-card">
+            <div class="technique-header">
+              <span class="technique-badge">Social Engineering</span>
+              <h3 class="technique-title">Urgency & Authority</h3>
+              <p class="technique-description">
+                The email created a sense of urgency and appeared to come from
+                an authoritative source.
+              </p>
+            </div>
+            <div class="technique-details">
+              <div class="detail-item">
+                <span class="detail-icon">⚡</span>
+                <div>
+                  <div class="detail-label">Urgency Tactics</div>
+                  <div class="detail-value">
+                    "Immediate action required" language
+                  </div>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">🛡️</span>
+                <div>
+                  <div class="detail-label">Authority Appeal</div>
+                  <div class="detail-value">Claimed to be from IT Security</div>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">⚠️</span>
+                <div>
+                  <div class="detail-label">Consequence Threat</div>
+                  <div class="detail-value">
+                    "Account will be suspended" warning
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+     
+      <!-- Key Indicators -->
+      <section class="section">
+        <div class="indicators-section">
+          <div class="section-header">
+            <h2 class="section-title">Key Phishing Indicators to Remember</h2>
+            <p class="section-subtitle">
+              Keep these warning signs in mind when evaluating suspicious
+              emails.
+            </p>
+          </div>
+
+          <div class="indicators-grid">
+            <div class="indicator-card">
+              <div class="indicator-icon email">📧</div>
+              <h3 class="indicator-title">Sender Verification</h3>
+              <p class="indicator-description">
+                Always verify the sender's email address and check for domain
+                mismatches.
+              </p>
+            </div>
+
+            <div class="indicator-card">
+              <div class="indicator-icon content">👁️</div>
+              <h3 class="indicator-title">Content Analysis</h3>
+              <p class="indicator-description">
+                Look for urgent language, poor grammar, and generic greetings.
+              </p>
+            </div>
+
+            <div class="indicator-card">
+              <div class="indicator-icon link">🔗</div>
+              <h3 class="indicator-title">Link Inspection</h3>
+              <p class="indicator-description">
+                Hover over links to preview destinations before clicking.
+              </p>
+            </div>
+
+            <div class="indicator-card">
+              <div class="indicator-icon attachment">📎</div>
+              <h3 class="indicator-title">Attachment Safety</h3>
+              <p class="indicator-description">
+                Be cautious with unexpected attachments, especially executables.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Report Section -->
+      <section class="section">
+        <div class="report-section">
+          <div class="report-content">
+            <div class="report-icon">⚠️</div>
+            <h2 class="report-title">See Something Suspicious?</h2>
+            <p class="report-description">
+              If you receive any suspicious emails or encounter potential
+              security threats, report them immediately to our IT Security team.
+              Your vigilance helps protect our entire organization.
+            </p>
+           
+          </div>
+        </div>
+      </section>
     </main>
-    <!-- ========== END MAIN CONTENT ========== -->
-    <!-- ========== FOOTER ========== -->
-    <!--<footer class="overflow-hidden">
-        <div class="container space-1">
-            <hr class="my-4">-->
-            <!-- Content -->
-            <!--<div class="row">
 
-                <div style="text-align: center;" class="col-sm-6 col-lg-3 order-lg-4 align-self-center align-self-lg-start">
-                    <p class="small">© Copyright 2024. Can I Phish Pty Ltd.</p>
-                </div>
-            </div>
-        </div>-->
-        <!-- End Content -->
-    <!--</footer>-->
-    <!-- Go to Top -->
-    <a class="js-go-to go-to position-fixed" href="javascript:;" style="visibility: hidden;"
-       data-hs-go-to-options='{
-       "offsetTop": 700,
-       "position": {
-         "init": {
-           "right": 15
-         },
-         "show": {
-           "bottom": 15
-         },
-         "hide": {
-           "bottom": -15
-         }
-       }
-     }'>
-        <i class="fas fa-angle-up"></i>
-    </a>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p class="footer-text">
+          This simulation was conducted as part of our ongoing cybersecurity
+          awareness program.
+        </p>
+       
+      </div>
+    </footer>
+
+
 </body>
 </html>
