@@ -2719,42 +2719,73 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
-            $policies = Policy::where('company_id', $companyId)->get();
+            // Total policies available
+            $totalPolicies = Policy::where('company_id', $companyId)->count();
 
-            if ($policies->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('No policies found for this company'),
-                    'data' => []
-                ], 404);
-            }
-
+            // Policies assigned (sent to users)
             $assignedPolicies = AssignedPolicy::where('company_id', $companyId)->get();
+            $totalAssignedPolicies = $assignedPolicies->count();
+
+            // Policies sent using campaign (assuming policies assigned via campaign have campaign_id set)
+            $policiesSentViaCampaign = AssignedPolicy::where('company_id', $companyId)
+            ->whereNotNull('campaign_id')
+            ->count();
+
+            // Total campaigns ran for policies (distinct campaign_id in assigned_policies)
+            $totalPolicyCampaigns = AssignedPolicy::where('company_id', $companyId)
+            ->whereNotNull('campaign_id')
+            ->distinct('campaign_id')
+            ->count('campaign_id');
+
+            // Users who responded for quiz (json_quiz_response not null)
+            $usersRespondedQuiz = AssignedPolicy::where('company_id', $companyId)
+            ->whereNotNull('json_quiz_response')
+            ->count();
+
+            // Users who accepted policy
+            $usersAccepted = AssignedPolicy::where('company_id', $companyId)
+            ->where('accepted', 1)
+            ->count();
+
+            // Users who did not accept policy
+            $usersNotAccepted = AssignedPolicy::where('company_id', $companyId)
+            ->where('accepted', 0)
+            ->count();
+
+            // Details for each assigned policy
             $assignedPolicyDetails = [];
             foreach ($assignedPolicies as $assignedPolicy) {
-                $assignedPolicyDetails[] = [
-                    'policy_name' => Policy::find($assignedPolicy->policy)->policy_name,
-                    'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
-                    'accepted_date' => $assignedPolicy->accepted_at
-                        ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
-                        : 'Not Accepted',
-                    'user_email' => $assignedPolicy->user_email,
-                    'user_name' => $assignedPolicy->user_name,
-                    'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
-                ];
+            $policy = Policy::find($assignedPolicy->policy);
+            $assignedPolicyDetails[] = [
+                'policy_name' => $policy ? $policy->policy_name : 'N/A',
+                'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
+                'accepted_date' => $assignedPolicy->accepted_at
+                ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
+                : 'Not Accepted',
+                'user_email' => $assignedPolicy->user_email,
+                'user_name' => $assignedPolicy->user_name,
+                'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
+            ];
             }
 
             return response()->json([
-                'success' => true,
-                'message' => __('Policies report fetched successfully'),
-                'data' => [
-                    'assigned_policies' => $assignedPolicyDetails
-                ]
+            'success' => true,
+            'message' => __('Policies report fetched successfully'),
+            'data' => [
+                'total_policies' => $totalPolicies,
+                'total_policies_sent_via_campaign' => $policiesSentViaCampaign,
+                'total_assigned_policies' => $totalAssignedPolicies,
+                'total_policy_campaigns' => $totalPolicyCampaigns,
+                'users_responded_quiz' => $usersRespondedQuiz,
+                'users_accepted_policy' => $usersAccepted,
+                'users_not_accepted_policy' => $usersNotAccepted,
+                'assigned_policies' => $assignedPolicyDetails
+            ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
+            'success' => false,
+            'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
