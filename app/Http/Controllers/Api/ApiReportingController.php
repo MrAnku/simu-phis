@@ -1616,20 +1616,21 @@ class ApiReportingController extends Controller
 
                 $assignedTrainings = [];
                 foreach ($trainings as $training) {
+                    $trainingData = $training->trainingData ?? null;
                     $assignedTrainings[] = [
-                        'training_name' => $training->trainingData->name,
-                        'training_type' => $training->training_type,
-                        'assigned_date' => $training->assigned_date,
-                         'training_started' => $training->training_started == 1 ? 'Yes' : 'No',
-                         'passing_score' => $training->trainingData->passing_score,
-                         'training_due_date' => $training->training_due_date,
-                         'json_quiz' => $training->trainingData->json_quiz,
-                         'is_completed' => $training->completed == 1 ? 'Yes' : 'No',
-                        'completion_date' => $training->completion_date,
-                        'personal_best' => $training->personal_best,
-                        'certificate_id' => $training->certificate_id,
-                        'last_reminder_date' => $training->last_reminder_date,
-                        'status' => $training->completed == 1 ? 'Completed' : 'In Progress',
+                        'training_name' => $trainingData ? $trainingData->name : 'N/A',
+                        'training_type' => $training->training_type ?? 'N/A',
+                        'assigned_date' => $training->assigned_date ?? null,
+                        'training_started' => isset($training->training_started) && $training->training_started == 1 ? 'Yes' : 'No',
+                        'passing_score' => $trainingData ? $trainingData->passing_score : null,
+                        'training_due_date' => $training->training_due_date ?? null,
+                        'json_quiz' => $trainingData ? $trainingData->json_quiz : null,
+                        'is_completed' => isset($training->completed) && $training->completed == 1 ? 'Yes' : 'No',
+                        'completion_date' => $training->completion_date ?? null,
+                        'personal_best' => $training->personal_best ?? null,
+                        'certificate_id' => $training->certificate_id ?? null,
+                        'last_reminder_date' => $training->last_reminder_date ?? null,
+                        'status' => isset($training->completed) && $training->completed == 1 ? 'Completed' : 'In Progress',
                     ];
                 }
 
