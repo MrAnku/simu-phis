@@ -346,81 +346,70 @@ class ApiPhishingEmailsController extends Controller
 
     public function addEmailTemplate(Request $request)
     {
-        // XSS check start
-        $input = $request->only('eTempName', 'eSubject');
-
-        foreach ($input as $key => $value) {
-            if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => __('Invalid input detected.')
-                ], 400); // Bad Request
-            }
-        }
-
-        array_walk_recursive($input, function (&$input) {
-            $input = strip_tags($input);
-        });
-        $request->merge($input);
-        // XSS check end
-
-        // Validation
-        $request->validate([
-            'eMailFile' => 'required|file|mimes:html',
-            'eTempName' => 'required|string|max:255',
-            'eSubject' => 'required|string|max:255',
-            'difficulty' => 'required|string|max:30',
-            'eAssoWebsite' => 'required|string|max:255',
-            'eSenderProfile' => 'required|string|max:255',
-        ]);
-
-        $company_id = Auth::user()->company_id;
-
-        $eTempName = $request->input('eTempName');
-        $eSubject = $request->input('eSubject');
-        $difficulty = $request->input('difficulty');
-        $eAssoWebsite = $request->input('eAssoWebsite');
-        $eSenderProfile = $request->input('eSenderProfile');
-        $eMailFile = $request->file('eMailFile');
-
-        // Generate a random name for the file
-        $randomName = generateRandom(32);
-        $extension = $eMailFile->getClientOriginalExtension();
-        $newFilename = $randomName . '.' . $extension;
-
         try {
+
+            // XSS check start
+            $input = $request->only('eTempName', 'eSubject');
+
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Invalid input detected.')
+                    ], 400); // Bad Request
+                }
+            }
+            // XSS check end
+
+            // Validation
+            $request->validate([
+                'eMailFile' => 'required|file|mimes:html',
+                'eTempName' => 'required|string|max:255',
+                'eSubject' => 'required|string|max:255',
+                'difficulty' => 'required|string|max:30',
+                'eAssoWebsite' => 'required|string|max:255',
+                'eSenderProfile' => 'required|string|max:255',
+            ]);
+
+            $company_id = Auth::user()->company_id;
+            $eMailFile = $request->file('eMailFile');
+
+            // Generate a random name for the file
+            $randomName = generateRandom(32);
+            $extension = $eMailFile->getClientOriginalExtension();
+            $newFilename = $randomName . '.' . $extension;
             // Move the uploaded file to the target directory
             $filePath = $request->file('eMailFile')->storeAs('/uploads/phishingMaterial/phishing_emails', $newFilename, 's3');
 
             // Insert data into the database
-            $isInserted = PhishingEmail::create([
-                'name' => $eTempName,
-                'email_subject' => $eSubject,
-                'difficulty' => $difficulty,
+            PhishingEmail::create([
+                'name' => $request->input('eTempName'),
+                'email_subject' => $request->input('eSubject'),
+                'difficulty' => $request->input('difficulty'),
                 'mailBodyFilePath' =>  "/" . $filePath,
-                'website' => $eAssoWebsite,
-                'senderProfile' => $eSenderProfile,
+                'website' => $request->input('eAssoWebsite'),
+                'senderProfile' => $request->input('eSenderProfile'),
                 'company_id' => $company_id,
             ]);
 
-            if ($isInserted) {
-                log_action("Email Template Added Successfully");
-                return response()->json([
-                    'status' => true,
-                    'message' => __('Email Template Added Successfully!')
-                ], 201); // Created
-            } else {
-                log_action("Failed to add email template");
-                return response()->json([
-                    'status' => false,
-                    'message' => __('Failed to add Email Template.')
-                ], 500); // Internal Server Error
-            }
+            log_action("Email Template Added Successfully");
+            return response()->json([
+                'success' => true,
+                'message' => __('Email Template Added Successfully!')
+            ], 201); // Created
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            log_action("Validation error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422); // Unprocessable Entity
+
         } catch (\Exception $e) {
             log_action("Failed to add email template");
             return response()->json([
-                'status' => false,
-                'message' => __('Something went wrong: ') . $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500); // Internal Server Error
         }
     }
@@ -455,7 +444,7 @@ class ApiPhishingEmailsController extends Controller
             'eSenderProfile' => 'required|string|max:255',
         ]);
 
-        
+
 
         $eTempName = $request->input('eTempName');
         $eSubject = $request->input('eSubject');
@@ -507,16 +496,16 @@ class ApiPhishingEmailsController extends Controller
     }
 
 
-   public function generateTemplate(Request $request)
-{
-    try {
-        // Validate input
-        if (empty($request->prompt)) {
-            throw new \Exception('Prompt cannot be empty');
-        }
+    public function generateTemplate(Request $request)
+    {
+        try {
+            // Validate input
+            if (empty($request->prompt)) {
+                throw new \Exception('Prompt cannot be empty');
+            }
 
-        // Define a structured system prompt for inline CSS email template
-        $systemPrompt = <<<EOT
+            // Define a structured system prompt for inline CSS email template
+            $systemPrompt = <<<EOT
 You are an expert email template generator. Generate a valid, professional HTML email template that strictly adheres to the following requirements:
 1. Uses responsive design with a max-width of 600px
 2. Includes proper HTML email boilerplate (DOCTYPE, meta tags, etc.)
@@ -531,8 +520,8 @@ You are an expert email template generator. Generate a valid, professional HTML 
 11. Uses div elements with inline CSS for layout, avoiding any table, tr, td, or other table-related tags
 EOT;
 
-        // Combine user prompt with additional instructions
-        $userPrompt = <<<EOT
+            // Combine user prompt with additional instructions
+            $userPrompt = <<<EOT
 Generate a valid, professional HTML email template based on the following request:
 {$request->prompt}
 
@@ -547,85 +536,85 @@ Ensure the template strictly adheres to:
 - Compatibility with major email clients
 EOT;
 
-        // Make API request to GPT-4o
-        $response = Http::withOptions(['verify' => false])
-            ->withHeaders([
-                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-                'Content-Type' => 'application/json',
-            ])
-            ->timeout(30)
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4o',
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
-                'max_tokens' => 2000,
-                'temperature' => 0.3, // Lowered further for strict adherence to instructions
-                'top_p' => 0.9, // Added to focus on high-probability outputs
+            // Make API request to GPT-4o
+            $response = Http::withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->timeout(30)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-4o',
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $userPrompt],
+                    ],
+                    'max_tokens' => 2000,
+                    'temperature' => 0.3, // Lowered further for strict adherence to instructions
+                    'top_p' => 0.9, // Added to focus on high-probability outputs
+                ]);
+
+            // Check for API failure
+            if ($response->failed()) {
+                $errorMessage = $response->body();
+                log_action("Failed to generate AI Email Template on topic of prompt: {$request->prompt}. Error: {$errorMessage}");
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Failed to generate email template: ' . $errorMessage,
+                ], 500);
+            }
+
+            // Extract HTML content
+            $html = $response['choices'][0]['message']['content'] ?? '';
+
+            // Clean up potential markdown fences
+            $html = preg_replace('/^```html\s*|\s*```$/m', '', trim($html));
+
+            // Validate HTML structure and ensure no <style> or <table> tags
+            if (empty($html) || !str_contains(strtolower($html), '<html') || !str_contains(strtolower($html), '<body')) {
+                log_action("Invalid HTML structure generated for prompt: {$request->prompt}");
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid HTML template structure',
+                ], 500);
+            }
+
+            // Strict check for <style> tags
+            if (preg_match('/<style\b[^>]*>/i', $html)) {
+                log_action("Generated HTML contains <style> tags for prompt: {$request->prompt}");
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Generated template contains unsupported <style> tags',
+                ], 500);
+            }
+
+            // Strict check for <table> tags
+            if (preg_match('/<table\b[^>]*>/i', $html)) {
+                log_action("Generated HTML contains <table> tags for prompt: {$request->prompt}");
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Generated template contains unsupported <table> tags',
+                ], 500);
+            }
+
+            // Log success
+            log_action("Email template generated using AI on topic of prompt: {$request->prompt}");
+
+            return response()->json([
+                'status' => true,
+                'html' => $html,
+                'message' => __('Successfully generated email template'),
             ]);
-
-        // Check for API failure
-        if ($response->failed()) {
-            $errorMessage = $response->body();
-            log_action("Failed to generate AI Email Template on topic of prompt: {$request->prompt}. Error: {$errorMessage}");
+        } catch (\Exception $e) {
+            log_action("Error occurred while generating AI Email Template on topic of prompt: {$request->prompt}. Error: " . $e->getMessage());
 
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to generate email template: ' . $errorMessage,
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
-
-        // Extract HTML content
-        $html = $response['choices'][0]['message']['content'] ?? '';
-
-        // Clean up potential markdown fences
-        $html = preg_replace('/^```html\s*|\s*```$/m', '', trim($html));
-
-        // Validate HTML structure and ensure no <style> or <table> tags
-        if (empty($html) || !str_contains(strtolower($html), '<html') || !str_contains(strtolower($html), '<body')) {
-            log_action("Invalid HTML structure generated for prompt: {$request->prompt}");
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid HTML template structure',
-            ], 500);
-        }
-
-        // Strict check for <style> tags
-        if (preg_match('/<style\b[^>]*>/i', $html)) {
-            log_action("Generated HTML contains <style> tags for prompt: {$request->prompt}");
-            return response()->json([
-                'status' => false,
-                'message' => 'Generated template contains unsupported <style> tags',
-            ], 500);
-        }
-
-        // Strict check for <table> tags
-        if (preg_match('/<table\b[^>]*>/i', $html)) {
-            log_action("Generated HTML contains <table> tags for prompt: {$request->prompt}");
-            return response()->json([
-                'status' => false,
-                'message' => 'Generated template contains unsupported <table> tags',
-            ], 500);
-        }
-
-        // Log success
-        log_action("Email template generated using AI on topic of prompt: {$request->prompt}");
-
-        return response()->json([
-            'status' => true,
-            'html' => $html,
-            'message' => __('Successfully generated email template'),
-        ]);
-    } catch (\Exception $e) {
-        log_action("Error occurred while generating AI Email Template on topic of prompt: {$request->prompt}. Error: " . $e->getMessage());
-
-        return response()->json([
-            'status' => false,
-            'message' => __('Error: ') . $e->getMessage(),
-        ], 500);
     }
-}
 
     public function saveAIPhishTemplate(Request $request)
     {
