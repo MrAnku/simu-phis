@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LearnApi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Badge;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
@@ -114,7 +115,7 @@ class ApiLearnBlueCollarController extends Controller
                 ], 422);
             }
 
-            // Decrypt the email
+            // Decrypt the user_whatsapp
             $userWhatsapp = decrypt($session->token);
 
             Session::put('token', $token);
@@ -592,7 +593,7 @@ class ApiLearnBlueCollarController extends Controller
                     'message' => 'Training not found.'
                 ], 404);
             }
-            $user = $rowData->user_email;
+            $user = $rowData->user_whatsapp;
 
             if ($request->scormTrainingScore == 0 && $rowData->personal_best == 0) {
                 $rowData->grade = 'F';
@@ -764,6 +765,468 @@ class ApiLearnBlueCollarController extends Controller
             $scormAssignedUser->update([
                 'certificate_id' => $certificateId,
             ]);
+        }
+    }
+
+    public function fetchScoreBoard(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $allAssignedTrainingMods = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)->where('training_started', 1)->get();
+
+            $allAssignedScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)->where('scorm_started', 1)->get();
+
+            $allAssignedTrainings = [];
+            foreach ($allAssignedTrainingMods as $trainingMod) {
+                $allAssignedTrainings[] = [
+                    'training_name' => $trainingMod->training_type == 'games' ? $trainingMod->trainingGame->name : $trainingMod->trainingData->name,
+                    'score' => $trainingMod->personal_best,
+                    'completed' => $trainingMod->completed ? 'Yes' : 'No',
+                    'training_due_date' => $trainingMod->training_due_date,
+                    'completion_date' => $trainingMod->completion_date,
+                    'training_type' => $trainingMod->training_type,
+                ];
+            }
+
+            foreach ($allAssignedScorms as $scorm) {
+                $allAssignedTrainings[] = [
+                    'training_name' => $scorm->scormTrainingData->name,
+                    'score' => $scorm->personal_best,
+                    'completed' => $scorm->completed ? 'Yes' : 'No',
+                    'training_due_date' => $scorm->scorm_due_date,
+                    'completion_date' => $scorm->completion_date,
+                    'training_type' => 'Scorm',
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scoreboard retrieved successfully'),
+                'data' => [
+                    'scoreboard' => $allAssignedTrainings ?? [],
+                    'total_trainings' => count($allAssignedTrainings),
+                    'avg_score' => count($allAssignedTrainings) > 0 ? round(array_sum(array_column($allAssignedTrainings, 'score')) / count($allAssignedTrainings)) : 0,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchLeaderBoard(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $currentUserWhatsapp = $request->user_whatsapp;
+
+            $companyId = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->value('company_id');
+
+            $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
+            $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
+
+            $allUsers = $trainingUsers->merge($scormUsers);
+
+            $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
+                $average = $group->avg('personal_best');
+
+                return [
+                    'user_whatsapp' => $user_whatsapp,
+                    'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                    'average_score' => round($average, 2),
+                ];
+            })->sortByDesc('average_score')->values();
+
+
+            // Add leaderboard rank
+            $leaderboard = $grouped->map(function ($user, $index) {
+                $user['leaderboard_rank'] = $index + 1;
+                return $user;
+            });
+
+            $currentUserRank = optional($leaderboard->firstWhere('user_whatsapp', $currentUserWhatsapp))['leaderboard_rank'] ?? null;
+
+            // Limit to top 10 users for leaderboard
+            $leaderboard = $leaderboard->take(10);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Leaderboard retrieved successfully'),
+                'data' => [
+                    'leaderboard' => $leaderboard,
+                    'total_users' => $leaderboard->count(),
+                    'current_user_rank' => $currentUserRank,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingGrades(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $trainingUsers = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                ->where('training_started', 1)
+                ->where('grade', '!=', 'null')->get();
+
+            $assignedTrainingModules = [];
+            $assignedScormModules = [];
+
+            foreach ($trainingUsers as $user) {
+                $assignedTrainingModules[] = [
+                    'training_name' => $user->training_type == 'games' ? $user->trainingGame->name : $user->trainingData->name,
+                    'score' => $user->personal_best,
+                    'grade' => $user->grade,
+                    'assigned_date' => $user->assigned_date,
+                ];
+            }
+            $avgTrainingScore = count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0;
+            if ($avgTrainingScore >= 90) {
+                $avgTrainingGrade = 'A+';
+            } elseif ($avgTrainingScore >= 80) {
+                $avgTrainingGrade = 'A';
+            } elseif ($avgTrainingScore >= 70) {
+                $avgTrainingGrade = 'B';
+            } elseif ($avgTrainingScore >= 60) {
+                $avgTrainingGrade = 'C';
+            } else {
+                $avgTrainingGrade = 'D';
+            }
+
+            $scormUsers = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                ->where('scorm_started', 1)
+                ->where('grade', '!=', 'null')->get();
+
+            foreach ($scormUsers as $user) {
+                $assignedScormModules[] = [
+                    'training_name' => $user->scormTrainingData->name,
+                    'score' => $user->personal_best,
+                    'grade' => $user->grade,
+                    'assigned_date' => $user->assigned_date,
+                ];
+            }
+
+            $avgScormScore = count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0;
+
+            if ($avgScormScore >= 90) {
+                $avgScormGrade = 'A+';
+            } elseif ($avgScormScore >= 80) {
+                $avgScormGrade = 'A';
+            } elseif ($avgScormScore >= 70) {
+                $avgScormGrade = 'B';
+            } elseif ($avgScormScore >= 60) {
+                $avgScormGrade = 'C';
+            } else {
+                $avgScormGrade = 'D';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training grades retrieved successfully'),
+                'data' => [
+                    'assigned_training_modules' => $assignedTrainingModules ?? [],
+                    'total_assigned_training_mod' => count($assignedTrainingModules),
+                    'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
+                    'avg_training_grade' => $avgTrainingGrade,
+                    'assigned_scorm_modules' => $assignedScormModules ?? [],
+                    'total_assigned_scorm_mod' => count($assignedScormModules),
+                    'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
+                    'avg_scorm_grade' => $avgScormGrade,
+                    'total_trainings' => count($assignedTrainingModules) + count($assignedScormModules),
+                    'total_passed_trainings' => BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('completed', 1)->count() + BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('completed', 1)->count(),
+                    'current_avg' => (
+                        BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->sum('personal_best')
+                        +
+                        BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('scorm_started', 1)
+                        ->sum('personal_best')
+                    ) / max(1, (
+                        BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->count()
+                        +
+                        BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('scorm_started', 1)
+                        ->count()
+                    )),
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingBadges(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $allBadgeIds = [];
+
+            // Collect badge IDs from training
+            $trainingWithBadges = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($trainingWithBadges as $training) {
+                $badgeIds = json_decode($training->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Collect badge IDs from SCORM
+            $scormWithBadges = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($scormWithBadges as $scorm) {
+                $badgeIds = json_decode($scorm->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Remove duplicate badge IDs
+            $uniqueBadgeIds = array_unique($allBadgeIds);
+
+            // Fetch badges
+            $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Badges retrieved successfully'),
+                'data' => [
+                    'badges' => $badges,
+                    'total_badges' => count($badges),
+                    'total_unlock_badges' => Badge::where('id', '!=', $uniqueBadgeIds)->count()
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingGoals(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $nonGameGoals = BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->get();
+
+            $gameGoals = BlueCollarTrainingUser::with('trainingGame')->where('user_whatsapp', $request->user_whatsapp)->where('training_type',  'games')->where('personal_best', '<', 70)->get();
+
+            $trainingGoals = $nonGameGoals->concat($gameGoals);
+
+            $scormGoals = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $request->user_whatsapp)->where('personal_best', '<', 70)->get();
+
+            $activeNonGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+
+            $activeGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type',  'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+
+            $activeGoals = $activeNonGameGoals->concat($activeGameGoals);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training goals retrieved successfully'),
+                'data' => [
+                    'all_training_goals' => $trainingGoals ?? [],
+                    'all_scorm_goals' => $scormGoals ?? [],
+                    'active_goals' => $activeGoals ?? [],
+                    'total_active_goals' => count($activeGoals),
+                    'avg_progress_training' => round(BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->where('completed', 1)->avg('personal_best')),
+                    'total_training_goals' => count($trainingGoals) + count($scormGoals),
+                    'avg_in_progress_trainings' => round(BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->where('completed', 0)->avg('personal_best')),
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchTrainingAchievements(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $allBadgeIds = [];
+
+            // Collect badge IDs from training
+            $trainingWithBadges = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($trainingWithBadges as $training) {
+                $badgeIds = json_decode($training->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Collect badge IDs from SCORM
+            $scormWithBadges = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                ->whereNotNull('badge')
+                ->get();
+
+            foreach ($scormWithBadges as $scorm) {
+                $badgeIds = json_decode($scorm->badge, true) ?? [];
+                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+            }
+
+            // Remove duplicate badge IDs
+            $uniqueBadgeIds = array_unique($allBadgeIds);
+
+            // Fetch badges
+            $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
+
+            $certificates = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                ->where('certificate_path', '!=', null)
+                ->pluck('certificate_path');
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Training achivements retrieved successfully'),
+                'data' => [
+                    'badges' => $badges,
+                    'certificates' => $certificates,
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchAllAssignedTrainings(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $assignedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
+                ->with('trainingData')
+                ->get();
+
+            foreach ($assignedTrainings as $training) {
+                $allAssignments[] = [
+                    'training_name' => $training->training_type == 'games' ? $training->trainingGame->name : $training->trainingData->name,
+                    'type' => $training->training_type == 'games' ? 'games' : $training->trainingData->training_type,
+                    'score' => $training->personal_best,
+                    'assigned_date' => $training->assigned_date,
+                    'grade' => $training->grade ?? 'N/A',
+                ];
+            }
+
+            $assignedScorm = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                ->with('scormTrainingData')
+                ->get();
+
+
+            foreach ($assignedScorm as $scorm) {
+                $allAssignments[] = [
+                    'training_name' => $scorm->scormTrainingData->name,
+                    'type' => 'Scorm',
+                    'score' => $scorm->personal_best,
+                    'assigned_date' => $scorm->assigned_date,
+                    'grade' => $scorm->grade ?? 'N/A',
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Assigned trainings retrieved successfully'),
+                'data' => $allAssignments
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function startTrainingModule(Request $request)
+    {
+        try {
+            $request->validate([
+                'training_id' => 'required|integer',
+            ]);
+
+            $training = BlueCollarTrainingUser::find($request->training_id);
+
+            if (!$training) {
+                return response()->json(['success' => false, 'message' => __('Training not found.')], 404);
+            }
+
+            if ($training->completed == 1) {
+                return response()->json(['success' => false, 'message' => __('Training already completed.')], 422);
+            }
+
+            $training->training_started = 1;
+            $training->save();
+
+            return response()->json(['success' => true, 'message' => __('Training started successfully.')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function startScorm(Request $request)
+    {
+        try {
+            $request->validate([
+                'scorm_id' => 'required|integer',
+            ]);
+
+            $scorm = BlueCollarScormAssignedUser::find($request->scorm_id);
+
+            if (!$scorm) {
+                return response()->json(['success' => false, 'message' => __('Scorm not found.')], 404);
+            }
+
+            if ($scorm->completed == 1) {
+                return response()->json(['success' => false, 'message' => __('Scorm already completed.')], 422);
+            }
+
+            $scorm->scorm_started = 1;
+            $scorm->save();
+
+            return response()->json(['success' => true, 'message' => __('Scorm started successfully.')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

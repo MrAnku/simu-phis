@@ -503,9 +503,6 @@ Route::prefix('learn')->group(function () {
 
     Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
 
-    Route::get('/fetch-training-achievements', [ApiLearnController::class, 'fetchTrainingAchievements']);
-
-
     Route::get('/fetch-all-assigned-trainings', [ApiLearnController::class, 'fetchAllAssignedTrainings']);
 
     Route::put('/start-training-module', [ApiLearnController::class, 'startTrainingModule']);
@@ -546,13 +543,6 @@ Route::prefix('learn')->group(function () {
         Route::post('/download-scorm-certificate', [ApiLearnBlueCollarController::class, 'downloadScormCertificate']);
         Route::post('/update-scorm-training-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
 
-
-
-
-        // ==================================
-
-
-
         Route::get('/fetch-score-board', [ApiLearnBlueCollarController::class, 'fetchScoreBoard']);
 
         Route::get('/fetch-leader-board', [ApiLearnBlueCollarController::class, 'fetchLeaderBoard']);
@@ -564,9 +554,6 @@ Route::prefix('learn')->group(function () {
         Route::get('/fetch-training-goals', [ApiLearnBlueCollarController::class, 'fetchTrainingGoals']);
 
         Route::get('/fetch-training-achievements', [ApiLearnBlueCollarController::class, 'fetchTrainingAchievements']);
-
-        Route::get('/fetch-training-achievements', [ApiLearnBlueCollarController::class, 'fetchTrainingAchievements']);
-
 
         Route::get('/fetch-all-assigned-trainings', [ApiLearnBlueCollarController::class, 'fetchAllAssignedTrainings']);
 
