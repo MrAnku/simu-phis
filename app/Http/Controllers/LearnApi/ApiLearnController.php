@@ -239,66 +239,6 @@ class ApiLearnController extends Controller
         }
     }
 
-    public function getBlueCollarEmpTranings(Request $request)
-    {
-        try {
-            $request->validate([
-                'user_whatsapp' => 'required|integer',
-            ]);
-
-            $blueCollarUser = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
-            if (!$blueCollarUser) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No blue collar employee found with this WhatsApp number.'
-                ], 404);
-            }
-            $allTrainings = BlueCollarTrainingUser::with('trainingData')
-                ->where('user_whatsapp', $request->user_whatsapp)->get();
-
-            $completedTrainings = BlueCollarTrainingUser::with('trainingData')
-                ->where('user_whatsapp', $request->user_whatsapp)
-                ->where('completed', 1)->get();
-
-            $inProgressTrainings = BlueCollarTrainingUser::with('trainingData')
-                ->where('user_whatsapp', $request->user_whatsapp)
-                ->where('training_started', 1)
-                ->where('completed', 0)->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'user_whatsapp' => $request->user_whatsapp,
-                    'all_trainings' => $allTrainings,
-                    'completed_trainings' => $completedTrainings,
-                    'in_progress_trainings' => $inProgressTrainings,
-                    'total_trainings' => BlueCollarTrainingUser::with('trainingData')
-                        ->where('user_whatsapp', $request->user_whatsapp)->count(),
-                    'total_trainings' => $allTrainings->count(),
-                    'total_completed_trainings' => $completedTrainings->count(),
-                    'total_in_progress_trainings' => $inProgressTrainings->count(),
-                    'avg_in_progress_trainings' => round(BlueCollarTrainingUser::with('trainingData')
-                        ->where('user_whatsapp', $request->user_whatsapp)
-                        ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best')),
-                ],
-                'message' => 'Courses fetched successfully for blue collar employee'
-            ], 200);
-        } catch (ValidationException $e) {
-            // Handle the validation exception
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
-            ], 422);
-        } catch (\Exception $e) {
-            // Handle the exception
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function updateTrainingScore(Request $request)
     {
         try {

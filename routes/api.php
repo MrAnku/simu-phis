@@ -482,7 +482,6 @@ Route::prefix('learn')->group(function () {
     Route::post('/create-new-token', [ApiLearnController::class, 'createNewToken']);
 
     Route::get('/get-normal-emp-tranings', [ApiLearnController::class, 'getNormalEmpTranings']);
-    Route::get('/get-blue-collar-emp-tranings', [ApiLearnController::class, 'getBlueCollarEmpTranings']);
     Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
     Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnController::class, 'fetchNormalEmpScormTrainings']);
 
@@ -535,6 +534,40 @@ Route::prefix('learn')->group(function () {
     Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining'])->name('translate.ai.training');
 
     // For Blue Collar
-    Route::post('/blue-collar/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
-    Route::get('/blue-collar/login-with-token', [ApiLearnBlueCollarController::class, 'loginWithToken']);
+    Route::prefix('blue-collar')->group(function () {
+        Route::post('/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
+        Route::get('/login-with-token', [ApiLearnBlueCollarController::class, 'loginWithToken']);
+        Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
+
+        // ==================================
+        Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
+        Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchNormalEmpScormTrainings']);
+
+        Route::post('/download-training-certificate', [ApiLearnBlueCollarController::class, 'downloadTrainingCertificate']);
+
+        Route::post('/download-scorm-certificate', [ApiLearnBlueCollarController::class, 'downloadScormCertificate']);
+
+        Route::post('/update-scorm-training-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
+
+        Route::get('/fetch-score-board', [ApiLearnBlueCollarController::class, 'fetchScoreBoard']);
+
+        Route::get('/fetch-leader-board', [ApiLearnBlueCollarController::class, 'fetchLeaderBoard']);
+
+        Route::get('/fetch-training-grades', [ApiLearnBlueCollarController::class, 'fetchTrainingGrades']);
+
+        Route::get('/fetch-training-badges', [ApiLearnBlueCollarController::class, 'fetchTrainingBadges']);
+
+        Route::get('/fetch-training-goals', [ApiLearnBlueCollarController::class, 'fetchTrainingGoals']);
+
+        Route::get('/fetch-training-achievements', [ApiLearnBlueCollarController::class, 'fetchTrainingAchievements']);
+
+        Route::get('/fetch-training-achievements', [ApiLearnBlueCollarController::class, 'fetchTrainingAchievements']);
+
+
+        Route::get('/fetch-all-assigned-trainings', [ApiLearnBlueCollarController::class, 'fetchAllAssignedTrainings']);
+
+        Route::put('/start-training-module', [ApiLearnBlueCollarController::class, 'startTrainingModule']);
+
+        Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
+    });
 });

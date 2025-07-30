@@ -39,4 +39,9 @@ class BlueCollarTrainingUser extends Model
     {
         return $this->hasOne(TrainingModule::class, 'id', 'training');
     }
+
+    public function trainingGame()
+    {
+        return $this->belongsTo(TrainingGame::class, 'training', 'id');
+    }
 }
