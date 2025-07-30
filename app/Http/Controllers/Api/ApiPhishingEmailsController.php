@@ -233,11 +233,6 @@ class ApiPhishingEmailsController extends Controller
             }
         }
 
-        array_walk_recursive($input, function (&$input) {
-            $input = strip_tags($input);
-        });
-
-        $request->merge($input);
 
         // Validation
         try {
