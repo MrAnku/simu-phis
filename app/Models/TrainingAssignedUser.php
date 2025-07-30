@@ -15,6 +15,10 @@ class TrainingAssignedUser extends Model
         'training',
         'user_name',
         'user_email',
+        'training_due_date',
+        'training_lang',
+        'training_type',
+        'assigned_date',
         'completion_date',
         'personal_best',
         'completed',
@@ -25,15 +29,18 @@ class TrainingAssignedUser extends Model
         // Add other columns that should be mass assignable
     ];
 
-    public function trainingData(){
+    public function trainingData()
+    {
         return $this->belongsTo(TrainingModule::class, 'training', 'id');
     }
 
-    public function trainingGame(){
+    public function trainingGame()
+    {
         return $this->belongsTo(TrainingGame::class, 'training', 'id');
     }
 
-    public function campaign(){
+    public function campaign()
+    {
         return $this->belongsTo(Campaign::class, 'campaign_id', 'campaign_id');
     }
 }

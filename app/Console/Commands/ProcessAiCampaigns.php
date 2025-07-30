@@ -172,6 +172,15 @@ class ProcessAiCampaigns extends Command
             } else {
                 echo 'Failed to assign training to ' . $campaign->employee_email;
             }
+        }else{
+            $assignedTraining->update(
+                [
+                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                    'training_lang' => $campaign->training_lang,
+                    'training_type' => $campaign->training_type,
+                    'assigned_date' => now()->toDateString()
+                ]
+            );
         }
 
         //send mail to user

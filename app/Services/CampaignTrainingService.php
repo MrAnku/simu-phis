@@ -51,12 +51,15 @@ class CampaignTrainingService
                 ];
 
                 $trainingAssignedService->assignNewTraining($campData);
-
-                // if ($trainingAssigned['status'] == true) {
-                //     return true;
-                // } else {
-                //     return false;
-                // }
+            } else {
+                $assignedTraining->update(
+                    [
+                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                        'training_lang' => $campaign->training_lang,
+                        'training_type' => $campaign->training_type,
+                        'assigned_date' => now()->toDateString()
+                    ]
+                );
             }
         }
 
@@ -105,12 +108,15 @@ class CampaignTrainingService
             ];
 
             $trainingAssignedService->assignNewTraining($campData);
-
-            // if ($trainingAssigned['status'] == true) {
-            //     return true;
-            // } else {
-            //     return false;
-            // }
+        } else {
+            $assignedTraining->update(
+                [
+                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                    'training_lang' => $campaign->training_lang,
+                    'training_type' => $campaign->training_type,
+                    'assigned_date' => now()->toDateString()
+                ]
+            );
         }
 
         //send mail to user
