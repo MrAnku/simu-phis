@@ -15,7 +15,7 @@ class BlueCollarWhatsappService
     public function __construct($companyId)
     {
         $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
+        if ($isWhitelabeled->isCompanyWhitelabeled() && $isWhitelabeled->geṭWhatsappConfig()) {
             $whitelabelData = $isWhitelabeled->getWhiteLabelData();
             $this->learn_domain = "https://" . $whitelabelData->learn_domain;
             $this->companyName = $whitelabelData->company_name;

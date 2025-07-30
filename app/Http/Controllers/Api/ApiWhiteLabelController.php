@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\WhiteLabelledSmtp;
 use App\Http\Controllers\Controller;
 use App\Models\WhiteLabelledCompany;
+use App\Models\WhiteLabelledWhatsappConfig;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,7 @@ class ApiWhiteLabelController extends Controller
                 'smtp_encryption' => 'required|string',
                 'from_address' => 'required',
                 'from_name' => 'required|string|max:255',
+                'is_default_wa_config' => 'required|boolean',
             ]);
 
             $whiteLabelExists = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->exists();
@@ -125,6 +127,21 @@ class ApiWhiteLabelController extends Controller
                     'from_name' => $request->from_name,
                     'company_id' => Auth::user()->company_id,
                 ]);
+
+                if($request->is_default_wa_config == false){
+                    $request->validate([
+                        'from_phone_id' => 'required|integer',
+                        'access_token' => 'required|string',
+                        'business_id' => 'required|integer',
+                    ]);
+
+                    WhiteLabelledWhatsappConfig::create([
+                        'from_phone_id' => $request->from_phone_id,
+                        'access_token' => $request->access_token,
+                        'business_id' => $request->business_id,
+                        'company_id' => Auth::user()->company_id,
+                    ]);
+                }
 
                 log_action("White label request submitted for the company : " . Auth::user()->company_name);
                 return response()->json([
