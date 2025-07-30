@@ -22,7 +22,7 @@ class ApiLearnBlueCollarController extends Controller
     public function createNewToken(Request $request)
     {
         try {
-            $request->validate(['user_whatsapp' => 'required|integer']);
+            $request->validate(['user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp']);
 
             $hasTraining = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)->first();
 
@@ -151,7 +151,7 @@ class ApiLearnBlueCollarController extends Controller
     {
         try {
             $request->validate([
-                'user_whatsapp' => 'required|integer',
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
             ]);
 
             $blueCollarUser = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
@@ -308,7 +308,7 @@ class ApiLearnBlueCollarController extends Controller
                     $whatsappService = new BlueCollarWhatsappService($rowData->company_id);
                     $whatsapp_response = $whatsappService->sendTrainingComplete($data);
 
-                     $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                     if ($isWhitelabeled->isCompanyWhitelabeled()) {
                         $whitelabelData = $isWhitelabeled->getWhiteLabelData();
                         $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
@@ -345,7 +345,7 @@ class ApiLearnBlueCollarController extends Controller
                     log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
                 }
             }
-            return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+            // return response()->json(['success' => true, 'message' => 'Score updated'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -444,6 +444,318 @@ class ApiLearnBlueCollarController extends Controller
         }
 
         $scormAssignedUser = BlueCollarScormAssignedUser::where('scorm', $trainingId)
+            ->where('user_whatsapp', $user_whatsapp)
+            ->first();
+
+        if ($scormAssignedUser) {
+            // Update only the certificate_id (no need to touch campaign_id)
+            $scormAssignedUser->update([
+                'certificate_id' => $certificateId,
+            ]);
+        }
+    }
+
+    public function fetchScormTrainings(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $user_whatsapp = $request->query('user_whatsapp');
+
+            $allTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)->get();
+
+            if ($allTrainings->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No SCORM trainings found for this WhatsApp number.'
+                ], 422);
+            }
+
+            $completedTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)
+                ->where('completed', 1)->get();
+
+            $inProgressTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')
+                ->where('user_whatsapp', $request->user_whatsapp)
+                ->where('scorm_started', 1)
+                ->where('completed', 0)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scorm trainings retrieved successfully'),
+                'data' => [
+                    'user_whatsapp' => $user_whatsapp,
+                    'all_trainings' => $allTrainings,
+                    'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'total_trainings' => BlueCollarScormAssignedUser::with('scormTrainingData')
+                        ->where('user_whatsapp', $user_whatsapp)->count(),
+                    'total_trainings' => $allTrainings->count(),
+                    'total_completed_trainings' => $completedTrainings->count(),
+                    'total_in_progress_trainings' => $inProgressTrainings->count(),
+                    'avg_in_progress_trainings' => round(BlueCollarScormAssignedUser::with('scormTrainingData')
+                        ->where('user_whatsapp', $user_whatsapp)
+                        ->where('scorm_started', 1)
+                        ->where('completed', 0)->avg('personal_best')),
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function downloadTrainingCertificate(Request $request)
+    {
+        $request->validate([
+            'training_id' => 'required|integer',
+            'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+        ]);
+
+        $training = BlueCollarTrainingUser::find($request->training_id);
+
+        if ($training == null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training not found.'),
+            ], 404);
+        }
+
+        if ($training->completed == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training is not completed yet.'),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Certificate Path retrieved successfully'),
+            'data' => [
+                'certificate_path' => $training->certificate_path,
+            ]
+        ], 200);
+    }
+
+    public function downloadScormCertificate(Request $request)
+    {
+        $request->validate([
+            'scorm_id' => 'required|integer',
+            'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+
+        ]);
+
+        $training = BlueCollarScormAssignedUser::find($request->scorm_id);
+
+        if ($training == null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Scorm not found.'),
+            ], 404);
+        }
+
+        if ($training->completed == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Scorm is not completed yet.'),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Certificate Path retrieved successfully'),
+            'data' => [
+                'certificate_path' => $training->certificate_path,
+            ]
+        ], 200);
+    }
+
+    public function updateScormTrainingScore(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'scormTrainingScore' => 'required|integer',
+                'encoded_id' => 'required',
+            ]);
+
+            $row_id = base64_decode($request->encoded_id);
+
+            $rowData = BlueCollarScormAssignedUser::with('scormTrainingData')->find($row_id);
+            if (!$rowData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training not found.'
+                ], 404);
+            }
+            $user = $rowData->user_email;
+
+            if ($request->scormTrainingScore == 0 && $rowData->personal_best == 0) {
+                $rowData->grade = 'F';
+                $rowData->save();
+            }
+
+            if ($rowData && $request->scormTrainingScore > $rowData->personal_best) {
+                // Update the column if the current value is greater
+                $rowData->personal_best = $request->scormTrainingScore;
+
+                // Assign Grade based on score
+                if ($request->scormTrainingScore >= 90) {
+                    $rowData->grade = 'A+';
+                } elseif ($request->scormTrainingScore >= 80) {
+                    $rowData->grade = 'A';
+                } elseif ($request->scormTrainingScore >= 70) {
+                    $rowData->grade = 'B';
+                } elseif ($request->scormTrainingScore >= 60) {
+                    $rowData->grade = 'C';
+                } else {
+                    $rowData->grade = 'D';
+                }
+
+                $rowData->save();
+
+                setCompanyTimezone($rowData->company_id);
+
+                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+
+                $passingScore = (int)$rowData->scormTrainingData->passing_score;
+
+                if ($request->scormTrainingScore >= $passingScore) {
+                    $rowData->completed = 1;
+                    $rowData->completion_date = now()->format('Y-m-d');
+                    $rowData->save();
+
+                    $data = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->scormTrainingData->name,
+                        'completion_date' => $rowData->completion_date,
+                        'user_whatsapp' => $rowData->user_whatsapp,
+                    ];
+
+                    // Send WhatsApp message
+                    $whatsappService = new BlueCollarWhatsappService($rowData->company_id);
+                    $whatsapp_response = $whatsappService->sendTrainingComplete($data);
+
+                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
+                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
+                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
+                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
+                    } else {
+                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+                    }
+
+
+                    $pdfContent = $this->generateScormCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_whatsapp, $companyLogo, $favIcon);
+
+                    $whatsappFolder = $rowData->user_whatsapp;
+                    $pdfFileName = 'certificate_' . time() . '.pdf';
+                    $relativePath =  'certificates/' . $whatsappFolder . '/' . $pdfFileName;
+
+
+                    // Save using Storage
+                    Storage::disk('s3')->put($relativePath, $pdfContent);
+                    $certificate_full_path = Storage::disk('s3')->path($relativePath);
+
+                    $rowData->certificate_path = '/' . $certificate_full_path;
+                    $rowData->save();
+
+                    if ($whatsapp_response->successful()) {
+                        return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to send WhatsApp message'
+                        ], 422);
+                    }
+
+                    log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                }
+            }
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateScormCertificatePdf($name, $scormName, $scorm, $date, $user_whatsapp, $logo, $favIcon)
+    {
+        $certificateId = $this->getScormCertificateId($user_whatsapp, $scorm);
+        if (!$certificateId) {
+            $certificateId = $this->generateCertificateId();
+            $this->storeScormCertificateId($user_whatsapp, $certificateId, $scorm);
+        }
+
+        $pdf = new Fpdi();
+        $pdf->AddPage('L', 'A4');
+        $pdf->setSourceFile(resource_path('templates/design.pdf'));
+        $template = $pdf->importPage(1);
+        $pdf->useTemplate($template);
+
+        // Truncate name if too long
+        if (strlen($name) > 15) {
+            $name = mb_substr($name, 0, 12) . '...';
+        }
+
+        // Add user name
+        $pdf->SetFont('Helvetica', '', 50);
+        $pdf->SetTextColor(47, 40, 103);
+        $pdf->SetXY(100, 115);
+        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
+
+        // Add training module
+        $pdf->SetFont('Helvetica', '', 16);
+        $pdf->SetTextColor(169, 169, 169);
+        $pdf->SetXY(100, 135);
+        $pdf->Cell(210, 10, "For completing $scormName", 0, 1, 'L');
+
+        // Add date and certificate ID
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(240, 165);
+        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
+
+        $pdf->SetXY(240, 10);
+        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
+
+        if ($logo || file_exists($logo)) {
+            // 1. Top-left corner (e.g., branding)
+            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
+        }
+
+        // 2. Bottom-center badge
+        $pdf->Image($favIcon, 110, 163, 15, 15);
+
+        return $pdf->Output('S');
+    }
+
+    private function getScormCertificateId($user_whatsapp, $scorm)
+    {
+        // Check the database for an existing certificate ID for this user and training module
+        $certificate = BlueCollarTrainingUser::where('scorm', $scorm)
+            ->where('user_whatsapp', $user_whatsapp)
+            ->first();
+
+        return $certificate ? $certificate->certificate_id : null;
+    }
+
+    private function storeScormCertificateId($user_whatsapp, $certificateId, $scorm)
+    {
+        $scormAssignedUser = BlueCollarTrainingUser::where('scorm', $scorm)
             ->where('user_whatsapp', $user_whatsapp)
             ->first();
 
