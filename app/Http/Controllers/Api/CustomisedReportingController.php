@@ -31,7 +31,27 @@ class CustomisedReportingController extends Controller
         ]);
     }
 
-    public function addCard(Request $request)
+    public function reportingById($id){
+        $id = base64_decode($id);
+        $companyId = Auth::user()->company_id;
+        $report = CustomisedReporting::where('id', $id)
+            ->where('company_id', $companyId)
+            ->first();  
+        if (!$report) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Report not found')
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Report fetched successfully'),
+            'data' => $report
+        ]);
+    }
+
+    public function addReport(Request $request)
     {
         try {
             $request->validate([
