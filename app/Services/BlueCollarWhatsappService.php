@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Http;
 class BlueCollarWhatsappService
 {
 
-   public function sendSessionRegenerate($sessionRegenrateData)
+   public function sendSessionRegenerate($sessionRegenerateData)
     {
-        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
-        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
+        $access_token = $sessionRegenerateData['access_token'];
+        $phone_number_id = $sessionRegenerateData['phone_number_id'];
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
-        $token = encrypt($sessionRegenrateData['user_whatsapp']);
+        $token = encrypt($sessionRegenerateData['user_whatsapp']);
 
         $whatsapp_data = [
             "messaging_product" => "whatsapp",
-            "to" => $sessionRegenrateData['user_whatsapp'],
+            "to" => $sessionRegenerateData['user_whatsapp'],
             "type" => "template",
             "template" => [
                 "name" => "session_regenerate",
@@ -25,9 +25,9 @@ class BlueCollarWhatsappService
                     [
                         "type" => "body",
                         "parameters" => [
-                            ["type" => "text", "text" => $sessionRegenrateData['user_name']],
-                            ["type" => "text", "text" => 'Your training session has been regenerated.'],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token],
+                            ["type" => "text", "text" => $sessionRegenerateData['user_name']],
+                            ["type" => "text", "text" => 'Session Successfully Reinitialized!'],
+                            ["type" => "text", "text" => $sessionRegenerateData['learn_domain'] . '/blue-collar-training-dashboard/' . $token],
                         ]
                     ]
                 ]

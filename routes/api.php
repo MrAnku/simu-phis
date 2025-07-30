@@ -536,4 +536,5 @@ Route::prefix('learn')->group(function () {
 
     // For Blue Collar
     Route::post('/blue-collar/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
+    Route::get('/blue-collar/login-with-token', [ApiLearnBlueCollarController::class, 'loginWithToken']);
 });
