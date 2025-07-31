@@ -674,7 +674,7 @@ class ApiPhishingWebsitesController extends Controller
             if ($response->failed()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to fetch the website.'),
+                    'message' => __('Failed to fetch the website.')
                 ], 400);
             }
 
@@ -684,12 +684,63 @@ class ApiPhishingWebsitesController extends Controller
             if (strlen($html) > 500 * 1024) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('The website is too large to clone. Please select a simpler page (like a login or input form).'),
+                    'message' => __('The website is too large to clone. Please select a simpler page (like a login or input form).')
                 ], 400);
             }
 
-            // Use DomCrawler to check for input fields
+            // Initialize Crawler
             $crawler = new Crawler($html);
+
+            // Check for SPA characteristics
+            $isLikelySPA = false;
+            $spaMessage = '';
+
+            // 1. Check if HTML is minimal (e.g., < 5KB and contains a single div like id="root" or id="app")
+            if (strlen($html) < 5 * 1024) {
+                $rootDiv = $crawler->filter('div[id="root"], div[id="app"], div[id="__next"]')->count();
+                if ($rootDiv > 0) {
+                    $isLikelySPA = true;
+                    $spaMessage = __('The website appears to be a Single Page Application (e.g., React or Next.js) with minimal initial HTML, which may not be suitable for cloning.');
+                }
+            }
+
+            // 2. Check for framework signatures (React, Next.js, or React-specific scripts)
+            if (!$isLikelySPA && (
+                stripos($html, 'data-reactroot') !== false ||
+                stripos($html, '__next') !== false ||
+                stripos($html, 'react-dom') !== false || // Check for React scripts
+                stripos($html, '/static/js/') !== false // Common for bundled JS in SPAs
+            )) {
+                $isLikelySPA = true;
+                $spaMessage = __('The website appears to use a JavaScript framework like React or Next.js, which may not be suitable for cloning.');
+            }
+
+            // 3. Check for CSS availability (look for <style> or <link rel="stylesheet">)
+            $hasCss = $crawler->filter('style, link[rel="stylesheet"]')->count() > 0;
+            if (!$hasCss) {
+                $isLikelySPA = true;
+                $spaMessage = __('The website lacks inline or linked CSS in the initial HTML, indicating it may be a Single Page Application that relies on JavaScript for styling.');
+            }
+
+            // 4. Check for accessibility features (indicative of dynamic JavaScript)
+            $hasAccessibilityFeatures = stripos($html, 'ReadSpeaker') !== false ||
+                $crawler->filter('[aria-label*="contrast"], [role="button"][aria-label*="text size"]')->count() > 0;
+            if ($hasAccessibilityFeatures) {
+                $isLikelySPA = true;
+                $spaMessage = __('The website includes dynamic accessibility features (e.g., text resizing, contrast toggle), indicating heavy JavaScript usage, which may not be suitable for cloning.');
+            }
+
+            
+
+            // If it's an SPA, return early
+            if ($isLikelySPA) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $spaMessage
+                ], 400);
+            }
+
+            // 6. Check for input fields
             $inputCount = $crawler->filter('input')->count();
 
             // Fallback: If DomCrawler finds no input, try a simple regex search for <input
@@ -698,10 +749,13 @@ class ApiPhishingWebsitesController extends Controller
                 $inputCount = count($matches[0]);
             }
 
+          
+
+            // If no input fields are found and not a login page, use the original error
             if ($inputCount < 1) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No input fields found on the page. Please select a page that asks for user input (e.g., login or form page).'),
+                    'message' => __('No input fields found on the page. Please select a page that asks for user input (e.g., login or form page).')
                 ], 400);
             }
 
