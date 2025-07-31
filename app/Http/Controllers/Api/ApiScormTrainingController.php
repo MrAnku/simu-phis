@@ -8,7 +8,14 @@ use Illuminate\Http\Request;
 use App\Models\ScormTraining;
 use App\Models\ScormAssignedUser;
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampLive;
+use App\Models\CampaignLive;
+use App\Models\QuishingLiveCamp;
+use App\Models\WaLiveCampaign;
+use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class ApiScormTrainingController extends Controller
@@ -93,5 +100,71 @@ class ApiScormTrainingController extends Controller
         }
     }
 
-   
+    public function deleteScormTrainings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'scormId' => 'required|integer|exists:scorm_trainings,id',
+            'scorm_package' => 'nullable|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $validator->errors()->first(),
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $scormId = $request->input('scormId');
+        $scorm_package = $request->input('scorm_package');
+        $company_id = Auth::user()->company_id;
+
+        try {
+            // Start DB transaction
+            DB::beginTransaction();
+
+            $emailCampExists = CampaignLive::where('scorm_training', $scormId)->exists();
+            $aiCallCampExists = AiCallCampLive::where('scorm_training', $scormId)->exists();
+            $quishCampExists = QuishingLiveCamp::where('scorm_training', $scormId)->exists();
+            $waLiveCampExists = WaLiveCampaign::where('scorm_training', $scormId)->exists();
+
+            if ($emailCampExists || $aiCallCampExists || $quishCampExists || $waLiveCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this scorm, Delete Campaigns first",
+                ], 422);
+            }
+
+            // Delete assigned users
+            DB::table('blue_collar_scorm_assigned_users')->where('scorm', $scormId)->where('company_id', $company_id)->delete();
+            DB::table('scorm_assigned_users')->where('scorm', $scormId)->where('company_id', $company_id)->delete();
+
+            // Delete SCORM
+            $scormTraining = ScormTraining::where('id', $scormId)->where('company_id', $company_id)->first();
+
+            $isDeleted  = $scormTraining->delete();
+
+            // Delete scorm package
+
+
+
+
+
+            DB::commit(); // Commit transaction
+            log_action("Scorm deleted");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scorm deleted successfully'),
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack(); // Rollback on error
+            log_action("Failed to Scorm training : " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __("Something went wrong, please try again later."),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
