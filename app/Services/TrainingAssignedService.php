@@ -105,4 +105,15 @@ class TrainingAssignedService
             'msg' => "New training assigned successfully \n"
         ];
     }
+
+     public function assignNewScormTraining($campData)
+    {
+        DB::table('scorm_assigned_users')
+            ->insert($campData);
+
+        return [
+            'status' => 1,
+            'msg' => "New training assigned successfully \n"
+        ];
+    }
 }

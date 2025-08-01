@@ -287,32 +287,61 @@ class ShowWebsiteController extends Controller
             }
         } else {
 
-            $trainingAssigned = null;
-            $scormAssigned = null;
+            // $trainingAssigned = null;
+            // $scormAssigned = null;
 
-            // assign training to bluecollar employees
-            if ($all_camp->training_module !== null) {
-                $trainingAssigned = DB::table('blue_collar_training_users')
-                    ->where('user_whatsapp', $all_camp->user_phone)
-                    ->where('training', $all_camp->training_module)
-                    ->first();
-            }
+            // // assign training to bluecollar employees
+            // if ($all_camp->training_module !== null) {
+            //     $trainingAssigned = DB::table('blue_collar_training_users')
+            //         ->where('user_whatsapp', $all_camp->user_phone)
+            //         ->where('training', $all_camp->training_module)
+            //         ->first();
+            // }
 
-            if ($all_camp->training_module !== null) {
-                $scormAssigned = DB::table('blue_collar_scorm_assigned_users')
-                    ->where('user_whatsapp', $all_camp->user_phone)
-                    ->where('scorm', $all_camp->scorm_training)
-                    ->first();
-            }
+            // if ($all_camp->training_module !== null) {
+            //     $scormAssigned = DB::table('blue_collar_scorm_assigned_users')
+            //         ->where('user_whatsapp', $all_camp->user_phone)
+            //         ->where('scorm', $all_camp->scorm_training)
+            //         ->first();
+            // }
 
 
-            if ($trainingAssigned && $scormAssigned) {
-                // return "Send Remainder";
-                return $this->whatsappSendTrainingReminder($campaign, $trainingAssigned->id);
+            // if ($trainingAssigned && $scormAssigned) {
+            //     // return "Send Remainder";
+            //     return $this->whatsappSendTrainingReminder($campaign, $trainingAssigned->id);
+            // } else {
+            //     // return "Assign Training";
+            //     // echo "kk";
+            //     return $this->whatsappAssignFirstTraining($campaign);
+            // }
+
+
+
+
+             if ($all_camp->training_assignment == 'all') {
+
+                $trainingModules = [];
+                $scormTrainings = [];
+
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+
+
+                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             } else {
-                // return "Assign Training";
-                // echo "kk";
-                return $this->whatsappAssignFirstTraining($campaign);
+                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
         }
     }
@@ -499,7 +528,6 @@ class ShowWebsiteController extends Controller
                 return;
             }
             if ($wsh == 1) {
-                echo "jkj";
                 $this->assignTrainingByWhatsapp($campid);
                 return;
             }
