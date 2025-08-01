@@ -207,7 +207,11 @@ class ApiScormTrainingController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Scorm training retrieved successfully'),
-                'data' => $scormTraining
+                'data' => [
+                    'scorm_url' => $scormTraining['scorm_url'],
+                    'scorm_training' => $scormTraining['scormTraining']
+                ]
+                
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
