@@ -11,6 +11,7 @@ class ScormTraining extends Model
         'description',
         'category',
         'file_path',
+        'scorm_version', // Added scorm_version field
         'company_id',
         'passing_score',
         'entry_point'

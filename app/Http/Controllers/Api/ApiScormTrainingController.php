@@ -24,51 +24,74 @@ class ApiScormTrainingController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'category' => 'nullable|string',
-                'scorm_file' => 'required|file|mimes:zip|max:921600',
-                'passing_score' => 'required|numeric',
-                'entry_point' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category' => 'nullable|string',
+            'scorm_version' => 'required|string|in:1.2,2004',
+            'scorm_file' => 'required|file|mimes:zip|max:921600',
+            'passing_score' => 'required|numeric',
+            'entry_point' => 'nullable|string|max:255',
             ]);
 
             $companyId = Auth::user()->company_id;
-
             $file = $request->file('scorm_file');
-
             $slug = Str::slug($request->name) . '-' . time();
 
-            $randomName = generateRandom(10);
-            $extension = $request->file('scorm_file')->getClientOriginalExtension();
-            $darkLogoFilename = $randomName . '.' . $extension;
+            // Save zip temporarily for scanning
+            $tmpZipPath = sys_get_temp_dir() . '/' . uniqid('scorm_', true) . '.zip';
+            $file->move(dirname($tmpZipPath), basename($tmpZipPath));
 
-
-            $extractTo = $request->file('scorm_file')->storeAs("uploads/scorm_package/{$companyId}", $slug, 's3');
-
-            if ($extractTo) {
-                // Extract ZIP
-                $zip = new ZipArchive;
-                if ($zip->open($file) === TRUE) {
-                    $zip->extractTo($extractTo);
-                    $zip->close();
-
-                    $scormTraining = ScormTraining::create([
-                        'name' => $request->name,
-                        'description' => $request->description,
-                        'category' => $request->category,
-                        'file_path' => "/uploads/scorm_package/{$companyId}/{$slug}/",
-                        'company_id' => $companyId,
-                        'entry_point' => $request->entry_point,
-                        'passing_score' => $request->passing_score,
-                    ]);
-
-                    return response()->json([
-                        'success' => true,
-                        'message' => __('Scorm Training Created successfully.')
-                    ], 201);
+            $zip = new ZipArchive;
+            if ($zip->open($tmpZipPath) === TRUE) {
+            // Scan for malicious files
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+                $filename = strtolower($stat['name']);
+                if (preg_match('/\.(php|exe|sh|bat|py|pl|cgi|asp|jsp|wsf|vbs|dll|com|scr|pif|jar|msi|cmd)$/i', $filename)) {
+                $zip->close();
+                @unlink($tmpZipPath);
+                return response()->json(['success' => false, 'message' => 'Malicious or executable file detected in SCORM zip.'], 422);
                 }
+            }
+
+            // check the entry point exists in the zip
+            if ($request->entry_point && !$zip->locateName($request->entry_point)) {
+                $zip->close();
+                @unlink($tmpZipPath);
+                return response()->json(['success' => false, 'message' => 'Entry point file not found in SCORM zip.'], 422);
+            }
+
+
+            $zip->close();
+
+            // S3 folder path
+            $scormFolder = "uploads/scorm_package/{$companyId}/{$slug}";
+            $scormZipName = $slug . '.zip';
+            $scormZipPath = $scormFolder . '/' . $scormZipName;
+
+            // Upload to S3 after scan
+            \Storage::disk('s3')->putFileAs($scormFolder, new \Illuminate\Http\File($tmpZipPath), $scormZipName);
+
+            @unlink($tmpZipPath);
+
+            $scormTraining = ScormTraining::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'category' => $request->category,
+                'file_path' => $scormFolder . '/' . $scormZipName, // S3 path
+                'scorm_version' => $request->scorm_version,
+                'company_id' => $companyId,
+                'entry_point' => $request->entry_point,
+                'passing_score' => $request->passing_score,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Scorm Training Created successfully.')
+            ], 201);
             } else {
-                return response()->json(['success' => false, 'message' => 'Failed to create Scorm Training'], 422);
+            @unlink($tmpZipPath);
+            return response()->json(['success' => false, 'message' => 'Failed to extract SCORM zip file'], 422);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -82,13 +105,6 @@ class ApiScormTrainingController extends Controller
 
             $scormTrainings = ScormTraining::where('company_id', $companyId)
                 ->get();
-
-            if ($scormTrainings->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('No Scorm trainings found for this company.')
-                ], 422);
-            }
 
             return response()->json([
                 'success' => true,

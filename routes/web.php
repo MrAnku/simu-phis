@@ -12,6 +12,7 @@ use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
 use App\Http\Controllers\PhishTriageController;
+use App\Http\Controllers\TestController;
 
 Route::get('/company/create-password/{token}', [CreatePassController::class, 'createCompanyPassPage'])->name('company.createCompanyPassPage');
 Route::post('/company/create-password', [CreatePassController::class, 'storeCompanyPass'])->name('company.storeCompanyPass');
@@ -115,6 +116,10 @@ Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('bloc
 
    
 });
+
+//test routes
+Route::get('/test/scorm/{id}', [TestController::class, 'testScorm'])
+    ->name('test.scorm');
 
 
 Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
