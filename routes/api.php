@@ -532,6 +532,9 @@ Route::prefix('learn')->group(function () {
     Route::get('/load-ai-training', [ApiLearnController::class, 'generateAiTraining'])->name('generate.training');
     Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining'])->name('translate.ai.training');
 
+    // Scorm Training
+    Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
+
     // For Blue Collar
     Route::prefix('blue-collar')->group(function () {
         Route::post('/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
