@@ -347,7 +347,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::prefix('customised-reporting')->group(function () {
         Route::get('/', [CustomisedReportingController::class, 'index']);
-        Route::get('/{id}', [CustomisedReportingController::class, 'reportingById']);
+        Route::get('/report-by-id/{id}', [CustomisedReportingController::class, 'reportingById']);
         Route::post('/add-report', [CustomisedReportingController::class, 'addReport']);
         Route::put('/add-widgets', [CustomisedReportingController::class, 'addWidgets']);
 
