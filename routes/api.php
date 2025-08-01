@@ -475,6 +475,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/add-scorm-training', [ApiScormTrainingController::class, 'addScormTraining']);
         Route::get('fetch-scorm-trainings', [ApiScormTrainingController::class, 'fetchScormTrainings']);
         Route::delete('delete-scorm-trainings', [ApiScormTrainingController::class, 'deleteScormTrainings']);
+        Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
     });
 });
 
