@@ -244,107 +244,68 @@ class ShowWebsiteController extends Controller
         }
     }
 
-    private function assignTrainingByWhatsapp($campid)
-    {
-        $campaign = WaLiveCampaign::where('id', $campid)->first();
-        if (!$campaign) {
-            return response()->json(['error' => 'Invalid campaign or user']);
-        }
-        if ($campaign->training_module == null) {
-            return response()->json(['error' => 'No training module assigned']);
-        }
 
-        setCompanyTimezone($campaign->company_id);
+private function assignTrainingByWhatsapp($campid)
+{
+    $campaign = WaLiveCampaign::where('id', $campid)->first();
+    if (!$campaign) {
+        echo "Invalid campaign or user\n";
+        return response()->json(['error' => 'Invalid campaign or user']);
+    }
+    if ($campaign->training_module == null && $campaign->scorm_training == null) {
+        echo "No training module nor scorm assigned\n";
+        return response()->json(['error' => 'No training module nor scorm assigned']);
+    }
 
-        //checking assignment
-        $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
+    setCompanyTimezone($campaign->company_id);
 
-        if ($campaign->employee_type == 'normal') {
-            if ($all_camp->training_assignment == 'all') {
+    //checking assignment
+    $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
 
-                $trainingModules = [];
-                $scormTrainings = [];
+    if ($campaign->employee_type == 'normal') {
+        if ($all_camp->training_assignment == 'all') {
+            $trainingModules = [];
+            $scormTrainings = [];
 
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
-
-
-                $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            } else {
-                $sent = CampaignTrainingService::assignTraining($campaign);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            if ($all_camp->training_module !== null) {
+                $trainingModules = json_decode($all_camp->training_module, true);
             }
+
+            if ($all_camp->scorm_training !== null) {
+                $scormTrainings = json_decode($all_camp->scorm_training, true);
+            }
+
+            $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
+
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         } else {
+            $sent = CampaignTrainingService::assignTraining($campaign);
 
-            // $trainingAssigned = null;
-            // $scormAssigned = null;
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+        }
+    } else {
+        if ($all_camp->training_assignment == 'all') {
+            $trainingModules = [];
+            $scormTrainings = [];
 
-            // // assign training to bluecollar employees
-            // if ($all_camp->training_module !== null) {
-            //     $trainingAssigned = DB::table('blue_collar_training_users')
-            //         ->where('user_whatsapp', $all_camp->user_phone)
-            //         ->where('training', $all_camp->training_module)
-            //         ->first();
-            // }
-
-            // if ($all_camp->training_module !== null) {
-            //     $scormAssigned = DB::table('blue_collar_scorm_assigned_users')
-            //         ->where('user_whatsapp', $all_camp->user_phone)
-            //         ->where('scorm', $all_camp->scorm_training)
-            //         ->first();
-            // }
-
-
-            // if ($trainingAssigned && $scormAssigned) {
-            //     // return "Send Remainder";
-            //     return $this->whatsappSendTrainingReminder($campaign, $trainingAssigned->id);
-            // } else {
-            //     // return "Assign Training";
-            //     // echo "kk";
-            //     return $this->whatsappAssignFirstTraining($campaign);
-            // }
-
-
-
-
-             if ($all_camp->training_assignment == 'all') {
-
-                $trainingModules = [];
-                $scormTrainings = [];
-
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
-
-
-                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            } else {
-                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            if ($all_camp->training_module !== null) {
+                $trainingModules = json_decode($all_camp->training_module, true);
             }
+
+            if ($all_camp->scorm_training !== null) {
+                $scormTrainings = json_decode($all_camp->scorm_training, true);
+            }
+
+            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+        } else {
+            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
+
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         }
     }
+}
 
     private function whatsappAssignFirstTraining($campaign)
     {

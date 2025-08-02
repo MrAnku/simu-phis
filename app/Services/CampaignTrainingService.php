@@ -9,6 +9,7 @@ use App\Models\ScormAssignedUser;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CampaignTrainingService
 {
@@ -72,14 +73,11 @@ class CampaignTrainingService
 
         if (!empty($scormTrainings)) {
             foreach ($scormTrainings as $training) {
-
-                //check if this training is already assigned to this user
                 $assignedTraining = ScormAssignedUser::where('user_email', $user_email)
                     ->where('scorm', $training)
                     ->first();
 
                 if (!$assignedTraining) {
-                    //call assignNewTraining from service method
                     $campData = [
                         'campaign_id' => $campaign->campaign_id,
                         'user_id' => $campaign->user_id,
@@ -90,25 +88,10 @@ class CampaignTrainingService
                         'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                         'company_id' => $campaign->company_id
                     ];
-
-                    // $trainingAssignedService->assignNewTraining($campData);
-
-                    DB::table('scorm_assigned_users')
-                        ->insert($campData);
-
-                    echo 'Scorm assigned successfully to ' . $user_email . "\n";
-
-
-                    // if ($trainingAssigned['status'] == true) {
-                    //     return true;
-                    // } else {
-                    //     return false;
-                    // }
+                    $trainingAssignedService->assignNewScormTraining($campData);
                 }
             }
         }
-
-
 
         //send mail to user
         $campData = [
@@ -168,8 +151,8 @@ class CampaignTrainingService
             }
         }
 
-
         if ($campaign->scorm_training !== null) {
+
             $assignedTrainingModule = ScormAssignedUser::where('user_email', $user_email)
                 ->where('scorm', $campaign->scorm_training)
                 ->first();
@@ -187,21 +170,9 @@ class CampaignTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                // DB::table('scorm_assigned_users')->insert($campData);
-
-                // echo 'Scorm assigned successfully to ' . $user_email . "\n";
                 $trainingAssignedService->assignNewScormTraining($campData);
-
-
-                // if ($trainingAssigned['status'] == true) {
-                //     return true;
-                // } else {
-                //     return false;
-                // }
             }
         }
-
-
 
         //send mail to user
         $campData = [
@@ -435,7 +406,7 @@ class CampaignTrainingService
                     ->insert($campData);
 
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
-                return true;
+                // return true;
 
 
                 // if ($trainingAssigned['status'] == true) {

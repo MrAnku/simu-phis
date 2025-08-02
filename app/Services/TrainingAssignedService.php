@@ -65,7 +65,7 @@ class TrainingAssignedService
         $trainingNames = collect();
         $scormNames = collect();
 
-        if ($allAssignedTrainings->isNotEmpty()){
+        if ($allAssignedTrainings->isNotEmpty()) {
             $trainingNames = $allAssignedTrainings->map(function ($training) {
                 if ($training->training_type == 'games') {
                     return $training->trainingGame->name;
@@ -75,9 +75,9 @@ class TrainingAssignedService
         }
 
 
-        if ($scormTrainings->isNotEmpty()){
+        if ($scormTrainings->isNotEmpty()) {
             $scormNames = $scormTrainings->map(function ($training) {
-    
+
                 return $training->scormTrainingData->name;
             });
         }
@@ -106,9 +106,20 @@ class TrainingAssignedService
         ];
     }
 
-     public function assignNewScormTraining($campData)
+    public function assignNewScormTraining($campData)
     {
         DB::table('scorm_assigned_users')
+            ->insert($campData);
+
+        return [
+            'status' => 1,
+            'msg' => "Scorm assigned successfully \n"
+        ];
+    }
+
+    public function assignNewBlueCollarScormTraining($campData)
+    {
+        DB::table('blue_collar_scorm_assigned_users')
             ->insert($campData);
 
         return [
