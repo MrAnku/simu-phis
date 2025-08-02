@@ -195,7 +195,6 @@ class CustomisedReportingController extends Controller
     public function lineData(Request $request)
     {
         try {
-            $companyId = Auth::user()->company_id;
             $type = $request->query('type');
             $companyId = Auth::user()->company_id;
 
@@ -305,5 +304,74 @@ class CustomisedReportingController extends Controller
     {
         //phishing event overtime
         return $this->lineData($request);
+    }
+
+    public function tableData(Request $request)
+    {
+        try {
+            $type = $request->query('type');
+            $companyId = Auth::user()->company_id;
+
+            if ($type === 'employees') {
+                $users = Users::where('company_id', $companyId)->distinct('user_email')->get();
+                $data = [];
+
+                foreach ($users as $user) {
+                    // Campaigns ran (sum from all sources)
+                    $campaignsRan =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->count();
+
+                    // Compromised count (sum from all sources)
+                    $compromisedCount =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('emp_compromised', 1)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', '1')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', 1)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 1)->count();
+
+                    $compromisedRate = $campaignsRan > 0 ? round(($compromisedCount / $campaignsRan) * 100, 2) : 0;
+
+                    // Ignore count (sum from all sources)
+                    $ignoredCount =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('qr_scanned', '0')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 0)->count();
+
+                    $ignoreRate = $campaignsRan > 0 ? round(($ignoredCount / $campaignsRan) * 100, 2) : 0;
+
+                    // Risk score (example: compromised rate + ignore rate, capped at 100)
+                    $riskScore = min($compromisedRate + $ignoreRate, 100);
+
+                    // Trainings assigned
+                    $trainingsAssigned = TrainingAssignedUser::where('company_id', $companyId)
+                        ->where('user_email', $user->user_email)
+                        ->count();
+
+                    $data[] = [
+                        'name' => $user->user_name,
+                        'email' => $user->user_email,
+                        'campaigns_ran' => $campaignsRan,
+                        'compromised_rate' => $compromisedRate,
+                        'risk_score' => $riskScore,
+                        'ignore_rate' => $ignoreRate,
+                        'trainings_assigned' => $trainingsAssigned,
+                    ];
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Employee table data retrieved successfully'),
+                    'data' => $data
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 }
