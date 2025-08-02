@@ -353,6 +353,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         //get routes
         Route::get('/card', [CustomisedReportingController::class, 'cardData']);
+        Route::get('/line', [CustomisedReportingController::class, 'lineData']);
+        Route::get('/bar', [CustomisedReportingController::class, 'barData']);
+        Route::get('/area', [CustomisedReportingController::class, 'areaData']);
 
     });
 

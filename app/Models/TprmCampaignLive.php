@@ -25,6 +25,8 @@ class TprmCampaignLive extends Model
         'mail_open',
         'payload_clicked',
         'email_reported',
+        'emp_compromised',
+        'payload_clicked',
         'email_lang',
         'sent',
         'training_assigned',

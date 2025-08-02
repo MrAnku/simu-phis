@@ -10,6 +10,7 @@ use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
 use App\Models\CampaignLive;
 use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
 use App\Models\TrainingAssignedUser;
 use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +32,13 @@ class CustomisedReportingController extends Controller
         ]);
     }
 
-    public function reportingById($id){
+    public function reportingById($id)
+    {
         $id = base64_decode($id);
         $companyId = Auth::user()->company_id;
         $report = CustomisedReporting::where('id', $id)
             ->where('company_id', $companyId)
-            ->first();  
+            ->first();
         if (!$report) {
             return response()->json([
                 'success' => false,
@@ -188,5 +190,120 @@ class CustomisedReportingController extends Controller
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function lineData(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $type = $request->query('type');
+            $companyId = Auth::user()->company_id;
+
+            // Get last 6 months including current month
+            $months = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $start = now()->subMonths($i)->startOfMonth()->format('Y-m-d');
+                $end = now()->subMonths($i)->endOfMonth()->format('Y-m-d');
+                $monthLabel = now()->subMonths($i)->format('M Y');
+                $months[] = [
+                    'month' => $monthLabel,
+                    'start' => $start,
+                    'end' => $end
+                ];
+            }
+
+            $phishing_events_overtime = [];
+
+            foreach ($months as $m) {
+                $clickRate = 0;
+                $reportRate = 0;
+                $ignoreRate = 0;
+
+                if ($type === 'email') {
+                    $clickRate = CampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    $reportRate = CampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('email_reported', 1)
+                        ->count();
+
+                    $ignoreRate = CampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('payload_clicked', 0)
+                        ->count();
+                } elseif ($type === 'quishing') {
+                    $clickRate = QuishingLiveCamp::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('compromised', '1')
+                        ->count();
+
+                    $reportRate = QuishingLiveCamp::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('email_reported', '1')
+                        ->count();
+
+                    $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('qr_scanned', '0')
+                        ->count();
+                } elseif ($type === 'tprm') {
+                    // Fetch TPRM campaign data
+                    $clickRate = TprmCampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('emp_compromised', 1)
+                        ->count();
+
+                    $reportRate = TprmCampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('email_reported', 1)
+                        ->count();
+
+                    $ignoreRate = TprmCampaignLive::where('company_id', $companyId)
+                        ->whereBetween('created_at', [$m['start'], $m['end']])
+                        ->where('payload_clicked', 0)
+                        ->count();
+                }
+
+                $phishing_events_overtime[] = [
+                    'month' => $m['month'],
+                    'clicked' => $clickRate,
+                    'targetClicked' => 5,
+                    'reported' => $reportRate,
+                    'targetReported' => 40,
+                    'ignored' => $ignoreRate,
+                    'targetIgnored' => 55
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Data retrieved successfully'),
+                'data' => [
+                    'phishing_events_overtime' => $phishing_events_overtime,
+                    'reportFormData' => [
+                        'simulationsPeriod' => 6
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function barData(Request $request)
+    {
+        //phishing event overtime
+        return $this->lineData($request);
+    }
+    public function areaData(Request $request)
+    {
+        //phishing event overtime
+        return $this->lineData($request);
     }
 }
