@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BlueCollarEmployee;
+use App\Models\BlueCollarLearnerLoginSession;
 use Illuminate\Support\Facades\Http;
 
 class BlueCollarWhatsappService
@@ -100,5 +101,54 @@ class BlueCollarWhatsappService
         ])->post($whatsapp_url, $whatsapp_data);
 
         return $response;
+    }
+
+    public function sendTrainingAssign($data)
+    {
+        $token = encrypt($data->user_phone);
+
+        $whatsapp_data = [
+            "messaging_product" => "whatsapp",
+            "to" => $data->user_phone, // Replace with actual user phone number
+            "type" => "template",
+            "template" => [
+                "name" => "training_message",
+                "language" => ["code" => "en"],
+                "components" => [
+                    [
+                        "type" => "body",
+                        "parameters" => [
+                            ["type" => "text", "text" => $data->user_name],
+                            ["type" => "text", "text" => $data->training_names],
+                            ["type" => "text", "text" => $this->learn_domain . "/start-blue-collar-training/" . $token]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $whatsapp_url = "https://graph.facebook.com/v22.0/{$this->phone_number_id}/messages";
+
+        // Insert new record into the database
+
+        $inserted = BlueCollarLearnerLoginSession::insert([
+            'whatsapp_number' => $data->user_phone,
+            'token' => $token,
+            'expiry' => now()->addHours(24),
+        ]);
+
+        // Check if the record was inserted successfully
+        if (!$inserted) {
+           return null;
+        }
+
+        $whatsapp_response = Http::withHeaders([
+            "Authorization" => "Bearer {$this->access_token}",
+            "Content-Type" => "application/json"
+        ])->withOptions([
+            'verify' => false
+        ])->post($whatsapp_url, $whatsapp_data);
+
+        return $whatsapp_response;
     }
 }

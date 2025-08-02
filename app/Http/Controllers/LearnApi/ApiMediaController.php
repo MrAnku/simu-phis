@@ -16,7 +16,7 @@ class ApiMediaController extends Controller
         try {
             // Validate the request
             $request->validate([
-                'file' => 'required|file|mimes:jpg,jpeg,png,webp,zip,ppt,pptx,mp4,mp3,pdf,avif|max:204800', // 200 MB max
+                'file' => 'required|file|mimes:jpg,jpeg,png,webp,zip,ppt,pptx,mp4,mp3,pdf,avif|max:20480', // 20 MB max
             ]);
 
             $file = $request->file('file');

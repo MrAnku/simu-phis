@@ -303,7 +303,6 @@ class ApiTrainingModuleController extends Controller
         try {
 
             $companyId = Auth::user()->company_id;
-            $cover_file = 'defaultTraining.jpg';
 
             // Handling cover file
             if ($request->hasFile('cover_file')) {

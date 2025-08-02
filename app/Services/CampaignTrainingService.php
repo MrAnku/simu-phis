@@ -288,56 +288,27 @@ class CampaignTrainingService
         }
 
 
+        $trainingNames = self::getAllTrainingNames($user_phone); // returns a collection
 
-        //send mail to user
-        // $campData = [
-        //     'user_name' => $campaign->user_name,
-        //     'user_email' => $user_email,
-        //     'company_id' => $campaign->company_id
-        // ];
-        // $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+        // Convert to comma-separated string (or keep as array if you prefer)
+        $trainingNamesString = $trainingNames->implode(', ');
 
-        // if ($isMailSent['status'] == true) {
-        //     return true;
-        // } else {
-        //     return false;
-        // }
+        // Prepare data object/array
+        $data = (object)[
+            'user_phone' => $user_phone,
+            'user_name' => $campaign->user_name,
+            'training_names' => $trainingNamesString
+        ];
 
-        //    $whatsapp_data = [
-        //     "messaging_product" => "whatsapp",
-        //     "to" => $campaign->user_phone, // Replace with actual user phone number
-        //     "type" => "template",
-        //     "template" => [
-        //         "name" => "training_message",
-        //         "language" => ["code" => "en"],
-        //         "components" => [
-        //             [
-        //                 "type" => "body",
-        //                 "parameters" => [
-        //                     ["type" => "text", "text" => $campaign->user_name],
-        //                     ["type" => "text", "text" => $campaign->trainingData->name],
-        //                     ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/start-blue-collar-training/" . $token]
-        //                 ]
-        //             ]
-        //         ]
-        //     ]
-        // ];
+        $blueCollarWhatsappService = new BlueCollarWhatsappService($campaign->company_id);
 
+        $whatsapp_response = $blueCollarWhatsappService->sendTrainingAssign($data);
 
-
-        // $whatsapp_response = Http::withHeaders([
-        //     "Authorization" => "Bearer {$access_token}",
-        //     "Content-Type" => "application/json"
-        // ])->withOptions([
-        //     'verify' => false
-        // ])->post($whatsapp_url, $whatsapp_data);
-
-
-        // if ($whatsapp_response->successful()) {
-        //     log_action("Bluecollar Training Assigned | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
-        // } else {
-        //     log_action("Training assignment failed", 'employee', 'employee');
-        // }
+        if ($whatsapp_response->successful()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static function assignSingleBlueCollarTraining($campaign)
@@ -406,31 +377,61 @@ class CampaignTrainingService
                     ->insert($campData);
 
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
-                // return true;
-
-
-                // if ($trainingAssigned['status'] == true) {
-                //     return true;
-                // } else {
-                //     return false;
-                // }
+             
             }
         }
 
+        $trainingNames = self::getAllTrainingNames($user_phone); // returns a collection
+
+        // Convert to comma-separated string (or keep as array if you prefer)
+        $trainingNamesString = $trainingNames->implode(', ');
+
+        // Prepare data object/array
+        $data = (object)[
+            'user_phone' => $user_phone,
+            'user_name' => $campaign->user_name,
+            'training_names' => $trainingNamesString
+        ];
+
+        $blueCollarWhatsappService = new BlueCollarWhatsappService($campaign->company_id);
+
+        $whatsapp_response = $blueCollarWhatsappService->sendTrainingAssign($data);
+
+        if ($whatsapp_response->successful()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    private static function getAllTrainingNames($user_phone)
+    {
+        $allAssignedTrainings = BlueCollarTrainingUser::with('trainingData', 'trainingGame')->where('user_whatsapp', $user_phone)->get();
+
+        $scormTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $user_phone)->get();
+
+        $trainingNames = collect();
+        $scormNames = collect();
+
+        if ($allAssignedTrainings->isNotEmpty()) {
+            $trainingNames = $allAssignedTrainings->map(function ($training) {
+                if ($training->training_type == 'games') {
+                    return $training->trainingGame->name;
+                }
+                return $training->trainingData->name;
+            });
+        }
 
 
-        //send mail to user
-        // $campData = [
-        //     'user_name' => $campaign->user_name,
-        //     'user_email' => $user_email,
-        //     'company_id' => $campaign->company_id
-        // ];
-        // $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+        if ($scormTrainings->isNotEmpty()) {
+            $scormNames = $scormTrainings->map(function ($training) {
 
-        // if ($isMailSent['status'] == true) {
-        //     return true;
-        // } else {
-        //     return false;
-        // }
+                return $training->scormTrainingData->name;
+            });
+        }
+
+        $trainingNames = $trainingNames->merge($scormNames)->filter();
+        return $trainingNames;
     }
 }
