@@ -16,7 +16,7 @@ class ApiMediaController extends Controller
         try {
             // Validate the request
             $request->validate([
-                'file' => 'required|file|mimes:jpg,jpeg,png,webp,zip,ppt,pptx,mp4,mp3,pdf',
+                'file' => 'required|file|mimes:jpg,jpeg,png,webp,zip,ppt,pptx,mp4,mp3,pdf,avif|max:204800', // 200 MB max
             ]);
 
             $file = $request->file('file');
@@ -85,7 +85,7 @@ class ApiMediaController extends Controller
             // Handle the validation exception
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
