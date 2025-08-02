@@ -15,6 +15,7 @@ use App\Models\WaLiveCampaign;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -157,16 +158,30 @@ class ApiScormTrainingController extends Controller
             // Delete SCORM
             $scormTraining = ScormTraining::where('id', $scormId)->where('company_id', $company_id)->first();
 
-            $isDeleted  = $scormTraining->delete();
+            if (!$scormTraining) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('SCORM training not found.')
+                ], 404);
+            }
 
             // Delete scorm package
 
+            $filePath = $scormTraining->file_path;
 
+            $localScormPath = md5($filePath);
 
+            if (Storage::disk('public')->exists("scorm_packages/{$localScormPath}")) {
+                Storage::disk('public')->deleteDirectory("scorm_packages/{$localScormPath}");
+            }
 
+            $scormS3Directory = dirname($filePath);
 
-            DB::commit(); // Commit transaction
-            log_action("Scorm deleted");
+            Storage::disk('s3')->deleteDirectory($scormS3Directory);
+
+            $scormTraining->delete();
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -189,7 +204,7 @@ class ApiScormTrainingController extends Controller
         try {
             $scormId = $request->id;
 
-            if(!$request->id){
+            if (!$request->id) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Scorm ID is required')
@@ -197,7 +212,7 @@ class ApiScormTrainingController extends Controller
             }
             $scormTraining = getScormTraining($scormId);
 
-            if($scormTraining['status'] == false){
+            if ($scormTraining['status'] == false) {
                 return response()->json([
                     'success' => false,
                     'message' => $scormTraining['msg']
@@ -211,7 +226,7 @@ class ApiScormTrainingController extends Controller
                     'scorm_url' => $scormTraining['scorm_url'],
                     'scorm_training' => $scormTraining['scormTraining']
                 ]
-                
+
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
