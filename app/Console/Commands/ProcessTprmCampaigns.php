@@ -43,6 +43,7 @@ class ProcessTprmCampaigns extends Command
   private function tsendCampaignEmails()
   {
     $companies = Company::where('approved', 1)
+      ->where('role', null)
       ->where('service_status', 1)
       ->where('role', null)
       ->get();
