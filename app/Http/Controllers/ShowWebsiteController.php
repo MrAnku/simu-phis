@@ -365,7 +365,7 @@ private function assignTrainingByWhatsapp($campid)
                         "parameters" => [
                             ["type" => "text", "text" => $campaign->user_name],
                             ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/start-blue-collar-training/" . $token]
+                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/blue-collar-training-dashboard/" . $token]
                         ]
                     ]
                 ]
@@ -425,7 +425,7 @@ private function assignTrainingByWhatsapp($campid)
                         "parameters" => [
                             ["type" => "text", "text" => $campaign->user_name],
                             ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/start-blue-collar-training/" . $token],
+                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/blue-collar-training-dashboard/" . $token],
                         ]
                     ]
                 ]

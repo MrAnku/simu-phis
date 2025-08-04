@@ -119,7 +119,7 @@ class BlueCollarWhatsappService
                         "parameters" => [
                             ["type" => "text", "text" => $data->user_name],
                             ["type" => "text", "text" => $data->training_names],
-                            ["type" => "text", "text" => $this->learn_domain . "/start-blue-collar-training/" . $token]
+                            ["type" => "text", "text" => $this->learn_domain . "/blue-collar-training-dashboard/" . $token]
                         ]
                     ]
                 ]
