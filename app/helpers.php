@@ -570,7 +570,7 @@ if (!function_exists('changeEmailLang')) {
             return $emailBody;
         }
 
-        $translatedUrl = str_replace('http://', 'https://', $translatedUrl);
+        $translatedUrl = str_replace('http://localhost:5000', 'https://translate.sparrow.host', $translatedUrl);
 
         $translatedContent = file_get_contents($translatedUrl);
 
