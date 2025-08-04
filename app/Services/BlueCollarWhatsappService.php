@@ -30,9 +30,8 @@ class BlueCollarWhatsappService
             $this->phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
         }
     }
-    public function sendSessionRegenerate($user_whatsapp)
+    public function sendSessionRegenerate($user_whatsapp, $token)
     {
-        $token = encrypt($user_whatsapp);
         $user_name = BlueCollarEmployee::where('whatsapp', $user_whatsapp)->value('user_name');
 
         $whatsapp_data = [

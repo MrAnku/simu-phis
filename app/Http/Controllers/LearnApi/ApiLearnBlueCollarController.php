@@ -66,7 +66,7 @@ class ApiLearnBlueCollarController extends Controller
             }
 
             $whatsappService = new BlueCollarWhatsappService($companyId);
-            $whatsapp_response = $whatsappService->sendSessionRegenerate($request->user_whatsapp);
+            $whatsapp_response = $whatsappService->sendSessionRegenerate($request->user_whatsapp, $token);
 
             if ($whatsapp_response->successful()) {
                 return response()->json([
