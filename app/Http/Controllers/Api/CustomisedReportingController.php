@@ -197,6 +197,8 @@ class CustomisedReportingController extends Controller
         try {
             $type = $request->query('type');
             $companyId = Auth::user()->company_id;
+            $title = '';
+            $description = '';
 
             // Get last 6 months including current month
             $months = [];
@@ -233,6 +235,9 @@ class CustomisedReportingController extends Controller
                         ->whereBetween('created_at', [$m['start'], $m['end']])
                         ->where('payload_clicked', 0)
                         ->count();
+
+                    $title = 'Email Phishing Campaigns';
+                    $description = __('Phishing events over time for email campaigns');
                 } elseif ($type === 'quishing') {
                     $clickRate = QuishingLiveCamp::where('company_id', $companyId)
                         ->whereBetween('created_at', [$m['start'], $m['end']])
@@ -248,6 +253,9 @@ class CustomisedReportingController extends Controller
                         ->whereBetween('created_at', [$m['start'], $m['end']])
                         ->where('qr_scanned', '0')
                         ->count();
+
+                    $title = 'Quishing Campaigns';
+                    $description = __('Phishing events over time for quishing campaigns');
                 } elseif ($type === 'tprm') {
                     // Fetch TPRM campaign data
                     $clickRate = TprmCampaignLive::where('company_id', $companyId)
@@ -264,6 +272,9 @@ class CustomisedReportingController extends Controller
                         ->whereBetween('created_at', [$m['start'], $m['end']])
                         ->where('payload_clicked', 0)
                         ->count();
+
+                    $title = 'TPRM Campaigns';
+                    $description = __('Phishing events over time for TPRM campaigns');
                 }
 
                 $phishing_events_overtime[] = [
@@ -277,11 +288,54 @@ class CustomisedReportingController extends Controller
                 ];
             }
 
+
+            $series = [
+                [
+                    'key' => 'clickRate',
+                    'label' => 'Click Rate',
+                    'color' => '#ef4444',
+                    'type' => 'line'
+                ],
+                [
+                    'key' => 'targetClickRate',
+                    'label' => 'Target Click Rate',
+                    'color' => '#f472b4',
+                    'type' => 'line'
+                ],
+                [
+                    'key' => 'reportRate',
+                    'label' => 'Report Rate',
+                    'color' => '#3b82f6',
+                    'type' => 'line'
+                ],
+                [
+                    'key' => 'targetReportRate',
+                    'label' => 'Target Report Rate',
+                    'color' => '#93c5fd',
+                    'type' => 'line'
+                ],
+                [
+                    'key' => 'ignoreRate',
+                    'label' => 'Ignore Rate',
+                    'color' => '#f97316',
+                    'type' => 'line'
+                ],
+                [
+                    'key' => 'targetIgnoreRate',
+                    'label' => 'Target Ignore Rate',
+                    'color' => '#fdba74',
+                    'type' => 'line'
+                ],
+            ];
+
             return response()->json([
                 'success' => true,
                 'message' => __('Data retrieved successfully'),
                 'data' => [
-                    'phishing_events_overtime' => $phishing_events_overtime,
+                    'title' => $title,
+                    'description' => $description,
+                    'data' => $phishing_events_overtime,
+                    'series' => $series,
                     'reportFormData' => [
                         'simulationsPeriod' => 6
                     ]
@@ -311,6 +365,9 @@ class CustomisedReportingController extends Controller
         try {
             $type = $request->query('type');
             $companyId = Auth::user()->company_id;
+            $title = '';
+            $description = '';
+            $columns = [];
 
             if ($type === 'employees') {
                 $users = Users::where('company_id', $companyId)->distinct('user_email')->get();
@@ -359,12 +416,31 @@ class CustomisedReportingController extends Controller
                         'ignore_rate' => $ignoreRate,
                         'trainings_assigned' => $trainingsAssigned,
                     ];
+
+                    $title = 'Employees';
+                    $description = __('Employee table data with campaigns, compromised rates, and risk scores');
                 }
+
+                $columns = [
+                    ['key' => 'name', 'label' => 'NAME', 'sortable' => true],
+                    ['key' => 'email', 'label' => 'EMAIL', 'sortable' => true],
+                    ['key' => 'campaigns_ran', 'label' => 'CAMPAIGNS RAN', 'sortable' => true],
+                    ['key' => 'compromised_rate', 'label' => 'COMPROMISED RATE', 'sortable' => true],
+                    ['key' => 'risk_score', 'label' => 'RISK SCORE', 'sortable' => true],
+                    ['key' => 'ignore_rate', 'label' => 'IGNORE RATE', 'sortable' => true],
+                    ['key' => 'trainings_assigned', 'label' => 'TRAININGS ASSIGNED', 'sortable' => true],
+                ];
+
 
                 return response()->json([
                     'success' => true,
                     'message' => __('Employee table data retrieved successfully'),
-                    'data' => $data
+                    'data' => [
+                        'title' => $title,
+                        'description' => $description,
+                        'columns' => $columns,
+                        'data' => $data
+                    ]
                 ]);
             }
         } catch (\Exception $e) {
