@@ -29,6 +29,10 @@ class CompanyManagementMail extends Mailable
             $this->subject = "License Expired!!!";
             $this->view = 'emails.admin.license_expired';
         }
+        if($type === 'need_support') {
+            $this->subject = "Need Support";
+            $this->view = 'emails.admin.need_support';
+        }
     }
 
     /**
