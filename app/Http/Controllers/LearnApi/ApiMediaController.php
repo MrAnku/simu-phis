@@ -105,4 +105,29 @@ class ApiMediaController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function deleteFile(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'file_id' => 'required|exists:medias,id',
+            ]);
+
+            // Find the media file by ID
+            $media = Media::findOrFail($request->file_id);
+
+            // Delete the file from S3 storage
+            Storage::disk('s3')->delete(ltrim($media->file_path, '/'));
+
+            // Delete the media record from the database
+            $media->delete();
+
+            log_action("File deleted");
+
+            return response()->json(['success' => true, 'message' => 'File deleted successfully.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
 }
