@@ -85,6 +85,62 @@ class CustomisedReportingController extends Controller
         }
     }
 
+    public function updateReport(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'report_name' => 'required|string|max:255',
+                'report_description' => 'required|string'
+            ]);
+            $id = base64_decode($id);
+
+            CustomisedReporting::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->update([
+                    'report_name' => $request->report_name,
+                    'report_description' => $request->report_description
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Report updated successfully')
+            ]);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteReport($id)
+    {
+        try {
+            $id = base64_decode($id);
+            CustomisedReporting::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Report deleted successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function addWidgets(Request $request)
     {
         try {
