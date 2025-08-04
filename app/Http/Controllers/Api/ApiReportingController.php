@@ -1450,7 +1450,7 @@ class ApiReportingController extends Controller
 
             $certifiedUsersRate = $totalAssignedUsers > 0
                 ? TrainingAssignedUser::where('company_id', $companyId)
-                    ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100
+                ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100
                 : 0;
 
             $emailCampData = Campaign::where('company_id', $companyId)
@@ -1467,35 +1467,30 @@ class ApiReportingController extends Controller
                 ->value('training_assign_remind_freq_days') ?? 0;
 
             $onboardingTrainingDetails = [];
-            $onboardingTrainings = TrainingAssignedUser::where('company_id', $companyId)
-                ->take(5)
+
+            $users = Users::where('company_id', $companyId)
+                ->where('company_id', $companyId)
+                ->distinct('user_email')
                 ->get();
-            foreach ($onboardingTrainings as $onboardingTraining) {
-                $groupName = null;
-                $userGroups = UsersGroup::where('company_id', $companyId)->get();
-                foreach ($userGroups as $group) {
-                    $users = json_decode($group->users, true);
-                    if (!$users) {
+            if ($users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    $trainingAssigned = $user->assignedTrainingsNew();
+                    if ($trainingAssigned->isEmpty()) {
                         continue;
                     }
-                    foreach ($users as $user) {
-                        if ($onboardingTraining->user_id == $user) {
-                            $groupName = $group->group_name;
-                            break 2;
-                        }
-                    }
+
+                    $onboardingTrainingDetails[] = [
+                        'user_name' => $trainingAssigned->user_name,
+                        'user_email' => $trainingAssigned->user_email,
+                        'assigned_date' => $trainingAssigned->assigned_date,
+                        'completed_date' => $trainingAssigned->training_due_date,
+                        'status' => $trainingAssigned->completed == 1 ? 'Completed' : 'In Progress',
+                        'outstanding_training_count' => TrainingAssignedUser::where('user_email', $trainingAssigned->user_email)
+                            ->where('personal_best', '>=', 70)->count(),
+                    ];
                 }
-                $onboardingTrainingDetails[] = [
-                    'user_name' => $onboardingTraining->user_name,
-                    'user_email' => $onboardingTraining->user_email,
-                    'divison' => $groupName ?? null,
-                    'assigned_date' => $onboardingTraining->assigned_date,
-                    'completed_date' => $onboardingTraining->training_due_date,
-                    'status' => $onboardingTraining->completed == 1 ? 'Complete' : 'In Progress',
-                    'outstanding_training_count' => TrainingAssignedUser::where('user_email', $onboardingTraining->user_email)
-                        ->where('personal_best', '>=', 70)->count(),
-                ];
             }
+
 
             return response()->json([
                 'success' => true,
@@ -1534,7 +1529,15 @@ class ApiReportingController extends Controller
     public function fetchAwarenessEduReporting()
     {
         try {
-            $companyId = Auth::user()->company_id;
+            $companyId = Auth::user()->company_id ?? null;
+            if (!$companyId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Company ID not found'),
+                    'data' => []
+                ], 400);
+            }
+
             $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
             $notStartedTraining = TrainingAssignedUser::where('company_id', $companyId)->where('training_started', 0)->count();
 
@@ -1560,90 +1563,88 @@ class ApiReportingController extends Controller
 
             $companyLicense = CompanyLicense::where('company_id', $companyId)->first();
             $totalEmployees = $companyLicense
-                ? ($companyLicense->used_employees + $companyLicense->used_tprm_employees + $companyLicense->used_blue_collar_employees)
+                ? ((int)($companyLicense->used_employees ?? 0) + (int)($companyLicense->used_tprm_employees ?? 0) + (int)($companyLicense->used_blue_collar_employees ?? 0))
                 : 0;
 
             $rolesResponsilbilityPercent = ($totalEmployees > 0) ? round($completedTraining / $totalEmployees * 100) : 0;
 
             $certifiedUsersRate = $totalAssignedUsers > 0
-                ? TrainingAssignedUser::where('company_id', $companyId)
-                    ->where('certificate_id', '!=', null)->count() / $totalAssignedUsers * 100
+                ? (TrainingAssignedUser::where('company_id', $companyId)
+                ->whereNotNull('certificate_id')->count() / $totalAssignedUsers * 100)
                 : 0;
 
             $emailCampData = Campaign::where('company_id', $companyId)
-                ->pluck('days_until_due');
-
+                ->pluck('days_until_due') ?? collect();
 
             $quishCampData = QuishingCamp::where('company_id', $companyId)
-                ->pluck('days_until_due');
+                ->pluck('days_until_due') ?? collect();
 
             $waCampData = WaCampaign::where('company_id', $companyId)
-                ->pluck('days_until_due');
+                ->pluck('days_until_due') ?? collect();
 
             $merged = $emailCampData->merge($quishCampData)->merge($waCampData);
-            $avgEducationDuration = round($merged->avg(), 2);
+            $avgEducationDuration = $merged->count() > 0 ? round($merged->avg(), 2) : 0;
 
             $avgOverallDuration = $avgEducationDuration;
 
-            $trainingAssignReminderFreqDays = (int) CompanySettings::where('company_id', $companyId)
-                ->value('training_assign_remind_freq_days');
+            $trainingAssignReminderFreqDays = (int) (CompanySettings::where('company_id', $companyId)
+                ->value('training_assign_remind_freq_days') ?? 0);
 
             $users = Users::where('company_id', $companyId)
-                ->whereIn('user_email', function ($query) use ($companyId) {
-                    $query->select('user_email')
-                        ->from('training_assigned_users')
-                        ->where('company_id', $companyId);
-                })
+                ->select('id', 'user_name', 'user_email')
+                ->distinct()
                 ->get();
-
 
             $onboardingTrainingDetails = [];
 
-            foreach ($users as $user) {
-                // Get group name
-                $group = UsersGroup::whereJsonContains('users', $user->id)->first();
-                $groupName = $group ? $group->group_name : null;
+            if ($users && $users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    // Get group name
+                    $group = UsersGroup::whereJsonContains('users', $user->id)->first();
+                    $groupName = $group ? $group->group_name : null;
 
-                // Get all trainings for this user
-                $trainings = TrainingAssignedUser::where('company_id', $companyId)
-                    ->where('user_email', $user->user_email)
-                    ->get();
+                    // Get all trainings for this user
+                    $trainings = TrainingAssignedUser::where('company_id', $companyId)
+                        ->where('user_email', $user->user_email)
+                        ->get();
 
-                $totalAssignedTrainings = $trainings->count();
-                $totalCompletedTrainings = $trainings->where('completed', 1)->count();
-                $totalCertificates = $trainings->whereNotNull('certificate_id')->count();
-                $outstandingTrainingCount = $trainings->where('personal_best', '>=', 70)->count();
+                    $totalAssignedTrainings = $trainings ? $trainings->count() : 0;
+                    $totalCompletedTrainings = $trainings ? $trainings->where('completed', 1)->count() : 0;
+                    $totalCertificates = $trainings ? $trainings->whereNotNull('certificate_id')->count() : 0;
+                    $outstandingTrainingCount = $trainings ? $trainings->where('personal_best', '>=', 70)->count() : 0;
 
-                $assignedTrainings = [];
-                foreach ($trainings as $training) {
-                    $trainingData = $training->trainingData ?? null;
-                    $assignedTrainings[] = [
-                        'training_name' => $trainingData ? $trainingData->name : 'N/A',
-                        'training_type' => $training->training_type ?? 'N/A',
-                        'assigned_date' => $training->assigned_date ?? null,
-                        'training_started' => isset($training->training_started) && $training->training_started == 1 ? 'Yes' : 'No',
-                        'passing_score' => $trainingData ? $trainingData->passing_score : null,
-                        'training_due_date' => $training->training_due_date ?? null,
-                        'json_quiz' => $trainingData ? $trainingData->json_quiz : null,
-                        'is_completed' => isset($training->completed) && $training->completed == 1 ? 'Yes' : 'No',
-                        'completion_date' => $training->completion_date ?? null,
-                        'personal_best' => $training->personal_best ?? null,
-                        'certificate_id' => $training->certificate_id ?? null,
-                        'last_reminder_date' => $training->last_reminder_date ?? null,
-                        'status' => isset($training->completed) && $training->completed == 1 ? 'Completed' : 'In Progress',
+                    $assignedTrainings = [];
+                    if ($trainings && $trainings->isNotEmpty()) {
+                        foreach ($trainings as $training) {
+                            $trainingData = $training->trainingData ?? null;
+                            $assignedTrainings[] = [
+                                'training_name' => $trainingData ? $trainingData->name : 'N/A',
+                                'training_type' => $training->training_type ?? 'N/A',
+                                'assigned_date' => $training->assigned_date ?? null,
+                                'training_started' => isset($training->training_started) && $training->training_started == 1 ? 'Yes' : 'No',
+                                'passing_score' => $trainingData ? $trainingData->passing_score : null,
+                                'training_due_date' => $training->training_due_date ?? null,
+                                'is_completed' => isset($training->completed) && $training->completed == 1 ? 'Yes' : 'No',
+                                'completion_date' => $training->completion_date ?? null,
+                                'personal_best' => $training->personal_best ?? null,
+                                'certificate_id' => $training->certificate_id ?? null,
+                                'last_reminder_date' => $training->last_reminder_date ?? null,
+                                'status' => isset($training->completed) && $training->completed == 1 ? 'Completed' : 'In Progress',
+                            ];
+                        }
+                    }
+
+                    $onboardingTrainingDetails[] = [
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        // 'division' => $groupName,
+                        'total_assigned_trainings' => $totalAssignedTrainings,
+                        'assigned_trainings' => $assignedTrainings,
+                        'total_completed_trainings' => $totalCompletedTrainings,
+                        'total_certificates' => $totalCertificates,
+                        'count_of_outstanding_training' => $outstandingTrainingCount,
                     ];
                 }
-
-                $onboardingTrainingDetails[] = [
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'division' => $groupName,
-                    'total_assigned_trainings' => $totalAssignedTrainings,
-                    'assigned_trainings' => $assignedTrainings,
-                    'total_completed_trainings' => $totalCompletedTrainings,
-                    'total_certificates' => $totalCertificates,
-                    'count_of_outstanding_training' => $outstandingTrainingCount,
-                ];
             }
 
             return response()->json([
@@ -1675,7 +1676,8 @@ class ApiReportingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage(),
+                'data' => []
             ], 500);
         }
     }
@@ -1811,11 +1813,11 @@ class ApiReportingController extends Controller
             $userGroups = UsersGroup::where('company_id', $companyId)->get();
 
             $scoreRanges = [
-                'poor' => [0, 20],
-                'fair' => [21, 40],
-                'good' => [41, 60],
-                'verygood' => [61, 80],
-                'excellent' => [81, 100],
+                'Poor' => [0, 20],
+                'Fair' => [21, 40],
+                'Good' => [41, 60],
+                'Very Good' => [61, 80],
+                'Excellent' => [81, 100],
             ];
 
             $divisionGroupDetails = [];
@@ -2635,29 +2637,29 @@ class ApiReportingController extends Controller
                 $trainings[] = [
                     'name' => $trainingModule->name,
                     'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count(),
+                        ->where('company_id', $companyId)
+                        ->count(),
                     'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)
-                    ->where('company_id', $companyId)
-                    ->count()
+                        ->where('company_id', $companyId)
+                        ->count()
 
                 ];
             }
@@ -2850,64 +2852,64 @@ class ApiReportingController extends Controller
 
             // Policies sent using campaign (assuming policies assigned via campaign have campaign_id set)
             $policiesSentViaCampaign = AssignedPolicy::where('company_id', $companyId)
-            ->whereNotNull('campaign_id')
-            ->count();
+                ->whereNotNull('campaign_id')
+                ->count();
 
             // Total campaigns ran for policies (distinct campaign_id in assigned_policies)
             $totalPolicyCampaigns = AssignedPolicy::where('company_id', $companyId)
-            ->whereNotNull('campaign_id')
-            ->distinct('campaign_id')
-            ->count('campaign_id');
+                ->whereNotNull('campaign_id')
+                ->distinct('campaign_id')
+                ->count('campaign_id');
 
             // Users who responded for quiz (json_quiz_response not null)
             $usersRespondedQuiz = AssignedPolicy::where('company_id', $companyId)
-            ->whereNotNull('json_quiz_response')
-            ->count();
+                ->whereNotNull('json_quiz_response')
+                ->count();
 
             // Users who accepted policy
             $usersAccepted = AssignedPolicy::where('company_id', $companyId)
-            ->where('accepted', 1)
-            ->count();
+                ->where('accepted', 1)
+                ->count();
 
             // Users who did not accept policy
             $usersNotAccepted = AssignedPolicy::where('company_id', $companyId)
-            ->where('accepted', 0)
-            ->count();
+                ->where('accepted', 0)
+                ->count();
 
             // Details for each assigned policy
             $assignedPolicyDetails = [];
             foreach ($assignedPolicies as $assignedPolicy) {
-            $policy = Policy::find($assignedPolicy->policy);
-            $assignedPolicyDetails[] = [
-                'policy_name' => $policy ? $policy->policy_name : 'N/A',
-                'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
-                'accepted_date' => $assignedPolicy->accepted_at
-                ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
-                : 'Not Accepted',
-                'user_email' => $assignedPolicy->user_email,
-                'user_name' => $assignedPolicy->user_name,
-                'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
-            ];
+                $policy = Policy::find($assignedPolicy->policy);
+                $assignedPolicyDetails[] = [
+                    'policy_name' => $policy ? $policy->policy_name : 'N/A',
+                    'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
+                    'accepted_date' => $assignedPolicy->accepted_at
+                        ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
+                        : 'Not Accepted',
+                    'user_email' => $assignedPolicy->user_email,
+                    'user_name' => $assignedPolicy->user_name,
+                    'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
+                ];
             }
 
             return response()->json([
-            'success' => true,
-            'message' => __('Policies report fetched successfully'),
-            'data' => [
-                'total_policies' => $totalPolicies,
-                'total_policies_sent_via_campaign' => $policiesSentViaCampaign,
-                'total_assigned_policies' => $totalAssignedPolicies,
-                'total_policy_campaigns' => $totalPolicyCampaigns,
-                'users_responded_quiz' => $usersRespondedQuiz,
-                'users_accepted_policy' => $usersAccepted,
-                'users_not_accepted_policy' => $usersNotAccepted,
-                'assigned_policies' => $assignedPolicyDetails
-            ]
+                'success' => true,
+                'message' => __('Policies report fetched successfully'),
+                'data' => [
+                    'total_policies' => $totalPolicies,
+                    'total_policies_sent_via_campaign' => $policiesSentViaCampaign,
+                    'total_assigned_policies' => $totalAssignedPolicies,
+                    'total_policy_campaigns' => $totalPolicyCampaigns,
+                    'users_responded_quiz' => $usersRespondedQuiz,
+                    'users_accepted_policy' => $usersAccepted,
+                    'users_not_accepted_policy' => $usersNotAccepted,
+                    'assigned_policies' => $assignedPolicyDetails
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-            'success' => false,
-            'message' => __('Error: ') . $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
