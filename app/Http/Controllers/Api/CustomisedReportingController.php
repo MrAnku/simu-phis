@@ -406,7 +406,7 @@ class CustomisedReportingController extends Controller
         }
     }
 
-    public function bubbleData(Request $request)
+    public function radialbarData(Request $request)
     {
         try {
             $companyId = Auth::user()->company_id;
