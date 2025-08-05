@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiMediaController extends Controller
 {
-     public function uploadFile(Request $request)
+    public function uploadFile(Request $request)
     {
         try {
             // Validate the request
@@ -129,5 +129,37 @@ class ApiMediaController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
+    }
+
+
+
+
+    public function splitFileIntoChunks(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+        ]);
+
+        $file = $request->file('file');
+        $chunkSize = 1024 * 1024 * 5; // 5 MB
+        $filePath = $file->getRealPath();
+        $fileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+
+        $handle = fopen($filePath, 'rb');
+        $chunkIndex = 0;
+
+        while (!feof($handle)) {
+            $chunk = fread($handle, $chunkSize);
+
+            $chunkName = "{$fileName}_part{$chunkIndex}.{$extension}";
+            Storage::put("chunks/{$chunkName}", $chunk);
+
+            $chunkIndex++;
+        }
+
+        fclose($handle);
+
+        return response()->json(['message' => 'File split into chunks successfully.']);
     }
 }

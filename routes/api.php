@@ -469,6 +469,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/upload_file', [ApiMediaController::class, 'uploadFile']);
         Route::get('/fetch_files', [ApiMediaController::class, 'fetchFiles']);
         Route::delete('/delete-file', [ApiMediaController::class, 'deleteFile']);
+
+         Route::post('/splitFileIntoChunks', [ApiMediaController::class, 'splitFileIntoChunks']);
     });
 
     // Scorm Training
