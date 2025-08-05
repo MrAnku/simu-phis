@@ -15,6 +15,7 @@ class AssignedPolicy extends Model
         'accepted_at',
         'json_quiz_response',
         'company_id',
+        'reading_time'
     ];
 
     public function policyData(){

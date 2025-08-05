@@ -53,6 +53,7 @@ class ApiLearnPolicyController extends Controller
         try {
             $request->validate([
                 'encoded_id' => 'required',
+                'reading_time' => 'required|numeric|min:0',
             ]);
             $encodedId = $request->input('encoded_id');
             $policyId = base64_decode($encodedId);
@@ -86,6 +87,7 @@ class ApiLearnPolicyController extends Controller
                 'accepted' => 1,
                 'accepted_at' => now(),
                 'json_quiz_response' => json_encode($responses),
+                'reading_time' => $request->input('reading_time'),
             ]);
 
             log_action("Policy with ID {$policyId} accepted by user", 'learner', 'learner');
