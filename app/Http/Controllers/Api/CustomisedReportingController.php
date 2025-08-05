@@ -496,12 +496,109 @@ class CustomisedReportingController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'title' => 'Security Dashboard',
+                    'title' => 'Risk and Security Analysis',
                     'type' => 'radialbar',
                     'data' => $data,
                     'series' => $series,
                     'xAxisKey' => 'division',
                     'maxValue' => 100
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function bubbleData(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $usersGroups = UsersGroup::where('company_id', $companyId)
+                ->whereNotNull('users')
+                ->get();
+
+            $data = [];
+            foreach ($usersGroups as $group) {
+                $userIds = json_decode($group->users, true);
+                $users = Users::where('company_id', $companyId)
+                    ->whereIn('id', $userIds)
+                    ->get();
+
+                $totalUsers = $users->count();
+
+                $phishingAttacks = 0;
+                $compromisedCount = 0;
+                $securityScore = 0;
+
+                foreach ($users as $user) {
+                    $campaignsRan =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->count();
+
+                    $phishingAttacks += $campaignsRan;
+
+                    $compromisedCount +=
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('emp_compromised', 1)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', '1')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', 1)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 1)->count();
+
+                    $ignoredCount =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('qr_scanned', '0')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 0)->count();
+
+                    $securityScore += $campaignsRan > 0 ? 100 - round((($compromisedCount + $ignoredCount) / $campaignsRan) * 100, 2) : 100;
+                }
+
+                $data[] = [
+                    'usersGroup' => $group->group_name ?: 'Unknown',
+                    'phishingAttacks' => $phishingAttacks,
+                    'compromised' => $compromisedCount,
+                    'securityScore' => $totalUsers > 0 ? round($securityScore / $totalUsers, 2) : 100,
+                    'employees' => $totalUsers
+                ];
+            }
+
+            $series = [
+                [
+                    'key' => 'phishingAttacks',
+                    'label' => 'Phishing Attacks',
+                    'color' => '#3b82f6',
+                    'sizeKey' => 'employees'
+                ],
+                [
+                    'key' => 'compromised',
+                    'label' => 'Compromised',
+                    'color' => '#ef4444',
+                    'sizeKey' => 'employees'
+                ],
+                [
+                    'key' => 'securityScore',
+                    'label' => 'Security Score',
+                    'color' => '#10b981',
+                    'sizeKey' => 'employees'
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'title' => 'Division Security Performance',
+                    'subtitle' => __('Phishing & Security Analysis'),
+                    'type' => 'bubble',
+                    'data' => $data,
+                    'series' => $series,
+                    'xAxisKey' => 'usersGroup',
+                    'yAxisKey' => 'phishingAttacks',
+                    'sizeKey' => 'employees',
+                    'description' => __('Bubble size represents number of employees in the division.'),
                 ]
             ]);
         } catch (\Exception $e) {
