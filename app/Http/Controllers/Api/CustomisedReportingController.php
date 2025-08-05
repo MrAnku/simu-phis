@@ -249,7 +249,7 @@ class CustomisedReportingController extends Controller
         }
     }
 
-    public function lineData(Request $request)
+    public function lineData(Request $request, $chartType = 'line')
     {
         try {
             $type = $request->query('type');
@@ -351,37 +351,37 @@ class CustomisedReportingController extends Controller
                     'key' => 'clickRate',
                     'label' => 'Click Rate',
                     'color' => '#ef4444',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
                 [
                     'key' => 'targetClickRate',
                     'label' => 'Target Click Rate',
                     'color' => '#f472b4',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
                 [
                     'key' => 'reportRate',
                     'label' => 'Report Rate',
                     'color' => '#3b82f6',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
                 [
                     'key' => 'targetReportRate',
                     'label' => 'Target Report Rate',
                     'color' => '#93c5fd',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
                 [
                     'key' => 'ignoreRate',
                     'label' => 'Ignore Rate',
                     'color' => '#f97316',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
                 [
                     'key' => 'targetIgnoreRate',
                     'label' => 'Target Ignore Rate',
                     'color' => '#fdba74',
-                    'type' => 'line'
+                    'type' => $chartType
                 ],
             ];
 
@@ -609,15 +609,21 @@ class CustomisedReportingController extends Controller
         }
     }
 
+    public function mixedData(Request $request)
+    {
+        //phishing event overtime
+        return $this->lineData($request, 'mixed');
+    }
+
     public function barData(Request $request)
     {
         //phishing event overtime
-        return $this->lineData($request);
+        return $this->lineData($request, 'bar');
     }
     public function areaData(Request $request)
     {
         //phishing event overtime
-        return $this->lineData($request);
+        return $this->lineData($request, 'area');
     }
 
     public function tableData(Request $request)
