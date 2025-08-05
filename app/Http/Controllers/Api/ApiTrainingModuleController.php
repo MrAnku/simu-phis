@@ -203,7 +203,7 @@ class ApiTrainingModuleController extends Controller
             'duration' => 'nullable|string|max:255',
             'tags' => 'nullable|string|max:255',
             'program_resources' => 'nullable|string|max:255',
-            'mCompTime' => 'required|string|max:255',
+            'estimated_time' => 'required|max:255',
             'mPassingScore' => 'required|numeric|min:0|max:100',
             'jsonData' => 'required|json',
             'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
@@ -223,7 +223,7 @@ class ApiTrainingModuleController extends Controller
             $mPassingScore = $request->input('mPassingScore');
             $mModuleLang = $request->input('mModuleLang', 'en');
             $filePath = 'uploads/trainingModule/defaultTraining.jpg';
-            $mCompTime = $request->input('mCompTime');
+            $estimated_time = $request->input('estimated_time');
             $jsonData = $request->input('jsonData');
             $companyId = Auth::user()->company_id;
 
@@ -252,7 +252,7 @@ class ApiTrainingModuleController extends Controller
                 'duration' => $request->input('duration'),
                 'tags' => $request->input('tags'),
                 'program_resources' => $request->input('program_resources'),
-                'estimated_time' => $mCompTime,
+                'estimated_time' => $estimated_time,
                 'cover_image' => "/" . $filePath,
                 'passing_score' => $mPassingScore,
                 'json_quiz' => $jsonData,
@@ -499,7 +499,7 @@ class ApiTrainingModuleController extends Controller
             'mPassingScore' => 'required',
             'category' => 'nullable|string|max:255',
             'mModuleLang' => 'nullable|string|max:255',
-            'mCompTime' => 'required|numeric',
+            'estimated_time' => 'required|numeric',
             'updatedjsonData' => 'required|json',
             // 'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
             'security' => 'nullable|string|max:255',
@@ -525,7 +525,7 @@ class ApiTrainingModuleController extends Controller
         $trainingModuleId = $request->input('trainingModuleid');
         $mPassingScore = $request->input('mPassingScore');
         $mModuleLang = $request->input('mModuleLang') ?? 'en';
-        $mCompTime = $request->input('mCompTime');
+        $estimated_time = $request->input('estimated_time');
         $jsonData = $request->input('updatedjsonData');
         $programResources = $request->input('program_resources') === 'null' ? null : $request->input('program_resources');
         $company_id = Auth::user()->company_id;
@@ -533,7 +533,7 @@ class ApiTrainingModuleController extends Controller
         try {
             $updateData = [
                 'name' => $moduleName,
-                'estimated_time' => $mCompTime,
+                'estimated_time' => $estimated_time,
                 'passing_score' => $mPassingScore,
                 'category' => $request->input('category') === 'null' ? null : $request->input('category'),
                 'json_quiz' => $jsonData,
