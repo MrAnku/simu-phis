@@ -12,6 +12,7 @@ use App\Models\CampaignLive;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\TrainingAssignedUser;
+use App\Models\UsersGroup;
 use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Claims\Custom;
@@ -395,6 +396,112 @@ class CustomisedReportingController extends Controller
                     'reportFormData' => [
                         'simulationsPeriod' => 6
                     ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function bubbleData(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $usersGroupId = $request->query('usersGroup'); // Get usersGroup from query parameter
+
+            // Fetch only the specified usersGroup
+            $division = UsersGroup::where('company_id', $companyId)
+                ->where('group_id', $usersGroupId)
+                ->whereNotNull('users')
+                ->first();
+
+            $data = [];
+            if ($division) {
+                $userIds = json_decode($division->users, true);
+                $users = Users::where('company_id', $companyId)
+                    ->whereIn('id', $userIds)
+                    ->get();
+
+                $totalUsers = $users->count();
+
+                $riskScores = [];
+                $exposureScores = [];
+                $mitigationScores = [];
+
+                foreach ($users as $user) {
+                    $campaignsRan =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->count();
+
+                    $compromisedCount =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('emp_compromised', 1)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', '1')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', 1)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 1)->count();
+
+                    $ignoredCount =
+                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('qr_scanned', '0')->count() +
+                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
+                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 0)->count();
+
+                    // Security measurements:
+                    // riskScore = compromisedRate (higher means more risk)
+                    // exposureScore = (compromisedCount + ignoredCount) / campaignsRan * 100 (higher means more exposure)
+                    // mitigationScore = 100 - exposureScore (higher means better mitigation)
+
+                    $compromisedRate = $campaignsRan > 0 ? round(($compromisedCount / $campaignsRan) * 100, 2) : 0;
+                    $exposureScore = $campaignsRan > 0 ? round((($compromisedCount + $ignoredCount) / $campaignsRan) * 100, 2) : 0;
+                    $mitigationScore = 100 - $exposureScore;
+
+                    $riskScores[] = $compromisedRate;
+                    $exposureScores[] = $exposureScore;
+                    $mitigationScores[] = $mitigationScore;
+                }
+
+                $data[] = [
+                    'division' => $division->group_name ?: 'Unknown',
+                    'risk_score' => $totalUsers > 0 ? round(array_sum($riskScores) / $totalUsers, 2) : 0,
+                    'exposure_score' => $totalUsers > 0 ? round(array_sum($exposureScores) / $totalUsers, 2) : 0,
+                    'mitigation_score' => $totalUsers > 0 ? round(array_sum($mitigationScores) / $totalUsers, 2) : 0,
+                ];
+            }
+
+            $series = [
+                [
+                    'key' => 'risk_score',
+                    'label' => 'Risk Score',
+                    'color' => '#ef4444',
+                    'maxValue' => 100
+                ],
+                [
+                    'key' => 'exposure_score',
+                    'label' => 'Exposure Score',
+                    'color' => '#f59e0b',
+                    'maxValue' => 100
+                ],
+                [
+                    'key' => 'mitigation_score',
+                    'label' => 'Mitigation Score',
+                    'color' => '#10b981',
+                    'maxValue' => 100
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'title' => 'Security Dashboard',
+                    'type' => 'radialbar',
+                    'data' => $data,
+                    'series' => $series,
+                    'xAxisKey' => 'division',
+                    'maxValue' => 100
                 ]
             ]);
         } catch (\Exception $e) {
