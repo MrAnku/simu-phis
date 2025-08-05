@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\CampaignLive;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
+use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -54,14 +58,60 @@ class ApiLearnController extends Controller
 
             Session::put('token', $token);
 
-            $isNormalEmployee = Users::where('user_email', $userEmail)->exists();
+            $employeeType = 'normal';
+            $user = Users::where('user_email', $userEmail)->first();
 
-            if ($isNormalEmployee == 1) {
-                $employeeType = 'normal';
-                $userName = Users::where('user_email', $userEmail)->value('user_name');
-            } else {
-                $employeeType = 'bluecollar';
-                $userName = BlueCollarEmployee::where('whatsapp', $userEmail)->value('user_name');
+            $userName = $user->user_name;
+
+            // Calculate Risk score
+            $riskScoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'veryGood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
+            // Campaigns
+            $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+                ->where('company_id', $user->company_id);
+
+            $totalSimulations = $emailCampaigns->count();
+            $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
+
+            $totalQuishing = $quishingCampaigns->count();
+            $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
+
+            $totalTprm = $tprmCampaigns->count();
+            $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
+
+            $totalWhatsapp = $whatsappCampaigns->count();
+            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
+
+            // Risk score calculation
+            $riskScore = null;
+            $riskLevel = null;
+
+            $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+            // Determine risk level
+            foreach ($riskScoreRanges as $label => [$min, $max]) {
+                if ($riskScore >= $min && $riskScore <= $max) {
+                    $riskLevel = $label;
+                    break;
+                }
             }
 
             return response()->json([
@@ -70,6 +120,8 @@ class ApiLearnController extends Controller
                     'email' => $userEmail,
                     'employee_type' => $employeeType,
                     'user_name' => $userName,
+                    'riskScore' => $riskScore,
+                    'riskLevel' => $riskLevel,
                 ],
                 'message' => 'You can Login now'
             ], 200);

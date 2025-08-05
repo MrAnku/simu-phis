@@ -7,6 +7,7 @@ use App\Models\Badge;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarWhatsappService;
 use App\Services\CheckWhitelabelService;
 use Illuminate\Http\Request;
@@ -121,8 +122,41 @@ class ApiLearnBlueCollarController extends Controller
             Session::put('token', $token);
 
             $employeeType = 'bluecollar';
-            $userName = BlueCollarEmployee::where('whatsapp', $userWhatsapp)->value('user_name');
+            $user = BlueCollarEmployee::where('whatsapp', $userWhatsapp)->first();
 
+            $userName = $user->user_name;
+            
+            // Calculate Risk score
+            $riskScoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'veryGood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
+            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+                ->where('company_id', $user->company_id);
+
+            $totalWhatsapp = $whatsappCampaigns->count();
+            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
+
+            // Risk score calculation
+            $riskScore = null;
+            $riskLevel = null;
+
+            $totalAll = $totalWhatsapp;
+            $compromisedAll = $compromisedWhatsapp;
+
+            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+            // Determine risk level
+            foreach ($riskScoreRanges as $label => [$min, $max]) {
+                if ($riskScore >= $min && $riskScore <= $max) {
+                    $riskLevel = $label;
+                    break;
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -130,6 +164,8 @@ class ApiLearnBlueCollarController extends Controller
                     'user_whatsapp' => $userWhatsapp,
                     'employee_type' => $employeeType,
                     'user_name' => $userName,
+                    'riskScore' => $riskScore,
+                    'riskLevel' => $riskLevel,
                 ],
                 'message' => 'You can Login now'
             ], 200);
