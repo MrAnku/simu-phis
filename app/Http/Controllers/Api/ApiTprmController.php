@@ -419,6 +419,14 @@ class ApiTprmController extends Controller
             if (!$campId) {
                 return response()->json(['success' => false, 'message' => __('Campaign ID is required')], 422);
             }
+
+            if (!TprmCampaign::where('campaign_id', $campId)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found'),
+                ], 404);
+            }
+
             $dateTime = Carbon::now();
             $formattedDateTime = $dateTime->format('m/d/Y g:i A');
 
@@ -429,44 +437,22 @@ class ApiTprmController extends Controller
                 'status' => 'running'
             ]);
 
-            TprmCampaignReport::where('campaign_id', $campId)
+            // Update campaign_live table
+            TprmCampaignLive::where('campaign_id', $campId)
                 ->where('company_id', $company_id)
                 ->update([
-                    'scheduled_date' => $formattedDateTime,
-                    'status' => 'running',
-                    'emails_delivered' => 0,
-                    'emails_viewed' => 0,
-                    'payloads_clicked' => 0,
-                    'emp_compromised' => 0,
-                    'email_reported' => 0,
-                    'training_assigned' => 0,
-                    'training_completed' => 0,
-                ]);
-
-            //deleting old campaign live
-            TprmCampaignLive::where('campaign_id', $campId)->delete();
-
-            $campaign = TprmCampaign::where('campaign_id', $campId)->first();
-
-            $users = TprmUsers::where('group_id', $campaign->users_group)->get();
-
-            foreach ($users as $user) {
-                TprmCampaignLive::create([
-                    'campaign_id' => $campaign->campaign_id,
-                    'campaign_name' => $campaign->campaign_name,
-                    'user_id' => $user->id,
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'training_module' => $campaign->training_module,
-                    'training_lang' => $campaign->training_module,
                     'launch_time' => $formattedDateTime,
-                    'phishing_material' => $campaign->phishing_material,
-                    'email_lang' => $campaign->email_lang,
                     'sent' => '0',
-                    'company_id' => $company_id,
+                    'mail_open' => '0',
+                    'payload_clicked' => '0',
+                    'emp_compromised' => '0',
+                    'email_reported' => '0',
+                    'training_assigned' => '0',
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
-            }
-            log_action("TPRM Campaign relaunched : {$campaign->campaign_name}");
+
+            log_action("TPRM Campaign relaunched");
 
             return response()->json(['success' => true, 'message' => __('Campaign relaunched successfully!')], 200);
         } catch (\Exception $e) {
