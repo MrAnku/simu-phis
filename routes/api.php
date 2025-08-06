@@ -392,7 +392,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-domain', [ApiTprmController::class, 'deleteDomain']);
         Route::post('/campaigns/create', [ApiTprmController::class, 'createCampaign']);
         Route::delete('/delete-campaign/{campId?}', [ApiTprmController::class, 'deleteCampaign']);
-        Route::post('/campaigns/relaunch/{campId?}', [ApiTprmController::class, 'relaunchCampaign']);
+        Route::put('/campaigns/relaunch/{campId?}', [ApiTprmController::class, 'relaunchCampaign']);
         Route::get('/campaigns/fetch-phish-data', [ApiTprmController::class, 'fetchPhishData']);
         Route::get('/treporting/fetch-campaign-report/{campaignId?}', [ApiReportingController::class, 'tfetchCampaignReport']);
         Route::get('/tfetch-camp-report-by-users/{campaignId?}', [ApiReportingController::class, 'tfetchCampReportByUsers']);
