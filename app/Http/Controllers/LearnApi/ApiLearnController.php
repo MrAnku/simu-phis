@@ -146,10 +146,10 @@ class ApiLearnController extends Controller
             $request->validate(['email' => 'required|email']);
 
             $hasTraining = TrainingAssignedUser::where('user_email', $request->email)->first();
-
+            $hasScormAssigned = ScormAssignedUser::where('user_email', $request->email)->first();
             $hasPolicy = AssignedPolicy::where('user_email', $request->email)->first();
 
-            if (!$hasTraining && !$hasPolicy) {
+            if (!$hasTraining && !$hasPolicy && !$hasScormAssigned) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No training or policy has been assigned to this email.'
@@ -166,6 +166,9 @@ class ApiLearnController extends Controller
             }
             if ($hasPolicy) {
                 $companyId = $hasPolicy->company_id;
+            }
+            if ($hasScormAssigned) {
+                $companyId = $hasScormAssigned->company_id;
             }
 
             $isWhitelabeled = new CheckWhitelabelService($companyId);

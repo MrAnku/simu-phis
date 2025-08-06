@@ -60,6 +60,7 @@ Route::post('login', [AuthenticatedSessionController::class, 'login']);
 
 
 Route::get('sso/validate', [SSOController::class, 'ssoValidate']);
+Route::get('sso-learner/validate', [SSOController::class, 'ssoValidateLearner']);
 
 Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
 
