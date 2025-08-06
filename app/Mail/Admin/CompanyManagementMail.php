@@ -42,8 +42,8 @@ class CompanyManagementMail extends Mailable
     {
         return new Envelope(
             subject: $this->subject,
-            cc: ['srikant@sparrowhost.in'],
-            // cc: ['contact@simuphish.com', $this->company->partner?->email],
+            // cc: ['srikant@sparrowhost.in'],
+            cc: ['contact@simuphish.com', $this->company->partner?->email],
         );
     }
 
