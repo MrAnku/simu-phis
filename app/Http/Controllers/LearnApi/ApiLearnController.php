@@ -63,65 +63,12 @@ class ApiLearnController extends Controller
 
             $userName = $user->user_name;
 
-            // Calculate Risk score
-            $riskScoreRanges = [
-                'poor' => [0, 20],
-                'fair' => [21, 40],
-                'good' => [41, 60],
-                'veryGood' => [61, 80],
-                'excellent' => [81, 100],
-            ];
-
-            // Campaigns
-            $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
-
-            $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
-
-            $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
-
-            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-                ->where('company_id', $user->company_id);
-
-            $totalSimulations = $emailCampaigns->count();
-            $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
-
-            $totalQuishing = $quishingCampaigns->count();
-            $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
-
-            $totalTprm = $tprmCampaigns->count();
-            $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
-
-            $totalWhatsapp = $whatsappCampaigns->count();
-            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-            // Risk score calculation
-            $riskScore = null;
-            $riskLevel = null;
-
-            $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
-
-            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-            // Determine risk level
-            foreach ($riskScoreRanges as $label => [$min, $max]) {
-                if ($riskScore >= $min && $riskScore <= $max) {
-                    $riskLevel = $label;
-                    break;
-                }
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => [
                     'email' => $userEmail,
                     'employee_type' => $employeeType,
-                    'user_name' => $userName,
-                    'riskScore' => $riskScore,
-                    'riskLevel' => $riskLevel,
+                    'user_name' => $userName
                 ],
                 'message' => 'You can Login now'
             ], 200);
@@ -217,6 +164,120 @@ class ApiLearnController extends Controller
 
             // Return success response
             return response()->json(['success' => true, 'message' => 'Mail sent successfully'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getDashboardMetrics(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $user = Users::where('user_email', $request->email)->first();
+
+            // Calculate Risk score
+            $riskScoreRanges = [
+                'poor' => [0, 20],
+                'fair' => [21, 40],
+                'good' => [41, 60],
+                'veryGood' => [61, 80],
+                'excellent' => [81, 100],
+            ];
+
+            // Campaigns
+            $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
+                ->where('company_id', $user->company_id);
+
+            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+                ->where('company_id', $user->company_id);
+
+            $totalSimulations = $emailCampaigns->count();
+            $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
+
+            $totalQuishing = $quishingCampaigns->count();
+            $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
+
+            $totalTprm = $tprmCampaigns->count();
+            $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
+
+            $totalWhatsapp = $whatsappCampaigns->count();
+            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
+
+            // Risk score calculation
+            $riskScore = null;
+            $riskLevel = null;
+
+            $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+            // Determine risk level
+            foreach ($riskScoreRanges as $label => [$min, $max]) {
+                if ($riskScore >= $min && $riskScore <= $max) {
+                    $riskLevel = $label;
+                    break;
+                }
+            }
+
+            // Calucalte current rank
+
+             $companyId = Users::where('user_email', $request->email)->value('company_id');
+
+            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
+
+            $allUsers = $trainingUsers->merge($scormUsers);
+
+            $currentUserEmail = $request->email;
+
+            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
+                $average = $group->avg('personal_best');
+
+                return [
+                    'email' => $email,
+                    'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                    'average_score' => round($average, 2),
+                ];
+            })->sortByDesc('average_score')->values();
+
+
+            // Add leaderboard rank
+            $leaderboard = $grouped->map(function ($user, $index) {
+                $user['leaderboard_rank'] = $index + 1;
+                return $user;
+            });
+
+            $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'riskScore' => $riskScore,
+                    'riskLevel' => $riskLevel,
+                    'currentUserRank' => $currentUserRank,
+                ],
+                'message' => 'Fetched dashboard metrics successfully'
+            ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([

@@ -487,7 +487,10 @@ Route::prefix('learn')->group(function () {
     Route::get('/login-with-token', [ApiLearnController::class, 'loginWithToken']);
     Route::post('/create-new-token', [ApiLearnController::class, 'createNewToken']);
 
+    Route::get('/dashboard/metrics', [ApiLearnController::class, 'getDashboardMetrics']);
+
     Route::get('/get-normal-emp-tranings', [ApiLearnController::class, 'getNormalEmpTranings']);
+
     Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
     Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnController::class, 'fetchNormalEmpScormTrainings']);
 
@@ -545,6 +548,9 @@ Route::prefix('learn')->group(function () {
     Route::prefix('blue-collar')->group(function () {
         Route::post('/create-new-token', [ApiLearnBlueCollarController::class, 'createNewToken']);
         Route::get('/login-with-token', [ApiLearnBlueCollarController::class, 'loginWithToken']);
+
+        Route::get('/dashboard/metrics', [ApiLearnBlueCollarController::class, 'getDashboardMetrics']);
+
         Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
 
         Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);

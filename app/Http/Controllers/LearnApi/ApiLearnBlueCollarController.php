@@ -125,8 +125,41 @@ class ApiLearnBlueCollarController extends Controller
             $user = BlueCollarEmployee::where('whatsapp', $userWhatsapp)->first();
 
             $userName = $user->user_name;
-            
-            // Calculate Risk score
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user_whatsapp' => $userWhatsapp,
+                    'employee_type' => $employeeType,
+                    'user_name' => $userName
+                ],
+                'message' => 'You can Login now'
+            ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+     public function getDashboardMetrics(Request $request)
+    {
+        try {
+            $request->validate([
+              'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
+
+          // Calculate Risk score
             $riskScoreRanges = [
                 'poor' => [0, 20],
                 'fair' => [21, 40],
@@ -158,16 +191,42 @@ class ApiLearnBlueCollarController extends Controller
                 }
             }
 
+            $companyId = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->value('company_id');
+
+            $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
+            $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
+
+            $allUsers = $trainingUsers->merge($scormUsers);
+
+            $currentUserWhatsapp = $request->user_whatsapp;
+
+            $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
+                $average = $group->avg('personal_best');
+
+                return [
+                    'user_whatsapp' => $user_whatsapp,
+                    'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                    'average_score' => round($average, 2),
+                ];
+            })->sortByDesc('average_score')->values();
+
+
+            // Add leaderboard rank
+            $leaderboard = $grouped->map(function ($user, $index) {
+                $user['leaderboard_rank'] = $index + 1;
+                return $user;
+            });
+
+            $currentUserRank = optional($leaderboard->firstWhere('user_whatsapp', $currentUserWhatsapp))['leaderboard_rank'] ?? null;
+
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'user_whatsapp' => $userWhatsapp,
-                    'employee_type' => $employeeType,
-                    'user_name' => $userName,
                     'riskScore' => $riskScore,
                     'riskLevel' => $riskLevel,
+                    'currentUserRank' => $currentUserRank,
                 ],
-                'message' => 'You can Login now'
+                'message' => 'Fetched dashboard metrics successfully'
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
