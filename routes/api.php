@@ -143,6 +143,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('quishing-campaign')->group(function () {
         Route::get('/', [ApiQuishingController::class, 'index']);
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
+        Route::put('/relaunch/{campaign_id?}', [ApiQuishingController::class, 'relaunchCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
     });
@@ -179,6 +180,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/requested-templates', [ApiWaCampaignController::class, 'requestedTemplates']);
 
         Route::get('/requested-template/check/{template_id}', [ApiWaCampaignController::class, 'checkTemplateStatus']);
+
+        Route::put('/relaunch/{campaign_id?}', [ApiWaCampaignController::class, 'relaunchCampaign']);
     });
 
     // Phishing Material routes
@@ -245,7 +248,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     });
 
     Route::prefix('report')->group(function () {
-      
+
         Route::get('/whatsappfetch-camp-training-details-individual/{campaignId?}', [ApiReportingController::class, 'whatsappfetchCampTrainingDetailsIndividual']);
 
         // Awareness and Education Reporting
@@ -256,7 +259,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         // Division Reporting
         Route::get('/fetch-division-users-report', [ApiReportingController::class, 'fetchDivisionUsersReport']);
 
-         Route::get('/fetch-division-users-reporting', [ApiReportingController::class, 'fetchDivisionUsersReporting']);
+        Route::get('/fetch-division-users-reporting', [ApiReportingController::class, 'fetchDivisionUsersReporting']);
 
         // Users Reporting
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
@@ -274,7 +277,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         // Policy Reporting
         Route::get('/fetch-policies-report', [ApiReportingController::class, 'fetchPoliciesReport']);
 
-         Route::get('/fetch-policies-reporting', [ApiReportingController::class, 'fetchPoliciesReporting']);
+        Route::get('/fetch-policies-reporting', [ApiReportingController::class, 'fetchPoliciesReporting']);
 
         // Course Summary Reporting
         Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
@@ -332,6 +335,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
+        Route::put('/relaunch/{campaign_id?}', [ApiAiCallController::class, 'relaunchCampaign']);
     });
 
     Route::prefix('phishing-emails')->group(function () {

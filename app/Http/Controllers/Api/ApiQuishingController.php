@@ -13,6 +13,7 @@ use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -23,12 +24,12 @@ class ApiQuishingController extends Controller
         try {
             $company_id = Auth::user()->company_id;
             $campaigns = QuishingCamp::with('userGroupData')
-            ->where(function ($query) use ($company_id) {
-                $query->where('company_id', $company_id)
-                      ->orWhere('company_id', 'default');
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+                ->where(function ($query) use ($company_id) {
+                    $query->where('company_id', $company_id)
+                        ->orWhere('company_id', 'default');
+                })
+                ->orderBy('id', 'desc')
+                ->get();
 
             $campLive = QuishingLiveCamp::where('company_id', $company_id)
                 ->get();
@@ -237,5 +238,58 @@ class ApiQuishingController extends Controller
         }
     }
 
-   
+    public function relaunchCampaign(Request $request)
+    {
+        try {
+            $campid = $request->route('campaign_id');
+
+            if (!$campid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required'),
+                ], 422);
+            }
+
+            if( !QuishingCamp::where('campaign_id', $campid)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found'),
+                ], 404);
+            }
+
+            $company_id = Auth::user()->company_id;
+
+            QuishingCamp::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'created_at' => now(),
+                    'status' => 'running'
+                ]);
+
+            // Update campaign_live table
+            QuishingLiveCamp::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'sent' => '0',
+                    'mail_open' => '0',
+                    'qr_scanned' => '0',
+                    'compromised' => '0',
+                    'email_reported' => '0',
+                    'training_assigned' => '0',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            log_action('Quishing campaign relaunched');
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign relaunched successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 }

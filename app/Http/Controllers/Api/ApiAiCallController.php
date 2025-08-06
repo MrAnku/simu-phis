@@ -580,4 +580,60 @@ class ApiAiCallController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    public function relaunchCampaign(Request $request)
+    {
+        try {
+            $campid = $request->route('campaign_id');
+
+            if (!$campid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required'),
+                ], 422);
+            }
+
+            if (!AiCallCampaign::where('campaign_id', $campid)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found'),
+                ], 404);
+            }
+
+            $company_id = Auth::user()->company_id;
+
+            AiCallCampaign::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'created_at' => now(),
+                    'status' => 'running'
+                ]);
+
+            // Update campaign_live table
+            AiCallCampLive::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'call_id' => null,
+                    'status' => 'running',
+                    'training_assigned' => '0',
+                    'compromised' => '0',
+                    'call_send_response' => null,
+                    'call_end_response' => null,
+                    'call_report' => null,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            log_action('AI Call campaign relaunched');
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign relaunched successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 }

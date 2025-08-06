@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\CompanyWhatsappConfig;
 use App\Models\CompanyWhatsappTemplate;
 use App\Models\RequestWhatsappTemplate;
+use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class ApiWaCampaignController extends Controller
@@ -739,6 +740,59 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function relaunchCampaign(Request $request)
+    {
+        try {
+            $campid = $request->route('campaign_id');
+
+            if (!$campid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required'),
+                ], 422);
+            }
+
+            if( !WaCampaign::where('campaign_id', $campid)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found'),
+                ], 404);
+            }
+
+            $company_id = Auth::user()->company_id;
+
+            WaCampaign::where('campaign_id', $campid)
+            ->where('company_id', $company_id)
+            ->update([
+                'launch_time' => now(),
+                'status' => 'running'
+            ]);
+
+            // Update campaign_live table
+            WaLiveCampaign::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'sent' => '0',
+                    'payload_clicked' => '0',
+                    'compromised' => '0',
+                    'training_assigned' => '0',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            log_action('Whatsapp campaign relaunched');
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign relaunched successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
