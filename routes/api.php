@@ -471,7 +471,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/fetch_files', [ApiMediaController::class, 'fetchFiles']);
         Route::delete('/delete-file', [ApiMediaController::class, 'deleteFile']);
 
-         Route::post('/splitFileIntoChunks', [ApiMediaController::class, 'splitFileIntoChunks']);
+        Route::post('/splitFileIntoChunks', [ApiMediaController::class, 'splitFileIntoChunks']);
     });
 
     // Scorm Training
@@ -538,6 +538,8 @@ Route::prefix('learn')->group(function () {
 
     // Scorm Training
     Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
+
+    Route::get('/fetch-languages', [ApiLearnController::class, 'fetchLanguages']);
 
     // For Blue Collar
     Route::prefix('blue-collar')->group(function () {

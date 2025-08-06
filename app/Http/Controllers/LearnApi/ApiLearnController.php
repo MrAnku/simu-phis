@@ -1900,4 +1900,17 @@ class ApiLearnController extends Controller
             'message' => 'Unable to translate in english',
         ], 422);
     }
+
+    public function fetchLanguages()
+    {
+        $languages = getLanguages();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Languages fetched successfully.'),
+            'data' => [
+                "languages" => $languages
+            ],
+        ], 200);
+    }
 }
