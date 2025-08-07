@@ -465,6 +465,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 
+     //company logs
+    Route::prefix('company-logs')->group(function () {
+        Route::get('/', [ApiCompanyLogsController::class, 'index']);
+        
+    });
+
     // Media
     Route::prefix('media')->group(function () {
         Route::post('/upload_file', [ApiMediaController::class, 'uploadFile']);
