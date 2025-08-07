@@ -445,11 +445,18 @@ class ApiEmployeesController extends Controller
             $verifiedDomain = DomainVerified::where('domain', $domain)
                 ->first();
 
-            if ($verifiedDomain && $verifiedDomain->verified == '1') {
+            if (
+                $verifiedDomain &&
+                $verifiedDomain->verified == '1' &&
+                $verifiedDomain->domain != 'simuphish.com'
+            ) {
                 return response()->json(['success' => false, 'message' => __('Domain already verified or by some other company')], 409);
             }
 
-            if ($verifiedDomain && $verifiedDomain->verified == '0') {
+            if (
+                $verifiedDomain && 
+                $verifiedDomain->verified == '0'
+            ) {
                 $genCode = generateRandom(6);
                 $verifiedDomain->temp_code = $genCode;
                 $verifiedDomain->company_id = $companyId;
