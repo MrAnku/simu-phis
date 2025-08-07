@@ -29,7 +29,7 @@ class TrainingAssignedUser extends Model
         'grade',
         'badge',
         'certificate_path',
-        // Add other columns that should be mass assignable
+        'feedback'
     ];
 
     public function trainingData()

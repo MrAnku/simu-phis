@@ -492,6 +492,9 @@ Route::prefix('learn')->group(function () {
     Route::get('/get-normal-emp-tranings', [ApiLearnController::class, 'getNormalEmpTranings']);
 
     Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
+
+    Route::put('/update-training-feedback', [ApiLearnController::class, 'updateTrainingFeedback']);
+
     Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnController::class, 'fetchNormalEmpScormTrainings']);
 
     Route::post('/download-training-certificate', [ApiLearnController::class, 'downloadTrainingCertificate']);
@@ -499,6 +502,8 @@ Route::prefix('learn')->group(function () {
     Route::post('/download-scorm-certificate', [ApiLearnController::class, 'downloadScormCertificate']);
 
     Route::post('/update-scorm-training-score', [ApiLearnController::class, 'updateScormTrainingScore']);
+
+    Route::put('/update-scorm-training-feedback', [ApiLearnController::class, 'updateScormTrainingFeedback']);
 
     Route::get('/fetch-score-board', [ApiLearnController::class, 'fetchScoreBoard']);
 
@@ -554,11 +559,16 @@ Route::prefix('learn')->group(function () {
         Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
 
         Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
+
+        Route::put('/update-training-feedback', [ApiLearnBlueCollarController::class, 'updateTrainingFeedback']);
+
         Route::get('/fetch-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchScormTrainings']);
         Route::post('/download-training-certificate', [ApiLearnBlueCollarController::class, 'downloadTrainingCertificate']);
 
         Route::post('/download-scorm-certificate', [ApiLearnBlueCollarController::class, 'downloadScormCertificate']);
         Route::post('/update-scorm-training-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
+
+        Route::put('/update-scorm-training-feedback', [ApiLearnBlueCollarController::class, 'updateScormTrainingFeedback']);
 
         Route::get('/fetch-score-board', [ApiLearnBlueCollarController::class, 'fetchScoreBoard']);
 

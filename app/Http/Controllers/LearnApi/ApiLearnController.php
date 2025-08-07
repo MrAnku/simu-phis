@@ -241,7 +241,7 @@ class ApiLearnController extends Controller
 
             // Calucalte current rank
 
-             $companyId = Users::where('user_email', $request->email)->value('company_id');
+            $companyId = Users::where('user_email', $request->email)->value('company_id');
 
             $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
             $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
@@ -366,25 +366,14 @@ class ApiLearnController extends Controller
 
             $row_id = base64_decode($request->encoded_id);
 
-            if (Session::has('bluecollar')) {
-                $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
-                if (!$rowData) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Training not found.'
-                    ], 404);
-                }
-                $user = $rowData->user_whatsapp;
-            } else {
-                $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
-                if (!$rowData) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Training not found.'
-                    ], 404);
-                }
-                $user = $rowData->user_email;
+            $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+            if (!$rowData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training not found.'
+                ], 404);
             }
+            $user = $rowData->user_email;
 
             if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
                 $rowData->grade = 'F';
@@ -498,6 +487,48 @@ class ApiLearnController extends Controller
                 }
             }
             return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateTrainingFeedback(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'feedback' => 'required|string|min:5|max:1000',
+                'encoded_id' => 'required',
+            ]);
+
+            $trainingId = base64_decode($request->encoded_id);
+
+            $trainingData = TrainingAssignedUser::find($trainingId);
+            if (!$trainingData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training not found.'
+                ], 404);
+            }
+
+            $trainingData->update([
+                'feedback' => $request->feedback,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback updated successfully.'
+            ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -638,6 +669,49 @@ class ApiLearnController extends Controller
             ], 500);
         }
     }
+
+    public function updateScormTrainingFeedback(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'feedback' => 'required|string|min:5|max:1000',
+                'encoded_id' => 'required',
+            ]);
+
+            $scormId = base64_decode($request->encoded_id);
+
+            $scormData = ScormAssignedUser::find($scormId);
+            if (!$scormData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Scorm not found.'
+                ], 404);
+            }
+
+            $scormData->update([
+                'feedback' => $request->feedback,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback updated successfully.'
+            ], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function generateCertificatePdf($name, $trainingModuleName, $trainingId, $date, $userEmail, $logo, $favIcon)
     {

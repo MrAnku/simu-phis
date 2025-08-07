@@ -150,16 +150,16 @@ class ApiLearnBlueCollarController extends Controller
         }
     }
 
-     public function getDashboardMetrics(Request $request)
+    public function getDashboardMetrics(Request $request)
     {
         try {
             $request->validate([
-              'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
             ]);
 
             $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
 
-          // Calculate Risk score
+            // Calculate Risk score
             $riskScoreRanges = [
                 'poor' => [0, 20],
                 'fair' => [21, 40],
@@ -442,6 +442,48 @@ class ApiLearnBlueCollarController extends Controller
                 }
             }
             // return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateTrainingFeedback(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'feedback' => 'required|string|min:5|max:1000',
+                'encoded_id' => 'required',
+            ]);
+
+            $trainingId = base64_decode($request->encoded_id);
+
+            $trainingData = BlueCollarTrainingUser::find($trainingId);
+            if (!$trainingData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training not found.'
+                ], 404);
+            }
+
+            $trainingData->update([
+                'feedback' => $request->feedback,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback updated successfully.'
+            ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -773,6 +815,48 @@ class ApiLearnBlueCollarController extends Controller
                     log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
                 }
             }
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateScormTrainingFeedback(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'feedback' => 'required|string|min:5|max:1000',
+                'encoded_id' => 'required',
+            ]);
+
+            $scormId = base64_decode($request->encoded_id);
+
+            $scormData = BlueCollarScormAssignedUser::find($scormId);
+            if (!$scormData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Scorm not found.'
+                ], 404);
+            }
+
+            $scormData->update([
+                'feedback' => $request->feedback,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback updated successfully.'
+            ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
