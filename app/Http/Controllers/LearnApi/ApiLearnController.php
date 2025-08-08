@@ -252,12 +252,16 @@ class ApiLearnController extends Controller
 
             $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
                 $average = $group->avg('personal_best');
+                $assignedTrainingsCount = $group->count();
 
                 return [
                     'email' => $email,
                     'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
+                    'assigned_trainings_count' => $assignedTrainingsCount,
                 ];
+            })->filter(function ($user) {
+                return $user['average_score'] >= 50; // Filter users with score >= 50
             })->sortByDesc('average_score')->values();
 
 
@@ -1061,12 +1065,16 @@ class ApiLearnController extends Controller
 
             $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
                 $average = $group->avg('personal_best');
+                $assignedTrainingsCount = $group->count();
 
                 return [
                     'email' => $email,
                     'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
+                    'assigned_trainings_count' => $assignedTrainingsCount,
                 ];
+            })->filter(function ($user) {
+                return $user['average_score'] >= 50; // Filter users with score >= 50
             })->sortByDesc('average_score')->values();
 
 

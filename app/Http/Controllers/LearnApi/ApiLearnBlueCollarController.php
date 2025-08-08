@@ -193,23 +193,26 @@ class ApiLearnBlueCollarController extends Controller
 
             $companyId = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->value('company_id');
 
+            $currentUserWhatsapp = $request->user_whatsapp;
+
             $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
             $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
 
             $allUsers = $trainingUsers->merge($scormUsers);
 
-            $currentUserWhatsapp = $request->user_whatsapp;
-
             $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
                 $average = $group->avg('personal_best');
+                $assignedTrainingsCount = $group->count();
 
                 return [
                     'user_whatsapp' => $user_whatsapp,
                     'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
+                    'assigned_trainings_count' => $assignedTrainingsCount,
                 ];
+            })->filter(function ($user) {
+                return $user['average_score'] >= 50; // Filter users with score >= 50
             })->sortByDesc('average_score')->values();
-
 
             // Add leaderboard rank
             $leaderboard = $grouped->map(function ($user, $index) {
@@ -1015,12 +1018,16 @@ class ApiLearnBlueCollarController extends Controller
 
             $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
                 $average = $group->avg('personal_best');
+                $assignedTrainingsCount = $group->count();
 
                 return [
                     'user_whatsapp' => $user_whatsapp,
                     'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
+                    'assigned_trainings_count' => $assignedTrainingsCount,
                 ];
+            })->filter(function ($user) {
+                return $user['average_score'] >= 50; // Filter users with score >= 50
             })->sortByDesc('average_score')->values();
 
 
