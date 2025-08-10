@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\WhatsappTemplatesController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
+use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
@@ -288,6 +289,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         // Course Summary Reporting
         Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
+
+        Route::get('/compliance', [ApiComplianceController::class, 'index']);
     });
 
     Route::prefix('employees')->group(function () {
@@ -465,10 +468,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-policy-campaign/{campaign_id?}', [ApiPolicyController::class, 'deletePolicyCampaign']);
     });
 
-     //company logs
+    //company logs
     Route::prefix('company-logs')->group(function () {
         Route::get('/', [ApiCompanyLogsController::class, 'index']);
-        
     });
 
     // Media
