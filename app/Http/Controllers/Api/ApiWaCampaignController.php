@@ -97,7 +97,7 @@ class ApiWaCampaignController extends Controller
 
             //check if the selected users group has users has whatsapp number
             if ($request->employee_type == 'normal') {
-                if (!$this->atLeastOneUserWithWhatsapp($validated['users_group'])) {
+                if (!atLeastOneUserWithWhatsapp($validated['users_group'], Auth::user()->company_id)) {
                     return response()->json([
                         'success' => false,
                         'message' => __('No employees with WhatsApp number found in the selected division.'),
@@ -123,26 +123,7 @@ class ApiWaCampaignController extends Controller
         }
     }
 
-    private function atLeastOneUserWithWhatsapp($groupid)
-    {
-        $hasWhatsapp = false;
-        $usersGroup = UsersGroup::where('group_id', $groupid)
-            ->where('company_id', Auth::user()->company_id)
-            ->first();
-        if ($usersGroup) {
-            $userIdsJson = $usersGroup->users;
-            $userIds = json_decode($userIdsJson, true);
-            $users = Users::whereIn('id', $userIds)->get();
-            foreach ($users as $user) {
-                if ($user->whatsapp) {
-                    $hasWhatsapp = true;
-                    break;
-                }
-            }
-        }
 
-        return $hasWhatsapp;
-    }
 
     private function handleImmediateCampaign($validated)
     {
@@ -202,9 +183,6 @@ class ApiWaCampaignController extends Controller
                     'user_id' => $user->id,
                     'user_email' => $user->user_email ?? null,
                     'user_phone' => $user->whatsapp,
-                    'employee_type' => $validated['employee_type'],
-                    'employee_type' => $validated['employee_type'],
-                    'employee_type' => $validated['employee_type'],
                     'phishing_website' => $validated['phishing_website'],
                     'training_module' => ($validated['campaign_type'] == 'phishing') || empty($validated['training_module']) ? null : $validated['training_module'][array_rand($validated['training_module'])],
                     'scorm_training' => ($validated['campaign_type'] == 'phishing') || empty($validated['scorm_training']) ? null : $validated['scorm_training'][array_rand($validated['scorm_training'])],
