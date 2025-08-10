@@ -33,8 +33,11 @@ class SyncLogs extends Command
 
     private function syncLogs()
     {
-        $companies = Company::all();
-        if (!$companies) {
+        $companies = Company::where('approved', 1)
+            ->where('service_status', 1)
+            ->where('role', null)
+            ->get();
+        if ($companies->isEmpty()) {
             return;
         }
         foreach ($companies as $company) {
@@ -102,7 +105,7 @@ class SyncLogs extends Command
     {
         $url = $siemConfig->url;
 
-        if($siemConfig->token == null){
+        if ($siemConfig->token == null) {
             $headers = [
                 'Content-Type' => 'application/json'
             ];
@@ -112,7 +115,7 @@ class SyncLogs extends Command
                 'Content-Type' => 'application/json'
             ];
         }
-       
+
 
         try {
             $response = Http::withHeaders($headers)->withoutVerifying()->post($url, $logsArray);

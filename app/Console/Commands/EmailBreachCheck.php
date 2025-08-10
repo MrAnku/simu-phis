@@ -43,15 +43,19 @@ class EmailBreachCheck extends Command
     private function scanNewUsers()
     {
         //scan new employees
-        $employees = Users::where('breach_scan_date', null)
-            ->distinct('user_email')
-            ->take(7)
-            ->get();
+        $employees = Users::whereNull('breach_scan_date')
+            ->get()
+            ->unique('user_email')
+            ->values()
+            ->take(7);
         if ($employees->isEmpty()) {
             return;
         }
 
         foreach ($employees as $employee) {
+
+            echo "email: " . $employee->user_email . "\n";
+            continue;
 
             setCompanyTimezone($employee->company_id);
 
@@ -65,18 +69,22 @@ class EmailBreachCheck extends Command
                 // Process the response
                 $breachData = $response->json();
                 // Update the employee's breach scan date and other relevant information
-                $employee->breach_scan_date = now();
+                // $employee->breach_scan_date = now();
+                Users::where('company_id', $employee->company_id)
+                    ->where('user_email', $employee->user_email)
+                    ->update(['breach_scan_date' => now()]);
+
                 BreachedEmail::create([
                     'email' => $employee->user_email,
                     'data' => json_encode($breachData),
                     'company_id' => $employee->company_id
                 ]);
-                $employee->save();
+                // $employee->save();
                 echo "Breach found for " . $employee->user_email . "\n";
 
                 $company = Company::where('company_id', $employee->company_id)->first();
 
-               
+
                 // send Email Notification
                 try {
                     $isWhitelabeled = new CheckWhitelabelService($company->company_id);
@@ -92,8 +100,11 @@ class EmailBreachCheck extends Command
                     echo "Failed to send email. Error: " . $e->getMessage() . "\n";
                 }
             } else {
-                $employee->breach_scan_date = now();
-                $employee->save();
+                // $employee->breach_scan_date = now();
+                // $employee->save();
+                Users::where('company_id', $employee->company_id)
+                    ->where('user_email', $employee->user_email)
+                    ->update(['breach_scan_date' => now()]);
                 echo "No breach found for " . $employee->user_email . "\n";
             }
         }
@@ -102,14 +113,18 @@ class EmailBreachCheck extends Command
     private function scanOldUsers()
     {
         //scan old employees
-        $employees = Users::where('breach_scan_date', '<', now()->subDays(10))
-        ->distinct('user_email')
-        ->take(7)
-        ->get();
+        $employees = Users::where('breach_scan_date', '<', now()->subDays(7))
+            ->get()
+            ->unique('user_email')
+            ->values()
+            ->take(7);
         if ($employees->isEmpty()) {
             return;
         }
         foreach ($employees as $employee) {
+
+            echo "email: " . $employee->user_email . "\n";
+            continue;
 
             setCompanyTimezone($employee->company_id);
 
@@ -124,7 +139,10 @@ class EmailBreachCheck extends Command
                 // Process the response
                 $breachData = $response->json();
                 // Update the employee's breach scan date and other relevant information
-                $employee->breach_scan_date = now();
+                Users::where('company_id', $employee->company_id)
+                    ->where('user_email', $employee->user_email)
+                    ->update(['breach_scan_date' => now()]);
+
                 $breachedEmail = BreachedEmail::where('email', $employee->user_email)->first();
                 if ($breachedEmail) {
                     $breachedEmail->update([
@@ -140,10 +158,10 @@ class EmailBreachCheck extends Command
                     ]);
                     echo "Breach found for " . $employee->user_email . "\n";
                 }
-                $employee->save();
             } else {
-                $employee->breach_scan_date = now();
-                $employee->save();
+                Users::where('company_id', $employee->company_id)
+                    ->where('user_email', $employee->user_email)
+                    ->update(['breach_scan_date' => now()]);
                 echo "No breach found for " . $employee->user_email . "\n";
             }
         }

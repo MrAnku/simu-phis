@@ -44,7 +44,10 @@ class ProcessWhatsappCampaign extends Command
     private function sendWhatsapp()
     {
         //getting companies
-        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
+        $companies = Company::where('service_status', 1)
+        ->where('approved', 1)
+        ->where('role', null)
+        ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -133,7 +136,10 @@ class ProcessWhatsappCampaign extends Command
     private function checkScheduledCampaigns()
     {
         //getting companies
-        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
+        $companies = Company::where('service_status', 1)
+        ->where('approved', 1)
+        ->where('role', null)
+        ->get();
 
         if ($companies->isEmpty()) {
             return;

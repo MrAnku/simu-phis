@@ -37,7 +37,10 @@ class ProcessQuishing extends Command
     public function handle()
     {
         //get all pending quishing campaigns
-        $companies = Company::where('service_status', 1)->where('approved', 1)->get();
+        $companies = Company::where('service_status', 1)
+        ->where('approved', 1)
+        ->where('role', null)
+        ->get();
 
         if ($companies->isEmpty()) {
             return;

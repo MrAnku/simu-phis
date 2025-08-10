@@ -44,6 +44,7 @@ class ProcessTprmCampaigns extends Command
   {
     $companies = Company::where('approved', 1)
       ->where('service_status', 1)
+      ->where('role', null)
       ->get();
 
     if ($companies->isEmpty()) {

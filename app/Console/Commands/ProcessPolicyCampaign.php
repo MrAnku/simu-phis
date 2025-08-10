@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use App\Models\Users;
 use App\Models\Policy;
+use App\Models\Company;
 use App\Models\UsersGroup;
 use App\Models\AssignedPolicy;
 use App\Models\PolicyCampaign;
@@ -43,7 +44,11 @@ class ProcessPolicyCampaign extends Command
 
     private function processScheduledCampaigns()
     {
-        $companies = DB::table('company')->where('approved', 1)->where('service_status', 1)->get();
+        $companies = DB::table('company')
+        ->where('approved', 1)
+        ->where('service_status', 1)
+        ->where('role', null)
+        ->get();
 
 
         if ($companies->isEmpty()) {
@@ -113,7 +118,10 @@ class ProcessPolicyCampaign extends Command
 
     private function sendCampaignLiveEmails()
     {
-        $companies = DB::table('company')->where('approved', 1)->where('service_status', 1)->get();
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;

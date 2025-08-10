@@ -42,8 +42,10 @@ class SendInfographics extends Command
 
     private function processScheduledCampaigns()
     {
-        $companies = Company::where('approved', 1)->where('service_status', 1)->get();
-
+        $companies = Company::where('approved', 1)
+        ->where('service_status', 1)
+        ->where('role', null)
+        ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -112,7 +114,10 @@ class SendInfographics extends Command
 
     private function sendCampaignLiveEmails()
     {
-        $companies = Company::where('approved', 1)->where('service_status', 1)->get();
+        $companies = Company::where('approved', 1)
+        ->where('service_status', 1)
+        ->where('role', null)
+        ->get();
 
         if ($companies->isEmpty()) {
             return;

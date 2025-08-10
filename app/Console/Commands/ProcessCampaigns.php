@@ -48,13 +48,13 @@ class ProcessCampaigns extends Command
     $this->processScheduledCampaigns();
     $this->sendCampaignLiveEmails();
     $this->updateRunningCampaigns();
-    // $this->sendReminderMail();
+    $this->sendReminderMail();
   }
 
   private function processScheduledCampaigns()
   {
-    $companies = DB::table('company')
-      ->where('approved', 1)
+    $companies = Company::where('approved', 1)
+      ->where('role', null)
       ->where('service_status', 1)
       ->get();
 
@@ -114,7 +114,7 @@ class ProcessCampaigns extends Command
           'user_name' => $user->user_name,
           'user_email' => $user->user_email,
           'training_module' => ($campaign->training_module == null) ? null : json_decode($campaign->training_module, true)[array_rand(json_decode($campaign->training_module, true))],
-           'scorm_training' => ($campaign->scorm_training == null) ? null : json_decode($campaign->scorm_training, true)[array_rand(json_decode($campaign->scorm_training, true))],
+          'scorm_training' => ($campaign->scorm_training == null) ? null : json_decode($campaign->scorm_training, true)[array_rand(json_decode($campaign->scorm_training, true))],
           'days_until_due' => $campaign->days_until_due ?? null,
           'training_lang' => $campaign->training_lang ?? null,
           'training_type' => $campaign->training_type ?? null,
@@ -143,7 +143,11 @@ class ProcessCampaigns extends Command
 
   private function sendCampaignLiveEmails()
   {
-    $companies = DB::table('company')->where('approved', 1)->where('service_status', 1)->get();
+    $companies = DB::table('company')
+        ->where('approved', 1)
+        ->where('role', null)
+        ->where('service_status', 1)
+        ->get();
 
     if ($companies->isEmpty()) {
       return;
@@ -360,211 +364,7 @@ class ProcessCampaigns extends Command
     $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
-  private function generateWebsiteUrl($websiteColumns, $campaign)
-  {
-    // Generate random parts
-    $randomString1 = Str::random(6);
-    $randomString2 = Str::random(10);
-    $slugName = Str::slug($websiteColumns->name);
 
-    // Construct the base URL
-    $baseUrl = "https://{$randomString1}.{$websiteColumns->domain}/{$randomString2}";
-
-    // Define query parameters
-    $params = [
-      'v' => 'r',
-      'c' => Str::random(10),
-      'p' => $websiteColumns->id,
-      'l' => $slugName,
-      'token' => $campaign->id,
-      'usrid' => $campaign->user_id
-    ];
-
-    // Build query string and final URL
-    $queryString = http_build_query($params);
-    $websiteFilePath = $baseUrl . '?' . $queryString;
-
-    return $websiteFilePath;
-  }
-
-  private function assignTraining($campaign, $trainingModules = null, $scormTrainings = null)
-  {
-    if ($trainingModules !== null || $scormTrainings !== null) {
-      $this->assignAllTrainings($campaign, $trainingModules, $scormTrainings);
-    } else {
-      $this->assignSingleTraining($campaign);
-    }
-  }
-
-  private function assignAllTrainings($campaign, $trainingModules = null, $scormTrainings = null)
-  {
-    $trainingAssignedService = new TrainingAssignedService();
-
-    if ($trainingModules !== null) {
-      foreach ($trainingModules as $training) {
-
-        //check if this training is already assigned to this user
-        $assignedTraining = TrainingAssignedUser::where('user_email', $campaign->user_email)
-          ->where('training', $training)
-          ->first();
-
-        if (!$assignedTraining) {
-          //call assignNewTraining from service method
-          $campData = [
-            'campaign_id' => $campaign->campaign_id,
-            'user_id' => $campaign->user_id,
-            'user_name' => $campaign->user_name,
-            'user_email' => $campaign->user_email,
-            'training' => $training,
-            'training_lang' => $campaign->training_lang,
-            'training_type' => $campaign->training_type,
-            'assigned_date' => now()->toDateString(),
-            'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-            'company_id' => $campaign->company_id
-          ];
-
-          $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-          if ($trainingAssigned['status'] == true) {
-            echo $trainingAssigned['msg'];
-          } else {
-            echo 'Failed to assign training to ' . $campaign->user_email;
-          }
-        }
-      }
-    }
-
-    if ($scormTrainings !== null) {
-      foreach ($scormTrainings as $training) {
-
-        //check if this training is already assigned to this user
-        $assignedTraining = ScormAssignedUser::where('user_email', $campaign->user_email)
-          ->where('scorm', $training)
-          ->first();
-
-        if (!$assignedTraining) {
-          //call assignNewTraining from service method
-          $campData = [
-            'campaign_id' => $campaign->campaign_id,
-            'user_id' => $campaign->user_id,
-            'user_name' => $campaign->user_name,
-            'user_email' => $campaign->user_email,
-            'scorm' => $training,
-            'assigned_date' => now()->toDateString(),
-            'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-            'company_id' => $campaign->company_id
-          ];
-
-          $scormAssigned = DB::table('scorm_assigned_users')
-            ->insert($campData);
-
-          if ($scormAssigned) {
-            echo "New Scorm training assigned successfully \n";
-          } else {
-            echo 'Failed to assign training to ' . $campaign->user_email;
-          }
-        }
-      }
-    }
-
-    //send mail to user
-    $campData = [
-      'user_name' => $campaign->user_name,
-      'user_email' => $campaign->user_email,
-      'company_id' => $campaign->company_id
-    ];
-    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-    if ($isMailSent['status'] == true) {
-      echo $isMailSent['msg'];
-    } else {
-      echo 'Failed to send mail to ' . $campaign->user_email;
-    }
-  }
-
-  private function assignSingleTraining($campaign)
-  {
-    $trainingAssignedService = new TrainingAssignedService();
-
-    // $assignedTrainingModule = null;
-    if ($campaign->training_module !== null) {
-      $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->user_email)
-        ->where('training', $campaign->training_module)
-        ->first();
-
-
-      if (!$assignedTrainingModule) {
-        //call assignNewTraining from service method
-        $campData = [
-          'campaign_id' => $campaign->campaign_id,
-          'user_id' => $campaign->user_id,
-          'user_name' => $campaign->user_name,
-          'user_email' => $campaign->user_email,
-          'training' => $campaign->training_module,
-          'training_lang' => $campaign->training_lang,
-          'training_type' => $campaign->training_type,
-          'assigned_date' => now()->toDateString(),
-          'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-          'company_id' => $campaign->company_id
-        ];
-
-        $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-        if ($trainingAssigned['status'] == true) {
-          echo $trainingAssigned['msg'];
-        } else {
-          echo 'Failed to assign training to ' . $campaign->user_email;
-        }
-      }
-    }
-
-    if ($campaign->scorm_training !== null) {
-      $assignedScormTraining = ScormAssignedUser::where('user_email', $campaign->user_email)
-        ->where('scorm', $campaign->scorm_training)
-        ->first();
-    }
-
-    if (!$assignedScormTraining) {
-      //call assignNewTraining from service method
-      $campData = [
-        'campaign_id' => $campaign->campaign_id,
-        'user_id' => $campaign->user_id,
-        'user_name' => $campaign->user_name,
-        'user_email' => $campaign->user_email,
-        'scorm' => $campaign->scorm_training,
-        'assigned_date' => now()->toDateString(),
-        'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        'company_id' => $campaign->company_id
-      ];
-
-      $scormAssigned = DB::table('scorm_assigned_users')
-        ->insert($campData);
-
-      if ($scormAssigned) {
-        echo "New Scorm training assigned successfully \n";
-      } else {
-        echo 'Failed to assign training to ' . $campaign->user_email;
-      }
-    }
-
-
-
-
-
-    //send mail to user
-    $campData = [
-      'user_name' => $campaign->user_name,
-      'user_email' => $campaign->user_email,
-      'company_id' => $campaign->company_id
-    ];
-    $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-    if ($isMailSent['status'] == true) {
-      echo $isMailSent['msg'];
-    } else {
-      echo 'Failed to send mail to ' . $campaign->user_email;
-    }
-  }
 
   private function updateRunningCampaigns()
   {
@@ -645,12 +445,16 @@ class ProcessCampaigns extends Command
   }
 
 
-
-
-
   private function sendReminderMail()
   {
-    $companies = Company::all();
+    $companies = Company::where('approved', 1)
+      ->where('service_status', 1)
+      ->where('role', null)
+      ->get();
+
+    if ($companies->isEmpty()) {
+      return;
+    }
 
     foreach ($companies as $company) {
       setCompanyTimezone($company->company_id);
@@ -659,9 +463,12 @@ class ProcessCampaigns extends Command
       $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
 
 
-      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)->get();
+      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
+        ->get()
+        ->unique('user_email')
+        ->values();
 
-      if (!$trainingAssignedUsers) {
+      if ($trainingAssignedUsers->isEmpty()) {
         continue;
       }
       $currentDate = Carbon::now();
@@ -673,11 +480,14 @@ class ProcessCampaigns extends Command
 
           if ($reminderDate->isBefore($currentDate)) {
             echo "Reminder will send";
-            // $this->freqTrainingReminder($assignedUser);
+            $this->freqTrainingReminder($assignedUser);
 
             // Update the last reminder date and save it
-            $assignedUser->last_reminder_date = $currentDate;
-            $assignedUser->save();
+            // $assignedUser->last_reminder_date = $currentDate;
+            // $assignedUser->save();
+            TrainingAssignedUser::where('company_id', $company->company_id)
+              ->where('user_email', $assignedUser->user_email)
+              ->update(['last_reminder_date' => $currentDate]);
           }
         } else {
           if ($assignedUser->personal_best == 0) {
@@ -685,9 +495,10 @@ class ProcessCampaigns extends Command
             $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
             if ($nextReminderDate->isBefore($currentDate)) {
 
-              // $this->freqTrainingReminder($assignedUser);
-              $assignedUser->last_reminder_date = $currentDate;
-              $assignedUser->save();
+              $this->freqTrainingReminder($assignedUser);
+              TrainingAssignedUser::where('company_id', $company->company_id)
+                ->where('user_email', $assignedUser->user_email)
+                ->update(['last_reminder_date' => $currentDate]);
             }
           }
         }
@@ -697,19 +508,18 @@ class ProcessCampaigns extends Command
 
   private function freqTrainingReminder($assignedUser)
   {
-    $learnSiteAndLogo = checkWhitelabeled($assignedUser->company_id);
+    try {
+      $trainingAssignedService = new TrainingAssignedService();
+      $mailData = [
+        'user_email' => $assignedUser->user_email,
+        'user_name' => $assignedUser->user_name,
+        'company_id' => $assignedUser->company_id,
+      ];
+      $trainingAssignedService->sendTrainingEmail($mailData);
 
-    $mailData = [
-      'user_name' => $assignedUser->user_name,
-      'training_name' => $assignedUser->training_type == 'games' ? $assignedUser->trainingGame->name : $assignedUser->trainingData->name,
-      // 'login_email' => $userCredentials->login_username,
-      // 'login_pass' => $userCredentials->login_password,
-      'company_name' => $learnSiteAndLogo['company_name'],
-      'company_email' => $learnSiteAndLogo['company_email'],
-      'learning_site' => $learnSiteAndLogo['learn_domain'],
-      'logo' => $learnSiteAndLogo['logo']
-    ];
-
-    $isMailSent = Mail::to($assignedUser->user_email)->send(new TrainingAssignedEmail($mailData));
+      echo "Reminder email sent to: " . $assignedUser->user_email . "\n";
+    } catch (\Exception $e) {
+      echo "Error sending reminder email: " . $e->getMessage() . "\n";
+    }
   }
 }
