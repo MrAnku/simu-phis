@@ -432,6 +432,7 @@ class ApiEmployeesController extends Controller
                 'outlook.com',
                 'hotmail.com',
                 'aol.com',
+                'live.com',
                 'yandex.com',
                 'icloud.com',
                 'protonmail.com'
