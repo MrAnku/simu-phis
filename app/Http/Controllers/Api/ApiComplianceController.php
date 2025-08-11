@@ -69,6 +69,7 @@ class ApiComplianceController extends Controller
                     'click_rate' => $this->clickRate($startDate, $endDate),
                     'report_rate' => $this->reportRate(),
                     'training_completion' => $this->trainingCompletion($startDate, $endDate),
+                    'training_completion_rate' => $this->trainingCompletionRate($startDate, $endDate),
                     'frameworks' => $this->frameworkScore($startDate, $endDate),
                     'simulation_results' => $this->simulationResults($startDate, $endDate),
                 ]
@@ -145,6 +146,16 @@ class ApiComplianceController extends Controller
             'pp' => round($currentRate - $previousRate, 2), // percentage points change
         ];
     }
+
+    private function trainingCompletionRate($startDate, $endDate)
+    {
+        $companyId = Auth::user()->company_id;
+        $assigned = TrainingAssignedUser::where('company_id', $companyId)->whereBetween('created_at', [$startDate, $endDate])->count();
+        $completed = TrainingAssignedUser::where('company_id', $companyId)->where('completed', 1)->whereBetween('created_at', [$startDate, $endDate])->count();
+
+        return $assigned > 0 ? round(($completed / $assigned) * 100, 2) : 0.0;
+    }
+
 
     private function trainingCompletion($startDate, $endDate)
     {
