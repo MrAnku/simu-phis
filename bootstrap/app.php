@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'timezone' => \App\Http\Middleware\SetUserTimezone::class,
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
             'jwt.auth' => JWTAuthMiddleware::class,
+            'checkLearnToken' => \App\Http\Middleware\checkLearnToken::class,
+            'checkBlueCollarLearnToken' => \App\Http\Middleware\checkBlueCollarLearnToken::class
         ]);
 
         $middleware->validateCsrfTokens(except: [
