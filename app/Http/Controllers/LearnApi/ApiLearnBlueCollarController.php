@@ -1018,13 +1018,13 @@ class ApiLearnBlueCollarController extends Controller
 
             $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
                 $average = $group->avg('personal_best');
-                $assignedTrainingsCount = $group->count();
+                 $completedTrainingsCount = $group->where('completed', 1)->count();
 
                 return [
                     'user_whatsapp' => $user_whatsapp,
                     'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
-                    'assigned_trainings_count' => $assignedTrainingsCount,
+                    'completed_trainings_count' => $completedTrainingsCount,
                 ];
             })->filter(function ($user) {
                 return $user['average_score'] >= 50; // Filter users with score >= 50
