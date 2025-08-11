@@ -290,7 +290,23 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         // Course Summary Reporting
         Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
 
-        Route::get('/compliance', [ApiComplianceController::class, 'index']);
+        Route::prefix('compliance')->group(function () {
+
+            Route::get('/', [ApiComplianceController::class, 'index']);
+            //general compliance report
+            Route::get('/generate-compliance-report', [ApiComplianceController::class, 'generateComplianceReport']);
+            Route::get('/soc2-report', [ApiComplianceController::class, 'soc2Report']);
+            Route::get('/iso27001-report', [ApiComplianceController::class, 'iso27001Report']);
+            Route::get('/hipaa-report', [ApiComplianceController::class, 'hipaaReport']);
+            Route::get('/gdpr-report', [ApiComplianceController::class, 'gdprReport']);
+            Route::get('/pdpl-report', [ApiComplianceController::class, 'pdplReport']);
+            Route::get('/nist-sp800-50-report', [ApiComplianceController::class, 'nistSp80050Report']);
+            Route::get('/nist-sp800-53-report', [ApiComplianceController::class, 'nistSp80053Report']);
+            Route::get('/pci-dss-report', [ApiComplianceController::class, 'pciDssReport']);
+            Route::get('/iso20000-report', [ApiComplianceController::class, 'iso20000Report']);
+            Route::get('/qcsf-report', [ApiComplianceController::class, 'qcsfReport']);
+            Route::get('/ocert-report', [ApiComplianceController::class, 'ocertReport']);
+        });
     });
 
     Route::prefix('employees')->group(function () {
