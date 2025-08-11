@@ -22,43 +22,56 @@ class ApiComplianceController extends Controller
 {
     public function index(Request $request)
     {
-        $companyId =  Auth::user()->company_id;
-        $totalEmployees = Users::where('company_id', $companyId)
-            ->get()
-            ->unique('user_email')
-            ->values()
-            ->count();
-        $trainedEmployees = TrainingAssignedUser::where('company_id', $companyId)
-            ->get()
-            ->unique('user_email')
-            ->values()
-            ->where('completed', 1)
-            ->count();
-        $trainedEmployeesPercentage = $totalEmployees > 0 ? round(($trainedEmployees / $totalEmployees) * 100, 2) : 0;
+        try {
+            $companyId =  Auth::user()->company_id;
+            $totalEmployees = Users::where('company_id', $companyId)
+                ->get()
+                ->unique('user_email')
+                ->values()
+                ->count();
+            $trainedEmployees = TrainingAssignedUser::where('company_id', $companyId)
+                ->get()
+                ->unique('user_email')
+                ->values()
+                ->where('completed', 1)
+                ->count();
+            $trainedEmployeesPercentage = $totalEmployees > 0 ? round(($trainedEmployees / $totalEmployees) * 100, 2) : 0;
 
-        //phishing tests
-        $simulations = Campaign::where('company_id', $companyId)
-            ->count() +
-            WaCampaign::where('company_id', $companyId)
-            ->count() +
-            QuishingCamp::where('company_id', $companyId)
-            ->count() +
-            AiCallCampaign::where('company_id', $companyId)
-            ->count();
+            //phishing tests
+            $simulations = Campaign::where('company_id', $companyId)
+                ->count() +
+                WaCampaign::where('company_id', $companyId)
+                ->count() +
+                QuishingCamp::where('company_id', $companyId)
+                ->count() +
+                AiCallCampaign::where('company_id', $companyId)
+                ->count();
             TprmCampaign::where('company_id', $companyId)
-            ->count();
+                ->count();
 
 
-        return response()->json([
-            'total_employees' => $totalEmployees,
-            'trained_employees' => $trainedEmployees,
-            'trained_employees_percentage' => $trainedEmployeesPercentage,
-            'click_rate' => $this->clickRate(),
-            'report_rate' => $this->reportRate(),
-            'training_completion' => $this->trainingCompletion(),
-            'frameworks' => $this->frameworkScore(),
-            'simulation_results' => $this->simulationResults(),
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Compliance data retrieved successfully',
+                'data' => [
+                    'total_employees' => $totalEmployees,
+                    'trained_employees' => $trainedEmployees,
+                    'trained_employees_percentage' => $trainedEmployeesPercentage,
+                    'simulations' => $simulations,
+                    'click_rate' => $this->clickRate(),
+                    'report_rate' => $this->reportRate(),
+                    'training_completion' => $this->trainingCompletion(),
+                    'frameworks' => $this->frameworkScore(),
+                    'simulation_results' => $this->simulationResults(),
+                ]
+
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     private function clickRate()
@@ -69,7 +82,7 @@ class ApiComplianceController extends Controller
             CampaignLive::where('company_id', $companyId)->where('payload_clicked', 1)->count() +
             WaLiveCampaign::where('company_id', $companyId)->where('payload_clicked', 1)->count() +
             QuishingLiveCamp::where('company_id', $companyId)->where('qr_scanned', '1')->count() +
-            
+
             TprmCampaignLive::where('company_id', $companyId)->where('payload_clicked', 1)->count();
 
         $total =
@@ -93,26 +106,26 @@ class ApiComplianceController extends Controller
         // Current 14 days
         $currentReports =
             CampaignLive::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$currentStart, $now])->count() +
-          
+
             QuishingLiveCamp::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$currentStart, $now])->count() +
             TprmCampaignLive::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$currentStart, $now])->count();
 
         $currentTotal =
             CampaignLive::where('company_id', $companyId)->whereBetween('created_at', [$currentStart, $now])->count() +
-          
+
             QuishingLiveCamp::where('company_id', $companyId)->whereBetween('created_at', [$currentStart, $now])->count() +
             TprmCampaignLive::where('company_id', $companyId)->whereBetween('created_at', [$currentStart, $now])->count();
 
         // Previous 14 days
         $previousReports =
             CampaignLive::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$previousStart, $previousEnd])->count() +
-        
+
             QuishingLiveCamp::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$previousStart, $previousEnd])->count() +
             TprmCampaignLive::where('company_id', $companyId)->where('email_reported', 1)->whereBetween('created_at', [$previousStart, $previousEnd])->count();
 
         $previousTotal =
             CampaignLive::where('company_id', $companyId)->whereBetween('created_at', [$previousStart, $previousEnd])->count() +
-         
+
             QuishingLiveCamp::where('company_id', $companyId)->whereBetween('created_at', [$previousStart, $previousEnd])->count() +
             TprmCampaignLive::where('company_id', $companyId)->whereBetween('created_at', [$previousStart, $previousEnd])->count();
 
@@ -125,7 +138,8 @@ class ApiComplianceController extends Controller
         ];
     }
 
-    private function trainingCompletion(){
+    private function trainingCompletion()
+    {
         $companyId = Auth::user()->company_id;
 
         $assigned = TrainingAssignedUser::where('company_id', $companyId)->count();
@@ -134,7 +148,8 @@ class ApiComplianceController extends Controller
         return $assigned > 0 ? round(($completed / $assigned) * 100, 2) : 0.0;
     }
 
-    private function simulationResults(){
+    private function simulationResults()
+    {
         $companyId = Auth::user()->company_id;
 
         // Get all simulation data
@@ -161,7 +176,8 @@ class ApiComplianceController extends Controller
         ];
     }
 
-    private function frameworkScore(){
+    private function frameworkScore()
+    {
         $companyId = Auth::user()->company_id;
 
         // Get total and trained employees
