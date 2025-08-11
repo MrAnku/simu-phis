@@ -1065,13 +1065,13 @@ class ApiLearnController extends Controller
 
             $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
                 $average = $group->avg('personal_best');
-                $assignedTrainingsCount = $group->count();
+                $completedTrainingsCount = $group->where('completed', 1)->count();
 
                 return [
                     'email' => $email,
                     'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
                     'average_score' => round($average, 2),
-                    'assigned_trainings_count' => $assignedTrainingsCount,
+                    'completed_trainings_count' => $completedTrainingsCount,
                 ];
             })->filter(function ($user) {
                 return $user['average_score'] >= 50; // Filter users with score >= 50
