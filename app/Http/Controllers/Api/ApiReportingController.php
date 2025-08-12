@@ -2626,48 +2626,213 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
+            // Get all training modules
             $trainingModules = TrainingModule::where(function ($query) use ($companyId) {
                 $query->where('company_id', $companyId)
                     ->orWhere('company_id', 'default');
             })
                 ->whereHas('trainingAssigned')
                 ->get();
-            $trainings = [];
-            foreach ($trainingModules as $trainingModule) {
-                $trainings[] = [
-                    'name' => $trainingModule->name,
-                    'total_assigned_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'completed_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('completed', 1)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'in_progress_trainings' => TrainingAssignedUser::where('training', $trainingModule->id)->where('training_started', 1)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)
-                        ->where('company_id', $companyId)
-                        ->count()
 
+            // Get all training games
+            $trainingGames = TrainingGame::get();
+
+            $trainings = [];
+            $overallStats = [
+                'total_assigned_trainings' => 0,
+                'total_completed_trainings' => 0,
+                'total_in_progress_trainings' => 0,
+                'total_not_started_trainings' => 0,
+                'total_overdue_trainings' => 0,
+                'total_certified_users' => 0,
+                'users_scored_above_40' => 0,
+                'users_scored_above_60' => 0,
+                'users_scored_above_80' => 0,
+                'overall_completion_rate' => 0,
+                'overall_progress_rate' => 0,
+                'scorm_training_users' => 0,
+                'gamified_training_users' => 0,
+                'ai_training_users' => 0,
+                'game_training_users' => 0
+            ];
+
+            // Process training modules
+            foreach ($trainingModules as $trainingModule) {
+                $assignedTrainings = TrainingAssignedUser::where('training', $trainingModule->id)
+                    ->where('company_id', $companyId);
+                
+                $totalAssigned = $assignedTrainings->count();
+                $completedTrainings = (clone $assignedTrainings)->where('completed', 1)->count();
+                $inProgressTrainings = (clone $assignedTrainings)->where('training_started', 1)->where('completed', 0)->count();
+                $notStartedTrainings = (clone $assignedTrainings)->where('training_started', 0)->count();
+                $overdueTrainings = (clone $assignedTrainings)
+                    ->where('training_due_date', '<', now())
+                    ->where('completed', 0)
+                    ->count();
+                $certifiedUsers = (clone $assignedTrainings)->whereNotNull('certificate_id')->count();
+                $usersScored40Plus = (clone $assignedTrainings)->where('personal_best', '>=', 40)->count();
+                $usersScored60Plus = (clone $assignedTrainings)->where('personal_best', '>=', 60)->count();
+                $usersScored80Plus = (clone $assignedTrainings)->where('personal_best', '>=', 80)->count();
+                
+                $completionRate = $totalAssigned > 0 ? round(($completedTrainings / $totalAssigned) * 100, 2) : 0;
+                $progressRate = $totalAssigned > 0 ? round((($inProgressTrainings + $completedTrainings) / $totalAssigned) * 100, 2) : 0;
+                
+                // Determine training type based on module properties
+                $trainingType = 'standard';
+                if ($trainingModule->is_scorm) {
+                    $trainingType = 'scorm';
+                    $overallStats['scorm_training_users'] += $totalAssigned;
+                } elseif ($trainingModule->is_gamified) {
+                    $trainingType = 'gamified';
+                    $overallStats['gamified_training_users'] += $totalAssigned;
+                } elseif ($trainingModule->is_ai_training) {
+                    $trainingType = 'ai';
+                    $overallStats['ai_training_users'] += $totalAssigned;
+                }
+
+                $trainings[] = [
+                    'training_id' => $trainingModule->id,
+                    'name' => $trainingModule->name,
+                    'training_type' => $trainingType,
+                    'description' => $trainingModule->description ?? '',
+                    'passing_score' => $trainingModule->passing_score ?? 0,
+                    'total_assigned_trainings' => $totalAssigned,
+                    'completed_trainings' => $completedTrainings,
+                    'in_progress_trainings' => $inProgressTrainings,
+                    'not_started_trainings' => $notStartedTrainings,
+                    'overdue_trainings' => $overdueTrainings,
+                    'certified_users' => $certifiedUsers,
+                    'users_scored_40_plus' => $usersScored40Plus,
+                    'users_scored_60_plus' => $usersScored60Plus,
+                    'users_scored_80_plus' => $usersScored80Plus,
+                    'completion_rate' => $completionRate,
+                    'progress_rate' => $progressRate,
+                    'average_score' => round((clone $assignedTrainings)->avg('personal_best') ?? 0, 2),
+                    'simulation_counts' => [
+                        'email_simulations' => CampaignLive::where('training_module', $trainingModule->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'quishing_simulations' => QuishingLiveCamp::where('training_module', $trainingModule->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'ai_call_simulations' => AiCallCampLive::where('training', $trainingModule->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'whatsapp_simulations' => WaLiveCampaign::where('training_module', $trainingModule->id)
+                            ->where('company_id', $companyId)
+                            ->count()
+                    ],
+                    // 'created_at' => $trainingModule->created_at->format('Y-m-d H:i:s'),
                 ];
+
+                // Update overall stats
+                $overallStats['total_assigned_trainings'] += $totalAssigned;
+                $overallStats['total_completed_trainings'] += $completedTrainings;
+                $overallStats['total_in_progress_trainings'] += $inProgressTrainings;
+                $overallStats['total_not_started_trainings'] += $notStartedTrainings;
+                $overallStats['total_overdue_trainings'] += $overdueTrainings;
+                $overallStats['total_certified_users'] += $certifiedUsers;
+                $overallStats['users_scored_above_40'] += $usersScored40Plus;
+                $overallStats['users_scored_above_60'] += $usersScored60Plus;
+                $overallStats['users_scored_above_80'] += $usersScored80Plus;
             }
+
+            // Process training games
+            $gameTrainings = [];
+            foreach ($trainingGames as $game) {
+                $assignedGames = TrainingAssignedUser::where('training', $game->id)
+                    ->where('training_type', 'games')
+                    ->where('company_id', $companyId);
+
+                $totalAssigned = $assignedGames->count();
+                $completedGames = (clone $assignedGames)->where('completed', 1)->count();
+                $inProgressGames = (clone $assignedGames)->where('training_started', 1)->where('completed', 0)->count();
+                $notStartedGames = (clone $assignedGames)->where('training_started', 0)->count();
+                
+                $completionRate = $totalAssigned > 0 ? round(($completedGames / $totalAssigned) * 100, 2) : 0;
+                $averageGameTime = (clone $assignedGames)->avg('game_time') ?? 0;
+
+                $gameTrainings[] = [
+                    'game_id' => $game->id,
+                    'name' => $game->name,
+                    'description' => $game->description ?? '',
+                    'total_assigned_games' => $totalAssigned,
+                    'completed_games' => $completedGames,
+                    'in_progress_games' => $inProgressGames,
+                    'not_started_games' => $notStartedGames,
+                    'completion_rate' => $completionRate,
+                    'average_game_time_seconds' => round($averageGameTime, 2),
+                    'simulation_counts' => [
+                        'email_simulations' => CampaignLive::where('training_type', 'games')
+                            ->where('training_module', $game->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'quishing_simulations' => QuishingLiveCamp::where('training_type', 'games')
+                            ->where('training_module', $game->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'ai_call_simulations' => AiCallCampLive::where('training_type', 'games')
+                            ->where('training', $game->id)
+                            ->where('company_id', $companyId)
+                            ->count(),
+                        'whatsapp_simulations' => WaLiveCampaign::where('training_type', 'games')
+                            ->where('training_module', $game->id)
+                            ->where('company_id', $companyId)
+                            ->count()
+                    ],
+                    'created_at' => $game->created_at->format('Y-m-d H:i:s'),
+                ];
+
+                $overallStats['game_training_users'] += $totalAssigned;
+                $overallStats['total_assigned_trainings'] += $totalAssigned;
+                $overallStats['total_completed_trainings'] += $completedGames;
+                $overallStats['total_in_progress_trainings'] += $inProgressGames;
+                $overallStats['total_not_started_trainings'] += $notStartedGames;
+            }
+
+            // Calculate overall rates
+            $overallStats['overall_completion_rate'] = $overallStats['total_assigned_trainings'] > 0 
+                ? round(($overallStats['total_completed_trainings'] / $overallStats['total_assigned_trainings']) * 100, 2) 
+                : 0;
+            
+            $overallStats['overall_progress_rate'] = $overallStats['total_assigned_trainings'] > 0 
+                ? round((($overallStats['total_in_progress_trainings'] + $overallStats['total_completed_trainings']) / $overallStats['total_assigned_trainings']) * 100, 2) 
+                : 0;
+
+            // Get recent training activities (last 30 days)
+            $recentActivities = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('created_at', '>=', now()->subDays(30))
+                ->with('trainingData')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($activity) {
+                    return [
+                        'user_email' => $activity->user_email,
+                        'training_name' => $activity->trainingData->name ?? 'N/A',
+                        'training_type' => $activity->training_type,
+                        'assigned_date' => $activity->assigned_date,
+                        'completion_status' => $activity->completed ? 'Completed' : ($activity->training_started ? 'In Progress' : 'Not Started'),
+                        'personal_best' => $activity->personal_best,
+                        'certificate_id' => $activity->certificate_id
+                    ];
+                });
+
             return response()->json([
-                'seuccess' => true,
-                'mssage' => __('Training report fetched successfully'),
+                'success' => true,
+                'message' => __('Advanced training report fetched successfully'),
                 'data' => [
-                    'trainings' => $trainings
+                    'overall_statistics' => $overallStats,
+                    'training_modules' => $trainings,
+                    'game_trainings' => $gameTrainings,
+                    'recent_activities' => $recentActivities,
+                    'summary' => [
+                        'total_training_modules' => count($trainings),
+                        'total_game_modules' => count($gameTrainings),
+                        'most_popular_training' => collect($trainings)->sortByDesc('total_assigned_trainings')->first()['name'] ?? 'N/A',
+                        'highest_completion_rate' => collect($trainings)->max('completion_rate') ?? 0,
+                        'lowest_completion_rate' => collect($trainings)->min('completion_rate') ?? 0
+                    ]
                 ]
             ], 200);
         } catch (\Exception $e) {

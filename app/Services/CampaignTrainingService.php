@@ -232,8 +232,7 @@ class CampaignTrainingService
 
                     // $trainingAssignedService->assignNewTraining($campData);
 
-                    DB::table('blue_collar_training_users')
-                        ->insert($campData);
+                    BlueCollarTrainingUser::create($campData);
 
                     echo "New training assigned successfully \n";
                 } else {
@@ -272,8 +271,7 @@ class CampaignTrainingService
 
                     // $trainingAssignedService->assignNewTraining($campData);
 
-                    DB::table('blue_collar_scorm_assigned_users')
-                        ->insert($campData);
+                    BlueCollarScormAssignedUser::create($campData);
 
                     echo 'Scorm assigned successfully to ' . $user_phone . "\n";
 
@@ -338,8 +336,7 @@ class CampaignTrainingService
                 ];
 
                 // $trainingAssignedService->assignNewTraining($campData);
-                DB::table('blue_collar_training_users')
-                    ->insert($campData);
+                BlueCollarTrainingUser::create($campData);
 
                 echo "New training assigned successfully \n";
             } else {
@@ -373,8 +370,7 @@ class CampaignTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                DB::table('blue_collar_scorm_assigned_users')
-                    ->insert($campData);
+                BlueCollarScormAssignedUser::create($campData);
 
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
              

@@ -12,7 +12,9 @@ class TrainingAssignedUser extends Model
     protected $table = 'training_assigned_users';
 
     protected $fillable = [
+        'campaign_id',
         'training',
+        'user_id',
         'user_name',
         'user_email',
         'training_due_date',

@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\ScormAssignedUser;
 use App\Models\WhiteLabelledSmtp;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
-use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
 use App\Services\CheckWhitelabelService;
+use App\Models\BlueCollarScormAssignedUser;
 
 class TrainingAssignedService
 {
@@ -97,8 +98,7 @@ class TrainingAssignedService
 
     public function assignNewTraining($campData)
     {
-        DB::table('training_assigned_users')
-            ->insert($campData);
+        TrainingAssignedUser::create($campData);
 
         return [
             'status' => 1,
@@ -108,8 +108,7 @@ class TrainingAssignedService
 
     public function assignNewScormTraining($campData)
     {
-        DB::table('scorm_assigned_users')
-            ->insert($campData);
+        ScormAssignedUser::create($campData);
 
         return [
             'status' => 1,
@@ -119,8 +118,7 @@ class TrainingAssignedService
 
     public function assignNewBlueCollarScormTraining($campData)
     {
-        DB::table('blue_collar_scorm_assigned_users')
-            ->insert($campData);
+        BlueCollarScormAssignedUser::create($campData);
 
         return [
             'status' => 1,
