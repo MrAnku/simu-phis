@@ -326,7 +326,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/otp-verify', [ApiEmployeesController::class, 'verifyOtp']);
         Route::delete('/delete-domain/{domain?}', [ApiEmployeesController::class, 'deleteDomain']);
         Route::post('/create-new-group', [ApiEmployeesController::class, 'createNewGroup']);
+        Route::put('/update-group', [ApiEmployeesController::class, 'updateGroup']);
         Route::post('/create-blue-collar-group', [ApiBlueCollarController::class, 'blueCollarNewGroup']);
+        Route::put('/update-blue-collar-group', [ApiBlueCollarController::class, 'updateBlueCollarGroup']);
         Route::get('/view-users/{groupId?}', [ApiEmployeesController::class, 'viewUsers']);
         Route::get('/view-unique-emails', [ApiEmployeesController::class, 'viewUniqueEmails']);
         Route::post('/add-emp-from-all-emp', [ApiEmployeesController::class, 'addEmpFromAllEmp']);

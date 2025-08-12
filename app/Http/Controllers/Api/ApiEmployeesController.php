@@ -455,7 +455,7 @@ class ApiEmployeesController extends Controller
             }
 
             if (
-                $verifiedDomain && 
+                $verifiedDomain &&
                 $verifiedDomain->verified == '0'
             ) {
                 $genCode = generateRandom(6);
@@ -581,8 +581,25 @@ class ApiEmployeesController extends Controller
             $request->merge($input);
 
             $grpName = $request->input('usrGroupName');
-            $grpId = generateRandom(6);
             $companyId = Auth::user()->company_id;
+
+            // Check for existing groups with the same base name
+            $existingGroups = UsersGroup::where('company_id', $companyId)
+                ->where('group_name', 'LIKE', "{$grpName}%")
+                ->pluck('group_name')
+                ->toArray();
+
+            if (in_array($grpName, $existingGroups)) {
+                // Find the next available suffix
+                $suffix = 1;
+                do {
+                    $newGrpName = "{$grpName}-({$suffix})";
+                    $suffix++;
+                } while (in_array($newGrpName, $existingGroups));
+                $grpName = $newGrpName;
+            }
+
+            $grpId = generateRandom(6);
 
             UsersGroup::create([
                 'group_id' => $grpId,
@@ -594,6 +611,49 @@ class ApiEmployeesController extends Controller
             log_action("New employee group {$grpName} created");
 
             return response()->json(['success' => true, 'message' => __('New Employee Division created successfully')], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateGroup(Request $request)
+    {
+        try {
+            $request->validate([
+                'group_id' => 'required',
+                'group_name' => 'required'
+            ]);
+            $input = $request->all();
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json(['success' => false, 'message' => __('Invalid input detected')], 422);
+                }
+            }
+            array_walk_recursive($input, function (&$input) {
+                $input = strip_tags($input);
+            });
+            $request->merge($input);
+
+            $groupId = $request->input('group_id');
+            $groupName = $request->input('group_name');
+            $companyId = Auth::user()->company_id;
+
+            $group = UsersGroup::where('group_id', $groupId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if (!$group) {
+                return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
+            }
+
+            $group->group_name = $groupName;
+            $group->save();
+
+            log_action("Employee group {$groupName} updated");
+
+            return response()->json(['success' => true, 'message' => __('Employee Group updated successfully')], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {

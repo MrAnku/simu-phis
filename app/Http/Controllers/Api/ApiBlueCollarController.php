@@ -17,6 +17,7 @@ use App\Models\DeletedBlueCollarEmployee;
 use App\Models\WaCampaign;
 use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ApiBlueCollarController extends Controller
 {
@@ -190,6 +191,22 @@ class ApiBlueCollarController extends Controller
             $grpId = generateRandom(6);
             $companyId = Auth::user()->company_id;
 
+            // Check for existing groups with the same base name
+            $existingGroups = BlueCollarGroup::where('company_id', $companyId)
+                ->where('group_name', 'LIKE', "{$grpName}%")
+                ->pluck('group_name')
+                ->toArray();
+
+            if (in_array($grpName, $existingGroups)) {
+                // Find the next available suffix
+                $suffix = 1;
+                do {
+                    $newGrpName = "{$grpName}-({$suffix})";
+                    $suffix++;
+                } while (in_array($newGrpName, $existingGroups));
+                $grpName = $newGrpName;
+            }
+
             BlueCollarGroup::create([
                 'group_id' => $grpId,
                 'group_name' => $grpName,
@@ -205,6 +222,49 @@ class ApiBlueCollarController extends Controller
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error:') . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateBlueCollarGroup(Request $request)
+    {
+        try {
+            $request->validate([
+                'group_id' => 'required',
+                'group_name' => 'required'
+            ]);
+            $input = $request->all();
+            foreach ($input as $key => $value) {
+                if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                    return response()->json(['success' => false, 'message' => __('Invalid input detected')], 422);
+                }
+            }
+            array_walk_recursive($input, function (&$input) {
+                $input = strip_tags($input);
+            });
+            $request->merge($input);
+
+            $groupId = $request->input('group_id');
+            $groupName = $request->input('group_name');
+            $companyId = Auth::user()->company_id;
+
+            $group = BlueCollarGroup::where('group_id', $groupId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if (!$group) {
+                return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
+            }
+
+            $group->group_name = $groupName;
+            $group->save();
+
+            log_action("Blue Collar group {$groupName} updated");
+
+            return response()->json(['success' => true, 'message' => __('Blue Collar Group updated successfully')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
