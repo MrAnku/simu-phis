@@ -208,7 +208,10 @@ class ApiComplianceController extends Controller
             'ISO_27001' => $this->calculateComplianceScore($trainingMetrics, $simulationMetrics, 'ISO_27001'),
             'HIPAA' => $this->calculateComplianceScore($trainingMetrics, [], 'HIPAA'),
             'GDPR' => $this->calculateComplianceScore($trainingMetrics, [], 'GDPR'),
-            'PDPL' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL'),
+            'PDPL_SAUDI' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL_SAUDI'),
+            'PDPL_UAE' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL_UAE'),
+            'PDPL_OMAN' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL_OMAN'),
+            'PDPL_JORDAN' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL_JORDAN'),
             'NIST_SP_800_50' => $this->calculateComplianceScore($trainingMetrics, $simulationMetrics, 'NIST_SP_800_50'),
             'NIST_SP_800_53' => $this->calculateComplianceScore($trainingMetrics, $simulationMetrics, 'NIST_SP_800_53'),
             'PCI_DSS' => $this->calculateComplianceScore($trainingMetrics, $simulationMetrics, 'PCI_DSS'),
@@ -233,7 +236,10 @@ class ApiComplianceController extends Controller
                 'ISO_27001' => $this->getIso27001Compliance($companyId, $startDate, $endDate),
                 'HIPAA' => $this->getHipaaCompliance($companyId, $startDate, $endDate),
                 'GDPR' => $this->getGdprCompliance($companyId, $startDate, $endDate),
-                'PDPL' => $this->getPdplCompliance($companyId, $startDate, $endDate),
+                'PDPL_SAUDI' => $this->getPdplCompliance($companyId, $startDate, $endDate, 'SAUDI'),
+                'PDPL_UAE' => $this->getPdplCompliance($companyId, $startDate, $endDate, 'UAE'),
+                'PDPL_OMAN' => $this->getPdplCompliance($companyId, $startDate, $endDate, 'OMAN'),
+                'PDPL_JORDAN' => $this->getPdplCompliance($companyId, $startDate, $endDate, 'JORDAN'),
                 'NIST_SP_800_50' => $this->getNistSp80050Compliance($companyId, $startDate, $endDate),
                 'NIST_SP_800_53' => $this->getNistSp80053Compliance($companyId, $startDate, $endDate),
                 'PCI_DSS' => $this->getPciDssCompliance($companyId, $startDate, $endDate),
@@ -354,8 +360,9 @@ class ApiComplianceController extends Controller
             $months = $request->query('months', 1);
             $startDate = now()->subMonths($months)->startOfMonth();
             $endDate = now();
+            $region = strtoupper($request->route('region'));
 
-            $data = $this->getPdplCompliance($companyId, $startDate, $endDate);
+            $data = $this->getPdplCompliance($companyId, $startDate, $endDate, $region);
 
             return response()->json([
                 'success' => true,
@@ -569,17 +576,17 @@ class ApiComplianceController extends Controller
         ];
     }
 
-    private function getPdplCompliance($companyId, $startDate, $endDate)
+    private function getPdplCompliance($companyId, $startDate, $endDate, $region)
     {
         $trainingMetrics = $this->getTrainingMetrics($companyId, $startDate, $endDate);
 
         return [
-            'framework' => 'PDPL (UAE/Oman/Saudi)',
+            'framework' => 'PDPL (' . ($region == 'SAUDI' ? 'Saudi Arabia' : $region) . ')',
             'controls' => ['Various awareness clauses'],
             'coverage' => 'Same as GDPR mapping',
             'staff_training_rate' => $trainingMetrics['completion_rate'],
             'data_protection_training' => $trainingMetrics['trained_employees'],
-            'compliance_score' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL')
+            'compliance_score' => $this->calculateComplianceScore($trainingMetrics, [], 'PDPL_' . $region)
         ];
     }
 
@@ -811,7 +818,10 @@ class ApiComplianceController extends Controller
             'ISO_27001' => ['training' => 0.7, 'simulation' => 0.3],
             'HIPAA' => ['training' => 0.8, 'simulation' => 0.2],
             'GDPR' => ['training' => 0.7, 'simulation' => 0.3],
-            'PDPL' => ['training' => 0.7, 'simulation' => 0.3],
+            'PDPL_SAUDI' => ['training' => 0.7, 'simulation' => 0.3],
+            'PDPL_UAE' => ['training' => 0.65, 'simulation' => 0.35],
+            'PDPL_OMAN' => ['training' => 0.75, 'simulation' => 0.25],
+            'PDPL_JORDAN' => ['training' => 0.7, 'simulation' => 0.3],
             'NIST_SP_800_50' => ['training' => 0.5, 'simulation' => 0.3, 'reporting' => 0.2],
             'NIST_SP_800_53' => ['training' => 0.6, 'simulation' => 0.4],
             'PCI_DSS' => ['training' => 0.7, 'simulation' => 0.3],

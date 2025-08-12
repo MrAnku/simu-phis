@@ -299,7 +299,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
             Route::get('/iso27001-report', [ApiComplianceController::class, 'iso27001Report']);
             Route::get('/hipaa-report', [ApiComplianceController::class, 'hipaaReport']);
             Route::get('/gdpr-report', [ApiComplianceController::class, 'gdprReport']);
-            Route::get('/pdpl-report', [ApiComplianceController::class, 'pdplReport']);
+            Route::get('/pdpl-report/{region}', [ApiComplianceController::class, 'pdplReport']);
             Route::get('/nist-sp800-50-report', [ApiComplianceController::class, 'nistSp80050Report']);
             Route::get('/nist-sp800-53-report', [ApiComplianceController::class, 'nistSp80053Report']);
             Route::get('/pci-dss-report', [ApiComplianceController::class, 'pciDssReport']);
