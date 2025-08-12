@@ -18,6 +18,7 @@ use App\Services\EmployeeService;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampaign;
 use App\Models\InfoGraphicLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
@@ -647,6 +648,10 @@ class ApiEmployeesController extends Controller
             if (!$group) {
                 return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
             }
+
+            AiCallCampaign::where('emp_group', $groupId)
+                ->where('company_id', $companyId)
+                ->update(['emp_grp_name' => $groupName]);
 
             $group->group_name = $groupName;
             $group->save();
