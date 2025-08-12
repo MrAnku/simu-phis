@@ -172,50 +172,75 @@ class ApiOutlookAdController extends Controller
 
     public function fetchEmps(Request $request)
     {
-        $groupId = $request->route('groupId');
-        // Validate group ID
-        if (!$groupId) {
-            return response()->json(['success' => false, 'message' => __('Group ID is required')], 400);
-        }
-        $company_id = Auth::user()->company_id;
+        try {
+            $groupId = $request->route('groupId');
+            // Validate group ID
+            if (!$groupId) {
+                return response()->json(['success' => false, 'message' => __('Group ID is required')], 400);
+            }
+            $company_id = Auth::user()->company_id;
 
-        $groupId = htmlspecialchars($groupId); // Sanitize input
+            $groupId = htmlspecialchars($groupId); // Sanitize input
 
-        $token = OutlookAdToken::where('company_id', $company_id)->first();
-        if (!$token) {
+            $token = OutlookAdToken::where('company_id', $company_id)->first();
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('You are not authorized to Sync Outlook AD Users')
+                ], 403);
+            }
+
+            // Initialize variables for pagination
+            $allUsers = [];
+            $nextLink = env('MS_GRAPH_API_URL') . "groups/{$groupId}/members?\$top=999";
+
+            // Fetch all users using pagination
+            do {
+                $response = Http::withToken($token->access_token)->get($nextLink);
+
+                if ($response->failed()) {
+                    $error = $response->json();
+                    if (isset($error['error']['code']) && $error['error']['code'] == "InvalidAuthenticationToken") {
+                        OutlookAdToken::where('company_id', $company_id)->delete();
+                        return response()->json([
+                            'success' => false,
+                            'message' => __('Your authentication token has expired. Please re-authorize')
+                        ], 401);
+                    }
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Failed to fetch users for the selected group')
+                    ], 500);
+                }
+
+                $users = $response->json();
+
+                // Add users to the collection
+                if (isset($users['value'])) {
+                    $allUsers = array_merge($allUsers, $users['value']);
+                }
+
+                // Check for next page
+                $nextLink = $users['@odata.nextLink'] ?? null;
+            } while ($nextLink);
+
+            // Check if any users were found
+            if (empty($allUsers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No users found in this group')
+                ], 404);
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => __('You are not authorized to Sync Outlook AD Users')
-            ], 403);
+                'success' => true,
+                'employees' => $allUsers,
+                'total_count' => count($allUsers),
+                'message' => __('Employees fetched successfully')
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
-        // Define API URL
-        $apiUrl = env('MS_GRAPH_API_URL') . "groups/{$groupId}/members";
-
-        // Fetch data from Microsoft Graph API
-        $response = Http::withToken($token->access_token)->get($apiUrl);
-
-        if ($response->failed()) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Failed to fetch users for the selected group')
-            ], 500);
-        }
-
-        $users = $response->json();
-
-        // Ensure the response contains user data
-        if (!isset($users['value'])) {
-            return response()->json([
-                'success' => false,
-                'message' => __('No users found in this group')
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'employees' => $users['value'],
-            'message' => __('Employees fetched successfully')
-        ], 200);
     }
 
     public function saveOutlookEmps(Request $request)
