@@ -81,8 +81,10 @@ class ApiSenderProfileController extends Controller
             $senderProfileId = $request->id;
             $id = base64_decode($senderProfileId);
 
+            $company_id = Auth::user()->company_id;
+            
             $senderProfile = SenderProfile::where('id', $id)
-                ->where('company_id', Auth::user()->company_id)
+                ->where('company_id', $company_id)
                 ->first();
 
             if (!$senderProfile) {
@@ -90,6 +92,17 @@ class ApiSenderProfileController extends Controller
                     'success' => false,
                     'message' => __('Sender profile not found.'),
                 ], 404); // ✅ 404 Not Found
+            }
+
+            $emailCampExists = CampaignLive::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
+            $quishingCampExists = QuishingLiveCamp::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
+            $tprmCampExists = TprmCampaignLive::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
+
+            if ($emailCampExists || $quishingCampExists || $tprmCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
             }
 
             //set null to campaign live and campaign

@@ -3,9 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampLive;
+use App\Models\BlueCollarTrainingUser;
+use App\Models\CampaignLive;
+use App\Models\QuishingLiveCamp;
+use App\Models\SmishingLiveCampaign;
+use App\Models\TprmCampaignLive;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Http\Request;
 use App\Models\TrainingGame;
 use App\Models\TrainingModule;
+use App\Models\WaLiveCampaign;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -610,25 +618,30 @@ class ApiTrainingModuleController extends Controller
         try {
             // Start DB transaction
             DB::beginTransaction();
+            
+            $emailCampExists = CampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
+            $aiCallCampExists = AiCallCampLive::where('training', $trainingId)->where('company_id', $company_id)->exists();
+            $quishingCampExists = QuishingLiveCamp::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
+            $smishingCampExists = SmishingLiveCampaign::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
+            $tprmCampExists = TprmCampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
+            $waCampExists = WaLiveCampaign::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
 
-            // Deleting related campaign data
-            $campaigns = DB::table('all_campaigns')
-                ->where('training_module', $trainingId)
-                ->where('company_id', $company_id)
-                ->get();
-
-            if ($campaigns->count() > 0) {
-                $campIdArray = $campaigns->pluck('campaign_id');
-
-                foreach ($campIdArray as $campId) {
-                    DB::table('all_campaigns')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
-                    DB::table('campaign_live')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
-                    DB::table('campaign_reports')->where('campaign_id', $campId)->where('company_id', $company_id)->delete();
-                }
+            if ($emailCampExists || $aiCallCampExists || $quishingCampExists || $smishingCampExists || $tprmCampExists || $waCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
             }
 
-            // Delete assigned users
-            DB::table('training_assigned_users')->where('training', $trainingId)->where('company_id', $company_id)->delete();
+            $trainingAssigned = TrainingAssignedUser::where('training', $trainingId)->where('company_id', $company_id)->exists();
+            $blueCollarTrainingAssigned = BlueCollarTrainingUser::where('training', $trainingId)->where('company_id', $company_id)->exists();
+
+            if ($trainingAssigned || $blueCollarTrainingAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This Training is assigned to users, You cannot delete it.",
+                ], 422);
+            }
 
             // Delete training module
             $trainingModule = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->first();

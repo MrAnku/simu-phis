@@ -91,7 +91,7 @@ class ApiPolicyController extends Controller
                 'policy_description' => 'required|string',
                 'policy_file' => 'nullable|file|mimes:pdf|max:10240',
                 'has_quiz' => 'required|boolean',
-                 'json_quiz' => 'nullable|json',
+                'json_quiz' => 'nullable|json',
             ]);
 
             $policy = Policy::findOrFail($request->policy_id);
@@ -120,7 +120,7 @@ class ApiPolicyController extends Controller
                     ], 422);
                 }
                 $json_quiz = $request->json_quiz;
-            }else{
+            } else {
                 $json_quiz = null;
             }
 
@@ -250,9 +250,23 @@ class ApiPolicyController extends Controller
                     'message' => 'Policy not found'
                 ], 422);
             }
-            PolicyCampaign::where('policy', $id)->delete();
-            PolicyCampaignLive::where('policy', $id)->delete();
-            AssignedPolicy::where('policy', $id)->delete();
+
+            $policyCampExists = PolicyCampaignLive::where('policy', $policy->id)->where('company_id', Auth::user()->company_id)->exists();
+
+            if ($policyCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
+            }
+
+            $assignedPolicy = AssignedPolicy::where('policy', $policy->id)->where('company_id', Auth::user()->company_id)->exists();
+            if ($assignedPolicy) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This policy is assigned to users, You cannot delete it.",
+                ], 422);
+            }
 
             $policy->delete();
             log_action("Policy deleted : " . $policy->policy_name);

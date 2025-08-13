@@ -6,6 +6,7 @@ use Plivo\RestClient;
 use Illuminate\Http\Request;
 use App\Models\SmishingTemplate;
 use App\Http\Controllers\Controller;
+use App\Models\SmishingLiveCampaign;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -198,7 +199,23 @@ class ApiSmishingTemplateController extends Controller
                 'template_id' => 'required|exists:smishing_templates,id',
             ]);
 
-            $smishingTemplate = SmishingTemplate::where('id', $request->input('template_id'))->first();
+            $smishingTemplate = SmishingTemplate::where('id', $request->input('template_id'))->where('company_id', Auth::user()->company_id)->first();
+
+            if(!$smishingTemplate){
+                return response()->json([
+                    'success' => false,
+                    'message' => "Template not found"
+                ], 404);
+            }
+            $smishCampExists = SmishingLiveCampaign::where('template_id', $smishingTemplate->id)->where('company_id', Auth::user()->company_id)->exists();
+
+            if ($smishCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
+            }
+
             $tempName = $smishingTemplate->name;
 
             $smishingTemplate->delete();

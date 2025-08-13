@@ -9,6 +9,7 @@ use App\Models\ScormTraining;
 use App\Models\ScormAssignedUser;
 use App\Http\Controllers\Controller;
 use App\Models\AiCallCampLive;
+use App\Models\BlueCollarScormAssignedUser;
 use App\Models\CampaignLive;
 use App\Models\QuishingLiveCamp;
 use App\Models\WaLiveCampaign;
@@ -150,10 +151,16 @@ class ApiScormTrainingController extends Controller
                     'message' => "Campaigns are associated with this scorm, Delete Campaigns first",
                 ], 422);
             }
+            
+            $scormAssigned = ScormAssignedUser::where('scorm', $scormId)->where('company_id', $company_id)->exists();
+            $blueCollarScormAssigned = BlueCollarScormAssignedUser::where('scorm', $scormId)->where('company_id', $company_id)->exists();
 
-            // Delete assigned users
-            DB::table('blue_collar_scorm_assigned_users')->where('scorm', $scormId)->where('company_id', $company_id)->delete();
-            DB::table('scorm_assigned_users')->where('scorm', $scormId)->where('company_id', $company_id)->delete();
+            if ($scormAssigned || $blueCollarScormAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This Training is assigned to users, You cannot delete it.",
+                ], 422);
+            }
 
             // Delete SCORM
             $scormTraining = ScormTraining::where('id', $scormId)->where('company_id', $company_id)->first();
