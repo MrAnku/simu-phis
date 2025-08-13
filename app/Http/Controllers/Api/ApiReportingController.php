@@ -630,46 +630,23 @@ class ApiReportingController extends Controller
             // Check if campaignId exists
             if (!$campId) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('Campaign ID is required.')
                 ], 400);
             }
 
             $companyId = Auth::user()->company_id;
 
-            // Fetch campaign report
-            $reportRow = TprmCampaignReport::where('campaign_id', $campId)->where('company_id', $companyId)->first();
+            $response = TprmCampaign::with('phishingMaterial')
+                ->where('company_id', $companyId)
+                ->where('campaign_id', $campId)
+                ->first();
 
-            // Fetch user group ID
-            $userGroup = TprmCampaign::where('campaign_id', $campId)->where('company_id', $companyId)->first();
-            $phishingMaterial = PhishingEmail::find($userGroup->phishing_material);
-
-            if ($reportRow && $userGroup) {
-                // Count the number of users in the group
-                $no_of_users = TprmUsers::where('group_id', $userGroup->users_group)->count();
-
-                // Prepare the response
-                $response = [
-                    'campaign_name' => $reportRow->campaign_name,
-                    'campaign_type' => $reportRow->campaign_type,
-                    'emails_delivered' => $reportRow->emails_delivered,
-                    'emails_viewed' => $reportRow->emails_viewed,
-                    'payloads_clicked' => $reportRow->payloads_clicked,
-                    'emp_compromised' => $reportRow->emp_compromised,
-                    'email_reported' => $reportRow->email_reported,
-                    'phishing_material' => $phishingMaterial ?? null,
-                    'status' => $reportRow->status,
-                    'no_of_users' => $no_of_users,
-                ];
-
-                return response()->json([
-                    'success' => true,
-                    'message' => __('TPRM campaign report fetched successfully.'),
-                    'data' => $response
-                ], 200);
-            } else {
-                return response()->json(['success' => false, [], 'message' => __('Campaign report or user group not found')], 404);
-            }
+            return response()->json([
+                'success' => true,
+                'message' => __('TPRM campaign report fetched successfully.'),
+                'data' => $response
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1570,7 +1547,7 @@ class ApiReportingController extends Controller
 
             $certifiedUsersRate = $totalAssignedUsers > 0
                 ? (TrainingAssignedUser::where('company_id', $companyId)
-                ->whereNotNull('certificate_id')->count() / $totalAssignedUsers * 100)
+                    ->whereNotNull('certificate_id')->count() / $totalAssignedUsers * 100)
                 : 0;
 
             $emailCampData = Campaign::where('company_id', $companyId)
@@ -2660,7 +2637,7 @@ class ApiReportingController extends Controller
             foreach ($trainingModules as $trainingModule) {
                 $assignedTrainings = TrainingAssignedUser::where('training', $trainingModule->id)
                     ->where('company_id', $companyId);
-                
+
                 $totalAssigned = $assignedTrainings->count();
                 $completedTrainings = (clone $assignedTrainings)->where('completed', 1)->count();
                 $inProgressTrainings = (clone $assignedTrainings)->where('training_started', 1)->where('completed', 0)->count();
@@ -2673,10 +2650,10 @@ class ApiReportingController extends Controller
                 $usersScored40Plus = (clone $assignedTrainings)->where('personal_best', '>=', 40)->count();
                 $usersScored60Plus = (clone $assignedTrainings)->where('personal_best', '>=', 60)->count();
                 $usersScored80Plus = (clone $assignedTrainings)->where('personal_best', '>=', 80)->count();
-                
+
                 $completionRate = $totalAssigned > 0 ? round(($completedTrainings / $totalAssigned) * 100, 2) : 0;
                 $progressRate = $totalAssigned > 0 ? round((($inProgressTrainings + $completedTrainings) / $totalAssigned) * 100, 2) : 0;
-                
+
                 // Determine training type based on module properties
                 $trainingType = 'standard';
                 if ($trainingModule->is_scorm) {
@@ -2748,7 +2725,7 @@ class ApiReportingController extends Controller
                 $completedGames = (clone $assignedGames)->where('completed', 1)->count();
                 $inProgressGames = (clone $assignedGames)->where('training_started', 1)->where('completed', 0)->count();
                 $notStartedGames = (clone $assignedGames)->where('training_started', 0)->count();
-                
+
                 $completionRate = $totalAssigned > 0 ? round(($completedGames / $totalAssigned) * 100, 2) : 0;
                 $averageGameTime = (clone $assignedGames)->avg('game_time') ?? 0;
 
@@ -2791,12 +2768,12 @@ class ApiReportingController extends Controller
             }
 
             // Calculate overall rates
-            $overallStats['overall_completion_rate'] = $overallStats['total_assigned_trainings'] > 0 
-                ? round(($overallStats['total_completed_trainings'] / $overallStats['total_assigned_trainings']) * 100, 2) 
+            $overallStats['overall_completion_rate'] = $overallStats['total_assigned_trainings'] > 0
+                ? round(($overallStats['total_completed_trainings'] / $overallStats['total_assigned_trainings']) * 100, 2)
                 : 0;
-            
-            $overallStats['overall_progress_rate'] = $overallStats['total_assigned_trainings'] > 0 
-                ? round((($overallStats['total_in_progress_trainings'] + $overallStats['total_completed_trainings']) / $overallStats['total_assigned_trainings']) * 100, 2) 
+
+            $overallStats['overall_progress_rate'] = $overallStats['total_assigned_trainings'] > 0
+                ? round((($overallStats['total_in_progress_trainings'] + $overallStats['total_completed_trainings']) / $overallStats['total_assigned_trainings']) * 100, 2)
                 : 0;
 
             // Get recent training activities (last 30 days)

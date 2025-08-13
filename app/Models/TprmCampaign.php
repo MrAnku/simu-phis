@@ -63,4 +63,9 @@ class TprmCampaign extends Model
             ->first()
             ->group_name ?? null;
     }
+
+    public function phishingMaterial()
+    {
+        return $this->belongsTo(PhishingEmail::class, 'phishing_material', 'id');
+    }
 }
