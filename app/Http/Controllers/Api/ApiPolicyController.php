@@ -256,7 +256,7 @@ class ApiPolicyController extends Controller
             if ($policyCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this policy, delete campaigns first",
                 ], 422);
             }
 
@@ -264,7 +264,7 @@ class ApiPolicyController extends Controller
             if ($assignedPolicy) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This policy is assigned to users, You cannot delete it.",
+                    'message' => "This policy is assigned to users, you cannot delete it.",
                 ], 422);
             }
 

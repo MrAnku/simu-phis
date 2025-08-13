@@ -148,7 +148,7 @@ class ApiScormTrainingController extends Controller
             if ($emailCampExists || $aiCallCampExists || $quishCampExists || $waLiveCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this scorm, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this scorm, delete campaigns first",
                 ], 422);
             }
             
@@ -158,7 +158,7 @@ class ApiScormTrainingController extends Controller
             if ($scormAssigned || $blueCollarScormAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This Training is assigned to users, You cannot delete it.",
+                    'message' => "This Training is assigned to users, you cannot delete it.",
                 ], 422);
             }
 

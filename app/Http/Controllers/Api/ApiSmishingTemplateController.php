@@ -212,7 +212,7 @@ class ApiSmishingTemplateController extends Controller
             if ($smishCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this template, delete campaigns first",
                 ], 422);
             }
 

@@ -12,6 +12,7 @@ use App\Models\SenderProfile;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Http\Controllers\Controller;
+use App\Models\QshTemplate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -82,7 +83,7 @@ class ApiSenderProfileController extends Controller
             $id = base64_decode($senderProfileId);
 
             $company_id = Auth::user()->company_id;
-            
+
             $senderProfile = SenderProfile::where('id', $id)
                 ->where('company_id', $company_id)
                 ->first();
@@ -94,6 +95,16 @@ class ApiSenderProfileController extends Controller
                 ], 404); // ✅ 404 Not Found
             }
 
+            $phishingEmailExists = PhishingEmail::where('senderProfile', $senderProfile->id)->where('company_id', $company_id)->exists();
+            $qshTemplateExists = QshTemplate::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
+
+            if ($phishingEmailExists || $qshTemplateExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Templates are associated with this sender profile, delete templates first",
+                ], 422);
+            }
+
             $emailCampExists = CampaignLive::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
             $quishingCampExists = QuishingLiveCamp::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
             $tprmCampExists = TprmCampaignLive::where('sender_profile', $senderProfile->id)->where('company_id', $company_id)->exists();
@@ -101,7 +112,7 @@ class ApiSenderProfileController extends Controller
             if ($emailCampExists || $quishingCampExists || $tprmCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this sender profile, delete campaigns first",
                 ], 422);
             }
 

@@ -12,6 +12,7 @@ use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\QshTemplate;
 use App\Models\SmishingLiveCampaign;
 use App\Models\WaLiveCampaign;
 use App\Models\WebsiteCloneJob;
@@ -134,13 +135,23 @@ class ApiPhishingWebsitesController extends Controller
                 ], 404);
             }
 
+            $phishingEmailExists = PhishingEmail::where('website', $website->id)->where('company_id', $company_id)->exists();
+            $qshTemplateExists = QshTemplate::where('website', $website->id)->where('company_id', $company_id)->exists();
+
+            if ($phishingEmailExists || $qshTemplateExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Templates are associated with this website, delete templates first",
+                ], 422);
+            }
+
             $waCampExists = WaLiveCampaign::where('phishing_website', $website->id)->where('company_id', $company_id)->exists();
             $smishCampExists = SmishingLiveCampaign::where('website_id', $website->id)->where('company_id', $company_id)->exists();
 
             if ($waCampExists || $smishCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this website, delete campaigns first",
                 ], 422);
             }
 
@@ -744,7 +755,7 @@ class ApiPhishingWebsitesController extends Controller
                 $spaMessage = __('The website includes dynamic accessibility features (e.g., text resizing, contrast toggle), indicating heavy JavaScript usage, which may not be suitable for cloning.');
             }
 
-            
+
 
             // If it's an SPA, return early
             if ($isLikelySPA) {
@@ -763,7 +774,7 @@ class ApiPhishingWebsitesController extends Controller
                 $inputCount = count($matches[0]);
             }
 
-          
+
 
             // If no input fields are found and not a login page, use the original error
             if ($inputCount < 1) {

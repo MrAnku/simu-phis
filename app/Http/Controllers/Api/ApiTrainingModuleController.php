@@ -616,9 +616,7 @@ class ApiTrainingModuleController extends Controller
         $company_id = Auth::user()->company_id;
 
         try {
-            // Start DB transaction
-            DB::beginTransaction();
-            
+           
             $emailCampExists = CampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
             $aiCallCampExists = AiCallCampLive::where('training', $trainingId)->where('company_id', $company_id)->exists();
             $quishingCampExists = QuishingLiveCamp::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
@@ -629,7 +627,7 @@ class ApiTrainingModuleController extends Controller
             if ($emailCampExists || $aiCallCampExists || $quishingCampExists || $smishingCampExists || $tprmCampExists || $waCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                    'message' => "Campaigns are associated with this training, delete campaigns first",
                 ], 422);
             }
 
@@ -639,7 +637,7 @@ class ApiTrainingModuleController extends Controller
             if ($trainingAssigned || $blueCollarTrainingAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This Training is assigned to users, You cannot delete it.",
+                    'message' => "This Training is assigned to users, you cannot delete it.",
                 ], 422);
             }
 
@@ -654,7 +652,6 @@ class ApiTrainingModuleController extends Controller
                 Storage::disk('s3')->delete($trainingModule->cover_image);
             }
 
-            DB::commit(); // Commit transaction
             log_action("Training module deleted");
 
             return response()->json([
@@ -662,7 +659,6 @@ class ApiTrainingModuleController extends Controller
                 'message' => __('Training deleted successfully'),
             ], 200);
         } catch (Exception $e) {
-            DB::rollBack(); // Rollback on error
             log_action("Failed to delete training module: " . $e->getMessage());
 
             return response()->json([
