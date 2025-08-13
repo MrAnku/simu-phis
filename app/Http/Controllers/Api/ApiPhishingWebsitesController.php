@@ -12,6 +12,8 @@ use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\SmishingLiveCampaign;
+use App\Models\WaLiveCampaign;
 use App\Models\WebsiteCloneJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -120,14 +122,26 @@ class ApiPhishingWebsitesController extends Controller
             $id = $request->route('encodedId');
             $id = base64_decode($id);
 
+            $company_id = Auth::user()->company_id;
+
             $website = PhishingWebsite::where('id', $id)
-                ->where('company_id', Auth::user()->company_id)
+                ->where('company_id', $company_id)
                 ->first();
             if (!$website) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Phishing website not found.')
                 ], 404);
+            }
+
+            $waCampExists = WaLiveCampaign::where('phishing_website', $website->id)->where('company_id', $company_id)->exists();
+            $smishCampExists = SmishingLiveCampaign::where('website_id', $website->id)->where('company_id', $company_id)->exists();
+
+            if ($waCampExists || $smishCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
             }
 
             $file = $website->file;

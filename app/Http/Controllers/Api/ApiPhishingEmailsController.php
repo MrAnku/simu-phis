@@ -10,6 +10,7 @@ use App\Models\SenderProfile;
 use App\Models\PhishingWebsite;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\TprmCampaignLive;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -306,9 +307,28 @@ class ApiPhishingEmailsController extends Controller
         }
 
         $tempid = $request->input('tempid');
+        $company_id = Auth::user()->company_id;
 
         try {
-            $template = PhishingEmail::where('id', $tempid)->first();
+            $template = PhishingEmail::where('id', $tempid)->where('company_id', $company_id)->first();
+
+            if(!$template) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing email template does not added by this user.')
+                ], 404);
+            }
+
+            $emailCampExists = CampaignLive::where('phishing_material', $template->id)->where('company_id', $company_id)->exists();
+            $tprmCampExists = TprmCampaignLive::where('phishing_material', $template->id)->where('company_id', $company_id)->exists();
+
+            if ($emailCampExists || $tprmCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
+            }
+
             $isDeleted = $template->delete();
 
             // Delete the file from S3

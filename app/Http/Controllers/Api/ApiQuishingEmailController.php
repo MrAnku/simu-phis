@@ -8,6 +8,7 @@ use App\Models\QshTemplate;
 use Illuminate\Http\JsonResponse;
 use App\Models\SenderProfile;
 use App\Models\PhishingWebsite;
+use App\Models\QuishingLiveCamp;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -45,10 +46,10 @@ class ApiQuishingEmailController extends Controller
                     ->where('company_id', 'default')->paginate(9);
                 $custom = QshTemplate::with('senderProfile')
                     ->where('name', 'like', "%$search%")
-                    ->where('company_id', $company_id)->paginate(9);    
-            } else if($request->has('difficulty')){
+                    ->where('company_id', $company_id)->paginate(9);
+            } else if ($request->has('difficulty')) {
 
-                 $difficulty = $request->input('difficulty');
+                $difficulty = $request->input('difficulty');
                 $quishingEmails = QshTemplate::with('senderProfile')
                     ->where('difficulty', $difficulty)
                     ->where(function ($query) use ($company_id) {
@@ -62,9 +63,8 @@ class ApiQuishingEmailController extends Controller
                 $custom = QshTemplate::with('senderProfile')
                     ->where('difficulty', $difficulty)
                     ->where('company_id', $company_id)->paginate(9);
-               
-            } else{
-                 // All QshTemplates if no search
+            } else {
+                // All QshTemplates if no search
                 $quishingEmails = QshTemplate::with('senderProfile')
                     ->where(function ($query) use ($company_id) {
                         $query->where('company_id', $company_id)
@@ -181,7 +181,7 @@ class ApiQuishingEmailController extends Controller
                     ], 400);
                 }
             }
-           
+
 
             // Validation
             $validator = Validator::make($request->all(), [
@@ -242,7 +242,7 @@ class ApiQuishingEmailController extends Controller
         }
     }
 
-     public function duplicate(Request $request)
+    public function duplicate(Request $request)
     {
         try {
             if (!$request->route('id')) {
@@ -333,10 +333,12 @@ class ApiQuishingEmailController extends Controller
             // Validate request
 
             $id = base64_decode($request->id);
+            $company_id = Auth::user()->company_id;
+
             $template = QshTemplate::where('id', $id)
-                ->where('company_id', Auth::user()->company_id)
+                ->where('company_id', $company_id)
                 ->first();
-            $template_name = $template->name;
+
 
             if (!$template) {
                 return response()->json([
@@ -344,6 +346,17 @@ class ApiQuishingEmailController extends Controller
                     'message' => __('Template not found.')
                 ], 404);
             }
+
+            $quishCampExists = QuishingLiveCamp::where('quishing_material', $template->id)->where('company_id', $company_id)->exists();
+
+            if ($quishCampExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Campaigns are associated with this template, Delete Campaigns first",
+                ], 422);
+            }
+
+            $template_name = $template->name;
 
             // Delete record from database
             $template->delete();
@@ -435,9 +448,6 @@ class ApiQuishingEmailController extends Controller
                 'success' => true,
                 'message' => __('Quishing template updated successfully.')
             ], 200);
-
-
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -448,7 +458,7 @@ class ApiQuishingEmailController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => __('Something went wrong. '). $e->getMessage()
+                'message' => __('Something went wrong. ') . $e->getMessage()
             ], 500);
         }
     }
