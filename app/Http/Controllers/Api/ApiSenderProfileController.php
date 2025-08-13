@@ -246,7 +246,7 @@ class ApiSenderProfileController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => __('Invalid SMTP configuration. Please check your SMTP settings.'),
-                ], 500);
+                ], 400); // Bad Request
             }
 
 
@@ -259,21 +259,15 @@ class ApiSenderProfileController extends Controller
             $senderProfile->password = $request->input('smtp_password');
             $senderProfile->company_id = Auth::user()->company_id;
 
-            if ($senderProfile->save()) {
-                log_action("Manual sender profile added successfully");
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Sender profile added successfully!'),
-                    'data' => $senderProfile,
-                ], 201); // Created
-            }
-
-            log_action("Failed to add manual sender profile");
-
+            $senderProfile->save();
+            log_action("Manual sender profile added successfully");
             return response()->json([
-                'success' => false,
-                'message' => __('Failed to add sender profile'),
-            ], 500); // Internal Server Error
+                'success' => true,
+                'message' => __('Sender profile added successfully!'),
+                'data' => $senderProfile,
+            ], 201); // Created
+
+
 
         } catch (ValidationException $e) {
             return response()->json([

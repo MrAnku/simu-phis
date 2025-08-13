@@ -38,9 +38,9 @@ class ProcessQuishing extends Command
     {
         //get all pending quishing campaigns
         $companies = Company::where('service_status', 1)
-        ->where('approved', 1)
-        ->where('role', null)
-        ->get();
+            ->where('approved', 1)
+            ->where('role', null)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -50,8 +50,8 @@ class ProcessQuishing extends Command
             setCompanyTimezone($company->company_id);
 
             $quishingCampaigns = $company->quishingLiveCamps()
-            ->where('sent', '0')
-            ->get();
+                ->where('sent', '0')
+                ->get();
 
             if ($quishingCampaigns->isEmpty()) {
                 continue;
@@ -159,18 +159,20 @@ class ProcessQuishing extends Command
             return false;
         }
 
-        $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+        // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         $mailBody = str_replace('{{qr_code}}', '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">', $mailBody);
 
 
         if ($campaign->quishing_lang !== 'en' && $campaign->quishing_lang !== 'am') {
-
+            $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
             $mailBody = changeEmailLang($mailBody, $campaign->quishing_lang);
-        }
-
-        if ($campaign->quishing_lang == 'am') {
-
+            $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+        } else if ($campaign->quishing_lang == 'am') {
+            $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
             $mailBody = translateHtmlToAmharic($mailBody);
+            $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+        } else {
+            $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         }
 
         $mailData = [

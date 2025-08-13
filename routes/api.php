@@ -221,7 +221,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/', [ApiSenderProfileController::class, 'index']);
         //new
         Route::get('/index', [ApiSenderProfileController::class, 'index2']);
-        Route::post('/add', [ApiSenderProfileController::class, 'addSenderProfile']);
+        Route::post('/add', [ApiSenderProfileController::class, 'saveManualSenderProfile']);
         Route::post('/save/manual', [ApiSenderProfileController::class, 'saveManualSenderProfile']);
         Route::post('/save/managed', [ApiSenderProfileController::class, 'saveManagedSenderProfile']);
         Route::delete('/delete', [ApiSenderProfileController::class, 'deleteSenderProfile']);

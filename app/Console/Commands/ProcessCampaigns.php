@@ -295,17 +295,19 @@ class ProcessCampaigns extends Command
 
 
     $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-    $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+    // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
     $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
 
     if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
-
+      $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
       $mailBody = changeEmailLang($mailBody, $campaign->email_lang);
-    }
-
-    if ($campaign->email_lang == 'am') {
-
+      $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+    }else if ($campaign->email_lang == 'am') {
+      $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
       $mailBody = translateHtmlToAmharic($mailBody);
+      $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+    }else{
+      $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
     }
 
     return $mailBody;
