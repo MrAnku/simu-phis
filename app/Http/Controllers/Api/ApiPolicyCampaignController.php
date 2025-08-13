@@ -94,6 +94,7 @@ class ApiPolicyCampaignController extends Controller
         try {
             $campaigns = PolicyCampaign::with(['campLive', 'assignedPolicies', 'policyDetail', 'groupDetail'])
                 ->where('company_id', Auth::user()->company_id)
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             return response()->json([
