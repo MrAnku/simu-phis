@@ -79,7 +79,7 @@ class InforgraphicsController extends Controller
     public function deleteInfographics(Request $request)
     {
         try {
-           $id = $request->route('encodedId');
+            $id = $request->route('encodedId');
             if (!$id) {
                 return response()->json([
                     'success' => false,
@@ -97,7 +97,7 @@ class InforgraphicsController extends Controller
             }
             $infographic->delete();
 
-           InfoGraphicLiveCampaign::where('infographic', $id)
+            InfoGraphicLiveCampaign::where('infographic', $id)
                 ->where('company_id', Auth::user()->company_id)
                 ->delete();
 
@@ -105,7 +105,7 @@ class InforgraphicsController extends Controller
                 'success' => true,
                 'message' => 'Inforgraphic deleted successfully'
             ]);
-        }  catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
@@ -121,11 +121,15 @@ class InforgraphicsController extends Controller
                 'users_group' => 'required|string',
                 'infographics' => 'required|array',
                 'scheduled_at' => 'required|string',
+                'schedule_type' => 'required|string|in:immediate,schedule'
             ]);
-            // check if scheduled_at is less than current time then the status will be running else pending
-            $scheduledAt = Carbon::parse($request->scheduled_at);
-            $currentTime = Carbon::now();
-            $status = $scheduledAt->lessThanOrEqualTo($currentTime) ? 'running' : 'pending';
+           if($request->schedule_type === 'immediate') {
+               $scheduledAt = Carbon::now()->toDateTimeString(); 
+           }else{
+               $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
+           }
+
+            $status = $request->schedule_type === 'immediate' ? 'running' : 'pending';
 
 
 
@@ -135,11 +139,16 @@ class InforgraphicsController extends Controller
                 'users_group' => $request->users_group,
                 'inforgraphics' => json_encode($request->infographics),
                 'status' => $status,
-                'scheduled_at' => $request->scheduled_at,
+                'scheduled_at' => $scheduledAt,
                 'company_id' => Auth::user()->company_id,
             ]);
             //send the employees to live table if status is running
             if ($status === 'running') {
+                $groupExists = UsersGroup::where('group_id', $campaign->users_group)
+                    ->where('company_id', Auth::user()->company_id)->exists();
+                if (!$groupExists) {
+                    return response()->json(['success' => false, 'message' => __('Division not found')], 404);
+                }
                 // Retrieve the users in the specified group
                 $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
                     ->where('company_id', Auth::user()->company_id)
@@ -238,7 +247,7 @@ class InforgraphicsController extends Controller
             ], 500);
         }
     }
-  
+
 
     public function deleteCampaign($campaign_id)
     {
