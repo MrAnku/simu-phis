@@ -3018,6 +3018,12 @@ class ApiReportingController extends Controller
                 ->where('accepted', 0)
                 ->count();
 
+            //average time taken by users to read and accept the policy
+            $averageTimeToAccept = AssignedPolicy::where('company_id', $companyId)
+                ->whereNotNull('reading_time') // time storing in seconds
+                ->get()
+                ->avg('reading_time');
+
             // Details for each assigned policy
             $assignedPolicyDetails = [];
             foreach ($assignedPolicies as $assignedPolicy) {
@@ -3028,6 +3034,11 @@ class ApiReportingController extends Controller
                     'accepted_date' => $assignedPolicy->accepted_at
                         ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
                         : 'Not Accepted',
+                    'reading_time' => $assignedPolicy->reading_time 
+                        ? ($assignedPolicy->reading_time < 60 
+                            ? round($assignedPolicy->reading_time, 2) . ' seconds' 
+                            : round($assignedPolicy->reading_time / 60, 2) . ' minutes') 
+                        : 'N/A',
                     'user_email' => $assignedPolicy->user_email,
                     'user_name' => $assignedPolicy->user_name,
                     'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
@@ -3045,7 +3056,12 @@ class ApiReportingController extends Controller
                     'users_responded_quiz' => $usersRespondedQuiz,
                     'users_accepted_policy' => $usersAccepted,
                     'users_not_accepted_policy' => $usersNotAccepted,
-                    'assigned_policies' => $assignedPolicyDetails
+                    'assigned_policies' => $assignedPolicyDetails,
+                    'average_time_to_accept' => $averageTimeToAccept 
+                        ? ($averageTimeToAccept < 60 
+                            ? round($averageTimeToAccept, 2) . ' seconds' 
+                            : round($averageTimeToAccept / 60, 2) . ' minutes') 
+                        : 'N/A',
                 ]
             ], 200);
         } catch (\Exception $e) {
