@@ -90,11 +90,6 @@ class InforgraphicsController extends Controller
 
             $infographic = Inforgraphic::findOrFail($id);
 
-            //delete the file from S3
-            if ($infographic->file_path) {
-                $filePath = ltrim($infographic->file_path, '/');
-                Storage::disk('s3')->delete($filePath);
-            }
             $infographic->delete();
 
            InfoGraphicLiveCampaign::where('infographic', $id)
