@@ -199,17 +199,18 @@ class ApiPhishingWebsitesController extends Controller
                 ], 404);
             }
 
-            //store new file
-            $randomName = generateRandom(32);
-            $extension = $request->file('file')->getClientOriginalExtension();
-            $newFilename = $randomName . '.' . $extension;
+             // Get the previous file path
+            $oldFilePath = ltrim($phishingWebsite->file, '/');
 
-            $filePath = $request->file('file')->storeAs('/uploads/phishingMaterial/phishing_websites', $newFilename, 's3');
+            // Get new file content
+            $newFileContent = file_get_contents($request->file('file')->getRealPath());
+
+            // Overwrite the previous file in S3
+            Storage::disk('s3')->put($oldFilePath, $newFileContent);
 
             PhishingWebsite::where('id', $data['id'])
                 ->update([
                     'name' => $data['name'],
-                    'file' => "/" . $filePath,
                     'domain' => $data['domain']
                 ]);
             log_action("Phishing website updated successfully (ID: {$data['id']})");
@@ -655,17 +656,46 @@ class ApiPhishingWebsitesController extends Controller
             }
             $id = base64_decode($request->route('id'));
 
-            $phishingEmail = PhishingWebsite::where('id', $id)->first();
-            if (!$phishingEmail) {
+            $phishingWebsite = PhishingWebsite::where('id', $id)->first();
+            if (!$phishingWebsite) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Phishing Website not found')
                 ], 422);
             }
 
-            $duplicateWebsite = $phishingEmail->replicate(['company_id', 'name']);
+            $originalPath = ltrim($phishingWebsite->file, '/');
+            $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+            $randomName = generateRandom(32) . '.' . $extension;
+            $newPath = 'uploads/phishingMaterial/phishing_websites/' . $randomName;
+
+            // Check if file exists in S3
+            if (!Storage::disk('s3')->exists($originalPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Original HTML file not found in S3.')
+                ], 404);
+            }
+
+            // Get file content as string
+            $fullPath = env('CLOUDFRONT_URL') . '/' . $originalPath;
+
+            $fileContent = file_get_contents($fullPath);
+
+            if (empty($fileContent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to read original HTML file from S3.')
+                ], 500);
+            }
+
+            // Save the copied file to S3
+            Storage::disk('s3')->put($newPath, $fileContent);
+
+            $duplicateWebsite = $phishingWebsite->replicate(['company_id', 'name', 'file']);
             $duplicateWebsite->company_id = Auth::user()->company_id;
-            $duplicateWebsite->name = $phishingEmail->name . ' (Copy)';
+            $duplicateWebsite->name = $phishingWebsite->name . ' (Copy)';
+            $duplicateWebsite->file = '/' . $newPath;
 
             $duplicateWebsite->save();
 

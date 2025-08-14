@@ -94,9 +94,9 @@ class ApiTrainingModuleController extends Controller
 
             if ($type == 'default') {
                 $query = TrainingModule::where('company_id', 'default');
-            } else if($type == 'custom'){
+            } else if ($type == 'custom') {
                 $query = TrainingModule::where('company_id', $companyId);
-            }else{
+            } else {
                 $query = TrainingModule::where(function ($query) use ($companyId) {
                     $query->where('company_id', $companyId)
                         ->orWhere('company_id', 'default');
@@ -616,7 +616,7 @@ class ApiTrainingModuleController extends Controller
         $company_id = Auth::user()->company_id;
 
         try {
-           
+
             $emailCampExists = CampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
             $aiCallCampExists = AiCallCampLive::where('training', $trainingId)->where('company_id', $company_id)->exists();
             $quishingCampExists = QuishingLiveCamp::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
@@ -877,9 +877,38 @@ class ApiTrainingModuleController extends Controller
                 ], 422);
             }
 
-            $duplicateTraining = $trainingModule->replicate(['company_id', 'name']);
+            $originalPath = ltrim($trainingModule->cover_image, '/');
+            $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+            $randomName = generateRandom(32) . '.' . $extension;
+            $newPath = 'uploads/trainingModule/' . $randomName;
+
+            // Check if file exists in S3
+            if (!Storage::disk('s3')->exists($originalPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Original HTML file not found in S3.')
+                ], 404);
+            }
+
+            // Get file content as string
+            $fullPath = env('CLOUDFRONT_URL') . '/' . $originalPath;
+
+            $fileContent = file_get_contents($fullPath);
+
+            if (empty($fileContent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to read original HTML file from S3.')
+                ], 500);
+            }
+
+            // Save the copied file to S3
+            Storage::disk('s3')->put($newPath, $fileContent);
+
+            $duplicateTraining = $trainingModule->replicate(['company_id', 'name', 'cover_image']);
             $duplicateTraining->company_id = Auth::user()->company_id;
             $duplicateTraining->name = $trainingModule->name . ' (Copy)';
+            $duplicateTraining->cover_image = '/' . $newPath;
 
             $duplicateTraining->save();
 
