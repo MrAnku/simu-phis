@@ -312,7 +312,7 @@ class ApiPhishingEmailsController extends Controller
         try {
             $template = PhishingEmail::where('id', $tempid)->where('company_id', $company_id)->first();
 
-            if(!$template) {
+            if (!$template) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Phishing email template does not added by this user.')
@@ -747,12 +747,57 @@ EOT;
                     'message' => __('Phishing Email not found')
                 ], 422);
             }
+            if (!$request->route('id')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing Email ID is required')
+                ], 422);
+            }
+            $id = base64_decode($request->route('id'));
 
-            $duplicateTraining = $phishingEmail->replicate(['company_id', 'name']);
+            $phishingEmail = PhishingEmail::where('id', $id)->first();
+            if (!$phishingEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing Email not found')
+                ], 422);
+            }
+
+            $originalPath = ltrim($phishingEmail->mailBodyFilePath, '/');
+            $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+            $randomName = generateRandom(32) . '.' . $extension;
+            $newPath = 'uploads/phishingMaterial/phishing_emails/' . $randomName;
+
+            // Check if file exists in S3
+            if (!Storage::disk('s3')->exists($originalPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Original HTML file not found in S3.')
+                ], 404);
+            }
+
+            // Get file content as string
+            $fullPath = env('CLOUDFRONT_URL') . '/' . $originalPath;
+
+            $fileContent = file_get_contents($fullPath);
+
+            if (empty($fileContent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to read original HTML file from S3.')
+                ], 500);
+            }
+
+            // Save the copied file to S3
+            Storage::disk('s3')->put($newPath, $fileContent);
+
+            // Duplicate the DB record
+            $duplicateTraining = $phishingEmail->replicate(['company_id', 'name', 'mailBodyFilePath']);
             $duplicateTraining->company_id = Auth::user()->company_id;
             $duplicateTraining->name = $phishingEmail->name . ' (Copy)';
-
+            $duplicateTraining->mailBodyFilePath = '/' . $newPath;
             $duplicateTraining->save();
+
 
             return response()->json([
                 'success' => true,

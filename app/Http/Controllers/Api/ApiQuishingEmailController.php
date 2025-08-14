@@ -261,9 +261,38 @@ class ApiQuishingEmailController extends Controller
                 ], 422);
             }
 
-            $duplicateTraining = $qshTemplate->replicate(['company_id', 'name']);
+            $originalPath = ltrim($qshTemplate->file, '/');
+            $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+            $randomName = generateRandom(32) . '.' . $extension;
+            $newPath = 'uploads/quishing_templates/' . $randomName;
+
+            // Check if file exists in S3
+            if (!Storage::disk('s3')->exists($originalPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Original HTML file not found in S3.')
+                ], 404);
+            }
+
+            // Get file content as string
+            $fullPath = env('CLOUDFRONT_URL') . '/' . $originalPath;
+
+            $fileContent = file_get_contents($fullPath);
+
+            if (empty($fileContent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to read original HTML file from S3.')
+                ], 500);
+            }
+
+            // Save the copied file to S3
+            Storage::disk('s3')->put($newPath, $fileContent);
+
+            $duplicateTraining = $qshTemplate->replicate(['company_id', 'name', 'file']);
             $duplicateTraining->company_id = Auth::user()->company_id;
             $duplicateTraining->name = $qshTemplate->name . ' (Copy)';
+            $duplicateTraining->file = '/' . $newPath;
 
             $duplicateTraining->save();
 
