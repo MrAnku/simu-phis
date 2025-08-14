@@ -101,6 +101,12 @@ class ProcessAiCampaigns extends Command
                                 $this->assignTraining($existingRow);
                                 $existingRow->update(['training_assigned' => 1]);
                             }
+
+                             if ($existingRow->scorm_training !== null) {
+
+                                $this->assignTraining($existingRow);
+                                $existingRow->update(['training_assigned' => 1]);
+                            }
                         }
 
                         // If exists, update the JSON column of the found row
