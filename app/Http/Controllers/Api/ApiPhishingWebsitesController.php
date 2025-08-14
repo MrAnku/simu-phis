@@ -199,17 +199,18 @@ class ApiPhishingWebsitesController extends Controller
                 ], 404);
             }
 
-            //store new file
-            $randomName = generateRandom(32);
-            $extension = $request->file('file')->getClientOriginalExtension();
-            $newFilename = $randomName . '.' . $extension;
+             // Get the previous file path
+            $oldFilePath = ltrim($phishingWebsite->file, '/');
 
-            $filePath = $request->file('file')->storeAs('/uploads/phishingMaterial/phishing_websites', $newFilename, 's3');
+            // Get new file content
+            $newFileContent = file_get_contents($request->file('file')->getRealPath());
+
+            // Overwrite the previous file in S3
+            Storage::disk('s3')->put($oldFilePath, $newFileContent);
 
             PhishingWebsite::where('id', $data['id'])
                 ->update([
                     'name' => $data['name'],
-                    'file' => "/" . $filePath,
                     'domain' => $data['domain']
                 ]);
             log_action("Phishing website updated successfully (ID: {$data['id']})");

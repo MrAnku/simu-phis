@@ -256,22 +256,24 @@ class ApiPhishingEmailsController extends Controller
                 ], 404);
             }
 
-            //store new file
-            $randomName = generateRandom(32);
-            $extension = $request->file('file')->getClientOriginalExtension();
-            $newFilename = $randomName . '.' . $extension;
+            // Get the previous file path
+            $oldFilePath = ltrim($phishingEmail->mailBodyFilePath, '/');
 
-            $filePath = $request->file('file')->storeAs('/uploads/phishingMaterial/phishing_emails', $newFilename, 's3');
+            // Get new file content
+            $newFileContent = file_get_contents($request->file('file')->getRealPath());
 
-            PhishingEmail::where('id', $data['id'])
-                ->update([
-                    'name' => $data['name'],
-                    'email_subject' => $data['email_subject'],
-                    'difficulty' => $data['difficulty'],
-                    'mailBodyFilePath' => "/" . $filePath,
-                    'website' => $data['phishing_website'],
-                    'senderProfile' => $data['sender_profile']
-                ]);
+            // Overwrite the previous file in S3
+            Storage::disk('s3')->put($oldFilePath, $newFileContent);
+
+            // Update other fields in the database
+            PhishingEmail::where('id', $data['id'])->update([
+                'name' => $data['name'],
+                'email_subject' => $data['email_subject'],
+                'difficulty' => $data['difficulty'],
+                'website' => $data['phishing_website'],
+                'senderProfile' => $data['sender_profile']
+            ]);
+
             log_action("Email template updated successfully (ID: {$data['id']})");
 
             return response()->json([
