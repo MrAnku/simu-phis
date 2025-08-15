@@ -8,6 +8,7 @@ use App\Models\AiAgentRequest;
 use App\Models\AiCallAgent;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\AiCallLikelifeAgent;
 use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
 use App\Models\Users;
@@ -50,6 +51,182 @@ class ApiAiCallController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
+    }
+
+    public function createAiAgent(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'agent_name' => 'required|string|max:255',
+                // 'user_id' => 'required|integer',
+                // 'llm' => 'required|string|max:255',
+                // 'tts_provider' => 'required|string|max:255',
+                'tts_voice' => 'required|string|max:255',
+                'language' => 'required|string|max:10',
+                'welcome_message' => 'required|string|max:1000',
+                'system_prompt' => 'required|string|max:2000',
+                'use_memory' => 'required|boolean',
+                'auto_generate_welcome_message' => 'required|boolean',
+                'auto_end_call' => 'required|boolean',
+                'auto_end_call_duration' => 'required|integer|min:1|max:300',
+                'tts_speed' => 'required|numeric|between:0.1,2.0',
+                'tts_stability' => 'required|numeric|between:0.0,1.0',
+                'tts_similarity_boost' => 'required|numeric|between:0.0,1.0'
+            ]);
+
+            // $validated['company_id'] = Auth::user()->company_id;
+            $requestBody = $validated;
+            $requestBody['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+            $requestBody['llm'] = 'gpt-4o';
+            $requestBody['tts_provider'] = 'elevenlabs';
+
+            // make api call
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->post('https://callapi3.sparrowhost.net/agent', $requestBody);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $validated['agent_id'] = $data['agent_id'];
+                $validated['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+                $validated['company_id'] = Auth::user()->company_id;
+
+                AiCallLikelifeAgent::create($validated);
+                return response()->json([
+                    'success' => true,
+                    'message' => __('AI Call Agent created successfully')
+                ], 201);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Something went wrong')
+            ], 500);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Validation Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function getAiAgents()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $agents = AiCallLikelifeAgent::where('company_id', $companyId)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $agents,
+                'message' => __('AI Call Agents fetched successfully')
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateAiAgent(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'agent_id' => 'required|string|exists:ai_call_likelife_agents,agent_id',
+                'agent_name' => 'required|string|max:255',
+                'tts_voice' => 'required|string|max:255',
+                'language' => 'required|string|max:10',
+                'welcome_message' => 'required|string|max:1000',
+                'system_prompt' => 'required|string|max:2000',
+                'use_memory' => 'required|boolean',
+                'auto_generate_welcome_message' => 'required|boolean',
+                'auto_end_call' => 'required|boolean',
+                'auto_end_call_duration' => 'required|integer|min:1|max:300',
+                'tts_speed' => 'required|numeric|between:0.1,2.0',
+                'tts_stability' => 'required|numeric|between:0.0,1.0',
+                'tts_similarity_boost' => 'required|numeric|between:0.0,1.0'
+            ]);
+
+            $agent = AiCallLikelifeAgent::where('agent_id', $validated['agent_id'])->first();
+
+            if (!$agent) {
+                return response()->json(['success' => false, 'message' => __('Agent not found')], 404);
+            }
+
+            // Prepare request body for API call
+            $requestBody = $validated;
+            $requestBody['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+            $requestBody['llm'] = 'gpt-4o';
+            $requestBody['tts_provider'] = 'elevenlabs';
+
+            // Make API call to update agent
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->put("https://callapi3.sparrowhost.net/agent?agent_id={$validated['agent_id']}", $requestBody);
+
+            if ($response->successful()) {
+                $agent->update($validated);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => __('AI Call Agent updated successfully')
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Failed to update agent via API')
+            ], 500);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Validation Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteAiAgentNew(Request $request)
+    {
+        try {
+            $agentId = $request->route('agent_id');
+
+            if (!$agentId) {
+                return response()->json(['success' => false, 'message' => __('Agent ID is required')], 422);
+            }
+
+            $agent = AiCallLikelifeAgent::where('agent_id', $agentId)->where('company_id', Auth::user()->company_id)->first();
+
+            if (!$agent) {
+                return response()->json(['success' => false, 'message' => __('Agent not found')], 404);
+            }
+
+            // Make API call to delete agent
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->delete("https://callapi3.sparrowhost.net/agent?agent_id={$agentId}&user_id=" . $this->extractIntegers(Auth::user()->company_id));
+
+            if ($response->successful()) {
+                $agent->delete();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => __('AI Call Agent deleted successfully')
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Something went wrong')
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+    private function extractIntegers($str)
+    {
+        // Remove all non-digit characters and return first 6 digits
+        $digits = preg_replace('/\D/', '', $str);
+        return (int) substr($digits, 0, 6);
     }
 
     public function testAiAgent(Request $request)
