@@ -26,11 +26,11 @@ class CompanyManagementMail extends Mailable
         $this->company = $company;
         $this->type = $type;
         if($type === 'license_expired') {
-            $this->subject = "License Expired!!!";
+            $this->subject = "License Expiration Notification";
             $this->view = 'emails.admin.license_expired';
         }
         if($type === 'need_support') {
-            $this->subject = "Need Support";
+            $this->subject = "Need Support?";
             $this->view = 'emails.admin.need_support';
         }
     }
@@ -42,7 +42,6 @@ class CompanyManagementMail extends Mailable
     {
         return new Envelope(
             subject: $this->subject,
-            // cc: ['srikant@sparrowhost.in'],
             cc: ['contact@simuphish.com', $this->company->partner?->email],
         );
     }
