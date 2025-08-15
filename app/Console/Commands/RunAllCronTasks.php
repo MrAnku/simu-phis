@@ -40,31 +40,38 @@ class RunAllCronTasks extends Command
             'app:process-whatsapp-campaign',
             'app:send-infographics',
             'app:sync-logs',
-            // Add more commands as needed
         ];
 
         foreach ($commands as $command) {
-            $logFileName = Str::slug($command) . '.log'; // Clean file name
-            $logPath = "logs/cron/{$logFileName}";
-            $timestamp = now()->format('Y-m-d H:i:s');
+            $logFileName = Str::slug($command) . '.log';
+            $logPath = storage_path("logs/cron/{$logFileName}");
 
-            try {
-                Artisan::call($command);
-                $outputText = Artisan::output();
-
-                $logEntry = "===== [{$timestamp}] SUCCESS: {$command} =====\n{$outputText}\n\n";
-            } catch (\Exception $e) {
-                $logEntry = "===== [{$timestamp}] ERROR: {$command} =====\n";
-                $logEntry .= "Message: " . $e->getMessage() . "\n";
-                $logEntry .= "File: " . $e->getFile() . "\n";
-                $logEntry .= "Line: " . $e->getLine() . "\n\n";
+            // Make sure the logs directory exists
+            if (!is_dir(dirname($logPath))) {
+                mkdir(dirname($logPath), 0777, true);
             }
 
-            // Append log entry to the command's log file
-            Storage::disk('local')->append($logPath, $logEntry);
+            try {
+                // Build full artisan command
+                $artisanPath = base_path('artisan');
+                $cmd = "php {$artisanPath} {$command} >> {$logPath} 2>&1 &";
 
-            // Optional: Console output
-            $this->info("Finished: {$command}");
+                // Run command in background
+                exec($cmd);
+
+                $this->info("Started {$command} in background, logging to {$logPath}");
+            } catch (\Throwable $e) {
+                // Log the error if the process fails to start
+                $timestamp = now()->format('Y-m-d H:i:s');
+                $errorEntry = "===== [{$timestamp}] ERROR STARTING: {$command} =====\n";
+                $errorEntry .= "Message: " . $e->getMessage() . "\n";
+                $errorEntry .= "File: " . $e->getFile() . "\n";
+                $errorEntry .= "Line: " . $e->getLine() . "\n\n";
+
+                Storage::disk('local')->append("logs/cron/errors.log", $errorEntry);
+
+                $this->error("Failed to start {$command}");
+            }
         }
     }
 }
