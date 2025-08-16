@@ -4,8 +4,16 @@ namespace App\Console\Commands;
 
 use App\Models\Users;
 use App\Models\Company;
+use App\Models\SmartGroup;
+use App\Models\UsersGroup;
+use Illuminate\Support\Str;
+use App\Models\CampaignLive;
 use App\Models\BreachedEmail;
+use App\Models\AiCallCampLive;
+use App\Models\WaLiveCampaign;
 use Illuminate\Console\Command;
+use App\Models\QuishingLiveCamp;
+use App\Services\EmployeeService;
 use App\Mail\BreachAlertAdminMail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -33,11 +41,14 @@ class EmailBreachCheck extends Command
      */
     public function handle()
     {
-        //check if any user not scanned for breach
+        // //check if any user not scanned for breach
         $this->scanNewUsers();
 
-        //check if any user scanner for breach more than 30 days ago
+        // //check if any user scanner for breach more than 30 days ago
         $this->scanOldUsers();
+
+        //analyse users and their risk and add them to smart groups
+        $this->handleSmartGroups();
     }
 
     private function scanNewUsers()
@@ -164,6 +175,168 @@ class EmailBreachCheck extends Command
                     ->update(['breach_scan_date' => now()]);
                 echo "No breach found for " . $employee->user_email . "\n";
             }
+        }
+    }
+
+    private function handleSmartGroups()
+    {
+        try {
+
+            $companies = Company::where('approved', 1)
+                ->where('role', null)
+                ->where('service_status', 1)
+                ->get();
+
+            if ($companies->isEmpty()) {
+                return;
+            }
+            foreach ($companies as $company) {
+
+                //check if the company is setuped smart grouping
+                $smartGrouping = SmartGroup::where('company_id', $company->company_id)->get();
+
+                if ($smartGrouping->isEmpty()) {
+                    continue;
+                }
+
+                //analyse risk
+                foreach ($smartGrouping as $group) {
+                    $this->analyseRisk($company, $group->risk_type, $group->group_name);
+                }
+
+
+                // add all found users into the smart group 
+            }
+        } catch (\Exception $e) {
+            echo "Error in handling smart groups: " . $e->getMessage() . "\n";
+            return;
+        }
+    }
+
+    private function analyseRisk($company, $riskType, $groupName)
+    {
+        //get all the users of the company
+        $employees = Users::where('company_id', $company->company_id)
+            ->get()
+            ->unique('user_email')
+            ->values();
+        if ($employees->isEmpty()) {
+            return;
+        }
+
+        // if risk type is low
+        if ($riskType === 'low') {
+
+            foreach ($employees as $em) {
+                $payloadClicks = $this->payloadClickCounts($em, $company->company_id);
+                if ($payloadClicks > 2 && $payloadClicks < 5) {
+                    $this->addToSmartGroup($em, $groupName);
+                }
+            }
+        }
+
+        // if risk type is medium
+        if ($riskType === 'medium') {
+
+            foreach ($employees as $em) {
+                $payloadClicks = $this->payloadClickCounts($em, $company->company_id);
+                $compromised = $this->compromisedCount($em, $company->company_id);
+                if ($payloadClicks >= 5 && $payloadClicks < 10 && $compromised >= 5 && $compromised < 10) {
+                    $this->addToSmartGroup($em, $groupName);
+                }
+            }
+        }
+
+        //if risk type is high
+        if ($riskType === 'high') {
+
+            foreach ($employees as $em) {
+                $payloadClicks = $this->payloadClickCounts($em, $company->company_id);
+                $compromised = $this->compromisedCount($em, $company->company_id);
+                if ($payloadClicks >= 10 && $compromised >= 10) {
+                    $this->addToSmartGroup($em, $groupName);
+                }
+            }
+        }
+    }
+
+    private function payloadClickCounts($employee, $companyId)
+    {
+
+        $counts = CampaignLive::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->where('user_email', $employee->user_email)
+            ->count() +
+            QuishingLiveCamp::where('qr_scanned', '1')
+            ->where('company_id', $companyId)
+            ->where('user_email', $employee->user_email)
+            ->count() +
+            WaLiveCampaign::where('company_id', $companyId)
+            ->where('payload_clicked', 1)
+            ->where('user_email', $employee->user_email)
+            ->count();
+
+        return $counts;
+    }
+
+    private function compromisedCount($employee, $companyId)
+    {
+        $counts = CampaignLive::where('company_id', $companyId)
+            ->where('emp_compromised', 1)
+            ->where('user_email', $employee->user_email)
+            ->count() +
+            QuishingLiveCamp::where('compromised', '1')
+            ->where('company_id', $companyId)
+            ->where('user_email', $employee->user_email)
+            ->count() +
+            WaLiveCampaign::where('company_id', $companyId)
+            ->where('compromised', 1)
+            ->where('user_email', $employee->user_email)
+            ->count() +
+            AiCallCampLive::where('company_id', $companyId)
+            ->where('compromised', 1)
+            ->where('employee_email', $employee->user_email)
+            ->count();
+
+        return $counts;
+    }
+
+    private function addToSmartGroup($employee, $groupName)
+    {
+
+        //check if this group with this name already exists
+
+        $userGroup = UsersGroup::where('company_id', $employee->company_id)
+            ->where('group_name', $groupName)
+            ->first();
+        if (!$userGroup) {
+            $userGroup = UsersGroup::create([
+                'group_id' => Str::random(6),
+                'group_name' => $groupName,
+                'users' => null,
+                'company_id' => $employee->company_id
+            ]);
+        }
+
+        $emService = new EmployeeService();
+        // Check if the user is already in the group
+        $emailExists = $emService->emailExistsInGroup(
+            $userGroup->group_id,
+            $employee->user_email,
+            $employee->company_id
+        );
+        if (!$emailExists) {
+            $user = Users::create(
+                [
+                    'user_name' => $employee->user_name,
+                    'user_email' => $employee->user_email,
+                    'user_company' => $employee->user_company,
+                    'user_job_title' => $employee->user_job_title,
+                    'whatsapp' => $employee->whatsapp,
+                    'company_id' => $employee->company_id,
+                ]
+            );
+            $emService->addEmployeeInGroup($userGroup->group_id, $user->id);
         }
     }
 }

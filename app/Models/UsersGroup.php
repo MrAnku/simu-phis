@@ -23,10 +23,10 @@ class UsersGroup extends Model
         'company_id',
     ];
 
-    public function users(): HasMany
-    {
-        return $this->hasMany(Users::class, 'group_id', 'group_id');
-    }
+    // public function users(): HasMany
+    // {
+    //     return $this->hasMany(Users::class, 'group_id', 'group_id');
+    // }
     public function emailCampaigns(): HasMany
     {
         return $this->hasMany(Campaign::class, 'users_group', 'group_id');

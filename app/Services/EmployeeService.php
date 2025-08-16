@@ -212,9 +212,9 @@ class EmployeeService
             ->delete();
     }
 
-    public function emailExistsInGroup($groupId, $email)
+    public function emailExistsInGroup($groupId, $email, $companyId = null)
     {
-        $users = Users::where('user_email', $email)->where('company_id', Auth::user()->company_id)->get();
+        $users = Users::where('user_email', $email)->where('company_id', $companyId ?? Auth::user()->company_id)->get();
         if (!$users) {
             return false;
         }
