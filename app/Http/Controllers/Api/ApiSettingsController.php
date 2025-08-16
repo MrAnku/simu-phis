@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Company;
+use App\Models\SmartGroup;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
@@ -124,7 +125,6 @@ class ApiSettingsController extends Controller
             ], 500);
         }
     }
-
 
     public function updatePassword(UpdatePasswordRequest $request)
     {
@@ -937,4 +937,80 @@ class ApiSettingsController extends Controller
             'company_name' => 'simUphish',
         ];
     }
+
+    public function smartGroups()
+    {
+        try {
+            $smartGroups = SmartGroup::where('company_id', Auth::user()->company_id)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $smartGroups
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred ') .  $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function addSmartGroup(Request $request)
+    {
+        try {
+            $request->validate([
+                'group_name' => 'required|string|max:255',
+                'risk_type' => 'required|in:low,medium,high',
+            ]);
+
+            SmartGroup::create([
+                'group_name' => $request->group_name,
+                'risk_type' => $request->risk_type,
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            log_action("Smart Group created: " . $request->group_name);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Smart Group created successfully')
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteSmartGroup($id)
+    {
+        try {
+            $id = base64_decode($id);
+            $smartGroup = SmartGroup::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$smartGroup) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Smart Group not found')
+                ], 404);
+            }
+
+            $smartGroup->delete();
+
+            log_action("Smart Group deleted: " . $smartGroup->group_name);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Smart Group deleted successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
