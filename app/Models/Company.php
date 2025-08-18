@@ -112,4 +112,8 @@ class Company extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(WhiteLabelledCompany::class, 'company_id', 'company_id');
     }
+
+    public function autoSyncProviders(){
+        return $this->hasMany(AutoSyncEmployee::class, 'company_id', 'company_id');
+    }
 }

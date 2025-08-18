@@ -25,6 +25,7 @@ use App\Services\CheckWhitelabelService;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Models\AutoSyncEmployee;
 use Illuminate\Validation\ValidationException;
 
 class ApiSettingsController extends Controller
@@ -1010,6 +1011,124 @@ class ApiSettingsController extends Controller
             return response()->json([
                 'success' => false, 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function autoSyncing(){
+        try {
+            $autoSync = AutoSyncEmployee::where('company_id', Auth::user()->company_id)->get();
+
+
+            return response()->json([
+                'success' => true,
+                'data' => $autoSync
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') .  $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function addAutoSync(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider' => 'required|string|max:20|in:google,outlook',
+                'group_id' => 'required|string|max:6',
+                'provider_group_id' => 'required|string|max:25',
+                'sync_freq_days' => 'required|integer|in:1,3,7',
+                'sync_employee_limit' => 'required|integer|min:1|max:100',
+            ]);
+
+            AutoSyncEmployee::create([
+                'provider' => $request->provider,
+                'local_group_id' => $request->group_id,
+                'provider_group_id' => $request->provider_group_id,
+                'sync_freq_days' => $request->sync_freq_days,
+                'sync_employee_limit' => $request->sync_employee_limit,
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Auto Sync configuration saved successfully')
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteAutoSync(Request $request, $id)
+    {
+        try {
+            $id = base64_decode($id);
+            $autoSync = AutoSyncEmployee::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$autoSync) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Auto Sync configuration not found')
+                ], 404);
+            }
+
+            $autoSync->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Auto Sync configuration deleted successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateAutoSync(Request $request, $id)
+    {
+        try {
+            $id = base64_decode($id);
+            $autoSync = AutoSyncEmployee::where('id', $id)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$autoSync) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Auto Sync configuration not found')
+                ], 404);
+            }
+
+            $request->validate([
+                'provider' => 'required|string|max:20|in:google,outlook',
+                'group_id' => 'required|string|max:6',
+                'provider_group_id' => 'required|string|max:25',
+                'sync_freq_days' => 'required|integer|in:1,3,7',
+                'sync_employee_limit' => 'required|integer|min:1|max:100',
+            ]);
+
+            $autoSync->update([
+                'provider' => $request->provider,
+                'local_group_id' => $request->group_id,
+                'provider_group_id' => $request->provider_group_id,
+                'sync_freq_days' => $request->sync_freq_days,
+                'sync_employee_limit' => $request->sync_employee_limit,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Auto Sync configuration updated successfully')
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 

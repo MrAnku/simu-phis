@@ -220,6 +220,11 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/smart-groups', [ApiSettingsController::class, 'smartGroups']);
         Route::post('/smart-groups/add', [ApiSettingsController::class, 'addSmartGroup']);
         Route::delete('/smart-groups/delete/{id}', [ApiSettingsController::class, 'deleteSmartGroup']);
+        //auto syncing
+        Route::get('/auto-syncing', [ApiSettingsController::class, 'autoSyncing']);
+        Route::post('/auto-syncing/add', [ApiSettingsController::class, 'addAutoSync']);
+        Route::delete('/auto-syncing/delete/{id}', [ApiSettingsController::class, 'deleteAutoSync']);
+        Route::put('/auto-syncing/update/{id}', [ApiSettingsController::class, 'updateAutoSync']);
     });
 
     Route::prefix('sender-profiles')->group(function () {

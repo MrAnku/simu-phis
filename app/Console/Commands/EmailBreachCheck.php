@@ -318,25 +318,22 @@ class EmailBreachCheck extends Command
             ]);
         }
 
-        $emService = new EmployeeService();
+        $emService = new EmployeeService($employee->company_id);
         // Check if the user is already in the group
         $emailExists = $emService->emailExistsInGroup(
             $userGroup->group_id,
-            $employee->user_email,
-            $employee->company_id
+            $employee->user_email
         );
         if (!$emailExists) {
-            $user = Users::create(
-                [
-                    'user_name' => $employee->user_name,
-                    'user_email' => $employee->user_email,
-                    'user_company' => $employee->user_company,
-                    'user_job_title' => $employee->user_job_title,
-                    'whatsapp' => $employee->whatsapp,
-                    'company_id' => $employee->company_id,
-                ]
+            $user = $emService->addEmployee(
+                $employee->user_name,
+                $employee->user_email,
+                $employee->user_company,
+                $employee->user_job_title,
+                $employee->whatsapp,
+                true
             );
-            $emService->addEmployeeInGroup($userGroup->group_id, $user->id);
+            $emService->addEmployeeInGroup($userGroup->group_id, $user['user_id']);
         }
     }
 }

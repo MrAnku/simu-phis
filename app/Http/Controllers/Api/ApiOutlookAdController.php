@@ -218,7 +218,7 @@ class ApiOutlookAdController extends Controller
 
         $company_id = Auth::user()->company_id;
         $groupId = $request->groupId;
-        $employee = new EmployeeService();
+        $employee = new EmployeeService($company_id);
         $errors = [];
         foreach ($request->employees as $emp) {
             $validator = Validator::make($emp, [

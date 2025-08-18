@@ -726,7 +726,7 @@ class ApiEmployeesController extends Controller
             foreach ($request->user_ids as $id) {
                 $user = Users::find($id);
                 if ($user) {
-                    $employee = new EmployeeService();
+                    $employee = new EmployeeService(Auth::user()->company_id);
                     // Check if the user is already in the group
                     $emailExists = $employee->emailExistsInGroup($request->groupId, $user->user_email);
                     if ($emailExists) {
@@ -770,7 +770,7 @@ class ApiEmployeesController extends Controller
         if (!$isUserExists) {
             return response()->json(['success' => false, 'message' => __('User not found')], 404);
         }
-        $employee = new EmployeeService();
+        $employee = new EmployeeService(Auth::user()->company_id);
         try {
             $employee->deleteEmployeeById($user_id);
             log_action("Employee deleted : {$user_name}");
@@ -795,7 +795,7 @@ class ApiEmployeesController extends Controller
             if ($users->isEmpty()) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
-            $employee = new EmployeeService();
+            $employee = new EmployeeService(Auth::user()->company_id);
             foreach ($users as $user) {
                 try {
                     $employee->deleteEmployeeById($user->id);
@@ -859,7 +859,7 @@ class ApiEmployeesController extends Controller
                 return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
             }
 
-            $employee = new EmployeeService();
+            $employee = new EmployeeService(Auth::user()->company_id);
             //if email exists in group
             $emailExists = $employee->emailExistsInGroup($request->groupId, $request->usrEmail);
             if ($emailExists) {
@@ -926,7 +926,7 @@ class ApiEmployeesController extends Controller
                 return response()->json(['success' => false, 'message' => __('This email already exists')], 422);
             }
 
-            $employee = new EmployeeService();
+            $employee = new EmployeeService(Auth::user()->company_id);
 
             $addedEmployee = $employee->addEmployee(
                 $request->usrName,
@@ -969,7 +969,7 @@ class ApiEmployeesController extends Controller
             if (($handle = fopen(storage_path('app/' . $path), "r")) !== FALSE) {
                 // Flag to track if it's the first row
                 $firstRow = true;
-                $employee = new EmployeeService();
+                $employee = new EmployeeService(Auth::user()->company_id);
 
                 while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                     // Skip the first row
@@ -1043,7 +1043,7 @@ class ApiEmployeesController extends Controller
             if (!$grpId) {
                 return response()->json(['success' => false, 'message' => __('Group ID is required')], 422);
             }
-            $employee = new EmployeeService();
+            $employee = new EmployeeService(Auth::user()->company_id);
             $deleted = $employee->deleteGroup($grpId);
             if ($deleted['status'] == 1) {
 

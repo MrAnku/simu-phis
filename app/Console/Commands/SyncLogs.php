@@ -2,9 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Users;
 use App\Models\Company;
 use App\Models\SiemLog;
 use Illuminate\Console\Command;
+use App\Services\EmployeeService;
+use App\Services\OutlookAdService;
 use Illuminate\Support\Facades\Http;
 
 class SyncLogs extends Command
@@ -28,7 +31,8 @@ class SyncLogs extends Command
      */
     public function handle()
     {
-        $this->syncLogs();
+        // $this->syncLogs();
+        $this->handleAutoSyncEmployees();
     }
 
     private function syncLogs()
@@ -127,6 +131,98 @@ class SyncLogs extends Command
             }
         } catch (\Exception $e) {
             echo 'Error: ' . $e->getMessage();
+        }
+    }
+
+    private function handleAutoSyncEmployees()
+    {
+        try {
+            $companies = Company::where('approved', 1)
+                ->where('service_status', 1)
+                ->where('role', null)
+                ->get();
+
+            if ($companies->isEmpty()) {
+                return;
+            }
+
+            foreach ($companies as $company) {
+                setCompanyTimezone($company->company_id);
+
+                // check auto sync setup enabled or not
+                $autoSyncProviders = $company->autoSyncProviders;
+                if ($autoSyncProviders->isEmpty()) {
+                    continue;
+                }
+                foreach ($autoSyncProviders as $provider) {
+                    if ($provider->provider == 'outlook') {
+                        $this->syncOutlookEmployees($company, $provider);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            echo 'Error: ' . $e->getMessage();
+        }
+    }
+
+    private function syncOutlookEmployees($company, $provider)
+    {
+        $newAdService = new OutlookAdService($company->company_id);
+        // check if company has outlook ad config
+        if (!$newAdService->hasToken()) {
+            return;
+        }
+
+        // check if token is valid
+        if (!$newAdService->isTokenValid()) {
+            // if not then get the new token using refresh token
+            $tokenRegenerated = $newAdService->refreshAccessToken();
+            if (!$tokenRegenerated) {
+                return;
+            }
+        }
+
+        // check last synced at is null or < freq days
+        if ($provider->last_synced_at === null || $provider->last_synced_at < now()->subDays($provider->sync_freq_days)) {
+            $employees = $newAdService->fetchGroupMembers($provider->provider_group_id);
+
+            if (empty($employees)) {
+                return;
+            }
+
+            $existingEmails = Users::where('company_id', $company->company_id)
+                ->pluck('user_email')
+                ->map(fn($email) => strtolower($email))
+                ->flip()
+                ->toArray();
+
+            $newEmployees = collect($employees)
+                ->filter(fn($emp) => isset($emp['mail']) && !isset($existingEmails[strtolower($emp['mail'])]))
+                ->values(); // reindex
+
+            $empService = new EmployeeService($company->company_id);
+
+            $limit = $provider->sync_employee_limit;
+
+            // print_r($newEmployees);
+            // return;
+
+            for ($i = 0; $i < $limit; $i++) {
+                $employee = $newEmployees[$i];
+                $addedEmp = $empService->addEmployee(
+                    $employee['displayName'] ?? 'Unknown',
+                    $employee['mail'] ?? 'Unknown',
+                    null,
+                    null,
+                    null,
+                    false,
+                    true
+                );
+                $addedInGroup = $empService->addEmployeeInGroup($provider->local_group_id, $addedEmp['user_id']);
+            }
+
+            $provider->last_synced_at = now();
+            $provider->save();
         }
     }
 }

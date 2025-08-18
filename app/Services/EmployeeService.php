@@ -20,6 +20,13 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployeeService
 {
+    protected $companyId;
+
+    //constructor
+    public function __construct($companyId)
+    {
+        $this->companyId = $companyId;
+    }
 
     public function addEmployee($name, $email, $company = null, $jobTitle = null, $whatsapp = null, $fromAllEmployees = false, $fromOutlookAd = false)
     {
@@ -61,7 +68,7 @@ class EmployeeService
                 'user_company' => $company,
                 'user_job_title' => $jobTitle,
                 'whatsapp' => $whatsapp,
-                'company_id' => Auth::user()->company_id,
+                'company_id' => $this->companyId,
             ]
         );
         return [
@@ -76,7 +83,7 @@ class EmployeeService
         $domain = explode("@", $email)[1];
         $checkDomain = DomainVerified::where('domain', $domain)
             ->where('verified', 1)
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $this->companyId)
             ->exists();
 
         return $checkDomain;
@@ -143,7 +150,7 @@ class EmployeeService
     }
     public function checkCampaignsExists($groupId)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = $this->companyId;
         $campaigns = [
             Campaign::class,
             QuishingCamp::class,
@@ -171,13 +178,13 @@ class EmployeeService
     public function deleteEmployeeById($employeeId)
     {
 
-        $user = Users::where('id', $employeeId)->where('company_id', Auth::user()->company_id)->first();
+        $user = Users::where('id', $employeeId)->where('company_id', $this->companyId)->first();
         // $ifBreached = BreachedEmail::where('email', $user->user_email)->delete();
 
         if ($user) {
 
             //remove this id users column array from all groups
-            $groups = UsersGroup::where('company_id', Auth::user()->company_id)->get();
+            $groups = UsersGroup::where('company_id', $this->companyId)->get();
             if ($groups) {
                 foreach ($groups as $group) {
                     if ($group->users !== null) {
@@ -205,16 +212,16 @@ class EmployeeService
     {
 
         TrainingAssignedUser::where('user_email', $email)
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $this->companyId)
             ->delete();
         AssignedPolicy::where('user_email', $email)
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $this->companyId)
             ->delete();
     }
 
-    public function emailExistsInGroup($groupId, $email, $companyId = null)
+    public function emailExistsInGroup($groupId, $email)
     {
-        $users = Users::where('user_email', $email)->where('company_id', $companyId ?? Auth::user()->company_id)->get();
+        $users = Users::where('user_email', $email)->where('company_id', $this->companyId)->get();
         if (!$users) {
             return false;
         }
@@ -233,7 +240,7 @@ class EmployeeService
     }
     private function isLimitExceeded()
     {
-        $company_id = Auth::user()->company_id;
+        $company_id = $this->companyId;
         $company_license = CompanyLicense::where('company_id', $company_id)->first();
         if ($company_license->used_employees >= $company_license->employees) {
             return true;
@@ -244,7 +251,7 @@ class EmployeeService
 
     public function isExpired()
     {
-        $company_id = Auth::user()->company_id;
+        $company_id = $this->companyId;
         $company_license = CompanyLicense::where('company_id', $company_id)->first();
         if (!$company_license) {
             return true;
@@ -256,15 +263,15 @@ class EmployeeService
     private function increaseLimit($email)
     {
         $userExists = Users::where('user_email', $email)
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $this->companyId)
             ->exists();
 
         $deletedEmployee = DeletedEmployee::where('email', $email)
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $this->companyId)
             ->exists();
 
         if (!$userExists && !$deletedEmployee) {
-            $company_license = CompanyLicense::where('company_id', Auth::user()->company_id)->first();
+            $company_license = CompanyLicense::where('company_id', $this->companyId)->first();
             if ($company_license) {
                 $company_license->increment('used_employees');
             }
