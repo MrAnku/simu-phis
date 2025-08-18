@@ -739,7 +739,7 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
 
-            if( !WaCampaign::where('campaign_id', $campid)->exists()) {
+            if (!WaCampaign::where('campaign_id', $campid)->exists()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Campaign not found'),
@@ -831,18 +831,16 @@ class ApiWaCampaignController extends Controller
                 ->delete($apiUrl);
 
             if ($response->successful()) {
-                if ($template) {
-                    $template->delete();
-                    return response()->json([
-                        'success' => true,
-                        'message' => __('Template deleted successfully.'),
-                    ], 200);
-                } else {
-                    return response()->json([
-                        'success' => true,
-                        'message' => __('Failed to delete Template'),
-                    ], 422);
-                }
+                $template->delete();
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Template deleted successfully.'),
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to delete Template'),
+                ], 422);
             }
         } catch (\Exception $e) {
             return response()->json([
