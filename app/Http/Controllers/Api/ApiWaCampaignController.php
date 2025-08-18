@@ -749,11 +749,11 @@ class ApiWaCampaignController extends Controller
             $company_id = Auth::user()->company_id;
 
             WaCampaign::where('campaign_id', $campid)
-            ->where('company_id', $company_id)
-            ->update([
-                'launch_time' => now(),
-                'status' => 'running'
-            ]);
+                ->where('company_id', $company_id)
+                ->update([
+                    'launch_time' => now(),
+                    'status' => 'running'
+                ]);
 
             // Update campaign_live table
             WaLiveCampaign::where('campaign_id', $campid)
@@ -776,6 +776,78 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function deleteTemplate(Request $request)
+    {
+        try {
+            $templateId = $request->template_id;
+            $templateName = $request->template_name;
+
+            if (!$templateId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Template ID is required.'),
+                ], 422);
+            }
+
+            if (!$templateName) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Template Name is required.'),
+                ], 422);
+            }
+
+            $companyId = Auth::user()->company_id;
+            $whatsappConfig = CompanyWhatsappConfig::where('company_id', $companyId)->first();
+            if (!$whatsappConfig) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('WhatsApp configuration not found for this company.'),
+                ], 422);
+            }
+
+            $template = RequestWhatsappTemplate::where('template_id', $templateId)
+                ->where('name', $templateName)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if (!$template) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Template not found.'),
+                ], 404);
+            }
+
+            $accessToken = $whatsappConfig->access_token;
+            $waBusinessId = $whatsappConfig->business_id;
+
+            $apiUrl = "https://graph.facebook.com/v23.0/{$waBusinessId}/message_templates?hsm_id={$templateId}&name={$templateName}";
+
+            // Try to delete from Meta's server
+            $response = Http::withToken($accessToken)
+                ->withoutVerifying()
+                ->delete($apiUrl);
+
+            if ($response->successful()) {
+                if ($template) {
+                    $template->delete();
+                    return response()->json([
+                        'success' => true,
+                        'message' => __('Template deleted successfully.'),
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'success' => true,
+                        'message' => __('Failed to delete Template'),
+                    ], 422);
+                }
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete template: ' . $e->getMessage(),
             ], 500);
         }
     }

@@ -190,6 +190,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/requested-template/check/{template_id}', [ApiWaCampaignController::class, 'checkTemplateStatus']);
 
         Route::put('/relaunch/{campaign_id?}', [ApiWaCampaignController::class, 'relaunchCampaign']);
+
+        Route::delete('/delete-template', [ApiWaCampaignController::class, 'deleteTemplate']);
     });
 
     // Phishing Material routes
