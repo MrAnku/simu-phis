@@ -68,7 +68,6 @@ class ApiEmployeesController extends Controller
         try {
             $companyId = Auth::user()->company_id;
             $groups = UsersGroup::where('company_id', $companyId)
-                ->withCount('users')
                 ->get();
 
             return response()->json([

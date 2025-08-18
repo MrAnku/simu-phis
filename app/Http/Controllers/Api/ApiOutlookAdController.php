@@ -7,6 +7,7 @@ use App\Models\OutlookAdToken;
 use App\Models\OutlookDmiToken;
 use App\Models\Users;
 use App\Services\EmployeeService;
+use App\Services\OutlookAdService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -21,7 +22,7 @@ class ApiOutlookAdController extends Controller
             "response_type" => "code",
             "redirect_uri" => env('MS_REDIRECT_URI'),
             "response_mode" => "query",
-            "scope" => "openid profile email User.Read Directory.Read.All",
+            "scope" => "offline_access openid profile email User.Read Directory.Read.All",
             "state" => csrf_token() // Use CSRF token for security
         ]);
 
@@ -47,37 +48,21 @@ class ApiOutlookAdController extends Controller
             ], 403);
         }
 
-        $tokenUrl = env('MS_AUTHORITY') . "token";
-        $response = Http::asForm()->post($tokenUrl, [
-            "client_id" => env('MS_CLIENT_ID'),
-            "client_secret" => env('MS_CLIENT_SECRET'),
-            "code" => $request->code,
-            "redirect_uri" => env('MS_REDIRECT_URI'),
-            "grant_type" => "authorization_code",
-        ]);
-
-        $tokenData = $response->json();
-
-        if (!isset($tokenData['access_token'])) {
+        $newAdService = new OutlookAdService(Auth::user()->company_id);
+        $tokenSaved = $newAdService->getAccessToken($request->code);
+        if (!$tokenSaved) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to get access token')
+                'message' => __('Failed to save access token')
             ], 500);
         }
 
-        $accessToken = $tokenData['access_token'];
-
-        // Store the token in Laravel storage
-        OutlookAdToken::create([
-            'access_token' => $accessToken,
-            'company_id' => Auth::user()->company_id
-        ]);
-
         return response()->json([
             'success' => true,
-            'message' => __('Authorization Successfull! Now you can sync your employees')
+            'message' => __('Authorization Successful! Now you can sync your employees')
         ], 200);
     }
+
 
     public function saveOutlookDmiCode(Request $request)
     {
@@ -123,52 +108,50 @@ class ApiOutlookAdController extends Controller
 
     public function fetchGroups()
     {
-        $company_id = Auth::user()->company_id;
-        $token = OutlookAdToken::where('company_id', $company_id)->first();
-        if (!$token) {
-            return response()->json([
-                'success' => false,
-                'message' => __('You are not authorized to Sync Outlook AD Users')
-            ], 403);
-        }
+        try {
+            $company_id = Auth::user()->company_id;
 
-        // Define API URL
-        $apiUrl = env('MS_GRAPH_API_URL') . "groups";
+            $newAdService = new OutlookAdService($company_id);
 
-        // Fetch data from Microsoft Graph API
-        $response = Http::withToken($token->access_token)->get($apiUrl);
-
-        if ($response->failed()) {
-            $error = $response->json();
-            if ($error['error']['code'] == "InvalidAuthenticationToken") {
-                OutlookAdToken::where('company_id', $company_id)->delete();
+            if (!$newAdService->hasToken()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Your authentication token has expired. Please re-authorize')
-                ], 401);
+                    'message' => __('You are not authorized to Sync Outlook AD Users')
+                ], 403);
             }
+            if (!$newAdService->isTokenValid()) {
+                $tokenRegenerated = $newAdService->refreshAccessToken();
+                if (!$tokenRegenerated) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Failed to refresh access token')
+                    ], 401);
+                }
+            }
+
+            $groups = $newAdService->fetchGroups();
+
+            // Option 3: Most concise if you're certain $groups is always an array
+            if (count($groups) === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No groups found')
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'groups' => $groups,
+                'message' => __('Groups fetched successfully')
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $response->body()
+                'message' => __('Failed to fetch groups: ') . $e->getMessage()
             ], 500);
         }
-
-        $groups = $response->json();
-
-        // Ensure the response contains group data
-        if (!isset($groups['value'])) {
-            return response()->json([
-                'success' => false,
-                'message' => __('No groups found')
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'groups' => $groups['value'],
-            'message' => __('Groups fetched successfully')
-        ], 200);
     }
+
 
     public function fetchEmps(Request $request)
     {
@@ -182,60 +165,36 @@ class ApiOutlookAdController extends Controller
 
             $groupId = htmlspecialchars($groupId); // Sanitize input
 
-            $token = OutlookAdToken::where('company_id', $company_id)->first();
-            if (!$token) {
+            $newAdService = new OutlookAdService($company_id);
+
+            if (!$newAdService->hasToken()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('You are not authorized to Sync Outlook AD Users')
                 ], 403);
             }
-
-            // Initialize variables for pagination
-            $allUsers = [];
-            $nextLink = env('MS_GRAPH_API_URL') . "groups/{$groupId}/members?\$top=999";
-
-            // Fetch all users using pagination
-            do {
-                $response = Http::withToken($token->access_token)->get($nextLink);
-
-                if ($response->failed()) {
-                    $error = $response->json();
-                    if (isset($error['error']['code']) && $error['error']['code'] == "InvalidAuthenticationToken") {
-                        OutlookAdToken::where('company_id', $company_id)->delete();
-                        return response()->json([
-                            'success' => false,
-                            'message' => __('Your authentication token has expired. Please re-authorize')
-                        ], 401);
-                    }
+            if (!$newAdService->isTokenValid()) {
+                $tokenRegenerated = $newAdService->refreshAccessToken();
+                if (!$tokenRegenerated) {
                     return response()->json([
                         'success' => false,
-                        'message' => __('Failed to fetch users for the selected group')
-                    ], 500);
+                        'message' => __('Failed to refresh access token')
+                    ], 401);
                 }
+            }
 
-                $users = $response->json();
-
-                // Add users to the collection
-                if (isset($users['value'])) {
-                    $allUsers = array_merge($allUsers, $users['value']);
-                }
-
-                // Check for next page
-                $nextLink = $users['@odata.nextLink'] ?? null;
-            } while ($nextLink);
-
-            // Check if any users were found
-            if (empty($allUsers)) {
+            $employees = $newAdService->fetchGroupMembers($groupId);
+            if (empty($employees)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No users found in this group')
+                    'message' => __('No employees found in this group')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'employees' => $allUsers,
-                'total_count' => count($allUsers),
+                'employees' => $employees,
+                'total_count' => count($employees),
                 'message' => __('Employees fetched successfully')
             ], 200);
         } catch (\Exception $e) {

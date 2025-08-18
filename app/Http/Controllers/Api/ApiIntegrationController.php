@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Models\SiemProvider;
 use Illuminate\Http\Request;
 use App\Models\OutlookAdToken;
+use App\Models\OutlookDmiToken;
+use App\Services\OutlookAdService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CompanyWhatsappConfig;
-use App\Models\OutlookDmiToken;
 
 class ApiIntegrationController extends Controller
 {
@@ -26,7 +27,7 @@ class ApiIntegrationController extends Controller
             ->first();
         $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
         if (!$hasOutlookAdToken) {
-            $authenticateUrl = $this->generateLoginUrl();
+            $authenticateUrl = OutlookAdService::authenticateUrl();
         } else {
             $authenticateUrl = null;
         }
@@ -62,17 +63,5 @@ class ApiIntegrationController extends Controller
         ]);
     }
 
-    private function generateLoginUrl()
-    {
-        $authUrl = env('MS_AUTHORITY') . "authorize?" . http_build_query([
-            "client_id" => env('MS_CLIENT_ID'),
-            "response_type" => "code",
-            "redirect_uri" => env('MS_REDIRECT_URI'),
-            "response_mode" => "query",
-            "scope" => "openid profile email User.Read Directory.Read.All",
-            "state" => csrf_token() // Use CSRF token for security
-        ]);
-
-        return $authUrl;
-    }
+   
 }
