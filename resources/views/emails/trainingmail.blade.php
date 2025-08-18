@@ -102,6 +102,11 @@
                 {{ __('Start Training Now') }}
             </a>
         </div>
+        <div>
+            <p style="text-align: center; font-size: 1.1em; margin-top: 10px;">
+                {{ __('Assigned Trainings:') }}
+            </p>
+        </div>
         @if (!empty($trainingNames))
             <ul class="trainings">
                 @foreach ($trainingNames as $trainingName)
