@@ -23,7 +23,7 @@ class ApiLearnPolicyController extends Controller
             ]);
             $email = $request->email;
             $assignedPolicies = AssignedPolicy::with('policyData')->where('user_email', $email)
-            ->where('accepted', 0)->get();
+                ->where('accepted', 0)->get();
 
             if ($assignedPolicies->isEmpty()) {
                 return response()->json([
@@ -65,28 +65,20 @@ class ApiLearnPolicyController extends Controller
 
             $policy = Policy::where('id', $assignedPolicy->policy)->first();
 
-            if($policy->has_quiz == 1){
+            if ($policy->has_quiz == 1) {
                 $request->validate([
-                    'json_quiz_response' => 'required'
+                    'json_quiz_response' => 'required|array'
                 ]);
             }
 
             $companyId = $assignedPolicy->company_id;
             setCompanyTimezone($companyId);
-
-            $responses = null;
-            if ($request->input('json_quiz_response')) {
-                $responses = $request->input('json_quiz_response');
-
-                if (!is_array($responses)) {
-                    return response()->json(['success' => false, 'message' => 'Invalid quiz response format'], 422);
-                }
-            }
+            $quiz = $request->input('json_quiz_response');
 
             $assignedPolicy->update([
                 'accepted' => 1,
                 'accepted_at' => now(),
-                'json_quiz_response' => json_encode($responses),
+                'json_quiz_response' => empty($quiz) ? null : json_encode($quiz),
                 'reading_time' => $request->input('reading_time'),
             ]);
 
@@ -179,7 +171,7 @@ class ApiLearnPolicyController extends Controller
             ]);
             $email = $request->email;
             $acceptedPolicies = AssignedPolicy::with('policyData')->where('user_email', $email)
-            ->where('accepted', 1)->get();
+                ->where('accepted', 1)->get();
 
             if ($acceptedPolicies->isEmpty()) {
                 return response()->json([
