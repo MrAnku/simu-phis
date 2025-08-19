@@ -15,4 +15,9 @@ class AutoSyncEmployee extends Model
         'last_synced_at',
         'company_id',
     ];
+
+    public function localGroupDetail()
+    {
+        return $this->belongsTo(UsersGroup::class, 'local_group_id', 'group_id');
+    }
 }

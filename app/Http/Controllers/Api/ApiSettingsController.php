@@ -1016,7 +1016,7 @@ class ApiSettingsController extends Controller
 
     public function autoSyncing(){
         try {
-            $autoSync = AutoSyncEmployee::where('company_id', Auth::user()->company_id)->get();
+            $autoSync = AutoSyncEmployee::with('localGroupDetail')->where('company_id', Auth::user()->company_id)->get();
 
 
             return response()->json([
