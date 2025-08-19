@@ -1165,7 +1165,7 @@ class ApiSettingsController extends Controller
             $request->validate([
                 'provider' => 'required|string|max:20|in:google,outlook',
                 'group_id' => 'required|string|max:6',
-                'provider_group_id' => 'required|string|max:25',
+                'provider_group_id' => 'required|string|max:40',
                 'sync_freq_days' => 'required|integer|in:1,3,7',
                 'sync_employee_limit' => 'required|integer|min:1|max:100',
             ]);
