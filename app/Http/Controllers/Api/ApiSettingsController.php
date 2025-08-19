@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Company;
 use App\Models\SmartGroup;
+use App\Models\UsersGroup;
 use Endroid\QrCode\QrCode;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\CompanySettings;
 use Endroid\QrCode\Color\Color;
 use App\Mail\CreateSubAdminMail;
+use App\Models\AutoSyncEmployee;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -25,7 +27,6 @@ use App\Services\CheckWhitelabelService;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UpdatePasswordRequest;
-use App\Models\AutoSyncEmployee;
 use Illuminate\Validation\ValidationException;
 
 class ApiSettingsController extends Controller
@@ -1018,10 +1019,16 @@ class ApiSettingsController extends Controller
         try {
             $autoSync = AutoSyncEmployee::with('localGroupDetail')->where('company_id', Auth::user()->company_id)->get();
 
+            $localGroups = UsersGroup::where('company_id', Auth::user()->company_id)
+                ->get(['group_id', 'group_name']);
+
 
             return response()->json([
                 'success' => true,
-                'data' => $autoSync
+                'data' => [
+                    'auto_sync' => $autoSync,
+                    'local_groups' => $localGroups
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
