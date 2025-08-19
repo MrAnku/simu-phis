@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\SiemLog;
+use App\Models\UsersGroup;
 use Illuminate\Console\Command;
 use App\Services\EmployeeService;
 use App\Services\OutlookAdService;
@@ -180,6 +181,15 @@ class SyncLogs extends Command
             if (!$tokenRegenerated) {
                 return;
             }
+        }
+
+        //check if local group exists or not
+        $localGroupExists = UsersGroup::where('group_id', $provider->local_group_id)
+            ->where('company_id', $company->company_id)
+            ->exists();
+
+        if (!$localGroupExists) {
+            return;
         }
 
         // check last synced at is null or < freq days

@@ -135,6 +135,14 @@ class EmployeeService
                 'msg' => __('This division is associated with campaigns, please delete campaigns first')
             ];
         }
+        //check if this group is associated with autosync
+        $autoSyncExists = $group->autoSyncProviders()->exists();
+        if ($autoSyncExists) {
+            return [
+                'status' => 0,
+                'msg' => __('This division is associated with auto-sync, please change the division in auto sync config.')
+            ];
+        }
         //delete this group users also
         if ($group->users !== null) {
             $usersArray = json_decode($group->users, true);
@@ -143,6 +151,7 @@ class EmployeeService
             }
         }
         $group->delete();
+
         return [
             'status' => 1,
             'msg' => __('Division deleted successfully')

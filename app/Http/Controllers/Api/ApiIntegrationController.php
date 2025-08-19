@@ -9,6 +9,7 @@ use App\Models\OutlookDmiToken;
 use App\Services\OutlookAdService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\AutoSyncEmployee;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CompanyWhatsappConfig;
 
@@ -63,5 +64,25 @@ class ApiIntegrationController extends Controller
         ]);
     }
 
-   
+    public function disableOutlookDirectorySync(){
+        $companyId = Auth::user()->company_id;
+
+        // Check if auto sync is enabled
+        $autoSync = AutoSyncEmployee::where('company_id', $companyId)
+            ->where('provider', 'outlook')
+            ->exists();
+        if($autoSync){
+            return response()->json([
+                'success' => false,
+                'message' => __('Auto-sync is enabled for Outlook, please delete it first.')
+            ], 400);
+        }
+        OutlookAdToken::where('company_id', $companyId)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Outlook directory sync has been disabled successfully.')
+        ]);
+    }
+
 }

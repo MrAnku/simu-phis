@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -15,6 +16,8 @@ return new class extends Migration
             $table->text('refresh_token')->nullable()->after('access_token');
             $table->dateTime('expires_at')->nullable()->after('refresh_token');
         });
+        //delete existing tokens
+        DB::table('outlook_ad_tokens')->whereNull('refresh_token')->delete();
     }
 
     /**

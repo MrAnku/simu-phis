@@ -44,4 +44,9 @@ class UsersGroup extends Model
         $users = json_decode($this->users, true);
         return is_array($users) ? Users::whereIn('id', $users)->count() : 0;
     }
+
+    public function autoSyncProviders()
+    {
+        return $this->hasMany(AutoSyncEmployee::class, 'local_group_id', 'group_id');
+    }
 }

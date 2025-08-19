@@ -241,6 +241,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::prefix('integration')->group(function () {
         Route::get('/', [ApiIntegrationController::class, 'index']);
+        Route::delete('/disable-outlook-directory-sync', [ApiIntegrationController::class, 'disableOutlookDirectorySync']);
     });
 
     Route::prefix('training-module')->group(function () {
