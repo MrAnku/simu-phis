@@ -816,8 +816,8 @@ class ApiWaCampaignController extends Controller
             if (!$template) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Template not found.'),
-                ], 404);
+                    'message' => __('This template was not created on this platform. Please try deleting it directly from Meta.'),
+                ], 422);
             }
 
             $accessToken = $whatsappConfig->access_token;
