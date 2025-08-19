@@ -160,67 +160,14 @@ class ApiLearnBlueCollarController extends Controller
             $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
 
             // Calculate Risk score
-            $riskScoreRanges = [
-                'poor' => [0, 20],
-                'fair' => [21, 40],
-                'good' => [41, 60],
-                'veryGood' => [61, 80],
-                'excellent' => [81, 100],
-            ];
+            $riskData = $this->calculateRiskScore($user);
+            $riskScore = $riskData['riskScore'];
+            $riskLevel = $riskData['riskLevel'];
 
-            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-                ->where('company_id', $user->company_id);
+            // Calculate current rank
 
-            $totalWhatsapp = $whatsappCampaigns->count();
-            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-            // Risk score calculation
-            $riskScore = null;
-            $riskLevel = null;
-
-            $totalAll = $totalWhatsapp;
-            $compromisedAll = $compromisedWhatsapp;
-
-            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-            // Determine risk level
-            foreach ($riskScoreRanges as $label => [$min, $max]) {
-                if ($riskScore >= $min && $riskScore <= $max) {
-                    $riskLevel = $label;
-                    break;
-                }
-            }
-
-            $companyId = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->value('company_id');
-
-            $currentUserWhatsapp = $request->user_whatsapp;
-
-            $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
-            $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
-
-            $allUsers = $trainingUsers->merge($scormUsers);
-
-            $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
-                $average = $group->avg('personal_best');
-                $assignedTrainingsCount = $group->count();
-
-                return [
-                    'user_whatsapp' => $user_whatsapp,
-                    'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
-                    'average_score' => round($average, 2),
-                    'assigned_trainings_count' => $assignedTrainingsCount,
-                ];
-            })->filter(function ($user) {
-                return $user['average_score'] >= 50; // Filter users with score >= 50
-            })->sortByDesc('average_score')->values();
-
-            // Add leaderboard rank
-            $leaderboard = $grouped->map(function ($user, $index) {
-                $user['leaderboard_rank'] = $index + 1;
-                return $user;
-            });
-
-            $currentUserRank = optional($leaderboard->firstWhere('user_whatsapp', $currentUserWhatsapp))['leaderboard_rank'] ?? null;
+            $leaderboardRank = $this->calculateLeaderboardRank($request->user_whatsapp);
+            $currentUserRank = $leaderboardRank['current_user_rank'];
 
             return response()->json([
                 'success' => true,
@@ -244,6 +191,85 @@ class ApiLearnBlueCollarController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function calculateLeaderboardRank($user_whatsapp)
+    {
+
+        $companyId = BlueCollarEmployee::where('whatsapp', $user_whatsapp)->value('company_id');
+
+        $currentUserWhatsapp = $user_whatsapp;
+
+        $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
+        $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
+
+        $allUsers = $trainingUsers->merge($scormUsers);
+
+        $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
+            $average = $group->avg('personal_best');
+            $assignedTrainingsCount = $group->count();
+
+            return [
+                'user_whatsapp' => $user_whatsapp,
+                'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                'average_score' => round($average, 2),
+                'assigned_trainings_count' => $assignedTrainingsCount,
+            ];
+        })->filter(function ($user) {
+            return $user['average_score'] >= 10; // Filter users with score >= 10
+        })->sortByDesc('average_score')->values();
+
+        // Add leaderboard rank
+        $leaderboard = $grouped->map(function ($user, $index) {
+            $user['leaderboard_rank'] = $index + 1;
+            return $user;
+        });
+
+        $currentUserRank = optional($leaderboard->firstWhere('user_whatsapp', $currentUserWhatsapp))['leaderboard_rank'] ?? null;
+        return [
+            'leaderboard' => $leaderboard,
+            'current_user_rank' => $currentUserRank,
+        ];
+    }
+
+
+    private function calculateRiskScore($user)
+    {
+        $riskScoreRanges = [
+            'poor' => [0, 20],
+            'fair' => [21, 40],
+            'good' => [41, 60],
+            'veryGood' => [61, 80],
+            'excellent' => [81, 100],
+        ];
+
+        $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id);
+
+        $totalWhatsapp = $whatsappCampaigns->count();
+        $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
+
+        // Risk score calculation
+        $riskScore = null;
+        $riskLevel = null;
+
+        $totalAll = $totalWhatsapp;
+        $compromisedAll = $compromisedWhatsapp;
+
+        $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+        // Determine risk level
+        foreach ($riskScoreRanges as $label => [$min, $max]) {
+            if ($riskScore >= $min && $riskScore <= $max) {
+                $riskLevel = $label;
+                break;
+            }
+        }
+
+        return [
+            'riskScore' => $riskScore,
+            'riskLevel' => $riskLevel,
+        ];
     }
 
     public function getTranings(Request $request)
@@ -1007,37 +1033,9 @@ class ApiLearnBlueCollarController extends Controller
                 'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
             ]);
 
-            $currentUserWhatsapp = $request->user_whatsapp;
-
-            $companyId = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->value('company_id');
-
-            $trainingUsers = BlueCollarTrainingUser::where('company_id', $companyId)->get();
-            $scormUsers = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
-
-            $allUsers = $trainingUsers->merge($scormUsers);
-
-            $grouped = $allUsers->groupBy('user_whatsapp')->map(function ($group, $user_whatsapp) use ($currentUserWhatsapp) {
-                $average = $group->avg('personal_best');
-                 $completedTrainingsCount = $group->where('completed', 1)->count();
-
-                return [
-                    'user_whatsapp' => $user_whatsapp,
-                    'name' => strtolower($user_whatsapp) == strtolower($currentUserWhatsapp) ? 'You' : ($group->first()->user_name ?? 'N/A'),
-                    'average_score' => round($average, 2),
-                    'completed_trainings_count' => $completedTrainingsCount,
-                ];
-            })->filter(function ($user) {
-                return $user['average_score'] >= 50; // Filter users with score >= 50
-            })->sortByDesc('average_score')->values();
-
-
-            // Add leaderboard rank
-            $leaderboard = $grouped->map(function ($user, $index) {
-                $user['leaderboard_rank'] = $index + 1;
-                return $user;
-            });
-
-            $currentUserRank = optional($leaderboard->firstWhere('user_whatsapp', $currentUserWhatsapp))['leaderboard_rank'] ?? null;
+            $leaderboardRank = $this->calculateLeaderboardRank($request->user_whatsapp);
+            $currentUserRank = $leaderboardRank['current_user_rank'];
+            $leaderboard = $leaderboardRank['leaderboard'];
 
             // Limit to top 10 users for leaderboard
             $leaderboard = $leaderboard->take(10);

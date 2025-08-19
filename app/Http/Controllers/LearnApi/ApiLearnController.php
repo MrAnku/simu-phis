@@ -189,89 +189,14 @@ class ApiLearnController extends Controller
             $user = Users::where('user_email', $request->email)->first();
 
             // Calculate Risk score
-            $riskScoreRanges = [
-                'poor' => [0, 20],
-                'fair' => [21, 40],
-                'good' => [41, 60],
-                'veryGood' => [61, 80],
-                'excellent' => [81, 100],
-            ];
+            $riskData = $this->calculateRiskScore($user);
+            $riskScore = $riskData['riskScore'];
+            $riskLevel = $riskData['riskLevel'];
 
-            // Campaigns
-            $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
+            // Calculate current rank
 
-            $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
-
-            $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
-                ->where('company_id', $user->company_id);
-
-            $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-                ->where('company_id', $user->company_id);
-
-            $totalSimulations = $emailCampaigns->count();
-            $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
-
-            $totalQuishing = $quishingCampaigns->count();
-            $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
-
-            $totalTprm = $tprmCampaigns->count();
-            $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
-
-            $totalWhatsapp = $whatsappCampaigns->count();
-            $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-            // Risk score calculation
-            $riskScore = null;
-            $riskLevel = null;
-
-            $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-            $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
-
-            $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-            // Determine risk level
-            foreach ($riskScoreRanges as $label => [$min, $max]) {
-                if ($riskScore >= $min && $riskScore <= $max) {
-                    $riskLevel = $label;
-                    break;
-                }
-            }
-
-            // Calucalte current rank
-
-            $companyId = Users::where('user_email', $request->email)->value('company_id');
-
-            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
-            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
-
-            $allUsers = $trainingUsers->merge($scormUsers);
-
-            $currentUserEmail = $request->email;
-
-            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
-                $average = $group->avg('personal_best');
-                $assignedTrainingsCount = $group->count();
-
-                return [
-                    'email' => $email,
-                    'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
-                    'average_score' => round($average, 2),
-                    'assigned_trainings_count' => $assignedTrainingsCount,
-                ];
-            })->filter(function ($user) {
-                return $user['average_score'] >= 50; // Filter users with score >= 50
-            })->sortByDesc('average_score')->values();
-
-
-            // Add leaderboard rank
-            $leaderboard = $grouped->map(function ($user, $index) {
-                $user['leaderboard_rank'] = $index + 1;
-                return $user;
-            });
-
-            $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
+            $leaderboardRank = $this->calculateLeaderboardRank($request->email);
+            $currentUserRank = $leaderboardRank['current_user_rank'];
 
             return response()->json([
                 'success' => true,
@@ -295,6 +220,104 @@ class ApiLearnController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function calculateRiskScore($user)
+    {
+        $riskScoreRanges = [
+            'poor' => [0, 20],
+            'fair' => [21, 40],
+            'good' => [41, 60],
+            'veryGood' => [61, 80],
+            'excellent' => [81, 100],
+        ];
+
+        // Campaigns
+        $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
+            ->where('company_id', $user->company_id);
+
+        $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
+            ->where('company_id', $user->company_id);
+
+        $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
+            ->where('company_id', $user->company_id);
+
+        $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id);
+
+        $totalSimulations = $emailCampaigns->count();
+        $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
+
+        $totalQuishing = $quishingCampaigns->count();
+        $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
+
+        $totalTprm = $tprmCampaigns->count();
+        $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
+
+        $totalWhatsapp = $whatsappCampaigns->count();
+        $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
+
+        // Risk score calculation
+        $riskScore = null;
+        $riskLevel = null;
+
+        $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+        $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+        $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
+
+        // Determine risk level
+        foreach ($riskScoreRanges as $label => [$min, $max]) {
+            if ($riskScore >= $min && $riskScore <= $max) {
+                $riskLevel = $label;
+                break;
+            }
+        }
+
+        return [
+            'riskScore' => $riskScore,
+            'riskLevel' => $riskLevel,
+        ];
+    }
+
+    private function calculateLeaderboardRank($email)
+    {
+
+        $companyId = Users::where('user_email', $email)->value('company_id');
+
+        $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
+        $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
+
+        $allUsers = $trainingUsers->merge($scormUsers);
+
+        $currentUserEmail = $email;
+
+        $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
+            $average = $group->avg('personal_best');
+            $assignedTrainingsCount = $group->count();
+
+            return [
+                'email' => $email,
+                'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
+                'average_score' => round($average, 2),
+                'assigned_trainings_count' => $assignedTrainingsCount,
+            ];
+        })->filter(function ($user) {
+            return $user['average_score'] >= 10; // Filter users with score >= 10
+        })->sortByDesc('average_score')->values();
+
+
+        // Add leaderboard rank
+        $leaderboard = $grouped->map(function ($user, $index) {
+            $user['leaderboard_rank'] = $index + 1;
+            return $user;
+        });
+
+        $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
+        return [
+            'leaderboard' => $leaderboard,
+            'current_user_rank' => $currentUserRank,
+        ];
     }
 
     public function getNormalEmpTranings(Request $request)
@@ -1054,37 +1077,9 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $currentUserEmail = $request->email;
-
-            $companyId = Users::where('user_email', $request->email)->value('company_id');
-
-            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
-            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
-
-            $allUsers = $trainingUsers->merge($scormUsers);
-
-            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
-                $average = $group->avg('personal_best');
-                $completedTrainingsCount = $group->where('completed', 1)->count();
-
-                return [
-                    'email' => $email,
-                    'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
-                    'average_score' => round($average, 2),
-                    'completed_trainings_count' => $completedTrainingsCount,
-                ];
-            })->filter(function ($user) {
-                return $user['average_score'] >= 50; // Filter users with score >= 50
-            })->sortByDesc('average_score')->values();
-
-
-            // Add leaderboard rank
-            $leaderboard = $grouped->map(function ($user, $index) {
-                $user['leaderboard_rank'] = $index + 1;
-                return $user;
-            });
-
-            $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
+            $leaderboardRank = $this->calculateLeaderboardRank($request->email);
+            $currentUserRank = $leaderboardRank['current_user_rank'];
+            $leaderboard = $leaderboardRank['leaderboard'];
 
             // Limit to top 10 users for leaderboard
             $leaderboard = $leaderboard->take(10);
