@@ -1087,6 +1087,18 @@ class ApiSettingsController extends Controller
                 'sync_employee_limit' => 'required|integer|min:1|max:100',
             ]);
 
+            //check if the provider is already exists for this company
+            $existingSync = AutoSyncEmployee::where('company_id', Auth::user()->company_id)
+                ->where('provider', $request->provider)
+                ->first();
+
+            if ($existingSync) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Auto Sync configuration already exists')
+                ], 409);
+            }
+
             AutoSyncEmployee::create([
                 'provider' => $request->provider,
                 'local_group_id' => $request->group_id,
