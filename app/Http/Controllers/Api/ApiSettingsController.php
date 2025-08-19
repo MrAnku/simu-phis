@@ -823,6 +823,44 @@ class ApiSettingsController extends Controller
         }
     }
 
+
+
+    public function updateSubAdmin(Request $request){
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:company,email',
+                'enabled_feature' => 'nullable|array',
+            ]);
+
+            $subAdmin = Company::where('company_id', Auth::user()->company_id)
+                ->where('role', 'sub-admin')
+                ->where('email', $request->email)
+                ->first();
+
+            if (!$subAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Sub-admin not found')
+                ], 404);
+            }
+
+            $subAdmin->enabled_feature = $request->enabled_feature !== null ? json_encode($request->enabled_feature) : null;
+            $subAdmin->save();
+
+            log_action("Sub Admin updated: " . $request->email);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Features updated successfully')
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+
     public function subAdmins(){
         try {
             $subAdmins = Company::where('company_id', Auth::user()->company_id)

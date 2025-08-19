@@ -216,6 +216,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::put('/sub-admins/change-service-status', [ApiSettingsController::class, 'changeServiceStatus']);
         Route::delete('/sub-admins/delete-sub-admin', [ApiSettingsController::class, 'deleteSubAdmin']);
         Route::post('/add-sub-admin', [ApiSettingsController::class, 'addSubAdmin']);
+        Route::put('/update-sub-admin', [ApiSettingsController::class, 'updateSubAdmin']);
 
         Route::get('/smart-groups', [ApiSettingsController::class, 'smartGroups']);
         Route::post('/smart-groups/add', [ApiSettingsController::class, 'addSmartGroup']);
