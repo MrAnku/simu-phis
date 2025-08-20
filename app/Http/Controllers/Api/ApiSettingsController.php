@@ -830,25 +830,27 @@ class ApiSettingsController extends Controller
         try {
             $request->validate([
                 'email' => 'required|email|exists:company,email',
+                'role' => 'required|string|in:admin,sub-admin',
                 'enabled_feature' => 'nullable|array',
             ]);
 
             $subAdmin = Company::where('company_id', Auth::user()->company_id)
-                ->where('role', 'sub-admin')
+                ->where('role', '!=', null)
                 ->where('email', $request->email)
                 ->first();
 
             if (!$subAdmin) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Sub-admin not found')
+                    'message' => __('Sub-admin/Admin not found')
                 ], 404);
             }
 
             $subAdmin->enabled_feature = $request->enabled_feature !== null ? json_encode($request->enabled_feature) : null;
+            $subAdmin->role = $request->role;
             $subAdmin->save();
 
-            log_action("Sub Admin updated: " . $request->email);
+            log_action("Sub Admin/Admin updated: " . $request->email);
 
             return response()->json([
                 'success' => true,
