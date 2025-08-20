@@ -268,20 +268,134 @@ class ApiEmployeesController extends Controller
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
 
+            $data = [
+                'personal' => $exist,
+                'campaigns' => $this->getCampaigns($email),
+                'training_assigned' => $this->getTrainingAssigned($email),
+                'security_score' => $this->getSecurityScore($email),
+            ];
+
+            $aiAnalysis = $this->getAIAnalysis($data);
+
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'personal' => $exist,
-                    'campaigns' => $this->getCampaigns($email),
-                    'training_assigned' => $this->getTrainingAssigned($email),
-                    'security_score' => $this->getSecurityScore($email),
-                ],
+                'data' => $data,
+                'ai_analysis' => $aiAnalysis,
                 'message' => __('Employee details retrieved successfully')
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+    private function getAIAnalysis($data)
+    {
+        try {
+            $openaiApiKey = env('OPENAI_API_KEY');
+
+            if (!$openaiApiKey) {
+                // Fallback to manual analysis if API key not configured
+                return $this->getFallbackAnalysis($data);
+            }
+
+            // Prepare data for AI analysis
+            $analysisData = [
+                'security_score' => $data['security_score']['security_score'] ?? null,
+                'risk_score' => $data['security_score']['risk_score'] ?? null,
+                'total_simulations' => $data['security_score']['total_simulations'] ?? null,
+                'compromised_simulations' => $data['security_score']['compromised_simulations'] ?? null,
+                'email_compromises' => $data['campaigns']['email_summary']['in_attack'] ?? 0,
+                'quishing_compromises' => $data['campaigns']['quishing_summary']['in_attack'] ?? 0,
+                'whatsapp_compromises' => $data['campaigns']['whatsapp_summary']['in_attack'] ?? 0,
+                'ai_call_responses' => $data['campaigns']['ai_call_summary']['total_calls_responded'] ?? 0,
+                'overdue_trainings' => $data['training_assigned']['overdue_trainings'] ?? 0,
+                'employee_name' => $data['personal']['user_name'] ?? 'Employee',
+            ];
+
+            $prompt = "Analyze this employee's cybersecurity behavior and provide 6-7 key insights as a JSON array of strings. Data: " . json_encode($analysisData) .
+                "\n\nAnalysis should cover: current security posture, vulnerabilities, training compliance, recommendations, and overall risk. " .
+                "If security score > 85% with low compromises, include positive reinforcement. " .
+                "Return only a JSON array of strings, maximum 7 items.";
+
+            $response = \Illuminate\Support\Facades\Http::timeout(30)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $openaiApiKey,
+                    'Content-Type' => 'application/json',
+                ])
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-4o',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a cybersecurity expert analyzing employee security behavior. Respond ONLY with a valid JSON array of strings.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
+                    ],
+                    'max_tokens' => 300,   // smaller cap, since we only need ~7 sentences
+                    'temperature' => 0.3   // lower for more consistent JSON output
+                ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+                $content = $result['choices'][0]['message']['content'] ?? null;
+
+                if ($content) {
+                    // Try to extract JSON array safely
+                    preg_match('/\[[\s\S]*\]/', $content, $matches);
+
+                    if ($matches) {
+                        $aiAnalysis = json_decode($matches[0], true);
+
+                        if (is_array($aiAnalysis)) {
+                            return array_slice($aiAnalysis, 0, 7);
+                        }
+                    }
+                }
+            }
+
+            // Fallback if AI response is invalid
+           
+            return $this->getFallbackAnalysis($data);
+        } catch (\Exception $e) {
+            return $this->getFallbackAnalysis($data);
+        }
+    }
+
+
+
+    private function getFallbackAnalysis($data)
+    {
+        $analysis = [];
+
+        $totalSimulations = $data['security_score']['total_simulations'];
+        $compromisedCount = $data['security_score']['compromised_simulations'];
+        $securityScore = $data['security_score']['security_score'];
+        $overdueTrainings = $data['training_assigned']['overdue_trainings'];
+
+        if ($totalSimulations == 0) {
+            $analysis[] = "Employee has not participated in any security simulations yet. Consider enrolling them in upcoming campaigns.";
+        } elseif ($securityScore >= 85) {
+            return ["Excellent security awareness demonstrated! This employee maintains strong cybersecurity practices and serves as a model for the organization."];
+        } else {
+            if ($securityScore < 50) {
+                $analysis[] = "CRITICAL: High vulnerability detected with {$compromisedCount} compromises out of {$totalSimulations} simulations. Immediate intervention required.";
+            }
+
+            if ($data['campaigns']['email_summary']['in_attack'] > 0) {
+                $analysis[] = "Email security training needed - employee fell for phishing attempts.";
+            }
+
+            if ($overdueTrainings > 0) {
+                $analysis[] = "Training compliance issue: {$overdueTrainings} modules overdue.";
+            }
+        }
+
+        return array_slice($analysis, 0, 7);
+    }
+
 
     private function getCampaigns($email)
     {
