@@ -744,6 +744,7 @@ class ApiSettingsController extends Controller
             $request->validate([
                 'email' => 'required|email|unique:company,email',
                 'full_name' => 'required|string|max:255',
+                'role' => 'required|string|in:sub-admin,admin',
                 'enabled_feature' => 'nullable|array',
             ]);
 
@@ -760,7 +761,7 @@ class ApiSettingsController extends Controller
                 "employees" => $admin->employees,
                 "usedemployees" => $admin->usedemployees,
                 "storage_region" => $admin->storage_region,
-                "role" => 'sub-admin',
+                "role" => $request->role,
                 "approved" => 1,
                 "service_status" => 1,
                 "account_type" => 'normal',
