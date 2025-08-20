@@ -866,10 +866,14 @@ class ApiSettingsController extends Controller
             $subAdmins = Company::where('company_id', Auth::user()->company_id)
                 ->where('role', 'sub-admin')
                 ->get(['email', 'full_name', 'enabled_feature', 'service_status', 'created_at']);
+            $adminPermissions = Company::where('company_id', Auth::user()->company_id)
+                ->where('role', null)
+                ->first(['enabled_feature']);
 
             return response()->json([
                 'success' => true,
-                'data' => $subAdmins
+                'data' => $subAdmins,
+                'admin_permissions' => $adminPermissions ?? []
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
