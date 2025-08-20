@@ -867,8 +867,8 @@ class ApiSettingsController extends Controller
     public function subAdmins(){
         try {
             $subAdmins = Company::where('company_id', Auth::user()->company_id)
-                ->where('role', 'sub-admin')
-                ->get(['email', 'full_name', 'enabled_feature', 'service_status', 'created_at']);
+                ->where('role','!=', null)
+                ->get(['email', 'full_name', 'role', 'enabled_feature', 'service_status', 'created_at']);
             $adminPermissions = Company::where('company_id', Auth::user()->company_id)
                 ->where('role', null)
                 ->first(['enabled_feature']);
