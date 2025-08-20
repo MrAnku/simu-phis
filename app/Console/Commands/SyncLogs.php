@@ -169,36 +169,47 @@ class SyncLogs extends Command
     private function syncOutlookEmployees($company, $provider)
     {
         $newAdService = new OutlookAdService($company->company_id);
+
         // check if company has outlook ad config
         if (!$newAdService->hasToken()) {
+            echo "has not token\n";
             return;
         }
+        echo "token found\n";
 
         // check if token is valid
         if (!$newAdService->isTokenValid()) {
-            // if not then get the new token using refresh token
+            echo "token expired\n";
             $tokenRegenerated = $newAdService->refreshAccessToken();
             if (!$tokenRegenerated) {
+                echo "token not regenerated\n";
                 return;
             }
         }
 
-        //check if local group exists or not
+        // check if local group exists
         $localGroupExists = UsersGroup::where('group_id', $provider->local_group_id)
             ->where('company_id', $company->company_id)
             ->exists();
 
         if (!$localGroupExists) {
+            echo "local group not exists\n";
             return;
         }
+        echo "local group found\n";
 
-        // check last synced at is null or < freq days
+        // check sync frequency
         if ($provider->last_synced_at === null || $provider->last_synced_at < now()->subDays($provider->sync_freq_days)) {
+            echo "ready to sync\n";
+
             $employees = $newAdService->fetchGroupMembers($provider->provider_group_id);
 
             if (empty($employees)) {
+                echo "members not found in provider group\n";
                 return;
             }
+
+            echo "members found\n";
 
             $existingEmails = Users::where('company_id', $company->company_id)
                 ->pluck('user_email')
@@ -208,17 +219,15 @@ class SyncLogs extends Command
 
             $newEmployees = collect($employees)
                 ->filter(fn($emp) => isset($emp['mail']) && !isset($existingEmails[strtolower($emp['mail'])]))
-                ->values(); // reindex
+                ->values(); // reindex collection
 
             $empService = new EmployeeService($company->company_id);
 
             $limit = $provider->sync_employee_limit;
+            echo "ready to add the employee in limit {$limit}\n";
 
-            // print_r($newEmployees);
-            // return;
-
-            for ($i = 0; $i < $limit; $i++) {
-                $employee = $newEmployees[$i];
+            // loop safely, only up to the available new employees
+            $newEmployees->take($limit)->each(function ($employee) use ($empService, $provider) {
                 $addedEmp = $empService->addEmployee(
                     $employee['displayName'] ?? 'Unknown',
                     $employee['mail'] ?? 'Unknown',
@@ -228,8 +237,11 @@ class SyncLogs extends Command
                     false,
                     true
                 );
-                $addedInGroup = $empService->addEmployeeInGroup($provider->local_group_id, $addedEmp['user_id']);
-            }
+
+                $empService->addEmployeeInGroup($provider->local_group_id, $addedEmp['user_id']);
+            });
+
+            echo "Sync success\n";
 
             $provider->last_synced_at = now();
             $provider->save();
