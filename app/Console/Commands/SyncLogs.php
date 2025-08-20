@@ -177,16 +177,6 @@ class SyncLogs extends Command
         }
         echo "token found\n";
 
-        // check if token is valid
-        if (!$newAdService->isTokenValid()) {
-            echo "token expired\n";
-            $tokenRegenerated = $newAdService->refreshAccessToken();
-            if (!$tokenRegenerated) {
-                echo "token not regenerated\n";
-                return;
-            }
-        }
-
         // check if local group exists
         $localGroupExists = UsersGroup::where('group_id', $provider->local_group_id)
             ->where('company_id', $company->company_id)
@@ -200,6 +190,17 @@ class SyncLogs extends Command
 
         // check sync frequency
         if ($provider->last_synced_at === null || $provider->last_synced_at < now()->subDays($provider->sync_freq_days)) {
+
+            // check if token is valid
+            if (!$newAdService->isTokenValid()) {
+                echo "token expired\n";
+                $tokenRegenerated = $newAdService->refreshAccessToken();
+                if (!$tokenRegenerated) {
+                    echo "token not regenerated\n";
+                    return;
+                }
+            }
+            echo "token valid\n";
             echo "ready to sync\n";
 
             $employees = $newAdService->fetchGroupMembers($provider->provider_group_id);
