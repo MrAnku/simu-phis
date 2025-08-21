@@ -900,27 +900,31 @@ if (!function_exists('atLeastOneUserWithWhatsapp')) {
 }
 
 if (!function_exists('getRandomDomain')) {
-    function getRandomDomain(){
+    function getRandomDomain()
+    {
         $domain = PhishingDomain::inRandomOrder()->first();
         return $domain ? $domain->domain : env('PHISHING_WEBSITE_DOMAIN');
     }
 }
 if (!function_exists('checkPhishingWebsiteDomain')) {
-    function checkPhishingWebsiteDomain(){
-        $host = request()->getHost();
+    function checkPhishingWebsiteDomain()
+    {
+        if (Schema::hasTable('phishing_domains')) {
+            $host = request()->getHost();
 
-        //remove subdomain
-        $hostParts = explode('.', $host);
-        if (count($hostParts) > 2) {
-            array_shift($hostParts);
+            //remove subdomain
+            $hostParts = explode('.', $host);
+            if (count($hostParts) > 2) {
+                array_shift($hostParts);
+            }
+            $domain = implode('.', $hostParts);
+
+            $domainExists = PhishingDomain::where('domain', $domain)->first();
+            if ($domainExists) {
+                return $domainExists->domain;
+            }
+
+            return env('PHISHING_WEBSITE_DOMAIN');
         }
-        $domain = implode('.', $hostParts);
-
-        $domainExists = PhishingDomain::where('domain', $domain)->first();
-        if($domainExists){
-            return $domainExists->domain;
-        }
-
-        return env('PHISHING_WEBSITE_DOMAIN');
     }
 }
