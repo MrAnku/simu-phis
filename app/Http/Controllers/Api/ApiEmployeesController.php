@@ -19,6 +19,7 @@ use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\AiCallCampaign;
+use App\Models\Campaign;
 use App\Models\InfoGraphicLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
@@ -273,6 +274,7 @@ class ApiEmployeesController extends Controller
                 'campaigns' => $this->getCampaigns($email),
                 'training_assigned' => $this->getTrainingAssigned($email),
                 'security_score' => $this->getSecurityScore($email),
+                'emails_viewed' => $this->getEmailViewed($email)
             ];
 
             $aiAnalysis = $this->getAIAnalysis($data);
@@ -396,6 +398,10 @@ class ApiEmployeesController extends Controller
         return array_slice($analysis, 0, 7);
     }
 
+    private function getEmailViewed($email)
+    {
+        return CampaignLive::where('user_email', $email)->where('mail_open', 1)->count() + QuishingLiveCamp::where('user_email', $email)->where('mail_open', '1')->count();
+    }
 
     private function getCampaigns($email)
     {
