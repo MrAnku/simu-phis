@@ -79,14 +79,14 @@ Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft
 
 //-------------------miscellaneous routes------------------//
 
-Route::domain(env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(function () {
+Route::domain(checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
     });
 });
 
-Route::domain("{subdomain}." . env('PHISHING_WEBSITE_DOMAIN'))->middleware('blockGoogleBots')->group(function () {
+Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');

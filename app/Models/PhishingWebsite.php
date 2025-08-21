@@ -22,12 +22,17 @@ class PhishingWebsite extends Model
 
     public function getUrlAttribute()
     {
-        return 'http://' . Str::random(6) . '.' . $this->domain . '/' . Str::random(10)
+        return 'http://' . Str::random(6)
+            . '.'
+            . getRandomDomain()
+            . '/'
+            . Str::random(10)
             . '?v=r&c=' . Str::random(10)
             . '&p=' . $this->id
             . '&l=' . Str::slug($this->name);
     }
-    public function whatsappCampLive(){
+    public function whatsappCampLive()
+    {
         return $this->hasMany(WaLiveCampaign::class, 'phishing_website', 'id');
     }
 }

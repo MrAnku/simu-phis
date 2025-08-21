@@ -796,6 +796,7 @@ private function assignTrainingByWhatsapp($campid)
             $companyId = Users::where('id', $userid)->value('company_id');
 
             setCompanyTimezone($companyId);
+            log_action("Phishing email payload clicked", 'company', $companyId);
 
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);

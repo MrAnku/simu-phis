@@ -12,6 +12,7 @@ use App\Models\UsersGroup;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
 use App\Models\ScormTraining;
+use App\Models\PhishingDomain;
 use App\Models\CompanySettings;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
@@ -559,7 +560,7 @@ if (!function_exists('getWebsiteUrl')) {
         $slugName = Str::slug($website->name);
 
         // Construct the base URL
-        $baseUrl = "https://{$randomString1}." . env('PHISHING_WEBSITE_DOMAIN') . "/{$randomString2}";
+        $baseUrl = "https://{$randomString1}." . getRandomDomain() . "/{$randomString2}";
 
         // Define query parameters
         $params = [
@@ -895,5 +896,31 @@ if (!function_exists('atLeastOneUserWithWhatsapp')) {
         }
 
         return $hasWhatsapp;
+    }
+}
+
+if (!function_exists('getRandomDomain')) {
+    function getRandomDomain(){
+        $domain = PhishingDomain::inRandomOrder()->first();
+        return $domain ? $domain->domain : env('PHISHING_WEBSITE_DOMAIN');
+    }
+}
+if (!function_exists('checkPhishingWebsiteDomain')) {
+    function checkPhishingWebsiteDomain(){
+        $host = request()->getHost();
+
+        //remove subdomain
+        $hostParts = explode('.', $host);
+        if (count($hostParts) > 2) {
+            array_shift($hostParts);
+        }
+        $domain = implode('.', $hostParts);
+
+        $domainExists = PhishingDomain::where('domain', $domain)->first();
+        if($domainExists){
+            return $domainExists->domain;
+        }
+
+        return env('PHISHING_WEBSITE_DOMAIN');
     }
 }
