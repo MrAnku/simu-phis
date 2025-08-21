@@ -37,6 +37,8 @@ use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiAssignedTrainingsController;
 use App\Http\Controllers\Api\ApiComplianceController;
+use App\Http\Controllers\Api\ApiCustomCertifcate;
+use App\Http\Controllers\Api\ApiCustomCertificate;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
@@ -575,6 +577,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('notifications')->group(function () {
         Route::get('fetch-notifications', [ApiNotificationsController::class, 'getNotifications']);
         Route::put('/mark-all-read', [ApiNotificationsController::class, 'markAllAsRead']);
+    });
+
+    // Custom Certificate
+    Route::prefix('certificate-templates')->group(function () {
+        Route::post('add-certificate', [ApiCustomCertificate::class, 'addCertificate']);
+        Route::put('select-certificate', [ApiCustomCertificate::class, 'selectCertificate']);
     });
 });
 

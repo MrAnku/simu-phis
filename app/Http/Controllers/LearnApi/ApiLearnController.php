@@ -23,9 +23,13 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\CampaignLive;
+use App\Models\CertificateTemplate;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WaLiveCampaign;
+use App\Services\TrainingScoreService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -394,12 +398,7 @@ class ApiLearnController extends Controller
             $row_id = base64_decode($request->encoded_id);
 
             $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
-            if (!$rowData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Training not found.'
-                ], 404);
-            }
+           
             $user = $rowData->user_email;
 
             if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
@@ -494,7 +493,9 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
+                    $scoreService = new TrainingScoreService();
+
+                    $pdfContent = $scoreService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
 
                     $emailFolder = $rowData->user_email;
                     $pdfFileName = 'certificate_' . time() . '.pdf';
@@ -661,7 +662,8 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $pdfContent = $this->generateScormCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_email, $companyLogo, $favIcon);
+                    $scoreService = new TrainingScoreService();
+                    $pdfContent = $scoreService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
                     $emailFolder = $rowData->user_email;
                     $pdfFileName = 'certificate_' . time() . '.pdf';
@@ -674,8 +676,7 @@ class ApiLearnController extends Controller
 
                     $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
-
-
+                    
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 
                     log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
@@ -736,176 +737,6 @@ class ApiLearnController extends Controller
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-
-    public function generateCertificatePdf($name, $trainingModuleName, $trainingId, $date, $userEmail, $logo, $favIcon)
-    {
-        $certificateId = $this->getCertificateId($userEmail, $trainingId);
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($userEmail, $certificateId, $trainingId);
-        }
-
-        $pdf = new Fpdi();
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
-
-        // Truncate name if too long
-        if (strlen($name) > 15) {
-            $name = mb_substr($name, 0, 12) . '...';
-        }
-
-        // Add user name
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
-
-        // Add training module
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $trainingModuleName", 0, 1, 'L');
-
-        // Add date and certificate ID
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
-
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
-
-        if ($logo || file_exists($logo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
-
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
-
-        return $pdf->Output('S');
-    }
-
-    public function generateScormCertificatePdf($name, $scormName, $scorm, $date, $userEmail, $logo, $favIcon)
-    {
-        $certificateId = $this->getScormCertificateId($userEmail, $scorm);
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeScormCertificateId($userEmail, $certificateId, $scorm);
-        }
-
-        $pdf = new Fpdi();
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
-
-        // Truncate name if too long
-        if (strlen($name) > 15) {
-            $name = mb_substr($name, 0, 12) . '...';
-        }
-
-        // Add user name
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
-
-        // Add training module
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $scormName", 0, 1, 'L');
-
-        // Add date and certificate ID
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
-
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
-
-        if ($logo || file_exists($logo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
-
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
-
-        return $pdf->Output('S');
-    }
-
-    private function getCertificateId($userEmail, $trainingId)
-    {
-        // Check the database for an existing certificate ID for this user and training module
-        $certificate = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $userEmail)
-            ->first();
-
-        return $certificate ? $certificate->certificate_id : null;
-    }
-
-    private function getScormCertificateId($userEmail, $scorm)
-    {
-        // Check the database for an existing certificate ID for this user and training module
-        $certificate = ScormAssignedUser::where('scorm', $scorm)
-            ->where('user_email', $userEmail)
-            ->first();
-
-        return $certificate ? $certificate->certificate_id : null;
-    }
-
-    private function generateCertificateId()
-    {
-        // Generate a unique random ID. You can adjust the format as needed.
-        return strtoupper(uniqid('CERT-'));
-    }
-
-    private function storeCertificateId($userEmail, $certificateId, $trainingId)
-    {
-        // Find the existing record based on training module and userEmail
-        $trainingAssignedUser = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $userEmail)
-            ->first();
-
-        // Check if the record was found
-        if ($trainingAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $trainingAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
-        }
-
-        $scormAssignedUser = ScormAssignedUser::where('scorm', $trainingId)
-            ->where('user_email', $userEmail)
-            ->first();
-
-        if ($scormAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $scormAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
-        }
-    }
-
-    private function storeScormCertificateId($userEmail, $certificateId, $scorm)
-    {
-        $scormAssignedUser = ScormAssignedUser::where('scorm', $scorm)
-            ->where('user_email', $userEmail)
-            ->first();
-
-        if ($scormAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $scormAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
         }
     }
 
