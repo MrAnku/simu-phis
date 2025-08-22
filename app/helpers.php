@@ -1008,3 +1008,41 @@ if (!function_exists('extractIntegers')) {
         return (int) substr($digits, 0, 6);
     }
 }
+
+if (!function_exists('assignGrade')) {
+    function assignGrade($rowData, $trainingScore)
+    {
+        if ($trainingScore >= 90) {
+            $rowData->grade = 'A+';
+        } elseif ($trainingScore >= 80) {
+            $rowData->grade = 'A';
+        } elseif ($trainingScore >= 70) {
+            $rowData->grade = 'B+';
+        } elseif ($trainingScore >= 60) {
+            $rowData->grade = 'B';
+        } elseif ($trainingScore >= 50) {
+            $rowData->grade = 'C+';
+        } elseif ($trainingScore >= 40) {
+            $rowData->grade = 'C';
+        } else {
+            $rowData->grade = 'F';
+        }
+        $rowData->save();
+    }
+}
+
+if (!function_exists('assignBadge')) {
+    function assignBadge($trainingData, $badge)
+    {
+        // Decode existing badges (or empty array if null)
+        $existingBadges = json_decode($trainingData->badge, true) ?? [];
+
+        // Avoid duplicates
+        if (!in_array($badge, $existingBadges)) {
+            $existingBadges[] = $badge; // Add new badge
+        }
+
+        // Save back to the model
+        $trainingData->badge = json_encode($existingBadges);
+    }
+}

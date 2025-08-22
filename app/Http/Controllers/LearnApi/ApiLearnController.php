@@ -403,16 +403,17 @@ class ApiLearnController extends Controller
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
-
+                
                 // Assign Grade based on score
-                $normalEmpLearnService->assignGrade($rowData, $request->trainingScore);
+                assignGrade($rowData, $request->trainingScore);
 
                 $badge = getMatchingBadge('score', $request->trainingScore);
                 // This helper function accepts a criteria type and value, and returns the first matching badge
 
                 if ($badge) {
-                    $normalEmpLearnService->assignBadge($rowData, $badge);
+                    assignBadge($rowData, $badge);
                 }
+
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -432,7 +433,7 @@ class ApiLearnController extends Controller
                     // This helper function accepts a criteria type and value, and returns the first matching badge
 
                     if ($badge) {
-                        $normalEmpLearnService->assignBadge($rowData, $badge);
+                        assignBadge($rowData, $badge);
                     }
                     $rowData->save();
 
@@ -552,13 +553,13 @@ class ApiLearnController extends Controller
                 $normalEmpLearnService = new NormalEmpLearnService();
 
                 // Assign Grade based on score
-                $normalEmpLearnService->assignGrade($rowData, $request->trainingScore);
+                assignGrade($rowData, $request->trainingScore);
 
                 $badge = getMatchingBadge('score', $request->trainingScore);
                 // This helper function accepts a criteria type and value, and returns the first matching badge
 
                 if ($badge) {
-                    $normalEmpLearnService->assignBadge($rowData, $badge);
+                    assignBadge($rowData, $badge);
                 }
                 $rowData->save();
 
@@ -579,7 +580,7 @@ class ApiLearnController extends Controller
                     $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
 
                     if ($badge) {
-                        $normalEmpLearnService->assignBadge($rowData, $badge);
+                        assignBadge($rowData, $badge);
                     }
                     $rowData->save();
 
@@ -606,7 +607,6 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $normalEmpLearnService = new NormalEmpLearnService();
                     $pdfContent = $normalEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
                     $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);

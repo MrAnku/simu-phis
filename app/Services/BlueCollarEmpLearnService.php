@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
+use App\Models\BlueCollarTrainingUser;
 use App\Models\CertificateTemplate;
-use App\Models\ScormAssignedUser;
-use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Storage;
 
-class NormalEmpLearnService
+class BlueCollarEmpLearnService
 {
+
     public function generateCertificatePdf($trainingModule, $logo, $favIcon)
     {
-        $certificateId = $this->getCertificateId($trainingModule->user_email, $trainingModule->training);
+        $certificateId = $this->getCertificateId($trainingModule->user_whatsapp, $trainingModule->training);
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($trainingModule->user_email, $certificateId, $trainingModule->training);
+            $this->storeCertificateId($trainingModule->user_whatsapp, $certificateId, $trainingModule->training);
         }
 
         // Check if custom template exists for this company or not, if it exists then send this certificate otherwise default one
@@ -23,7 +23,7 @@ class NormalEmpLearnService
         $certificateService = new TrainingCertificateService();
         if ($customTemplate) {
 
-            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId, $logo, $favIcon);
+            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId, $logo);
             return $pdfContent;
         } else {
             $pdfContent = $certificateService->defaultTemplate($trainingModule, $trainingModule->trainingData->name, $certificateId, $logo, $favIcon);
@@ -31,11 +31,11 @@ class NormalEmpLearnService
         }
     }
 
-    private function getCertificateId($userEmail, $trainingId)
+    private function getCertificateId($user_whatsapp, $trainingId)
     {
         // Check the database for an existing certificate ID for this user and training module
-        $certificate = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $userEmail)
+        $certificate = BlueCollarTrainingUser::where('training', $trainingId)
+            ->where('user_whatsapp', $user_whatsapp)
             ->first();
 
         return $certificate ? $certificate->certificate_id : null;
@@ -47,11 +47,11 @@ class NormalEmpLearnService
         return strtoupper(uniqid('CERT-'));
     }
 
-    private function storeCertificateId($userEmail, $certificateId, $trainingId)
+    private function storeCertificateId($user_whatsapp, $certificateId, $trainingId)
     {
-        // Find the existing record based on training module and userEmail
-        $trainingAssignedUser = TrainingAssignedUser::where('training', $trainingId)
-            ->where('user_email', $userEmail)
+        // Find the existing record based on training module and user_whatsapp
+        $trainingAssignedUser = BlueCollarTrainingUser::where('training', $trainingId)
+            ->where('user_whatsapp', $user_whatsapp)
             ->first();
 
         // Check if the record was found
@@ -65,10 +65,10 @@ class NormalEmpLearnService
 
     public function generateScormCertificatePdf($scormTraining, $logo, $favIcon)
     {
-        $certificateId = $this->getScormCertificateId($scormTraining->user_email, $scormTraining->scorm);
+        $certificateId = $this->getScormCertificateId($scormTraining->user_whatsapp, $scormTraining->scorm);
         if (!$certificateId) {
             $certificateId = $this->generateCertificateId();
-            $this->storeScormCertificateId($scormTraining->user_email, $certificateId, $scormTraining->scorm);
+            $this->storeScormCertificateId($scormTraining->user_whatsapp, $certificateId, $scormTraining->scorm);
         }
 
         // Check if custom template exists for this company or not, if it exists then send this certificate otherwise default one
@@ -84,21 +84,19 @@ class NormalEmpLearnService
             return $pdfContent;
         }
     }
-
-    private function getScormCertificateId($userEmail, $scorm)
+    private function getScormCertificateId($user_whatsapp, $scorm)
     {
         // Check the database for an existing certificate ID for this user and training module
-        $certificate = ScormAssignedUser::where('scorm', $scorm)
-            ->where('user_email', $userEmail)
+        $certificate = BlueCollarTrainingUser::where('scorm', $scorm)
+            ->where('user_whatsapp', $user_whatsapp)
             ->first();
 
         return $certificate ? $certificate->certificate_id : null;
     }
-
-    private function storeScormCertificateId($userEmail, $certificateId, $scorm)
+    private function storeScormCertificateId($user_whatsapp, $certificateId, $scorm)
     {
-        $scormAssignedUser = ScormAssignedUser::where('scorm', $scorm)
-            ->where('user_email', $userEmail)
+        $scormAssignedUser = BlueCollarTrainingUser::where('scorm', $scorm)
+            ->where('user_whatsapp', $user_whatsapp)
             ->first();
 
         if ($scormAssignedUser) {
@@ -111,9 +109,9 @@ class NormalEmpLearnService
 
     public function saveCertificatePdf($pdfContent, $trainingData)
     {
-        $emailFolder = $trainingData->user_email;
+        $whatsappFolder = $trainingData->user_whatsapp;
         $pdfFileName = 'certificate_' . time() . '.pdf';
-        $relativePath =  'certificates/' . $emailFolder . '/' . $pdfFileName;
+        $relativePath =  'certificates/' . $whatsappFolder . '/' . $pdfFileName;
 
         // Save using Storage
         Storage::disk('s3')->put($relativePath, $pdfContent);

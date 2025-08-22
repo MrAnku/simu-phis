@@ -8,6 +8,7 @@ use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\WaLiveCampaign;
+use App\Services\BlueCollarEmpLearnService;
 use App\Services\BlueCollarWhatsappService;
 use App\Services\CheckWhitelabelService;
 use Illuminate\Http\Request;
@@ -345,12 +346,7 @@ class ApiLearnBlueCollarController extends Controller
             $row_id = base64_decode($request->encoded_id);
 
             $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
-            if (!$rowData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Training not found.'
-                ], 404);
-            }
+
             $user = $rowData->user_whatsapp;
 
             if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
@@ -358,38 +354,22 @@ class ApiLearnBlueCollarController extends Controller
                 $rowData->save();
             }
 
+            $blueCollarEmpLearnService = new BlueCollarEmpLearnService();
+
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
 
                 // Assign Grade based on score
-                if ($request->trainingScore >= 90) {
-                    $rowData->grade = 'A+';
-                } elseif ($request->trainingScore >= 80) {
-                    $rowData->grade = 'A';
-                } elseif ($request->trainingScore >= 70) {
-                    $rowData->grade = 'B';
-                } elseif ($request->trainingScore >= 60) {
-                    $rowData->grade = 'C';
-                } else {
-                    $rowData->grade = 'D';
-                }
+                assignGrade($rowData, $request->trainingScore);
 
                 $badge = getMatchingBadge('score', $request->trainingScore);
                 // This helper function accepts a criteria type and value, and returns the first matching badge
 
                 if ($badge) {
-                    // Decode existing badges (or empty array if null)
-                    $existingBadges = json_decode($rowData->badge, true) ?? [];
-
-                    // Avoid duplicates
-                    if (!in_array($badge, $existingBadges)) {
-                        $existingBadges[] = $badge; // Add new badge
-                    }
-
-                    // Save back to the model
-                    $rowData->badge = json_encode($existingBadges);
+                    assignBadge($rowData, $badge);
                 }
+
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -405,20 +385,11 @@ class ApiLearnBlueCollarController extends Controller
                     $totalCompletedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $rowData->user_whatsapp)
                         ->where('completed', 1)->count();
 
-                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
                     // This helper function accepts a criteria type and value, and returns the first matching badge
+                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
 
                     if ($badge) {
-                        // Decode existing badges (or empty array if null)
-                        $existingBadges = json_decode($rowData->badge, true) ?? [];
-
-                        // Avoid duplicates
-                        if (!in_array($badge, $existingBadges)) {
-                            $existingBadges[] = $badge; // Add new badge
-                        }
-
-                        // Save back to the model
-                        $rowData->badge = json_encode($existingBadges);
+                        assignBadge($rowData, $badge);
                     }
                     $rowData->save();
 
@@ -443,19 +414,10 @@ class ApiLearnBlueCollarController extends Controller
                         $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
                     }
 
+                    $pdfContent = $blueCollarEmpLearnService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
 
-                    $pdfContent = $this->generateCertificatePdf($rowData->user_name, $rowData->trainingData->name, $rowData->training, $rowData->completion_date, $rowData->user_whatsapp, $companyLogo, $favIcon);
+                    $blueCollarEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
-                    $whatsappFolder = $rowData->user_whatsapp;
-                    $pdfFileName = 'certificate_' . time() . '.pdf';
-                    $relativePath =  'certificates/' . $whatsappFolder . '/' . $pdfFileName;
-
-
-                    // Save using Storage
-                    Storage::disk('s3')->put($relativePath, $pdfContent);
-                    $certificate_full_path = Storage::disk('s3')->path($relativePath);
-
-                    $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
 
                     if ($whatsapp_response->successful()) {
@@ -466,11 +428,9 @@ class ApiLearnBlueCollarController extends Controller
                             'message' => 'Failed to send WhatsApp message'
                         ], 422);
                     }
-
-                    log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
                 }
             }
-            // return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+            return response()->json(['success' => true, 'message' => 'Score updated'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -525,100 +485,6 @@ class ApiLearnBlueCollarController extends Controller
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-    public function generateCertificatePdf($name, $trainingModuleName, $trainingId, $date, $user_whatsapp, $logo, $favIcon)
-    {
-        $certificateId = $this->getCertificateId($user_whatsapp, $trainingId);
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeCertificateId($user_whatsapp, $certificateId, $trainingId);
-        }
-
-        $pdf = new Fpdi();
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
-
-        // Truncate name if too long
-        if (strlen($name) > 15) {
-            $name = mb_substr($name, 0, 12) . '...';
-        }
-
-        // Add user name
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
-
-        // Add training module
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $trainingModuleName", 0, 1, 'L');
-
-        // Add date and certificate ID
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
-
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
-
-        if ($logo || file_exists($logo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
-
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
-
-        return $pdf->Output('S');
-    }
-
-    private function getCertificateId($user_whatsapp, $trainingId)
-    {
-        // Check the database for an existing certificate ID for this user and training module
-        $certificate = BlueCollarTrainingUser::where('training', $trainingId)
-            ->where('user_whatsapp', $user_whatsapp)
-            ->first();
-
-        return $certificate ? $certificate->certificate_id : null;
-    }
-
-    private function generateCertificateId()
-    {
-        // Generate a unique random ID. You can adjust the format as needed.
-        return strtoupper(uniqid('CERT-'));
-    }
-
-    private function storeCertificateId($user_whatsapp, $certificateId, $trainingId)
-    {
-        // Find the existing record based on training module and user_whatsapp
-        $trainingAssignedUser = BlueCollarTrainingUser::where('training', $trainingId)
-            ->where('user_whatsapp', $user_whatsapp)
-            ->first();
-
-        // Check if the record was found
-        if ($trainingAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $trainingAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
-        }
-
-        $scormAssignedUser = BlueCollarScormAssignedUser::where('scorm', $trainingId)
-            ->where('user_whatsapp', $user_whatsapp)
-            ->first();
-
-        if ($scormAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $scormAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
         }
     }
 
@@ -753,12 +619,7 @@ class ApiLearnBlueCollarController extends Controller
             $row_id = base64_decode($request->encoded_id);
 
             $rowData = BlueCollarScormAssignedUser::with('scormTrainingData')->find($row_id);
-            if (!$rowData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Training not found.'
-                ], 404);
-            }
+
             $user = $rowData->user_whatsapp;
 
             if ($request->scormTrainingScore == 0 && $rowData->personal_best == 0) {
@@ -770,17 +631,16 @@ class ApiLearnBlueCollarController extends Controller
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->scormTrainingScore;
 
+                $blueCollarEmpLearnService = new BlueCollarEmpLearnService();
+
                 // Assign Grade based on score
-                if ($request->scormTrainingScore >= 90) {
-                    $rowData->grade = 'A+';
-                } elseif ($request->scormTrainingScore >= 80) {
-                    $rowData->grade = 'A';
-                } elseif ($request->scormTrainingScore >= 70) {
-                    $rowData->grade = 'B';
-                } elseif ($request->scormTrainingScore >= 60) {
-                    $rowData->grade = 'C';
-                } else {
-                    $rowData->grade = 'D';
+                assignGrade($rowData, $request->trainingScore);
+
+                $badge = getMatchingBadge('score', $request->trainingScore);
+                // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                if ($badge) {
+                    assignBadge($rowData, $badge);
                 }
 
                 $rowData->save();
@@ -794,6 +654,16 @@ class ApiLearnBlueCollarController extends Controller
                 if ($request->scormTrainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    $totalCompletedTrainings = BlueCollarScormAssignedUser::where('user_whatsapp', $rowData->user_whatsapp)
+                        ->where('completed', 1)->count();
+
+                    // This helper function accepts a criteria type and value, and returns the first matching badge
+                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
+
+                    if ($badge) {
+                        assignBadge($rowData, $badge);
+                    }
                     $rowData->save();
 
                     $data = [
@@ -817,19 +687,10 @@ class ApiLearnBlueCollarController extends Controller
                         $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
                     }
 
+                    $pdfContent = $blueCollarEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
-                    $pdfContent = $this->generateScormCertificatePdf($rowData->user_name, $rowData->scormTrainingData->name, $rowData->scorm, $rowData->completion_date, $rowData->user_whatsapp, $companyLogo, $favIcon);
+                    $blueCollarEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
-                    $whatsappFolder = $rowData->user_whatsapp;
-                    $pdfFileName = 'certificate_' . time() . '.pdf';
-                    $relativePath =  'certificates/' . $whatsappFolder . '/' . $pdfFileName;
-
-
-                    // Save using Storage
-                    Storage::disk('s3')->put($relativePath, $pdfContent);
-                    $certificate_full_path = Storage::disk('s3')->path($relativePath);
-
-                    $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
 
                     if ($whatsapp_response->successful()) {
@@ -844,6 +705,7 @@ class ApiLearnBlueCollarController extends Controller
                     log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
                 }
             }
+            return response()->json(['success' => true, 'message' => 'Score updated'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -901,80 +763,80 @@ class ApiLearnBlueCollarController extends Controller
         }
     }
 
-    public function generateScormCertificatePdf($name, $scormName, $scorm, $date, $user_whatsapp, $logo, $favIcon)
-    {
-        $certificateId = $this->getScormCertificateId($user_whatsapp, $scorm);
-        if (!$certificateId) {
-            $certificateId = $this->generateCertificateId();
-            $this->storeScormCertificateId($user_whatsapp, $certificateId, $scorm);
-        }
+    // public function generateScormCertificatePdf($name, $scormName, $scorm, $date, $user_whatsapp, $logo, $favIcon)
+    // {
+    //     $certificateId = $this->getScormCertificateId($user_whatsapp, $scorm);
+    //     if (!$certificateId) {
+    //         $certificateId = $this->generateCertificateId();
+    //         $this->storeScormCertificateId($user_whatsapp, $certificateId, $scorm);
+    //     }
 
-        $pdf = new Fpdi();
-        $pdf->AddPage('L', 'A4');
-        $pdf->setSourceFile(resource_path('templates/design.pdf'));
-        $template = $pdf->importPage(1);
-        $pdf->useTemplate($template);
+    //     $pdf = new Fpdi();
+    //     $pdf->AddPage('L', 'A4');
+    //     $pdf->setSourceFile(resource_path('templates/design.pdf'));
+    //     $template = $pdf->importPage(1);
+    //     $pdf->useTemplate($template);
 
-        // Truncate name if too long
-        if (strlen($name) > 15) {
-            $name = mb_substr($name, 0, 12) . '...';
-        }
+    //     // Truncate name if too long
+    //     if (strlen($name) > 15) {
+    //         $name = mb_substr($name, 0, 12) . '...';
+    //     }
 
-        // Add user name
-        $pdf->SetFont('Helvetica', '', 50);
-        $pdf->SetTextColor(47, 40, 103);
-        $pdf->SetXY(100, 115);
-        $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
+    //     // Add user name
+    //     $pdf->SetFont('Helvetica', '', 50);
+    //     $pdf->SetTextColor(47, 40, 103);
+    //     $pdf->SetXY(100, 115);
+    //     $pdf->Cell(0, 10, ucwords($name), 0, 1, 'L');
 
-        // Add training module
-        $pdf->SetFont('Helvetica', '', 16);
-        $pdf->SetTextColor(169, 169, 169);
-        $pdf->SetXY(100, 135);
-        $pdf->Cell(210, 10, "For completing $scormName", 0, 1, 'L');
+    //     // Add training module
+    //     $pdf->SetFont('Helvetica', '', 16);
+    //     $pdf->SetTextColor(169, 169, 169);
+    //     $pdf->SetXY(100, 135);
+    //     $pdf->Cell(210, 10, "For completing $scormName", 0, 1, 'L');
 
-        // Add date and certificate ID
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(240, 165);
-        $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
+    //     // Add date and certificate ID
+    //     $pdf->SetFont('Helvetica', '', 10);
+    //     $pdf->SetTextColor(120, 120, 120);
+    //     $pdf->SetXY(240, 165);
+    //     $pdf->Cell(50, 10, "Completion date: $date", 0, 0, 'R');
 
-        $pdf->SetXY(240, 10);
-        $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
+    //     $pdf->SetXY(240, 10);
+    //     $pdf->Cell(50, 10, "Certificate ID: $certificateId", 0, 0, 'R');
 
-        if ($logo || file_exists($logo)) {
-            // 1. Top-left corner (e.g., branding)
-            $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
-        }
+    //     if ($logo || file_exists($logo)) {
+    //         // 1. Top-left corner (e.g., branding)
+    //         $pdf->Image($logo, 100, 12, 50); // X=15, Y=12, Width=40mm           
+    //     }
 
-        // 2. Bottom-center badge
-        $pdf->Image($favIcon, 110, 163, 15, 15);
+    //     // 2. Bottom-center badge
+    //     $pdf->Image($favIcon, 110, 163, 15, 15);
 
-        return $pdf->Output('S');
-    }
+    //     return $pdf->Output('S');
+    // }
 
-    private function getScormCertificateId($user_whatsapp, $scorm)
-    {
-        // Check the database for an existing certificate ID for this user and training module
-        $certificate = BlueCollarTrainingUser::where('scorm', $scorm)
-            ->where('user_whatsapp', $user_whatsapp)
-            ->first();
+    // private function getScormCertificateId($user_whatsapp, $scorm)
+    // {
+    //     // Check the database for an existing certificate ID for this user and training module
+    //     $certificate = BlueCollarTrainingUser::where('scorm', $scorm)
+    //         ->where('user_whatsapp', $user_whatsapp)
+    //         ->first();
 
-        return $certificate ? $certificate->certificate_id : null;
-    }
+    //     return $certificate ? $certificate->certificate_id : null;
+    // }
 
-    private function storeScormCertificateId($user_whatsapp, $certificateId, $scorm)
-    {
-        $scormAssignedUser = BlueCollarTrainingUser::where('scorm', $scorm)
-            ->where('user_whatsapp', $user_whatsapp)
-            ->first();
+    // private function storeScormCertificateId($user_whatsapp, $certificateId, $scorm)
+    // {
+    //     $scormAssignedUser = BlueCollarTrainingUser::where('scorm', $scorm)
+    //         ->where('user_whatsapp', $user_whatsapp)
+    //         ->first();
 
-        if ($scormAssignedUser) {
-            // Update only the certificate_id (no need to touch campaign_id)
-            $scormAssignedUser->update([
-                'certificate_id' => $certificateId,
-            ]);
-        }
-    }
+    //     if ($scormAssignedUser) {
+    //         // Update only the certificate_id (no need to touch campaign_id)
+    //         $scormAssignedUser->update([
+    //             'certificate_id' => $certificateId,
+    //         ]);
+    //     }
+    // }
 
     public function fetchScoreBoard(Request $request)
     {
