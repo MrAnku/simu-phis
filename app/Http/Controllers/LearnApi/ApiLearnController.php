@@ -22,7 +22,7 @@ use App\Models\CampaignLive;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WaLiveCampaign;
-use App\Services\NormalEmployeeLearningService;
+use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -398,7 +398,7 @@ class ApiLearnController extends Controller
                 $rowData->grade = 'F';
                 $rowData->save();
             }
-            $normalEmpLearnService = new NormalEmployeeLearningService();
+            $normalEmpLearnService = new NormalEmpLearnService();
 
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
@@ -549,7 +549,7 @@ class ApiLearnController extends Controller
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->scormTrainingScore;
 
-                $normalEmpLearnService = new NormalEmployeeLearningService();
+                $normalEmpLearnService = new NormalEmpLearnService();
 
                 // Assign Grade based on score
                 $normalEmpLearnService->assignGrade($rowData, $request->trainingScore);
@@ -606,7 +606,7 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $normalEmpLearnService = new NormalEmployeeLearningService();
+                    $normalEmpLearnService = new NormalEmpLearnService();
                     $pdfContent = $normalEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
                     $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);

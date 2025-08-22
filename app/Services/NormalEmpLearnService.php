@@ -9,7 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 
-class NormalEmployeeLearningService
+class NormalEmpLearnService
 {
     public function generateCertificatePdf($trainingModule, $logo, $favIcon)
     {
