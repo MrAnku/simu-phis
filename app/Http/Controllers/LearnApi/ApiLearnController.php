@@ -7,29 +7,22 @@ use Illuminate\Http\Request;
 
 use App\Models\Badge;
 use App\Models\Users;
-use setasign\Fpdi\Fpdi;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
 use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
-use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
-use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\CampaignLive;
-use App\Models\CertificateTemplate;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WaLiveCampaign;
-use App\Services\TrainingScoreService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Auth;
+use App\Services\NormalEmployeeLearningService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -398,45 +391,27 @@ class ApiLearnController extends Controller
             $row_id = base64_decode($request->encoded_id);
 
             $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
-           
+
             $user = $rowData->user_email;
 
             if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
                 $rowData->grade = 'F';
                 $rowData->save();
             }
+            $normalEmpLearnService = new NormalEmployeeLearningService();
 
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
 
                 // Assign Grade based on score
-                if ($request->trainingScore >= 90) {
-                    $rowData->grade = 'A+';
-                } elseif ($request->trainingScore >= 80) {
-                    $rowData->grade = 'A';
-                } elseif ($request->trainingScore >= 70) {
-                    $rowData->grade = 'B';
-                } elseif ($request->trainingScore >= 60) {
-                    $rowData->grade = 'C';
-                } else {
-                    $rowData->grade = 'D';
-                }
+                $normalEmpLearnService->assignGrade($rowData, $request->trainingScore);
 
                 $badge = getMatchingBadge('score', $request->trainingScore);
                 // This helper function accepts a criteria type and value, and returns the first matching badge
 
                 if ($badge) {
-                    // Decode existing badges (or empty array if null)
-                    $existingBadges = json_decode($rowData->badge, true) ?? [];
-
-                    // Avoid duplicates
-                    if (!in_array($badge, $existingBadges)) {
-                        $existingBadges[] = $badge; // Add new badge
-                    }
-
-                    // Save back to the model
-                    $rowData->badge = json_encode($existingBadges);
+                    $normalEmpLearnService->assignBadge($rowData, $badge);
                 }
                 $rowData->save();
 
@@ -457,16 +432,7 @@ class ApiLearnController extends Controller
                     // This helper function accepts a criteria type and value, and returns the first matching badge
 
                     if ($badge) {
-                        // Decode existing badges (or empty array if null)
-                        $existingBadges = json_decode($rowData->badge, true) ?? [];
-
-                        // Avoid duplicates
-                        if (!in_array($badge, $existingBadges)) {
-                            $existingBadges[] = $badge; // Add new badge
-                        }
-
-                        // Save back to the model
-                        $rowData->badge = json_encode($existingBadges);
+                        $normalEmpLearnService->assignBadge($rowData, $badge);
                     }
                     $rowData->save();
 
@@ -493,25 +459,13 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $scoreService = new TrainingScoreService();
+                    $pdfContent = $normalEmpLearnService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
 
-                    $pdfContent = $scoreService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
+                    $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
-                    $emailFolder = $rowData->user_email;
-                    $pdfFileName = 'certificate_' . time() . '.pdf';
-                    $relativePath =  'certificates/' . $emailFolder . '/' . $pdfFileName;
-
-
-                    // Save using Storage
-                    Storage::disk('s3')->put($relativePath, $pdfContent);
-                    $certificate_full_path = Storage::disk('s3')->path($relativePath);
-
-                    $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
-
-                    log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
                 }
             }
             return response()->json(['success' => true, 'message' => 'Score updated'], 200);
@@ -583,25 +537,8 @@ class ApiLearnController extends Controller
 
             $row_id = base64_decode($request->encoded_id);
 
-            if (Session::has('bluecollar')) {
-                $rowData = BlueCollarTrainingUser::with('trainingData')->find($row_id);
-                if (!$rowData) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Training not found.'
-                    ], 404);
-                }
-                $user = $rowData->user_whatsapp;
-            } else {
-                $rowData = ScormAssignedUser::with('scormTrainingData')->find($row_id);
-                if (!$rowData) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Training not found.'
-                    ], 404);
-                }
-                $user = $rowData->user_email;
-            }
+            $rowData = ScormAssignedUser::with('scormTrainingData')->find($row_id);
+            $user = $rowData->user_email;
 
             if ($request->scormTrainingScore == 0 && $rowData->personal_best == 0) {
                 $rowData->grade = 'F';
@@ -612,19 +549,17 @@ class ApiLearnController extends Controller
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->scormTrainingScore;
 
-                // Assign Grade based on score
-                if ($request->scormTrainingScore >= 90) {
-                    $rowData->grade = 'A+';
-                } elseif ($request->scormTrainingScore >= 80) {
-                    $rowData->grade = 'A';
-                } elseif ($request->scormTrainingScore >= 70) {
-                    $rowData->grade = 'B';
-                } elseif ($request->scormTrainingScore >= 60) {
-                    $rowData->grade = 'C';
-                } else {
-                    $rowData->grade = 'D';
-                }
+                $normalEmpLearnService = new NormalEmployeeLearningService();
 
+                // Assign Grade based on score
+                $normalEmpLearnService->assignGrade($rowData, $request->trainingScore);
+
+                $badge = getMatchingBadge('score', $request->trainingScore);
+                // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                if ($badge) {
+                    $normalEmpLearnService->assignBadge($rowData, $badge);
+                }
                 $rowData->save();
 
                 setCompanyTimezone($rowData->company_id);
@@ -636,10 +571,19 @@ class ApiLearnController extends Controller
                 if ($request->scormTrainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    $totalCompletedTrainings = ScormAssignedUser::where('user_email', $rowData->user_email)
+                        ->where('completed', 1)->count();
+
+                    // This helper function accepts a criteria type and value, and returns the first matching badge
+                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
+
+                    if ($badge) {
+                        $normalEmpLearnService->assignBadge($rowData, $badge);
+                    }
                     $rowData->save();
 
                     // Send email
-
                     $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
                     if ($isWhitelabeled->isCompanyWhitelabeled()) {
                         $whitelabelData = $isWhitelabeled->getWhiteLabelData();
@@ -662,24 +606,14 @@ class ApiLearnController extends Controller
                         'company_id' => $rowData->company_id
                     ];
 
-                    $scoreService = new TrainingScoreService();
-                    $pdfContent = $scoreService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
+                    $normalEmpLearnService = new NormalEmployeeLearningService();
+                    $pdfContent = $normalEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
-                    $emailFolder = $rowData->user_email;
-                    $pdfFileName = 'certificate_' . time() . '.pdf';
-                    $relativePath = 'certificates/' . $emailFolder . '/' . $pdfFileName;
+                    $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
-
-                    // Save using Storage
-                    Storage::disk('s3')->put($relativePath, $pdfContent);
-                    $certificate_full_path = Storage::disk('s3')->path($relativePath);
-
-                    $rowData->certificate_path = '/' . $certificate_full_path;
                     $rowData->save();
-                    
-                    Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
 
-                    log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                    Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
                 }
             }
             return response()->json(['success' => true, 'message' => 'Score updated'], 200);
