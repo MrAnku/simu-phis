@@ -1036,7 +1036,7 @@ class ApiLearnController extends Controller
                 $allAssignedTrainings[] = [
                     'training_name' => $trainingMod->training_type == 'games' ? $trainingMod->trainingGame->name : $trainingMod->trainingData->name,
                     'score' => $trainingMod->personal_best,
-                    'completed' => $trainingMod->completed ? 'Yes' : 'No',
+                    'status' => $trainingMod->completed ? 'Completed' : 'Not Completed',
                     'training_due_date' => $trainingMod->training_due_date,
                     'completion_date' => $trainingMod->completion_date,
                     'training_type' => $trainingMod->training_type,
@@ -1047,7 +1047,7 @@ class ApiLearnController extends Controller
                 $allAssignedTrainings[] = [
                     'training_name' => $scorm->scormTrainingData->name,
                     'score' => $scorm->personal_best,
-                    'completed' => $scorm->completed ? 'Yes' : 'No',
+                    'status' => $scorm->completed ? 'Completed' : 'Not Completed',
                     'training_due_date' => $scorm->scorm_due_date,
                     'completion_date' => $scorm->completion_date,
                     'training_type' => 'Scorm',
