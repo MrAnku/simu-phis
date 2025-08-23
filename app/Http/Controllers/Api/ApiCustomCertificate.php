@@ -71,30 +71,35 @@ class ApiCustomCertificate extends Controller
         }
     }
 
-    public function selectCertificate(Request $request)
+    public function setCustomCertificate(Request $request)
     {
         try {
             $request->validate([
                 'template_id' => 'required|exists:certificate_templates,id',
+                'selected' => 'required|boolean',
             ]);
 
             $companyId = Auth::user()->company_id;
 
-            // Deselect all templates for the company
-            CertificateTemplate::where('company_id', $companyId)->update(['selected' => false]);
+            if ($request->selected) {
+                // Deselect all templates for the company
+                CertificateTemplate::where('company_id', $companyId)->update(['selected' => false]);
+                // Select the specified template
+                CertificateTemplate::where('id', $request->template_id)->update(['selected' => true]);
+                $message = 'Template selected successfully.';
+            } else {
+                // Unselect the specified template
+                CertificateTemplate::where('id', $request->template_id)->update(['selected' => false]);
+                $message = 'Template unselected successfully.';
+            }
 
-            // Select the specified template
-            CertificateTemplate::where('id', $request->template_id)->update(['selected' => true]);
-
-            return response()->json(['success' => true, 'message' => 'Template selected successfully.'], 200);
+            return response()->json(['success' => true, 'message' => $message], 200);
         } catch (ValidationException $e) {
-            // Handle the validation exception
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
-            // Handle the exception
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()
@@ -102,15 +107,16 @@ class ApiCustomCertificate extends Controller
         }
     }
 
-    public function fetchCertificateTemplates(){
-        try{
+    public function fetchCertificateTemplates()
+    {
+        try {
             $companyId = Auth::user()->company_id;
             $templates = CertificateTemplate::where('company_id', $companyId)->get();
-            if($templates->isEmpty()){
+            if ($templates->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'No certificate templates found.'], 422);
             }
             return response()->json(['success' => true, 'message' => 'Certificate templates fetched successfully.', 'data' => $templates], 200);
-        }catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
