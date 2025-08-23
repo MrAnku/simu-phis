@@ -583,6 +583,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('certificate-templates')->group(function () {
         Route::post('add-certificate', [ApiCustomCertificate::class, 'addCertificate']);
         Route::put('select-certificate', [ApiCustomCertificate::class, 'selectCertificate']);
+        Route::get('fetch-certificate-templates', [ApiCustomCertificate::class, 'fetchCertificateTemplates']);
     });
 });
 

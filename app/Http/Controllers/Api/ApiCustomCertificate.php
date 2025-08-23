@@ -44,7 +44,7 @@ class ApiCustomCertificate extends Controller
 
             $companyId = Auth::user()->company_id;
 
-            $templatePath = 'certificate_templates/' . $companyId . '/' . uniqid() . '.html';
+            $templatePath = '/certificate_templates/' . $companyId . '/' . uniqid() . '.html';
 
             // Save template to S3
             Storage::disk('s3')->put($templatePath, $templateContent);
@@ -88,6 +88,29 @@ class ApiCustomCertificate extends Controller
 
             return response()->json(['success' => true, 'message' => 'Template selected successfully.'], 200);
         } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchCertificateTemplates(){
+        try{
+            $companyId = Auth::user()->company_id;
+            $templates = CertificateTemplate::where('company_id', $companyId)->get();
+            if($templates->isEmpty()){
+                return response()->json(['success' => false, 'message' => 'No certificate templates found.'], 422);
+            }
+            return response()->json(['success' => true, 'message' => 'Certificate templates fetched successfully.', 'data' => $templates], 200);
+        }catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
