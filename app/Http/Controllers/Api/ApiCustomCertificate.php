@@ -144,6 +144,10 @@ class ApiCustomCertificate extends Controller
             if (!$template) {
                 return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
             }
+
+            if($template->selected){
+                return response()->json(['success' => false, 'message' => 'Cannot delete a selected template. Please unselect it first.'], 422);
+            }
             // Delete the file from S3
             Storage::disk('s3')->delete($template->filepath);
 
