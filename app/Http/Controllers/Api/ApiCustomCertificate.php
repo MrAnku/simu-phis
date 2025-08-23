@@ -20,7 +20,6 @@ class ApiCustomCertificate extends Controller
             $request->validate([
                 'template_html' => 'required|mimes:html',
                 'layout_name' => 'required|string|max:255',
-                'selected' => 'boolean',
             ]);
             $templateContent = file_get_contents($request->file('template_html')->getRealPath());
 
@@ -50,12 +49,16 @@ class ApiCustomCertificate extends Controller
             Storage::disk('s3')->put($templatePath, $templateContent);
 
             // Save template info in DB
-            CertificateTemplate::create([
+            $template = CertificateTemplate::create([
                 'company_id' => Auth::user()->company_id,
                 'filepath' => $templatePath,
                 'layout_name' => $request->layout_name,
             ]);
-            return response()->json(['success' => true, 'message' => 'Template saved successfully.'], 200);
+            if ($template) {
+                return response()->json(['success' => true, 'message' => 'Template saved successfully.'], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Failed to save template.'], 500);
+            }
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
@@ -131,10 +134,60 @@ class ApiCustomCertificate extends Controller
         }
     }
 
-    public function deleteCertificateTemplate(Request $request){
-        try{
+    public function updateCustomCertificate(Request $request)
+    {
+        try {
+            $request->validate([
+                'template_id' => 'required|exists:certificate_templates,id',
+                'template_html' => 'required|mimes:html',
+                'layout_name' => 'required|string|max:255',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $template = CertificateTemplate::find($request->template_id);
+
+            if (!$template) {
+                return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
+            }
+
+            // Get the previous file path
+            $oldFilePath = ltrim($template->filepath, '/');
+
+            // Get new file content
+            $newFileContent = file_get_contents($request->file('template_html')->getRealPath());
+
+            // Overwrite the previous file in S3
+            Storage::disk('s3')->put($oldFilePath, $newFileContent);
+
+            // Update other fields in the database
+            $templateUpdated = CertificateTemplate::where('id', $request->template_id)->where('company_id', $companyId)->update([
+                'layout_name' => $request->layout_name
+            ]);
+
+            if ($templateUpdated) {
+                return response()->json(['success' => true, 'message' => 'Certificate template updated successfully.'], 200);
+            }
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteCertificateTemplate(Request $request)
+    {
+        try {
             $templateId = $request->route('id');
-            if(!$templateId){
+            if (!$templateId) {
                 return response()->json(['success' => false, 'message' => 'Template ID is required.'], 422);
             }
 
@@ -145,14 +198,14 @@ class ApiCustomCertificate extends Controller
                 return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
             }
 
-            if($template->selected){
+            if ($template->selected) {
                 return response()->json(['success' => false, 'message' => 'Cannot delete a selected template. Please unselect it first.'], 422);
             }
             // Delete the file from S3
             Storage::disk('s3')->delete($template->filepath);
 
             $templateDeleted = $template->delete();
-            if($templateDeleted){
+            if ($templateDeleted) {
                 return response()->json(['success' => true, 'message' => 'Certificate template deleted successfully.'], 200);
             }
         } catch (\Exception $e) {

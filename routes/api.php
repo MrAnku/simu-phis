@@ -585,6 +585,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::put('set-custom-certificate', [ApiCustomCertificate::class, 'setCustomCertificate']);
         Route::get('fetch-certificate-templates', [ApiCustomCertificate::class, 'fetchCertificateTemplates']);
         Route::delete('delete-certificate-template/{id?}', [ApiCustomCertificate::class, 'deleteCertificateTemplate']);
+        Route::post('update-custom-certificate', [ApiCustomCertificate::class, 'updateCustomCertificate']);
     });
 });
 
