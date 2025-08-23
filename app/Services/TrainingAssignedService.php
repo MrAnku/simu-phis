@@ -69,9 +69,9 @@ class TrainingAssignedService
         if ($allAssignedTrainings->isNotEmpty()) {
             $trainingNames = $allAssignedTrainings->map(function ($training) {
                 if ($training->training_type == 'games') {
-                    return $training->trainingGame->name;
+                    return $training->trainingGame?->name;
                 }
-                return $training->trainingData->name;
+                return $training->trainingData?->name;
             });
         }
 
@@ -79,7 +79,7 @@ class TrainingAssignedService
         if ($scormTrainings->isNotEmpty()) {
             $scormNames = $scormTrainings->map(function ($training) {
 
-                return $training->scormTrainingData->name;
+                return $training->scormTrainingData?->name;
             });
         }
 
