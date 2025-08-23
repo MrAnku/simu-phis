@@ -222,7 +222,7 @@ class ApiAiCallController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
-   
+
 
     public function testAiAgent(Request $request)
     {
@@ -608,94 +608,61 @@ class ApiAiCallController extends Controller
         }
     }
 
-    public function  fetchCallReport(Request $request)
+    public function  fetchCallReport($callId)
     {
         try {
-            if (!$request->route('callId')) {
+            if (!$callId) {
                 return response()->json(['success' => false, 'message' => __('Call ID is required')], 422);
             }
             //checking if call report is available or not
 
-            $localReport = AiCallCampLive::where('call_id', $request->route('callId'))->first();
+            $localReport = AiCallCampLive::where('call_id', $callId)->first();
             if (!$localReport) {
                 return response()->json(['success' => false, 'message' => __('Call report not found')], 404);
             }
-            if ($localReport) {
-                if ($localReport->call_report == null) {
+            if ($localReport->call_report == null) {
 
-                    // Make the HTTP request
-                    $response = Http::withHeaders([
-                        'Authorization' => 'Bearer ' . env('RETELL_API_KEY'),
-                    ])->withOptions(['verify' => false])->get('https://api.retellai.com/v2/get-call/' . $request->route('callId'));
-
-                    if ($response->successful()) {
-                        // Return the response data
-                        $res = $response->json();
-                        $res['fell_for_simulation'] = false;
-
-                        if (isset($res['transcript_with_tool_calls'])) {
-                            foreach ($res['transcript_with_tool_calls'] as $toolCall) {
-                                if ($toolCall['role'] == 'tool_call_invocation') {
-                                    $arguments = json_decode($toolCall['arguments'], true);
-
-                                    if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
-                                        $res['fell_for_simulation'] = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-
-
-                        //    echo $res['call']['call_id'];
-                        //     return;
-
-                        // if($res->transcript_with_tool_calls)
-
-                        // $res['fell_for_simulation'] = true;
-                        log_action("AI Vishing Call report fetched for call id {$request->route('callId')}");
-                        if (isset($res['transcript_object']) && count($res['transcript_object']) > 0) {
-                            $localReport->call_report = $res;
-                            $localReport->save();
-                        }
-
-                        return $res;
-                    } else {
-                        // Handle the error, e.g., log the error or throw an exception
-                        log_action("Error while fetching AI Vishing Call report for call id {$request->route('callId')}");
-
-                        return response()->json(['success' => false, 'message' => $response->body()], 422);
-                    }
-                } else {
-                    $data = json_decode($localReport->call_report, true);
-
-
-
-                    $data['fell_for_simulation'] = false;
-
-                    if (isset($data['transcript_with_tool_calls'])) {
-                        foreach ($data['transcript_with_tool_calls'] as $toolCall) {
-                            if ($toolCall['role'] == 'tool_call_invocation') {
-                                $arguments = json_decode($toolCall['arguments'], true);
-
-                                if (isset($arguments['fell_for_simulation']) && $arguments['fell_for_simulation'] === true) {
-                                    $data['fell_for_simulation'] = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-
-
-
-
-                    return $data;
+                $callReport = $this->getReportFromApi($callId);
+                if (!$callReport) {
+                    return response()->json(['success' => false, 'message' => __('Call report not found')], 404);
                 }
+                $callReport['agent_id'] = $localReport->agent_id;
+                $callReport['call_id'] = $callId;
+                $callReport['call_status'] = $localReport->status;
+                $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
+                $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";
+                $localReport->call_report = json_encode($callReport);
+                $localReport->save();
+
+                return response()->json(['success' => true, 'data' => $callReport], 200);
+            } else {
+                $callReport = json_decode($localReport->call_report, true);
+                $callReport['agent_id'] = $localReport->agent_id;
+                $callReport['call_id'] = $localReport->call_id;
+                $callReport['call_status'] = $localReport->status;
+                $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
+                $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";
+                return response()->json(['success' => true, 'data' => $callReport], 200);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    private function getReportFromApi($callId)
+    {
+        try {
+            // Make the HTTP request
+            $response = Http::get('https://callapi3.sparrowhost.net/call/call_info/' . $callId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                return $data;
+            }
+            return false;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
