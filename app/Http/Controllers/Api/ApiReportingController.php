@@ -37,6 +37,8 @@ use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\ScormAssignedUser;
+use App\Models\ScormTraining;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -2627,6 +2629,7 @@ class ApiReportingController extends Controller
                 'users_scored_above_80' => 0,
                 'overall_completion_rate' => 0,
                 'overall_progress_rate' => 0,
+                'static_training_users' => 0,
                 'scorm_training_users' => 0,
                 'gamified_training_users' => 0,
                 'ai_training_users' => 0,
@@ -2655,16 +2658,12 @@ class ApiReportingController extends Controller
                 $progressRate = $totalAssigned > 0 ? round((($inProgressTrainings + $completedTrainings) / $totalAssigned) * 100, 2) : 0;
 
                 // Determine training type based on module properties
-                $trainingType = 'standard';
-                if ($trainingModule->is_scorm) {
-                    $trainingType = 'scorm';
-                    $overallStats['scorm_training_users'] += $totalAssigned;
-                } elseif ($trainingModule->is_gamified) {
+                $trainingType = 'static_training';
+                if ($trainingModule->training_type == 'gamified') {
                     $trainingType = 'gamified';
                     $overallStats['gamified_training_users'] += $totalAssigned;
-                } elseif ($trainingModule->is_ai_training) {
-                    $trainingType = 'ai';
-                    $overallStats['ai_training_users'] += $totalAssigned;
+                } else if ($trainingModule->training_type == 'static_training') {
+                    $overallStats['static_training_users'] += $totalAssigned;
                 }
 
                 $trainings[] = [
@@ -2713,6 +2712,16 @@ class ApiReportingController extends Controller
                 $overallStats['users_scored_above_60'] += $usersScored60Plus;
                 $overallStats['users_scored_above_80'] += $usersScored80Plus;
             }
+
+            //process scorm trainings
+           $assignedScorm = ScormAssignedUser::where('company_id', $companyId)->count();
+            $overallStats['scorm_training_users'] = $assignedScorm;
+
+            //ai training
+            $assignedAiTraining = TrainingAssignedUser::where('training_type', 'ai_training')
+                ->where('company_id', $companyId)
+                ->count();
+            $overallStats['ai_training_users'] = $assignedAiTraining;
 
             // Process training games
             $gameTrainings = [];
