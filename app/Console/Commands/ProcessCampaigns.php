@@ -62,25 +62,30 @@ class ProcessCampaigns extends Command
       return;
     }
     foreach ($companies as $company) {
+      try {
 
-      setCompanyTimezone($company->company_id);
+        setCompanyTimezone($company->company_id);
 
-      $campaigns = Campaign::where('status', 'pending')
-        ->where('company_id', $company->company_id)
-        ->get();
+        $campaigns = Campaign::where('status', 'pending')
+          ->where('company_id', $company->company_id)
+          ->get();
 
-      if ($campaigns) {
-        foreach ($campaigns as $campaign) {
-          $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-          $currentDateTime = Carbon::now();
+        if ($campaigns) {
+          foreach ($campaigns as $campaign) {
+            $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
+            $currentDateTime = Carbon::now();
 
-          if ($launchTime->lessThan($currentDateTime)) {
+            if ($launchTime->lessThan($currentDateTime)) {
 
-            $this->makeCampaignLive($campaign->campaign_id);
+              $this->makeCampaignLive($campaign->campaign_id);
 
-            $campaign->update(['status' => 'running']);
+              $campaign->update(['status' => 'running']);
+            }
           }
         }
+      } catch (\Exception $e) {
+        echo "Error while making campaign live: " . $e->getMessage();
+        continue;
       }
     }
   }
@@ -113,13 +118,13 @@ class ProcessCampaigns extends Command
           'user_id' => $user->id,
           'user_name' => $user->user_name,
           'user_email' => $user->user_email,
-          'training_module' => ($campaign->training_module == null) ? null : json_decode($campaign->training_module, true)[array_rand(json_decode($campaign->training_module, true))],
-          'scorm_training' => ($campaign->scorm_training == null) ? null : json_decode($campaign->scorm_training, true)[array_rand(json_decode($campaign->scorm_training, true))],
+          'training_module' => $this->getRandomTrainingModule($campaign),
+          'scorm_training' => $this->getRandomScormTraining($campaign),
           'days_until_due' => $campaign->days_until_due ?? null,
           'training_lang' => $campaign->training_lang ?? null,
           'training_type' => $campaign->training_type ?? null,
           'launch_time' => $campaign->launch_time,
-          'phishing_material' => $campaign->phishing_material == null ? null : json_decode($campaign->phishing_material, true)[array_rand(json_decode($campaign->phishing_material, true))],
+          'phishing_material' => $this->getRandomPhishingMaterial($campaign),
           'sender_profile' => $campaign->sender_profile ?? null,
           'email_lang' => $campaign->email_lang ?? null,
           'sent' => '0',
@@ -141,13 +146,43 @@ class ProcessCampaigns extends Command
     }
   }
 
+  private function getRandomTrainingModule($campaign)
+  {
+    if ($campaign->campaign_type == "Phishing") {
+      return null;
+    }
+    $trainingModules = json_decode($campaign->training_module, true);
+    return $trainingModules[array_rand($trainingModules)];
+  }
+
+  private function getRandomScormTraining($campaign)
+  {
+    if ($campaign->campaign_type == "Phishing") {
+      return null;
+    }
+
+    $scormTrainings = json_decode($campaign->scorm_training, true);
+    return $scormTrainings[array_rand($scormTrainings)];
+  }
+
+  private function getRandomPhishingMaterial($campaign)
+  {
+
+    if ($campaign->campaign_type == "Training") {
+      return null;
+    }
+
+    $phishingMaterials = json_decode($campaign->phishing_material, true);
+    return $phishingMaterials[array_rand($phishingMaterials)];
+  }
+
   private function sendCampaignLiveEmails()
   {
     $companies = DB::table('company')
-        ->where('approved', 1)
-        ->where('role', null)
-        ->where('service_status', 1)
-        ->get();
+      ->where('approved', 1)
+      ->where('role', null)
+      ->where('service_status', 1)
+      ->get();
 
     if ($companies->isEmpty()) {
       return;
@@ -302,11 +337,11 @@ class ProcessCampaigns extends Command
       $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
       $mailBody = changeEmailLang($mailBody, $campaign->email_lang);
       $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-    }else if ($campaign->email_lang == 'am') {
+    } else if ($campaign->email_lang == 'am') {
       $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
       $mailBody = translateHtmlToAmharic($mailBody);
       $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-    }else{
+    } else {
       $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
     }
 
@@ -370,36 +405,60 @@ class ProcessCampaigns extends Command
 
   private function updateRunningCampaigns()
   {
-    $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'one')->get();
+    try {
+      $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'one')->get();
 
-    foreach ($oneOffCampaigns as $campaign) {
+      foreach ($oneOffCampaigns as $campaign) {
 
-      $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign->campaign_id)->count();
-
-      if ($checkSent == 0) {
-        Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-
-        echo 'Campaign completed';
-      }
-    }
-
-    $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'one')->get();
-
-    if ($recurrCampaigns) {
-
-      foreach ($recurrCampaigns as $recurrCampaign) {
-
-        $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $recurrCampaign->campaign_id)->count();
+        $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign->campaign_id)->count();
 
         if ($checkSent == 0) {
+          Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
 
-          if ($recurrCampaign->expire_after !== null) {
+          echo 'Campaign completed';
+        }
+      }
 
-            $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
-            $expire_after = Carbon::createFromFormat("Y-m-d", $recurrCampaign->expire_after);
+      $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'one')->get();
 
-            if ($launchTime->lessThan($expire_after)) {
+      if ($recurrCampaigns) {
 
+        foreach ($recurrCampaigns as $recurrCampaign) {
+
+          $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $recurrCampaign->campaign_id)->count();
+
+          if ($checkSent == 0) {
+
+            if ($recurrCampaign->expire_after !== null) {
+
+              $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
+              $expire_after = Carbon::createFromFormat("Y-m-d", $recurrCampaign->expire_after);
+
+              if ($launchTime->lessThan($expire_after)) {
+
+                $email_freq = $recurrCampaign->email_freq;
+
+                switch ($email_freq) {
+                  case 'weekly':
+                    $launchTime->addWeek();
+                    break;
+                  case 'monthly':
+                    $launchTime->addMonth();
+                    break;
+                  case 'quaterly':
+                    $launchTime->addMonths(3);
+                    break;
+                  default:
+                    break;
+                }
+
+                $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
+              } else {
+                $recurrCampaign->update(['status' => 'completed']);
+              }
+            } else {
+
+              $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
               $email_freq = $recurrCampaign->email_freq;
 
               switch ($email_freq) {
@@ -417,32 +476,12 @@ class ProcessCampaigns extends Command
               }
 
               $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-            } else {
-              $recurrCampaign->update(['status' => 'completed']);
             }
-          } else {
-
-            $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
-            $email_freq = $recurrCampaign->email_freq;
-
-            switch ($email_freq) {
-              case 'weekly':
-                $launchTime->addWeek();
-                break;
-              case 'monthly':
-                $launchTime->addMonth();
-                break;
-              case 'quaterly':
-                $launchTime->addMonths(3);
-                break;
-              default:
-                break;
-            }
-
-            $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
           }
         }
       }
+    } catch (\Exception $e) {
+      echo "Error while updating running campaigns: " . $e->getMessage();
     }
   }
 
@@ -459,51 +498,56 @@ class ProcessCampaigns extends Command
     }
 
     foreach ($companies as $company) {
-      setCompanyTimezone($company->company_id);
+      try {
+        setCompanyTimezone($company->company_id);
 
 
-      $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
+        $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
 
 
-      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
-        ->get()
-        ->unique('user_email')
-        ->values();
+        $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
+          ->get()
+          ->unique('user_email')
+          ->values();
 
-      if ($trainingAssignedUsers->isEmpty()) {
-        continue;
-      }
-      $currentDate = Carbon::now();
-      foreach ($trainingAssignedUsers as $assignedUser) {
+        if ($trainingAssignedUsers->isEmpty()) {
+          continue;
+        }
+        $currentDate = Carbon::now();
+        foreach ($trainingAssignedUsers as $assignedUser) {
 
-        if ($assignedUser->last_reminder_date == null && $assignedUser->personal_best == 0) {
+          if ($assignedUser->last_reminder_date == null && $assignedUser->personal_best == 0) {
 
-          $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
+            $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
 
-          if ($reminderDate->isBefore($currentDate)) {
-            echo "Reminder will send";
-            $this->freqTrainingReminder($assignedUser);
-
-            // Update the last reminder date and save it
-            // $assignedUser->last_reminder_date = $currentDate;
-            // $assignedUser->save();
-            TrainingAssignedUser::where('company_id', $company->company_id)
-              ->where('user_email', $assignedUser->user_email)
-              ->update(['last_reminder_date' => $currentDate]);
-          }
-        } else {
-          if ($assignedUser->personal_best == 0) {
-            $lastReminderDate = Carbon::parse($assignedUser->last_reminder_date);
-            $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
-            if ($nextReminderDate->isBefore($currentDate)) {
-
+            if ($reminderDate->isBefore($currentDate)) {
+              echo "Reminder will send";
               $this->freqTrainingReminder($assignedUser);
+
+              // Update the last reminder date and save it
+              // $assignedUser->last_reminder_date = $currentDate;
+              // $assignedUser->save();
               TrainingAssignedUser::where('company_id', $company->company_id)
                 ->where('user_email', $assignedUser->user_email)
                 ->update(['last_reminder_date' => $currentDate]);
             }
+          } else {
+            if ($assignedUser->personal_best == 0) {
+              $lastReminderDate = Carbon::parse($assignedUser->last_reminder_date);
+              $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
+              if ($nextReminderDate->isBefore($currentDate)) {
+
+                $this->freqTrainingReminder($assignedUser);
+                TrainingAssignedUser::where('company_id', $company->company_id)
+                  ->where('user_email', $assignedUser->user_email)
+                  ->update(['last_reminder_date' => $currentDate]);
+              }
+            }
           }
         }
+      } catch (\Exception $e) {
+        echo "Error while sending reminder email: " . $e->getMessage() . "\n";
+        continue;
       }
     }
   }
