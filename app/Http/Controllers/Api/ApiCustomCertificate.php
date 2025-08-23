@@ -130,4 +130,33 @@ class ApiCustomCertificate extends Controller
             ], 500);
         }
     }
+
+    public function deleteCertificateTemplate(Request $request){
+        try{
+            $templateId = $request->route('id');
+            if(!$templateId){
+                return response()->json(['success' => false, 'message' => 'Template ID is required.'], 422);
+            }
+
+            $companyId = Auth::user()->company_id;
+            $template = CertificateTemplate::where('id', $templateId)->where('company_id', $companyId)->first();
+
+            if (!$template) {
+                return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
+            }
+            // Delete the file from S3
+            Storage::disk('s3')->delete($template->filepath);
+
+            $templateDeleted = $template->delete();
+            if($templateDeleted){
+                return response()->json(['success' => true, 'message' => 'Certificate template deleted successfully.'], 200);
+            }
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
