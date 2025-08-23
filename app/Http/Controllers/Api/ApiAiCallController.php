@@ -76,7 +76,7 @@ class ApiAiCallController extends Controller
 
             // $validated['company_id'] = Auth::user()->company_id;
             $requestBody = $validated;
-            $requestBody['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+            $requestBody['user_id'] = extractIntegers(Auth::user()->company_id);
             $requestBody['llm'] = 'gpt-4o';
             $requestBody['tts_provider'] = 'elevenlabs';
 
@@ -89,7 +89,7 @@ class ApiAiCallController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 $validated['agent_id'] = $data['agent_id'];
-                $validated['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+                $validated['user_id'] = extractIntegers(Auth::user()->company_id);
                 $validated['company_id'] = Auth::user()->company_id;
 
                 AiCallLikelifeAgent::create($validated);
@@ -154,7 +154,7 @@ class ApiAiCallController extends Controller
 
             // Prepare request body for API call
             $requestBody = $validated;
-            $requestBody['user_id'] = $this->extractIntegers(Auth::user()->company_id);
+            $requestBody['user_id'] = extractIntegers(Auth::user()->company_id);
             $requestBody['llm'] = 'gpt-4o';
             $requestBody['tts_provider'] = 'elevenlabs';
 
@@ -203,7 +203,7 @@ class ApiAiCallController extends Controller
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
-            ])->delete("https://callapi3.sparrowhost.net/agent?agent_id={$agentId}&user_id=" . $this->extractIntegers(Auth::user()->company_id));
+            ])->delete("https://callapi3.sparrowhost.net/agent?agent_id={$agentId}&user_id=" . extractIntegers(Auth::user()->company_id));
 
             if ($response->successful()) {
                 $agent->delete();
@@ -222,12 +222,7 @@ class ApiAiCallController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
-    private function extractIntegers($str)
-    {
-        // Remove all non-digit characters and return first 6 digits
-        $digits = preg_replace('/\D/', '', $str);
-        return (int) substr($digits, 0, 6);
-    }
+   
 
     public function testAiAgent(Request $request)
     {

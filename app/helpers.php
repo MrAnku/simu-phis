@@ -1000,3 +1000,11 @@ if (!function_exists('sendNotification')) {
         ]);
     }
 }
+if (!function_exists('extractIntegers')) {
+    function extractIntegers($str)
+    {
+        // Remove all non-digit characters and return first 6 digits
+        $digits = preg_replace('/\D/', '', $str);
+        return (int) substr($digits, 0, 6);
+    }
+}

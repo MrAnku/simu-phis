@@ -2,10 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
-use App\Models\ScormAssignedUser;
 use Illuminate\Console\Command;
+use App\Models\ScormAssignedUser;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
@@ -33,44 +34,121 @@ class ProcessAiCampaigns extends Command
     public function handle()
     {
         $this->processAiCalls();
-        $this->analyseAicallReports();
+        // $this->analyseAicallReports();
+        $this->checkCallStatus();
         $this->checkAllAiCallsHandled();
     }
 
     private function processAiCalls()
     {
-        $pendingCalls = AiCallCampLive::where('status', 'pending')->take(1)->get();
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
 
-        $url = 'https://api.retellai.com/v2/create-phone-call';
+        if ($companies->isEmpty()) {
+            return;
+        }
+        foreach ($companies as $company) {
+            try {
+                $pendingCalls = AiCallCampLive::where('company_id', $company->company_id)
+                    ->where('status', 'pending')
+                    ->take(1)
+                    ->get();
 
-        foreach ($pendingCalls as $pendingCall) {
+                $url = 'https://callapi3.sparrowhost.net/call';
+
+                foreach ($pendingCalls as $pendingCall) {
 
 
-            setCompanyTimezone($pendingCall->company_id);
+                    setCompanyTimezone($pendingCall->company_id);
 
-            // Make the HTTP request
+                    // Make the HTTP request
+                    $requestBody = [
+                        "user_id" => extractIntegers($pendingCall->company_id),
+                        "agent_id" => $pendingCall->agent_id,
+                        "twilio_account_sid" => env('TWILIO_ACCOUNT_SID'),
+                        "twilio_auth_token" => env('TWILIO_AUTH_TOKEN'),
+                        "twilio_phone_number" => env('TWILIO_PHONE_NUMBER'),
+                        "recipient_phone_number" => $pendingCall->to_mobile
+                    ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('RETELL_API_KEY'),
-            ])
-                ->withOptions(['verify' => false])
-                ->post($url, [
-                    'from_number' => $pendingCall->from_mobile,
-                    'to_number' => $pendingCall->to_mobile,
-                    'override_agent_id' => $pendingCall->agent_id
-                ]);
+                    $response = Http::post($url, $requestBody);
 
-            // Check for a successful response
-            if ($response->successful()) {
-                // Return the response data
-                $pendingCall->call_id = $response['call_id'];
-                $pendingCall->call_send_response = $response->json();
-                $pendingCall->status = 'waiting';
-                $pendingCall->save();
-            } else {
-                // Handle the error, e.g., log the error or throw an exception
-                echo "Unable to fetch agents: " . $response->body() . "\n";
+                    // Check for a successful response
+                    if ($response->successful()) {
+                        $callResponse = $response->json();
+                        // // Return the response data
+                        $pendingCall->call_id = $callResponse['call_sid'];
+                        $pendingCall->call_send_response = json_encode($callResponse, true);
+                        $pendingCall->status = 'waiting';
+                        $pendingCall->save();
+                        echo $response->body() . "\n";
+                    } else {
+                        // Handle the error, e.g., log the error or throw an exception
+                        echo "Call Failed: " . $response->body() . "\n";
+                    }
+                }
+            } catch (\Exception $e) {
+                echo "Something went wrong " . $e->getMessage();
             }
+        }
+    }
+
+    private function checkCallStatus()
+    {
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
+
+        if ($companies->isEmpty()) {
+            return;
+        }
+        foreach ($companies as $company) {
+            try {
+                $placedCall = AiCallCampLive::where('company_id', $company->company_id)
+                    ->where('call_id', '!=', null)
+                    ->where('status', 'waiting')
+                    ->first();
+                if (!$placedCall) {
+                    return;
+                }
+
+                $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
+                if ($compromised) {
+                    if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
+
+                        $this->assignTraining($placedCall);
+                        $placedCall->update(['training_assigned' => 1]);
+                    }
+
+                    $placedCall->update(['compromised' => 1]);
+                }
+                $placedCall->update([
+                    'status' => 'completed',
+                    'call_end_response' => json_encode(['call_ended' => true])
+                ]);
+            } catch (\Exception $e) {
+                echo "Something went wrong " . $e->getMessage();
+            }
+        }
+    }
+
+    private function checkEmployeeCompromised($callId)
+    {
+        try {
+            $response = Http::get('https://callapi3.sparrowhost.net/call/detect_vishing/' . $callId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if ($data['vishing_detected'] == true) {
+                    return true;
+                }
+                return false;
+            }
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
@@ -133,16 +211,19 @@ class ProcessAiCampaigns extends Command
     private function checkAllAiCallsHandled()
     {
         $campaigns = AiCallCampaign::where('status', 'pending')->get();
+        if ($campaigns->isEmpty()) {
+            return;
+        }
 
-        if ($campaigns->isNotEmpty()) {
+        foreach ($campaigns as $campaign) {
+            $liveCampaigns = $campaign->individualCamps()
+            ->where('status', 'pending')
+            ->orWhere('status', 'waiting')
+            ->get();
 
-            foreach ($campaigns as $campaign) {
-                $liveCampaigns = AiCallCampLive::where(['campaign_id' => $campaign->campaign_id, 'status' => 'pending'])->get();
+            if ($liveCampaigns->isEmpty()) {
 
-                if ($liveCampaigns->isEmpty()) {
-
-                    AiCallCampaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-                }
+                $campaign->update(['status' => 'completed']);
             }
         }
     }
