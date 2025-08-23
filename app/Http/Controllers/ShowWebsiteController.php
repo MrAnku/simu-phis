@@ -179,8 +179,8 @@ class ShowWebsiteController extends Controller
         if (!$campaign) {
             return response()->json(['error' => 'Invalid campaign or user']);
         }
-        if ($campaign->training_module == null) {
-            return response()->json(['error' => 'No training module assigned']);
+        if ($campaign->training_module == null && $campaign->scorm_training == null) {
+            return response()->json(['error' => 'No training assigned']);
         }
 
         setCompanyTimezone($campaign->company_id);
@@ -220,8 +220,8 @@ class ShowWebsiteController extends Controller
         if (!$campaign) {
             return response()->json(['error' => 'Invalid campaign or user']);
         }
-        if ($campaign->training_module == null) {
-            return response()->json(['error' => 'No training module assigned']);
+        if ($campaign->training_module == null && $campaign->scorm_training == null) {
+            return response()->json(['error' => 'No training assigned']);
         }
 
         setCompanyTimezone($campaign->company_id);
@@ -501,9 +501,9 @@ private function assignTrainingByWhatsapp($campid)
                 return response()->json(['error' => 'Invalid campaign or user']);
             }
 
-            if ($campaign->training_module == null) {
+            if ($campaign->training_module == null && $campaign->scorm_training == null) {
 
-                return response()->json(['error' => 'No training module assigned']);
+                return response()->json(['error' => 'No training assigned']);
             }
 
             setCompanyTimezone($campaign->company_id);
@@ -575,8 +575,8 @@ private function assignTrainingByWhatsapp($campid)
             return response()->json(['error' => 'Invalid campaign or user']);
         }
 
-        if ($campaign->training_module == null) {
-            return response()->json(['error' => 'No training module assigned']);
+        if ($campaign->training_module == null && $campaign->scorm_training == null) {
+            return response()->json(['error' => 'No training assigned']);
         }
 
         setCompanyTimezone($campaign->company_id);

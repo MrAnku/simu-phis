@@ -609,7 +609,7 @@ class ApiAiCallController extends Controller
                 ->where('company_id', $company_id)
                 ->update([
                     'created_at' => now(),
-                    'status' => 'running'
+                    'status' => 'pending'
                 ]);
 
             // Update campaign_live table
@@ -617,7 +617,7 @@ class ApiAiCallController extends Controller
                 ->where('company_id', $company_id)
                 ->update([
                     'call_id' => null,
-                    'status' => 'running',
+                    'status' => 'pending',
                     'training_assigned' => '0',
                     'compromised' => '0',
                     'call_send_response' => null,

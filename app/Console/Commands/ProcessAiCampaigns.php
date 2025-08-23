@@ -102,7 +102,7 @@ class ProcessAiCampaigns extends Command
                                 $existingRow->update(['training_assigned' => 1]);
                             }
 
-                             if ($existingRow->scorm_training !== null) {
+                            if ($existingRow->scorm_training !== null) {
 
                                 $this->assignTraining($existingRow);
                                 $existingRow->update(['training_assigned' => 1]);
@@ -173,22 +173,22 @@ class ProcessAiCampaigns extends Command
                     'company_id' => $campaign->company_id
                 ];
 
-                 $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
-                 if ($trainingAssigned['status'] == true) {
-                echo $trainingAssigned['msg'];
+                if ($trainingAssigned['status'] == true) {
+                    echo $trainingAssigned['msg'];
+                } else {
+                    echo 'Failed to assign training to ' . $campaign->employee_email;
+                }
             } else {
-                echo 'Failed to assign training to ' . $campaign->employee_email;
-            }
-        }else{
-            $assignedTrainingModule->update(
-                [
-                    'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                    'training_lang' => $campaign->training_lang,
-                    'training_type' => $campaign->training_type,
-                    'assigned_date' => now()->toDateString()
-                ]
-            );
+                $assignedTrainingModule->update(
+                    [
+                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                        'training_lang' => $campaign->training_lang,
+                        'training_type' => $campaign->training_type,
+                        'assigned_date' => now()->toDateString()
+                    ]
+                );
             }
         }
 
@@ -210,11 +210,13 @@ class ProcessAiCampaigns extends Command
                     'company_id' => $campaign->company_id
                 ];
 
-                DB::table('scorm_assigned_users')
-                    ->insert($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
-                echo 'Scorm assigned successfully to ' . $campaign->employee_email . "\n";
-
+                if ($trainingAssigned['status'] == true) {
+                    echo $trainingAssigned['msg'];
+                } else {
+                    echo 'Failed to assign training to ' . $campaign->employee_email;
+                }
             }
         }
 
