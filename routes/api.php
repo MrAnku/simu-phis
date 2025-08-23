@@ -394,6 +394,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/delete-campaign/{campaign_id?}', [ApiAiCallController::class, 'deleteCampaign']);
         Route::get('/get-agents', [ApiAiCallController::class, 'getAgents']);
         Route::get('/fetch-call-report/{callId?}', [ApiAiCallController::class, 'fetchCallReport']);
+        Route::get('/fetch-call-recording/{callId?}', [ApiAiCallController::class, 'fetchCallRecording']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
         Route::put('/relaunch/{campaign_id?}', [ApiAiCallController::class, 'relaunchCampaign']);
     });

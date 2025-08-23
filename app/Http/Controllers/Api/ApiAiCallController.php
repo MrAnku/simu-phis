@@ -628,6 +628,7 @@ class ApiAiCallController extends Controller
                 }
                 $callReport['agent_id'] = $localReport->agent_id;
                 $callReport['call_id'] = $callId;
+                $callReport['disconnect_reason'] = 'user_hangup';
                 $callReport['call_status'] = $localReport->status;
                 $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
                 $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";
@@ -637,13 +638,33 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             } else {
                 $callReport = json_decode($localReport->call_report, true);
-                $callReport['agent_id'] = $localReport->agent_id;
-                $callReport['call_id'] = $localReport->call_id;
-                $callReport['call_status'] = $localReport->status;
-                $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
-                $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";
+                
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchCallRecording($callId)
+    {
+        try {
+            if (!$callId) {
+                return response()->json(['success' => false, 'message' => __('Call ID is required')], 422);
+            }
+
+             // Make the HTTP request
+            $response = Http::get('https://callapi3.sparrowhost.net/audio/' . $callId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                return response()->json(['success' => true, 'data' => $data], 200);
+            }else{
+                return response()->json(['success' => false, 'message' => __('Call recording not found')], 404);
+            }
+
+            
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
