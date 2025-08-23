@@ -25,7 +25,6 @@ class ApiCustomCertificate extends Controller
 
             // Validate required shortcodes
             $requiredShortcodes = [
-                '{{logo_url}}',
                 '{{certificate_id}}',
                 '{{learner_name}}',
                 '{{training_name}}',
@@ -142,6 +141,25 @@ class ApiCustomCertificate extends Controller
                 'template_html' => 'required|mimes:html',
                 'layout_name' => 'required|string|max:255',
             ]);
+
+             $templateContent = file_get_contents($request->file('template_html')->getRealPath());
+
+            // Validate required shortcodes
+            $requiredShortcodes = [
+                '{{certificate_id}}',
+                '{{learner_name}}',
+                '{{training_name}}',
+                '{{completion_date}}'
+            ];
+
+            foreach ($requiredShortcodes as $shortcode) {
+                if (strpos($templateContent, $shortcode) === false) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Missing required shortcode: $shortcode"
+                    ], 422);
+                }
+            }
 
             $companyId = Auth::user()->company_id;
 
