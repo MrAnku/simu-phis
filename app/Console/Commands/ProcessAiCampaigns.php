@@ -60,6 +60,9 @@ class ProcessAiCampaigns extends Command
 
                 foreach ($pendingCalls as $pendingCall) {
 
+                    if ($this->isRetellAgent($pendingCall->agent_id)) {
+                        continue;
+                    }
 
                     setCompanyTimezone($pendingCall->company_id);
 
@@ -115,6 +118,10 @@ class ProcessAiCampaigns extends Command
                     return;
                 }
 
+                if ($this->isRetellAgent($placedCall->agent_id)) {
+                    continue;
+                }
+
                 $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
                 if ($compromised) {
                     if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
@@ -150,6 +157,14 @@ class ProcessAiCampaigns extends Command
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    private function isRetellAgent($agentId)
+    {
+        if (strpos($agentId, 'agent_') === 0) {
+            return true;
+        }
+        return false;
     }
 
     private function analyseAicallReports()
@@ -217,9 +232,9 @@ class ProcessAiCampaigns extends Command
 
         foreach ($campaigns as $campaign) {
             $liveCampaigns = $campaign->individualCamps()
-            ->where('status', 'pending')
-            ->orWhere('status', 'waiting')
-            ->get();
+                ->where('status', 'pending')
+                ->orWhere('status', 'waiting')
+                ->get();
 
             if ($liveCampaigns->isEmpty()) {
 
