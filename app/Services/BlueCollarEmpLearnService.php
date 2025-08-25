@@ -23,7 +23,7 @@ class BlueCollarEmpLearnService
         $certificateService = new TrainingCertificateService();
         if ($customTemplate) {
 
-            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId, $logo);
+            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId, $trainingModule->trainingData->name);
             return $pdfContent;
         } else {
             $pdfContent = $certificateService->defaultTemplate($trainingModule, $trainingModule->trainingData->name, $certificateId, $logo, $favIcon);
@@ -77,7 +77,7 @@ class BlueCollarEmpLearnService
         $certificateService = new TrainingCertificateService();
         if ($customTemplate) {
 
-            $pdfContent = $certificateService->customTemplate($customTemplate, $scormTraining, $certificateId, $logo, $favIcon);
+            $pdfContent = $certificateService->customTemplate($customTemplate, $scormTraining, $certificateId, $scormTraining->scormTrainingData->name);
             return $pdfContent;
         } else {
             $pdfContent = $certificateService->defaultTemplate($scormTraining, $scormTraining->scormTrainingData->name, $certificateId, $logo, $favIcon);
