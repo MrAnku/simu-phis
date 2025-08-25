@@ -762,12 +762,20 @@ class ApiAiCallController extends Controller
                     'message' => __('Campaign ID is required'),
                 ], 422);
             }
+            $campaign = AiCallCampaign::where('campaign_id', $campid)->first();
 
-            if (!AiCallCampaign::where('campaign_id', $campid)->exists()) {
+            if (!$campaign) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Campaign not found'),
                 ], 404);
+            }
+            //check if the agent id starts with agent i.e. agent_bdjsdhbjshdbs
+            if (strpos($campaign->ai_agent, 'agent_') === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('This campaign can not be relaunched. Please create new campaign.'),
+                ], 422);
             }
 
             $company_id = Auth::user()->company_id;
