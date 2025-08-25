@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\WhatsappTemplatesController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
+use App\Http\Controllers\Api\ApiAssignedTrainingsController;
 use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
@@ -519,6 +520,15 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('fetch-scorm-trainings', [ApiScormTrainingController::class, 'fetchScormTrainings']);
         Route::delete('delete-scorm-trainings', [ApiScormTrainingController::class, 'deleteScormTrainings']);
         Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
+    });
+
+    // Fetch Assigned Trainings
+    Route::prefix('assigned-trainings')->group(function () {
+        Route::get('normal-emp', [ApiAssignedTrainingsController::class, 'fetchEmpWithTrainings']);
+        Route::get('blue-collar', [ApiAssignedTrainingsController::class, 'fetchBlueCollarWithTrainings']);
+        Route::get('training-details', [ApiAssignedTrainingsController::class, 'fetchTrainingDetails']);
+        Route::get('game-details', [ApiAssignedTrainingsController::class, 'fetchGameDetails']);
+        Route::get('scorm-details', [ApiAssignedTrainingsController::class, 'fetchScormDetails']);
     });
 });
 
