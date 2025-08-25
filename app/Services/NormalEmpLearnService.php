@@ -23,7 +23,7 @@ class NormalEmpLearnService
         $certificateService = new TrainingCertificateService();
         if ($customTemplate) {
 
-            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId, $logo, $favIcon);
+            $pdfContent = $certificateService->customTemplate($customTemplate, $trainingModule, $certificateId);
             return $pdfContent;
         } else {
             $pdfContent = $certificateService->defaultTemplate($trainingModule, $trainingModule->trainingData->name, $certificateId, $logo, $favIcon);

@@ -56,18 +56,16 @@ class TrainingCertificateService
         return $pdf->Output('S');
     }
 
-    public function customTemplate($customTemplate, $trainingModule, $certificateId, $logo)
+    public function customTemplate($customTemplate, $trainingModule, $certificateId)
     {
         $templateContent = Storage::disk('s3')->get($customTemplate->filepath);
         $certificateHtml = str_replace(
-            ['{{logo_url}}', '{{certificate_id}}', '{{learner_name}}', '{{training_name}}', '{{completion_date}}'],
+            ['{{certificate_id}}', '{{learner_name}}', '{{training_name}}', '{{completion_date}}'],
             [
-                $logo,
                 $certificateId,
                 $trainingModule->user_name,
                 $trainingModule->trainingData->name,
                 $trainingModule->completion_date
-                // $favIcon
             ],
             $templateContent
         );
