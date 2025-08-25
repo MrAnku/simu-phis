@@ -2,13 +2,14 @@
 
 namespace App\Mail;
 
+use Illuminate\Support\Str;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class CampaignMail extends Mailable
 {
@@ -31,8 +32,17 @@ class CampaignMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new Address($this->mailData['from_email'], $this->mailData['from_name']),
+            from: new Address(
+                $this->mailData['from_email'], 
+                $this->mailData['from_name']
+            ),
             subject: $this->mailData['email_subject'],
+            replyTo: [
+                new Address(
+                    Str::random(7) . "@sparrowhost.in", 
+                    $this->mailData['from_name']
+                ),
+            ],
         );
     }
 
@@ -49,9 +59,9 @@ class CampaignMail extends Mailable
     public function build()
     {
         return $this->from($this->mailData['from_email'], $this->mailData['from_name'])
-                    ->subject($this->mailData['email_subject'])
-                    ->html($this->mailData['mailBody'])
-                    ->withSwiftMessage(function ($message) {
+            ->subject($this->mailData['email_subject'])
+            ->html($this->mailData['mailBody'])
+            ->withSwiftMessage(function ($message) {
                 $headers = $message->getHeaders();
 
                 $headers->addTextHeader('X-MS-Exchange-Organization-SkipSafeLinksProcessing', '1');
