@@ -529,6 +529,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('training-details', [ApiAssignedTrainingsController::class, 'fetchTrainingDetails']);
         Route::get('game-details', [ApiAssignedTrainingsController::class, 'fetchGameDetails']);
         Route::get('scorm-details', [ApiAssignedTrainingsController::class, 'fetchScormDetails']);
+        Route::delete('delete-training', [ApiAssignedTrainingsController::class, 'deleteTraining']);
+        Route::delete('delete-scorm', [ApiAssignedTrainingsController::class, 'deleteScorm']);
     });
 });
 

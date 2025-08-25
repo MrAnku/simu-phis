@@ -185,12 +185,12 @@ class ApiAssignedTrainingsController extends Controller
                     ->with('trainingData')
                     ->get();
             } else {
-                  $request->validate([
+                $request->validate([
                     'identifier' => 'numeric|exists:blue_collar_training_users,user_whatsapp'
                 ]);
                 $trainings = BlueCollarTrainingUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
-                     ->where('training_type', '!=',  'games')
+                    ->where('training_type', '!=',  'games')
                     ->with('trainingData')
                     ->get();
             }
@@ -198,6 +198,7 @@ class ApiAssignedTrainingsController extends Controller
             $result = [];
             foreach ($trainings as $training) {
                 $result[] = [
+                    'id'    => $training->id,
                     'training_name'    => $training->trainingData->name ?? null,
                     'personal_best'    => $training->personal_best,
                     'passing_score'    => $training->trainingData->passing_score ?? null,
@@ -258,6 +259,7 @@ class ApiAssignedTrainingsController extends Controller
             $result = [];
             foreach ($games as $game) {
                 $result[] = [
+                    'id'    => $game->id,
                     'game_name'    => $game->trainingGame->name ?? null,
                     'personal_best'    => $game->personal_best,
                     'passing_score'    => $game->trainingGame->passing_score ?? null,
@@ -316,6 +318,7 @@ class ApiAssignedTrainingsController extends Controller
             $result = [];
             foreach ($scorms as $scorm) {
                 $result[] = [
+                    'id'    => $scorm->id,
                     'scorm_name'    => $scorm->scormTrainingData->name ?? null,
                     'personal_best'    => $scorm->personal_best,
                     'passing_score'    => $scorm->scormTrainingData->passing_score ?? null,
@@ -339,6 +342,95 @@ class ApiAssignedTrainingsController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
-    
+    }
+
+    public function deleteTraining(Request $request)
+    {
+        try {
+            $request->validate([
+                'type' => 'required|in:normal,blue_collar',
+                'training_id' => 'required'
+            ]);
+
+            $companyId = Auth::user()->company_id;
+            $type = $request->type;
+
+            if ($type === 'normal') {
+                $trainingDeleted = TrainingAssignedUser::where('company_id', $companyId)
+                    ->where('id', $request->training_id)
+                    ->delete();
+            } else {
+                $trainingDeleted = BlueCollarTrainingUser::where('company_id', $companyId)
+                    ->where('id', $request->training_id)
+                    ->delete();
+            }
+
+            if ($trainingDeleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Training deleted successfully.'
+                ], 200);
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Assigned Training not found.'
+                ], 404);
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteScorm(Request $request)
+    {
+        try {
+            $request->validate([
+                'type' => 'required|in:normal,blue_collar',
+                'training_id' => 'required'
+            ]);
+
+            $companyId = Auth::user()->company_id;
+            $type = $request->type;
+
+            if ($type === 'normal') {
+                $trainingDeleted = ScormAssignedUser::where('company_id', $companyId)
+                    ->where('id', $request->training_id)
+                    ->delete();
+            } else {
+                $trainingDeleted = BlueCollarScormAssignedUser::where('company_id', $companyId)
+                    ->where('id', $request->training_id)
+                    ->delete();
+            }
+
+            if ($trainingDeleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Scorm deleted successfully.'
+                ], 200);
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Assigned Scorm not found.'
+                ], 404);
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
