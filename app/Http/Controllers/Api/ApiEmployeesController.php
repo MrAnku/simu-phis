@@ -491,30 +491,38 @@ class ApiEmployeesController extends Controller
         $companyId = Auth::user()->company_id;
         $totalSimulations = 0;
         $compromisedSimulations = 0;
+        $payloadClickedSimulations = 0;
 
         // Email Campaigns
         $emailTotal = CampaignLive::where('user_email', $email)->count();
         $emailCompromised = CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count();
+        $emailPayloadClicked = CampaignLive::where('user_email', $email)->where('payload_clicked', 1)->count();
 
         // Quishing Campaigns
         $quishingTotal = QuishingLiveCamp::where('user_email', $email)->count();
         $quishingCompromised = QuishingLiveCamp::where('user_email', $email)->where('compromised', 1)->count();
+        $quishingPayloadClicked = QuishingLiveCamp::where('user_email', $email)->where('qr_scanned', '1')->count();
 
         // WhatsApp Campaigns
         $waTotal = WaLiveCampaign::where('user_email', $email)->count();
         $waCompromised = WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count();
+        $waPayloadClicked = WaLiveCampaign::where('user_email', $email)->where('payload_clicked', 1)->count();
 
         // AI Call Campaigns
         $aiTotal = AiCallCampLive::where('employee_email', $email)->count();
-        $aiCompromised = AiCallCampLive::where('employee_email', $email)->where('call_end_response', '!=', null)->count();
+        $aiCompromised = AiCallCampLive::where('employee_email', $email)->where('compromised', 1)->count();
 
         $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
         $compromisedSimulations = $emailCompromised + $quishingCompromised + $waCompromised + $aiCompromised;
+        $payloadClickedSimulations = $emailPayloadClicked + $quishingPayloadClicked + $waPayloadClicked;
 
         if ($totalSimulations > 0) {
             $safeSimulations = $totalSimulations - $compromisedSimulations;
             $percentage = round(($safeSimulations / $totalSimulations) * 100, 2);
-            $riskScore = round(($compromisedSimulations / $totalSimulations) * 100, 2);
+            
+            // Risk score based on payload clicked and compromised
+            $totalRiskyActions = $compromisedSimulations + $payloadClickedSimulations;
+            $riskScore = round(($totalRiskyActions / $totalSimulations) * 100, 2);
         } else {
             $percentage = 100;
             $riskScore = 0;
@@ -524,7 +532,8 @@ class ApiEmployeesController extends Controller
             'security_score' => $percentage, // out of 100
             'risk_score' => $riskScore,        // out of 100
             'total_simulations' => $totalSimulations,
-            'compromised_simulations' => $compromisedSimulations
+            'compromised_simulations' => $compromisedSimulations,
+            'payload_clicked' => $payloadClickedSimulations
         ];
     }
 
