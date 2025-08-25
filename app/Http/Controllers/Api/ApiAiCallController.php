@@ -31,15 +31,22 @@ class ApiAiCallController extends Controller
             $empGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
             $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
             $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->get();
-            $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
-            $phone_numbers = $this->getPhoneNumbers();
+            // $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
+            $agents = AiCallLikelifeAgent::where('company_id', $companyId)->get([
+                'agent_name',
+                'agent_id'
+            ]);
+            // $phone_numbers = $this->getPhoneNumbers();
+            $phone_numbers = [
+                'phone_number' => env('TWILIO_PHONE_NUMBER')
+            ];
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'company' => $company,
                     'agents' => $agents,
-                    'phone_numbers' => $phone_numbers,
+                    'phone_numbers' => [$phone_numbers],
                     'empGroups' => $empGroups,
                     'campaigns' => [
                         'data' => $campaigns
