@@ -60,6 +60,7 @@ class ApiAssignedTrainingsController extends Controller
             if (!isset($employees[$email])) {
                 $employees[$email] = [
                     'user_email' => $email,
+                    'user_name' => $training->user_name,
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
@@ -77,6 +78,7 @@ class ApiAssignedTrainingsController extends Controller
             if (!isset($employees[$email])) {
                 $employees[$email] = [
                     'user_email' => $email,
+                    'user_name' => $scorm->user_name,
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
@@ -135,6 +137,7 @@ class ApiAssignedTrainingsController extends Controller
             if (!isset($employees[$user_whatsapp])) {
                 $employees[$user_whatsapp] = [
                     'user_whatsapp' => $user_whatsapp,
+                    'user_name' => $training->user_name,
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
@@ -152,6 +155,7 @@ class ApiAssignedTrainingsController extends Controller
             if (!isset($employees[$user_whatsapp])) {
                 $employees[$user_whatsapp] = [
                     'user_whatsapp' => $user_whatsapp,
+                    'user_name' => $scorm->user_name,
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
@@ -370,7 +374,7 @@ class ApiAssignedTrainingsController extends Controller
                     'success' => true,
                     'message' => 'Training deleted successfully.'
                 ], 200);
-            }else{
+            } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'Assigned Training not found.'
@@ -415,7 +419,7 @@ class ApiAssignedTrainingsController extends Controller
                     'success' => true,
                     'message' => 'Scorm deleted successfully.'
                 ], 200);
-            }else{
+            } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'Assigned Scorm not found.'
