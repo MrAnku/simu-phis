@@ -538,6 +538,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
             Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
             Route::post('/update-scorm-score', [ApiLearnController::class, 'updateScormTrainingScore']);
+            Route::post('/update-game-score', [ApiLearnController::class, 'updateGameScore']);
         });
 
         Route::prefix('blue-collar')->group(function () {
