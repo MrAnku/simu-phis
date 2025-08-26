@@ -26,13 +26,6 @@ class ApiAssignedTrainingsController extends Controller
 
             $employees = $this->buildEmployeeTrainingSummary($trainings, $scorms);
 
-            if (empty($employees)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No trainings have been assigned to any employees.'
-                ], 422);
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Employees with trainings fetched successfully.',
@@ -102,13 +95,6 @@ class ApiAssignedTrainingsController extends Controller
             $scorms = BlueCollarScormAssignedUser::where('company_id', $companyId)->get();
 
             $employees = $this->buildBlueEmpTrainingSummary($trainings, $scorms);
-
-            if (empty($employees)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No trainings have been assigned to any employees.'
-                ], 422);
-            }
 
             return response()->json([
                 'success' => true,
