@@ -531,6 +531,22 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('scorm-details', [ApiAssignedTrainingsController::class, 'fetchScormDetails']);
         Route::delete('delete-training', [ApiAssignedTrainingsController::class, 'deleteTraining']);
         Route::delete('delete-scorm', [ApiAssignedTrainingsController::class, 'deleteScorm']);
+
+        Route::prefix('normal-emp')->group(function () {
+            Route::put('/start-training', [ApiLearnController::class, 'startTrainingModule']);
+            Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
+
+            Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
+            Route::post('/update-scorm-score', [ApiLearnController::class, 'updateScormTrainingScore']);
+        });
+
+        Route::prefix('blue-collar')->group(function () {
+            Route::put('/start-training', [ApiLearnBlueCollarController::class, 'startTrainingModule']);
+            Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
+
+            Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
+            Route::post('/update-scorm-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
+        });
     });
 });
 
