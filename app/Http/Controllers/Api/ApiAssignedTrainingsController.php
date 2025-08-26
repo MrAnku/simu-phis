@@ -207,6 +207,7 @@ class ApiAssignedTrainingsController extends Controller
                     'personal_best'    => $training->personal_best,
                     'passing_score'    => $training->trainingData->passing_score ?? null,
                     'training_due_date' => $training->training_due_date,
+                    'is_completed'      => $training->completed
                 ];
             }
 
@@ -268,6 +269,7 @@ class ApiAssignedTrainingsController extends Controller
                     'personal_best'    => $game->personal_best,
                     'passing_score'    => $game->trainingGame->passing_score ?? null,
                     'game_due_date' => $game->training_due_date,
+                    'is_completed'      => $game->completed
                 ];
             }
 
@@ -327,6 +329,7 @@ class ApiAssignedTrainingsController extends Controller
                     'personal_best'    => $scorm->personal_best,
                     'passing_score'    => $scorm->scormTrainingData->passing_score ?? null,
                     'scorm_due_date' => $scorm->scorm_due_date,
+                    'is_completed'      => $scorm->completed
                 ];
             }
 
