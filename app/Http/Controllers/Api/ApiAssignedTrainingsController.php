@@ -181,7 +181,7 @@ class ApiAssignedTrainingsController extends Controller
 
             if ($type === 'normal') {
                 $request->validate([
-                    'identifier' => 'email|exists:training_assigned_users,user_email'
+                    'identifier' => 'email|exists:users,user_email'
                 ]);
                 $trainings = TrainingAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
@@ -190,7 +190,7 @@ class ApiAssignedTrainingsController extends Controller
                     ->get();
             } else {
                 $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_training_users,user_whatsapp'
+                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
                 ]);
                 $trainings = BlueCollarTrainingUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
@@ -242,7 +242,7 @@ class ApiAssignedTrainingsController extends Controller
 
             if ($type === 'normal') {
                 $request->validate([
-                    'identifier' => 'email|exists:training_assigned_users,user_email'
+                    'identifier' => 'email|exists:users,user_email'
                 ]);
                 $games = TrainingAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
@@ -251,7 +251,7 @@ class ApiAssignedTrainingsController extends Controller
                     ->get();
             } else {
                 $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_training_users,user_whatsapp'
+                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
                 ]);
                 $games = BlueCollarTrainingUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
@@ -303,7 +303,7 @@ class ApiAssignedTrainingsController extends Controller
 
             if ($type === 'normal') {
                 $request->validate([
-                    'identifier' => 'email|exists:scorm_assigned_users,user_email'
+                    'identifier' => 'email|exists:users,user_email'
                 ]);
                 $scorms = ScormAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
@@ -311,7 +311,7 @@ class ApiAssignedTrainingsController extends Controller
                     ->get();
             } else {
                 $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_scorm_assigned_users,user_whatsapp'
+                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
                 ]);
                 $scorms = BlueCollarScormAssignedUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
