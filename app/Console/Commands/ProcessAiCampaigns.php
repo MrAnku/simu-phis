@@ -110,32 +110,34 @@ class ProcessAiCampaigns extends Command
         }
         foreach ($companies as $company) {
             try {
-                $placedCall = AiCallCampLive::where('company_id', $company->company_id)
+                $placedCalls = AiCallCampLive::where('company_id', $company->company_id)
                     ->where('call_id', '!=', null)
                     ->where('status', 'waiting')
-                    ->first();
-                if (!$placedCall) {
+                    ->get();
+                if ($placedCalls->isEmpty()) {
                     return;
                 }
 
-                if ($this->isRetellAgent($placedCall->agent_id)) {
-                    continue;
-                }
-
-                $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
-                if ($compromised) {
-                    if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
-
-                        $this->assignTraining($placedCall);
-                        $placedCall->update(['training_assigned' => 1]);
+                foreach ($placedCalls as $placedCall) {
+                    if ($this->isRetellAgent($placedCall->agent_id)) {
+                        continue;
                     }
 
-                    $placedCall->update(['compromised' => 1]);
+                    $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
+                    if ($compromised) {
+                        if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
+
+                            $this->assignTraining($placedCall);
+                            $placedCall->update(['training_assigned' => 1]);
+                        }
+
+                        $placedCall->update(['compromised' => 1]);
+                    }
+                    $placedCall->update([
+                        'status' => 'completed',
+                        'call_end_response' => json_encode(['call_ended' => true])
+                    ]);
                 }
-                $placedCall->update([
-                    'status' => 'completed',
-                    'call_end_response' => json_encode(['call_ended' => true])
-                ]);
             } catch (\Exception $e) {
                 echo "Something went wrong " . $e->getMessage();
             }
