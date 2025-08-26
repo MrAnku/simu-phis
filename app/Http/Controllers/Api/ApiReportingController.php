@@ -15,6 +15,7 @@ use App\Models\TprmCampaign;
 use App\Models\TrainingGame;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
+use App\Models\ScormTraining;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
@@ -28,6 +29,8 @@ use App\Models\PhishingWebsite;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WhatsappCampaign;
+use App\Services\EmployeeReport;
+use App\Models\ScormAssignedUser;
 use Illuminate\Http\JsonResponse;
 use App\Models\BlueCollarEmployee;
 use App\Models\TprmCampaignReport;
@@ -37,8 +40,6 @@ use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
-use App\Models\ScormAssignedUser;
-use App\Models\ScormTraining;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -2037,30 +2038,13 @@ class ApiReportingController extends Controller
     public function fetchUsersReport()
     {
         try{
+            $companyId = Auth::user()->company_id;
+            $employeeReport = new EmployeeReport(Auth::user()->email, $companyId);
 
             return response()->json([
                 'success' => true,
                 'message' => __('Users report fetched successfully'),
-                'data' => [
-                    // Risk Assessment Metrics
-                    'overall_risk_score' => $this->calculateOverallRiskScore($companyId),
-                    'user_risk_distribution' => $this->calculateUserRiskDistribution($companyId),
-                    'department_risk_levels' => $this->calculateDepartmentRiskLevels($companyId),
-                    'trend_analysis' => $this->calculateRiskTrends($companyId),
-
-                    // Campaign Performance Metrics
-                    'campaign_effectiveness' => $this->calculateCampaignEffectiveness($companyId),
-                    'click_through_rates' => $this->calculateClickThroughRates($companyId),
-                    'reporting_rates' => $this->calculateReportingRates($companyId),
-                    'compromise_rates' => $this->calculateCompromiseRates($companyId),
-
-                    // Training Analytics
-                    'training_completion_rates' => $this->calculateTrainingCompletionRates($companyId),
-                    'knowledge_retention_scores' => $this->calculateKnowledgeRetention($companyId),
-                    'training_effectiveness' => $this->calculateTrainingEffectiveness($companyId),
-                    'certification_progress' => $this->calculateCertificationProgress($companyId),
-
-                ]
+                'data' => $employeeReport->generateReport()
             ], 200);
 
         } catch(\Exception $e) {
