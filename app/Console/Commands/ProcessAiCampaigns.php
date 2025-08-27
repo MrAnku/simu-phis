@@ -266,8 +266,7 @@ class ProcessAiCampaigns extends Command
 
         foreach ($campaigns as $campaign) {
             $liveCampaigns = $campaign->individualCamps()
-                ->where('status', 'pending')
-                ->orWhere('status', 'waiting')
+                ->where('status', '!=', 'completed')
                 ->get();
 
             if ($liveCampaigns->isEmpty()) {
