@@ -33,9 +33,9 @@ class ProcessAiCampaigns extends Command
      */
     public function handle()
     {
+        $this->checkCallStatus();
         $this->processAiCalls();
         // $this->analyseAicallReports();
-        $this->checkCallStatus();
         $this->checkAllAiCallsHandled();
     }
 
@@ -52,10 +52,15 @@ class ProcessAiCampaigns extends Command
         foreach ($companies as $company) {
             try {
                 $pendingCalls = AiCallCampLive::where('company_id', $company->company_id)
-                    ->where('status', 'pending')
+                    ->where(function ($q) {
+                        $q->where('status', 'pending')
+                            ->orWhere('status', 'no-answer')
+                            ->orWhere('status', 'failed')
+                            ->orWhere('status', 'canceled');
+                    })
                     ->take(1)
                     ->get();
-
+                    
                 $url = 'https://callapi3.sparrowhost.net/call';
 
                 foreach ($pendingCalls as $pendingCall) {
@@ -123,6 +128,17 @@ class ProcessAiCampaigns extends Command
                         continue;
                     }
 
+                    $status = $this->checkStatus($placedCall->call_id);
+                    if ($status == null) {
+                        continue;
+                    }
+                    if ($status !== 'completed') {
+                        $placedCall->update(['status' => $status]);
+                        continue;
+                    }
+
+                    // this will execute after the call completion
+
                     $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
                     if ($compromised) {
                         if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
@@ -141,6 +157,21 @@ class ProcessAiCampaigns extends Command
             } catch (\Exception $e) {
                 echo "Something went wrong " . $e->getMessage();
             }
+        }
+    }
+
+    private function checkStatus($callId)
+    {
+        try {
+            $response = Http::get('https://callapi3.sparrowhost.net/call/call_info/' . $callId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['status'];
+            }
+        } catch (\Exception $e) {
+            echo "Something went wrong " . $e->getMessage();
+            return null;
         }
     }
 
