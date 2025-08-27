@@ -49,13 +49,38 @@ class EmployeeReport
     public function calculateOverallRiskScore(): float
     {
         $payloadClicked = $this->payloadClicked();
-        $emailReported = $this->emailReported();
-        $emailViewed = $this->emailViewed();
-        $compromised = $this->compromised();
+        $emailReported  = $this->emailReported();
+        $emailViewed    = $this->emailViewed();
+        $compromised    = $this->compromised();
 
-        $overallRiskScore = ($payloadClicked * 0.4) + ($emailReported * 0.4) + ($emailViewed * 0.2) + ($compromised * 0.2);
-        return round($overallRiskScore, 2);
+        $totalEvents = $payloadClicked + $emailReported + $emailViewed + $compromised;
+
+        // If no activity, assume perfect awareness
+        if ($totalEvents === 0) {
+            return 100.0;
+        }
+
+        // Weights: adjust based on how severe each action is
+        $weights = [
+            'payloadClicked' => -40, // clicking payloads = bad
+            'compromised'    => -50, // compromises = worst
+            'emailViewed'    => -10, // views are neutral-to-slightly risky
+            'emailReported'  => +30, // reporting = very good
+        ];
+
+        // Normalize each metric by total events
+        $score = 100;
+        $score += ($payloadClicked / $totalEvents) * $weights['payloadClicked'];
+        $score += ($compromised    / $totalEvents) * $weights['compromised'];
+        $score += ($emailViewed    / $totalEvents) * $weights['emailViewed'];
+        $score += ($emailReported  / $totalEvents) * $weights['emailReported'];
+
+        // Bound between 0–100
+        $score = max(0, min(100, $score));
+
+        return round($score, 2);
     }
+
 
     private function calculateUserRiskDistribution(): array
     {
@@ -180,7 +205,7 @@ class EmployeeReport
         ];
     }
 
-  
+
     public function payloadClicked($email = null): int
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
@@ -699,7 +724,7 @@ class EmployeeReport
             ->toArray();
         $trainingNames = TrainingModule::whereIn('id', $trainingIds)->pluck('name')->toArray();
 
-        
+
 
         return $trainingNames;
     }
@@ -716,7 +741,7 @@ class EmployeeReport
     }
 
     public function onTimeTrainingCompleted(): int
-    { 
+    {
         $onTimeTrainings = 0;
         $completedTrainings = TrainingAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
@@ -849,5 +874,4 @@ class EmployeeReport
 
         return $scormNames;
     }
-
 }

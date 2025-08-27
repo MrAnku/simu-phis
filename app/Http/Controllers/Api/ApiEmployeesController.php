@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Users;
+use App\Models\Campaign;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
+use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
 use App\Models\DomainVerified;
@@ -14,16 +16,15 @@ use App\Models\WaLiveCampaign;
 use App\Models\BlueCollarGroup;
 use App\Models\DeletedEmployee;
 use App\Models\QuishingLiveCamp;
+use App\Services\EmployeeReport;
 use App\Services\EmployeeService;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\AiCallCampaign;
-use App\Models\Campaign;
-use App\Models\InfoGraphicLiveCampaign;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Models\InfoGraphicLiveCampaign;
 use App\Services\CheckWhitelabelService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -204,6 +205,12 @@ class ApiEmployeesController extends Controller
                         ->groupBy('user_email');
                 })
                 ->get();
+                
+            $allEmployees->map(function ($employee) {
+                $empReport = new EmployeeReport($employee->user_email, $employee->company_id);
+                $employee->risk_score = $empReport->calculateOverallRiskScore();
+                return $employee;
+            });
 
             $hasOutlookAdToken = OutlookAdToken::where('company_id', $companyId)->exists();
 
