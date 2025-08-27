@@ -826,7 +826,7 @@ class EmployeeReport
         return $totalCertificates;
     }
 
-    public function certifiedTrainings(): int
+    public function certifiedTrainings(): array
     {
         $trainingIds = TrainingAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
@@ -838,7 +838,7 @@ class EmployeeReport
         return $trainingNames;
     }
 
-    public function certifiedScorm(): int
+    public function certifiedScorm(): array
     {
         $scormIds = ScormAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)

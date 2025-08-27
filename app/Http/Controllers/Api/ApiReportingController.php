@@ -2035,11 +2035,11 @@ class ApiReportingController extends Controller
     }
 
 
-    public function fetchUsersReport()
+    public function fetchUsersReport($email)
     {
         try{
             $companyId = Auth::user()->company_id;
-            $employeeReport = new EmployeeReport(Auth::user()->email, $companyId);
+            $employeeReport = new EmployeeReport($email, $companyId);
 
             return response()->json([
                 'success' => true,

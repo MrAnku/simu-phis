@@ -280,7 +280,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/fetch-division-users-reporting', [ApiReportingController::class, 'fetchDivisionUsersReporting']);
 
         // Users Reporting
-        Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
+        Route::get('/fetch-users-report/{email}', [ApiReportingController::class, 'fetchUsersReport']);
         
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
 
