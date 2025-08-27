@@ -25,8 +25,6 @@ use App\Http\Controllers\Api\InforgraphicsController;
 use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\LearnApi\ApiMediaController;
 use App\Http\Controllers\Api\ApiIntegrationController;
-use App\Http\Controllers\Api\ApiShowWebsiteController;
-use App\Http\Controllers\Api\AivishingReportController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\NoActivityUsersController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
@@ -36,7 +34,6 @@ use App\Http\Controllers\Api\ApiPolicyCampaignController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
-use App\Http\Controllers\Api\WhatsappTemplatesController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiAssignedTrainingsController;
 use App\Http\Controllers\Api\ApiComplianceController;
@@ -49,7 +46,6 @@ use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
-use App\Http\Controllers\LearnApi\ApiPolicyController as LearnApiApiPolicyController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -383,7 +379,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('phishing-emails')->group(function () {
         Route::get('/', [ApiPhishingEmailsController::class, 'index']);
         Route::get('/get-template-by-id/{id?}', [ApiPhishingEmailsController::class, 'getTemplateById']);
-        Route::get('/search-email-template', [ApiPhishingEmailsController::class, 'searchPhishingEmails']);
         Route::post('/add-email-template', [ApiPhishingEmailsController::class, 'addEmailTemplate']);
         Route::post('/generate-template', [ApiPhishingEmailsController::class, 'generateTemplate']);
         Route::post('/save-ai-phish-template', [ApiPhishingEmailsController::class, 'saveAIPhishTemplate']);

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Campaign;
 use App\Models\CampaignLive;
 use Illuminate\Http\Request;
 use App\Models\PhishingEmail;
@@ -12,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\TprmCampaignLive;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -65,104 +63,6 @@ class ApiPhishingEmailsController extends Controller
                     'default'        => $defaultQuery->paginate(9),
                     'custom'         => $customQuery->paginate(9),
                 ]
-            ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => __('Error: ') . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-    public function searchPhishingEmails(Request $request): JsonResponse
-    {
-        try {
-            $company_id = Auth::user()->company_id;
-            $searchTerm = $request->query('search');
-
-            $senderProfiles = SenderProfile::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->get();
-
-            $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->get();
-
-            if ($request->has('difficulty')) {
-                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id)
-                            ->orWhere('company_id', 'default');
-                    })
-                    ->where('difficulty', $request->input('difficulty'))
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-                $default = PhishingEmail::with(['web', 'sender_p'])
-                    ->where('difficulty', $request->input('difficulty'))
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', 'default');
-                    })
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-                $custom = PhishingEmail::with(['web', 'sender_p'])
-                    ->where('difficulty', $request->input('difficulty'))
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id);
-                    })
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-            } else {
-                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id)
-                            ->orWhere('company_id', 'default');
-                    })
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-                $default = PhishingEmail::with(['web', 'sender_p'])
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', 'default');
-                    })
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-                $custom = PhishingEmail::with(['web', 'sender_p'])
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id);
-                    })
-                    ->when($searchTerm, function ($query, $searchTerm) {
-                        return $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-                    })
-                    ->paginate(9);
-            }
-
-
-
-            return response()->json([
-                'status' => true,
-                'message' => __('Phishing emails fetched successfully'),
-                'data' => [
-                    'phishingEmails' => $phishingEmails,
-                    'default' => $default,
-                    'custom' => $custom,
-                    'senderProfiles' => $senderProfiles,
-                    'phishingWebsites' => $phishingWebsites,
-                ],
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([

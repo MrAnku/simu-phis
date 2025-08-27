@@ -19,68 +19,42 @@ class ApiQuishingEmailController extends Controller
     {
         try {
             $company_id = Auth::user()->company_id;
-
-            // // Fetch Sender Profiles
-            // $senderProfiles = SenderProfile::where(function ($query) use ($company_id) {
-            //     $query->where('company_id', $company_id)
-            //         ->orWhere('company_id', 'default');
-            // })->get();
-
-            // // Fetch Phishing Websites
-            // $phishingWebsites = PhishingWebsite::where(function ($query) use ($company_id) {
-            //     $query->where('company_id', $company_id)
-            //         ->orWhere('company_id', 'default');
-            // })->get();
-
             // Handle Search
-            if ($request->has('search')) {
-                $search = $request->input('search');
-                $quishingEmails = QshTemplate::with('senderProfile')
-                    ->where('name', 'like', "%$search%")
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id)
-                            ->orWhere('company_id', 'default');
-                    })->paginate(9);
-                $default = QshTemplate::with('senderProfile')
-                    ->where('name', 'like', "%$search%")
-                    ->where('company_id', 'default')->paginate(9);
-                $custom = QshTemplate::with('senderProfile')
-                    ->where('name', 'like', "%$search%")
-                    ->where('company_id', $company_id)->paginate(9);
-            } else if ($request->has('difficulty')) {
+             // Base queries
+            $defaultQuery = QshTemplate::with('senderProfile')
+                ->where('company_id', 'default');
 
-                $difficulty = $request->input('difficulty');
-                $quishingEmails = QshTemplate::with('senderProfile')
-                    ->where('difficulty', $difficulty)
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id)
-                            ->orWhere('company_id', 'default');
-                    })->paginate(9);
+            $customQuery = QshTemplate::with('senderProfile')
+                ->where('company_id', $company_id);
 
-                $default = QshTemplate::with('senderProfile')
-                    ->where('difficulty', $difficulty)
-                    ->where('company_id', 'default')->paginate(9);
-                $custom = QshTemplate::with('senderProfile')
-                    ->where('difficulty', $difficulty)
-                    ->where('company_id', $company_id)->paginate(9);
-            } else {
-                // All QshTemplates if no search
-                $quishingEmails = QshTemplate::with('senderProfile')
-                    ->where(function ($query) use ($company_id) {
-                        $query->where('company_id', $company_id)
-                            ->orWhere('company_id', 'default');
-                    })->paginate(9);
-                $default = QshTemplate::with('senderProfile')
-                    ->where('company_id', 'default')->paginate(9);
-                $custom = QshTemplate::with('senderProfile')
-                    ->where('company_id', $company_id)->paginate(9);
+             // Apply filters
+            if ($request->filled('search')) {
+                $searchTerm = $request->input('search');
+                $defaultQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('email_subject', 'like', "%{$searchTerm}%");
+                });
+                $customQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('email_subject', 'like', "%{$searchTerm}%");
+                });
             }
+
+            if ($request->filled('difficulty')) {
+                $difficulty = $request->input('difficulty');
+                $defaultQuery->where('difficulty', $difficulty);
+                $customQuery->where('difficulty', $difficulty);
+            }
+
+            // Combined (no union, just where-in)
+            $combinedQuery = QshTemplate::with('senderProfile')
+                ->whereIn('company_id', ['default', $company_id]);
 
             return response()->json([
                 'status' => true,
-                'quishing_emails' => $quishingEmails,
-                'default' => $default,
-                'custom' => $custom,
+                'quishing_emails' => $combinedQuery->paginate(9),
+                'default' => $defaultQuery->paginate(9),
+                'custom' => $customQuery->paginate(9),
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
