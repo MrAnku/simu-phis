@@ -126,7 +126,15 @@ class InforgraphicsController extends Controller
 
             $status = $request->schedule_type === 'immediate' ? 'running' : 'pending';
 
-
+           //check if the user group has users
+           $groupExists = UsersGroup::where('group_id', $request->users_group)
+               ->where('company_id', Auth::user()->company_id)
+               ->whereNotNull('users')
+               ->where('users', '!=', '[]') 
+               ->exists();
+           if (!$groupExists) {
+               return response()->json(['success' => false, 'message' => __('This division does not have any employees')], 404);
+           }
 
             $campaign = InfoGraphicCampaign::create([
                 'campaign_name' => $request->campaign_name,
