@@ -18,10 +18,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
-use App\Models\CampaignLive;
-use App\Models\QuishingLiveCamp;
-use App\Models\TprmCampaignLive;
-use App\Models\WaLiveCampaign;
 use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +25,13 @@ use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
 {
+     protected $normalEmpLearnService;
+
+    public function __construct()
+    {
+        $this->normalEmpLearnService = new NormalEmpLearnService();
+    }
+
     public function loginWithToken(Request $request)
     {
         try {
@@ -186,13 +189,12 @@ class ApiLearnController extends Controller
             $user = Users::where('user_email', $request->email)->first();
 
             // Calculate Risk score
-            $riskData = $this->calculateRiskScore($user);
+            $riskData = $this->normalEmpLearnService->calculateRiskScore($user);
             $riskScore = $riskData['riskScore'];
             $riskLevel = $riskData['riskLevel'];
 
             // Calculate current rank
-
-            $leaderboardRank = $this->calculateLeaderboardRank($request->email);
+            $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
             return response()->json([
@@ -217,104 +219,6 @@ class ApiLearnController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    private function calculateRiskScore($user)
-    {
-        $riskScoreRanges = [
-            'poor' => [0, 20],
-            'fair' => [21, 40],
-            'good' => [41, 60],
-            'veryGood' => [61, 80],
-            'excellent' => [81, 100],
-        ];
-
-        // Campaigns
-        $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-            ->where('company_id', $user->company_id);
-
-        $totalSimulations = $emailCampaigns->count();
-        $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
-
-        $totalQuishing = $quishingCampaigns->count();
-        $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
-
-        $totalTprm = $tprmCampaigns->count();
-        $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
-
-        $totalWhatsapp = $whatsappCampaigns->count();
-        $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-        // Risk score calculation
-        $riskScore = null;
-        $riskLevel = null;
-
-        $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-        $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
-
-        $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-        // Determine risk level
-        foreach ($riskScoreRanges as $label => [$min, $max]) {
-            if ($riskScore >= $min && $riskScore <= $max) {
-                $riskLevel = $label;
-                break;
-            }
-        }
-
-        return [
-            'riskScore' => $riskScore,
-            'riskLevel' => $riskLevel,
-        ];
-    }
-
-    private function calculateLeaderboardRank($email)
-    {
-
-        $companyId = Users::where('user_email', $email)->value('company_id');
-
-        $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
-        $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
-
-        $allUsers = $trainingUsers->merge($scormUsers);
-
-        $currentUserEmail = $email;
-
-        $grouped = $allUsers->groupBy('user_email')->map(function ($group, $email) use ($currentUserEmail) {
-            $average = $group->avg('personal_best');
-            $assignedTrainingsCount = $group->count();
-
-            return [
-                'email' => $email,
-                'name' => strtolower($email) == strtolower($currentUserEmail) ? 'You' : ($group->first()->user_name ?? 'N/A'),
-                'average_score' => round($average, 2),
-                'assigned_trainings_count' => $assignedTrainingsCount,
-            ];
-        })->filter(function ($user) {
-            return $user['average_score'] >= 10; // Filter users with score >= 10
-        })->sortByDesc('average_score')->values();
-
-
-        // Add leaderboard rank
-        $leaderboard = $grouped->map(function ($user, $index) {
-            $user['leaderboard_rank'] = $index + 1;
-            return $user;
-        });
-
-        $currentUserRank = optional($leaderboard->firstWhere('email', $currentUserEmail))['leaderboard_rank'] ?? null;
-        return [
-            'leaderboard' => $leaderboard,
-            'current_user_rank' => $currentUserRank,
-        ];
     }
 
     public function getNormalEmpTranings(Request $request)
@@ -497,12 +401,6 @@ class ApiLearnController extends Controller
             $trainingId = base64_decode($request->encoded_id);
 
             $trainingData = TrainingAssignedUser::find($trainingId);
-            if (!$trainingData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Training not found.'
-                ], 404);
-            }
 
             $trainingData->update([
                 'feedback' => $request->feedback,
@@ -644,12 +542,6 @@ class ApiLearnController extends Controller
             $scormId = base64_decode($request->encoded_id);
 
             $scormData = ScormAssignedUser::find($scormId);
-            if (!$scormData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Scorm not found.'
-                ], 404);
-            }
 
             $scormData->update([
                 'feedback' => $request->feedback,
@@ -792,32 +684,7 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $request->email)->where('training_started', 1)->get();
-
-            $allAssignedScorms = ScormAssignedUser::where('user_email', $request->email)->where('scorm_started', 1)->get();
-
-            $allAssignedTrainings = [];
-            foreach ($allAssignedTrainingMods as $trainingMod) {
-                $allAssignedTrainings[] = [
-                    'training_name' => $trainingMod->training_type == 'games' ? $trainingMod->trainingGame->name : $trainingMod->trainingData->name,
-                    'score' => $trainingMod->personal_best,
-                    'status' => $trainingMod->completed ? 'Completed' : 'Not Completed',
-                    'training_due_date' => $trainingMod->training_due_date,
-                    'completion_date' => $trainingMod->completion_date,
-                    'training_type' => $trainingMod->training_type,
-                ];
-            }
-
-            foreach ($allAssignedScorms as $scorm) {
-                $allAssignedTrainings[] = [
-                    'training_name' => $scorm->scormTrainingData->name,
-                    'score' => $scorm->personal_best,
-                    'status' => $scorm->completed ? 'Completed' : 'Not Completed',
-                    'training_due_date' => $scorm->scorm_due_date,
-                    'completion_date' => $scorm->completion_date,
-                    'training_type' => 'Scorm',
-                ];
-            }
+            $allAssignedTrainings = $this->normalEmpLearnService->getAllProgressTrainings($request->email);
 
             return response()->json([
                 'success' => true,
@@ -842,7 +709,7 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $leaderboardRank = $this->calculateLeaderboardRank($request->email);
+            $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
             $currentUserRank = $leaderboardRank['current_user_rank'];
             $leaderboard = $leaderboardRank['leaderboard'];
 
@@ -888,17 +755,8 @@ class ApiLearnController extends Controller
                 ];
             }
             $avgTrainingScore = count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0;
-            if ($avgTrainingScore >= 90) {
-                $avgTrainingGrade = 'A+';
-            } elseif ($avgTrainingScore >= 80) {
-                $avgTrainingGrade = 'A';
-            } elseif ($avgTrainingScore >= 70) {
-                $avgTrainingGrade = 'B';
-            } elseif ($avgTrainingScore >= 60) {
-                $avgTrainingGrade = 'C';
-            } else {
-                $avgTrainingGrade = 'D';
-            }
+
+            $avgTrainingGrade = $this->normalEmpLearnService->getGrade($avgTrainingScore);
 
             $scormUsers = ScormAssignedUser::where('user_email', $request->email)
                 ->where('scorm_started', 1)
@@ -915,17 +773,7 @@ class ApiLearnController extends Controller
 
             $avgScormScore = count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0;
 
-            if ($avgScormScore >= 90) {
-                $avgScormGrade = 'A+';
-            } elseif ($avgScormScore >= 80) {
-                $avgScormGrade = 'A';
-            } elseif ($avgScormScore >= 70) {
-                $avgScormGrade = 'B';
-            } elseif ($avgScormScore >= 60) {
-                $avgScormGrade = 'C';
-            } else {
-                $avgScormGrade = 'D';
-            }
+            $avgScormGrade = $this->normalEmpLearnService->getGrade($avgScormScore);
 
             return response()->json([
                 'success' => true,
