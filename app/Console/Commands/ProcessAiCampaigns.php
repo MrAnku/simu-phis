@@ -117,7 +117,7 @@ class ProcessAiCampaigns extends Command
             try {
                 $placedCalls = AiCallCampLive::where('company_id', $company->company_id)
                     ->where('call_id', '!=', null)
-                    ->where('status', 'waiting')
+                    ->where('status', '!=', 'pending')
                     ->get();
                 if ($placedCalls->isEmpty()) {
                     return;
