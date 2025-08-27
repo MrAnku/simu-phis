@@ -26,6 +26,26 @@ class ApiPhishingEmailsController extends Controller
         try {
             $company_id = Auth::user()->company_id;
 
+            if ($request->has('search')) {
+                $searchTerm = $request->input('search');
+                $phishingEmails = PhishingEmail::with(['web', 'sender_p'])
+                    ->where(function ($query) use ($company_id) {
+                        $query->where('company_id', $company_id)
+                            ->orWhere('company_id', 'default');
+                    })
+                    ->where(function ($query) use ($searchTerm) {
+                        $query->where('name', 'like', "%{$searchTerm}%")
+                            ->orWhere('email_subject', 'like', "%{$searchTerm}%");
+                    })
+                    ->paginate(9);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => __('Phishing data fetched successfully.'),
+                    'data' => $phishingEmails
+                ], 200);
+            }
+
             if ($request->has('difficulty')) {
 
                 $difficulty = $request->input('difficulty');
