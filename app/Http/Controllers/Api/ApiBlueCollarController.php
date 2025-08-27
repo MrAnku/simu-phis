@@ -419,6 +419,51 @@ class ApiBlueCollarController extends Controller
         }
     }
 
+    public function updateBlueCollarUser(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|string',
+                'usrName' => 'required|string|max:255',
+                'usrCompany' => 'nullable|string|max:255',
+                'usrJobTitle' => 'nullable|string|max:255'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+            }
+
+            $companyId = Auth::user()->company_id;
+
+            // Check if user exists
+            $user = BlueCollarEmployee::where('id', base64_decode($request->id))
+                ->where('company_id', $companyId)
+                ->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => __('User not found')], 404);
+            }
+
+            // Update user details
+            $user->update([
+                'user_name' => $request->usrName,
+                'user_company' => $request->usrCompany,
+                'user_job_title' => $request->usrJobTitle,
+            ]);
+
+            //update in wa campaign
+            WaLiveCampaign::where('employee_type', 'bluecollar')
+                ->where('user_id', $user->id)
+                ->where('company_id', $companyId)
+                ->update(['user_name' => $request->usrName]);
+
+            log_action("Blue Collar User updated : {$request->usrName}");
+            return response()->json(['success' => true, 'message' => __('Employee Updated Successfully')], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+        }
+    }
+
     public function deleteBlueGroup(Request $request)
     {
         $grpId = $request->route('group_id');

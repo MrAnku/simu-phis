@@ -351,6 +351,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/add-user', [ApiEmployeesController::class, 'addUser']);
         Route::post('/add-plan-user', [ApiEmployeesController::class, 'addPlanUser']);
         Route::post('/add-blue-collar-user', [ApiBlueCollarController::class, 'addBlueCollarUser']);
+        Route::put('/update-blue-collar-user', [ApiBlueCollarController::class, 'updateBlueCollarUser']);
         Route::post('/import-csv', [ApiEmployeesController::class, 'importCsv']);
         Route::delete('/delete-group/{groupId?}', [ApiEmployeesController::class, 'deleteGroup']);
         Route::delete('/delete-blue-group/{group_id?}', [ApiBlueCollarController::class, 'deleteBlueGroup']);
