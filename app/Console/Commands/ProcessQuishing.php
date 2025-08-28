@@ -160,7 +160,14 @@ class ProcessQuishing extends Command
         }
 
         // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-        $mailBody = str_replace('{{qr_code}}', '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">', $mailBody);
+        $mailBody = str_replace(
+            '{{qr_code}}',
+            '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">' .
+                '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
+                '<input type="hidden" id="campaign_type" value="quishing">',
+            $mailBody
+        );
+
 
 
         if ($campaign->quishing_lang !== 'en' && $campaign->quishing_lang !== 'am') {

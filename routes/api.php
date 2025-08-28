@@ -46,6 +46,7 @@ use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
+use App\Http\Controllers\PhishingReplyController;
 
 Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -136,6 +137,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/send-training-reminder/{email?}', [ApiCampaignController::class, 'sendTrainingReminder']);
         Route::put('/complete-training/{encodedTrainingId?}', [ApiCampaignController::class, 'completeTraining']);
         Route::delete('/remove-training/{encodedTrainingId?}', [ApiCampaignController::class, 'removeTraining']);
+    });
+
+    Route::prefix('phishing-replies')->group(function () {
+        Route::get('/fetch-replies', [PhishingReplyController::class, 'fetchPhishingReplies']);
     });
 
     Route::prefix('no-activity-users')->group(function () {

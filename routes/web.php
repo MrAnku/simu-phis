@@ -11,6 +11,7 @@ use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
+use App\Http\Controllers\PhishingReplyController;
 use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\TestController;
 
@@ -125,6 +126,7 @@ Route::get('/test/scorm/{id}', [TestController::class, 'testScorm'])
 Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
 Route::post('/phish-triage/log-report', [PhishTriageController::class, 'logReport']);
 
+Route::post('/phishing-reply', [PhishingReplyController::class, 'phishingReply']);
 
 
 Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);

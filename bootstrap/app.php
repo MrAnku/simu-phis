@@ -30,7 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/ai-calling/log-call-detail',
             '/phish-triage/log-report',
-            '/outlook-phish-report'
+            '/outlook-phish-report',
+            '/phishing-reply'
         ]);
         $middleware->append(CorsMiddleware::class);
     })

@@ -331,7 +331,12 @@ class ProcessCampaigns extends Command
 
     $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
     // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-    $mailBody = str_replace('{{tracker_img}}', '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">', $mailBody);
+    $mailBody = str_replace(
+      '{{tracker_img}}',
+      '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">' .
+        '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
+        '<input type="hidden" id="campaign_type" value="email">', $mailBody
+    );
 
     if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
       $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
