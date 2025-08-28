@@ -109,7 +109,10 @@ class PhishingReplyController extends Controller
 
             $replies = PhishingReply::where('campaign_id', $campaignId)
                 ->where('campaign_type', $campaignType)
-                ->get();
+                ->pluck('body')
+                ->map(function ($item) {
+                    return ['reply' => $item];
+                });
 
             return response()->json([
                 'success' => true,
