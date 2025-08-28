@@ -10,6 +10,7 @@ use App\Models\WhatsappCampaign;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\BlueCollarScormAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
@@ -300,6 +301,9 @@ class ApiBlueCollarController extends Controller
 
                 $user->delete();
                 BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+                    ->where('company_id', Auth::user()->company_id)
+                    ->delete();
+                BlueCollarScormAssignedUser::where('user_whatsapp', $user->whatsapp)
                     ->where('company_id', Auth::user()->company_id)
                     ->delete();
 

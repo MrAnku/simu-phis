@@ -13,6 +13,7 @@ use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
 use App\Models\InfoGraphicCampaign;
 use App\Models\PolicyCampaign;
+use App\Models\ScormAssignedUser;
 use App\Models\SmishingCampaign;
 use App\Models\TrainingAssignedUser;
 use App\Models\WaCampaign;
@@ -221,6 +222,9 @@ class EmployeeService
     {
 
         TrainingAssignedUser::where('user_email', $email)
+            ->where('company_id', $this->companyId)
+            ->delete();
+        ScormAssignedUser::where('user_email', $email)
             ->where('company_id', $this->companyId)
             ->delete();
         AssignedPolicy::where('user_email', $email)
