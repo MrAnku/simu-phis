@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Users;
 use Plivo\RestClient;
 use App\Models\Campaign;
@@ -105,7 +106,7 @@ class ShowWebsiteController extends Controller
         if ($lang && $lang != 'en') {
             $filePath = resource_path("oopsPage/alertPage_{$lang}.html");
             if (!File::exists($filePath)) {
-            $filePath = resource_path("oopsPage/alertPage.html");
+                $filePath = resource_path("oopsPage/alertPage.html");
             }
         } else {
             $filePath = resource_path("oopsPage/alertPage.html");
@@ -245,67 +246,67 @@ class ShowWebsiteController extends Controller
     }
 
 
-private function assignTrainingByWhatsapp($campid)
-{
-    $campaign = WaLiveCampaign::where('id', $campid)->first();
-    if (!$campaign) {
-        echo "Invalid campaign or user\n";
-        return response()->json(['error' => 'Invalid campaign or user']);
-    }
-    if ($campaign->training_module == null && $campaign->scorm_training == null) {
-        echo "No training module nor scorm assigned\n";
-        return response()->json(['error' => 'No training module nor scorm assigned']);
-    }
-
-    setCompanyTimezone($campaign->company_id);
-
-    //checking assignment
-    $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
-
-    if ($campaign->employee_type == 'normal') {
-        if ($all_camp->training_assignment == 'all') {
-            $trainingModules = [];
-            $scormTrainings = [];
-
-            if ($all_camp->training_module !== null) {
-                $trainingModules = json_decode($all_camp->training_module, true);
-            }
-
-            if ($all_camp->scorm_training !== null) {
-                $scormTrainings = json_decode($all_camp->scorm_training, true);
-            }
-
-            $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
-
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-        } else {
-            $sent = CampaignTrainingService::assignTraining($campaign);
-
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+    private function assignTrainingByWhatsapp($campid)
+    {
+        $campaign = WaLiveCampaign::where('id', $campid)->first();
+        if (!$campaign) {
+            echo "Invalid campaign or user\n";
+            return response()->json(['error' => 'Invalid campaign or user']);
         }
-    } else {
-        if ($all_camp->training_assignment == 'all') {
-            $trainingModules = [];
-            $scormTrainings = [];
+        if ($campaign->training_module == null && $campaign->scorm_training == null) {
+            echo "No training module nor scorm assigned\n";
+            return response()->json(['error' => 'No training module nor scorm assigned']);
+        }
 
-            if ($all_camp->training_module !== null) {
-                $trainingModules = json_decode($all_camp->training_module, true);
+        setCompanyTimezone($campaign->company_id);
+
+        //checking assignment
+        $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
+
+        if ($campaign->employee_type == 'normal') {
+            if ($all_camp->training_assignment == 'all') {
+                $trainingModules = [];
+                $scormTrainings = [];
+
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+                $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                $sent = CampaignTrainingService::assignTraining($campaign);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
-
-            if ($all_camp->scorm_training !== null) {
-                $scormTrainings = json_decode($all_camp->scorm_training, true);
-            }
-
-            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
-
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         } else {
-            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
+            if ($all_camp->training_assignment == 'all') {
+                $trainingModules = [];
+                $scormTrainings = [];
 
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
         }
     }
-}
 
     private function whatsappAssignFirstTraining($campaign)
     {
@@ -799,7 +800,10 @@ private function assignTrainingByWhatsapp($campid)
             log_action("Phishing email payload clicked", 'company', $companyId);
 
             if ($qsh == 1) {
-                QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1']);
+                if (clickedByBot($companyId, $campid, 'quishing')) {
+                    return;
+                }
+                QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1', 'mail_open' => '1']);
                 QuishingActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
                 return;
             }
@@ -813,10 +817,15 @@ private function assignTrainingByWhatsapp($campid)
                 return;
             }
 
+
+
             $campaign = CampaignLive::where('id', $campid)->where('payload_clicked', 0)->first();
 
             if ($campaign) {
-                $campaign->update(['payload_clicked' => 1]);
+                if (clickedByBot($companyId, $campid, 'email')) {
+                    return;
+                }
+                $campaign->update(['payload_clicked' => 1, 'mail_open' => 1]);
 
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
@@ -835,11 +844,15 @@ private function assignTrainingByWhatsapp($campid)
             $companyId = TprmUsers::where('id', $userid)->value('company_id');
 
             setCompanyTimezone($companyId);
+            if (clickedByBot($companyId, $campid, 'tprm')) {
+                return;
+            }
             //update payload click for TPRM campaigns
-            TprmCampaignLive::where('id', $campid)->update(['payload_clicked' => 1]);
+            TprmCampaignLive::where('id', $campid)->update(['payload_clicked' => 1, 'mail_open' => 1]);
             TprmActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
 
             log_action("TPRM phishing payload clicked", 'employee', 'employee');
         }
     }
+
 }

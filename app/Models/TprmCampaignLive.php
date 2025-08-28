@@ -22,6 +22,7 @@ class TprmCampaignLive extends Model
         'launch_time',
         'phishing_material',
         'sender_profile',
+        'mail_open',
         'payload_clicked',
         'email_reported',
         'email_lang',

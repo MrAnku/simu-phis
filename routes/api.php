@@ -223,6 +223,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::post('/auto-syncing/add', [ApiSettingsController::class, 'addAutoSync']);
         Route::delete('/auto-syncing/delete/{id}', [ApiSettingsController::class, 'deleteAutoSync']);
         Route::put('/auto-syncing/update/{id}', [ApiSettingsController::class, 'updateAutoSync']);
+        Route::put('/time-to-click', [ApiSettingsController::class, 'updateTimeToClick']);
     });
 
     Route::prefix('sender-profiles')->group(function () {

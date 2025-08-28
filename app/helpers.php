@@ -2,6 +2,7 @@
 
 // app/Helpers/helpers.php
 
+use Carbon\Carbon;
 use App\Models\Log;
 use App\Models\Badge;
 use App\Models\Users;
@@ -11,9 +12,12 @@ use App\Mail\CampaignMail;
 use App\Models\UsersGroup;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
+use App\Models\TprmActivity;
 use App\Models\ScormTraining;
 use App\Models\PhishingDomain;
 use App\Models\CompanySettings;
+use App\Models\QuishingActivity;
+use App\Models\EmailCampActivity;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -926,5 +930,29 @@ if (!function_exists('checkPhishingWebsiteDomain')) {
 
             return env('PHISHING_WEBSITE_DOMAIN');
         }
+    }
+}
+if (!function_exists('clickedByBot')) {
+    function clickedByBot($companyId, $campid, $campType): bool
+    {
+        $companySetting = CompanySettings::where('company_id', $companyId)->first();
+
+        if ($companySetting && $companySetting->time_to_click) {
+            if ($campType === 'quishing') {
+                $sentAt = QuishingActivity::where('campaign_live_id', $campid)->value('email_sent_at');
+            } elseif ($campType === 'email') {
+                $sentAt = EmailCampActivity::where('campaign_live_id', $campid)->value('email_sent_at');
+            } elseif ($campType === 'tprm') {
+                $sentAt = TprmActivity::where('campaign_live_id', $campid)->value('email_sent_at');
+            }
+            if ($sentAt) {
+                $sentAt = Carbon::parse($sentAt); // Convert datetime string to Carbon
+                if (now()->diffInSeconds($sentAt) <= $companySetting->time_to_click) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

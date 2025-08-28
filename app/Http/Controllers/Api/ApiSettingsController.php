@@ -735,10 +735,10 @@ class ApiSettingsController extends Controller
         // return $request;
         try {
             $pocAccount = Company::where('company_id', Auth::user()->company_id)
-            ->where('role', null)
-            ->where('account_type', 'poc')->exists();
+                ->where('role', null)
+                ->where('account_type', 'poc')->exists();
 
-            if($pocAccount){
+            if ($pocAccount) {
                 return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to this account')], 402);
             }
             $request->validate([
@@ -797,8 +797,7 @@ class ApiSettingsController extends Controller
                 $portalDomain = "https://" . $whiteLableData->domain;
 
                 $isWhitelabeled->updateSmtpConfig();
-                
-            }else{
+            } else {
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
                 $portalDomain = env('NEXT_APP_URL');
@@ -826,7 +825,8 @@ class ApiSettingsController extends Controller
 
 
 
-    public function updateSubAdmin(Request $request){
+    public function updateSubAdmin(Request $request)
+    {
         try {
             $request->validate([
                 'email' => 'required|email|exists:company,email',
@@ -864,10 +864,11 @@ class ApiSettingsController extends Controller
     }
 
 
-    public function subAdmins(){
+    public function subAdmins()
+    {
         try {
             $subAdmins = Company::where('company_id', Auth::user()->company_id)
-                ->where('role','!=', null)
+                ->where('role', '!=', null)
                 ->get(['email', 'full_name', 'role', 'enabled_feature', 'service_status', 'created_at']);
             $adminPermissions = Company::where('company_id', Auth::user()->company_id)
                 ->where('role', null)
@@ -888,43 +889,43 @@ class ApiSettingsController extends Controller
 
     public function changeServiceStatus(Request $request)
     {
-       try {
-           $request->validate([
-               'email' => 'required|email|exists:company,email',
-               'service_status' => 'required',
-           ]);
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:company,email',
+                'service_status' => 'required',
+            ]);
 
-           $subAdmin = Company::where('company_id', Auth::user()->company_id)
-               ->where('role', 'sub-admin')
-               ->where('email', $request->email)
-               ->first();
+            $subAdmin = Company::where('company_id', Auth::user()->company_id)
+                ->where('role', 'sub-admin')
+                ->where('email', $request->email)
+                ->first();
 
-           if (!$subAdmin) {
-               return response()->json([
-                   'success' => false,
-                   'message' => __('Sub-admin not found')
-               ], 404);
-           }
+            if (!$subAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Sub-admin not found')
+                ], 404);
+            }
 
-           $subAdmin->service_status = $request->service_status;
-           $subAdmin->save();
+            $subAdmin->service_status = $request->service_status;
+            $subAdmin->save();
 
-           if($request->service_status == 1){
-            $msg = 'Subadmin account activated successfully';
-           }else{
-            $msg = 'Subadmin account deactivated successfully';
-           }
-           log_action($msg);
+            if ($request->service_status == 1) {
+                $msg = 'Subadmin account activated successfully';
+            } else {
+                $msg = 'Subadmin account deactivated successfully';
+            }
+            log_action($msg);
 
-           return response()->json([
-               'success' => true,
-               'message' => __('Sub-admin status updated successfully')
-           ]);
-       } catch (ValidationException $e) {
-           return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
-       } catch (\Exception $e) {
-           return response()->json(['success' => false, 'message' => $e->getMessage()]);
-       }
+            return response()->json([
+                'success' => true,
+                'message' => __('Sub-admin status updated successfully')
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function deleteSubAdmin(Request $request)
@@ -967,7 +968,7 @@ class ApiSettingsController extends Controller
         $company = Company::with('partner')->where('company_id', Auth::user()->company_id)->first();
 
         $partner_id = $company->partner->partner_id;
-      
+
         $isWhitelabled = WhiteLabelledCompany::where('partner_id', $partner_id)
             ->where('approved_by_partner', 1)
             ->first();
@@ -1055,12 +1056,14 @@ class ApiSettingsController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 'message' => $e->getMessage()
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function autoSyncing(){
+    public function autoSyncing()
+    {
         try {
             $autoSync = AutoSyncEmployee::with('localGroupDetail')->where('company_id', Auth::user()->company_id)->get();
 
@@ -1149,7 +1152,8 @@ class ApiSettingsController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 'message' => $e->getMessage()
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -1196,4 +1200,39 @@ class ApiSettingsController extends Controller
         }
     }
 
+    public function updateTimeToClick(Request $request)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|boolean',
+            ]);
+
+            if ($request->status == true) {
+                $request->validate([
+                    'seconds' => 'required|integer|min:10|max:50',
+                ]);
+            }
+
+            $settings = CompanySettings::where('email', Auth::user()->email)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Company settings not found')], 404);
+            }
+            if ($request->status == true) {
+                $settings->update([
+                    'time_to_click' => $request->seconds,
+                ]);
+            } else {
+                $settings->update([
+                    'time_to_click' => null,
+                ]);
+            }
+
+            return response()->json(['success' => true, 'message' => __('Time to click updated successfully')]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

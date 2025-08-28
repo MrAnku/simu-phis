@@ -24,10 +24,14 @@ class TrackingController extends Controller
             $campaignLive = CampaignLive::where('id', $campid)->where('mail_open', 0)->first();
 
             if ($campaignLive) {
+                if (clickedByBot($campaignLive->company_id, $campaignLive->id, 'email')) {
+                    return;
+                }
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
 
                 setCompanyTimezone($campaignLive->company_id);
+                
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
@@ -54,6 +58,9 @@ class TrackingController extends Controller
             $campaignLive = TprmCampaignLive::where('id', $campid)->where('mail_open', 0)->first();
 
             if ($campaignLive) {
+                if (clickedByBot($campaignLive->company_id, $campaignLive->id, 'tprm')) {
+                    return;
+                }
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
 
@@ -129,6 +136,9 @@ class TrackingController extends Controller
                 ->where('mail_open', '0')
                 ->first();
                 if ($quishingLive) {
+                    if (clickedByBot($quishingLive->company_id, $quishingLive->id, 'quishing')) {
+                        return;
+                    }
                     $quishingLive->mail_open = '1';
                     $quishingLive->save();
 
