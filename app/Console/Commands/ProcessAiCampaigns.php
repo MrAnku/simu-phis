@@ -56,6 +56,7 @@ class ProcessAiCampaigns extends Command
                         $q->where('status', 'pending')
                             ->orWhere('status', 'no-answer')
                             ->orWhere('status', 'failed')
+                            ->orWhere('status', 'busy')
                             ->orWhere('status', 'canceled');
                     })
                     ->take(1)
