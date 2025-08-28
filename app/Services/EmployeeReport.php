@@ -49,37 +49,19 @@ class EmployeeReport
     public function calculateOverallRiskScore(): float
     {
         $payloadClicked = $this->payloadClicked();
-        $emailReported  = $this->emailReported();
-        $emailViewed    = $this->emailViewed();
-        $compromised    = $this->compromised();
+        $compromised = $this->compromised();
+        $totalSimulations = $this->totalSimulations();
 
-        $totalEvents = $payloadClicked + $emailReported + $emailViewed + $compromised;
+        $totalCompromised = $payloadClicked + $compromised;
 
-        // If no activity, assume perfect awareness
-        if ($totalEvents === 0) {
-            return 100.0;
+        if ($totalSimulations > 0) {
+            $rawScore = 100 - round(($totalCompromised / $totalSimulations) * 100, 2);
+            return max(0, min(100, $rawScore)); // clamp between 0 and 100
         }
 
-        // Weights: adjust based on how severe each action is
-        $weights = [
-            'payloadClicked' => -40, // clicking payloads = bad
-            'compromised'    => -50, // compromises = worst
-            'emailViewed'    => -10, // views are neutral-to-slightly risky
-            'emailReported'  => +30, // reporting = very good
-        ];
-
-        // Normalize each metric by total events
-        $score = 100;
-        $score += ($payloadClicked / $totalEvents) * $weights['payloadClicked'];
-        $score += ($compromised    / $totalEvents) * $weights['compromised'];
-        $score += ($emailViewed    / $totalEvents) * $weights['emailViewed'];
-        $score += ($emailReported  / $totalEvents) * $weights['emailReported'];
-
-        // Bound between 0–100
-        $score = max(0, min(100, $score));
-
-        return round($score, 2);
+        return 100; // default when no simulations
     }
+
 
 
     private function calculateUserRiskDistribution(): array
@@ -252,7 +234,7 @@ class EmployeeReport
 
     public function compromiseRate(): float
     {
-        $totalUsers = $this->usersCampaigns();
+        $totalUsers = $this->totalSimulations();
         $compromisedUsers = $this->compromised();
 
         return $totalUsers > 0 ? round(($compromisedUsers / $totalUsers) * 100, 2) : 0;
@@ -286,7 +268,7 @@ class EmployeeReport
         return $email + $quishing;
     }
 
-    public function usersCampaigns($email = null): int
+    public function totalSimulations($email = null): int
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
@@ -639,7 +621,7 @@ class EmployeeReport
         $usersCampaign = 0;
         $usersClicks = 0;
         foreach ($userEmails as $email) {
-            $usersCampaign += $this->usersCampaigns($email);
+            $usersCampaign += $this->totalSimulations($email);
             $usersClicks += $this->payloadClicked($email);
         }
 
