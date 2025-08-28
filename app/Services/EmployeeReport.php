@@ -55,13 +55,13 @@ class EmployeeReport
         $totalCompromised = $payloadClicked + $compromised;
 
         if ($totalSimulations > 0) {
-            $rawScore = 100 - round(($totalCompromised / $totalSimulations) * 100, 2);
-            return max(0, min(100, $rawScore)); // clamp between 0 and 100
+            $rawScore = 100 - (($totalCompromised / $totalSimulations) * 100);
+            $clamped = max(0, min(100, $rawScore));
+            return round($clamped, 2); // ensures values like 2.1099999 become 2.11
         }
 
-        return 100; // default when no simulations
+        return 100.00;
     }
-
 
 
     private function calculateUserRiskDistribution(): array
