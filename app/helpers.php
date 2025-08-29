@@ -936,20 +936,40 @@ if (!function_exists('clickedByBot')) {
     function clickedByBot($companyId, $campid, $campType): bool
     {
         $companySetting = CompanySettings::where('company_id', $companyId)->first();
+        setCompanyTimezone($companyId);
 
-        if ($companySetting && $companySetting->time_to_click) {
-            if ($campType === 'quishing') {
-                $sentAt = QuishingActivity::where('campaign_live_id', $campid)->value('email_sent_at');
-            } elseif ($campType === 'email') {
-                $sentAt = EmailCampActivity::where('campaign_live_id', $campid)->value('email_sent_at');
-            } elseif ($campType === 'tprm') {
-                $sentAt = TprmActivity::where('campaign_live_id', $campid)->value('email_sent_at');
-            }
-            if ($sentAt) {
-                $sentAt = Carbon::parse($sentAt); // Convert datetime string to Carbon
-                if (now()->diffInSeconds($sentAt) <= $companySetting->time_to_click) {
-                    return true;
-                }
+        // Only continue if setting exists AND time_to_click is not null
+        if (!$companySetting || $companySetting->time_to_click === null) {
+            return false;
+        }
+
+        // Map campaign type to model
+        $models = [
+            'quishing' => QuishingActivity::class,
+            'email'    => EmailCampActivity::class,
+            'tprm'     => TprmActivity::class,
+        ];
+
+        if (!isset($models[$campType])) {
+            return false; // invalid type
+        }
+
+        // Fetch sent time
+        $sentAt = $models[$campType]::where('campaign_live_id', $campid)
+            ->orderBy('email_sent_at', 'asc') // ensure consistent row selection
+            ->value('email_sent_at');
+
+        if (!$sentAt) {
+            return false;
+        }
+
+        $sentAtCarbon = Carbon::parse($sentAt);
+
+        // Only consider if now is after sentAt
+        if (now()->greaterThanOrEqualTo($sentAtCarbon)) {
+            $diffSeconds = $sentAtCarbon->diffInSeconds(now()); // always positive
+            if ($diffSeconds <= $companySetting->time_to_click) {
+                return true;
             }
         }
 

@@ -936,25 +936,25 @@ class ApiSettingsController extends Controller
             ]);
 
             $subAdmin = Company::where('company_id', Auth::user()->company_id)
-                ->where('role', 'sub-admin')
+                ->where('role', '!=', null)
                 ->where('email', $request->email)
                 ->first();
 
             if (!$subAdmin) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Sub-admin not found')
+                    'message' => __('Admin/Sub-admin not found')
                 ], 404);
             }
 
             $subAdmin->delete();
             CompanySettings::where('email', $request->email)->delete();
 
-            log_action("Sub Admin deleted: " . $request->email);
+            log_action("Admin/Sub Admin deleted: " . $request->email);
 
             return response()->json([
                 'success' => true,
-                'message' => __('Sub-admin deleted successfully')
+                'message' => __('Admin/Sub-admin deleted successfully')
             ]);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->validator->errors()->first()]);
