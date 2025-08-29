@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Policy;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\CompanyTrigger;
+use App\Models\TrainingModule;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -14,8 +16,21 @@ class ApiTriggerController extends Controller
     {
         try {
 
-            $triggers = CompanyTrigger::where('company_id', Auth::user()->company_id)->get();
-            return response()->json(['success' => true, 'data' => $triggers], 200);
+            $trainingModules = TrainingModule::where('company_id', Auth::user()->company_id)
+            ->orWhere('company_id', 'default')
+            ->get(['id', 'name']);
+            $policies = Policy::where('company_id', Auth::user()->company_id)
+            ->get(['id', 'policy_name']);
+
+            $triggers = CompanyTrigger::with(['training', 'policy'])->where('company_id', Auth::user()->company_id)->get();
+            return response()->json([
+                'success' => true, 
+                'data' => [
+                    'training_modules' => $trainingModules,
+                    'policies' => $policies,
+                    'triggers' => $triggers
+                ]
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -25,15 +40,15 @@ class ApiTriggerController extends Controller
     {
         $request->validate([
             'event_type' => 'required|in:new_user',
-            'training' => 'required|integer|exists:training_modules,id',
-            'policy' => 'required|integer|exists:policies,id',
+            'training' => 'nullable|integer|exists:training_modules,id',
+            'policy' => 'nullable|integer|exists:policies,id',
         ]);
 
         try {
             $trigger = new CompanyTrigger();
             $trigger->event_type = $request->event_type;
-            $trigger->training = $request->training;
-            $trigger->policy = $request->policy;
+            $trigger->training = $request->training ?? null;
+            $trigger->policy = $request->policy ?? null;
             $trigger->status = 1; // Active by default
             $trigger->company_id = Auth::user()->company_id;
             $trigger->save();
