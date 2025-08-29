@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Api\ApiNotificationsController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Api\ApiTriggerController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -560,6 +561,10 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
             Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
             Route::post('/update-scorm-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
         });
+    });
+
+    Route::prefix('notifications')->group(function () {
+        Route::get('fetch-notifications', [ApiNotificationsController::class, 'getNotifications']);
     });
 });
 
