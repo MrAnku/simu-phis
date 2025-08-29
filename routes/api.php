@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
+use App\Http\Controllers\Api\ApiTriggerController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
@@ -231,6 +232,13 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::put('/time-to-click', [ApiSettingsController::class, 'updateTimeToClick']);
     });
 
+    Route::prefix('triggers')->group(function () {
+        Route::get('/', [ApiTriggerController::class, 'index']);
+        Route::post('/add', [ApiTriggerController::class, 'addTrigger']);
+        Route::put('/update/{id}', [ApiTriggerController::class, 'updateTrigger']);
+        Route::delete('/delete/{id}', [ApiTriggerController::class, 'deleteTrigger']);
+    });
+
     Route::prefix('sender-profiles')->group(function () {
         //old
         Route::get('/', [ApiSenderProfileController::class, 'index']);
@@ -287,7 +295,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         // Users Reporting
         Route::get('/fetch-users-report/{email}', [ApiReportingController::class, 'fetchUsersReport']);
-        
+
         Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
 
         Route::get('/fetch-users-reporting', [ApiReportingController::class, 'fetchUsersReporting']);

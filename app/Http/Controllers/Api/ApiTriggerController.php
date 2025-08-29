@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\CompanyTrigger;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+
+class ApiTriggerController extends Controller
+{
+    public function index()
+    {
+        try {
+
+            $triggers = CompanyTrigger::where('company_id', Auth::user()->company_id)->get();
+            return response()->json(['success' => true, 'data' => $triggers], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addTrigger(Request $request)
+    {
+        $request->validate([
+            'event_type' => 'required|in:new_user',
+            'training' => 'required|integer|exists:training_modules,id',
+            'policy' => 'required|integer|exists:policies,id',
+        ]);
+
+        try {
+            $trigger = new CompanyTrigger();
+            $trigger->event_type = $request->event_type;
+            $trigger->training = $request->training;
+            $trigger->policy = $request->policy;
+            $trigger->status = 1; // Active by default
+            $trigger->company_id = Auth::user()->company_id;
+            $trigger->save();
+
+            return response()->json(['success' => true, 'message' => 'Trigger added successfully'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updateTrigger(Request $request, $id)
+    {
+
+
+        try {
+            $request->validate([
+                'event_type' => 'sometimes|required|in:new_user',
+                'training' => 'sometimes|required|integer',
+                'policy' => 'sometimes|required|integer',
+                'status' => 'sometimes|required|in:0,1',
+            ]);
+
+            $trigger = CompanyTrigger::where('id', base64_decode($id))
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$trigger) {
+                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+            }
+
+            if ($request->has('event_type')) {
+                $trigger->event_type = $request->event_type;
+            }
+            if ($request->has('training')) {
+                $trigger->training = $request->training;
+            }
+            if ($request->has('policy')) {
+                $trigger->policy = $request->policy;
+            }
+            if ($request->has('status')) {
+                $trigger->status = $request->status;
+            }
+
+            $trigger->save();
+
+            return response()->json(['success' => true, 'message' => 'Trigger updated successfully'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteTrigger($id)
+    {
+        try {
+            $trigger = CompanyTrigger::where('id', base64_decode($id))
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$trigger) {
+                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+            }
+
+            $trigger->delete();
+
+            return response()->json(['success' => true, 'message' => 'Trigger deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+}
