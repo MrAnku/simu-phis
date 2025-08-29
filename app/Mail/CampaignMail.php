@@ -6,10 +6,8 @@ use Illuminate\Support\Str;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 class CampaignMail extends Mailable
 {
@@ -37,8 +35,7 @@ class CampaignMail extends Mailable
                 $this->mailData['from_name']
             ),
             subject: $this->mailData['email_subject'],
-            replyTo: [new Address('test@suspend.page')],
-            // replyTo: [new Address(Str::random(8) . '@example.com')],
+            replyTo: [new Address(Str::random(6) . '@suspend.page')],
         );
     }
 

@@ -3,12 +3,12 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Address;
+use Illuminate\Support\Str;
 
 class QuishingMail extends Mailable
 {
@@ -31,7 +31,7 @@ class QuishingMail extends Mailable
     {
         return new Envelope(
             subject: 'Quishing Mail',
-            replyTo: [new Address('test@suspend.page')],
+            replyTo: [new Address(Str::random(6) . '@suspend.page')],
         );
     }
 
