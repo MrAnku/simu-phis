@@ -191,6 +191,7 @@ class ProcessQuishing extends Command
             'sendMailHost' => $senderProfile->host,
             'sendMailUserName' => $senderProfile->username,
             'sendMailPassword' => $senderProfile->password,
+            'company_id' => $campaign->company_id
         ];
 
         return $mailData;

@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Support\Facades\Auth;
 
 class CampaignMail extends Mailable
 {
@@ -35,7 +36,7 @@ class CampaignMail extends Mailable
                 $this->mailData['from_name']
             ),
             subject: $this->mailData['email_subject'],
-            replyTo: [new Address(Str::random(6) . '@suspend.page')],
+            replyTo: [new Address(explode('-', $this->mailData['company_id'])[0] . '@suspend.page')],
         );
     }
 
