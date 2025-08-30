@@ -18,9 +18,9 @@ class ApiTriggerController extends Controller
 
             $trainingModules = TrainingModule::where('company_id', Auth::user()->company_id)
             ->orWhere('company_id', 'default')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'company_id']);
             $policies = Policy::where('company_id', Auth::user()->company_id)
-            ->get(['id', 'policy_name']);
+            ->get(['id', 'policy_name', 'company_id']);
 
             $triggers = CompanyTrigger::with(['training', 'policy'])->where('company_id', Auth::user()->company_id)->get();
             return response()->json([
