@@ -10,8 +10,9 @@ use Illuminate\Validation\ValidationException;
 
 class ApiNotificationsController extends Controller
 {
-    public function getNotifications(Request $request){
-        try{
+    public function getNotifications(Request $request)
+    {
+        try {
             $notifications = Notification::where('company_id', Auth::user()->company_id)->get();
             return response()->json([
                 'success' => true,
@@ -26,6 +27,25 @@ class ApiNotificationsController extends Controller
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function markAllAsRead()
+    {
+        try {
+            Notification::where('company_id', Auth::user()->company_id)
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'All notifications marked as read.'
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage()

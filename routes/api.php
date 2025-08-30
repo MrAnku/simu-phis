@@ -565,6 +565,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
     Route::prefix('notifications')->group(function () {
         Route::get('fetch-notifications', [ApiNotificationsController::class, 'getNotifications']);
+        Route::put('/mark-all-read', [ApiNotificationsController::class, 'markAllAsRead']);
     });
 });
 
