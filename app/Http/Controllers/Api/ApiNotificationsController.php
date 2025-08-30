@@ -13,7 +13,7 @@ class ApiNotificationsController extends Controller
     public function getNotifications(Request $request)
     {
         try {
-            $notifications = Notification::where('company_id', Auth::user()->company_id)->get();
+            $notifications = Notification::where('company_id', Auth::user()->company_id)->orderBy('created_at', 'desc')->get();
             return response()->json([
                 'success' => true,
                 'data' => $notifications,
