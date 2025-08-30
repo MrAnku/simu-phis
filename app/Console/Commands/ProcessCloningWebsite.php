@@ -128,6 +128,8 @@ class ProcessCloningWebsite extends Command
                 'status' => 'completed',
                 'file_url' => $cloudfrontBaseUrl . '/' . $filename,
             ]);
+
+            sendNotification('Cloning completed successfully. You can view your cloned site here: ' . $jobRecord->file_url, $jobRecord->company_id);
         } catch (\Exception $e) {
             $jobRecord->update([
                 'status' => 'failed',

@@ -18,6 +18,7 @@ use App\Models\PhishingDomain;
 use App\Models\CompanySettings;
 use App\Models\QuishingActivity;
 use App\Models\EmailCampActivity;
+use App\Models\Notification;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -974,5 +975,15 @@ if (!function_exists('clickedByBot')) {
         }
 
         return false;
+    }
+}
+
+if (!function_exists('sendNotification')) {
+    function sendNotification($message, $companyId)
+    {
+        Notification::create([
+            'message' => $message,
+            'company_id' => $companyId,
+        ]);
     }
 }

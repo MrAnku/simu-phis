@@ -684,13 +684,6 @@ class ApiTprmController extends Controller
                         return response()->json(['success' => false, 'message' => __('Email: ') . ' ' . $emailExists->user_email . ' ' . __('already exists')], 422);
                     }
 
-                    $tprmUsers = new TprmUsers();
-                    $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
-                    $tprmUsers->user_name = explode('@', $userEmail)[0];
-                    $tprmUsers->user_email = $userEmail;
-                    $tprmUsers->company_id = $companyId;
-                    $tprmUsers->save();
-
                     $userExists = TprmUsers::where('user_email', $userEmail)
                         ->where('company_id', Auth::user()->company_id)
                         ->exists();
@@ -703,6 +696,18 @@ class ApiTprmController extends Controller
                         if ($company_license) {
                             $company_license->increment('used_tprm_employees');
                         }
+                    }
+                    
+                    $tprmUsers = new TprmUsers();
+                    $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
+                    $tprmUsers->user_name = explode('@', $userEmail)[0];
+                    $tprmUsers->user_email = $userEmail;
+                    $tprmUsers->company_id = $companyId;
+                    $tprmUsers->save();
+
+                    // Notify when 95% of license used
+                    if ($company_license->used_tprm_employees == $company_license->tprm_employees * 0.95) {
+                        sendNotification('95% of your TPRM employee license has been used.', $companyId);
                     }
                 }
                 if (!$message) {

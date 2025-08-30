@@ -387,6 +387,20 @@ class ApiBlueCollarController extends Controller
                 return response()->json(['success' => false, 'message' => __('This Whatsapp already exists / Or added by some other company')], 422);
             }
 
+            $userExists = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+
+            $deletedEmployee = DeletedBlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+
+            if (!$userExists && !$deletedEmployee) {
+                if ($company_license) {
+                    $company_license->increment('used_blue_collar_employees');
+                }
+            }
+
             BlueCollarEmployee::create(
                 [
                     'group_id' => $request->groupId,
@@ -398,23 +412,10 @@ class ApiBlueCollarController extends Controller
                 ]
             );
 
-            $userExists = BlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
-                ->where('company_id', Auth::user()->company_id)
-                ->exists();
-
-            $deletedEmployee = DeletedBlueCollarEmployee::where('whatsapp', $request->usrWhatsapp)
-                ->where('company_id', Auth::user()->company_id)
-                ->exists();
-
-            if (!$userExists || !$deletedEmployee) {
-                if ($company_license) {
-                    $company_license->increment('used_blue_collar_employees');
-                }
+            // Notify when 95% of license used
+            if ($company_license->used_blue_collar_employees == $company_license->blue_collar_employees * 0.95) {
+                sendNotification('95% of your blue collar employee license has been used.', $companyId);
             }
-
-
-
-            // Auth::user()->increment('usedemployees');
 
             log_action("Blue Collar User added : {$request->usrName}");
             return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);

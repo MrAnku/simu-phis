@@ -72,6 +72,12 @@ class EmployeeService
                 'company_id' => $this->companyId,
             ]
         );
+
+        // Notify when 95% of license used
+        $company_license = CompanyLicense::where('company_id', $this->companyId)->first();
+        if ($company_license->used_employees == $company_license->employees * 0.95) {
+            sendNotification('95% of your employee license has been used.', $this->companyId);
+        }
         return [
             'status' => 1,
             'user_id' => $user->id,
@@ -255,6 +261,7 @@ class EmployeeService
     {
         $company_id = $this->companyId;
         $company_license = CompanyLicense::where('company_id', $company_id)->first();
+
         if ($company_license->used_employees >= $company_license->employees) {
             return true;
         } else {
