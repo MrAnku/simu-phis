@@ -11,6 +11,7 @@ class Campaign extends Model
     use HasFactory;
 
     protected $table = 'all_campaigns';
+    protected $appends = ['formatted_created_at'];
 
     protected $fillable = [
         'campaign_id',
@@ -80,10 +81,15 @@ class Campaign extends Model
         return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');
     }
 
-    protected $appends = ['formatted_created_at'];
+
 
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
+
+    public function emailReplies()
+    {
+        return $this->hasMany(PhishingReply::class, 'campaign_id', 'campaign_id');
     }
 }

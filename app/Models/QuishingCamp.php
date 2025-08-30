@@ -24,6 +24,8 @@ class QuishingCamp extends Model
         'scorm_training'
     ];
 
+    protected $appends = ['formatted_created_at'];
+
     public function trainingModules()
     {
         $ids = json_decode($this->training_module, true);
@@ -49,10 +51,14 @@ class QuishingCamp extends Model
         return $this->hasMany(QuishingActivity::class, 'campaign_id', 'campaign_id');
     }
 
-    protected $appends = ['formatted_created_at'];
 
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
+    }
+
+    public function emailReplies()
+    {
+        return $this->hasMany(PhishingReply::class, 'campaign_id', 'campaign_id');
     }
 }
