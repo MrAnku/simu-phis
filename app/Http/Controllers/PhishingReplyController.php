@@ -148,20 +148,37 @@ class PhishingReplyController extends Controller
         if (!$originalMessage) {
             return false;
         }
+        
+        // Decode the message if it's URL/quoted-printable encoded
+        $decodedMessage = quoted_printable_decode($originalMessage);
+        
         $campaignId = null;
         $campaignType = null;
-        if (preg_match('/id="[^"]*campaign_id" value="([^"]+)"/', $originalMessage, $idMatch)) {
+        
+        // Try to extract from decoded message first
+        if (preg_match('/id="[^"]*campaign_id"[^>]*value="([^"]+)"/', $decodedMessage, $idMatch)) {
             $campaignId = $idMatch[1];
         }
-        if (preg_match('/id="[^"]*campaign_type" value="([^"]+)"/', $originalMessage, $typeMatch)) {
+        if (preg_match('/id="[^"]*campaign_type"[^>]*value="([^"]+)"/', $decodedMessage, $typeMatch)) {
             $campaignType = $typeMatch[1];
         }
+        
+        // If not found in decoded message, try original message
+        if (!$campaignId || !$campaignType) {
+            if (preg_match('/id="[^"]*campaign_id"[^>]*value="([^"]+)"/', $originalMessage, $idMatch)) {
+                $campaignId = $idMatch[1];
+            }
+            if (preg_match('/id="[^"]*campaign_type"[^>]*value="([^"]+)"/', $originalMessage, $typeMatch)) {
+                $campaignType = $typeMatch[1];
+            }
+        }
+        
         if ($campaignId && $campaignType) {
-            // Optionally set these as properties if needed elsewhere
             $this->campaignId = $campaignId;
             $this->campaignType = $campaignType;
             return true;
         }
+        
         return false;
     }
 
