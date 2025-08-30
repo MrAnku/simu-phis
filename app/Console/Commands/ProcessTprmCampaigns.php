@@ -118,6 +118,8 @@ class ProcessTprmCampaigns extends Command
         'sendMailHost' => $senderProfile->host,
         'sendMailUserName' => $senderProfile->username,
         'sendMailPassword' => $senderProfile->password,
+        'campaign_id' => $campaign->campaign_id,
+        'campaign_type' => 'tprm'
       ];
 
       // $this->sendMailConditionally($mailData, $campaign, $company_id);

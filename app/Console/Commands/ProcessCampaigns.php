@@ -301,7 +301,9 @@ class ProcessCampaigns extends Command
         'sendMailHost' => $senderProfile->host,
         'sendMailUserName' => $senderProfile->username,
         'sendMailPassword' => $senderProfile->password,
-        'company_id' => $campaign->company_id
+        'company_id' => $campaign->company_id,
+        'campaign_id' => $campaign->campaign_id,
+        'campaign_type' => 'email'
       ];
 
       // $this->sendMailConditionally($mailData, $campaign, $company_id);
