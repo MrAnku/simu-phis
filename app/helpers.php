@@ -981,6 +981,19 @@ if (!function_exists('clickedByBot')) {
 if (!function_exists('sendNotification')) {
     function sendNotification($message, $companyId)
     {
+        // Count notifications for this company
+        $count = Notification::where('company_id', $companyId)->count();
+
+        // If there are already 20 notifications, delete the oldest one
+        if ($count >= 20) {
+            $oldest = Notification::where('company_id', $companyId)
+                ->orderBy('created_at', 'asc')
+                ->first();
+            if ($oldest) {
+                $oldest->delete();
+            }
+        }
+
         Notification::create([
             'message' => $message,
             'company_id' => $companyId,
