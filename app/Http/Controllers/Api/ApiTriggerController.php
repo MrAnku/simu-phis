@@ -45,6 +45,15 @@ class ApiTriggerController extends Controller
         ]);
 
         try {
+            //check if company already has this trigger
+            $exists = CompanyTrigger::where('event_type', $request->event_type)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+
+            if ($exists) {
+                return response()->json(['success' => false, 'message' => 'Trigger event already exists. You can update it instead.'], 409);
+            }
+
             $trigger = new CompanyTrigger();
             $trigger->event_type = $request->event_type;
             $trigger->training = $request->training ?? null;

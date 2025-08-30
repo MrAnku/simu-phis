@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 class EmployeeService
 {
     protected $companyId;
+    protected $newUser = false;
 
     //constructor
     public function __construct($companyId)
@@ -77,6 +78,10 @@ class EmployeeService
         $company_license = CompanyLicense::where('company_id', $this->companyId)->first();
         if ($company_license->used_employees == $company_license->employees * 0.95) {
             sendNotification('95% of your employee license has been used.', $this->companyId);
+        }
+        if ($this->newUser) {
+            $trigger = new TriggerService('new_user', 'normal', $this->companyId);
+            $trigger->executeTriggerActions();
         }
         return [
             'status' => 1,
@@ -294,6 +299,7 @@ class EmployeeService
             $company_license = CompanyLicense::where('company_id', $this->companyId)->first();
             if ($company_license) {
                 $company_license->increment('used_employees');
+                $this->newUser = true;
             }
         }
     }
