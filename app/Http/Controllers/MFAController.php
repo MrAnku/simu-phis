@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
 use App\Models\CompanySettings;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\Auth;
@@ -46,25 +47,27 @@ class MFAController extends Controller
         $valid = $google2fa->verifyKey(decrypt($settings->mfa_secret), $request->otp);
 
         if ($valid) {
-            Auth::login($company);
-            $token = JWTAuth::fromUser($company);
-            
+            $authService = new AuthService($request->email);
+            return $authService->loginCompany('mfa');
+            // Auth::login($company);
+            // $token = JWTAuth::fromUser($company);
 
-            $enabledFeatures = Company::where('company_id', $company->company_id)->value('enabled_feature');
-            if (!$enabledFeatures) {
-                $enabledFeatures = 'null'; // Default to null if no features are enabled
-            }
-            
-            $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
-            $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
 
-            return response()->json([
-                'token' => $token,
-                'success' => true,
-                'company' => $company,
-                'message' => 'Logged in successfully',
-            ])->withCookie($cookie)
-              ->withCookie($enabledFeatureCookie);
+            // $enabledFeatures = Company::where('company_id', $company->company_id)->value('enabled_feature');
+            // if (!$enabledFeatures) {
+            //     $enabledFeatures = 'null'; // Default to null if no features are enabled
+            // }
+
+            // $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
+            // $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
+
+            // return response()->json([
+            //     'token' => $token,
+            //     'success' => true,
+            //     'company' => $company,
+            //     'message' => 'Logged in successfully',
+            // ])->withCookie($cookie)
+            //   ->withCookie($enabledFeatureCookie);
         }
 
         return response()->json([

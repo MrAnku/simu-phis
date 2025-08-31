@@ -116,4 +116,8 @@ class Company extends Authenticatable implements JWTSubject
     public function autoSyncProviders(){
         return $this->hasMany(AutoSyncEmployee::class, 'company_id', 'company_id');
     }
+
+    public function license(){
+        return $this->hasOne(CompanyLicense::class, 'company_id', 'company_id');
+    }
 }

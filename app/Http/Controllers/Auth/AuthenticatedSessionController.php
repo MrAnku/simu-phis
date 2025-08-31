@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Otp;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
 use App\Models\CompanyLicense;
+use App\Mail\PasswordResetMail;
 use App\Models\CompanySettings;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Mail\PasswordResetMail;
-use App\Models\Otp;
-use App\Services\CheckWhitelabelService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
+use App\Services\CheckWhitelabelService;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
@@ -27,68 +27,10 @@ class AuthenticatedSessionController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials',
-            ], 401);
-        }
+        $authService = new AuthService($credentials['email'], $credentials['password']);
+        return $authService->loginCompany('password');
 
-        // Check if the user is approved
-        $approved = $this->isApproved();
-        if (!$approved) {
-            Auth::logout();
-            return response()->json([
-                'success' => false,
-                'message' => 'Your account is not approved yet. Please contact your service provider.',
-            ], 422);
-        }
-
-        // Check if the service status is approved
-        $serviceStatusApproved = $this->isServiceStatusApproved();
-        if (!$serviceStatusApproved) {
-            Auth::logout();
-            return response()->json([
-                'success' => false,
-                'message' => 'Your services are on hold. Please contact your service provider.',
-            ], 422);
-        }
-
-        // check License Expiry
-        $licenseExpired = $this->checkLicenseExpiry();
-        if ($licenseExpired) {
-            return response()->json(['success' => false, 'message' => __('Your License has beeen Expired')], 422);
-        }
-
-        $mfaEnabled = $this->checkMfa();
-        if ($mfaEnabled) {
-            $email = Auth::user()->email;
-            Auth::logout(Auth::user());
-            return response()->json([
-                "mfa" => true,
-                'company' => [
-                    'email' => $email,
-                ],
-                "success" => true
-            ]);
-        }
-        $enabledFeatures = Company::where('company_id', Auth::user()->company_id)->value('enabled_feature');
-
-        if (!$enabledFeatures) {
-            $enabledFeatures = 'null'; // Default to null if no features are enabled
-        }
-
-        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
-        $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
-
-        return response()->json([
-            'token' => $token,
-            'company' => Auth::user(),
-            "success" => true,
-            "message" => "Logged in successfully",
-            "mfa" => false,
-        ])->withCookie($cookie)
-            ->withCookie($enabledFeatureCookie);
+     
     }
 
     public function tokenCheck(Request $request): JsonResponse
@@ -327,46 +269,4 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
-    private function checkLicenseExpiry()
-    {
-        $user = Auth::user();
-        $company_license = CompanyLicense::where('company_id', $user->company_id)->first();
-
-        // Check License Expiry
-        if (now()->toDateString() > $company_license->expiry) {
-            Auth::logout($user);
-            return true;
-        }
-    }
-
-    private function checkMfa()
-    {
-        $user = Auth::user();
-        $company_settings = CompanySettings::where('email', $user->email)->first();
-        if ($company_settings->mfa == 1) {
-            // Store the user ID in the session and logout
-            // Auth::logout($user);
-            return true;
-        }
-    }
-
-    private function isApproved()
-    {
-        $user = Auth::user();
-        if ($user->approved == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private function isServiceStatusApproved()
-    {
-        $user = Auth::user();
-        if ($user->service_status == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

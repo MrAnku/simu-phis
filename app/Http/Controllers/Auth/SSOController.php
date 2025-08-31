@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Models\Company;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
 use App\Models\AssignedPolicy;
-use App\Models\CompanyLicense;
-use App\Models\CompanySettings;
 use App\Models\ScormAssignedUser;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Services\CheckWhitelabelService;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class SSOController extends Controller
 {
@@ -76,114 +72,13 @@ class SSOController extends Controller
             ], 400);
         }
 
-        // Check if this email exists in company table
-        $company = Company::where('email', $email)->first();
-        if (!$company) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Account not found'
-            ], 404);
-        }
-
-        Auth::login($company);
-        $token = JWTAuth::fromUser($company);
-
-        // Check if the user is approved
-        if (!$this->isApproved()) {
-            Auth::logout();
-            return response()->json([
-                'success' => false,
-                'message' => 'Your account is not approved yet. Please contact your service provider.',
-            ], 422);
-        }
-
-        // Check if the service status is approved
-        if (!$this->isServiceStatusApproved()) {
-            Auth::logout();
-            return response()->json([
-                'success' => false,
-                'message' => 'Your services are on hold. Please contact your service provider.',
-            ], 422);
-        }
-
-        // Check License Expiry
-        if ($this->checkLicenseExpiry()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your License has been Expired'
-            ], 422);
-        }
-
-        // Check MFA
-        if ($this->checkMfa()) {
-            $email = Auth::user()->email;
-            Auth::logout(Auth::user());
-            return response()->json([
-                "mfa" => true,
-                'company' => [
-                    'email' => $email,
-                ],
-                "success" => true
-            ]);
-        }
-
-        // Get enabled features
-        $enabledFeatures = Company::where('company_id', $company->company_id)->value('enabled_feature') ?? 'null';
-
-        $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
-        $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
-
-        return response()->json([
-            'token' => $token,
-            'success' => true,
-            'company' => $company,
-            'message' => 'Logged in successfully',
-        ])->withCookie($cookie)->withCookie($enabledFeatureCookie);
+        $authService = new AuthService($email);
+        return $authService->loginCompany('sso');
+        
     }
 
-    private function checkMfa()
-    {
-        $user = Auth::user();
-        $company_settings = CompanySettings::where('email', $user->email)->first();
-        if ($company_settings->mfa == 1) {
-            // Store the user ID in the session and logout
-            // Auth::logout($user);
-            return true;
-        }
-    }
+  
 
-
-    private function checkLicenseExpiry()
-    {
-        $user = Auth::user();
-        $company_license = CompanyLicense::where('company_id', $user->company_id)->first();
-
-        // Check License Expiry
-        if (now()->toDateString() > $company_license->expiry) {
-            Auth::logout($user);
-            return true;
-        }
-    }
-
-    private function isApproved()
-    {
-        $user = Auth::user();
-        if ($user->approved == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private function isServiceStatusApproved()
-    {
-        $user = Auth::user();
-        if ($user->service_status == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public function ssoValidateLearner(Request $request)
     {
