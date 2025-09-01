@@ -27,6 +27,7 @@ class CompanySettings extends Model
         'phish_redirect_url',
         'phish_reporting',
         'training_assign_remind_freq_days',
-        'time_to_click'
+        'time_to_click',
+        'phish_reply'
     ];
 }

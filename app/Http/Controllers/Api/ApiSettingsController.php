@@ -1235,4 +1235,31 @@ class ApiSettingsController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function phishingReply(Request $request)
+    {
+        try {
+            $request->validate([
+                'phish_reply' => 'required|boolean',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $settings = CompanySettings::where('company_id', $companyId)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Company settings not found')], 404);
+            }
+
+            // Update phish_reply for all settings with this company_id
+            CompanySettings::where('company_id', $companyId)
+                ->update(['phish_reply' => $request->phish_reply]);
+
+            return response()->json(['success' => true, 'message' => __('Phishing reply updated successfully')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

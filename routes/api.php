@@ -231,6 +231,9 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::delete('/auto-syncing/delete/{id}', [ApiSettingsController::class, 'deleteAutoSync']);
         Route::put('/auto-syncing/update/{id}', [ApiSettingsController::class, 'updateAutoSync']);
         Route::put('/time-to-click', [ApiSettingsController::class, 'updateTimeToClick']);
+
+        // enable phishing reply
+        Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
     });
 
     Route::prefix('triggers')->group(function () {

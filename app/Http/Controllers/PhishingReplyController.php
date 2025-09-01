@@ -41,6 +41,11 @@ class PhishingReplyController extends Controller
             return response()->json(['success' => false, 'message' => 'Company is not valid'], 423);
         }
 
+        if(!$this->isPhishReplyEnabled($companyId)) {
+            \Log::info('Phishing reply is not enabled for this company');
+            return response()->json(['success' => false, 'message' => 'Phishing reply is not enabled for this company'], 423);
+        }
+
         if(!$this->hasCampaignIdAndCampaignType($originalMessage)) {
             \Log::info('Invalid campaign ID or message');
             return response()->json(['success' => false, 'message' => 'Invalid campaign ID or message'], 424);
@@ -205,6 +210,18 @@ class PhishingReplyController extends Controller
             $validCompany = true;
         }
         return $validCompany;
+    }
+
+    private function isPhishReplyEnabled($companyId): bool
+    {
+        $phishReplyEnabled = false;
+        // Check if the Phishing Reply feature is enabled
+        $isPhishReplyEnabled = CompanySettings::where('company_id', $companyId)->where('phish_reply', true)->exists();
+
+        if ($isPhishReplyEnabled) {
+            $phishReplyEnabled = true;
+        }
+        return $phishReplyEnabled;
     }
 
     public function fetchPhishingReplies(Request $request)
