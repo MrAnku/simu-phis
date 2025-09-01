@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\CompanyTrigger;
+use App\Models\BlueCollarEmployee;
 use App\Models\CompanyTriggerTraining;
 
 class TriggerService
@@ -55,31 +56,50 @@ class TriggerService
             ->first();
 
         if ($lastUser) {
-            $lastUserEmail = $lastUser->user_email;
             // Create a new entry in the company_trigger_trainings table
             CompanyTriggerTraining::create([
-                'user_email' => $lastUserEmail,
-                'training' => $this->getTrainingId() ?? null,
-                'policy' => $this->getPolicyId() ?? null,
+                'employee_type' => $this->employeeType,
+                'user_id' => $lastUser->id,
+                'user_name' => $lastUser->user_name,
+                'user_email' => $lastUser->user_email,
+                'training' => $this->getAction('training') ?? null,
+                'policy' => $this->getAction('policy') ?? null,
+                'scorm' => $this->getAction('scorm') ?? null,
                 'company_id' => $this->companyId
             ]);
         }
     }
 
-    private function getTrainingId(): ?int
+    private function runBlueCollarUserActions(): void
     {
-        return CompanyTrigger::where('company_id', $this->companyId)
-            ->where('event_type', $this->eventType)
-            ->where('employee_type', $this->employeeType)
-            ->value('training');
+        // get the last user email added by the company
+        $lastUser = BlueCollarEmployee::where('company_id', $this->companyId)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($lastUser) {
+            // Create a new entry in the company_trigger_trainings table
+            CompanyTriggerTraining::create([
+                'employee_type' => $this->employeeType,
+                'user_id' => $lastUser->id,
+                'user_name' => $lastUser->user_name,
+                'user_whatsapp' => $lastUser->whatsapp,
+                'training' => $this->getAction('training') ?? null,
+                'policy' => $this->getAction('policy') ?? null,
+                'scorm' => $this->getAction('scorm') ?? null,
+                'company_id' => $this->companyId
+            ]);
+        }
     }
 
-    private function getPolicyId(): ?int
+    private function getAction(string $type): ?string
     {
         return CompanyTrigger::where('company_id', $this->companyId)
             ->where('event_type', $this->eventType)
             ->where('employee_type', $this->employeeType)
-            ->value('policy');
+            ->value($type);
     }
+
+   
 
 }

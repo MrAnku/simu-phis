@@ -43,12 +43,14 @@ class ApiTriggerController extends Controller
         try {
             $request->validate([
                 'event_type' => 'required|in:new_user',
+                'employee_type' => 'required|in:bluecollar,normal',
                 'training' => 'nullable|array',
                 'policy' => 'nullable|array',
                 'scorm' => 'nullable|array',
             ]);
             //check if company already has this trigger
             $exists = CompanyTrigger::where('event_type', $request->event_type)
+                ->where('employee_type', $request->employee_type)
                 ->where('company_id', Auth::user()->company_id)
                 ->exists();
 
@@ -61,6 +63,7 @@ class ApiTriggerController extends Controller
 
             $trigger = new CompanyTrigger();
             $trigger->event_type = $request->event_type;
+            $trigger->employee_type = $request->employee_type;
             $trigger->training = $request->training ? json_encode($request->training) : null;
             $trigger->policy = $request->policy ? json_encode($request->policy) : null;
             $trigger->scorm = $request->scorm ? json_encode($request->scorm) : null;
@@ -83,6 +86,7 @@ class ApiTriggerController extends Controller
         try {
             $request->validate([
                 'event_type' => 'required|in:new_user',
+                'employee_type' => 'required|in:bluecollar,normal',
                 'training' => 'nullable|array',
                 'policy' => 'nullable|array',
                 'scorm' => 'nullable|array',
@@ -99,6 +103,7 @@ class ApiTriggerController extends Controller
 
             if ($request->has('event_type')) {
                 $trigger->event_type = $request->event_type;
+                $trigger->employee_type = $request->employee_type;
             }
             if ($request->has('training')) {
                 $trigger->training = $request->training ? json_encode($request->training) : null;

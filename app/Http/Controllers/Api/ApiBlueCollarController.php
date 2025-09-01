@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\WaCampaign;
 use Illuminate\Http\Request;
 use App\Models\CompanyLicense;
 use App\Models\OutlookAdToken;
+use App\Models\WaLiveCampaign;
 use App\Models\BlueCollarGroup;
 use App\Models\WhatsappCampaign;
+use App\Services\TriggerService;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\BlueCollarScormAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\DeletedBlueCollarEmployee;
-use App\Models\WaCampaign;
-use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Validator;
+use App\Models\BlueCollarScormAssignedUser;
 use Illuminate\Validation\ValidationException;
 
 class ApiBlueCollarController extends Controller
 {
+    private $newBlueCollarUser = false;
+
     public function index()
     {
         try {
@@ -397,6 +400,7 @@ class ApiBlueCollarController extends Controller
 
             if (!$userExists && !$deletedEmployee) {
                 if ($company_license) {
+                    $this->newBlueCollarUser = true;
                     $company_license->increment('used_blue_collar_employees');
                 }
             }
@@ -411,6 +415,10 @@ class ApiBlueCollarController extends Controller
                     'company_id' => $companyId,
                 ]
             );
+            if ($this->newBlueCollarUser) {
+                $trigger = new TriggerService('new_user', 'bluecollar', $companyId);
+                $trigger->executeTriggerActions();
+            }
 
             // Notify when 95% of license used
             if ($company_license->used_blue_collar_employees == $company_license->blue_collar_employees * 0.95) {

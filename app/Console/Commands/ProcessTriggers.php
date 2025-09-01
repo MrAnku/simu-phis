@@ -49,12 +49,18 @@ class ProcessTriggers extends Command
     {
         $companyId = $company->company_id;
 
-        $trainingPolicyInQues = CompanyTriggerTraining::where('company_id', $companyId)
+        $queues = CompanyTriggerTraining::where('company_id', $companyId)
             ->where('sent', 0)
             ->take(5)
             ->get();
-        if ($trainingPolicyInQues->isEmpty()) {
+            
+        if ($queues->isEmpty()) {
             return;
+        }
+
+        foreach ($queues as $queue) {
+            $user_email = $queue->user_email;
+            $training = $queue->training;
         }
 
         //sending training
