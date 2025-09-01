@@ -6,10 +6,7 @@ use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\Users;
 use App\Models\ScormAssignedUser;
-use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class CampaignTrainingService
 {
@@ -373,7 +370,6 @@ class CampaignTrainingService
                 BlueCollarScormAssignedUser::create($campData);
 
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
-             
             }
         }
 
@@ -398,7 +394,6 @@ class CampaignTrainingService
         } else {
             return false;
         }
-
     }
 
     private static function getAllTrainingNames($user_phone)

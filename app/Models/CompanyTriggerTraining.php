@@ -10,7 +10,7 @@ class CompanyTriggerTraining extends Model
         'user_email',
         'training',
         'policy',
-        'status',
+        'sent',
         'company_id'
     ];
 }

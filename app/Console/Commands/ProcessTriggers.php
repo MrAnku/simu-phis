@@ -3,8 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Company;
-use App\Models\CompanyTriggerTraining;
 use Illuminate\Console\Command;
+use App\Models\TrainingAssignedUser;
+use App\Models\CompanyTriggerTraining;
+use App\Services\TrainingAssignedService;
 
 class ProcessTriggers extends Command
 {
@@ -48,14 +50,34 @@ class ProcessTriggers extends Command
         $companyId = $company->company_id;
 
         $trainingPolicyInQues = CompanyTriggerTraining::where('company_id', $companyId)
-            ->where('status', 0)
+            ->where('sent', 0)
             ->take(5)
             ->get();
-        if($trainingPolicyInQues->isEmpty()){
+        if ($trainingPolicyInQues->isEmpty()) {
             return;
         }
 
-        
-    }
+        //sending training
+        $assignedTraining = TrainingAssignedUser::where('user_email', $user_email)
+            ->where('training', $training)
+            ->first();
 
+        if (!$assignedTraining) {
+            //call assignNewTraining from service method
+            $campData = [
+                'campaign_id' => $campaign->campaign_id,
+                'user_id' => $campaign->user_id,
+                'user_name' => $campaign->user_name,
+                'user_email' => $user_email,
+                'training' => $training,
+                'training_lang' => $campaign->training_lang,
+                'training_type' => $campaign->training_type,
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
+                'company_id' => $campaign->company_id
+            ];
+
+            $trainingAssignedService->assignNewTraining($campData);
+        }
+    }
 }

@@ -35,14 +35,19 @@ class TriggerService
         if ($this->companyHasTrigger()) {
 
             if($this->eventType == 'new_user'){
-                $this->runNewUserActions();
+                if($this->employeeType == 'normal'){
+                    $this->runNormalUserActions();
+                }
+                if($this->employeeType == 'bluecollar'){
+                    $this->runBlueCollarUserActions();
+                }
             }
             
         }
 
     }
 
-    private function runNewUserActions(): void
+    private function runNormalUserActions(): void
     {
         // get the last user email added by the company
         $lastUser = Users::where('company_id', $this->companyId)

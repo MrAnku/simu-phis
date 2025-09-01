@@ -17,7 +17,6 @@ use App\Models\ScormAssignedUser;
 use App\Models\SmishingCampaign;
 use App\Models\TrainingAssignedUser;
 use App\Models\WaCampaign;
-use Illuminate\Support\Facades\Auth;
 
 class EmployeeService
 {
