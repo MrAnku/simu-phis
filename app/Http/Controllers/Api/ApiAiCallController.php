@@ -98,6 +98,9 @@ class ApiAiCallController extends Controller
                 $validated['agent_id'] = $data['agent_id'];
                 $validated['user_id'] = extractIntegers(Auth::user()->company_id);
                 $validated['company_id'] = Auth::user()->company_id;
+                if($request->auto_generate_welcome_message) {
+                    $validated['welcome_message'] = $data['welcome_message'];
+                }
 
                 AiCallLikelifeAgent::create($validated);
                 return response()->json([
@@ -172,6 +175,10 @@ class ApiAiCallController extends Controller
             ])->put("https://callapi3.sparrowhost.net/agent?agent_id={$validated['agent_id']}", $requestBody);
 
             if ($response->successful()) {
+                $data = $response->json();
+                if($request->auto_generate_welcome_message) {
+                    $validated['welcome_message'] = $data['welcome_message'];
+                }
                 $agent->update($validated);
 
                 return response()->json([
