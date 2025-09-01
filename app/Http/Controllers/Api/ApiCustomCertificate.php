@@ -85,7 +85,7 @@ class ApiCustomCertificate extends Controller
 
             if ($request->selected) {
                 // Deselect all templates for the company
-                CertificateTemplate::where('company_id', $companyId)->update(['selected' => false]);
+                CertificateTemplate::where('company_id', $companyId)->orWhere('company_id', 'default')->update(['selected' => false]);
                 // Select the specified template
                 CertificateTemplate::where('id', $request->template_id)->update(['selected' => true]);
                 $message = 'Template selected successfully.';
@@ -113,7 +113,9 @@ class ApiCustomCertificate extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
-            $templates = CertificateTemplate::where('company_id', $companyId)->get();
+            $templates = CertificateTemplate::where('company_id', $companyId)
+            ->orWhere('company_id', 'default')
+            ->get();
             if ($templates->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'No certificate templates found.'], 422);
             }
