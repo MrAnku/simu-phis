@@ -65,6 +65,22 @@ class ApiEmployeesController extends Controller
         }
     }
 
+    public function verifiedDomains()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $verifiedDomains = DomainVerified::where('verified', 1)->where('company_id', $companyId)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $verifiedDomains,
+                'message' => __('Verified domains retrieved successfully')
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error:') . $e->getMessage()], 500);
+        }
+    }
+
     public function getGroups()
     {
         try {
