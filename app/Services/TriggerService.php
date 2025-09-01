@@ -28,6 +28,7 @@ class TriggerService
         return CompanyTrigger::where('company_id', $this->companyId)
             ->where('event_type', $this->eventType)
             ->where('employee_type', $this->employeeType)
+            ->where('status', 1)
             ->exists();
     }
 
