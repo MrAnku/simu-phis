@@ -13,6 +13,7 @@ use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -98,7 +99,7 @@ class ApiAiCallController extends Controller
                 $validated['agent_id'] = $data['agent_id'];
                 $validated['user_id'] = extractIntegers(Auth::user()->company_id);
                 $validated['company_id'] = Auth::user()->company_id;
-                if($request->auto_generate_welcome_message) {
+                if ($request->auto_generate_welcome_message) {
                     $validated['welcome_message'] = $data['welcome_message'];
                 }
 
@@ -176,7 +177,7 @@ class ApiAiCallController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-                if($request->auto_generate_welcome_message) {
+                if ($request->auto_generate_welcome_message) {
                     $validated['welcome_message'] = $data['welcome_message'];
                 }
                 $agent->update($validated);
@@ -410,7 +411,9 @@ class ApiAiCallController extends Controller
                     'emp_group_name' => 'required|string',
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
-                    'ai_phone' => 'required|string'
+                    'ai_phone' => 'required|string',
+                    'scheduled_at' => 'required|string',
+                    'schedule_type' => 'required|string|in:immediate,schedule'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -433,6 +436,14 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
             }
 
+            if ($request->schedule_type === 'immediate') {
+                $scheduledAt = Carbon::now()->toDateTimeString();
+            } else {
+                $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
+            }
+
+            $status = $request->schedule_type === 'immediate' ? 'running' : 'pending';
+
             AiCallCampaign::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $request->camp_name,
@@ -445,11 +456,21 @@ class ApiAiCallController extends Controller
                 'ai_agent' => $request->ai_agent,
                 'ai_agent_name' => $request->ai_agent_name,
                 'phone_no' => $request->ai_phone,
-                'status' => 'pending',
+                'status' => $status,
+                'launch_time' => $scheduledAt,
+                'launch_type' => $request->schedule_type,
                 'company_id' => $companyId
             ]);
 
-            $this->makeCampaignLive($campId);
+            // $this->makeCampaignLive($campId);
+
+            // $companyId = Auth::user()->company_id;
+
+
+
+            if ($status === 'running') {
+                $this->makeCampaignLive($campId);
+            }
 
             log_action('Campaign for AI Vishing simulation created');
 
@@ -652,7 +673,7 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             } else {
                 $callReport = json_decode($localReport->call_report, true);
-                
+
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             }
         } catch (\Exception $e) {
@@ -667,18 +688,16 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => false, 'message' => __('Call ID is required')], 422);
             }
 
-             // Make the HTTP request
+            // Make the HTTP request
             $response = Http::get('https://callapi3.sparrowhost.net/audio/' . $callId);
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 return response()->json(['success' => true, 'data' => $data], 200);
-            }else{
+            } else {
                 return response()->json(['success' => false, 'message' => __('Call recording not found')], 404);
             }
-
-            
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
@@ -692,7 +711,7 @@ class ApiAiCallController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 return $data;
             }
             return false;
