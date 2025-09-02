@@ -166,18 +166,18 @@ class ApiAssignedTrainingsController extends Controller
             $identifier = $request->identifier;
 
             if ($type === 'normal') {
-                $request->validate([
-                    'identifier' => 'email|exists:users,user_email'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'email|exists:users,user_email'
+                // ]);
                 $trainings = TrainingAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
                     ->where('training_type', '!=',  'games')
                     ->with('trainingData')
                     ->get();
             } else {
-                $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
+                // ]);
                 $trainings = BlueCollarTrainingUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
                     ->where('training_type', '!=',  'games')
@@ -229,18 +229,18 @@ class ApiAssignedTrainingsController extends Controller
             $identifier = $request->identifier;
 
             if ($type === 'normal') {
-                $request->validate([
-                    'identifier' => 'email|exists:users,user_email'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'email|exists:users,user_email'
+                // ]);
                 $games = TrainingAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
                     ->where('training_type', 'games')
                     ->with('trainingGame')
                     ->get();
             } else {
-                $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
+                // ]);
                 $games = BlueCollarTrainingUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
                     ->where('training_type', 'games')
@@ -292,17 +292,17 @@ class ApiAssignedTrainingsController extends Controller
             $identifier = $request->identifier;
 
             if ($type === 'normal') {
-                $request->validate([
-                    'identifier' => 'email|exists:users,user_email'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'email|exists:users,user_email'
+                // ]);
                 $scorms = ScormAssignedUser::where('company_id', $companyId)
                     ->where('user_email', $identifier)
                     ->with('scormTrainingData')
                     ->get();
             } else {
-                $request->validate([
-                    'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
-                ]);
+                // $request->validate([
+                //     'identifier' => 'numeric|exists:blue_collar_employees,whatsapp'
+                // ]);
                 $scorms = BlueCollarScormAssignedUser::where('company_id', $companyId)
                     ->where('user_whatsapp', $identifier)
                     ->with('scormTrainingData')
