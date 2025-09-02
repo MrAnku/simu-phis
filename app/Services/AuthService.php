@@ -158,6 +158,12 @@ class AuthService
             $token = JWTAuth::attempt(['email' => $this->companyEmail, 'password' => $this->password]);
         }
 
+        if (!$token) {
+            return response()->json([
+                'message' => 'Invalid credentials',
+                'success' => false
+            ], 401);
+        }
 
         $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
         $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
