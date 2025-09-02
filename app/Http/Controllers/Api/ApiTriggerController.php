@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\CompanyTrigger;
 use App\Models\TrainingModule;
 use App\Http\Controllers\Controller;
+use App\Models\ScormTraining;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -18,9 +19,10 @@ class ApiTriggerController extends Controller
 
             $trainingModules = TrainingModule::where('company_id', Auth::user()->company_id)
                 ->orWhere('company_id', 'default')
-                ->get(['id', 'name', 'company_id']);
+                ->get(['id', 'name', 'company_id', 'training_type']);
             $policies = Policy::where('company_id', Auth::user()->company_id)
                 ->get(['id', 'policy_name', 'company_id']);
+            $scorms = ScormTraining::where('company_id', Auth::user()->company_id)->get(['id', 'name', 'company_id']);
 
             $triggers = CompanyTrigger::where('company_id', Auth::user()->company_id)->get();
             return response()->json([
@@ -28,6 +30,7 @@ class ApiTriggerController extends Controller
                 'data' => [
                     'training_modules' => $trainingModules,
                     'policies' => $policies,
+                    'scorms' => $scorms,
                     'triggers' => $triggers
                 ]
             ], 200);
