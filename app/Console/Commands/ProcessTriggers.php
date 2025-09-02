@@ -2,11 +2,19 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Policy;
 use App\Models\Company;
-use Illuminate\Console\Command;
-use App\Models\TrainingAssignedUser;
-use App\Models\CompanyTriggerTraining;
+use App\Models\ScormTraining;
+use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
+use Illuminate\Console\Command;
+use App\Mail\PolicyCampaignEmail;
+use App\Models\ScormAssignedUser;
+use App\Models\TrainingAssignedUser;
+use Illuminate\Support\Facades\Mail;
+use App\Models\BlueCollarTrainingUser;
+use App\Models\CompanyTriggerTraining;
+use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
 
 class ProcessTriggers extends Command
@@ -52,113 +60,219 @@ class ProcessTriggers extends Command
 
         $queues = CompanyTriggerTraining::where('company_id', $companyId)
             ->where('sent', 0)
-            ->take(5)
+            ->take(1)
             ->get();
-            
+
         if ($queues->isEmpty()) {
             return;
         }
 
         foreach ($queues as $queue) {
-            if($queue->employee_type == 'normal'){
-                $this->processQueueForNormalUser($queue);
-            }
-            if($queue->employee_type == 'bluecollar'){
-                $this->processQueueForBlueCollarUser($queue);
-            }
-        }
+            $trainings = $queue->training;
+            $policies = $queue->policy;
+            $scorms = $queue->scorm;
 
-      
-    }
-
-    private function processQueueForNormalUser($queue)
-    {
-
-        $training = $queue->training;
-        $policy = $queue->policy;
-        $scorm = $queue->scorm;
-
-        if (!$training && !$policy && !$scorm) {
-            return;
-        }
-
-        if($training){
-            $trainings = json_decode($training, true);
-            if (!$trainings) {
+            if (!$trainings && !$policies && !$scorms) {
                 return;
             }
-            foreach ($trainings as $training) {
 
-                if(TrainingModule::where('id', $training['training'])->doesntExist()){
-                    continue;
-                }
-                //sending training
-                $assignedTraining = TrainingAssignedUser::where('user_email', $queue->user_email)
-                    ->where('training', $training['training'])
-                    ->first();
-
-                if (!$assignedTraining) {
-                    //call assignNewTraining from service method
-                    $campData = [
-                        'campaign_id' => 'from_trigger',
-                        'user_id' => $queue->user_id,
-                        'user_name' => $queue->user_name,
-                        'user_email' => $queue->user_email,
-                        'training' => $training['training'],
-                        'training_lang' => $training['training_lang'],
-                        'training_type' => $training['training_type'],
-                        'assigned_date' => now()->toDateString(),
-                        'training_due_date' => now()->addDays($training['days_until_due'])->toDateString(),
-                        'company_id' => $queue->company_id
-                    ];
-
-                    $trainingAssignedService = new TrainingAssignedService();
-
-                    $trainingAssignedService->assignNewTraining($campData);
-                }
+            if ($trainings) {
+                $this->assignTraining($trainings, $queue, $queue->employee_type);
             }
+
+            if ($policies) {
+                $this->assignPolicy($policies, $queue, $queue->employee_type);
+            }
+
+            if ($scorms) {
+                $this->assignScorm($scorms, $queue, $queue->employee_type);
+            }
+
+            $queue->sent = 1;
+            $queue->save();
+        }
+    }
+
+
+
+    private function assignTraining($trainings, $queue, $employeeType)
+    {
+        $trainings = json_decode($trainings, true);
+        if (!$trainings) {
+            return;
+        }
+        foreach ($trainings as $training) {
+
+            if (TrainingModule::where('id', $training['training'])->doesntExist()) {
+                continue;
+            }
+            if ($employeeType == 'bluecollar') {
+                $this->assignTrainingToBluecollar($training, $queue);
+                continue;
+            }
+            //sending training
+            $assignedTraining = TrainingAssignedUser::where('user_email', $queue->user_email)
+                ->where('training', $training['training'])
+                ->first();
+
+            if (!$assignedTraining) {
+                //call assignNewTraining from service method
+                $campData = [
+                    'campaign_id' => 'from_trigger',
+                    'user_id' => $queue->user_id,
+                    'user_name' => $queue->user_name,
+                    'user_email' => $queue->user_email,
+                    'training' => $training['training'],
+                    'training_lang' => $training['training_lang'],
+                    'training_type' => $training['training_type'],
+                    'assigned_date' => now()->toDateString(),
+                    'training_due_date' => now()->addDays($training['days_until_due'])->toDateString(),
+                    'company_id' => $queue->company_id
+                ];
+
+                $trainingAssignedService = new TrainingAssignedService();
+
+                $trainingAssignedService->assignNewTraining($campData);
+            }
+        }
+        if ($queue->employee_type == 'bluecollar') {
+            $this->sendWhatsappNotification($queue);
+        } else {
             $mailData = [
                 'user_email' => $queue->user_email,
                 'user_name' => $queue->user_name,
                 'company_id' => $queue->company_id,
             ];
             $isSent = $trainingAssignedService->sendTrainingEmail($mailData);
-            if($isSent['status'] == 1){
-                $queue->sent = 1;
-                $queue->save();
+            if ($isSent['status'] == 1) {
+                echo "Training assigned to " . $queue->user_name . "\n";
             }
-            
+        }
+    }
 
+    private function assignPolicy($policies, $queue, $employeeType)
+    {
+
+        $policies = json_decode($policies, true);
+
+        if (!$policies) {
+            return;
         }
 
+        $policyNames = '';
+
+        foreach ($policies as $policyId) {
+            $policyName = Policy::where('id', $policyId)->value('policy_name') ?? null;
+            if (!$policyName) {
+                continue;
+            }
+            $policyNames .= $policyName . ', ';
+
+            $isPolicyExists = AssignedPolicy::where('user_email', $queue->user_email)
+                ->where('policy', $policyId)
+                ->where('company_id', $queue->company_id)
+                ->exists();
+
+            if ($isPolicyExists) {
+                continue;
+            }
+            AssignedPolicy::create([
+                'campaign_id' => 'from_trigger',
+                'user_name' => $queue->user_name,
+                'user_email' => $queue->user_email,
+                'policy' => $policyId,
+                'company_id' => $queue->company_id,
+            ]);
+        }
+
+        $mailData = [
+            'user_name' => $queue->user_name,
+            'assigned_at' => now(),
+            'policy_name' => rtrim($policyNames, ', '),
+            'company_id' => $queue->company_id,
+        ];
+        try {
+            Mail::to($queue->user_email)->send(new PolicyCampaignEmail($mailData));
+        } catch (\Exception $e) {
+            echo 'Failed to send email: ' . $e->getMessage() . "\n";
+        }
+
+        echo "Policy assigned to " . $queue->user_name . "\n";
     }
 
-    private function processQueueForBlueCollarUser($queue)
+    private function assignScorm($scorms, $queue, $employeeType)
     {
-        // Process the queue for blue-collar users
+        $scorms = json_decode($scorms, true);
+
+        if (!$scorms) {
+            return;
+        }
+        foreach ($scorms as $scormId) {
+            $scormExists = ScormTraining::where('id', $scormId)->exists();
+            if (!$scormExists) {
+                continue;
+            }
+            $scormAssigned = ScormAssignedUser::where('user_email', $queue->user_email)
+                ->where('scorm', $scormId)
+                ->first();
+
+            if (!$scormAssigned) {
+                $campData = [
+                    'campaign_id' => 'from_trigger',
+                    'user_id' => $queue->user_id,
+                    'user_name' => $queue->user_name,
+                    'user_email' => $queue->user_email,
+                    'scorm' => $scormId,
+                    'assigned_date' => now()->toDateString(),
+                    'scorm_due_date' => now()->addDays($queue->days_until_due)->toDateString(),
+                    'company_id' => $queue->company_id
+                ];
+                $trainingAssignedService = new TrainingAssignedService();
+                $trainingAssignedService->assignNewScormTraining($campData);
+            }
+        }
+        //send mail to user
+        $campData = [
+            'user_name' => $queue->user_name,
+            'user_email' => $queue->user_email,
+            'company_id' => $queue->company_id
+        ];
+        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+        if ($isMailSent['status'] == true) {
+            echo "Mail sent successfully to " . $queue->user_name . "\n";
+        } else {
+            echo "Failed to send mail to " . $queue->user_name . "\n";
+        }
     }
 
-        // $assignedTraining = TrainingAssignedUser::where('user_email', $queue->user_email)
-        //     ->where('training', $queue->training)
-        //     ->first();
+    private function assignTrainingToBluecollar($training, $queue)
+    {
+        $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $queue->user_whatsapp)
+            ->where('training', $training['training'])
+            ->first();
 
-        // if (!$assignedTraining) {
-        //     //call assignNewTraining from service method
-        //     $campData = [
-        //         'campaign_id' => $campaign->campaign_id,
-        //         'user_id' => $campaign->user_id,
-        //         'user_name' => $campaign->user_name,
-        //         'user_email' => $user_email,
-        //         'training' => $training,
-        //         'training_lang' => $campaign->training_lang,
-        //         'training_type' => $campaign->training_type,
-        //         'assigned_date' => now()->toDateString(),
-        //         'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        //         'company_id' => $campaign->company_id
-        //     ];
+        if (!$assignedTrainingModule) {
+            //call assignNewTraining from service method
+            $campData = [
+                'campaign_id' => 'from_trigger',
+                'user_id' => $queue->user_id,
+                'user_name' => $queue->user_name,
+                'user_whatsapp' => $queue->user_whatsapp,
+                'training' => $training['training'],
+                'training_lang' => $training['training_lang'],
+                'training_type' => $training['training_type'],
+                'assigned_date' => now()->toDateString(),
+                'training_due_date' => now()->addDays($training['days_until_due'])->toDateString(),
+                'company_id' => $queue->company_id
+            ];
 
-        //     $trainingAssignedService->assignNewTraining($campData);
-        // }
+            // $trainingAssignedService->assignNewTraining($campData);
+            BlueCollarTrainingUser::create($campData);
+        }
+    }
 
-
+    private function sendWhatsappNotification($queue){
+        echo "Training notification sent to " . $queue->user_whatsapp . "\n";
+    }
 }
