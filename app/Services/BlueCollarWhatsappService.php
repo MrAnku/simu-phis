@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarLearnerLoginSession;
+use App\Services\Whatsapp\WhatsappTemplateService;
 use Illuminate\Support\Facades\Http;
 
 class BlueCollarWhatsappService
@@ -34,25 +35,32 @@ class BlueCollarWhatsappService
     {
         $user_name = BlueCollarEmployee::where('whatsapp', $user_whatsapp)->value('user_name');
 
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $user_whatsapp,
-            "type" => "template",
-            "template" => [
-                "name" => "session_regenerate",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => $user_name],
-                            ["type" => "text", "text" => 'Session Successfully Reinitialized!'],
-                            ["type" => "text", "text" => $this->learn_domain . '/blue-collar-training-dashboard/' . $token],
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $whatsapp_data = WhatsappTemplateService::sessionRegenerateTemplate(
+            $user_whatsapp,
+            $user_name,
+            $this->learn_domain,
+            $token
+        );
+
+        // $whatsapp_data = [
+        //     "messaging_product" => "whatsapp",
+        //     "to" => $user_whatsapp,
+        //     "type" => "template",
+        //     "template" => [
+        //         "name" => "session_regenerate",
+        //         "language" => ["code" => "en"],
+        //         "components" => [
+        //             [
+        //                 "type" => "body",
+        //                 "parameters" => [
+        //                     ["type" => "text", "text" => $user_name],
+        //                     ["type" => "text", "text" => 'Session Successfully Reinitialized!'],
+        //                     ["type" => "text", "text" => $this->learn_domain . '/blue-collar-training-dashboard/' . $token],
+        //                 ]
+        //             ]
+        //         ]
+        //     ]
+        // ];
 
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$this->phone_number_id}/messages";
 
@@ -70,25 +78,27 @@ class BlueCollarWhatsappService
     {
         $token = encrypt($data['user_whatsapp']);
 
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $data['user_whatsapp'],
-            "type" => "template",
-            "template" => [
-                "name" => "training_complete",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => $data['user_name']],
-                            ["type" => "text", "text" => $data['training_name']],
-                            ["type" => "text", "text" => $data['completion_date']],
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $whatsapp_data = WhatsappTemplateService::trainingCompleteTemplate($data['user_whatsapp'], $data['user_name'], $data['training_name'], $data['completion_date']);
+
+        // $whatsapp_data = [
+        //     "messaging_product" => "whatsapp",
+        //     "to" => $data['user_whatsapp'],
+        //     "type" => "template",
+        //     "template" => [
+        //         "name" => "training_complete",
+        //         "language" => ["code" => "en"],
+        //         "components" => [
+        //             [
+        //                 "type" => "body",
+        //                 "parameters" => [
+        //                     ["type" => "text", "text" => $data['user_name']],
+        //                     ["type" => "text", "text" => $data['training_name']],
+        //                     ["type" => "text", "text" => $data['completion_date']],
+        //                 ]
+        //             ]
+        //         ]
+        //     ]
+        // ];
 
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$this->phone_number_id}/messages";
 
@@ -106,25 +116,27 @@ class BlueCollarWhatsappService
     {
         $token = encrypt($data->user_phone);
 
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $data->user_phone, // Replace with actual user phone number
-            "type" => "template",
-            "template" => [
-                "name" => "training_message",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => $data->user_name],
-                            ["type" => "text", "text" => $data->training_names],
-                            ["type" => "text", "text" => $this->learn_domain . "/blue-collar-training-dashboard/" . $token]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $whatsapp_data = WhatsappTemplateService::trainingMessage($data->user_phone, $data->user_name, $data->training_names, $this->learn_domain, $token);
+
+        // $whatsapp_data = [
+        //     "messaging_product" => "whatsapp",
+        //     "to" => $data->user_phone, // Replace with actual user phone number
+        //     "type" => "template",
+        //     "template" => [
+        //         "name" => "training_message",
+        //         "language" => ["code" => "en"],
+        //         "components" => [
+        //             [
+        //                 "type" => "body",
+        //                 "parameters" => [
+        //                     ["type" => "text", "text" => $data->user_name],
+        //                     ["type" => "text", "text" => $data->training_names],
+        //                     ["type" => "text", "text" => $this->learn_domain . "/blue-collar-training-dashboard/" . $token]
+        //                 ]
+        //             ]
+        //         ]
+        //     ]
+        // ];
 
         $whatsapp_url = "https://graph.facebook.com/v22.0/{$this->phone_number_id}/messages";
 
@@ -138,7 +150,7 @@ class BlueCollarWhatsappService
 
         // Check if the record was inserted successfully
         if (!$inserted) {
-           return null;
+            return null;
         }
 
         $whatsapp_response = Http::withHeaders([

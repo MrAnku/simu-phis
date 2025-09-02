@@ -16,6 +16,7 @@ use App\Models\BlueCollarTrainingUser;
 use App\Models\CompanyTriggerTraining;
 use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
+use App\Models\BlueCollarScormAssignedUser;
 
 class ProcessTriggers extends Command
 {
@@ -107,9 +108,11 @@ class ProcessTriggers extends Command
                 continue;
             }
             if ($employeeType == 'bluecollar') {
+                echo "Assigning training to " . $employeeType . "\n";
                 $this->assignTrainingToBluecollar($training, $queue);
                 continue;
             }
+            echo "Assigning training to " . $employeeType . "\n";
             //sending training
             $assignedTraining = TrainingAssignedUser::where('user_email', $queue->user_email)
                 ->where('training', $training['training'])
@@ -152,6 +155,9 @@ class ProcessTriggers extends Command
 
     private function assignPolicy($policies, $queue, $employeeType)
     {
+        if ($employeeType == 'bluecollar') {
+            return;
+        }
 
         $policies = json_decode($policies, true);
 
@@ -162,6 +168,7 @@ class ProcessTriggers extends Command
         $policyNames = '';
 
         foreach ($policies as $policyId) {
+            echo "Assigning policy to " . $employeeType;
             $policyName = Policy::where('id', $policyId)->value('policy_name') ?? null;
             if (!$policyName) {
                 continue;
@@ -202,14 +209,20 @@ class ProcessTriggers extends Command
 
     private function assignScorm($scorms, $queue, $employeeType)
     {
+        $trainingAssignedService = new TrainingAssignedService();
         $scorms = json_decode($scorms, true);
 
         if (!$scorms) {
             return;
         }
         foreach ($scorms as $scormId) {
+
             $scormExists = ScormTraining::where('id', $scormId)->exists();
             if (!$scormExists) {
+                continue;
+            }
+            if ($employeeType == 'bluecollar') {
+                $this->assignScormToBluecollar($scormId, $queue);
                 continue;
             }
             $scormAssigned = ScormAssignedUser::where('user_email', $queue->user_email)
@@ -231,18 +244,22 @@ class ProcessTriggers extends Command
                 $trainingAssignedService->assignNewScormTraining($campData);
             }
         }
-        //send mail to user
-        $campData = [
-            'user_name' => $queue->user_name,
-            'user_email' => $queue->user_email,
-            'company_id' => $queue->company_id
-        ];
-        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-        if ($isMailSent['status'] == true) {
-            echo "Mail sent successfully to " . $queue->user_name . "\n";
+        if ($queue->employee_type == 'bluecollar') {
+            $this->sendWhatsappNotification($queue);
         } else {
-            echo "Failed to send mail to " . $queue->user_name . "\n";
+            //send mail to user
+            $campData = [
+                'user_name' => $queue->user_name,
+                'user_email' => $queue->user_email,
+                'company_id' => $queue->company_id
+            ];
+            $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+
+            if ($isMailSent['status'] == true) {
+                echo "Mail sent successfully to " . $queue->user_name . "\n";
+            } else {
+                echo "Failed to send mail to " . $queue->user_name . "\n";
+            }
         }
     }
 
@@ -272,7 +289,33 @@ class ProcessTriggers extends Command
         }
     }
 
-    private function sendWhatsappNotification($queue){
-        echo "Training notification sent to " . $queue->user_whatsapp . "\n";
+    private function assignScormToBluecollar($scormId, $queue)
+    {
+        $assignedTrainingModule = BlueCollarScormAssignedUser::where('user_whatsapp', $queue->user_whatsapp)
+            ->where('scorm', $scormId)
+            ->first();
+
+        if (!$assignedTrainingModule) {
+            //call assignNewTraining from service method
+            $campData = [
+                'campaign_id' => 'from_trigger',
+                'user_id' => $queue->user_id,
+                'user_name' => $queue->user_name,
+                'user_whatsapp' => $queue->user_whatsapp,
+                'scorm' => $scormId,
+                'assigned_date' => now()->toDateString(),
+                'scorm_due_date' => now()->addDays($queue->days_until_due)->toDateString(),
+                'company_id' => $queue->company_id
+            ];
+
+            BlueCollarScormAssignedUser::create($campData);
+
+            echo 'Scorm assigned successfully to ' . $queue->user_whatsapp . "\n";
+        }
+    }
+
+    private function sendWhatsappNotification($queue)
+    {
+        echo "Training/scorm notification sent to " . $queue->user_whatsapp . "\n";
     }
 }
