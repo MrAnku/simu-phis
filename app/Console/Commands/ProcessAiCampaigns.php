@@ -9,6 +9,8 @@ use Illuminate\Console\Command;
 use App\Models\ScormAssignedUser;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
+use App\Models\Users;
+use App\Models\UsersGroup;
 use Illuminate\Support\Facades\Http;
 use App\Services\TrainingAssignedService;
 
@@ -34,6 +36,7 @@ class ProcessAiCampaigns extends Command
     public function handle()
     {
         $this->checkCallStatus();
+        $this->processScheduledCampaigns();
         $this->processAiCalls();
         // $this->analyseAicallReports();
         $this->checkAllAiCallsHandled();
@@ -61,7 +64,7 @@ class ProcessAiCampaigns extends Command
                     })
                     ->take(1)
                     ->get();
-                    
+
                 $url = 'https://callapi3.sparrowhost.net/call';
 
                 foreach ($pendingCalls as $pendingCall) {
@@ -100,6 +103,81 @@ class ProcessAiCampaigns extends Command
                 }
             } catch (\Exception $e) {
                 echo "Something went wrong " . $e->getMessage();
+            }
+        }
+    }
+
+    private function processScheduledCampaigns()
+    {
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
+
+        if ($companies->isEmpty()) {
+            return;
+        }
+
+        foreach ($companies as $company) {
+            setCompanyTimezone($company->company_id);
+
+            // Fetch campaigns for this company
+            $campaigns = AiCallCampaign::where('company_id', $company->company_id)
+                ->where('status', 'pending')
+                ->get();
+
+            foreach ($campaigns as $campaign) {
+                // Scheduled campaign: insert into live table only when launch_time passes
+                if ($campaign->launch_type === 'schedule' && $campaign->status === 'pending') {
+                    $scheduledTime = \Carbon\Carbon::parse($campaign->launch_time);
+                    $currentDateTime = \Carbon\Carbon::now();
+
+                    if ($scheduledTime->lessThanOrEqualTo($currentDateTime)) {
+                        // Insert record in live table
+                        $this->makeCampaignLive($campaign->campaign_id);
+                        $campaign->update(['status' => 'running']);
+                    } else {
+                        echo 'Campaign : ' . $campaign->campaign_name . ' is not yet scheduled to go live.' . "\n";
+                    }
+                }
+            }
+        }
+    }
+
+    private function makeCampaignLive($campaignid)
+    {
+
+        $campaign = AiCallCampaign::where('campaign_id', $campaignid)->first();
+
+        if ($campaign) {
+
+            $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+            $userIds = json_decode($userIdsJson, true);
+            $users = Users::whereIn('id', $userIds)->get();
+            if ($users) {
+                foreach ($users as $user) {
+
+                    if ($user->whatsapp == null) {
+                        continue;
+                    }
+
+                    AiCallCampLive::create([
+                        'campaign_id' => $campaign->campaign_id,
+                        'campaign_name' => $campaign->campaign_name,
+                        'user_id' => $user->id,
+                        'employee_name' => $user->user_name,
+                        'employee_email' => $user->user_email,
+                        'training' => $campaign->training ?? null,
+                        'scorm_training' => $campaign->scorm_training ?? null,
+                        'training_lang' => $campaign->training_lang ?? null,
+                        'training_type' => $campaign->training_type ?? null,
+                        'from_mobile' => $campaign->phone_no,
+                        'to_mobile' => "+" . $user->whatsapp,
+                        'agent_id' => $campaign->ai_agent,
+                        'status' => 'pending',
+                        'company_id' => $campaign->company_id,
+                    ]);
+                }
             }
         }
     }
@@ -260,7 +338,7 @@ class ProcessAiCampaigns extends Command
 
     private function checkAllAiCallsHandled()
     {
-        $campaigns = AiCallCampaign::where('status', 'pending')->get();
+        $campaigns = AiCallCampaign::where('status', 'running')->get();
         if ($campaigns->isEmpty()) {
             return;
         }

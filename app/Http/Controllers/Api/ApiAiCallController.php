@@ -412,8 +412,8 @@ class ApiAiCallController extends Controller
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
                     'ai_phone' => 'required|string',
-                    'scheduled_at' => 'required|string',
-                    'schedule_type' => 'required|string|in:immediate,schedule'
+                    'scheduled_at' => 'required_if:schedule_type,schedule|string',
+                    'schedule_type' => 'required|string|in:immediately,schedule'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -436,13 +436,13 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
             }
 
-            if ($request->schedule_type === 'immediate') {
+            if ($request->schedule_type === 'immediately') {
                 $scheduledAt = Carbon::now()->toDateTimeString();
             } else {
                 $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
             }
 
-            $status = $request->schedule_type === 'immediate' ? 'running' : 'pending';
+            $status = $request->schedule_type === 'immediately' ? 'running' : 'pending';
 
             AiCallCampaign::create([
                 'campaign_id' => $campId,
@@ -461,12 +461,6 @@ class ApiAiCallController extends Controller
                 'launch_type' => $request->schedule_type,
                 'company_id' => $companyId
             ]);
-
-            // $this->makeCampaignLive($campId);
-
-            // $companyId = Auth::user()->company_id;
-
-
 
             if ($status === 'running') {
                 $this->makeCampaignLive($campId);
