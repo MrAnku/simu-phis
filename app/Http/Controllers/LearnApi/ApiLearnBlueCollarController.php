@@ -124,6 +124,14 @@ class ApiLearnBlueCollarController extends Controller
 
             $employeeType = 'bluecollar';
             $user = BlueCollarEmployee::where('whatsapp', $userWhatsapp)->first();
+            if (!$user) {
+                BlueCollarTrainingUser::where('user_whatsapp', $userWhatsapp)->delete();
+                BlueCollarScormAssignedUser::where('user_whatsapp', $userWhatsapp)->delete();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are no longer an employee on this platform.'
+                ], 404);
+            }
 
             $userName = $user->user_name;
 

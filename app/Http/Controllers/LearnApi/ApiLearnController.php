@@ -61,6 +61,15 @@ class ApiLearnController extends Controller
             $employeeType = 'normal';
             $user = Users::where('user_email', $userEmail)->first();
 
+            if (!$user) {
+                TrainingAssignedUser::where('user_email', $userEmail)->delete();
+                ScormAssignedUser::where('user_email', $userEmail)->delete();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are no longer an employee on this platform.'
+                ], 404);
+            }
+
             $userName = $user->user_name;
 
             return response()->json([
