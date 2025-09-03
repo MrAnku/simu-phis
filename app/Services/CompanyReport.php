@@ -2,11 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\AiCallCampaign;
+use App\Models\Campaign;
 use App\Models\CampaignLive;
 use App\Models\AiCallCampLive;
+use App\Models\QuishingCamp;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaign;
 use App\Models\TrainingAssignedUser;
+use App\Models\WaCampaign;
 
 class CompanyReport
 {
@@ -71,7 +76,7 @@ class CompanyReport
         return $email + $quishing + $whatsapp + $ai;
     }
 
-    public function totalSimulations($email = null): int
+    public function totalSimulations(): int
     {
         $email =  CampaignLive::where('company_id', $this->companyId)
             ->count();
@@ -108,5 +113,57 @@ class CompanyReport
         }
 
         return 0.00;
+    }
+
+    public function compromiseRate(): float
+    {
+        $totalUsers = $this->totalSimulations();
+        $compromisedUsers = $this->compromised();
+
+        return $totalUsers > 0 ? round(($compromisedUsers / $totalUsers) * 100, 2) : 0;
+    }
+    public function clickRate(): float
+    {
+        $totalUsers = $this->totalSimulations();
+        $clickedUsers = $this->payloadClicked();
+
+        return $totalUsers > 0 ? round(($clickedUsers / $totalUsers) * 100, 2) : 0;
+    }
+
+    public function emailReported(): int
+    {
+        return CampaignLive::where('company_id', $this->companyId)
+            ->where('email_reported', 1)
+            ->count() + QuishingLiveCamp::where('company_id', $this->companyId)
+            ->where('email_reported', '1')
+            ->count();
+    }
+
+    public function emailCampaigns(): int
+    {
+        return Campaign::where('company_id', $this->companyId)
+            ->count();
+    }
+    public function quishingCampaigns(): int
+    {
+        return QuishingCamp::where('company_id', $this->companyId)
+            ->count();
+    }
+    public function aiCampaigns(): int
+    {
+        return AiCallCampaign::where('company_id', $this->companyId)
+            ->count();
+    }
+
+    public function tprmCampaigns(): int
+    {
+        return TprmCampaign::where('company_id', $this->companyId)
+            ->count();
+    }
+
+    public function whatsappCampaigns(): int
+    {
+        return WaCampaign::where('company_id', $this->companyId)
+            ->count();
     }
 }

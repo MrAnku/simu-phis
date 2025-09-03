@@ -13,7 +13,6 @@ class CardDataService
     //     "company_risk_score",
     //     "training_completion_rate",
     //     "compromise_rate",
-    //     "employee_compromised",
     //     "click_rate",
     //     "email_clicks",
     //     "email_reported",
@@ -39,8 +38,6 @@ class CardDataService
                 return $this->getTrainingCompletionRateData();
             case "compromise_rate":
                 return $this->getCompromiseRateData();
-            case "employee_compromised":
-                return $this->getEmployeeCompromisedData();
             case "click_rate":
                 return $this->getClickRateData();
             case "email_clicks":
@@ -93,91 +90,127 @@ class CardDataService
 
     private function getCompromiseRateData(): array
     {
-        // Logic to fetch and return compromise rate data
-        return [
-            'type' => 'compromise_rate',
-            'data' => 'Sample data for compromise rate',
-        ];
-    }
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->compromiseRate();
 
-    private function getEmployeeCompromisedData(): array
-    {
-        // Logic to fetch and return employee compromised data
         return [
-            'type' => 'employee_compromised',
-            'data' => 'Sample data for employee compromised',
+            'title' => 'Compromise Rate',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideAlertTriangle',
+            'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getClickRateData(): array
     {
-        // Logic to fetch and return click rate data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->clickRate();
+
         return [
-            'type' => 'click_rate',
-            'data' => 'Sample data for click rate',
+            'title' => 'Click Rate',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMousePointer',
+            'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getEmailClicksData(): array
     {
-        // Logic to fetch and return email clicks data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->payloadClicked();
+
         return [
-            'type' => 'email_clicks',
-            'data' => 'Sample data for email clicks',
+            'title' => 'Phishing Email Clicks',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMousePointer',
+            'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getEmailReportedData(): array
     {
-        // Logic to fetch and return email reported data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->emailReported();
+
         return [
-            'type' => 'email_reported',
-            'data' => 'Sample data for email reported',
+            'title' => 'Emails Reported',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMailCheck',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getEmailCampaignsData(): array
     {
-        // Logic to fetch and return email campaigns data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->emailCampaigns();
+
         return [
-            'type' => 'email_campaigns',
-            'data' => 'Sample data for email campaigns',
+            'title' => 'Email Campaigns',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMails',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getQuishingCampaignsData(): array
     {
-        // Logic to fetch and return quishing campaigns data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->quishingCampaigns();
+
         return [
-            'type' => 'quishing_campaigns',
-            'data' => 'Sample data for quishing campaigns',
+            'title' => 'Quishing Campaigns',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMailCheck',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getAiCampaignsData(): array
     {
-        // Logic to fetch and return AI campaigns data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->aiCampaigns();
+
         return [
-            'type' => 'ai_campaigns',
-            'data' => 'Sample data for AI campaigns',
+            'title' => 'AI Vishing',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideSparkles',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getTprmCampaignsData(): array
     {
-        // Logic to fetch and return TPRM campaigns data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->tprmCampaigns();
+
         return [
-            'type' => 'tprm_campaigns',
-            'data' => 'Sample data for TPRM campaigns',
+            'title' => 'TPRM Campaigns',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideMailCheck',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 
     private function getWhatsappCampaignsData(): array
     {
-        // Logic to fetch and return WhatsApp campaigns data
+        $companyReport = new CompanyReport($this->companyId);
+        $value = $companyReport->whatsappCampaigns();
+
         return [
-            'type' => 'whatsapp_campaigns',
-            'data' => 'Sample data for WhatsApp campaigns',
+            'title' => 'WhatsApp Campaigns',
+            'period' => 'All time',
+            'value' => $value,
+            'icon' => 'LucideSmartphone',
+            'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
         ];
     }
 }
