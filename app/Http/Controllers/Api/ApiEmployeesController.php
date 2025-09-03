@@ -221,7 +221,7 @@ class ApiEmployeesController extends Controller
                         ->groupBy('user_email');
                 })
                 ->get();
-                
+
             $allEmployees->map(function ($employee) {
                 $empReport = new EmployeeReport($employee->user_email, $employee->company_id);
                 $employee->risk_score = $empReport->calculateOverallRiskScore();
@@ -382,7 +382,7 @@ class ApiEmployeesController extends Controller
             }
 
             // Fallback if AI response is invalid
-           
+
             return $this->getFallbackAnalysis($data);
         } catch (\Exception $e) {
             return $this->getFallbackAnalysis($data);
@@ -512,39 +512,47 @@ class ApiEmployeesController extends Controller
     private function getSecurityScore($email)
     {
         $companyId = Auth::user()->company_id;
-        $totalSimulations = 0;
-        $compromisedSimulations = 0;
-        $payloadClickedSimulations = 0;
 
         // Email Campaigns
         $emailTotal = CampaignLive::where('user_email', $email)->count();
         $emailCompromised = CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count();
         $emailPayloadClicked = CampaignLive::where('user_email', $email)->where('payload_clicked', 1)->count();
+        $emailRisky = CampaignLive::where('user_email', $email)
+            ->where(function ($q) {
+                $q->where('emp_compromised', 1)->orWhere('payload_clicked', 1);
+            })->count();
 
         // Quishing Campaigns
         $quishingTotal = QuishingLiveCamp::where('user_email', $email)->count();
         $quishingCompromised = QuishingLiveCamp::where('user_email', $email)->where('compromised', 1)->count();
         $quishingPayloadClicked = QuishingLiveCamp::where('user_email', $email)->where('qr_scanned', '1')->count();
+        $quishingRisky = QuishingLiveCamp::where('user_email', $email)
+            ->where(function ($q) {
+                $q->where('compromised', 1)->orWhere('qr_scanned', '1');
+            })->count();
 
         // WhatsApp Campaigns
         $waTotal = WaLiveCampaign::where('user_email', $email)->count();
         $waCompromised = WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count();
         $waPayloadClicked = WaLiveCampaign::where('user_email', $email)->where('payload_clicked', 1)->count();
+        $waRisky = WaLiveCampaign::where('user_email', $email)
+            ->where(function ($q) {
+                $q->where('compromised', 1)->orWhere('payload_clicked', 1);
+            })->count();
 
         // AI Call Campaigns
         $aiTotal = AiCallCampLive::where('employee_email', $email)->count();
         $aiCompromised = AiCallCampLive::where('employee_email', $email)->where('compromised', 1)->count();
+        $aiRisky = $aiCompromised; // Only compromised is risky for AI calls
 
         $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
         $compromisedSimulations = $emailCompromised + $quishingCompromised + $waCompromised + $aiCompromised;
         $payloadClickedSimulations = $emailPayloadClicked + $quishingPayloadClicked + $waPayloadClicked;
+        $totalRiskyActions = $emailRisky + $quishingRisky + $waRisky + $aiRisky;
 
         if ($totalSimulations > 0) {
-            $safeSimulations = $totalSimulations - $compromisedSimulations;
+            $safeSimulations = $totalSimulations - $totalRiskyActions;
             $percentage = round(($safeSimulations / $totalSimulations) * 100, 2);
-            
-            // Risk score based on payload clicked and compromised
-            $totalRiskyActions = $compromisedSimulations + $payloadClickedSimulations;
             $riskScore = round(($totalRiskyActions / $totalSimulations) * 100, 2);
         } else {
             $percentage = 100;
@@ -553,7 +561,7 @@ class ApiEmployeesController extends Controller
 
         return [
             'security_score' => $percentage, // out of 100
-            'risk_score' => $riskScore,        // out of 100
+            'risk_score' => $riskScore,      // out of 100
             'total_simulations' => $totalSimulations,
             'compromised_simulations' => $compromisedSimulations,
             'payload_clicked' => $payloadClickedSimulations
