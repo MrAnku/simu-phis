@@ -13,6 +13,7 @@ use App\Models\Users;
 use App\Models\UsersGroup;
 use Illuminate\Support\Facades\Http;
 use App\Services\TrainingAssignedService;
+use Illuminate\Support\Carbon;
 
 class ProcessAiCampaigns extends Command
 {
@@ -129,8 +130,8 @@ class ProcessAiCampaigns extends Command
             foreach ($campaigns as $campaign) {
                 // Scheduled campaign: insert into live table only when launch_time passes
                 if ($campaign->launch_type === 'schedule' && $campaign->status === 'pending') {
-                    $scheduledTime = \Carbon\Carbon::parse($campaign->launch_time);
-                    $currentDateTime = \Carbon\Carbon::now();
+                    $scheduledTime = Carbon::parse($campaign->launch_time);
+                    $currentDateTime = Carbon::now();
 
                     if ($scheduledTime->lessThanOrEqualTo($currentDateTime)) {
                         // Insert record in live table
@@ -146,7 +147,6 @@ class ProcessAiCampaigns extends Command
 
     private function makeCampaignLive($campaignid)
     {
-
         $campaign = AiCallCampaign::where('campaign_id', $campaignid)->first();
 
         if ($campaign) {
