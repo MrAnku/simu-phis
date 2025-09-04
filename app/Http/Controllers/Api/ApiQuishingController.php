@@ -12,6 +12,7 @@ use App\Models\TrainingModule;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Http\Controllers\Controller;
+use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -229,7 +230,11 @@ class ApiQuishingController extends Controller
             $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
+            $scormAssigned = ScormAssignedUser::with('scormTrainingData')->where('campaign_id', $campaign_id)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
             $campaign->trainingAssigned = $trainingAssigned;
+            $campaign->scormAssigned = $scormAssigned;
 
             return response()->json([
                 'success' => true,
