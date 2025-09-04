@@ -64,6 +64,11 @@ class Campaign extends Model
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
     }
 
+      public function scormAssignedUsers()
+    {
+        return $this->hasMany(ScormAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
+
     public function campaignActivity()
     {
         return $this->hasMany(EmailCampActivity::class, 'campaign_id', 'campaign_id');
