@@ -52,6 +52,9 @@ class ApiPolicyController extends Controller
             $filePath = $request->file('policy_file')->storeAs('/uploads/policyFile', $newFilename, 's3');
 
             if ($request->has_quiz == true) {
+                $request->validate([
+                    'json_quiz' => 'required|json',
+                ]);
                 $json_quiz = $request->json_quiz;
             } else {
                 $json_quiz = null;
