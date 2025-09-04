@@ -37,8 +37,14 @@ class WaLiveCampaign extends Model
     }
     public function whatsTrainingData()
     {
-        return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
+        return $this->hasMany(BlueCollarTrainingUser::class, 'campaign_id', 'campaign_id');
     }
+
+    public function scormTrainingData()
+    {
+        return $this->hasMany(BlueCollarScormAssignedUser::class, 'campaign_id', 'campaign_id');
+    }
+
 
     public function trainingData()
     {
