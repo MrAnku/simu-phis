@@ -9,6 +9,7 @@ use App\Models\Users;
 use App\Models\Company;
 use App\Models\SiemLog;
 use App\Mail\CampaignMail;
+use App\Models\AuditLog;
 use App\Models\UsersGroup;
 use Illuminate\Support\Str;
 use App\Models\SiemProvider;
@@ -1044,5 +1045,23 @@ if (!function_exists('assignBadge')) {
 
         // Save back to the model
         $trainingData->badge = json_encode($existingBadges);
+    }
+}
+
+
+if (!function_exists('audit_log')) {
+
+    function audit_log($action, $description = null, $userType = null)
+    {
+        $user = Auth::user();
+        AuditLog::create([
+            'company_id' => $user->company_id,
+            'user_id' => $user->id,
+            'user_type' => $userType,
+            'action' => $action,
+            'description' => $description,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->header('User-Agent'),
+        ]);
     }
 }
