@@ -40,7 +40,16 @@ class CompanyReport
         return 100.00;
     }
 
-    public function payloadClicked($email = null): int
+    public function emailViewed(): int
+    {
+        return CampaignLive::where('company_id', $this->companyId)
+            ->where('mail_open', 1)
+            ->count() + QuishingLiveCamp::where('company_id', $this->companyId)
+            ->where('mail_open', '1')
+            ->count();
+    }
+
+    public function payloadClicked(): int
     {
         $email =  CampaignLive::where('company_id', $this->companyId)
             ->where('payload_clicked', 1)

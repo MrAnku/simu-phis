@@ -16,9 +16,10 @@ class WidgetsService
         return $cardDataService->getData();
     }
 
-    public function line()
+    public function line($type, $months)
     {
-        // Logic for line data
+        $lineDataService = new LineDataService($type, $this->companyId);
+        return $lineDataService->getData($months);
     }
 
     public function radial()

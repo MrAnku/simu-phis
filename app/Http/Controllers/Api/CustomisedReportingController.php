@@ -196,155 +196,167 @@ class CustomisedReportingController extends Controller
         }
     }
 
-    public function lineData(Request $request, $chartType = 'line')
+    public function lineData(Request $request)
     {
         try {
             $type = $request->query('type');
+            $months = $request->query('months');
             $companyId = Auth::user()->company_id;
-            $title = '';
-            $description = '';
 
-            // Get last 6 months including current month
-            $months = [];
-            for ($i = 5; $i >= 0; $i--) {
-                $start = now()->subMonths($i)->startOfMonth()->format('Y-m-d');
-                $end = now()->subMonths($i)->endOfMonth()->format('Y-m-d');
-                $monthLabel = now()->subMonths($i)->format('M Y');
-                $months[] = [
-                    'month' => $monthLabel,
-                    'start' => $start,
-                    'end' => $end
-                ];
-            }
-
-            $phishing_events_overtime = [];
-
-            foreach ($months as $m) {
-                $clickRate = 0;
-                $reportRate = 0;
-                $ignoreRate = 0;
-
-                if ($type === 'email') {
-                    $clickRate = CampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('emp_compromised', 1)
-                        ->count();
-
-                    $reportRate = CampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('email_reported', 1)
-                        ->count();
-
-                    $ignoreRate = CampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('payload_clicked', 0)
-                        ->count();
-
-                    $title = 'Email Phishing Campaigns';
-                    $description = __('Phishing events over time for email campaigns');
-                } elseif ($type === 'quishing') {
-                    $clickRate = QuishingLiveCamp::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('compromised', '1')
-                        ->count();
-
-                    $reportRate = QuishingLiveCamp::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('email_reported', '1')
-                        ->count();
-
-                    $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('qr_scanned', '0')
-                        ->count();
-
-                    $title = 'Quishing Campaigns';
-                    $description = __('Phishing events over time for quishing campaigns');
-                } elseif ($type === 'tprm') {
-                    // Fetch TPRM campaign data
-                    $clickRate = TprmCampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('emp_compromised', 1)
-                        ->count();
-
-                    $reportRate = TprmCampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('email_reported', 1)
-                        ->count();
-
-                    $ignoreRate = TprmCampaignLive::where('company_id', $companyId)
-                        ->whereBetween('created_at', [$m['start'], $m['end']])
-                        ->where('payload_clicked', 0)
-                        ->count();
-
-                    $title = 'TPRM Campaigns';
-                    $description = __('Phishing events over time for TPRM campaigns');
-                }
-
-                $phishing_events_overtime[] = [
-                    'month' => $m['month'],
-                    'clicked' => $clickRate,
-                    'targetClicked' => 5,
-                    'reported' => $reportRate,
-                    'targetReported' => 40,
-                    'ignored' => $ignoreRate,
-                    'targetIgnored' => 55
-                ];
-            }
-
-
-            $series = [
-                [
-                    'key' => 'clickRate',
-                    'label' => 'Click Rate',
-                    'color' => '#ef4444',
-                    'type' => $chartType
-                ],
-                [
-                    'key' => 'targetClickRate',
-                    'label' => 'Target Click Rate',
-                    'color' => '#f472b4',
-                    'type' => $chartType
-                ],
-                [
-                    'key' => 'reportRate',
-                    'label' => 'Report Rate',
-                    'color' => '#3b82f6',
-                    'type' => $chartType
-                ],
-                [
-                    'key' => 'targetReportRate',
-                    'label' => 'Target Report Rate',
-                    'color' => '#93c5fd',
-                    'type' => $chartType
-                ],
-                [
-                    'key' => 'ignoreRate',
-                    'label' => 'Ignore Rate',
-                    'color' => '#f97316',
-                    'type' => $chartType
-                ],
-                [
-                    'key' => 'targetIgnoreRate',
-                    'label' => 'Target Ignore Rate',
-                    'color' => '#fdba74',
-                    'type' => $chartType
-                ],
-            ];
+            $widget = new WidgetsService($companyId);
 
             return response()->json([
                 'success' => true,
-                'message' => __('Data retrieved successfully'),
-                'data' => [
-                    'title' => $title,
-                    'description' => $description,
-                    'data' => $phishing_events_overtime,
-                    'series' => $series,
-                    'reportFormData' => [
-                        'simulationsPeriod' => 6
-                    ]
-                ]
+                'message' => __('Line data retrieved successfully'),
+                'data' => $widget->line($type, $months)
             ]);
+
+
+
+            // $title = '';
+            // $description = '';
+
+            // // Get last 6 months including current month
+            // $months = [];
+            // for ($i = 5; $i >= 0; $i--) {
+            //     $start = now()->subMonths($i)->startOfMonth()->format('Y-m-d');
+            //     $end = now()->subMonths($i)->endOfMonth()->format('Y-m-d');
+            //     $monthLabel = now()->subMonths($i)->format('M Y');
+            //     $months[] = [
+            //         'month' => $monthLabel,
+            //         'start' => $start,
+            //         'end' => $end
+            //     ];
+            // }
+
+            // $phishing_events_overtime = [];
+
+            // foreach ($months as $m) {
+            //     $clickRate = 0;
+            //     $reportRate = 0;
+            //     $ignoreRate = 0;
+
+            //     if ($type === 'email') {
+            //         $clickRate = CampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('emp_compromised', 1)
+            //             ->count();
+
+            //         $reportRate = CampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('email_reported', 1)
+            //             ->count();
+
+            //         $ignoreRate = CampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('payload_clicked', 0)
+            //             ->count();
+
+            //         $title = 'Email Phishing Campaigns';
+            //         $description = __('Phishing events over time for email campaigns');
+            //     } elseif ($type === 'quishing') {
+            //         $clickRate = QuishingLiveCamp::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('compromised', '1')
+            //             ->count();
+
+            //         $reportRate = QuishingLiveCamp::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('email_reported', '1')
+            //             ->count();
+
+            //         $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('qr_scanned', '0')
+            //             ->count();
+
+            //         $title = 'Quishing Campaigns';
+            //         $description = __('Phishing events over time for quishing campaigns');
+            //     } elseif ($type === 'tprm') {
+            //         // Fetch TPRM campaign data
+            //         $clickRate = TprmCampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('emp_compromised', 1)
+            //             ->count();
+
+            //         $reportRate = TprmCampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('email_reported', 1)
+            //             ->count();
+
+            //         $ignoreRate = TprmCampaignLive::where('company_id', $companyId)
+            //             ->whereBetween('created_at', [$m['start'], $m['end']])
+            //             ->where('payload_clicked', 0)
+            //             ->count();
+
+            //         $title = 'TPRM Campaigns';
+            //         $description = __('Phishing events over time for TPRM campaigns');
+            //     }
+
+            //     $phishing_events_overtime[] = [
+            //         'month' => $m['month'],
+            //         'clicked' => $clickRate,
+            //         'targetClicked' => 5,
+            //         'reported' => $reportRate,
+            //         'targetReported' => 40,
+            //         'ignored' => $ignoreRate,
+            //         'targetIgnored' => 55
+            //     ];
+            // }
+
+
+            // $series = [
+            //     [
+            //         'key' => 'clickRate',
+            //         'label' => 'Click Rate',
+            //         'color' => '#ef4444',
+            //         'type' => $chartType
+            //     ],
+            //     [
+            //         'key' => 'targetClickRate',
+            //         'label' => 'Target Click Rate',
+            //         'color' => '#f472b4',
+            //         'type' => $chartType
+            //     ],
+            //     [
+            //         'key' => 'reportRate',
+            //         'label' => 'Report Rate',
+            //         'color' => '#3b82f6',
+            //         'type' => $chartType
+            //     ],
+            //     [
+            //         'key' => 'targetReportRate',
+            //         'label' => 'Target Report Rate',
+            //         'color' => '#93c5fd',
+            //         'type' => $chartType
+            //     ],
+            //     [
+            //         'key' => 'ignoreRate',
+            //         'label' => 'Ignore Rate',
+            //         'color' => '#f97316',
+            //         'type' => $chartType
+            //     ],
+            //     [
+            //         'key' => 'targetIgnoreRate',
+            //         'label' => 'Target Ignore Rate',
+            //         'color' => '#fdba74',
+            //         'type' => $chartType
+            //     ],
+            // ];
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => __('Data retrieved successfully'),
+            //     'data' => [
+            //         'title' => $title,
+            //         'description' => $description,
+            //         'data' => $phishing_events_overtime,
+            //         'series' => $series,
+            //         'reportFormData' => [
+            //             'simulationsPeriod' => 6
+            //         ]
+            //     ]
+            // ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
