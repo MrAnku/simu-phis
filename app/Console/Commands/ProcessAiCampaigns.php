@@ -97,6 +97,10 @@ class ProcessAiCampaigns extends Command
                         $pendingCall->status = 'waiting';
                         $pendingCall->save();
                         echo $response->body() . "\n";
+
+                        // Mark the AiCallCampaign as completed after call is initiated
+                        AiCallCampaign::where('campaign_id', $pendingCall->campaign_id)
+                            ->update(['status' => 'completed']);
                     } else {
                         // Handle the error, e.g., log the error or throw an exception
                         echo "Call Failed: " . $response->body() . "\n";
