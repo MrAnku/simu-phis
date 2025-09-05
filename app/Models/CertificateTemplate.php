@@ -10,5 +10,5 @@ class CertificateTemplate extends Model
    use HasFactory;
 
    protected $table = 'certificate_templates';
-   protected $fillable = ['company_id', 'filepath', 'layout_name', 'selected'];
+   protected $fillable = ['company_id', 'template_id', 'certificate_type', 'filepath', 'layout_name', 'selected'];
 }
