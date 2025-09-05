@@ -89,8 +89,10 @@ class LineDataService
                 'type' => 'line'
             ];
         }
+        $title = "Interaction Analytics";
+        $description = "The report overview of employee interaction of simulation.";
 
-        return ['data' => $data, 'series' => $series];
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getSimulationsData($months): array
@@ -127,7 +129,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "Simulation Overview";
+        $description = "The simulation data report and analytics.";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getTrainingReportData($months): array
@@ -164,7 +170,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "Training Overview";
+        $description = "The training progress and analysis.";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getEmailCampaignData($months): array
@@ -201,7 +211,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "Email Campaign Overview";
+        $description = "Email campaign and interaction overview";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getQuishingCampaignData($months): array
@@ -238,7 +252,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "Quishing Campaign Overview";
+        $description = "Quishing campaign and interaction overview";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getAiCampaignData($months): array
@@ -280,7 +298,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "Vishing Campaign Overview";
+        $description = "Vishing campaign and interaction overview";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getTprmCampaignData($months): array
@@ -318,7 +340,11 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "TPRM Campaign Overview";
+        $description = "TPRM campaign and interaction overview";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 
     private function getWhatsappCampaignData($months): array
@@ -356,6 +382,10 @@ class LineDataService
             ];
         }
 
-        return ['data' => $data, 'series' => $series];
+        $title = "WhatsApp Campaign Overview";
+        $description = "WhatsApp campaign and interaction overview";
+
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
 }

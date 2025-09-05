@@ -207,7 +207,7 @@ class CustomisedReportingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Line data retrieved successfully'),
+                'message' => __('Data retrieved successfully'),
                 'data' => $widget->line($type, $months)
             ]);
 
@@ -455,8 +455,26 @@ class CustomisedReportingController extends Controller
 
     public function barData(Request $request)
     {
-        //phishing event overtime
-        return $this->lineData($request, 'bar');
+        try {
+            $type = $request->query('type', 'interaction');
+            $months = $request->query('months', 6);
+            $companyId = Auth::user()->company_id;
+
+            $widget = new WidgetsService($companyId);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Data retrieved successfully'),
+                'data' => $widget->line($type, $months)
+            ]);
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
     public function areaData(Request $request)
     {
