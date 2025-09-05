@@ -14,9 +14,7 @@ class TableDataService
     // $types = [
     //     "employees",
     //     "training_report",
-    //     "scorm_report",
     //     "game_report",
-    //     "campaign_report",
     //     "policy_report"
     // ];
 
@@ -33,12 +31,8 @@ class TableDataService
                 return $this->getEmployeesData($months);
             case "training_report":
                 return $this->getTrainingReportData($months);
-            case "scorm_report":
-                return $this->getScormReportData($months);
             case "game_report":
                 return $this->getGameReportData($months);
-            case "campaign_report":
-                return $this->getCampaignReportData($months);
             case "policy_report":
                 return $this->getPolicyReportData($months);
             default:
@@ -88,30 +82,134 @@ class TableDataService
         return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
     }
 
-    // public function getTrainingReportData($months): array
-    // {
-    //     // Implementation for fetching training report data
-    // }
+    public function getTrainingReportData($months): array
+    {
+        $startDate = now()->subMonths($months)->startOfMonth();
+        $endDate = now()->endOfMonth();
 
-    // public function getScormReportData($months): array
-    // {
-    //     // Implementation for fetching SCORM report data
-    // }
+        $data = [];
+        $keys = ['name', 'email', 'training_assigned', 'training_started', 'training_completed', 'training_overdue', 'completion_rate', 'training_in_progress', 'certified'];
+        $columns = [];
 
-    // public function getGameReportData($months): array
-    // {
-    //     // Implementation for fetching game report data
-    // }
+        $employees = new CompanyReport($this->companyId);
 
-    // public function getCampaignReportData($months): array
-    // {
-    //     // Implementation for fetching campaign report data
-    // }
+        foreach ($employees->employees() as $employee) {
+            $empReport = new EmployeeReport(
+                $employee->user_email,
+                $this->companyId,
+                [$startDate, $endDate]
+            );
+            $data[] = [
+                'name' => $employee->user_name,
+                'email' => $employee->user_email,
+                'training_assigned' => $empReport->assignedTrainings(),
+                'training_started' => $empReport->startedTrainings(),
+                'training_completed' => $empReport->trainingCompleted(),
+                'training_overdue' => $empReport->overdueTrainings(),
+                'completion_rate' => $empReport->trainingCompletionRate(),
+                'training_in_progress' => $empReport->trainingInProgress(),
+                'certified' => $empReport->certifiedTrainings(),
+            ];
+        }
 
-    // public function getPolicyReportData($months): array
-    // {
-    //     // Implementation for fetching policy report data
-    // }
+        foreach ($keys as $key) {
+            $columns[] = [
+                'key' => $key,
+                'label' => ucwords(str_replace('_', ' ', $key)),
+                'sortable' => true
+            ];
+        }
+
+        $title = "Employee Training Report";
+        $description = "This report provides an overview of employee training progress.";
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
+    }
+
+
+
+    public function getGameReportData($months): array
+    {
+
+        $startDate = now()->subMonths($months)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        $data = [];
+        $keys = ['name', 'email', 'assigned_games', 'average_score', 'play_time'];
+        $columns = [];
+
+        $employees = new CompanyReport($this->companyId);
+
+        foreach ($employees->employees() as $employee) {
+            $empReport = new EmployeeReport(
+                $employee->user_email,
+                $this->companyId,
+                [$startDate, $endDate]
+            );
+            $data[] = [
+                'name' => $employee->user_name,
+                'email' => $employee->user_email,
+                'assigned_games' => $empReport->assignedGames(),
+                'average_score' => $empReport->averageGameScore(),
+                'play_time' => $empReport->averageGamePlayTime()
+            ];
+        }
+
+        foreach ($keys as $key) {
+            $columns[] = [
+                'key' => $key,
+                'label' => ucwords(str_replace('_', ' ', $key)),
+                'sortable' => true
+            ];
+        }
+
+        $title = "Game analytics";
+        $description = "This report provides an overview of employee training progress.";
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
+    }
+
+    public function getPolicyReportData($months): array
+    {
+        
+
+        $startDate = now()->subMonths($months)->startOfMonth();
+        $endDate = now()->endOfMonth();
+
+        $data = [];
+        $keys = ['name', 'email', 'policies_assigned', 'accepted', 'quiz_responded'];
+        $columns = [];
+
+        $employees = new CompanyReport($this->companyId);
+
+        foreach ($employees->employees() as $employee) {
+            $empReport = new EmployeeReport(
+                $employee->user_email,
+                $this->companyId,
+                [$startDate, $endDate]
+            );
+            $data[] = [
+                'name' => $employee->user_name,
+                'email' => $employee->user_email,
+                'policies_assigned' => $empReport->policiesAssigned(),
+                'accepted' => $empReport->policiesAccepted(),
+                'quiz_responded' => $empReport->policyQuizResponded()
+            ];
+        }
+
+        foreach ($keys as $key) {
+            $columns[] = [
+                'key' => $key,
+                'label' => ucwords(str_replace('_', ' ', $key)),
+                'sortable' => true
+            ];
+        }
+
+        $title = "Policy Overview";
+        $description = "This report provides an overview of assigned policies to the employees";
+
+        return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
+    }
 
 
 }

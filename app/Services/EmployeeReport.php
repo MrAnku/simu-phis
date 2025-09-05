@@ -6,6 +6,7 @@ use App\Models\Users;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
 use App\Models\AiCallCampLive;
+use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
@@ -289,8 +290,59 @@ class EmployeeReport
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
+        $assignedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
 
-        return $assignedTrainings;
+        return $assignedTrainings + $assignedScorms;
+    }
+
+    public function startedTrainings($email = null): int
+    {
+        $startedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('training_started', 1)
+            ->where('completed', 0)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        $scormStarted = ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('scorm_started', 1)
+            ->where('completed', 0)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        return $startedTrainings + $scormStarted;
+    }
+
+    public function trainingInProgress($email = null): int
+    {
+        $inprogressTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('training_started', 1)
+            ->where('completed', 0)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+        $inprogressScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('scorm_started', 1)
+            ->where('completed', 0)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        return $inprogressTrainings + $inprogressScorms;
     }
 
     public function trainingCompleted($email = null): int
@@ -298,12 +350,61 @@ class EmployeeReport
         $completedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
-            ->count() + ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+        $completedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
 
-        return $completedTrainings;
+        return $completedTrainings + $completedScorms;
+    }
+
+    public function certifiedTrainings($email = null): int
+    {
+        $completedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 1)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+        $completedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 1)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        return $completedTrainings + $completedScorms;
+    }
+
+    public function overdueTrainings($email = null): int
+    {
+        $overdueTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 0)
+            ->where('training_due_date', '<', now())
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+        $overdueScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 0)
+            ->where('scorm_due_date', '<', now())
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        return $overdueTrainings + $overdueScorms;
     }
 
     public function trainingCompletionRate(): float
@@ -408,5 +509,73 @@ class EmployeeReport
         $ignored = $totalSimulations - ($emailViewed + $payloadClicked + $compromised + $emailReported);
 
         return $totalSimulations > 0 ? round(($ignored / $totalSimulations) * 100, 2) : 0;
+    }
+
+    public function assignedGames(): int
+    {
+        return TrainingAssignedUser::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('training_type', 'games')
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })->count();
+    }
+
+    public function averageGameScore(): float
+    {
+        $avg = TrainingAssignedUser::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('training_type', 'games')
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->avg('personal_best') ?? 0;
+
+        return round((float) $avg, 2);
+    }
+
+    public function averageGamePlayTime(): string
+    {
+        $avg = TrainingAssignedUser::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('training_type', 'games')
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->avg('game_time') ?? 0;
+
+        $timeInSeconds = round((float) $avg, 2);
+
+        return round($timeInSeconds / 60, 2) . " minutes";
+    }
+
+    public function policiesAssigned(): int
+    {
+        return AssignedPolicy::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+    }
+    public function policiesAccepted(): int
+    {
+        return AssignedPolicy::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('accepted', 1)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+    }
+    public function policyQuizResponded(): int
+    {
+        return AssignedPolicy::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('json_quiz_response', '!=', null)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
     }
 }
