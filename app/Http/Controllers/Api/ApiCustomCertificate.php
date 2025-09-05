@@ -15,7 +15,6 @@ class ApiCustomCertificate extends Controller
     {
         try {
             $request->validate([
-                'template_id' => 'required|string',
                 'certificate_type' => 'required|string|in:manual,template',
                 'template_html' => 'required|mimes:html',
                 'layout_name' => 'required|string|max:255',
@@ -49,7 +48,6 @@ class ApiCustomCertificate extends Controller
             // Save template info in DB
             $template = CertificateTemplate::create([
                 'company_id' => Auth::user()->company_id,
-                'template_id' => $request->template_id,
                 'certificate_type' => $request->certificate_type,
                 'filepath' => $templatePath,
                 'layout_name' => $request->layout_name,
