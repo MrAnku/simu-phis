@@ -199,8 +199,8 @@ class CustomisedReportingController extends Controller
     public function lineData(Request $request)
     {
         try {
-            $type = $request->query('type');
-            $months = $request->query('months');
+            $type = $request->query('type', 'interaction');
+            $months = $request->query('months', 6);
             $companyId = Auth::user()->company_id;
 
             $widget = new WidgetsService($companyId);
