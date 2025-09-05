@@ -2,6 +2,8 @@
 
 namespace App\Services\CustomisedReport;
 
+use App\Services\CustomisedReport\LineDataService;
+
 class WidgetsService
 {
     protected $companyId;
@@ -22,15 +24,18 @@ class WidgetsService
         return $lineDataService->getData($months);
     }
 
-    public function radial()
+    public function table($type, $months)
     {
-        // Logic for bar data
+        $tableDataService = new TableDataService($type, $this->companyId);
+        return $tableDataService->getData($months);
     }
 
-    public function table()
+    public function radial()
     {
-        // Logic for area data
+        // Logic for radial data
     }
+
+    
 
     public function bubble()
     {

@@ -17,33 +17,35 @@ class EmployeeReport
 {
     private string $email;
     private string $companyId;
+    private array $dateRange; //array
 
-    public function __construct(string $email, string $companyId)
+    public function __construct(string $email, string $companyId, array $dateRange = null)
     {
         $this->email = $email;
         $this->companyId = $companyId;
+        $this->dateRange = $dateRange;
     }
 
-    public function generateReport(): array
-    {
-        return [
-            // Risk Assessment Metrics
-            'overall_risk_score' => $this->calculateOverallRiskScore(),
-            'user_risk_distribution' => $this->calculateUserRiskDistribution(),
+    // public function generateReport(): array
+    // {
+    //     return [
+    //         // Risk Assessment Metrics
+    //         'overall_risk_score' => $this->calculateOverallRiskScore(),
+    //         'user_risk_distribution' => $this->calculateUserRiskDistribution(),
 
-            // Campaign Performance Metrics
-            'click_through_rates' => $this->calculateClickThroughRates(),
-            'email_report_rates' => $this->calculateEmailReportRate(),
-            'compromise_rates' => $this->calculateCompromiseRates(),
+    //         // Campaign Performance Metrics
+    //         'click_through_rates' => $this->calculateClickThroughRates(),
+    //         'email_report_rates' => $this->calculateEmailReportRate(),
+    //         'compromise_rates' => $this->calculateCompromiseRates(),
 
-            // Training Analytics
-            'training_completion_rates' => $this->calculateTrainingCompletionRates(),
-            // 'knowledge_retention_scores' => $this->calculateKnowledgeRetention(),
-            // 'training_effectiveness' => $this->calculateTrainingEffectiveness(),
-            'certification_progress' => $this->calculateCertificationProgress(),
+    //         // Training Analytics
+    //         'training_completion_rates' => $this->calculateTrainingCompletionRates(),
+    //         // 'knowledge_retention_scores' => $this->calculateKnowledgeRetention(),
+    //         // 'training_effectiveness' => $this->calculateTrainingEffectiveness(),
+    //         'certification_progress' => $this->calculateCertificationProgress(),
 
-        ];
-    }
+    //     ];
+    // }
 
     // Risk Assessment Methods
     public function calculateOverallRiskScore(): float
@@ -64,146 +66,34 @@ class EmployeeReport
     }
 
 
-    private function calculateUserRiskDistribution(): array
-    {
-        $payloadClicked = $this->payloadClicked();
-        $emailReported = $this->emailReported();
-        $emailViewed = $this->emailViewed();
-        $compromised = $this->compromised();
-
-        // Calculate risk level based on metrics
-        $riskScore = $this->calculateOverallRiskScore();
-
-        // Determine risk category
-        if ($riskScore >= 5) {
-            $riskLevel = 'high';
-        } elseif ($riskScore >= 2) {
-            $riskLevel = 'medium';
-        } else {
-            $riskLevel = 'low';
-        }
-
-        return [
-            'risk_score' => round($riskScore, 2),
-            'risk_level' => $riskLevel,
-            'metrics' => [
-                'payload_clicked' => $payloadClicked,
-                'email_reported' => $emailReported,
-                'email_viewed' => $emailViewed,
-                'compromised' => $compromised
-            ],
-            'risk_factors' => [
-                'high_payload_clicks' => $payloadClicked >= 3,
-                'low_reporting_rate' => $emailReported < 2,
-                'multiple_compromises' => $compromised >= 2,
-                'high_engagement' => $emailViewed >= 5
-            ]
-        ];
-    }
-
-
-
-    private function calculateClickThroughRates(): array
-    {
-        $ctrByDepartment = [];
-        $usersGroups = UsersGroup::where('company_id', $this->companyId)->get();
-        foreach ($usersGroups as $group) {
-            $ctrByDepartment['group_name'] = $group->group_name;
-            $ctrByDepartment['total_clicks'] = $this->clicksByUsersGroup($group->group_id);
-            $ctrByDepartment['click_rate'] = $this->clickRateByUsersGroup($group->group_id);
-        }
-        return [
-            'overall_ctr' => $this->clickRate(),
-            'by_campaign_type' => [
-                'email' => $this->clickRate('email'),
-                'quishing' => $this->clickRate('quishing'),
-                'ai' => $this->clickRate('ai'),
-                'whatsapp' => $this->clickRate('whatsapp')
-            ],
-            'by_department' => $ctrByDepartment,
-            'trend' => $this->checkCtrTrend(),
-            'highest_risk_type' => $this->checkHighestRiskType()
-        ];
-    }
-
-    private function calculateEmailReportRate(): array
-    {
-        return [
-            'overall_reporting_rate' => 58.7,
-            'by_threat_type' => [
-                'email' => 68.9, // Most familiar to users
-                'quishing' => 42.3, // Lower awareness
-                'ai' => 38.1, // Hardest to detect
-                'whatsapp' => 55.2
-            ],
-            'by_department' => [
-                'IT' => ['email' => 82.1, 'quishing' => 65.3, 'ai' => 58.7, 'whatsapp' => 71.2],
-                'Finance' => ['email' => 72.5, 'quishing' => 38.9, 'ai' => 32.1, 'whatsapp' => 52.8],
-                'HR' => ['email' => 65.2, 'quishing' => 41.7, 'ai' => 35.9, 'whatsapp' => 54.3],
-                'Sales' => ['email' => 61.8, 'quishing' => 39.2, 'ai' => 33.7, 'whatsapp' => 48.9]
-            ],
-            'average_response_time' => [
-                'email' => '3.8 minutes',
-                'quishing' => '8.2 minutes',
-                'ai' => '12.5 minutes',
-                'whatsapp' => '6.1 minutes'
-            ],
-            'improvement_trend' => 14.3
-        ];
-    }
-
-    private function calculateCompromiseRates(): array
-    {
-        return [
-            'overall_compromise_rate' => $this->compromiseRate(),
-            'compromised' => $this->compromised()
-        ];
-    }
-
-    // Training Analytics Methods
-    private function calculateTrainingCompletionRates(): array
-    {
-        return [
-            'overall_completion' => $this->trainingCompletionRate(),
-            'trainings' => $this->assignedTrainingNames(),
-            'assigned_scorm' => $this->assignedScormNames(),
-            'training_completed_on_time' => [
-                "training" => $this->onTimeTrainingCompleted(),
-                "scorm" => $this->onTimeScormCompleted(),
-            ],
-            'average_completion_time' => [
-                "training" => $this->averageTrainingCompletionTime(),
-                "scorm" => $this->averageScormCompletionTime(),
-            ],
-        ];
-    }
-
-    private function calculateCertificationProgress(): array
-    {
-        return [
-            'total_certifications' => $this->totalCertificates(),
-            'certified_trainings' => $this->certifiedTrainings(),
-            'certified_scorm' => $this->certifiedScorm()
-        ];
-    }
-
-
     public function payloadClicked($email = null): int
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('payload_clicked', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('qr_scanned', '1')
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('payload_clicked', 1)
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('compromised', 1)
             ->count();
 
@@ -214,18 +104,30 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('emp_compromised', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('compromised', '1')
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('compromised', 1)
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('compromised', 1)
             ->count();
 
@@ -244,10 +146,16 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('email_reported', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('email_reported', '1')
             ->count();
 
@@ -258,10 +166,16 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('mail_open', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->where('mail_open', '1')
             ->count();
 
@@ -272,15 +186,27 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
 
         return $email + $quishing + $whatsapp + $ai;
@@ -355,323 +281,13 @@ class EmployeeReport
         }
     }
 
-    public function previousMonthClickRate($campaign = null): int
-    {
-        $lastMonth = now()->subMonth();
-        $startOfLastMonth = $lastMonth->startOfMonth();
-        $endOfLastMonth = $lastMonth->endOfMonth();
-
-        if ($campaign) {
-            // Campaign-wise click rate calculation for last month
-            switch (strtolower($campaign)) {
-                case 'email':
-                    $totalEmails = CampaignLive::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    $clickedEmails = CampaignLive::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('payload_clicked', 1)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    return $totalEmails > 0 ? round(($clickedEmails / $totalEmails) * 100) : 0;
-
-                case 'quishing':
-                    $totalQuishing = QuishingLiveCamp::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    $scannedQuishing = QuishingLiveCamp::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('qr_scanned', '1')
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    return $totalQuishing > 0 ? round(($scannedQuishing / $totalQuishing) * 100) : 0;
-
-                case 'whatsapp':
-                    $totalWhatsapp = WaLiveCampaign::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    $clickedWhatsapp = WaLiveCampaign::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('payload_clicked', 1)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    return $totalWhatsapp > 0 ? round(($clickedWhatsapp / $totalWhatsapp) * 100) : 0;
-
-                case 'ai':
-                    $totalAi = AiCallCampLive::where('employee_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    $compromisedAi = AiCallCampLive::where('employee_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('compromised', 1)
-                        ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                        ->count();
-                    return $totalAi > 0 ? round(($compromisedAi / $totalAi) * 100) : 0;
-
-                default:
-                    return 0;
-            }
-        } else {
-            // Overall click rate calculation for last month
-            $totalCampaigns = CampaignLive::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + QuishingLiveCamp::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + WaLiveCampaign::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + AiCallCampLive::where('employee_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count();
-
-            $totalClicks = CampaignLive::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('payload_clicked', 1)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + QuishingLiveCamp::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('qr_scanned', '1')
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + WaLiveCampaign::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('payload_clicked', 1)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count()
-                + AiCallCampLive::where('employee_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('compromised', 1)
-                ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-                ->count();
-
-            return $totalCampaigns > 0 ? round(($totalClicks / $totalCampaigns) * 100) : 0;
-        }
-    }
-
-    public function currentMonthClickRate($campaign = null): int
-    {
-        $currentMonth = now();
-        $startOfCurrentMonth = $currentMonth->startOfMonth();
-        $endOfCurrentMonth = $currentMonth->endOfMonth();
-
-        if ($campaign) {
-            // Campaign-wise click rate calculation for current month
-            switch (strtolower($campaign)) {
-                case 'email':
-                    $totalEmails = CampaignLive::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    $clickedEmails = CampaignLive::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('payload_clicked', 1)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    return $totalEmails > 0 ? round(($clickedEmails / $totalEmails) * 100) : 0;
-
-                case 'quishing':
-                    $totalQuishing = QuishingLiveCamp::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    $scannedQuishing = QuishingLiveCamp::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('qr_scanned', '1')
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    return $totalQuishing > 0 ? round(($scannedQuishing / $totalQuishing) * 100) : 0;
-
-                case 'whatsapp':
-                    $totalWhatsapp = WaLiveCampaign::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    $clickedWhatsapp = WaLiveCampaign::where('user_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('payload_clicked', 1)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    return $totalWhatsapp > 0 ? round(($clickedWhatsapp / $totalWhatsapp) * 100) : 0;
-
-                case 'ai':
-                    $totalAi = AiCallCampLive::where('employee_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    $compromisedAi = AiCallCampLive::where('employee_email', $this->email)
-                        ->where('company_id', $this->companyId)
-                        ->where('compromised', 1)
-                        ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                        ->count();
-                    return $totalAi > 0 ? round(($compromisedAi / $totalAi) * 100) : 0;
-
-                default:
-                    return 0;
-            }
-        } else {
-            // Overall click rate calculation for current month
-            $totalCampaigns = CampaignLive::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + QuishingLiveCamp::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + WaLiveCampaign::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + AiCallCampLive::where('employee_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count();
-
-            $totalClicks = CampaignLive::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('payload_clicked', 1)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + QuishingLiveCamp::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('qr_scanned', '1')
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + WaLiveCampaign::where('user_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('payload_clicked', 1)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count()
-                + AiCallCampLive::where('employee_email', $this->email)
-                ->where('company_id', $this->companyId)
-                ->where('compromised', 1)
-                ->whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])
-                ->count();
-
-            return $totalCampaigns > 0 ? round(($totalClicks / $totalCampaigns) * 100) : 0;
-        }
-    }
-
-    public function checkHighestRiskType(): string
-    {
-        $clickRates = [
-            'Email Phishing' => $this->clickRate('email'),
-            'Quishing' => $this->clickRate('quishing'),
-            'AI Vishing' => $this->clickRate('ai'),
-            'WhatsApp Simulation' => $this->clickRate('whatsapp')
-        ];
-
-        arsort($clickRates);
-        return key($clickRates);
-    }
-
-    public function checkCtrTrend(): string
-    {
-        $currentCtr = $this->currentMonthClickRate();
-        $previousCtr = $this->previousMonthClickRate();
-
-        if ($currentCtr > $previousCtr) {
-            return 'increasing';
-        } elseif ($currentCtr < $previousCtr) {
-            return 'decreasing';
-        } else {
-            return 'stable';
-        }
-    }
-
-    public function clickRateByUsersGroup($groupId = null): int
-    {
-        if ($groupId) {
-            // Calculate click rate for specific group
-            $usersGroup = UsersGroup::where('company_id', $this->companyId)
-                ->where('group_id', $groupId)
-                ->first();
-        } else {
-            $usersGroup = UsersGroup::where('company_id', $this->companyId)
-                ->first();
-        }
-
-        if (!$usersGroup) {
-            return 0;
-        }
-
-        // Get users in this group
-        $usersIds = json_decode($usersGroup->users, true) ?? [];
-
-        if (empty($usersIds)) {
-            return 0;
-        }
-
-        $totalCampaigns = 0;
-        $totalClicks = 0;
-
-        $userEmails = Users::whereIn('id', $usersIds)->where('company_id', $this->companyId)->pluck('user_email')->toArray();
-
-        $usersCampaign = 0;
-        $usersClicks = 0;
-        foreach ($userEmails as $email) {
-            $usersCampaign += $this->totalSimulations($email);
-            $usersClicks += $this->payloadClicked($email);
-        }
-
-        $totalCampaigns += $usersCampaign;
-        $totalClicks += $usersClicks;
-
-        $clickRate = $totalCampaigns > 0 ? round(($totalClicks / $totalCampaigns) * 100) : 0;
-
-
-        return $clickRate;
-    }
-
-    public function clicksByUsersGroup($groupId = null): int
-    {
-        if ($groupId) {
-            // Calculate click rate for specific group
-            $usersGroup = UsersGroup::where('company_id', $this->companyId)
-                ->where('group_id', $groupId)
-                ->first();
-        } else {
-            $usersGroup = UsersGroup::where('company_id', $this->companyId)
-                ->first();
-        }
-
-        if (!$usersGroup) {
-            return 0;
-        }
-
-        // Get users in this group
-        $usersIds = json_decode($usersGroup->users, true) ?? [];
-
-        if (empty($usersIds)) {
-            return 0;
-        }
-
-        $totalClicks = 0;
-
-        $userEmails = Users::whereIn('id', $usersIds)->where('company_id', $this->companyId)->pluck('user_email')->toArray();
-
-        foreach ($userEmails as $email) {
-            $totalClicks += $this->payloadClicked($email);
-        }
-
-        return $totalClicks;
-    }
-
     public function assignedTrainings($email = null): int
     {
         $assignedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
+            ->when($this->dateRange, function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
             ->count();
 
         return $assignedTrainings;
@@ -698,30 +314,6 @@ class EmployeeReport
         return $assignedTrainings > 0 ? round(($completedTraining / $assignedTrainings) * 100, 2) : 0;
     }
 
-    public function assignedTrainingNames($email = null): array
-    {
-        $trainingIds = TrainingAssignedUser::where('user_email', $email ?? $this->email)
-            ->where('company_id', $this->companyId)
-            ->pluck('training')
-            ->toArray();
-        $trainingNames = TrainingModule::whereIn('id', $trainingIds)->pluck('name')->toArray();
-
-
-
-        return $trainingNames;
-    }
-
-    public function assignedScormNames($email = null): array
-    {
-        $scormIds = ScormAssignedUser::where('user_email', $email ?? $this->email)
-            ->where('company_id', $this->companyId)
-            ->pluck('scorm')
-            ->toArray();
-        $scormNames = ScormTraining::whereIn('id', $scormIds)->pluck('name')->toArray();
-
-        return $scormNames;
-    }
-
     public function onTimeTrainingCompleted(): int
     {
         $onTimeTrainings = 0;
@@ -742,33 +334,6 @@ class EmployeeReport
         }
 
         return $onTimeTrainings;
-    }
-
-    public function averageTrainingCompletionTime(): string
-    {
-        $totalDays = 0;
-        $completedCount = 0;
-
-        $completedTrainings = TrainingAssignedUser::where('user_email', $this->email)
-            ->where('company_id', $this->companyId)
-            ->where('completed', 1)
-            ->get();
-
-        foreach ($completedTrainings as $training) {
-            if ($training->assigned_date && $training->completion_date) {
-                $assignedDate = \Carbon\Carbon::parse($training->assigned_date);
-                $completionDate = \Carbon\Carbon::parse($training->completion_date);
-                $totalDays += $assignedDate->diffInDays($completionDate);
-                $completedCount++;
-            }
-        }
-
-        if ($completedCount === 0) {
-            return 'N/A';
-        }
-
-        $averageDays = round($totalDays / $completedCount);
-        return $averageDays . ' days';
     }
 
     public function onTimeScormCompleted(): int
@@ -833,27 +398,15 @@ class EmployeeReport
         return $totalCertificates;
     }
 
-    public function certifiedTrainings(): array
+    public function ignoreRate(): float
     {
-        $trainingIds = TrainingAssignedUser::where('user_email', $this->email)
-            ->where('company_id', $this->companyId)
-            ->where('certificate_id', '!=', null)
-            ->pluck('training')
-            ->toArray();
-        $trainingNames = TrainingModule::whereIn('id', $trainingIds)->pluck('name')->toArray();
+        $totalSimulations = $this->totalSimulations();
+        $emailViewed = $this->emailViewed();
+        $payloadClicked = $this->payloadClicked();
+        $compromised = $this->compromised();
+        $emailReported = $this->emailReported();
+        $ignored = $totalSimulations - ($emailViewed + $payloadClicked + $compromised + $emailReported);
 
-        return $trainingNames;
-    }
-
-    public function certifiedScorm(): array
-    {
-        $scormIds = ScormAssignedUser::where('user_email', $this->email)
-            ->where('company_id', $this->companyId)
-            ->where('certificate_id', '!=', null)
-            ->pluck('scorm')
-            ->toArray();
-        $scormNames = ScormTraining::whereIn('id', $scormIds)->pluck('name')->toArray();
-
-        return $scormNames;
+        return $totalSimulations > 0 ? round(($ignored / $totalSimulations) * 100, 2) : 0;
     }
 }

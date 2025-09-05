@@ -2,17 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\AiCallCampaign;
+use App\Models\Users;
 use App\Models\Campaign;
+use App\Models\WaCampaign;
 use App\Models\CampaignLive;
-use App\Models\AiCallCampLive;
 use App\Models\QuishingCamp;
+use App\Models\TprmCampaign;
+use App\Models\AiCallCampaign;
+use App\Models\AiCallCampLive;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
-use App\Models\TprmCampaign;
 use App\Models\TrainingAssignedUser;
-use App\Models\WaCampaign;
 
 class CompanyReport
 {
@@ -21,6 +22,14 @@ class CompanyReport
     public function __construct($companyId)
     {
         $this->companyId = $companyId;
+    }
+
+    public function employees(): object
+    {
+        return Users::where('company_id', $this->companyId)
+            ->get()
+            ->unique('user_email')
+            ->values();
     }
 
     // Risk Assessment Methods

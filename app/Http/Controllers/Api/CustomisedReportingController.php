@@ -212,151 +212,30 @@ class CustomisedReportingController extends Controller
             ]);
 
 
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 
-            // $title = '';
-            // $description = '';
+    public function tableData(Request $request)
+    {
+          try {
+            $type = $request->query('type', 'employees');
+            $months = $request->query('months', 2);
+            $companyId = Auth::user()->company_id;
 
-            // // Get last 6 months including current month
-            // $months = [];
-            // for ($i = 5; $i >= 0; $i--) {
-            //     $start = now()->subMonths($i)->startOfMonth()->format('Y-m-d');
-            //     $end = now()->subMonths($i)->endOfMonth()->format('Y-m-d');
-            //     $monthLabel = now()->subMonths($i)->format('M Y');
-            //     $months[] = [
-            //         'month' => $monthLabel,
-            //         'start' => $start,
-            //         'end' => $end
-            //     ];
-            // }
+            $widget = new WidgetsService($companyId);
 
-            // $phishing_events_overtime = [];
-
-            // foreach ($months as $m) {
-            //     $clickRate = 0;
-            //     $reportRate = 0;
-            //     $ignoreRate = 0;
-
-            //     if ($type === 'email') {
-            //         $clickRate = CampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('emp_compromised', 1)
-            //             ->count();
-
-            //         $reportRate = CampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('email_reported', 1)
-            //             ->count();
-
-            //         $ignoreRate = CampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('payload_clicked', 0)
-            //             ->count();
-
-            //         $title = 'Email Phishing Campaigns';
-            //         $description = __('Phishing events over time for email campaigns');
-            //     } elseif ($type === 'quishing') {
-            //         $clickRate = QuishingLiveCamp::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('compromised', '1')
-            //             ->count();
-
-            //         $reportRate = QuishingLiveCamp::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('email_reported', '1')
-            //             ->count();
-
-            //         $ignoreRate = QuishingLiveCamp::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('qr_scanned', '0')
-            //             ->count();
-
-            //         $title = 'Quishing Campaigns';
-            //         $description = __('Phishing events over time for quishing campaigns');
-            //     } elseif ($type === 'tprm') {
-            //         // Fetch TPRM campaign data
-            //         $clickRate = TprmCampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('emp_compromised', 1)
-            //             ->count();
-
-            //         $reportRate = TprmCampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('email_reported', 1)
-            //             ->count();
-
-            //         $ignoreRate = TprmCampaignLive::where('company_id', $companyId)
-            //             ->whereBetween('created_at', [$m['start'], $m['end']])
-            //             ->where('payload_clicked', 0)
-            //             ->count();
-
-            //         $title = 'TPRM Campaigns';
-            //         $description = __('Phishing events over time for TPRM campaigns');
-            //     }
-
-            //     $phishing_events_overtime[] = [
-            //         'month' => $m['month'],
-            //         'clicked' => $clickRate,
-            //         'targetClicked' => 5,
-            //         'reported' => $reportRate,
-            //         'targetReported' => 40,
-            //         'ignored' => $ignoreRate,
-            //         'targetIgnored' => 55
-            //     ];
-            // }
+            return response()->json([
+                'success' => true,
+                'message' => __('Table data retrieved successfully'),
+                'data' => $widget->table($type, $months)
+            ]);
 
 
-            // $series = [
-            //     [
-            //         'key' => 'clickRate',
-            //         'label' => 'Click Rate',
-            //         'color' => '#ef4444',
-            //         'type' => $chartType
-            //     ],
-            //     [
-            //         'key' => 'targetClickRate',
-            //         'label' => 'Target Click Rate',
-            //         'color' => '#f472b4',
-            //         'type' => $chartType
-            //     ],
-            //     [
-            //         'key' => 'reportRate',
-            //         'label' => 'Report Rate',
-            //         'color' => '#3b82f6',
-            //         'type' => $chartType
-            //     ],
-            //     [
-            //         'key' => 'targetReportRate',
-            //         'label' => 'Target Report Rate',
-            //         'color' => '#93c5fd',
-            //         'type' => $chartType
-            //     ],
-            //     [
-            //         'key' => 'ignoreRate',
-            //         'label' => 'Ignore Rate',
-            //         'color' => '#f97316',
-            //         'type' => $chartType
-            //     ],
-            //     [
-            //         'key' => 'targetIgnoreRate',
-            //         'label' => 'Target Ignore Rate',
-            //         'color' => '#fdba74',
-            //         'type' => $chartType
-            //     ],
-            // ];
-
-            // return response()->json([
-            //     'success' => true,
-            //     'message' => __('Data retrieved successfully'),
-            //     'data' => [
-            //         'title' => $title,
-            //         'description' => $description,
-            //         'data' => $phishing_events_overtime,
-            //         'series' => $series,
-            //         'reportFormData' => [
-            //             'simulationsPeriod' => 6
-            //         ]
-            //     ]
-            // ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -585,94 +464,5 @@ class CustomisedReportingController extends Controller
         return $this->lineData($request, 'area');
     }
 
-    public function tableData(Request $request)
-    {
-        try {
-            $type = $request->query('type');
-            $companyId = Auth::user()->company_id;
-            $title = '';
-            $description = '';
-            $columns = [];
-
-            if ($type === 'employees') {
-                $users = Users::where('company_id', $companyId)->distinct('user_email')->get();
-                $data = [];
-
-                foreach ($users as $user) {
-                    // Campaigns ran (sum from all sources)
-                    $campaignsRan =
-                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
-                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
-                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->count() +
-                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->count();
-
-                    // Compromised count (sum from all sources)
-                    $compromisedCount =
-                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('emp_compromised', 1)->count() +
-                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', '1')->count() +
-                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('compromised', 1)->count() +
-                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 1)->count();
-
-                    $compromisedRate = $campaignsRan > 0 ? round(($compromisedCount / $campaignsRan) * 100, 2) : 0;
-
-                    // Ignore count (sum from all sources)
-                    $ignoredCount =
-                        CampaignLive::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
-                        QuishingLiveCamp::where('company_id', $companyId)->where('user_email', $user->user_email)->where('qr_scanned', '0')->count() +
-                        WaLiveCampaign::where('company_id', $companyId)->where('user_email', $user->user_email)->where('payload_clicked', 0)->count() +
-                        AiCallCampLive::where('company_id', $companyId)->where('employee_email', $user->user_email)->where('compromised', 0)->count();
-
-                    $ignoreRate = $campaignsRan > 0 ? round(($ignoredCount / $campaignsRan) * 100, 2) : 0;
-
-                    // Risk score (example: compromised rate + ignore rate, capped at 100)
-                    $riskScore = min($compromisedRate + $ignoreRate, 100);
-
-                    // Trainings assigned
-                    $trainingsAssigned = TrainingAssignedUser::where('company_id', $companyId)
-                        ->where('user_email', $user->user_email)
-                        ->count();
-
-                    $data[] = [
-                        'name' => $user->user_name,
-                        'email' => $user->user_email,
-                        'campaigns_ran' => $campaignsRan,
-                        'compromised_rate' => $compromisedRate,
-                        'risk_score' => $riskScore,
-                        'ignore_rate' => $ignoreRate,
-                        'trainings_assigned' => $trainingsAssigned,
-                    ];
-
-                    $title = 'Employees';
-                    $description = __('Employee table data with campaigns, compromised rates, and risk scores');
-                }
-
-                $columns = [
-                    ['key' => 'name', 'label' => 'NAME', 'sortable' => true],
-                    ['key' => 'email', 'label' => 'EMAIL', 'sortable' => true],
-                    ['key' => 'campaigns_ran', 'label' => 'CAMPAIGNS RAN', 'sortable' => true],
-                    ['key' => 'compromised_rate', 'label' => 'COMPROMISED RATE', 'sortable' => true],
-                    ['key' => 'risk_score', 'label' => 'RISK SCORE', 'sortable' => true],
-                    ['key' => 'ignore_rate', 'label' => 'IGNORE RATE', 'sortable' => true],
-                    ['key' => 'trainings_assigned', 'label' => 'TRAININGS ASSIGNED', 'sortable' => true],
-                ];
-
-
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Employee table data retrieved successfully'),
-                    'data' => [
-                        'title' => $title,
-                        'description' => $description,
-                        'columns' => $columns,
-                        'data' => $data
-                    ]
-                ]);
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
-            ], 500);
-        }
-    }
+    
 }

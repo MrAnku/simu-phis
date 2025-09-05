@@ -29,7 +29,6 @@ use App\Models\PhishingWebsite;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WhatsappCampaign;
-use App\Services\EmployeeReport;
 use App\Models\ScormAssignedUser;
 use Illuminate\Http\JsonResponse;
 use App\Models\BlueCollarEmployee;

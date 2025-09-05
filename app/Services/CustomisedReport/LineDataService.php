@@ -2,8 +2,6 @@
 
 namespace App\Services\CustomisedReport;
 
-use App\Models\TprmCampaignReport;
-use Carbon\Carbon;
 use App\Services\CompanyReport;
 use App\Services\Simulations\EmailCampReport;
 use App\Services\Simulations\QuishingCampReport;
