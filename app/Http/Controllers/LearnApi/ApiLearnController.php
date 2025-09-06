@@ -25,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
 {
-     protected $normalEmpLearnService;
+    protected $normalEmpLearnService;
 
     public function __construct()
     {
@@ -316,7 +316,7 @@ class ApiLearnController extends Controller
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
-                
+
                 // Assign Grade based on score
                 assignGrade($rowData, $request->trainingScore);
 
@@ -338,6 +338,17 @@ class ApiLearnController extends Controller
                 if ($request->trainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    // Audit log
+                    $auditLogs = [
+                        'company_id'    => $rowData->company_id,
+                        'user_email'    => $user,
+                        'user_whatsapp' => null,
+                        'action'        => 'TRAINING_COMPLETED',
+                        'description'   => "User {$user} completed training '{$rowData->trainingData->name}'.",
+                        'user_type'     => 'normal',
+                    ];
+                    audit_log($auditLogs);
 
                     $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $rowData->user_email)
                         ->where('completed', 1)->count();

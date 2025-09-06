@@ -8,7 +8,9 @@ class AuditLog extends Model
 {
     protected $fillable = [
         'company_id',
-        'user_id',
+        'user_email',
+        'user_whatsapp',
+        'user_type',
         'action',
         'description',
         'ip_address',

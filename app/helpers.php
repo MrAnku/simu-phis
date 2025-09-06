@@ -1051,17 +1051,17 @@ if (!function_exists('assignBadge')) {
 
 if (!function_exists('audit_log')) {
 
-    function audit_log($action, $description = null, $userType = null)
+    function audit_log($log)
     {
-        $user = Auth::user();
         AuditLog::create([
-            'company_id' => $user->company_id,
-            'user_id' => $user->id,
-            'user_type' => $userType,
-            'action' => $action,
-            'description' => $description,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
+            'company_id'    => $log['company_id'],
+            'user_email'    => $log['user_email']    ?? null,
+            'user_whatsapp' => $log['user_whatsapp'] ?? null,
+            'user_type'     => $log['user_type'],
+            'action'        => $log['action'] ?? null,
+            'description'   => $log['description']   ?? null,
+            'ip_address'    => request()->ip(),
+            'user_agent'    => request()->header('User-Agent'),
         ]);
     }
 }
