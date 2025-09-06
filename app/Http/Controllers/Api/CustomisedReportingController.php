@@ -449,8 +449,26 @@ class CustomisedReportingController extends Controller
 
     public function mixedData(Request $request)
     {
-        //phishing event overtime
-        return $this->lineData($request, 'mixed');
+        try {
+            $type = $request->query('type', 'interaction');
+            $months = $request->query('months', 6);
+            $companyId = Auth::user()->company_id;
+
+            $widget = new WidgetsService($companyId);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Data retrieved successfully'),
+                'data' => $widget->line($type, $months)
+            ]);
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function barData(Request $request)
@@ -478,8 +496,26 @@ class CustomisedReportingController extends Controller
     }
     public function areaData(Request $request)
     {
-        //phishing event overtime
-        return $this->lineData($request, 'area');
+        try {
+            $type = $request->query('type', 'interaction');
+            $months = $request->query('months', 6);
+            $companyId = Auth::user()->company_id;
+
+            $widget = new WidgetsService($companyId);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Data retrieved successfully'),
+                'data' => $widget->line($type, $months)
+            ]);
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 
     

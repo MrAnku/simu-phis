@@ -355,13 +355,13 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
 
         //get routes
         Route::get('/card', [CustomisedReportingController::class, 'cardData']);
-        Route::get('/line', [CustomisedReportingController::class, 'lineData']);
-        Route::get('/bar', [CustomisedReportingController::class, 'barData']);
-        Route::get('/area', [CustomisedReportingController::class, 'areaData']);
+        Route::get('/line', [CustomisedReportingController::class, 'lineData']); //common
+        Route::get('/bar', [CustomisedReportingController::class, 'barData']); //common
+        Route::get('/radialbar', [CustomisedReportingController::class, 'radialbarData']); //common
+        Route::get('/mixed', [CustomisedReportingController::class, 'mixedData']); //common
         Route::get('/table', [CustomisedReportingController::class, 'tableData']);
-        Route::get('/radialbar', [CustomisedReportingController::class, 'radialbarData']);
+        Route::get('/area', [CustomisedReportingController::class, 'areaData']);
         Route::get('/bubble', [CustomisedReportingController::class, 'bubbleData']);
-        Route::get('/mixed', [CustomisedReportingController::class, 'mixedData']);
 
     });
 
