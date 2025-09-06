@@ -14,6 +14,7 @@ use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
+use App\Models\UsersGroup;
 
 class CompanyReport
 {
@@ -30,6 +31,12 @@ class CompanyReport
             ->get()
             ->unique('user_email')
             ->values();
+    }
+
+    public function userGroups(): object
+    {
+        return UsersGroup::where('company_id', $this->companyId)
+            ->get();
     }
 
     // Risk Assessment Methods

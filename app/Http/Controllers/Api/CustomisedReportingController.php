@@ -348,7 +348,7 @@ class CustomisedReportingController extends Controller
     public function bubbleData(Request $request)
     {
          try {
-            $type = $request->query('type', 'interaction');
+            $type = $request->query('type', 'division_report');
             $months = $request->query('months', 6);
             $companyId = Auth::user()->company_id;
 
@@ -357,7 +357,7 @@ class CustomisedReportingController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Data retrieved successfully'),
-                'data' => $widget->line($type, $months)
+                'data' => $widget->bubble($type, $months)
             ]);
 
 

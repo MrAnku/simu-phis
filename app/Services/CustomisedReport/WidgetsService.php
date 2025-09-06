@@ -3,6 +3,7 @@
 namespace App\Services\CustomisedReport;
 
 use App\Services\CustomisedReport\LineDataService;
+use App\Services\CustomisedReport\BubbleDataService;
 
 class WidgetsService
 {
@@ -37,9 +38,10 @@ class WidgetsService
 
     
 
-    public function bubble()
+    public function bubble($type, $months)
     {
-        // Logic for table data
+        $bubbleDataService = new BubbleDataService($type, $this->companyId);
+        return $bubbleDataService->getData($months);
     }
 
 }
