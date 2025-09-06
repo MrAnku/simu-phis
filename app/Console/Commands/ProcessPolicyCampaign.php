@@ -45,10 +45,10 @@ class ProcessPolicyCampaign extends Command
     private function processScheduledCampaigns()
     {
         $companies = DB::table('company')
-        ->where('approved', 1)
-        ->where('service_status', 1)
-        ->where('role', null)
-        ->get();
+            ->where('approved', 1)
+            ->where('service_status', 1)
+            ->where('role', null)
+            ->get();
 
 
         if ($companies->isEmpty()) {
@@ -110,6 +110,17 @@ class ProcessPolicyCampaign extends Command
                     'policy' => $campaign->policy,
                     'company_id' => $campaign->company_id,
                 ]);
+
+                // Audit log
+                $auditLogs = [
+                    'company_id'    => $campaign->company_id,
+                    'user_email'    => $user->user_email,
+                    'user_whatsapp' => null,
+                    'action'        => 'POLICY CAMPAIGN LAUNCHED',
+                    'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    'user_type'     => 'normal',
+                ];
+                audit_log($auditLogs);
             }
 
             echo 'Policy Campaign is live' . "\n";

@@ -540,6 +540,17 @@ class ApiAiCallController extends Controller
                         'status' => 'pending',
                         'company_id' => $campaign->company_id,
                     ]);
+
+                    // Audit log
+                    $auditLogs = [
+                        'company_id'    => $campaign->company_id,
+                        'user_email'    => $user->user_email,
+                        'user_whatsapp' => $user->whatsapp,
+                        'action'        => 'AI CAMPAIGN LAUNCHED',
+                        'description' => "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
+                        'user_type'     => 'normal',
+                    ];
+                    audit_log($auditLogs);
                 }
             }
         }

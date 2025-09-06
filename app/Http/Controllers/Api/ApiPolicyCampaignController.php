@@ -66,6 +66,17 @@ class ApiPolicyCampaignController extends Controller
                         'policy' => $campaign->policy,
                         'company_id' => Auth::user()->company_id,
                     ]);
+
+                    // Audit log
+                    $auditLogs = [
+                        'company_id'    => Auth::user()->company_id,
+                        'user_email'    => $user->user_email,
+                        'user_whatsapp' => null,
+                        'action'        => 'POLICY CAMPAIGN LAUNCHED',
+                        'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                        'user_type'     => 'normal',
+                    ];
+                    audit_log($auditLogs);
                 }
             }
             // log_action("Policy campaign created for company: " . Auth::user()->company_id);

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('company_id');
             $table->string('user_email')->nullable();
-            $table->integer('user_whatsapp')->nullable();
+            $table->bigInteger('user_whatsapp')->nullable();
             $table->string('user_type');
             $table->string('action');
             $table->text('description')->nullable();

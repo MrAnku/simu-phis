@@ -136,6 +136,17 @@ class ProcessCampaigns extends Command
           'campaign_live_id' => $camp_live->id,
           'company_id' => $campaign->company_id,
         ]);
+
+        // Audit log
+        $auditLogs = [
+          'company_id'    => $campaign->company_id,
+          'user_email'    => $user->user_email,
+          'user_whatsapp' => null,
+          'action'        => 'EMAIL CAMPAIGN LAUNCHED',
+          'description'   => "'$campaign->campaign_name' shoot to {$user->user_email}",
+          'user_type'     => 'normal',
+        ];
+        audit_log($auditLogs);
       }
 
       // Update the campaign status to 'running'

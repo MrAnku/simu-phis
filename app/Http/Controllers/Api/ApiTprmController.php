@@ -338,6 +338,17 @@ class ApiTprmController extends Controller
                     'campaign_live_id' => $camp_live->id,
                     'company_id' => $companyId,
                 ]);
+
+                // Audit log
+                $auditLogs = [
+                    'company_id'    => $companyId,
+                    'user_email'    => $user->user_email,
+                    'user_whatsapp' => null,
+                    'action'        => 'TPRM CAMPAIGN LAUNCHED',
+                    'description' => "'{$campName}' shoot to {$user->user_email}",
+                    'user_type'     => 'tprm',
+                ];
+                audit_log($auditLogs);
             }
 
             TprmCampaign::create([
@@ -697,7 +708,7 @@ class ApiTprmController extends Controller
                             $company_license->increment('used_tprm_employees');
                         }
                     }
-                    
+
                     $tprmUsers = new TprmUsers();
                     $tprmUsers->group_id = $existingGroup ? $existingGroup->group_id : $tprmGroup->group_id;
                     $tprmUsers->user_name = explode('@', $userEmail)[0];

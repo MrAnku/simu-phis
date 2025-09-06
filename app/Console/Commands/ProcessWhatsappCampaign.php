@@ -230,6 +230,17 @@ class ProcessWhatsappCampaign extends Command
                     'campaign_live_id' => $camp_live->id,
                     'company_id' => $camp_live->company_id,
                 ]);
+
+                 // Audit log
+                $auditLogs = [
+                    'company_id'    => $camp_live->company_id,
+                    'user_email'    => $user->user_email ?? null,
+                    'user_whatsapp' => $user->whatsapp ?? null,
+                    'action'        => 'WHATSAPP CAMPAIGN LAUNCHED',
+                    'description' => "'$campaign->campaign_name' sent to " . ($user->user_email ?? $user->whatsapp),
+                    'user_type'     => $campaign->employee_type,
+                ];
+                audit_log($auditLogs);
             }
 
 

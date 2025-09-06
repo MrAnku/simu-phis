@@ -43,9 +43,9 @@ class SendInfographics extends Command
     private function processScheduledCampaigns()
     {
         $companies = Company::where('approved', 1)
-        ->where('service_status', 1)
-        ->where('role', null)
-        ->get();
+            ->where('service_status', 1)
+            ->where('role', null)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -106,6 +106,17 @@ class SendInfographics extends Command
                     'infographic' => collect($campaign->infographics)->random(),
                     'company_id' => $campaign->company_id,
                 ]);
+
+                // Audit log
+                $auditLogs = [
+                    'company_id'    => $campaign->company_id,
+                    'user_email'    => $user->user_email,
+                    'user_whatsapp' => null,
+                    'action'        => 'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                    'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    'user_type'     => 'normal',
+                ];
+                audit_log($auditLogs);
             }
 
             echo 'Inforgraphics Campaign is live' . "\n";
@@ -115,9 +126,9 @@ class SendInfographics extends Command
     private function sendCampaignLiveEmails()
     {
         $companies = Company::where('approved', 1)
-        ->where('service_status', 1)
-        ->where('role', null)
-        ->get();
+            ->where('service_status', 1)
+            ->where('role', null)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -139,7 +150,7 @@ class SendInfographics extends Command
                 $whiteLableData = $isWhitelabeled->getWhiteLabelData();
                 $companyName = $whiteLableData->company_name;
                 $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-               
+
                 $isWhitelabeled->updateSmtpConfig();
                 
             }else{

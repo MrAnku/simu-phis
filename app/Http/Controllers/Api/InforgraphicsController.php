@@ -119,22 +119,22 @@ class InforgraphicsController extends Controller
                 'schedule_type' => 'required|string|in:immediate,schedule'
             ]);
            if($request->schedule_type === 'immediate') {
-               $scheduledAt = Carbon::now()->toDateTimeString(); 
+                $scheduledAt = Carbon::now()->toDateTimeString();
            }else{
-               $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
-           }
+                $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
+            }
 
             $status = $request->schedule_type === 'immediate' ? 'running' : 'pending';
 
-           //check if the user group has users
-           $groupExists = UsersGroup::where('group_id', $request->users_group)
-               ->where('company_id', Auth::user()->company_id)
-               ->whereNotNull('users')
-               ->where('users', '!=', '[]') 
-               ->exists();
-           if (!$groupExists) {
-               return response()->json(['success' => false, 'message' => __('This division does not have any employees')], 404);
-           }
+            //check if the user group has users
+            $groupExists = UsersGroup::where('group_id', $request->users_group)
+                ->where('company_id', Auth::user()->company_id)
+                ->whereNotNull('users')
+                ->where('users', '!=', '[]')
+                ->exists();
+            if (!$groupExists) {
+                return response()->json(['success' => false, 'message' => __('This division does not have any employees')], 404);
+            }
 
             $campaign = InfoGraphicCampaign::create([
                 'campaign_name' => $request->campaign_name,
@@ -178,6 +178,17 @@ class InforgraphicsController extends Controller
                         'infographic' => collect($request->infographics)->random(),
                         'company_id' => Auth::user()->company_id,
                     ]);
+
+                    // Audit log
+                    $auditLogs = [
+                        'company_id'    => Auth::user()->company_id,
+                        'user_email'    => $user->user_email,
+                        'user_whatsapp' => null,
+                        'action'        => 'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                        'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                        'user_type'     => 'normal',
+                    ];
+                    audit_log($auditLogs);
                 }
             }
             log_action("Infographic campaign created for company:");
