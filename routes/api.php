@@ -242,6 +242,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/', [ApiTriggerController::class, 'index']);
         Route::post('/add', [ApiTriggerController::class, 'addTrigger']);
         Route::put('/update/{id}', [ApiTriggerController::class, 'updateTrigger']);
+        Route::put('/status/toggle/{id}', [ApiTriggerController::class, 'toggleStatus']);
         Route::delete('/delete/{id}', [ApiTriggerController::class, 'deleteTrigger']);
     });
 

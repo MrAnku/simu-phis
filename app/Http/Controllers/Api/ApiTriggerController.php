@@ -95,6 +95,14 @@ class ApiTriggerController extends Controller
                 'scorm' => 'nullable|array',
                 'status' => 'required|in:0,1',
             ]);
+            //check if this employee type already exists for this company
+            $employeeTypeExists = CompanyTrigger::where('employee_type', $request->employee_type)
+                ->where('company_id', Auth::user()->company_id)
+                ->exists();
+            if($employeeTypeExists){
+                return response()->json(['success' => false, 'message' => 'This employee type trigger already exists. You can update it instead.'], 409);
+            }
+
 
             $trigger = CompanyTrigger::where('id', base64_decode($id))
                 ->where('company_id', Auth::user()->company_id)
@@ -126,6 +134,26 @@ class ApiTriggerController extends Controller
             return response()->json(['success' => true, 'message' => 'Trigger updated successfully'], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function toggleStatus($id)
+    {
+        try {
+            $trigger = CompanyTrigger::where('id', base64_decode($id))
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$trigger) {
+                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+            }
+
+            $trigger->status = !$trigger->status;
+            $trigger->save();
+
+            return response()->json(['success' => true, 'message' => 'Trigger updated'], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
