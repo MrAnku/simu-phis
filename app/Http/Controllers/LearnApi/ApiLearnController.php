@@ -340,15 +340,14 @@ class ApiLearnController extends Controller
                     $rowData->completion_date = now()->format('Y-m-d');
 
                     // Audit log
-                    $auditLogs = [
-                        'company_id'    => $rowData->company_id,
-                        'user_email'    => $user,
-                        'user_whatsapp' => null,
-                        'action'        => 'TRAINING_COMPLETED',
-                        'description'   => "User {$user} completed training '{$rowData->trainingData->name}'.",
-                        'user_type'     => 'normal',
-                    ];
-                    audit_log($auditLogs);
+                    self::logAudit(
+                        $rowData->company_id,
+                        $user,
+                        null,
+                        'TRAINING COMPLETED',
+                        "{$user} completed training : '{$rowData->trainingData->name}'.",
+                        'normal'
+                    );
 
                     $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $rowData->user_email)
                         ->where('completed', 1)->count();
@@ -490,6 +489,16 @@ class ApiLearnController extends Controller
                 if ($request->scormTrainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    // Audit log
+                    self::logAudit(
+                        $rowData->company_id,
+                        $rowData->user_email,
+                        null,
+                        'TRAINING COMPLETED',
+                        "{$rowData->user_email} completed training : '{$rowData->scormTrainingData->name}'.",
+                        'normal'
+                    );
 
                     $totalCompletedTrainings = ScormAssignedUser::where('user_email', $rowData->user_email)
                         ->where('completed', 1)->count();
@@ -1683,5 +1692,18 @@ class ApiLearnController extends Controller
                 "languages" => $languages
             ],
         ], 200);
+    }
+
+    private static function logAudit($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
+    {
+        $auditLogs = [
+            'company_id'    => $companyId,
+            'user_email'    => $userEmail,
+            'user_whatsapp' => $userWhatsapp,
+            'action'        => $action,
+            'description'   => $description,
+            'user_type'     => $userType,
+        ];
+        audit_log($auditLogs);
     }
 }

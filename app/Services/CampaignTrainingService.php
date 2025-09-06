@@ -6,7 +6,9 @@ use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\Users;
 use App\Models\ScormAssignedUser;
+use App\Models\ScormTraining;
 use App\Models\TrainingAssignedUser;
+use App\Models\TrainingModule;
 
 class CampaignTrainingService
 {
@@ -55,6 +57,17 @@ class CampaignTrainingService
                     ];
 
                     $trainingAssignedService->assignNewTraining($campData);
+
+                    $module = TrainingModule::find($training);
+                    // Audit log
+                    self::logAudit(
+                        $campaign->company_id,
+                        $campaign->user_email,
+                        null,
+                        'TRAINING ASSIGNED',
+                        "{$module->name} assigned to {$campaign->user_email}",
+                        'normal'
+                    );
                 } else {
                     $assignedTraining->update(
                         [
@@ -86,6 +99,17 @@ class CampaignTrainingService
                         'company_id' => $campaign->company_id
                     ];
                     $trainingAssignedService->assignNewScormTraining($campData);
+
+                    $scorm = ScormTraining::find($training);
+                    // Audit log
+                    self::logAudit(
+                        $campaign->company_id,
+                        $campaign->user_email,
+                        null,
+                        'SCORM ASSIGNED',
+                        "{$scorm->name} assigned to {$campaign->user_email}",
+                        'normal'
+                    );
                 }
             }
         }
@@ -136,6 +160,17 @@ class CampaignTrainingService
                 ];
 
                 $trainingAssignedService->assignNewTraining($campData);
+
+                $module = TrainingModule::find($campaign->training_module);
+                // Audit log
+                self::logAudit(
+                    $campaign->company_id,
+                    $campaign->user_email,
+                    null,
+                    'TRAINING ASSIGNED',
+                    "{$module->name} assigned to {$campaign->user_email}",
+                    'normal'
+                );
             } else {
                 $assignedTrainingModule->update(
                     [
@@ -168,6 +203,17 @@ class CampaignTrainingService
                 ];
 
                 $trainingAssignedService->assignNewScormTraining($campData);
+
+                $scorm = ScormTraining::find($campaign->scorm_training);
+                // Audit log
+                self::logAudit(
+                    $campaign->company_id,
+                    $campaign->user_email,
+                    null,
+                    'SCORM ASSIGNED',
+                    "{$scorm->name} assigned to {$campaign->user_email}",
+                    'normal'
+                );
             }
         }
 
@@ -231,6 +277,16 @@ class CampaignTrainingService
 
                     BlueCollarTrainingUser::create($campData);
 
+                    $module = TrainingModule::find($training);
+                    // Audit log
+                    self::logAudit(
+                        $campaign->company_id,
+                        $campaign->user_email ?? null,
+                        $user_phone,
+                        'TRAINING ASSIGNED',
+                        "{$module->name} assigned to {$user_phone}",
+                        'bluecollar'
+                    );
                     echo "New training assigned successfully \n";
                 } else {
                     $assignedTraining->update(
@@ -270,14 +326,17 @@ class CampaignTrainingService
 
                     BlueCollarScormAssignedUser::create($campData);
 
+                    $scorm = ScormTraining::find($training);
+                    // Audit log
+                    self::logAudit(
+                        $campaign->company_id,
+                        $campaign->user_email ?? null,
+                        $user_phone,
+                        'SCORM ASSIGNED',
+                        "{$scorm->name} assigned to {$user_phone}",
+                        'bluecollar'
+                    );
                     echo 'Scorm assigned successfully to ' . $user_phone . "\n";
-
-
-                    // if ($trainingAssigned['status'] == true) {
-                    //     return true;
-                    // } else {
-                    //     return false;
-                    // }
                 }
             }
         }
@@ -335,6 +394,16 @@ class CampaignTrainingService
                 // $trainingAssignedService->assignNewTraining($campData);
                 BlueCollarTrainingUser::create($campData);
 
+                $training = TrainingModule::find($campaign->training_module);
+                self::logAudit(
+                    $campaign->company_id,
+                    $campaign->user_email ?? null,
+                    $user_phone,
+                    'TRAINING ASSIGNED',
+                    "{$training->name} assigned to {$user_phone}",
+                    'bluecollar'
+                );
+
                 echo "New training assigned successfully \n";
             } else {
                 $assignedTrainingModule->update(
@@ -368,6 +437,17 @@ class CampaignTrainingService
                 ];
 
                 BlueCollarScormAssignedUser::create($campData);
+
+                $scorm = TrainingModule::find($campaign->scorm_training);
+                // Audit log
+                 self::logAudit(
+                    $campaign->company_id,
+                    $campaign->user_email ?? null,
+                    $user_phone,
+                    'SCORM ASSIGNED',
+                    "{$scorm->name} assigned to {$user_phone}",
+                    'bluecollar'
+                );
 
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
             }
@@ -424,5 +504,18 @@ class CampaignTrainingService
 
         $trainingNames = $trainingNames->merge($scormNames)->filter();
         return $trainingNames;
+    }
+
+    private static function logAudit($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
+    {
+        $auditLogs = [
+            'company_id'    => $companyId,
+            'user_email'    => $userEmail,
+            'user_whatsapp' => $userWhatsapp,
+            'action'        => $action,
+            'description'   => $description,
+            'user_type'     => $userType,
+        ];
+        audit_log($auditLogs);
     }
 }

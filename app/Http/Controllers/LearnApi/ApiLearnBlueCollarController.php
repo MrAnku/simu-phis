@@ -390,6 +390,16 @@ class ApiLearnBlueCollarController extends Controller
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
 
+                    // Audit log
+                    self::logAudit(
+                        $rowData->company_id,
+                        null,
+                        $rowData->user_whatsapp,
+                        'TRAINING COMPLETED',
+                        "{$rowData->user_whatsapp} completed training : '{$rowData->trainingData->name}'.",
+                        'bluecollar'
+                    );
+
                     $totalCompletedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $rowData->user_whatsapp)
                         ->where('completed', 1)->count();
 
@@ -662,6 +672,16 @@ class ApiLearnBlueCollarController extends Controller
                 if ($request->scormTrainingScore >= $passingScore) {
                     $rowData->completed = 1;
                     $rowData->completion_date = now()->format('Y-m-d');
+
+                    // Audit log
+                    self::logAudit(
+                        $rowData->company_id,
+                        null,
+                        $rowData->user_whatsapp,
+                        'TRAINING COMPLETED',
+                        "{$rowData->user_whatsapp} completed training : '{$rowData->scormTrainingData->name}'.",
+                        'bluecollar'
+                    );
 
                     $totalCompletedTrainings = BlueCollarScormAssignedUser::where('user_whatsapp', $rowData->user_whatsapp)
                         ->where('completed', 1)->count();
@@ -1282,5 +1302,18 @@ class ApiLearnBlueCollarController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
+    }
+
+    private static function logAudit($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
+    {
+        $auditLogs = [
+            'company_id'    => $companyId,
+            'user_email'    => $userEmail,
+            'user_whatsapp' => $userWhatsapp,
+            'action'        => $action,
+            'description'   => $description,
+            'user_type'     => $userType,
+        ];
+        audit_log($auditLogs);
     }
 }
