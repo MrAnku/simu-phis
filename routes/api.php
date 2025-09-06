@@ -359,8 +359,8 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/bar', [CustomisedReportingController::class, 'barData']); //common
         Route::get('/radialbar', [CustomisedReportingController::class, 'radialbarData']); //common
         Route::get('/mixed', [CustomisedReportingController::class, 'mixedData']); //common
+        Route::get('/area', [CustomisedReportingController::class, 'areaData']); //common
         Route::get('/table', [CustomisedReportingController::class, 'tableData']);
-        Route::get('/area', [CustomisedReportingController::class, 'areaData']);
         Route::get('/bubble', [CustomisedReportingController::class, 'bubbleData']);
 
     });
