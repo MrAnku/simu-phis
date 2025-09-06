@@ -36,6 +36,8 @@ use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiAssignedTrainingsController;
+use App\Http\Controllers\Api\ApiAuditLogController;
+use App\Http\Controllers\Api\ApiAuditLogsController;
 use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiCustomCertifcate;
 use App\Http\Controllers\Api\ApiCustomCertificate;
@@ -587,6 +589,12 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('fetch-certificate-templates', [ApiCustomCertificate::class, 'fetchCertificateTemplates']);
         Route::delete('delete-certificate-template/{id?}', [ApiCustomCertificate::class, 'deleteCertificateTemplate']);
         Route::post('update-custom-certificate', [ApiCustomCertificate::class, 'updateCustomCertificate']);
+    });
+
+    // Audit Logs
+    Route::prefix('audit-logs')->group(function () {
+        Route::get('fetch-logs', [ApiAuditLogsController::class, 'fetchAuditLogs']);
+        Route::get('fetch-audit-actions', [ApiAuditLogsController::class, 'fetchAuditActions']);
     });
 });
 
