@@ -1112,7 +1112,7 @@
     "New Blue Collar Division created successfully": "تم إنشاء قسم العمالة الزرقاء الجديد بنجاح",
     "Blue Collar Division deleted successfully": "تم حذف قسم العمالة الزرقاء بنجاح",
     "Training has been assigned!": "!تم تعيين التدريب",
-    "Hi :name,": ",name مرحبًا",
+    "Hi :name,": ",:name مرحبًا",
     "Your organization has enrolled you in a training session after you encountered a simulated phishing exercise.":
 ".قامت مؤسستك بتسجيلك في دورة تدريبية بعد أن واجهت تجربة تصيد احتيالي",
     "Click the link below to start your training:": ":اضغط على الرابط أدناه لبدء التدريب",
