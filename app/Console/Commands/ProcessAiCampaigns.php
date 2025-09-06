@@ -7,8 +7,10 @@ use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use Illuminate\Console\Command;
 use App\Models\ScormAssignedUser;
+use App\Models\ScormTraining;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
+use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
 use Illuminate\Support\Facades\Http;
@@ -181,16 +183,15 @@ class ProcessAiCampaigns extends Command
                         'status' => 'pending',
                         'company_id' => $campaign->company_id,
                     ]);
-                     // Audit log
-                    $auditLogs = [
-                        'company_id'    => $campaign->company_id,
-                        'user_email'    => $user->user_email,
-                        'user_whatsapp' => $user->whatsapp,
-                        'action'        => 'AI CAMPAIGN LAUNCHED',
-                        'description' => "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
-                        'user_type'     => 'normal',
-                    ];
-                    audit_log($auditLogs);
+                    // Audit log
+                    audit_log(
+                        $campaign->company_id,
+                        $campaign->user_email,
+                        $user->whatsapp,
+                        'AI CAMPAIGN LAUNCHED',
+                        "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
+                        'normal'
+                    );
                 }
             }
         }
@@ -397,6 +398,17 @@ class ProcessAiCampaigns extends Command
 
                 $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
+                $module = TrainingModule::find($campaign->training);
+                // Audit log
+                audit_log(
+                    $campaign->company_id,
+                    $campaign->employee_email,
+                    null,
+                    'TRAINING ASSIGNED',
+                    "{$module->name} assigned to {$campaign->employee_email}",
+                    'normal'
+                );
+
                 if ($trainingAssigned['status'] == true) {
                     echo $trainingAssigned['msg'];
                 } else {
@@ -434,6 +446,16 @@ class ProcessAiCampaigns extends Command
 
                 $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
+                $scorm = ScormTraining::find($campaign->scorm_training);
+                // Audit log
+                audit_log(
+                    $campaign->company_id,
+                    $campaign->employee_email,
+                    null,
+                    'SCORM ASSIGNED',
+                    "{$scorm->name} assigned to {$campaign->employee_email}",
+                    'normal'
+                );
                 if ($trainingAssigned['status'] == true) {
                     echo $trainingAssigned['msg'];
                 } else {

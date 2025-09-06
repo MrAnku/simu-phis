@@ -118,9 +118,9 @@ class InforgraphicsController extends Controller
                 'scheduled_at' => 'required|string',
                 'schedule_type' => 'required|string|in:immediate,schedule'
             ]);
-           if($request->schedule_type === 'immediate') {
+            if ($request->schedule_type === 'immediate') {
                 $scheduledAt = Carbon::now()->toDateTimeString();
-           }else{
+            } else {
                 $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
             }
 
@@ -180,15 +180,14 @@ class InforgraphicsController extends Controller
                     ]);
 
                     // Audit log
-                    $auditLogs = [
-                        'company_id'    => Auth::user()->company_id,
-                        'user_email'    => $user->user_email,
-                        'user_whatsapp' => null,
-                        'action'        => 'INFOGRAPHICS CAMPAIGN LAUNCHED',
-                        'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
-                        'user_type'     => 'normal',
-                    ];
-                    audit_log($auditLogs);
+                    audit_log(
+                        Auth::user()->company_id,
+                        $user->user_email,
+                        null,
+                        'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                        "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                        'normal'
+                    );
                 }
             }
             log_action("Infographic campaign created for company:");

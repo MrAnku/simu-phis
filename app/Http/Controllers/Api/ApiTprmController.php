@@ -340,15 +340,14 @@ class ApiTprmController extends Controller
                 ]);
 
                 // Audit log
-                $auditLogs = [
-                    'company_id'    => $companyId,
-                    'user_email'    => $user->user_email,
-                    'user_whatsapp' => null,
-                    'action'        => 'TPRM CAMPAIGN LAUNCHED',
-                    'description' => "'{$campName}' shoot to {$user->user_email}",
-                    'user_type'     => 'tprm',
-                ];
-                audit_log($auditLogs);
+                audit_log(
+                    $companyId,
+                    $user->user_email,
+                    null,
+                    'TPRM CAMPAIGN LAUNCHED',
+                    "'{$campName}' shoot to {$user->user_email}",
+                    'tprm'
+                );
             }
 
             TprmCampaign::create([

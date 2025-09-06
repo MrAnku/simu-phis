@@ -1050,16 +1050,15 @@ if (!function_exists('assignBadge')) {
 
 
 if (!function_exists('audit_log')) {
-
-    function audit_log($log)
+    function audit_log($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
     {
         AuditLog::create([
-            'company_id'    => $log['company_id'],
-            'user_email'    => $log['user_email']    ?? null,
-            'user_whatsapp' => $log['user_whatsapp'] ?? null,
-            'user_type'     => $log['user_type'],
-            'action'        => $log['action'] ?? null,
-            'description'   => $log['description']   ?? null,
+            'company_id'    => $companyId,
+            'user_email'    => $userEmail    ?? null,
+            'user_whatsapp' => $userWhatsapp ?? null,
+            'user_type'     => $userType,
+            'action'        => $action ?? null,
+            'description'   => $description   ?? null,
             'ip_address'    => request()->ip(),
             'user_agent'    => request()->header('User-Agent'),
         ]);

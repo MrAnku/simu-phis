@@ -542,15 +542,14 @@ class ApiAiCallController extends Controller
                     ]);
 
                     // Audit log
-                    $auditLogs = [
-                        'company_id'    => $campaign->company_id,
-                        'user_email'    => $user->user_email,
-                        'user_whatsapp' => $user->whatsapp,
-                        'action'        => 'AI CAMPAIGN LAUNCHED',
-                        'description' => "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
-                        'user_type'     => 'normal',
-                    ];
-                    audit_log($auditLogs);
+                    audit_log(
+                        $campaign->company_id,
+                        $user->user_email,
+                        $user->whatsapp,
+                        'AI CAMPAIGN LAUNCHED',
+                        "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
+                        'normal'
+                    );
                 }
             }
         }

@@ -340,7 +340,7 @@ class ApiLearnController extends Controller
                     $rowData->completion_date = now()->format('Y-m-d');
 
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $rowData->company_id,
                         $user,
                         null,
@@ -491,7 +491,7 @@ class ApiLearnController extends Controller
                     $rowData->completion_date = now()->format('Y-m-d');
 
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $rowData->company_id,
                         $rowData->user_email,
                         null,
@@ -1692,18 +1692,5 @@ class ApiLearnController extends Controller
                 "languages" => $languages
             ],
         ], 200);
-    }
-
-    private static function logAudit($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
-    {
-        $auditLogs = [
-            'company_id'    => $companyId,
-            'user_email'    => $userEmail,
-            'user_whatsapp' => $userWhatsapp,
-            'action'        => $action,
-            'description'   => $description,
-            'user_type'     => $userType,
-        ];
-        audit_log($auditLogs);
     }
 }

@@ -45,9 +45,9 @@ class ProcessWhatsappCampaign extends Command
     {
         //getting companies
         $companies = Company::where('service_status', 1)
-        ->where('approved', 1)
-        ->where('role', null)
-        ->get();
+            ->where('approved', 1)
+            ->where('role', null)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -137,9 +137,9 @@ class ProcessWhatsappCampaign extends Command
     {
         //getting companies
         $companies = Company::where('service_status', 1)
-        ->where('approved', 1)
-        ->where('role', null)
-        ->get();
+            ->where('approved', 1)
+            ->where('role', null)
+            ->get();
 
         if ($companies->isEmpty()) {
             return;
@@ -231,16 +231,15 @@ class ProcessWhatsappCampaign extends Command
                     'company_id' => $camp_live->company_id,
                 ]);
 
-                 // Audit log
-                $auditLogs = [
-                    'company_id'    => $camp_live->company_id,
-                    'user_email'    => $user->user_email ?? null,
-                    'user_whatsapp' => $user->whatsapp ?? null,
-                    'action'        => 'WHATSAPP CAMPAIGN LAUNCHED',
-                    'description' => "'$campaign->campaign_name' sent to " . ($user->user_email ?? $user->whatsapp),
-                    'user_type'     => $campaign->employee_type,
-                ];
-                audit_log($auditLogs);
+                // Audit log
+                audit_log(
+                    $camp_live->company_id,
+                    $user->user_email ?? null,
+                    $user->whatsapp ?? null,
+                    'WHATSAPP CAMPAIGN LAUNCHED',
+                    "'$campaign->campaign_name' sent to " . ($user->user_email ?? $user->whatsapp),
+                    $campaign->employee_type
+                );
             }
 
 

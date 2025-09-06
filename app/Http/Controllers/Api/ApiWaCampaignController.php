@@ -203,15 +203,14 @@ class ApiWaCampaignController extends Controller
                 ]);
 
                 // Audit log
-                $auditLogs = [
-                    'company_id'    => Auth::user()->company_id,
-                    'user_email'    => $user->user_email ?? null,
-                    'user_whatsapp' => $user->whatsapp ?? null,
-                    'action'        => 'WHATSAPP CAMPAIGN LAUNCHED',
-                    'description' => "'{$validated['campaign_name']}' sent to " . ($user->user_email ?? $user->whatsapp),
-                    'user_type'     => $validated['employee_type'],
-                ];
-                audit_log($auditLogs);
+                audit_log(
+                    Auth::user()->company_id,
+                    $user->user_email ?? null,
+                    $user->whatsapp ?? null,
+                    'WHATSAPP CAMPAIGN LAUNCHED',
+                    "'{$validated['campaign_name']}' sent to " . ($user->user_email ?? $user->whatsapp),
+                    $validated['employee_type']
+                );
             }
 
             log_action("Whatsapp Campaign Created");

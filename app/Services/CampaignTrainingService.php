@@ -60,7 +60,7 @@ class CampaignTrainingService
 
                     $module = TrainingModule::find($training);
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $campaign->company_id,
                         $campaign->user_email,
                         null,
@@ -102,7 +102,7 @@ class CampaignTrainingService
 
                     $scorm = ScormTraining::find($training);
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $campaign->company_id,
                         $campaign->user_email,
                         null,
@@ -163,7 +163,7 @@ class CampaignTrainingService
 
                 $module = TrainingModule::find($campaign->training_module);
                 // Audit log
-                self::logAudit(
+                audit_log(
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
@@ -206,7 +206,7 @@ class CampaignTrainingService
 
                 $scorm = ScormTraining::find($campaign->scorm_training);
                 // Audit log
-                self::logAudit(
+                audit_log(
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
@@ -279,7 +279,7 @@ class CampaignTrainingService
 
                     $module = TrainingModule::find($training);
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $campaign->company_id,
                         $campaign->user_email ?? null,
                         $user_phone,
@@ -328,7 +328,7 @@ class CampaignTrainingService
 
                     $scorm = ScormTraining::find($training);
                     // Audit log
-                    self::logAudit(
+                    audit_log(
                         $campaign->company_id,
                         $campaign->user_email ?? null,
                         $user_phone,
@@ -395,7 +395,7 @@ class CampaignTrainingService
                 BlueCollarTrainingUser::create($campData);
 
                 $training = TrainingModule::find($campaign->training_module);
-                self::logAudit(
+                audit_log(
                     $campaign->company_id,
                     $campaign->user_email ?? null,
                     $user_phone,
@@ -440,7 +440,7 @@ class CampaignTrainingService
 
                 $scorm = TrainingModule::find($campaign->scorm_training);
                 // Audit log
-                 self::logAudit(
+                audit_log(
                     $campaign->company_id,
                     $campaign->user_email ?? null,
                     $user_phone,
@@ -448,7 +448,6 @@ class CampaignTrainingService
                     "{$scorm->name} assigned to {$user_phone}",
                     'bluecollar'
                 );
-
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";
             }
         }
@@ -504,18 +503,5 @@ class CampaignTrainingService
 
         $trainingNames = $trainingNames->merge($scormNames)->filter();
         return $trainingNames;
-    }
-
-    private static function logAudit($companyId, $userEmail, $userWhatsapp, $action, $description, $userType)
-    {
-        $auditLogs = [
-            'company_id'    => $companyId,
-            'user_email'    => $userEmail,
-            'user_whatsapp' => $userWhatsapp,
-            'action'        => $action,
-            'description'   => $description,
-            'user_type'     => $userType,
-        ];
-        audit_log($auditLogs);
     }
 }

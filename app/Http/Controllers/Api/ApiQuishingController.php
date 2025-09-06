@@ -144,15 +144,14 @@ class ApiQuishingController extends Controller
                 ]);
 
                 // Audit log
-                $auditLogs = [
-                    'company_id'    => Auth::user()->company_id,
-                    'user_email'    => $user->user_email,
-                    'user_whatsapp' => null,
-                    'action'        => 'QUISHING CAMPAIGN LAUNCHED',
-                    'description'   => "'$request->campaign_name' shoot to {$user->user_email}",
-                    'user_type'     => 'normal',
-                ];
-                audit_log($auditLogs);
+                audit_log(
+                    Auth::user()->company_id,
+                    $user->user_email,
+                    null,
+                    'QUISHING CAMPAIGN LAUNCHED',
+                    "'$request->campaign_name' shoot to {$user->user_email}",
+                    'normal'
+                );
             }
 
             log_action("Quishing Campaign Created : {$request->campaign_name}");

@@ -108,15 +108,14 @@ class SendInfographics extends Command
                 ]);
 
                 // Audit log
-                $auditLogs = [
-                    'company_id'    => $campaign->company_id,
-                    'user_email'    => $user->user_email,
-                    'user_whatsapp' => null,
-                    'action'        => 'INFOGRAPHICS CAMPAIGN LAUNCHED',
-                    'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
-                    'user_type'     => 'normal',
-                ];
-                audit_log($auditLogs);
+                 audit_log(
+                    $campaign->company_id,
+                    $campaign->user_email,
+                    null,
+                    'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                    "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    'normal'
+                );
             }
 
             echo 'Inforgraphics Campaign is live' . "\n";

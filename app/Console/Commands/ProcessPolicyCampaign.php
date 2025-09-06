@@ -112,15 +112,14 @@ class ProcessPolicyCampaign extends Command
                 ]);
 
                 // Audit log
-                $auditLogs = [
-                    'company_id'    => $campaign->company_id,
-                    'user_email'    => $user->user_email,
-                    'user_whatsapp' => null,
-                    'action'        => 'POLICY CAMPAIGN LAUNCHED',
-                    'description' => "'{$campaign->campaign_name}' shoot to {$user->user_email}",
-                    'user_type'     => 'normal',
-                ];
-                audit_log($auditLogs);
+                audit_log(
+                    $campaign->company_id,
+                    $campaign->user_email,
+                    null,
+                    'POLICY CAMPAIGN LAUNCHED',
+                    "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    'normal'
+                );
             }
 
             echo 'Policy Campaign is live' . "\n";
@@ -200,6 +199,16 @@ class ProcessPolicyCampaign extends Command
                         'policy' => $campaign->policy,
                         'company_id' => $campaign->company_id,
                     ]);
+
+                    // Audit log
+                    audit_log(
+                        $campaign->company_id,
+                        $campaign->user_email,
+                        null,
+                        'POLICY ASSIGNED',
+                        "'{$policy->policy_name}' assigned to {$campaign->user_email}",
+                        'normal'
+                    );
                 } else {
                     echo 'Failed to send email to ' . $campaign->user_email . "\n";
                 }
