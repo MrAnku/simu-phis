@@ -216,6 +216,15 @@ class ApiPolicyController extends Controller
                 ], 422);
             }
 
+            // Audit log
+            audit_log(
+                Auth::user()->company_id,
+                $user_email,
+                null,
+                'POLICY ACCEPTED',
+                "'{$user_email}' accepted this policy :  {$policy->policy_name}",
+                'normal'
+            );
             return response()->json([
                 'success' => true,
                 'message' => 'Policy accepted successfully'

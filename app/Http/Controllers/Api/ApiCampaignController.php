@@ -217,15 +217,14 @@ class ApiCampaignController extends Controller
             ]);
 
             // Audit log
-            $auditLogs = [
-                'company_id'    => $companyId,
-                'user_email'    => $user->user_email,
-                'user_whatsapp' => null,
-                'action'        => 'EMAIL CAMPAIGN LAUNCHED',
-                'description'   => "'{$data['camp_name']}' shoot to {$user->user_email}",
-                'user_type'     => 'normal',
-            ];
-            audit_log($auditLogs);
+            audit_log(
+                $companyId,
+                $user->user_email,
+                null,
+                'EMAIL CAMPAIGN LAUNCHED',
+                "'{$data['camp_name']}' shoot to {$user->user_email}",
+                'normal'
+            );
         }
 
 
