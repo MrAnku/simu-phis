@@ -188,7 +188,7 @@ class ProcessAiCampaigns extends Command
                         $campaign->company_id,
                         $campaign->user_email,
                         $user->whatsapp,
-                        'AI CAMPAIGN LAUNCHED',
+                        'AI_CAMPAIGN_LAUNCHED',
                         "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
                         'normal'
                     );
@@ -240,7 +240,7 @@ class ProcessAiCampaigns extends Command
                             $placedCall->company_id,
                             $placedCall->employee_email,
                             null,
-                            'EMPLOYEE COMPROMISED',
+                            'EMPLOYEE_COMPROMISED',
                             "{$placedCall->employee_email} compromised in AI call campaign '{$placedCall->campaign_name}'",
                             'normal'
                         );
@@ -412,7 +412,7 @@ class ProcessAiCampaigns extends Command
                     $campaign->company_id,
                     $campaign->employee_email,
                     null,
-                    'TRAINING ASSIGNED',
+                    'TRAINING_ASSIGNED',
                     "{$module->name} assigned to {$campaign->employee_email}",
                     'normal'
                 );
@@ -460,7 +460,7 @@ class ProcessAiCampaigns extends Command
                     $campaign->company_id,
                     $campaign->employee_email,
                     null,
-                    'SCORM ASSIGNED',
+                    'SCORM_ASSIGNED',
                     "{$scorm->name} assigned to {$campaign->employee_email}",
                     'normal'
                 );

@@ -64,7 +64,7 @@ class CampaignTrainingService
                         $campaign->company_id,
                         $campaign->user_email,
                         null,
-                        'TRAINING ASSIGNED',
+                        'TRAINING_ASSIGNED',
                         "{$module->name} assigned to {$campaign->user_email}",
                         'normal'
                     );
@@ -106,7 +106,7 @@ class CampaignTrainingService
                         $campaign->company_id,
                         $campaign->user_email,
                         null,
-                        'SCORM ASSIGNED',
+                        'SCORM_ASSIGNED',
                         "{$scorm->name} assigned to {$campaign->user_email}",
                         'normal'
                     );
@@ -167,7 +167,7 @@ class CampaignTrainingService
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'TRAINING ASSIGNED',
+                    'TRAINING_ASSIGNED',
                     "{$module->name} assigned to {$campaign->user_email}",
                     'normal'
                 );
@@ -210,7 +210,7 @@ class CampaignTrainingService
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'SCORM ASSIGNED',
+                    'SCORM_ASSIGNED',
                     "{$scorm->name} assigned to {$campaign->user_email}",
                     'normal'
                 );
@@ -283,7 +283,7 @@ class CampaignTrainingService
                         $campaign->company_id,
                         $campaign->user_email ?? null,
                         $user_phone,
-                        'TRAINING ASSIGNED',
+                        'TRAINING_ASSIGNED',
                         "{$module->name} assigned to {$user_phone}",
                         'bluecollar'
                     );
@@ -332,7 +332,7 @@ class CampaignTrainingService
                         $campaign->company_id,
                         $campaign->user_email ?? null,
                         $user_phone,
-                        'SCORM ASSIGNED',
+                        'SCORM_ASSIGNED',
                         "{$scorm->name} assigned to {$user_phone}",
                         'bluecollar'
                     );
@@ -399,7 +399,7 @@ class CampaignTrainingService
                     $campaign->company_id,
                     $campaign->user_email ?? null,
                     $user_phone,
-                    'TRAINING ASSIGNED',
+                    'TRAINING_ASSIGNED',
                     "{$training->name} assigned to {$user_phone}",
                     'bluecollar'
                 );
@@ -444,7 +444,7 @@ class CampaignTrainingService
                     $campaign->company_id,
                     $campaign->user_email ?? null,
                     $user_phone,
-                    'SCORM ASSIGNED',
+                    'SCORM_ASSIGNED',
                     "{$scorm->name} assigned to {$user_phone}",
                     'bluecollar'
                 );

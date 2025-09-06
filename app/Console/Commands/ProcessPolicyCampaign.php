@@ -116,7 +116,7 @@ class ProcessPolicyCampaign extends Command
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'POLICY CAMPAIGN LAUNCHED',
+                    'POLICY_CAMPAIGN_LAUNCHED',
                     "'{$campaign->campaign_name}' shoot to {$user->user_email}",
                     'normal'
                 );
@@ -205,7 +205,7 @@ class ProcessPolicyCampaign extends Command
                         $campaign->company_id,
                         $campaign->user_email,
                         null,
-                        'POLICY ASSIGNED',
+                        'POLICY_ASSIGNED',
                         "'{$policy->policy_name}' assigned to {$campaign->user_email}",
                         'normal'
                     );

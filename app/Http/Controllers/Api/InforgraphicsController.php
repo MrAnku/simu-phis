@@ -184,7 +184,7 @@ class InforgraphicsController extends Controller
                         Auth::user()->company_id,
                         $user->user_email,
                         null,
-                        'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                        'INFOGRAPHICS_CAMPAIGN_LAUNCHED',
                         "'{$campaign->campaign_name}' shoot to {$user->user_email}",
                         'normal'
                     );

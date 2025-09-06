@@ -142,7 +142,7 @@ class ProcessCampaigns extends Command
           $campaign->company_id,
           $campaign->user_email,
           null,
-          'EMAIL CAMPAIGN LAUNCHED',
+          'EMAIL_CAMPAIGN_LAUNCHED',
           "'{$campaign->campaign_name}' shoot to {$user->user_email}",
           'normal'
         );

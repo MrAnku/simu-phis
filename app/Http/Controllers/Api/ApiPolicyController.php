@@ -221,7 +221,7 @@ class ApiPolicyController extends Controller
                 Auth::user()->company_id,
                 $user_email,
                 null,
-                'POLICY ACCEPTED',
+                'POLICY_ACCEPTED',
                 "'{$user_email}' accepted this policy :  {$policy->policy_name}",
                 'normal'
             );

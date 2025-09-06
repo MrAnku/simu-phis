@@ -148,7 +148,7 @@ class ApiQuishingController extends Controller
                     Auth::user()->company_id,
                     $user->user_email,
                     null,
-                    'QUISHING CAMPAIGN LAUNCHED',
+                    'QUISHING_CAMPAIGN_LAUNCHED',
                     "'$request->campaign_name' shoot to {$user->user_email}",
                     'normal'
                 );

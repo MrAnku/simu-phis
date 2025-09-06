@@ -207,7 +207,7 @@ class ApiWaCampaignController extends Controller
                     Auth::user()->company_id,
                     $user->user_email ?? null,
                     $user->whatsapp ?? null,
-                    'WHATSAPP CAMPAIGN LAUNCHED',
+                    'WHATSAPP_CAMPAIGN_LAUNCHED',
                     "'{$validated['campaign_name']}' sent to " . ($user->user_email ?? $user->whatsapp),
                     $validated['employee_type']
                 );

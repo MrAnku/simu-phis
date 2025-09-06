@@ -395,7 +395,7 @@ class ApiLearnBlueCollarController extends Controller
                         $rowData->company_id,
                         null,
                         $rowData->user_whatsapp,
-                        'TRAINING COMPLETED',
+                        'TRAINING_COMPLETED',
                         "{$rowData->user_whatsapp} completed training : '{$rowData->trainingData->name}'.",
                         'bluecollar'
                     );
@@ -437,6 +437,16 @@ class ApiLearnBlueCollarController extends Controller
                     $blueCollarEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
                     $rowData->save();
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        null,
+                        $rowData->user_whatsapp,
+                        'CERTIFICATE_AWARDED',
+                        "Certificate has been awarded to '{$rowData->user_whatsapp}'.",
+                        'bluecollar'
+                    );
 
                     if ($whatsapp_response->successful()) {
                         return response()->json(['success' => true, 'message' => 'Score updated'], 200);
@@ -678,7 +688,7 @@ class ApiLearnBlueCollarController extends Controller
                         $rowData->company_id,
                         null,
                         $rowData->user_whatsapp,
-                        'TRAINING COMPLETED',
+                        'TRAINING_COMPLETED',
                         "{$rowData->user_whatsapp} completed training : '{$rowData->scormTrainingData->name}'.",
                         'bluecollar'
                     );
@@ -720,6 +730,16 @@ class ApiLearnBlueCollarController extends Controller
                     $blueCollarEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
                     $rowData->save();
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        null,
+                        $rowData->user_whatsapp,
+                        'CERTIFICATE_AWARDED',
+                        "Certificate has been awarded to '{$rowData->user_whatsapp}'.",
+                        'bluecollar'
+                    );
 
                     if ($whatsapp_response->successful()) {
                         return response()->json(['success' => true, 'message' => 'Score updated'], 200);

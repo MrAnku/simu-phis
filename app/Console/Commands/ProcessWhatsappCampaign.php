@@ -236,7 +236,7 @@ class ProcessWhatsappCampaign extends Command
                     $camp_live->company_id,
                     $user->user_email ?? null,
                     $user->whatsapp ?? null,
-                    'WHATSAPP CAMPAIGN LAUNCHED',
+                    'WHATSAPP_CAMPAIGN_LAUNCHED',
                     "'$campaign->campaign_name' sent to " . ($user->user_email ?? $user->whatsapp),
                     $campaign->employee_type
                 );

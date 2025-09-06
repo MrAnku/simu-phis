@@ -344,7 +344,7 @@ class ApiLearnController extends Controller
                         $rowData->company_id,
                         $user,
                         null,
-                        'TRAINING COMPLETED',
+                        'TRAINING_COMPLETED',
                         "{$user} completed training : '{$rowData->trainingData->name}'.",
                         'normal'
                     );
@@ -388,6 +388,16 @@ class ApiLearnController extends Controller
                     $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
                     $rowData->save();
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        $rowData->user_email,
+                        null,
+                        'CERTIFICATE_AWARDED',
+                        "Certificate has been awarded to '{$rowData->user_email}'.",
+                        'normal'
+                    );
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
                 }
@@ -495,7 +505,7 @@ class ApiLearnController extends Controller
                         $rowData->company_id,
                         $rowData->user_email,
                         null,
-                        'TRAINING COMPLETED',
+                        'TRAINING_COMPLETED',
                         "{$rowData->user_email} completed training : '{$rowData->scormTrainingData->name}'.",
                         'normal'
                     );
@@ -539,6 +549,16 @@ class ApiLearnController extends Controller
                     $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
 
                     $rowData->save();
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        $rowData->user_email,
+                        null,
+                        'CERTIFICATE_AWARDED',
+                        "Certificate has been awarded to '{$rowData->user_email}'.",
+                        'normal'
+                    );
 
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
                 }

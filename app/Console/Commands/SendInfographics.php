@@ -112,7 +112,7 @@ class SendInfographics extends Command
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'INFOGRAPHICS CAMPAIGN LAUNCHED',
+                    'INFOGRAPHICS_CAMPAIGN_LAUNCHED',
                     "'{$campaign->campaign_name}' shoot to {$user->user_email}",
                     'normal'
                 );

@@ -72,7 +72,7 @@ class ApiPolicyCampaignController extends Controller
                         Auth::user()->company_id,
                         $user->user_email,
                         null,
-                        'POLICY CAMPAIGN LAUNCHED',
+                        'POLICY_CAMPAIGN_LAUNCHED',
                         "'{$campaign->campaign_name}' shoot to {$user->user_email}",
                         'normal'
                     );
