@@ -236,6 +236,14 @@ class ProcessAiCampaigns extends Command
 
                     $compromised = $this->checkEmployeeCompromised($placedCall->call_id);
                     if ($compromised) {
+                        audit_log(
+                            $placedCall->company_id,
+                            $placedCall->employee_email,
+                            null,
+                            'EMPLOYEE COMPROMISED',
+                            "{$placedCall->employee_email} compromised in AI call campaign '{$placedCall->campaign_name}'",
+                            'normal'
+                        );
                         if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
 
                             $this->assignTraining($placedCall);
