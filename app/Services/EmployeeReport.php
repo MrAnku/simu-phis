@@ -20,7 +20,7 @@ class EmployeeReport
     private string $companyId;
     private array $dateRange; //array
 
-    public function __construct(string $email, string $companyId, array $dateRange = null)
+    public function __construct(string $email, string $companyId, array $dateRange = [])
     {
         $this->email = $email;
         $this->companyId = $companyId;
@@ -71,28 +71,28 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('payload_clicked', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('qr_scanned', '1')
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('payload_clicked', 1)
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('compromised', 1)
@@ -105,28 +105,28 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('emp_compromised', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('compromised', '1')
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('compromised', 1)
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('compromised', 1)
@@ -147,14 +147,14 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('email_reported', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('email_reported', '1')
@@ -167,14 +167,14 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('mail_open', 1)
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->where('mail_open', '1')
@@ -187,25 +187,25 @@ class EmployeeReport
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $quishing = QuishingLiveCamp::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $whatsapp = WaLiveCampaign::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -286,13 +286,13 @@ class EmployeeReport
     {
         $assignedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $assignedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -306,7 +306,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('training_started', 1)
             ->where('completed', 0)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -315,7 +315,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('scorm_started', 1)
             ->where('completed', 0)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -329,7 +329,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('training_started', 1)
             ->where('completed', 0)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -337,7 +337,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('scorm_started', 1)
             ->where('completed', 0)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -350,14 +350,14 @@ class EmployeeReport
         $completedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $completedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -370,14 +370,14 @@ class EmployeeReport
         $completedTrainings = TrainingAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
         $completedScorms = ScormAssignedUser::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->where('completed', 1)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -391,7 +391,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('completed', 0)
             ->where('training_due_date', '<', now())
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -399,7 +399,7 @@ class EmployeeReport
             ->where('company_id', $this->companyId)
             ->where('completed', 0)
             ->where('scorm_due_date', '<', now())
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -516,7 +516,7 @@ class EmployeeReport
         return TrainingAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
             ->where('training_type', 'games')
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })->count();
     }
@@ -526,7 +526,7 @@ class EmployeeReport
         $avg = TrainingAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
             ->where('training_type', 'games')
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->avg('personal_best') ?? 0;
@@ -539,7 +539,7 @@ class EmployeeReport
         $avg = TrainingAssignedUser::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
             ->where('training_type', 'games')
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->avg('game_time') ?? 0;
@@ -553,7 +553,7 @@ class EmployeeReport
     {
         return AssignedPolicy::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -563,7 +563,7 @@ class EmployeeReport
         return AssignedPolicy::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
             ->where('accepted', 1)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -573,7 +573,7 @@ class EmployeeReport
         return AssignedPolicy::where('user_email', $this->email)
             ->where('company_id', $this->companyId)
             ->where('json_quiz_response', '!=', null)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();

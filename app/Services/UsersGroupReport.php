@@ -15,7 +15,7 @@ class UsersGroupReport
     private string $companyId;
     private array $dateRange;
 
-    public function __construct(string $groupId, string $companyId, array $dateRange = null)
+    public function __construct(string $groupId, string $companyId, array $dateRange = [])
     {
         $this->groupId = $groupId;
         $this->companyId = $companyId;
@@ -43,7 +43,7 @@ class UsersGroupReport
     {
         return Campaign::where('company_id', $this->companyId)
             ->where('users_group', $this->groupId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -53,7 +53,7 @@ class UsersGroupReport
     {
         return QuishingCamp::where('company_id', $this->companyId)
             ->where('users_group', $this->groupId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -63,7 +63,7 @@ class UsersGroupReport
     {
         return AiCallCampaign::where('company_id', $this->companyId)
             ->where('emp_group', $this->groupId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
@@ -72,7 +72,7 @@ class UsersGroupReport
     {
         return WaCampaign::where('company_id', $this->companyId)
             ->where('users_group', $this->groupId)
-            ->when($this->dateRange, function ($query) {
+            ->when(!empty($this->dateRange), function ($query) {
                 $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
