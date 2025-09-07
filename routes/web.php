@@ -120,7 +120,7 @@ Route::domain(checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'msB
     });
 });
 
-Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'msBotBlocker'])->group(function () {
+Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
@@ -143,7 +143,7 @@ Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['block
     Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
 
     //route for updating payload
-    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
+    Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick'])->middleware('msBotBlocker');
 });
 
 //test routes
