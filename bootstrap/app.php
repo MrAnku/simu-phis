@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Middleware\CorsMiddleware;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\CorsMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use PHPOpenSourceSaver\JWTAuth\Http\Middleware\Authenticate as JWTAuthMiddleware;
@@ -14,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
+        // $middleware->trustProxies(at: '*');
         //
         $middleware->alias([
             'isAdminLoggedIn' => \App\Http\Middleware\AdminAuthenticate::class,
@@ -25,7 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
             'jwt.auth' => JWTAuthMiddleware::class,
             'checkLearnToken' => \App\Http\Middleware\checkLearnToken::class,
-            'checkBlueCollarLearnToken' => \App\Http\Middleware\checkBlueCollarLearnToken::class
+            'checkBlueCollarLearnToken' => \App\Http\Middleware\checkBlueCollarLearnToken::class,
+            'msBotBlocker' => \App\Http\Middleware\BlockMicrosoftIps::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

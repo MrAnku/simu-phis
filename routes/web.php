@@ -1,9 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Mail;
+use Dompdf\FrameDecorator\Block;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\AicallController;
+use App\Http\Middleware\BlockMicrosoftIps;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\BluecolarController;
 use App\Http\Controllers\OutlookAdController;
@@ -111,14 +113,14 @@ Route::get('/login-with-microsoft', [OutlookAdController::class, 'loginMicrosoft
 
 //-------------------miscellaneous routes------------------//
 
-Route::domain(checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->group(function () {
+Route::domain(checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'msBotBlocker'])->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
     });
 });
 
-Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'throttle:hook-limiter'])->group(function () {
+Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'msBotBlocker'])->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
@@ -157,13 +159,19 @@ Route::middleware('throttle:hook-limiter')->group(function () {
     Route::post('/phishing-reply', [PhishingReplyController::class, 'phishingReply']);
 
 
-    Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
+    Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail'])->middleware('msBotBlocker');
     Route::get('/ttrackEmailView/{campid}', [TrackingController::class, 'ttrackemail']);
     Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
     Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
     Route::post('/googlereport', [TrackingController::class, 'googleReport']);
 });
 
+
+Route::middleware(BlockMicrosoftIps::class)->group(function () {
+    Route::get('test-outlook-bot', function () {
+        return "You're not a bot!";
+    });
+});
 
 
 require __DIR__ . '/auth.php';

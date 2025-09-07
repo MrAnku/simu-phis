@@ -40,10 +40,10 @@ class BlockGoogleBots
         $clientIp = $request->ip();
 
         // Log the request for debugging (optional)
-        Log::debug('BlockGoogleBots Middleware', [
-            'ip' => $clientIp,
-            'user_agent' => $userAgent,
-        ]);
+        // Log::debug('BlockGoogleBots Middleware', [
+        //     'ip' => $clientIp,
+        //     'user_agent' => $userAgent,
+        // ]);
 
         // Check if the User-Agent matches known Google bot patterns
         foreach ($this->googleBotUserAgents as $botPattern) {
