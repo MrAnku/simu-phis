@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\BlueCollarEmployee;
+use App\Models\Users;
 use Illuminate\Http\Request;
 
 class ApiAuditLogsController extends Controller
@@ -88,5 +90,73 @@ class ApiAuditLogsController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function searchUsers(Request $request)
+    {
+        try {
+            $search = $request->query('q');
+
+            $normalUsers = $this->getNormalUsers($search);
+
+            $blueCollarUsers = $this->getBlueCollarUsers($search);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'normal_users' => $normalUsers,
+                    'blue_collar_users' => $blueCollarUsers
+                ],
+                'message' => 'Users fetched successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getNormalUsers($search)
+    {
+        // Normal users (email)
+        $normalUsersQuery = Users::select('user_email')
+            ->whereNotNull('user_email');
+
+        if ($search) {
+            $normalUsersQuery->where('user_email', 'like', "%{$search}%");
+        }
+
+        $normalUsers = $normalUsersQuery->distinct()
+            ->limit(10)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'user_email' => $user->user_email
+                ];
+            });
+
+        return $normalUsers;
+    }
+
+    private function getBlueCollarUsers($search)
+    {
+        $blueCollarQuery = BlueCollarEmployee::select('whatsapp')
+            ->whereNotNull('whatsapp');
+
+        if ($search) {
+            $blueCollarQuery->where('whatsapp', 'like', "%{$search}%");
+        }
+
+        $blueCollarUsers = $blueCollarQuery->distinct()
+            ->limit(10)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'whatsapp' => $user->whatsapp
+                ];
+            });
+
+        return $blueCollarUsers;
     }
 }

@@ -616,6 +616,7 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::prefix('audit-logs')->group(function () {
         Route::get('fetch-logs', [ApiAuditLogsController::class, 'fetchAuditLogs']);
         Route::get('fetch-audit-actions', [ApiAuditLogsController::class, 'fetchAuditActions']);
+        Route::get('search-users', [ApiAuditLogsController::class, 'searchUsers']);
     });
 });
 
