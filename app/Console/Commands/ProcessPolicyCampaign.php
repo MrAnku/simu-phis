@@ -206,7 +206,7 @@ class ProcessPolicyCampaign extends Command
                         $campaign->user_email,
                         null,
                         'POLICY_ASSIGNED',
-                        "'{$policy->policy_name}' assigned to {$campaign->user_email}",
+                        "'{$policy->policy_name}' has been assigned to {$campaign->user_email}",
                         'normal'
                     );
                 } else {

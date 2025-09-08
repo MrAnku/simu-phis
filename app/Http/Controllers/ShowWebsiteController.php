@@ -633,6 +633,18 @@ class ShowWebsiteController extends Controller
             if ($qsh == 1) {
                 QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
 
+                $qshCamp = QuishingLiveCamp::where('id', $campid)->first();
+
+                // Audit log
+                audit_log(
+                    $companyId,
+                    $qshCamp->user_email,
+                    null,
+                    'EMPLOYEE_COMPROMISED',
+                    "{$qshCamp->user_email} compromised in Quishing campaign '{$qshCamp->campaign_name}'",
+                    'normal'
+                );
+
                 $agent = new Agent();
 
                 $clientData = [
@@ -663,6 +675,18 @@ class ShowWebsiteController extends Controller
 
             if ($wsh == 1) {
                 WaLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
+
+                $waCamp = WaLiveCampaign::where('id', $campid)->first();
+
+                // Audit log
+                audit_log(
+                    $companyId,
+                    null,
+                    $waCamp->user_phone,
+                    'EMPLOYEE_COMPROMISED',
+                    "{$waCamp->user_phone} compromised in Whatsapp campaign '{$waCamp->campaign_name}'",
+                    $waCamp->employee_type
+                );
 
                 $agent = new Agent();
 
@@ -714,7 +738,15 @@ class ShowWebsiteController extends Controller
                     ->where('id', $campid)
                     ->update(['emp_compromised' => 1]);
 
-
+                // Audit log
+                audit_log(
+                    $companyId,
+                    $user->user_email,
+                    null,
+                    'EMPLOYEE_COMPROMISED',
+                    "{$user->user_email} compromised in Email campaign '{$user->campaign_name}'",
+                    'normal'
+                );
 
                 $agent = new Agent();
 
@@ -854,5 +886,4 @@ class ShowWebsiteController extends Controller
             log_action("TPRM phishing payload clicked", 'employee', 'employee');
         }
     }
-
 }

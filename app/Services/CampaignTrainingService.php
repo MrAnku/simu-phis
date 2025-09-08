@@ -65,7 +65,7 @@ class CampaignTrainingService
                         $campaign->user_email,
                         null,
                         'TRAINING_ASSIGNED',
-                        "{$module->name} assigned to {$campaign->user_email}",
+                        "{$module->name} has been assigned to {$campaign->user_email}",
                         'normal'
                     );
                 } else {
@@ -107,7 +107,7 @@ class CampaignTrainingService
                         $campaign->user_email,
                         null,
                         'SCORM_ASSIGNED',
-                        "{$scorm->name} assigned to {$campaign->user_email}",
+                        "{$scorm->name} has been assigned to {$campaign->user_email}",
                         'normal'
                     );
                 }
@@ -168,7 +168,7 @@ class CampaignTrainingService
                     $campaign->user_email,
                     null,
                     'TRAINING_ASSIGNED',
-                    "{$module->name} assigned to {$campaign->user_email}",
+                    "{$module->name} has been assigned to {$campaign->user_email}",
                     'normal'
                 );
             } else {
@@ -211,7 +211,7 @@ class CampaignTrainingService
                     $campaign->user_email,
                     null,
                     'SCORM_ASSIGNED',
-                    "{$scorm->name} assigned to {$campaign->user_email}",
+                    "{$scorm->name} has been assigned to {$campaign->user_email}",
                     'normal'
                 );
             }
@@ -284,7 +284,7 @@ class CampaignTrainingService
                         $campaign->user_email ?? null,
                         $user_phone,
                         'TRAINING_ASSIGNED',
-                        "{$module->name} assigned to {$user_phone}",
+                        "{$module->name} has been assigned to {$user_phone}",
                         'bluecollar'
                     );
                     echo "New training assigned successfully \n";
@@ -333,7 +333,7 @@ class CampaignTrainingService
                         $campaign->user_email ?? null,
                         $user_phone,
                         'SCORM_ASSIGNED',
-                        "{$scorm->name} assigned to {$user_phone}",
+                        "{$scorm->name} has been assigned to {$user_phone}",
                         'bluecollar'
                     );
                     echo 'Scorm assigned successfully to ' . $user_phone . "\n";
@@ -400,7 +400,7 @@ class CampaignTrainingService
                     $campaign->user_email ?? null,
                     $user_phone,
                     'TRAINING_ASSIGNED',
-                    "{$training->name} assigned to {$user_phone}",
+                    "{$training->name} has been assigned to {$user_phone}",
                     'bluecollar'
                 );
 
@@ -445,7 +445,7 @@ class CampaignTrainingService
                     $campaign->user_email ?? null,
                     $user_phone,
                     'SCORM_ASSIGNED',
-                    "{$scorm->name} assigned to {$user_phone}",
+                    "{$scorm->name} has been assigned to {$user_phone}",
                     'bluecollar'
                 );
                 echo 'Scorm assigned successfully to ' . $user_phone . "\n";

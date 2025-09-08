@@ -413,7 +413,7 @@ class ProcessAiCampaigns extends Command
                     $campaign->employee_email,
                     null,
                     'TRAINING_ASSIGNED',
-                    "{$module->name} assigned to {$campaign->employee_email}",
+                    "{$module->name} has been assigned to {$campaign->employee_email}",
                     'normal'
                 );
 
@@ -461,7 +461,7 @@ class ProcessAiCampaigns extends Command
                     $campaign->employee_email,
                     null,
                     'SCORM_ASSIGNED',
-                    "{$scorm->name} assigned to {$campaign->employee_email}",
+                    "{$scorm->name} has been assigned to {$campaign->employee_email}",
                     'normal'
                 );
                 if ($trainingAssigned['status'] == true) {
