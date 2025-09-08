@@ -146,6 +146,7 @@ class ProcessTriggers extends Command
                 'user_name' => $queue->user_name,
                 'company_id' => $queue->company_id,
             ];
+            $trainingAssignedService = new TrainingAssignedService();
             $isSent = $trainingAssignedService->sendTrainingEmail($mailData);
             if ($isSent['status'] == 1) {
                 echo "Training assigned to " . $queue->user_name . "\n";
@@ -209,7 +210,6 @@ class ProcessTriggers extends Command
 
     private function assignScorm($scorms, $queue, $employeeType)
     {
-        $trainingAssignedService = new TrainingAssignedService();
         $scorms = json_decode($scorms, true);
 
         if (!$scorms) {
@@ -253,6 +253,7 @@ class ProcessTriggers extends Command
                 'user_email' => $queue->user_email,
                 'company_id' => $queue->company_id
             ];
+            $trainingAssignedService = new TrainingAssignedService();
             $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
 
             if ($isMailSent['status'] == true) {
