@@ -19,7 +19,7 @@ class BlockMicrosoftIps
     public function handle(Request $request, Closure $next): Response
     {
 
-        $clientIp = $request->ip();
+        $clientIp = getClientIp();
 
         // Parse IPv4 or IPv6 automatically
         $ip = Factory::parseAddressString($clientIp);
