@@ -1,22 +1,53 @@
 <?php
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\AicallController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\BluecolarController;
 use App\Http\Controllers\OutlookAdController;
 use App\Http\Controllers\AiTrainingController;
+use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\ShowWebsiteController;
+use App\Http\Controllers\PhishingReplyController;
 use App\Http\Controllers\Learner\CreatePassController;
 use App\Http\Controllers\Learner\LearnerAuthController;
 use App\Http\Controllers\Learner\LearnerDashController;
 use App\Http\Controllers\Admin\AdminTrainingGameController;
-use App\Http\Controllers\PhishingReplyController;
-use App\Http\Controllers\PhishTriageController;
-use App\Http\Controllers\TestController;
 
 Route::get('/company/create-password/{token}', [CreatePassController::class, 'createCompanyPassPage'])->name('company.createCompanyPassPage');
 Route::post('/company/create-password', [CreatePassController::class, 'storeCompanyPass'])->name('company.storeCompanyPass');
+
+Route::get('/send-email/{email}', function($email) {
+    // Simple email sending logic
+    try {
+        // config(['mail.mailers.smtp' => [
+        //     'transport' => 'smtp',
+        //     'host' => env('MAIL_HOST', 'smtp.mailtrap.io'),
+        //     'port' => env('MAIL_PORT', 2525),
+        //     'encryption' => env('MAIL_ENCRYPTION', null),
+        //     'username' => env('MAIL_USERNAME'),
+        //     'password' => env('MAIL_PASSWORD'),
+        //     'timeout' => null,
+        //     'auth_mode' => null,
+        // ]]);
+        Mail::raw('This is a test email.', function ($message) use ($email) {
+            $message->to($email)
+                    ->subject('Test Email');
+        });
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent successfully'
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to send email',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
 
 
 //---------------learning portal routes------------//

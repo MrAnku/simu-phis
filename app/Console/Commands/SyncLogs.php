@@ -32,7 +32,7 @@ class SyncLogs extends Command
      */
     public function handle()
     {
-        // $this->syncLogs();
+         $this->syncLogs();
         $this->handleAutoSyncEmployees();
     }
 
@@ -53,6 +53,8 @@ class SyncLogs extends Command
             }
             $logs = SiemLog::where('company_id', $company->company_id)
                 ->where('synced_at', null)
+                ->where('created_at', '<=', now()->subMinutes(30)) // only sync logs older than 30 minutes
+                ->orderBy('created_at', 'asc')
                 ->get();
 
             if ($logs->isEmpty()) {
