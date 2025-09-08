@@ -12,7 +12,8 @@ $everyMinuteCommands = [
     'app:process-tprm-campaigns',
     'app:process-whatsapp-campaign',
     'app:send-infographics',
-    'app:company-management'
+    'app:company-management',
+    'app:process-triggers',
 ];
 
 if (! is_dir(storage_path('logs/cron'))) {
