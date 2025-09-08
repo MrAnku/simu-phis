@@ -236,7 +236,7 @@ class ProcessWhatsappCampaign extends Command
                     $camp_live->company_id,
                     $user->user_email ?? null,
                     $user->whatsapp ?? null,
-                    'WHATSAPP_CAMPAIGN_SENT',
+                    'WHATSAPP_CAMPAIGN_SIMULATED',
                     "The campaign ‘{$campaign->campaign_name}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
                     $campaign->employee_type
                 );

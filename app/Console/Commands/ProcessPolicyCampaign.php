@@ -116,7 +116,7 @@ class ProcessPolicyCampaign extends Command
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'POLICY_CAMPAIGN_SENT',
+                    'POLICY_CAMPAIGN_SIMULATED',
                     "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
                     'normal'
                 );

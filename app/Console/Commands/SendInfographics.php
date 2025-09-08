@@ -112,7 +112,7 @@ class SendInfographics extends Command
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
-                    'INFOGRAPHICS_CAMPAIGN_SENT',
+                    'INFOGRAPHICS_CAMPAIGN_SIMULATED',
                     "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
                     'normal'
                 );

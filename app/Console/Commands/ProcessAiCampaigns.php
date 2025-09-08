@@ -188,7 +188,7 @@ class ProcessAiCampaigns extends Command
                         $campaign->company_id,
                         $campaign->user_email,
                         $user->whatsapp,
-                        'AI_CAMPAIGN_SENT',
+                        'AI_CAMPAIGN_SIMULATED',
                         "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->whatsapp}",
                         'normal'
                     );

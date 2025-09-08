@@ -72,7 +72,7 @@ class ApiPolicyCampaignController extends Controller
                         Auth::user()->company_id,
                         $user->user_email,
                         null,
-                        'POLICY_CAMPAIGN_SENT',
+                        'POLICY_CAMPAIGN_SIMULATED',
                         "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
                         'normal'
                     );

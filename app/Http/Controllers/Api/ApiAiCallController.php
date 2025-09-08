@@ -546,7 +546,7 @@ class ApiAiCallController extends Controller
                         $campaign->company_id,
                         $user->user_email,
                         $user->whatsapp,
-                        'AI_CAMPAIGN_SENT',
+                        'AI_CAMPAIGN_SIMULATED',
                         "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->whatsapp}",
                         'normal'
                     );
