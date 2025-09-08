@@ -185,7 +185,8 @@ class InforgraphicsController extends Controller
                         $user->user_email,
                         null,
                         'INFOGRAPHICS_CAMPAIGN_LAUNCHED',
-                        "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                        "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
+                        null,
                         'normal'
                     );
                 }

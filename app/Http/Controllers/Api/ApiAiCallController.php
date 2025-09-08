@@ -547,7 +547,7 @@ class ApiAiCallController extends Controller
                         $user->user_email,
                         $user->whatsapp,
                         'AI_CAMPAIGN_LAUNCHED',
-                        "'{$campaign->campaign_name}' shoot to {$user->whatsapp}",
+                        "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->whatsapp}",
                         'normal'
                     );
                 }

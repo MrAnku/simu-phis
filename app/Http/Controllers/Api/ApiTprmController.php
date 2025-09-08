@@ -345,7 +345,7 @@ class ApiTprmController extends Controller
                     $user->user_email,
                     null,
                     'TPRM_CAMPAIGN_LAUNCHED',
-                    "'{$campName}' shoot to {$user->user_email}",
+                    "The campaign ‘{$campName}’ has been sent to {$user->user_email}",
                     'tprm'
                 );
             }

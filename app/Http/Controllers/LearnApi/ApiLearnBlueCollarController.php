@@ -444,7 +444,7 @@ class ApiLearnBlueCollarController extends Controller
                         null,
                         $rowData->user_whatsapp,
                         'CERTIFICATE_AWARDED',
-                        "Certificate has been awarded to '{$rowData->user_whatsapp}'.",
+                        "Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_whatsapp}",
                         'bluecollar'
                     );
 
@@ -737,7 +737,7 @@ class ApiLearnBlueCollarController extends Controller
                         null,
                         $rowData->user_whatsapp,
                         'CERTIFICATE_AWARDED',
-                        "Certificate has been awarded to '{$rowData->user_whatsapp}'.",
+                        "Certificate for {$rowData->scormTrainingData->name} has been awarded to {$rowData->user_whatsapp}",
                         'bluecollar'
                     );
 

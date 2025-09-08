@@ -143,7 +143,7 @@ class ProcessCampaigns extends Command
           $campaign->user_email,
           null,
           'EMAIL_CAMPAIGN_LAUNCHED',
-          "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+          "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
           'normal'
         );
       }
@@ -348,7 +348,8 @@ class ProcessCampaigns extends Command
       '{{tracker_img}}',
       '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">' .
         '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
-        '<input type="hidden" id="campaign_type" value="email">', $mailBody
+        '<input type="hidden" id="campaign_type" value="email">',
+      $mailBody
     );
 
     if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {

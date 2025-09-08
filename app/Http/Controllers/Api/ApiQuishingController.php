@@ -149,7 +149,7 @@ class ApiQuishingController extends Controller
                     $user->user_email,
                     null,
                     'QUISHING_CAMPAIGN_LAUNCHED',
-                    "'$request->campaign_name' shoot to {$user->user_email}",
+                    "The campaign ‘{$request->campaign_name}’ has been sent to {$user->user_email}",
                     'normal'
                 );
             }
@@ -271,7 +271,7 @@ class ApiQuishingController extends Controller
                 ], 422);
             }
 
-            if( !QuishingCamp::where('campaign_id', $campid)->exists()) {
+            if (!QuishingCamp::where('campaign_id', $campid)->exists()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Campaign not found'),

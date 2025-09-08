@@ -108,12 +108,12 @@ class SendInfographics extends Command
                 ]);
 
                 // Audit log
-                 audit_log(
+                audit_log(
                     $campaign->company_id,
                     $campaign->user_email,
                     null,
                     'INFOGRAPHICS_CAMPAIGN_LAUNCHED',
-                    "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
                     'normal'
                 );
             }
@@ -151,11 +151,9 @@ class SendInfographics extends Command
                 $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
 
                 $isWhitelabeled->updateSmtpConfig();
-                
-            }else{
+            } else {
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-                
             }
 
             foreach ($campaigns as $campaign) {
@@ -174,8 +172,6 @@ class SendInfographics extends Command
                 if ($isMailSent) {
                     echo 'Infographic sent to ' . $campaign->user_email . "\n";
                     $campaign->update(['sent' => 1]);
-
-                  
                 } else {
                     echo 'Failed to send infographic to ' . $campaign->user_email . "\n";
                 }

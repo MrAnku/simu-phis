@@ -395,7 +395,7 @@ class ApiLearnController extends Controller
                         $rowData->user_email,
                         null,
                         'CERTIFICATE_AWARDED',
-                        "Certificate has been awarded to '{$rowData->user_email}'.",
+                        "Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_email}",
                         'normal'
                     );
 
@@ -556,7 +556,7 @@ class ApiLearnController extends Controller
                         $rowData->user_email,
                         null,
                         'CERTIFICATE_AWARDED',
-                        "Certificate has been awarded to '{$rowData->user_email}'.",
+                        "Certificate for {$rowData->scormTrainingData->name} has been awarded to {$rowData->user_email}",
                         'normal'
                     );
 

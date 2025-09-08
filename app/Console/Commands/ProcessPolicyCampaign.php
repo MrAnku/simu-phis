@@ -117,7 +117,7 @@ class ProcessPolicyCampaign extends Command
                     $campaign->user_email,
                     null,
                     'POLICY_CAMPAIGN_LAUNCHED',
-                    "'{$campaign->campaign_name}' shoot to {$user->user_email}",
+                    "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
                     'normal'
                 );
             }
