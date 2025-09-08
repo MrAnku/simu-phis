@@ -53,14 +53,14 @@ class CompanyManagement extends Command
             }
             $license = $company->license;
             if (!$license) {
-                echo ("Company {$company->company_name} does not have a valid license.");
+                echo ("Company {$company->company_name} does not have a valid license. \n");
                 continue;
             }
             if (
                 $license->expiry < now() &&
                 $company->alert?->license_expired == null
             ) {
-                echo ("Company {$company->company_name} license has expired.");
+                echo ("Company {$company->company_name} license has expired. \n");
                 try {
                     Mail::to($company->email)->send(new CompanyManagementMail($company, 'license_expired'));
 
@@ -87,7 +87,7 @@ class CompanyManagement extends Command
         }
         foreach ($companies as $company) {
             
-            if ($company->alert?->need_support == null) {
+            if ($company->alert?->need_support == null && $company->license?->expiry > now()) {
                 $companyCreatedDate = Carbon::parse($company->created_at);
 
                 //check if the company was created more than 15 days ago
