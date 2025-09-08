@@ -76,7 +76,7 @@
         <p>
             If you're interested in renewing your account or just want to explore more about how simUphish can support
             your phishing awareness efforts, feel free to reply to this email or contact us directly at <a
-                href="mailto:contact@simuphish.com" target="_blank">contact@simuphish.com</a>.
+                href="mailto:support@simuphish.com" target="_blank">support@simuphish.com</a>.
         </p>
 
         <p>
@@ -86,7 +86,7 @@
         <p>Best regards,<br>
             <strong>Customer Support Team</strong><br>
             <strong>simUphish</strong><br>
-            <a href="mailto:contact@simuphish.com" target="_blank">contact@simuphish.com</a><br>
+            <a href="mailto:support@simuphish.com" target="_blank">support@simuphish.com</a><br>
             <a href="https://www.simuphish.com" target="_blank">www.simuphish.com</a>
         </p>
         

@@ -57,7 +57,7 @@
             <li>Any technical questions or concerns</li>
         </ul>
         <p style="text-align: center;">
-            <a href="mailto:{{ $company->partner?->email ?? 'N/A'}}" class="button" style="color: #fff !important;">Get Support</a>
+            <a href="mailto:support@simuphish.com" class="button" style="color: #fff !important;">Get Support</a>
         </p>
         <p style="text-align: center; font-size: 14px; color: #666;">
             <em>No issues? That's great! Feel free to ignore this email.</em>
