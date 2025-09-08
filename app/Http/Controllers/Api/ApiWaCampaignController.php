@@ -207,8 +207,8 @@ class ApiWaCampaignController extends Controller
                     Auth::user()->company_id,
                     $user->user_email ?? null,
                     $user->whatsapp ?? null,
-                    'WHATSAPP_CAMPAIGN_LAUNCHED',
-                    "'{$validated['campaign_name']}' sent to " . ($user->user_email ?? $user->whatsapp),
+                    'WHATSAPP_CAMPAIGN_SENT',
+                    "The campaign ‘{$validated['campaign_name']}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
                     $validated['employee_type']
                 );
             }
@@ -324,8 +324,13 @@ class ApiWaCampaignController extends Controller
             }
 
 
-            $campaigns = WaLiveCampaign::with(['whatsTrainingData', 'phishingWebsite', 'whatsTrainingData.trainingData',
-             'scormTrainingData.scormTrainingData', 'campaignActivity'])
+            $campaigns = WaLiveCampaign::with([
+                'whatsTrainingData',
+                'phishingWebsite',
+                'whatsTrainingData.trainingData',
+                'scormTrainingData.scormTrainingData',
+                'campaignActivity'
+            ])
                 ->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();

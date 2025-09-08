@@ -221,7 +221,7 @@ class ApiCampaignController extends Controller
                 $companyId,
                 $user->user_email,
                 null,
-                'EMAIL_CAMPAIGN_LAUNCHED',
+                'EMAIL_CAMPAIGN_SENT',
                 "The campaign ‘{$data['camp_name']}’ has been sent to {$user->user_email}",
                 'normal'
             );

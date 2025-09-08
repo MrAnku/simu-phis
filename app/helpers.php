@@ -1059,7 +1059,7 @@ if (!function_exists('audit_log')) {
             'user_type'     => $userType,
             'action'        => $action ?? null,
             'description'   => $description   ?? null,
-            'ip_address'    => request()->ip(),
+            'ip_address'    => getClientIp(),
             'user_agent'    => request()->header('User-Agent'),
         ]);
     }

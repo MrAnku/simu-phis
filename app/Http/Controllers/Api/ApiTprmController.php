@@ -338,16 +338,6 @@ class ApiTprmController extends Controller
                     'campaign_live_id' => $camp_live->id,
                     'company_id' => $companyId,
                 ]);
-
-                // Audit log
-                audit_log(
-                    $companyId,
-                    $user->user_email,
-                    null,
-                    'TPRM_CAMPAIGN_LAUNCHED',
-                    "The campaign ‘{$campName}’ has been sent to {$user->user_email}",
-                    'tprm'
-                );
             }
 
             TprmCampaign::create([

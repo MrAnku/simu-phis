@@ -61,13 +61,12 @@ class ApiAuditLogsController extends Controller
     {
         try {
             $actions = [
-                'EMAIL_CAMPAIGN_LAUNCHED',
-                'QUISHING_CAMPAIGN_LAUNCHED',
-                'WHATSAPP_CAMPAIGN_LAUNCHED',
-                'AI_CAMPAIGN_LAUNCHED',
-                'TPRM_CAMPAIGN_LAUNCHED',
-                'POLICY_CAMPAIGN_LAUNCHED',
-                'INFOGRAPHICS_CAMPAIGN_LAUNCHED',
+                'EMAIL_CAMPAIGN_SENT',
+                'QUISHING_CAMPAIGN_SENT',
+                'WHATSAPP_CAMPAIGN_SENT',
+                'AI_CAMPAIGN_SENT',
+                'POLICY_CAMPAIGN_SENT',
+                'INFOGRAPHICS_CAMPAIGN_SENT',
                 'EMPLOYEE_COMPROMISED',
                 'SCORM_ASSIGNED',
                 'TRAINING_ASSIGNED',
