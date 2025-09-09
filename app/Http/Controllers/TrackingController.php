@@ -35,13 +35,8 @@ class TrackingController extends Controller
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
-                log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
-                $report = CampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
-
-                if ($report) {
-                    $report->emails_viewed += 1;
-                    $report->save();
-                }
+                log_action("Phishing email opened by {$campaignLive->user_email} in email simulation", 'company', $campaignLive->company_id);
+                
             }
         }
 
@@ -68,13 +63,8 @@ class TrackingController extends Controller
 
                 TprmActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
-                log_action("Phishing email opened by {$campaignLive->user_email}", 'employee', 'employee');
-                $report = TprmCampaignReport::where('campaign_id', $campaignLive->campaign_id)->first();
-
-                if ($report) {
-                    $report->emails_viewed += 1;
-                    $report->save();
-                }
+                log_action("Phishing email opened by {$campaignLive->user_email} in TPRM simulation", 'company', $campaignLive->company_id);
+                
             }
         }
 
@@ -144,7 +134,7 @@ class TrackingController extends Controller
 
                     setCompanyTimezone($quishingLive->company_id);
                     
-                    log_action("Quishing QR code scanned by {$quishingLive->user_email}", 'employee', 'employee');
+                    log_action("Quishing QR code scanned by {$quishingLive->user_email}", 'company', $quishingLive->company_id);
                     QuishingActivity::where('campaign_live_id', $employeeid)->update(['email_viewed_at' => now()]);
                 }
             }
