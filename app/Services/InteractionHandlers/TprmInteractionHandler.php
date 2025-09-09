@@ -3,25 +3,21 @@
 namespace App\Services\InteractionHandlers;
 
 use Jenssegers\Agent\Agent;
-use App\Models\CampaignLive;
 use App\Models\TprmActivity;
 use App\Models\TprmCampaignLive;
-use App\Models\EmailCampActivity;
 
 class TprmInteractionHandler
 {
     protected $campLiveId;
-    protected $companyId;
 
-    public function __construct($campLiveId, $companyId)
+    public function __construct($campLiveId)
     {
         $this->campLiveId = $campLiveId;
-        $this->companyId = $companyId;
     }
 
-    public function updatePayloadClick()
+    public function updatePayloadClick($companyId)
     {
-        if (clickedByBot($this->companyId, $this->campLiveId, 'tprm')) {
+        if (clickedByBot($companyId, $this->campLiveId, 'tprm')) {
             return;
         }
         $campaignLive = TprmCampaignLive::where('id', $this->campLiveId)
@@ -32,10 +28,10 @@ class TprmInteractionHandler
             $campaignLive->save();
 
             TprmActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
-            log_action("Phishing email payload clicked by {$campaignLive->user_email} in tprm simulation.", 'company', $this->companyId);
+            log_action("Phishing email payload clicked by {$campaignLive->user_email} in tprm simulation.", 'company', $companyId);
         }
     }
-    public function handleCompromisedEmail(){
+    public function handleCompromisedEmail($companyId){
 
         $campaignLive = TprmCampaignLive::where('id', $this->campLiveId)
             ->where('emp_compromised', 0)
@@ -65,7 +61,7 @@ class TprmInteractionHandler
                 'compromised_at' => now(),
                 'client_details' => json_encode($clientData)
             ]);
-        log_action("Phishing email marked as compromised by {$campaignLive->user_email} in tprm simulation.", 'company', $this->companyId);
+        log_action("Phishing email marked as compromised by {$campaignLive->user_email} in tprm simulation.", 'company', $companyId);
 
         return response()->json(['status' => 'success', 'message' => 'Email marked as compromised.']);
     }

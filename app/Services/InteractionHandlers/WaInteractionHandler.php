@@ -2,26 +2,22 @@
 
 namespace App\Services\InteractionHandlers;
 
-use App\Models\CampaignLive;
-use App\Models\WaLiveCampaign;
-use App\Models\QuishingActivity;
-use App\Models\QuishingLiveCamp;
-use App\Models\WhatsappActivity;
-use App\Models\EmailCampActivity;
+use App\Models\WaCampaign;
 use Jenssegers\Agent\Agent;
+use App\Models\WaLiveCampaign;
+use App\Models\WhatsappActivity;
+use App\Services\CampaignTrainingService;
 
 class WaInteractionHandler
 {
     protected $campLiveId;
-    protected $companyId;
 
-    public function __construct($campLiveId, $companyId)
+    public function __construct($campLiveId)
     {
         $this->campLiveId = $campLiveId;
-        $this->companyId = $companyId;
     }
 
-    public function updatePayloadClick()
+    public function updatePayloadClick($companyId)
     {
 
         $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)
@@ -31,11 +27,11 @@ class WaInteractionHandler
             $campaignLive->save();
 
             WhatsappActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
-            log_action("Visited to phishing website by {$campaignLive->user_name} in WhatsApp simulation.", 'company', $this->companyId);
+            log_action("Visited to phishing website by {$campaignLive->user_name} in WhatsApp simulation.", 'company', $companyId);
         }
     }
 
-    public function handleCompromisedMsg()
+    public function handleCompromisedMsg($companyId)
     {
         $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)
             ->where('compromised', 0)
@@ -63,11 +59,11 @@ class WaInteractionHandler
                 'compromised_at' => now(),
                 'client_details' => json_encode($clientData)
             ]);
-        log_action("Employee compromised {$campaignLive->user_email} in whatsapp simulation.", 'company', $this->companyId);
+        log_action("Employee compromised {$campaignLive->user_email} in whatsapp simulation.", 'company', $companyId);
 
         // Audit log
         audit_log(
-            $this->companyId,
+            $companyId,
             null,
             $campaignLive->user_phone,
             'EMPLOYEE_COMPROMISED',
@@ -75,5 +71,66 @@ class WaInteractionHandler
             $campaignLive->employee_type
         );
         return response()->json(['status' => 'success', 'message' => 'Message marked as compromised.']);
+    }
+
+    public function assignTraining()
+    {
+        $campaign = WaLiveCampaign::where('id', $this->campLiveId)->first();
+        if (!$campaign) {
+            return response()->json(['error' => 'Invalid campaign or user']);
+        }
+        if ($campaign->training_module == null && $campaign->scorm_training == null) {
+            return response()->json(['error' => 'No training module nor scorm assigned']);
+        }
+
+        setCompanyTimezone($campaign->company_id);
+
+        //checking assignment
+        $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
+
+        if ($campaign->employee_type == 'normal') {
+            if ($all_camp->training_assignment == 'all') {
+                $trainingModules = [];
+                $scormTrainings = [];
+
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+                CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                CampaignTrainingService::assignTraining($campaign);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
+        } else {
+            if ($all_camp->training_assignment == 'all') {
+                $trainingModules = [];
+                $scormTrainings = [];
+
+                if ($all_camp->training_module !== null) {
+                    $trainingModules = json_decode($all_camp->training_module, true);
+                }
+
+                if ($all_camp->scorm_training !== null) {
+                    $scormTrainings = json_decode($all_camp->scorm_training, true);
+                }
+
+                CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                CampaignTrainingService::assignBlueCollarTraining($campaign);
+
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
+        }
+
     }
 }

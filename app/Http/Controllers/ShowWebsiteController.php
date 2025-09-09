@@ -2,33 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Users;
-use Plivo\RestClient;
-use App\Models\Campaign;
 use App\Models\TprmUsers;
-use App\Models\WaCampaign;
-use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
-use App\Models\QuishingCamp;
-use App\Models\TprmActivity;
 use Illuminate\Http\Request;
 use App\Models\WaLiveCampaign;
 use App\Models\CompanySettings;
 use App\Models\PhishingWebsite;
-use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
-use App\Models\SmishingCampaign;
-use App\Models\WhatsappActivity;
 use \App\Models\TprmCampaignLive;
-use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
 use App\Models\SmishingLiveCampaign;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
-use App\Services\CampaignTrainingService;
-use App\Services\TrainingAssignedService;
-use App\Models\BlueCollarLearnerLoginSession;
 use App\Services\InteractionHandlers\WaInteractionHandler;
 use App\Services\InteractionHandlers\EmailInteractionHandler;
 use App\Services\InteractionHandlers\QuishingInteractionHandler;
@@ -158,305 +143,6 @@ class ShowWebsiteController extends Controller
         return response()->json(['error' => 'Campaign or Company Setting not found'], 404);
     }
 
-  
-
-    private function assignTrainingByQuishing($campid)
-    {
-        $campaign = QuishingLiveCamp::where('id', $campid)->first();
-
-
-        if (!$campaign) {
-            return response()->json(['error' => 'Invalid campaign or user']);
-        }
-        if ($campaign->training_module == null && $campaign->scorm_training == null) {
-            return response()->json(['error' => 'No training assigned']);
-        }
-
-        setCompanyTimezone($campaign->company_id);
-
-        //checking assignment
-        $all_camp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
-
-        if ($all_camp->training_assignment == 'all') {
-
-
-            $trainingModules = [];
-            $scormTrainings = [];
-
-            if ($all_camp->training_module !== null) {
-                $trainingModules = json_decode($all_camp->training_module, true);
-            }
-
-            if ($all_camp->scorm_training !== null) {
-                $scormTrainings = json_decode($all_camp->scorm_training, true);
-            }
-
-            $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
-
-            // Update campaign_live table
-            $campaign->update(['sent' => '1', 'training_assigned' => '1']);
-        } else {
-            $sent = CampaignTrainingService::assignTraining($campaign);
-
-            // Update campaign_live table
-            $campaign->update(['sent' => '1', 'training_assigned' => '1']);
-        }
-    }
-
-    private function assignTrainingBySmishing($campid)
-    {
-        $campaign = SmishingLiveCampaign::where('id', $campid)->first();
-        if (!$campaign) {
-            return response()->json(['error' => 'Invalid campaign or user']);
-        }
-        if ($campaign->training_module == null && $campaign->scorm_training == null) {
-            return response()->json(['error' => 'No training assigned']);
-        }
-
-        setCompanyTimezone($campaign->company_id);
-
-
-        //checking assignment
-        $all_camp = SmishingCampaign::where('campaign_id', $campaign->campaign_id)->first();
-
-        if ($all_camp->training_assignment == 'all') {
-            $trainings = json_decode($all_camp->training_module, true);
-            $sent = CampaignTrainingService::assignTraining($campaign, $trainings, true);
-
-            // Update campaign_live table
-            $campaign->update(['training_assigned' => 1]);
-        } else {
-            $sent = CampaignTrainingService::assignTraining($campaign, null, true);
-
-            // Update campaign_live table
-            $campaign->update(['training_assigned' => 1]);
-        }
-    }
-
-
-    private function assignTrainingByWhatsapp($campid)
-    {
-        $campaign = WaLiveCampaign::where('id', $campid)->first();
-        if (!$campaign) {
-            echo "Invalid campaign or user\n";
-            return response()->json(['error' => 'Invalid campaign or user']);
-        }
-        if ($campaign->training_module == null && $campaign->scorm_training == null) {
-            echo "No training module nor scorm assigned\n";
-            return response()->json(['error' => 'No training module nor scorm assigned']);
-        }
-
-        setCompanyTimezone($campaign->company_id);
-
-        //checking assignment
-        $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
-
-        if ($campaign->employee_type == 'normal') {
-            if ($all_camp->training_assignment == 'all') {
-                $trainingModules = [];
-                $scormTrainings = [];
-
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
-                $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
-
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            } else {
-                $sent = CampaignTrainingService::assignTraining($campaign);
-
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            }
-        } else {
-            if ($all_camp->training_assignment == 'all') {
-                $trainingModules = [];
-                $scormTrainings = [];
-
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
-                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
-
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            } else {
-                $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
-
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            }
-        }
-    }
-
-    private function whatsappAssignFirstTraining($campaign)
-    {
-        if ($campaign->training_module !== null) {
-            $training_assigned = DB::table('blue_collar_training_users')
-                ->insertGetId([
-                    'campaign_id' => $campaign->campaign_id,
-                    'user_id' => $campaign->user_id,
-                    'user_name' => $campaign->user_name,
-                    'user_whatsapp' => $campaign->user_phone,
-                    'training' => $campaign->training_module,
-                    'training_lang' => $campaign->training_lang,
-                    'training_type' => $campaign->training_type,
-                    'assigned_date' => now()->toDateString(),
-                    'training_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
-                    'company_id' => $campaign->company_id
-                ]);
-        }
-
-        if ($campaign->scorm_training !== null) {
-            $training_assigned = DB::table('blue_collar_scorm_assigned_users')
-                ->insertGetId([
-                    'campaign_id' => $campaign->campaign_id,
-                    'user_id' => $campaign->user_id,
-                    'user_name' => $campaign->user_name,
-                    'user_whatsapp' => $campaign->user_phone,
-                    'scorm' => $campaign->scorm_training,
-                    'assigned_date' => now()->toDateString(),
-                    'scorm_due_date' => now()->addDays((int)$campaign->days_until_due)->toDateString(),
-                    'company_id' => $campaign->company_id
-                ]);
-        }
-
-        if (!$training_assigned) {
-            return response()->json(['error' => __('Failed to assign training')]);
-        }
-
-        $campaign->update(['training_assigned' => 1]);
-
-        // WhatsApp Notification
-        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
-        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
-        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
-
-        $token = encrypt($campaign->user_phone);
-
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $campaign->user_phone, // Replace with actual user phone number
-            "type" => "template",
-            "template" => [
-                "name" => "training_message",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => $campaign->user_name],
-                            ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/blue-collar-training-dashboard/" . $token]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        // Insert new record into the database
-
-        $inserted = BlueCollarLearnerLoginSession::insert([
-            'whatsapp_number' => $campaign->user_phone,
-            'token' => $token,
-            'expiry' => now()->addHours(24),
-        ]);
-
-        // Check if the record was inserted successfully
-        if (!$inserted) {
-            return response()->json(['error' => 'Failed to create token'], 500);
-        }
-
-        $whatsapp_response = Http::withHeaders([
-            "Authorization" => "Bearer {$access_token}",
-            "Content-Type" => "application/json"
-        ])->withOptions([
-            'verify' => false
-        ])->post($whatsapp_url, $whatsapp_data);
-
-
-        if ($whatsapp_response->successful()) {
-            log_action("Bluecollar Training Assigned | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
-        } else {
-            log_action("Training assignment failed", 'employee', 'employee');
-        }
-
-        return response()->json(['success' => __('Training assigned and WhatsApp notification sent')]);
-    }
-
-    private function whatsappSendTrainingReminder($campaign, $trainingAssignedId)
-    {
-        // WhatsApp API Configuration
-        $access_token = env('WHATSAPP_CLOUD_API_TOKEN');
-        $phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
-        $whatsapp_url = "https://graph.facebook.com/v22.0/{$phone_number_id}/messages";
-
-        $token = encrypt($campaign->user_phone);
-
-
-        $whatsapp_data = [
-            "messaging_product" => "whatsapp",
-            "to" => $campaign->user_phone, // Replace with actual user phone number
-            "type" => "template",
-            "template" => [
-                "name" => "training_message",
-                "language" => ["code" => "en"],
-                "components" => [
-                    [
-                        "type" => "body",
-                        "parameters" => [
-                            ["type" => "text", "text" => $campaign->user_name],
-                            ["type" => "text", "text" => $campaign->trainingData->name],
-                            ["type" => "text", "text" => env('SIMUPHISH_LEARNING_URL') . "/blue-collar-training-dashboard/" . $token],
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        // Insert new record into the database
-
-        $inserted = BlueCollarLearnerLoginSession::insert([
-            'whatsapp_number' => $campaign->user_phone,
-            'token' => $token,
-            'expiry' => now()->addHours(24),
-        ]);
-
-        // Check if the record was inserted successfully
-        if (!$inserted) {
-            return response()->json(['error' => 'Failed to create token'], 500);
-        }
-
-        // Send WhatsApp message
-
-        $whatsapp_response = Http::withHeaders([
-            "Authorization" => "Bearer {$access_token}",
-            "Content-Type" => "application/json"
-        ])->withOptions([
-            'verify' => false
-        ])->post($whatsapp_url, $whatsapp_data);
-
-
-        if ($whatsapp_response->successful()) {
-            log_action("Bluecolar training Reminder Sent | Training {$campaign->trainingData->name} assigned to {$campaign->user_phone}.", 'employee', 'employee');
-            return response()->json(['success' => __('Training reminder sent via WhatsApp')]);
-        } else {
-            return response()->json([
-                'error' => __('Failed to send WhatsApp message'),
-                'status' => $whatsapp_response->status(),
-                'response' => $whatsapp_response->body()
-            ], 500);
-        }
-    }
-
-
 
     public function assignTraining(Request $request)
     {
@@ -469,139 +155,28 @@ class ShowWebsiteController extends Controller
 
             // Quishing Campaign
             if ($qsh == 1) {
-                $this->assignTrainingByQuishing($campid);
-                return;
-            }
-            if ($smi == 1) {
-                $this->assignTrainingBySmishing($campid);
-                $this->sendTrainingSms($campid);
-                return;
-            }
-            if ($wsh == 1) {
-                $this->assignTrainingByWhatsapp($campid);
-                return;
-            }
+                $handler = new QuishingInteractionHandler($campid);
+                return $handler->assignTraining();
 
-            // =======================================
-            // Email Campaign 
-            $campaign = CampaignLive::where('id', $campid)->first();
 
-            if (!$campaign) {
-                return response()->json(['error' => 'Invalid campaign or user']);
-            }
-
-            if ($campaign->training_module == null && $campaign->scorm_training == null) {
-
-                return response()->json(['error' => 'No training assigned']);
-            }
-
-            setCompanyTimezone($campaign->company_id);
-
-            //checking assignment
-            $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-
-            if ($all_camp->training_assignment == 'all') {
-                $trainings = json_decode($all_camp->training_module, true);
-                $sent = CampaignTrainingService::assignTraining($campaign, $trainings);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+                // $this->assignTrainingByQuishing($campid);
+                // return;
+            } else if ($smi == 1) {
+                $handler = new SmishingInteractionHandler($campid);
+                return $handler->assignTraining();
+                // $this->assignTrainingBySmishing($campid);
+                // $this->sendTrainingSms($campid);
+                // return;
+            } else if ($wsh == 1) {
+                $handler = new WaInteractionHandler($campid);
+                return $handler->assignTraining();
+                // $this->assignTrainingByWhatsapp($campid);
+                // return;
             } else {
-                $sent = CampaignTrainingService::assignTraining($campaign);
-
-                // Update campaign_live table
-                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-            }
-        }
-    }
-
-
-    private function sendAlertSms($campaign)
-    {
-        try {
-            $client = new RestClient(
-                env('PLIVO_AUTH_ID'),
-                env('PLIVO_AUTH_TOKEN')
-            );
-            if ($campaign->training_module == null) {
-                $msgBody = "Oops! You were in attack! Don't worry this is just for test. This simulation is part of our ongoing efforts to improve cybersecurity awareness. Thank you for your cooperation.";
-            } else {
-                $msgBody = "Oops! You were in attack! This simulation is part of our ongoing efforts to improve cybersecurity awareness. Please complete the training sent to your email to enhance your awareness and security. Thank you for your cooperation.";
+                $handler = new EmailInteractionHandler($campid);
+                return $handler->assignTraining();
             }
 
-
-            $response = $client->messages->create(
-                [
-                    "src" => env('PLIVO_MOBILE_NUMBER'),
-                    "dst" => $campaign->user_phone,
-                    "text"  => $msgBody
-                ]
-            );
-            return response()->json([
-                'status' => 'success',
-                'message' => __('SMS sent successfully'),
-                'response' => $response
-            ]);
-        } catch (\Plivo\Exceptions\PlivoRestException $e) {
-            // Handle the Plivo exception
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to send SMS: ' . $e->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            // Handle the exception
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An error occurred: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    private function sendTrainingSms($campid)
-    {
-        $campaign = SmishingLiveCampaign::where('id', $campid)->first();
-        if (!$campaign) {
-            return response()->json(['error' => 'Invalid campaign or user']);
-        }
-
-        if ($campaign->training_module == null && $campaign->scorm_training == null) {
-            return response()->json(['error' => 'No training assigned']);
-        }
-
-        setCompanyTimezone($campaign->company_id);
-
-        try {
-            $client = new RestClient(
-                env('PLIVO_AUTH_ID'),
-                env('PLIVO_AUTH_TOKEN')
-            );
-
-            $msgBody = "Training assigned! Please check your email for the training. This simulation is part of our ongoing efforts to improve cybersecurity awareness. Thank you for your cooperation.";
-
-            $response = $client->messages->create(
-                [
-                    "src" => env('PLIVO_MOBILE_NUMBER'),
-                    "dst" => $campaign->user_phone,
-                    "text"  => $msgBody
-                ]
-            );
-            return response()->json([
-                'status' => 'success',
-                'message' => __('SMS sent successfully'),
-                'response' => $response
-            ]);
-        } catch (\Plivo\Exceptions\PlivoRestException $e) {
-            // Handle the Plivo exception
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to send SMS: ' . $e->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            // Handle the exception
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An error occurred: ' . $e->getMessage()
-            ]);
         }
     }
 
@@ -624,21 +199,21 @@ class ShowWebsiteController extends Controller
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
-                $handler = new QuishingInteractionHandler($campid, $companyId);
-                return $handler->handleCompromisedEmail();
+                $handler = new QuishingInteractionHandler($campid);
+                return $handler->handleCompromisedEmail($companyId);
             } else if ($smi == 1) {
-                $handler = new SmishingInteractionHandler($campid, $companyId);
-                return $handler->handleCompromisedMsg();
+                $handler = new SmishingInteractionHandler($campid);
+                return $handler->handleCompromisedMsg($companyId);
             } else if ($wsh == 1) {
 
-                $handler = new WaInteractionHandler($campid, $companyId);
-                return $handler->handleCompromisedMsg();
+                $handler = new WaInteractionHandler($campid);
+                return $handler->handleCompromisedMsg($companyId);
             } else if ($tprm == 1) {
-                $handler = new TprmInteractionHandler($campid, $companyId);
-                return $handler->handleCompromisedEmail();
+                $handler = new TprmInteractionHandler($campid);
+                return $handler->handleCompromisedEmail($companyId);
             } else {
-                $handler = new EmailInteractionHandler($campid, $companyId);
-                return $handler->handleCompromisedEmail();
+                $handler = new EmailInteractionHandler($campid);
+                return $handler->handleCompromisedEmail($companyId);
             }
         }
     }
@@ -663,26 +238,25 @@ class ShowWebsiteController extends Controller
 
             if ($qsh == 1) {
 
-                $handler = new QuishingInteractionHandler($campid, $companyId);
-                $handler->updatePayloadClick();
+                $handler = new QuishingInteractionHandler($campid);
+                $handler->updatePayloadClick($companyId);
                 return;
             } else if ($smi == 1) {
-                $handler = new SmishingInteractionHandler($campid, $companyId);
-                $handler->updatePayloadClick();
+                $handler = new SmishingInteractionHandler($campid);
+                $handler->updatePayloadClick($companyId);
                 return;
             } else if ($wsh == 1) {
-                $handler = new WaInteractionHandler($campid, $companyId);
-                $handler->updatePayloadClick();
+                $handler = new WaInteractionHandler($campid);
+                $handler->updatePayloadClick($companyId);
 
                 return;
-            } else if( $tprm == 1) {
-                $handler = new TprmInteractionHandler($campid, $companyId);
-                $handler->updatePayloadClick();
+            } else if ($tprm == 1) {
+                $handler = new TprmInteractionHandler($campid);
+                $handler->updatePayloadClick($companyId);
             } else {
-                $handler = new EmailInteractionHandler($campid, $companyId);
-                $handler->updatePayloadClick();
+                $handler = new EmailInteractionHandler($campid);
+                $handler->updatePayloadClick($companyId);
             }
         }
     }
-
 }

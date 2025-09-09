@@ -3,24 +3,23 @@
 namespace App\Services\InteractionHandlers;
 
 use App\Models\Campaign;
+use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
 use App\Models\EmailCampActivity;
-use Jenssegers\Agent\Agent;
+use App\Services\CampaignTrainingService;
 
 class EmailInteractionHandler
 {
     protected $campLiveId;
-    protected $companyId;
 
-    public function __construct($campLiveId, $companyId)
+    public function __construct($campLiveId)
     {
         $this->campLiveId = $campLiveId;
-        $this->companyId = $companyId;
     }
 
-    public function updatePayloadClick()
+    public function updatePayloadClick($companyId)
     {
-        if (clickedByBot($this->companyId, $this->campLiveId, 'email')) {
+        if (clickedByBot($companyId, $this->campLiveId, 'email')) {
             return;
         }
         $campaignLive = CampaignLive::where('id', $this->campLiveId)
@@ -31,11 +30,11 @@ class EmailInteractionHandler
             $campaignLive->save();
 
             EmailCampActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
-            log_action("Phishing email payload clicked by {$campaignLive->user_email} in email simulation.", 'company', $this->companyId);
+            log_action("Phishing email payload clicked by {$campaignLive->user_email} in email simulation.", 'company', $companyId);
         }
     }
 
-    public function handleCompromisedEmail()
+    public function handleCompromisedEmail($companyId)
     {
         $campaignLive = CampaignLive::where('id', $this->campLiveId)
             ->where('emp_compromised', 0)
@@ -65,10 +64,10 @@ class EmailInteractionHandler
                 'compromised_at' => now(),
                 'client_details' => json_encode($clientData)
             ]);
-        log_action("Phishing email marked as compromised by {$campaignLive->user_email} in email simulation.", 'company', $this->companyId);
+        log_action("Phishing email marked as compromised by {$campaignLive->user_email} in email simulation.", 'company', $companyId);
 
         audit_log(
-            $this->companyId,
+            $companyId,
             $campaignLive->user_email,
             null,
             'EMPLOYEE_COMPROMISED',
@@ -76,6 +75,39 @@ class EmailInteractionHandler
             'normal'
         );
 
-        return response()->json(['status' => 'success', 'message' => 'Email marked as compromised.']);
+        return response()->json(['success' => true, 'message' => 'Email marked as compromised.']);
+    }
+
+    public function assignTraining()
+    {
+         $campaign = CampaignLive::where('id', $this->campLiveId)->first();
+
+            if (!$campaign) {
+                return response()->json(['success' => false, 'message' => 'Invalid campaign or user.'], 400);
+            }
+
+            if ($campaign->training_module == null && $campaign->scorm_training == null) {
+
+                return response()->json(['success' => false, 'message' => 'No training module nor scorm assigned.'], 400);
+            }
+
+            setCompanyTimezone($campaign->company_id);
+
+            //checking assignment
+            $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
+
+            if ($all_camp->training_assignment == 'all') {
+                $trainings = json_decode($all_camp->training_module, true);
+                CampaignTrainingService::assignTraining($campaign, $trainings);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            } else {
+                CampaignTrainingService::assignTraining($campaign);
+
+                // Update campaign_live table
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
+            return response()->json(['success' => true, 'message' => 'Training assigned successfully.']);
     }
 }
