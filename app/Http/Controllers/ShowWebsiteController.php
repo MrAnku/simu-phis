@@ -29,6 +29,11 @@ use Illuminate\Support\Facades\Http;
 use App\Services\CampaignTrainingService;
 use App\Services\TrainingAssignedService;
 use App\Models\BlueCollarLearnerLoginSession;
+use App\Services\InteractionHandlers\WaInteractionHandler;
+use App\Services\InteractionHandlers\EmailInteractionHandler;
+use App\Services\InteractionHandlers\QuishingInteractionHandler;
+use App\Services\InteractionHandlers\SmishingInteractionHandler;
+use App\Services\InteractionHandlers\TprmInteractionHandler;
 
 class ShowWebsiteController extends Controller
 {
@@ -124,12 +129,15 @@ class ShowWebsiteController extends Controller
         $qsh = $request->input('qsh');
         $smi = $request->input('smi');
         $wsh = $request->input('wsh');
+        $tprm = $request->input('tprm');
         if ($qsh == 1) {
             $campDetail = QuishingLiveCamp::find($campid);
         } else if ($smi == 1) {
             $campDetail = SmishingLiveCampaign::find($campid);
         } else if ($wsh == 1) {
             $campDetail = WaLiveCampaign::find($campid);
+        } else if ($tprm == 1) {
+            $campDetail = TprmCampaignLive::find($campid);
         } else {
             $campDetail = CampaignLive::find($campid);
         }
@@ -150,27 +158,7 @@ class ShowWebsiteController extends Controller
         return response()->json(['error' => 'Campaign or Company Setting not found'], 404);
     }
 
-    public function tcheckWhereToRedirect(Request $request)
-    {
-        $campid = $request->input('campid');
-        $campDetail = TprmCampaignLive::find($campid);
-
-        if ($campDetail) {
-            $companySetting = CompanySettings::where('company_id', $campDetail->company_id)->first();
-
-            if ($companySetting) {
-                $arr = [
-                    'redirect' => $companySetting->phish_redirect,
-                    'redirect_url' => $companySetting->phish_redirect_url,
-                    'lang' => $companySetting->default_notifications_lang,
-                ];
-
-                return response()->json($arr);
-            }
-        }
-
-        return response()->json(['error' => 'Campaign or Company Setting not found'], 404);
-    }
+  
 
     private function assignTrainingByQuishing($campid)
     {
@@ -625,195 +613,33 @@ class ShowWebsiteController extends Controller
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
             $wsh = $request->input('wsh');
+            $tprm = $request->input('tprm');
 
             $companyId = Users::where('id', $userid)->value('company_id');
+
+            if ($tprm == 1) {
+                $companyId = TprmUsers::where('id', $userid)->value('company_id');
+            }
 
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
-                QuishingLiveCamp::where('id', $campid)->where('compromised', '0')->update(['compromised' => '1']);
+                $handler = new QuishingInteractionHandler($campid, $companyId);
+                return $handler->handleCompromisedEmail();
+            } else if ($smi == 1) {
+                $handler = new SmishingInteractionHandler($campid, $companyId);
+                return $handler->handleCompromisedMsg();
+            } else if ($wsh == 1) {
 
-                $qshCamp = QuishingLiveCamp::where('id', $campid)->first();
-
-                // Audit log
-                audit_log(
-                    $companyId,
-                    $qshCamp->user_email,
-                    null,
-                    'EMPLOYEE_COMPROMISED',
-                    "{$qshCamp->user_email} compromised in Quishing campaign '{$qshCamp->campaign_name}'",
-                    'normal'
-                );
-
-                $agent = new Agent();
-
-                $clientData = [
-                    'platform' => $agent->platform(), // Extract OS
-                    'browser' => $agent->browser(), // Extract Browser
-                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
-                    'ip' => $request->ip(), // Client IP Address
-                    'source' => $request->header('User-Agent'), // Full User-Agent string
-                    'browserVersion' => $agent->version($agent->browser()),
-                    'device' => $agent->device(),
-                    'isMobile' => $agent->isMobile(),
-                    'isDesktop' => $agent->isDesktop(),
-
-                ];
-                QuishingActivity::where('campaign_live_id', $campid)
-                    ->update([
-                        'compromised_at' => now(),
-                        'client_details' => json_encode($clientData)
-                    ]);
-
-                return;
-            }
-
-            if ($smi == 1) {
-                SmishingLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
-                return;
-            }
-
-            if ($wsh == 1) {
-                WaLiveCampaign::where('id', $campid)->where('compromised', 0)->update(['compromised' => 1]);
-
-                $waCamp = WaLiveCampaign::where('id', $campid)->first();
-
-                // Audit log
-                audit_log(
-                    $companyId,
-                    null,
-                    $waCamp->user_phone,
-                    'EMPLOYEE_COMPROMISED',
-                    "{$waCamp->user_phone} compromised in Whatsapp campaign '{$waCamp->campaign_name}'",
-                    $waCamp->employee_type
-                );
-
-                $agent = new Agent();
-
-                $clientData = [
-                    'platform' => $agent->platform(), // Extract OS
-                    'browser' => $agent->browser(), // Extract Browser
-                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
-                    'ip' => $request->ip(), // Client IP Address
-                    'source' => $request->header('User-Agent'), // Full User-Agent string
-                    'browserVersion' => $agent->version($agent->browser()),
-                    'device' => $agent->device(),
-                    'isMobile' => $agent->isMobile(),
-                    'isDesktop' => $agent->isDesktop(),
-
-                ];
-                WhatsappActivity::where('campaign_live_id', $campid)
-                    ->update([
-                        'compromised_at' => now(),
-                        'client_details' => json_encode($clientData)
-                    ]);
-                return;
-            }
-
-            // Check if the campaign exists and user's email is compromised
-            $user = DB::table('campaign_live')
-                ->where('id', $campid)
-                ->where('emp_compromised', 0)
-                ->where('user_id', $userid)
-                ->first();
-
-            if ($user) {
-                $campId2 = $user->campaign_id;
-
-                // Update campaign_reports table
-                $reportsEmpComCount = DB::table('campaign_reports')
-                    ->where('campaign_id', $campId2)
-                    ->first();
-
-                if ($reportsEmpComCount) {
-                    $emp_compromised = (int)$reportsEmpComCount->emp_compromised + 1;
-
-                    DB::table('campaign_reports')
-                        ->where('campaign_id', $campId2)
-                        ->update(['emp_compromised' => $emp_compromised]);
-                }
-
-                // Update campaign_live table
-                $isUpdatedIndividual = DB::table('campaign_live')
-                    ->where('id', $campid)
-                    ->update(['emp_compromised' => 1]);
-
-                // Audit log
-                audit_log(
-                    $companyId,
-                    $user->user_email,
-                    null,
-                    'EMPLOYEE_COMPROMISED',
-                    "{$user->user_email} compromised in Email campaign '{$user->campaign_name}'",
-                    'normal'
-                );
-
-                $agent = new Agent();
-
-                $clientData = [
-                    'platform' => $agent->platform(), // Extract OS
-                    'browser' => $agent->browser(), // Extract Browser
-                    'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
-                    'ip' => $request->ip(), // Client IP Address
-                    'source' => $request->header('User-Agent'), // Full User-Agent string
-                    'browserVersion' => $agent->version($agent->browser()),
-                    'device' => $agent->device(),
-                    'isMobile' => $agent->isMobile(),
-                    'isDesktop' => $agent->isDesktop(),
-
-                ];
-                EmailCampActivity::where('campaign_live_id', $campid)
-                    ->update([
-                        'compromised_at' => now(),
-                        'client_details' => json_encode($clientData)
-                    ]);
-
-                if ($isUpdatedIndividual) {
-                    log_action('Employee compromised in Email campaign', 'employee', 'employee');
-                    return response()->json(['message' => 'Email compromised status updated successfully']);
-                } else {
-
-                    return response()->json(['error' => 'Failed to update email compromised status']);
-                }
+                $handler = new WaInteractionHandler($campid, $companyId);
+                return $handler->handleCompromisedMsg();
+            } else if ($tprm == 1) {
+                $handler = new TprmInteractionHandler($campid, $companyId);
+                return $handler->handleCompromisedEmail();
             } else {
-                return response()->json(['error' => 'Invalid campaign or user email already compromised']);
+                $handler = new EmailInteractionHandler($campid, $companyId);
+                return $handler->handleCompromisedEmail();
             }
-        }
-    }
-
-    public function thandleCompromisedEmail(Request $request)
-    {
-        if ($request->has('emailCompromised')) {
-            $campid = $request->input('campid');
-            $userid = $request->input('userid');
-            TprmCampaignLive::where('id', $campid)->where('emp_compromised', 0)->update(['emp_compromised' => 1]);
-
-            $companyId = TprmUsers::where('id', $userid)->value('company_id');
-
-            setCompanyTimezone($companyId);
-
-            $agent = new Agent();
-
-            $clientData = [
-                'platform' => $agent->platform(), // Extract OS
-                'browser' => $agent->browser(), // Extract Browser
-                'os' => $agent->platform() . ' ' . $agent->version($agent->platform()), // OS + Version
-                'ip' => $request->ip(), // Client IP Address
-                'source' => $request->header('User-Agent'), // Full User-Agent string
-                'browserVersion' => $agent->version($agent->browser()),
-                'device' => $agent->device(),
-                'isMobile' => $agent->isMobile(),
-                'isDesktop' => $agent->isDesktop(),
-
-            ];
-            TprmActivity::where('campaign_live_id', $campid)
-                ->update([
-                    'compromised_at' => now(),
-                    'client_details' => json_encode($clientData)
-                ]);
-
-
-            log_action('Employee compromised in TPRM email campaign', 'employee', 'employee');
         }
     }
 
@@ -825,65 +651,38 @@ class ShowWebsiteController extends Controller
             $qsh = $request->input('qsh');
             $smi = $request->input('smi');
             $wsh = $request->input('wsh');
+            $tprm = $request->input('tprm');
 
             $companyId = Users::where('id', $userid)->value('company_id');
 
+            if ($tprm == 1) {
+                $companyId = TprmUsers::where('id', $userid)->value('company_id');
+            }
+
             setCompanyTimezone($companyId);
-            log_action("Phishing email payload clicked", 'company', $companyId);
 
             if ($qsh == 1) {
-                if (clickedByBot($companyId, $campid, 'quishing')) {
-                    return;
-                }
-                QuishingLiveCamp::where('id', $campid)->update(['qr_scanned' => '1', 'mail_open' => '1']);
-                QuishingActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
+
+                $handler = new QuishingInteractionHandler($campid, $companyId);
+                $handler->updatePayloadClick();
                 return;
-            }
-            if ($smi == 1) {
-                SmishingLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
+            } else if ($smi == 1) {
+                $handler = new SmishingInteractionHandler($campid, $companyId);
+                $handler->updatePayloadClick();
                 return;
-            }
-            if ($wsh == 1) {
-                WaLiveCampaign::where('id', $campid)->update(['payload_clicked' => 1]);
-                WhatsappActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
+            } else if ($wsh == 1) {
+                $handler = new WaInteractionHandler($campid, $companyId);
+                $handler->updatePayloadClick();
+
                 return;
-            }
-
-
-
-            $campaign = CampaignLive::where('id', $campid)->where('payload_clicked', 0)->first();
-
-            if ($campaign) {
-                if (clickedByBot($companyId, $campid, 'email')) {
-                    return;
-                }
-                $campaign->update(['payload_clicked' => 1, 'mail_open' => 1]);
-
-
-                EmailCampActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
-
-                log_action("Phishing email payload clicked by {$campaign->user_email}", 'employee', 'employee');
+            } else if( $tprm == 1) {
+                $handler = new TprmInteractionHandler($campid, $companyId);
+                $handler->updatePayloadClick();
+            } else {
+                $handler = new EmailInteractionHandler($campid, $companyId);
+                $handler->updatePayloadClick();
             }
         }
     }
 
-    public function tupdatePayloadClick(Request $request)
-    {
-        if ($request->has('updatePayloadClick')) {
-            $campid = $request->input('campid');
-            $userid = $request->input('userid');
-
-            $companyId = TprmUsers::where('id', $userid)->value('company_id');
-
-            setCompanyTimezone($companyId);
-            if (clickedByBot($companyId, $campid, 'tprm')) {
-                return;
-            }
-            //update payload click for TPRM campaigns
-            TprmCampaignLive::where('id', $campid)->update(['payload_clicked' => 1, 'mail_open' => 1]);
-            TprmActivity::where('campaign_live_id', $campid)->update(['payload_clicked_at' => now()]);
-
-            log_action("TPRM phishing payload clicked", 'employee', 'employee');
-        }
-    }
 }

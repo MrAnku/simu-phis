@@ -133,18 +133,15 @@ Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockG
 
     //route to check where to redirect
     Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
-    Route::post('/tcheck-where-to-redirect', [ShowWebsiteController::class, 'tcheckWhereToRedirect']);
 
     //route for assigning training
     Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
 
     //route for email compromise
     Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
-    Route::post('/temp-compromised', [ShowWebsiteController::class, 'thandleCompromisedEmail']);
 
     //route for updating payload
     Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
-    Route::post('/tupdate-payload', [ShowWebsiteController::class, 'tupdatePayloadClick']);
 
    
 });

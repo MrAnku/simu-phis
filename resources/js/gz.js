@@ -59,12 +59,13 @@ function checkWhereToRedirect(campid, tprm = false, qsh = false, smi = false, ws
   // console.log(campid);
   return new Promise((resolve, reject) => {
     $.post({
-      url: tprm !== false ? '/tcheck-where-to-redirect' : '/check-where-to-redirect',
+      url: '/check-where-to-redirect',
       data: {
         checkWhereToRedirect: 1,
         qsh: qsh !== false ? 1 : 0,
         smi: smi !== false ? 1 : 0,
         wsh: wsh !== false ? 1 : 0,
+        tprm: tprm !== false ? 1 : 0,
         campid: campid
       },
       success: function (res) {
@@ -101,12 +102,13 @@ function assignTraining(campid, userid, tprm = false, qsh = false, smi = false, 
 
 function updateCompromised(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
   $.post({
-    url: tprm !== false ? '/temp-compromised' : '/emp-compromised',
+    url: '/emp-compromised',
     data: {
       emailCompromised: 1,
       qsh: qsh !== false ? 1 : 0,
       smi: smi !== false ? 1 : 0,
       wsh: wsh !== false ? 1 : 0,
+      tprm: tprm !== false ? 1 : 0,
       campid: campid,
       userid: userid
     },
@@ -120,12 +122,13 @@ function updateCompromised(campid, userid, tprm = false, qsh = false, smi = fals
 
 function updatePayloadClick(campid, userid, tprm = false, qsh = false, smi = false, wsh = false) {
   $.post({
-    url: tprm !== false ? '/tupdate-payload' : '/update-payload',
+    url: '/update-payload',
     data: {
       updatePayloadClick: 1,
       qsh: qsh !== false ? 1 : 0,
       smi: smi !== false ? 1 : 0,
       wsh: wsh !== false ? 1 : 0,
+      tprm: tprm !== false ? 1 : 0,
       campid: campid,
       userid: userid
     },

@@ -45,7 +45,6 @@ class ProcessTprmCampaigns extends Command
     $companies = Company::where('approved', 1)
       ->where('role', null)
       ->where('service_status', 1)
-      ->where('role', null)
       ->get();
 
     if ($companies->isEmpty()) {
@@ -120,7 +119,8 @@ class ProcessTprmCampaigns extends Command
         'sendMailUserName' => $senderProfile->username,
         'sendMailPassword' => $senderProfile->password,
         'campaign_id' => $campaign->campaign_id,
-        'campaign_type' => 'tprm'
+        'campaign_type' => 'tprm',
+        'company_id' => $campaign->company_id,
       ];
 
       // $this->sendMailConditionally($mailData, $campaign, $company_id);
