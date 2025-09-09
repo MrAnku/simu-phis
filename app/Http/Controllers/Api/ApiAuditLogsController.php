@@ -40,9 +40,12 @@ class ApiAuditLogsController extends Controller
                     $request->start_date . ' 00:00:00',
                     $request->end_date . ' 23:59:59'
                 ]);
+            } elseif ($request->filled('start_date')) {
+                $query->where('created_at', '>=', $request->start_date . ' 00:00:00');
+            } elseif ($request->filled('end_date')) {
+                $query->where('created_at', '<=', $request->end_date . ' 23:59:59');
             }
 
-            // Optional: Add pagination
             $logs = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
