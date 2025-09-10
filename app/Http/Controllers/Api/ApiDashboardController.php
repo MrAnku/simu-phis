@@ -23,6 +23,7 @@ use App\Models\QuishingLiveCamp;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use App\Services\CompanyReport;
 use Illuminate\Support\Facades\Auth;
 
 class ApiDashboardController extends Controller
@@ -38,6 +39,8 @@ class ApiDashboardController extends Controller
 
 
         $breachedEmails = BreachedEmail::with('userData')->where('company_id', $companyId)->take(5)->get();
+        $companyReport = new CompanyReport($companyId);
+
         log_action("Dashboard accessed");
         return response()->json([
             'status' => 'success',
@@ -51,7 +54,8 @@ class ApiDashboardController extends Controller
                 'risk_score_distribution' => $this->getRiskScoreDistribution(),
                 'division_score' => $this->getDivisionScore(),
                 'breachedEmails' => $breachedEmails,
-                'usageCounts' => $this->osBrowserUsage()
+                'usageCounts' => $this->osBrowserUsage(),
+                'riskScore' => $companyReport->calculateOverallRiskScore()
             ]
         ], 200);
     }
@@ -122,7 +126,7 @@ class ApiDashboardController extends Controller
             ]);
             log_action("Platform settings tour taken");
         }
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Tour taken successfully'
