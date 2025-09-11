@@ -158,7 +158,7 @@ class ProcessCampaigns extends Command
 
   private function getRandomTrainingModule($campaign)
   {
-    if ($campaign->campaign_type == "Phishing") {
+    if ($campaign->campaign_type == "Phishing" || $campaign->training_module == null) {
       return null;
     }
     $trainingModules = json_decode($campaign->training_module, true);
@@ -167,7 +167,7 @@ class ProcessCampaigns extends Command
 
   private function getRandomScormTraining($campaign)
   {
-    if ($campaign->campaign_type == "Phishing") {
+    if ($campaign->campaign_type == "Phishing" || $campaign->scorm_training == null) {
       return null;
     }
 
