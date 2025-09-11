@@ -851,10 +851,10 @@ class ApiReportingController extends Controller
 
             foreach ($allUsers as $userReport) {
                 $data[] = [
-                    'employee_name' => $userReport->employee_name,
+                    'user_name' => $userReport->user_name,
                     'mobile' => $userReport->to_mobile,
                     'call_time' => $userReport->created_at,
-                    'email' => $userReport->employee_email,
+                    'email' => $userReport->user_email,
                     'status' => $userReport->status == 'completed' ? 'Completed' : ucfirst($userReport->status),
                     'training_assigned' => $userReport->training_assigned == '1' ? 'Yes' : 'No',
                 ];
@@ -2213,18 +2213,18 @@ class ApiReportingController extends Controller
                             'compromised' => 0,
                         ],
                         'ai_vishing' => [
-                            'totalCampaigns' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'totalCampaigns' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->count(),
-                            'totalTrainings' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'totalTrainings' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->where('training_assigned', 1)
                                 ->count(),
-                            'call_send' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'call_send' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->whereNotNull('call_send_response')
                                 ->count(),
-                            'call_reported' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'call_reported' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->whereNotNull('call_report')
                                 ->count(),
@@ -2474,18 +2474,18 @@ class ApiReportingController extends Controller
                             'compromised' => 0,
                         ],
                         'ai_vishing' => [
-                            'totalCampaigns' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'totalCampaigns' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->count(),
-                            'totalTrainings' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'totalTrainings' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->where('training_assigned', 1)
                                 ->count(),
-                            'call_send' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'call_send' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->whereNotNull('call_send_response')
                                 ->count(),
-                            'call_reported' => AiCallCampLive::where('employee_email', $user->user_email)
+                            'call_reported' => AiCallCampLive::where('user_email', $user->user_email)
                                 ->where('company_id', $companyId)
                                 ->whereNotNull('call_report')
                                 ->count(),
@@ -2691,7 +2691,7 @@ class ApiReportingController extends Controller
                         'quishing_simulations' => QuishingLiveCamp::where('training_module', $trainingModule->id)
                             ->where('company_id', $companyId)
                             ->count(),
-                        'ai_call_simulations' => AiCallCampLive::where('training', $trainingModule->id)
+                        'ai_call_simulations' => AiCallCampLive::where('training_module', $trainingModule->id)
                             ->where('company_id', $companyId)
                             ->count(),
                         'whatsapp_simulations' => WaLiveCampaign::where('training_module', $trainingModule->id)
@@ -2758,7 +2758,7 @@ class ApiReportingController extends Controller
                             ->where('company_id', $companyId)
                             ->count(),
                         'ai_call_simulations' => AiCallCampLive::where('training_type', 'games')
-                            ->where('training', $game->id)
+                            ->where('training_module', $game->id)
                             ->where('company_id', $companyId)
                             ->count(),
                         'whatsapp_simulations' => WaLiveCampaign::where('training_type', 'games')
@@ -2852,7 +2852,7 @@ class ApiReportingController extends Controller
                         ->count(),
                     'total_no_of_simulations' => CampaignLive::where('training_module', $trainingModule->id)->count(),
                     'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $trainingModule->id)->count(),
-                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $trainingModule->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training_module', $trainingModule->id)->count(),
                     'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $trainingModule->id)->count(),
                     'total_no_of_tprm' => TprmCampaignLive::where('training_module', $trainingModule->id)->count(),
                     'assigned_date' => TrainingAssignedUser::where('training', $trainingModule->id)->value('assigned_date'),
@@ -2890,7 +2890,7 @@ class ApiReportingController extends Controller
                 $latestTrainingSimulationTypes[] = [
                     'total_no_of_simulations' => CampaignLive::where('training_module', $latestTraining->id)->count(),
                     'total_no_of_quish_camp' => QuishingLiveCamp::where('training_module', $latestTraining->id)->count(),
-                    'total_no_of_ai_camp' => AiCallCampLive::where('training', $latestTraining->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training_module', $latestTraining->id)->count(),
                     'total_no_of_wa_camp' => WaLiveCampaign::where('training_module', $latestTraining->id)->count(),
                     'total_no_of_tprm' => TprmCampaignLive::where('training_module', $latestTraining->id)->count(),
                 ];
@@ -2929,7 +2929,7 @@ class ApiReportingController extends Controller
                     'in_progress_games' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->where('training_started', 1)->count(),
                     'total_no_of_simulations' => CampaignLive::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
                     'total_no_of_quish_camp' => QuishingLiveCamp::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
-                    'total_no_of_ai_camp' => AiCallCampLive::where('training_type', 'games')->where('training', $trainingGame->id)->count(),
+                    'total_no_of_ai_camp' => AiCallCampLive::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
                     'total_no_of_wa_camp' => WaLiveCampaign::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
                     'game_completion_time_in_seconds' => TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->value('game_time') ?: 0,
                 ];

@@ -459,9 +459,9 @@ class ApiEmployeesController extends Controller
         // AI Call Campaigns Summary
         $aiCallSummary = [
             'type' => 'ai_call_summary',
-            'total_campaigns' => AiCallCampLive::where('employee_email', $email)->count(),
-            'total_calls_sent' => AiCallCampLive::where('employee_email', $email)->where('call_send_response', '!=', null)->count(),
-            'total_calls_responded' => AiCallCampLive::where('employee_email', $email)->where('call_end_response', '!=', null)->count(),
+            'total_campaigns' => AiCallCampLive::where('user_email', $email)->count(),
+            'total_calls_sent' => AiCallCampLive::where('user_email', $email)->where('call_send_response', '!=', null)->count(),
+            'total_calls_responded' => AiCallCampLive::where('user_email', $email)->where('call_end_response', '!=', null)->count(),
         ];
 
         return [
@@ -541,8 +541,8 @@ class ApiEmployeesController extends Controller
             })->count();
 
         // AI Call Campaigns
-        $aiTotal = AiCallCampLive::where('employee_email', $email)->count();
-        $aiCompromised = AiCallCampLive::where('employee_email', $email)->where('compromised', 1)->count();
+        $aiTotal = AiCallCampLive::where('user_email', $email)->count();
+        $aiCompromised = AiCallCampLive::where('user_email', $email)->where('compromised', 1)->count();
         $aiRisky = $aiCompromised; // Only compromised is risky for AI calls
 
         $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
@@ -1453,10 +1453,10 @@ class ApiEmployeesController extends Controller
     {
         $companyId = Auth::user()->company_id;
         //ai call campaign live update
-        AiCallCampLive::where('employee_email', $email)
+        AiCallCampLive::where('user_email', $email)
             ->where('company_id', $companyId)
             ->update([
-                'employee_name' => $name,
+                'user_name' => $name,
             ]);
         //assigned policies update
         AssignedPolicy::where('user_email', $email)

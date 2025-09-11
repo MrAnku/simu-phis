@@ -621,7 +621,7 @@ class ApiTrainingModuleController extends Controller
         try {
 
             $emailCampExists = CampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
-            $aiCallCampExists = AiCallCampLive::where('training', $trainingId)->where('company_id', $company_id)->exists();
+            $aiCallCampExists = AiCallCampLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
             $quishingCampExists = QuishingLiveCamp::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
             $smishingCampExists = SmishingLiveCampaign::where('training_module', $trainingId)->where('company_id', $company_id)->exists();
             $tprmCampExists = TprmCampaignLive::where('training_module', $trainingId)->where('company_id', $company_id)->exists();

@@ -189,9 +189,9 @@ class ProcessAiCampaigns extends Command
                         'campaign_name' => $campaign->campaign_name,
                         'employee_type' => $campaign->employee_type,
                         'user_id' => $user->id,
-                        'employee_name' => $user->user_name,
-                        'employee_email' => $user->user_email,
-                        'training' => $campaign->training ?? null,
+                        'user_name' => $user->user_name,
+                        'user_email' => $user->user_email,
+                        'training_module' => $campaign->training_module ?? null,
                         'scorm_training' => $campaign->scorm_training ?? null,
                         'training_lang' => $campaign->training_lang ?? null,
                         'training_type' => $campaign->training_type ?? null,
@@ -254,13 +254,13 @@ class ProcessAiCampaigns extends Command
                     if ($compromised) {
                         audit_log(
                             $placedCall->company_id,
-                            $placedCall->employee_email,
+                            $placedCall->user_email,
                             null,
                             'EMPLOYEE_COMPROMISED',
-                            "{$placedCall->employee_email} compromised in AI call campaign '{$placedCall->campaign_name}'",
+                            "{$placedCall->user_email} compromised in AI call campaign '{$placedCall->campaign_name}'",
                             'normal'
                         );
-                        if ($placedCall->training !== null || $placedCall->scorm_training !== null) {
+                        if ($placedCall->training_module !== null || $placedCall->scorm_training !== null) {
 
                             $this->assignTraining($placedCall);
                             $placedCall->update(['training_assigned' => 1]);
@@ -341,7 +341,7 @@ class ProcessAiCampaigns extends Command
 
                         if ($logJson['args']['fell_for_simulation'] == true) {
 
-                            if ($existingRow->training !== null) {
+                            if ($existingRow->training_module !== null) {
 
                                 $this->assignTraining($existingRow);
                                 $existingRow->update(['training_assigned' => 1]);
@@ -359,7 +359,7 @@ class ProcessAiCampaigns extends Command
 
                         DB::table('ai_call_camp_live')->where('id', $existingRow->id)->update([
                             // 'call_time' => $logJson['start_timestamp'] ?? null,
-                            'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training !== null ? 1 : 0,
+                            'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training_module !== null ? 1 : 0,
                             'compromised' => $logJson['args']['fell_for_simulation'] == true ? 1 : 0,
                             'status' => 'completed',
                             'call_end_response' => $updatedJson
@@ -400,108 +400,17 @@ class ProcessAiCampaigns extends Command
 
         $trainingAssignedService = new TrainingAssignedService();
 
-        // if ($campaign->training !== null) {
-        //     $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->employee_email)
-        //         ->where('training', $campaign->training)
-        //         ->first();
-
-        //     if (!$assignedTrainingModule) {
-        //         //call assignNewTraining from service method
-        //         $campData = [
-        //             'campaign_id' => $campaign->campaign_id,
-        //             'user_id' => $campaign->user_id,
-        //             'user_name' => $campaign->employee_name,
-        //             'user_email' => $campaign->employee_email,
-        //             'training' => $campaign->training,
-        //             'training_lang' => $campaign->training_lang,
-        //             'training_type' => $campaign->training_type,
-        //             'assigned_date' => now()->toDateString(),
-        //             'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        //             'company_id' => $campaign->company_id
-        //         ];
-
-        //         $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-        //         $module = TrainingModule::find($campaign->training);
-        //         // Audit log
-        //         audit_log(
-        //             $campaign->company_id,
-        //             $campaign->employee_email,
-        //             null,
-        //             'TRAINING_ASSIGNED',
-        //             "{$module->name} has been assigned to {$campaign->employee_email}",
-        //             'normal'
-        //         );
-
-        //         if ($trainingAssigned['status'] == true) {
-        //             echo $trainingAssigned['msg'];
-        //         } else {
-        //             echo 'Failed to assign training to ' . $campaign->employee_email;
-        //         }
-        //     } else {
-        //         $assignedTrainingModule->update(
-        //             [
-        //                 'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        //                 'training_lang' => $campaign->training_lang,
-        //                 'training_type' => $campaign->training_type,
-        //                 'assigned_date' => now()->toDateString()
-        //             ]
-        //         );
-        //     }
-        // }
-
-        // if ($campaign->scorm_training !== null) {
-        //     $assignedTrainingModule = ScormAssignedUser::where('user_email', $campaign->employee_email)
-        //         ->where('scorm', $campaign->scorm_training)
-        //         ->first();
-
-        //     if (!$assignedTrainingModule) {
-        //         //call assignNewTraining from service method
-        //         $campData = [
-        //             'campaign_id' => $campaign->campaign_id,
-        //             'user_id' => $campaign->user_id,
-        //             'user_name' => $campaign->employee_name,
-        //             'user_email' => $campaign->employee_email,
-        //             'scorm' => $campaign->scorm_training,
-        //             'assigned_date' => now()->toDateString(),
-        //             'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-        //             'company_id' => $campaign->company_id
-        //         ];
-
-        //         $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
-
-        //         $scorm = ScormTraining::find($campaign->scorm_training);
-        //         // Audit log
-        //         audit_log(
-        //             $campaign->company_id,
-        //             $campaign->employee_email,
-        //             null,
-        //             'SCORM_ASSIGNED',
-        //             "{$scorm->name} has been assigned to {$campaign->employee_email}",
-        //             'normal'
-        //         );
-        //         if ($trainingAssigned['status'] == true) {
-        //             echo $trainingAssigned['msg'];
-        //         } else {
-        //             echo 'Failed to assign training to ' . $campaign->employee_email;
-        //         }
-        //     }
-        // }
-
-
-
-
         // Blue collar logic
         if ($campaign->employee_type === 'bluecollar') {
 
             $user_phone = ltrim($campaign->to_mobile, '+');
             // Assign normal training
-            if ($campaign->training !== null) {
+            if ($campaign->training_module !== null) {
                 $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $user_phone)
                     ->where('training', $campaign->training_module)
                     ->first();
 
-                // $assignedTrainingModule = BlueCollarTrainingUser::where('user_email', $campaign->employee_email)
+                // $assignedTrainingModule = BlueCollarTrainingUser::where('user_email', $campaign->user_email)
                 //     ->where('training', $campaign->training)
                 //     ->first();
 
@@ -509,9 +418,9 @@ class ProcessAiCampaigns extends Command
                     $campData = [
                         'campaign_id' => $campaign->campaign_id,
                         'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->employee_name,
+                        'user_name' => $campaign->user_name,
                         'user_whatsapp' => $user_phone,
-                        'training' => $campaign->training,
+                        'training_module' => $campaign->training_module,
                         'training_lang' => $campaign->training_lang,
                         'training_type' => $campaign->training_type,
                         'assigned_date' => now()->toDateString(),
@@ -521,20 +430,20 @@ class ProcessAiCampaigns extends Command
 
                     $trainingAssigned = $trainingAssignedService->assignNewBlueCollarTraining($campData);
 
-                    $module = TrainingModule::find($campaign->training);
+                    $module = TrainingModule::find($campaign->training_module);
                     audit_log(
                         $campaign->company_id,
-                        $campaign->employee_email,
+                        $campaign->user_email,
                         null,
                         'TRAINING_ASSIGNED',
-                        "{$module->name} has been assigned to {$campaign->employee_email}",
+                        "{$module->name} has been assigned to {$campaign->user_email}",
                         'bluecollar'
                     );
 
                     if ($trainingAssigned['status'] == true) {
                         echo $trainingAssigned['msg'];
                     } else {
-                        echo 'Failed to assign training to ' . $campaign->employee_email;
+                        echo 'Failed to assign training to ' . $campaign->user_email;
                     }
                 } else {
                     $assignedTrainingModule->update([
@@ -557,7 +466,7 @@ class ProcessAiCampaigns extends Command
                     $campData = [
                         'campaign_id' => $campaign->campaign_id,
                         'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->employee_name,
+                        'user_name' => $campaign->user_name,
                         'user_whatsapp' => $user_phone,
                         'scorm' => $campaign->scorm_training,
                         'assigned_date' => now()->toDateString(),
@@ -570,16 +479,16 @@ class ProcessAiCampaigns extends Command
                     $scorm = ScormTraining::find($campaign->scorm_training);
                     audit_log(
                         $campaign->company_id,
-                        $campaign->employee_email,
+                        $campaign->user_email,
                         null,
                         'SCORM_ASSIGNED',
-                        "{$scorm->name} has been assigned to {$campaign->employee_email}",
+                        "{$scorm->name} has been assigned to {$campaign->user_email}",
                         'bluecollar'
                     );
                     if ($trainingAssigned['status'] == true) {
                         echo $trainingAssigned['msg'];
                     } else {
-                        echo 'Failed to assign training to ' . $campaign->employee_email;
+                        echo 'Failed to assign training to ' . $campaign->user_email;
                     }
                 }
             }
@@ -607,18 +516,18 @@ class ProcessAiCampaigns extends Command
             }
         } else {
             // Normal employee logic (existing)
-            if ($campaign->training !== null) {
-                $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->employee_email)
-                    ->where('training', $campaign->training)
+            if ($campaign->training_module !== null) {
+                $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->user_email)
+                    ->where('training', $campaign->training_module)
                     ->first();
 
                 if (!$assignedTrainingModule) {
                     $campData = [
                         'campaign_id' => $campaign->campaign_id,
                         'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->employee_name,
-                        'user_email' => $campaign->employee_email,
-                        'training' => $campaign->training,
+                        'user_name' => $campaign->user_name,
+                        'user_email' => $campaign->user_email,
+                        'training_module' => $campaign->training_module,
                         'training_lang' => $campaign->training_lang,
                         'training_type' => $campaign->training_type,
                         'assigned_date' => now()->toDateString(),
@@ -628,20 +537,20 @@ class ProcessAiCampaigns extends Command
 
                     $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
-                    $module = TrainingModule::find($campaign->training);
+                    $module = TrainingModule::find($campaign->training_module);
                     audit_log(
                         $campaign->company_id,
-                        $campaign->employee_email,
+                        $campaign->user_email,
                         null,
                         'TRAINING_ASSIGNED',
-                        "{$module->name} has been assigned to {$campaign->employee_email}",
+                        "{$module->name} has been assigned to {$campaign->user_email}",
                         'normal'
                     );
 
                     if ($trainingAssigned['status'] == true) {
                         echo $trainingAssigned['msg'];
                     } else {
-                        echo 'Failed to assign training to ' . $campaign->employee_email;
+                        echo 'Failed to assign training to ' . $campaign->user_email;
                     }
                 } else {
                     $assignedTrainingModule->update([
@@ -654,7 +563,7 @@ class ProcessAiCampaigns extends Command
             }
 
             if ($campaign->scorm_training !== null) {
-                $assignedTrainingModule = ScormAssignedUser::where('user_email', $campaign->employee_email)
+                $assignedTrainingModule = ScormAssignedUser::where('user_email', $campaign->user_email)
                     ->where('scorm', $campaign->scorm_training)
                     ->first();
 
@@ -662,8 +571,8 @@ class ProcessAiCampaigns extends Command
                     $campData = [
                         'campaign_id' => $campaign->campaign_id,
                         'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->employee_name,
-                        'user_email' => $campaign->employee_email,
+                        'user_name' => $campaign->user_name,
+                        'user_email' => $campaign->user_email,
                         'scorm' => $campaign->scorm_training,
                         'assigned_date' => now()->toDateString(),
                         'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
@@ -675,24 +584,24 @@ class ProcessAiCampaigns extends Command
                     $scorm = ScormTraining::find($campaign->scorm_training);
                     audit_log(
                         $campaign->company_id,
-                        $campaign->employee_email,
+                        $campaign->user_email,
                         null,
                         'SCORM_ASSIGNED',
-                        "{$scorm->name} has been assigned to {$campaign->employee_email}",
+                        "{$scorm->name} has been assigned to {$campaign->user_email}",
                         'normal'
                     );
                     if ($trainingAssigned['status'] == true) {
                         echo $trainingAssigned['msg'];
                     } else {
-                        echo 'Failed to assign training to ' . $campaign->employee_email;
+                        echo 'Failed to assign training to ' . $campaign->user_email;
                     }
                 }
             }
 
             //send mail to user
             $campData = [
-                'user_name' => $campaign->employee_name,
-                'user_email' => $campaign->employee_email,
+                'user_name' => $campaign->user_name,
+                'user_email' => $campaign->user_email,
                 'company_id' => $campaign->company_id
             ];
             $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
@@ -700,7 +609,7 @@ class ProcessAiCampaigns extends Command
             if ($isMailSent['status'] == true) {
                 echo $isMailSent['msg'];
             } else {
-                echo 'Failed to send mail to ' . $campaign->employee_email;
+                echo 'Failed to send mail to ' . $campaign->user_email;
             }
         }
     }

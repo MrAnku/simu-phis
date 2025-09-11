@@ -90,7 +90,7 @@ class EmployeeReport
             })
             ->where('payload_clicked', 1)
             ->count();
-        $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
+        $ai = AiCallCampLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
@@ -124,7 +124,7 @@ class EmployeeReport
             })
             ->where('compromised', 1)
             ->count();
-        $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
+        $ai = AiCallCampLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
@@ -203,7 +203,7 @@ class EmployeeReport
                 return $query->whereBetween('created_at', $this->dateRange);
             })
             ->count();
-        $ai = AiCallCampLive::where('employee_email', $email ?? $this->email)
+        $ai = AiCallCampLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
@@ -249,10 +249,10 @@ class EmployeeReport
                     return $totalWhatsapp > 0 ? round(($clickedWhatsapp / $totalWhatsapp) * 100) : 0;
 
                 case 'ai':
-                    $totalAi = AiCallCampLive::where('employee_email', $this->email)
+                    $totalAi = AiCallCampLive::where('user_email', $this->email)
                         ->where('company_id', $this->companyId)
                         ->count();
-                    $compromisedAi = AiCallCampLive::where('employee_email', $this->email)
+                    $compromisedAi = AiCallCampLive::where('user_email', $this->email)
                         ->where('company_id', $this->companyId)
                         ->where('compromised', 1)
                         ->count();
@@ -272,7 +272,7 @@ class EmployeeReport
                 + WaLiveCampaign::where('user_email', $this->email)
                 ->where('company_id', $this->companyId)
                 ->count()
-                + AiCallCampLive::where('employee_email', $this->email)
+                + AiCallCampLive::where('user_email', $this->email)
                 ->where('company_id', $this->companyId)
                 ->count();
 

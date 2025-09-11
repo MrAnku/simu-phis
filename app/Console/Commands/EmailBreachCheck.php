@@ -295,7 +295,7 @@ class EmailBreachCheck extends Command
             ->count() +
             AiCallCampLive::where('company_id', $companyId)
             ->where('compromised', 1)
-            ->where('employee_email', $employee->user_email)
+            ->where('user_email', $employee->user_email)
             ->count();
 
         return $counts;

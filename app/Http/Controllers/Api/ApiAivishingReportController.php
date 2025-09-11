@@ -708,35 +708,35 @@ class ApiAivishingReportController extends Controller
                 $userEmail = $user->user_email;
 
                 $total = AiCallCampLive::where('company_id', $companyId)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
                 $totalCallSent = AiCallCampLive::where('company_id', $companyId)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->where('call_send_response', '!=', null)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
                 $callsInQueue = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_id', null)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
                 $callsInProgress = AiCallCampLive::where('company_id', $companyId)
                     ->where('status', 'waiting')
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
                 $callsCompleted = AiCallCampLive::where('company_id', $companyId)
                     ->where('status', 'completed')
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
                 $transcriptionsLogged = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_report', '!=', null)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
@@ -768,30 +768,30 @@ class ApiAivishingReportController extends Controller
                 $userEmail = $user->user_email;
 
                 $total = AiCallCampLive::where('company_id', $companyId)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->count();
 
                 $totalCallSent = AiCallCampLive::where('company_id', $companyId)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->where('call_send_response', '!=', null)
                     ->count();
 
                 $callsInQueue = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_id', null)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->count();
                 $callsInProgress = AiCallCampLive::where('company_id', $companyId)
                     ->where('status', 'waiting')
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->count();
                 $callsCompleted = AiCallCampLive::where('company_id', $companyId)
                     ->where('status', 'completed')
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->count();
 
                 $transcriptionsLogged = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_report', '!=', null)
-                    ->where('employee_email', $userEmail)
+                    ->where('user_email', $userEmail)
                     ->count();
 
                 $campaignStats[] = [

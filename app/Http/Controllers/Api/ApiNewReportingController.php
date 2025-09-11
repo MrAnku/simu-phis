@@ -176,7 +176,7 @@ class ApiNewReportingController extends Controller
 
             // AI Vishing
             $aiCount = AiCallCampLive::where('company_id', $companyId)
-            ->where('training', $trainingId)
+            ->where('training_module', $trainingId)
             ->whereBetween('created_at', [$period['start'], $period['end']])
             ->count();
 

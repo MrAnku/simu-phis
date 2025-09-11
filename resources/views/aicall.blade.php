@@ -875,7 +875,7 @@
 
                             response.individual_camps.forEach(element => {
                                 row += ` <tr>
-                                    <th scope="row">${element.employee_name}</th>
+                                    <th scope="row">${element.user_name}</th>
                                     <td>${element.to_mobile}</td>
                                     <td>
                                         <p class="font-monospace mb-0">${element.call_id}</p>
