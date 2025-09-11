@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
-use App\Models\BlueCollarEmployee;
 use App\Models\Users;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use App\Models\BlueCollarEmployee;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class ApiAuditLogsController extends Controller
 {
@@ -14,7 +15,7 @@ class ApiAuditLogsController extends Controller
     public function fetchAuditLogs(Request $request)
     {
         try {
-            $query = AuditLog::query();
+            $query = AuditLog::where('company_id', Auth::user()->company_id);
 
             // User filter (by email or whatsapp) - apply first if set
             if ($request->filled('user')) {
