@@ -11,14 +11,13 @@ class WhatsappTemplateService
             "to" => $to,
             "type" => "template",
             "template" => [
-                "name" => "session_regenerate",
+                "name" => "session",
                 "language" => ["code" => "en"],
                 "components" => [
                     [
                         "type" => "body",
                         "parameters" => [
                             ["type" => "text", "text" => $userName],
-                            ["type" => "text", "text" => 'Session Successfully Reinitialized!'],
                             ["type" => "text", "text" => $learnDomain . '/blue-collar-training-dashboard/' . $token],
                         ]
                     ]
@@ -57,7 +56,7 @@ class WhatsappTemplateService
             "to" => $to, // Replace with actual user phone number
             "type" => "template",
             "template" => [
-                "name" => "training_message",
+                "name" => "tmessage",
                 "language" => ["code" => "en"],
                 "components" => [
                     [
