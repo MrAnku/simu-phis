@@ -210,12 +210,10 @@ class ProcessAiCampaigns extends Command
         foreach ($companies as $company) {
             try {
                 $placedCalls = AiCallCampLive::where('company_id', $company->company_id)
-                    ->where('call_id', '!=', null)
-                    ->where('status', '!=', 'pending')
-                    ->where('status', '!=', 'completed')
+                    ->whereNotIn('status', ['pending', 'completed'])
                     ->get();
                 if ($placedCalls->isEmpty()) {
-                    return;
+                    continue;
                 }
 
                 foreach ($placedCalls as $placedCall) {
