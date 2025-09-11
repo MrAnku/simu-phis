@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\ApiAuditLogsController;
 use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiCustomCertifcate;
 use App\Http\Controllers\Api\ApiCustomCertificate;
+use App\Http\Controllers\Api\ApiCustomisedDashController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
@@ -113,6 +114,11 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
     Route::get('/get-line-chart-2-data', [ApiDashboardController::class, 'getLineChartData2']);
     //new
     Route::get('/risk-comparison', [ApiDashboardController::class, 'riskComparison']);
+
+    Route::prefix('customised-dashboard')->group(function () {
+        Route::get('/', [ApiCustomisedDashController::class, 'index']);
+        Route::put('/update-or-create', [ApiCustomisedDashController::class, 'updateOrCreate']);
+    });
 
     //card reports
     Route::prefix('simulation-report')->group(function () {
