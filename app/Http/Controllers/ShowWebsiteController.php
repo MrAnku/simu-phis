@@ -195,6 +195,9 @@ class ShowWebsiteController extends Controller
             if ($tprm == 1) {
                 $companyId = TprmUsers::where('id', $userid)->value('company_id');
             }
+            if($wsh == 1){
+                $companyId = WaLiveCampaign::where('id', $campid)->value('company_id');
+            }
 
             setCompanyTimezone($companyId);
 
@@ -232,6 +235,9 @@ class ShowWebsiteController extends Controller
 
             if ($tprm == 1) {
                 $companyId = TprmUsers::where('id', $userid)->value('company_id');
+            }
+            if($wsh == 1){
+                $companyId = WaLiveCampaign::where('id', $campid)->value('company_id');
             }
 
             setCompanyTimezone($companyId);

@@ -40,6 +40,9 @@ class WaInteractionHandler
             return;
         }
 
+        $campaignLive->compromised = 1;
+        $campaignLive->save();
+
         $agent = new Agent();
 
         $clientData = [
