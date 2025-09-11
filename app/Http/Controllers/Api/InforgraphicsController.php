@@ -186,7 +186,6 @@ class InforgraphicsController extends Controller
                         null,
                         'INFOGRAPHICS_CAMPAIGN_SIMULATED',
                         "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
-                        null,
                         'normal'
                     );
                 }
