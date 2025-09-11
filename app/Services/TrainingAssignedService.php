@@ -11,6 +11,7 @@ use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Mail;
 use App\Services\CheckWhitelabelService;
 use App\Models\BlueCollarScormAssignedUser;
+use App\Models\BlueCollarTrainingUser;
 
 class TrainingAssignedService
 {
@@ -119,6 +120,16 @@ class TrainingAssignedService
     public function assignNewBlueCollarScormTraining($campData)
     {
         BlueCollarScormAssignedUser::create($campData);
+
+        return [
+            'status' => 1,
+            'msg' => "New training assigned successfully \n"
+        ];
+    }
+
+    public function assignNewBlueCollarTraining($campData)
+    {
+        BlueCollarTrainingUser::create($campData);
 
         return [
             'status' => 1,

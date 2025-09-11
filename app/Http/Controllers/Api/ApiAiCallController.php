@@ -9,6 +9,7 @@ use App\Models\AiCallAgent;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\AiCallLikelifeAgent;
+use App\Models\BlueCollarEmployee;
 use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
 use App\Models\Users;
@@ -408,6 +409,7 @@ class ApiAiCallController extends Controller
                     'scorm_training' => 'nullable|integer',
                     'training_lang' => 'nullable|string',
                     'training_type' => 'nullable|string',
+                    'employee_type' => 'required|in:normal,bluecollar',
                     'emp_group_name' => 'required|string',
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
@@ -420,21 +422,26 @@ class ApiAiCallController extends Controller
                 ]
             );
 
-            if (!UsersGroup::where('group_id', $request->emp_group)->where('users', '!=', null)->exists()) {
-                return response()->json(['success' => false, 'message' => __('Employee Group does not exist or No user found in group')], 422);
+            if ($request->employee_type == 'normal') {
+                if (!UsersGroup::where('group_id', $request->emp_group)->where('users', '!=', null)->exists()) {
+                    return response()->json(['success' => false, 'message' => __('Employee Group does not exist or No user found in group')], 422);
+                }
+
+                //checking if all users have valid mobile number
+                $hasPhoneNo = $this->groupHasPhoneNumber($request->emp_group);
+
+                if (!$hasPhoneNo) {
+                    return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
+                }
             }
 
-            // return "request validated";
+
+
 
             $companyId = Auth::user()->company_id;
             $campId = Str::random(6);
 
-            //checking if all users have valid mobile number
-            $hasPhoneNo = $this->groupHasPhoneNumber($request->emp_group);
 
-            if (!$hasPhoneNo) {
-                return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
-            }
 
             if ($request->schedule_type === 'immediately') {
                 $scheduledAt = Carbon::now()->toDateTimeString();
@@ -447,6 +454,7 @@ class ApiAiCallController extends Controller
             AiCallCampaign::create([
                 'campaign_id' => $campId,
                 'campaign_name' => $request->camp_name,
+                'employee_type' => $request->employee_type,
                 'emp_group' => $request->emp_group,
                 'emp_grp_name' => $request->emp_group_name,
                 'training' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : $request->training_module,
@@ -514,9 +522,30 @@ class ApiAiCallController extends Controller
 
         if ($campaign) {
 
-            $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
-            $userIds = json_decode($userIdsJson, true);
-            $users = Users::whereIn('id', $userIds)->get();
+            if ($campaign->employee_type == 'normal') {
+                $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+                $userIds = json_decode($userIdsJson, true);
+                $users = Users::whereIn('id', $userIds)->get();
+            }
+
+            if ($campaign->employee_type == 'bluecollar') {
+
+                $users = BlueCollarEmployee::where('group_id', $campaign->emp_group)->get();
+            }
+
+
+
+
+
+
+
+            // $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+            // $userIds = json_decode($userIdsJson, true);
+            // $users = Users::whereIn('id', $userIds)->get();
+
+
+
+
             if ($users) {
                 foreach ($users as $user) {
 
@@ -527,6 +556,7 @@ class ApiAiCallController extends Controller
                     AiCallCampLive::create([
                         'campaign_id' => $campaign->campaign_id,
                         'campaign_name' => $campaign->campaign_name,
+                        'employee_type' => $campaign->employee_type,
                         'user_id' => $user->id,
                         'employee_name' => $user->user_name,
                         'employee_email' => $user->user_email,

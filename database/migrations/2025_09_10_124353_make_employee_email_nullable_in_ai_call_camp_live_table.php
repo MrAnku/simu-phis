@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,11 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ai_call_camp_live', function (Blueprint $table) {
-            $table->string('employee_type')->after('campaign_name');
+            $table->string('employee_email')->nullable()->change();
         });
-
-         // Set default value for existing records
-        DB::table('ai_call_camp_live')->update(['employee_type' => 'normal']);
     }
 
     /**
@@ -26,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ai_call_camp_live', function (Blueprint $table) {
-            $table->dropColumn('employee_type');
+            $table->string('employee_email')->nullable(false)->change();
         });
     }
 };
