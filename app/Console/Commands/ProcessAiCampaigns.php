@@ -17,6 +17,7 @@ use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
 use App\Services\BlueCollarWhatsappService;
+use App\Services\CampaignTrainingService;
 use Illuminate\Support\Facades\Http;
 use App\Services\TrainingAssignedService;
 use Illuminate\Support\Carbon;
@@ -516,101 +517,14 @@ class ProcessAiCampaigns extends Command
             }
         } else {
             // Normal employee logic (existing)
-            if ($campaign->training_module !== null) {
-                $assignedTrainingModule = TrainingAssignedUser::where('user_email', $campaign->user_email)
-                    ->where('training', $campaign->training_module)
-                    ->first();
+            $sent = CampaignTrainingService::assignTraining($campaign);
 
-                if (!$assignedTrainingModule) {
-                    $campData = [
-                        'campaign_id' => $campaign->campaign_id,
-                        'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->user_name,
-                        'user_email' => $campaign->user_email,
-                        'training' => $campaign->training_module,
-                        'training_lang' => $campaign->training_lang,
-                        'training_type' => $campaign->training_type,
-                        'assigned_date' => now()->toDateString(),
-                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'company_id' => $campaign->company_id
-                    ];
-
-                    $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
-
-                    $module = TrainingModule::find($campaign->training_module);
-                    audit_log(
-                        $campaign->company_id,
-                        $campaign->user_email,
-                        null,
-                        'TRAINING_ASSIGNED',
-                        "{$module->name} has been assigned to {$campaign->user_email}",
-                        'normal'
-                    );
-
-                    if ($trainingAssigned['status'] == true) {
-                        echo $trainingAssigned['msg'];
-                    } else {
-                        echo 'Failed to assign training to ' . $campaign->user_email;
-                    }
-                } else {
-                    $assignedTrainingModule->update([
-                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'training_lang' => $campaign->training_lang,
-                        'training_type' => $campaign->training_type,
-                        'assigned_date' => now()->toDateString()
-                    ]);
-                }
-            }
-
-            if ($campaign->scorm_training !== null) {
-                $assignedTrainingModule = ScormAssignedUser::where('user_email', $campaign->user_email)
-                    ->where('scorm', $campaign->scorm_training)
-                    ->first();
-
-                if (!$assignedTrainingModule) {
-                    $campData = [
-                        'campaign_id' => $campaign->campaign_id,
-                        'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->user_name,
-                        'user_email' => $campaign->user_email,
-                        'scorm' => $campaign->scorm_training,
-                        'assigned_date' => now()->toDateString(),
-                        'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'company_id' => $campaign->company_id
-                    ];
-
-                    $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
-
-                    $scorm = ScormTraining::find($campaign->scorm_training);
-                    audit_log(
-                        $campaign->company_id,
-                        $campaign->user_email,
-                        null,
-                        'SCORM_ASSIGNED',
-                        "{$scorm->name} has been assigned to {$campaign->user_email}",
-                        'normal'
-                    );
-                    if ($trainingAssigned['status'] == true) {
-                        echo $trainingAssigned['msg'];
-                    } else {
-                        echo 'Failed to assign training to ' . $campaign->user_email;
-                    }
-                }
-            }
-
-            //send mail to user
-            $campData = [
-                'user_name' => $campaign->user_name,
-                'user_email' => $campaign->user_email,
-                'company_id' => $campaign->company_id
-            ];
-            $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
-
-            if ($isMailSent['status'] == true) {
-                echo $isMailSent['msg'];
+            if ($sent) {
+                echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
             } else {
-                echo 'Failed to send mail to ' . $campaign->user_email;
+                echo 'Failed to assign training to ' . $campaign->user_email . "\n";
             }
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         }
     }
 
