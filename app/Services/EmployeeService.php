@@ -183,7 +183,7 @@ class EmployeeService
 
         foreach ($campaigns as $campaign) {
             if ($campaign == AiCallCampaign::class) {
-                if ($campaign::where('emp_group', $groupId)->exists()) {
+                if ($campaign::where('users_group', $groupId)->exists()) {
                     return true;
                 }
             } else {

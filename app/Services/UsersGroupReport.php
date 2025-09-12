@@ -62,7 +62,7 @@ class UsersGroupReport
     public function totalAiCampaigns(): int
     {
         return AiCallCampaign::where('company_id', $this->companyId)
-            ->where('emp_group', $this->groupId)
+            ->where('users_group', $this->groupId)
             ->when(!empty($this->dateRange), function ($query) {
                 $query->whereBetween('created_at', $this->dateRange);
             })

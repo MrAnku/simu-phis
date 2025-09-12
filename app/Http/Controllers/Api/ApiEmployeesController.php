@@ -808,9 +808,9 @@ class ApiEmployeesController extends Controller
                 return response()->json(['success' => false, 'message' => __('Group Not found')], 404);
             }
 
-            AiCallCampaign::where('emp_group', $groupId)
+            AiCallCampaign::where('users_group', $groupId)
                 ->where('company_id', $companyId)
-                ->update(['emp_grp_name' => $groupName]);
+                ->update(['users_grp_name' => $groupName]);
 
             $group->group_name = $groupName;
             $group->save();

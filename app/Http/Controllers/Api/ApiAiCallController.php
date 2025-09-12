@@ -404,7 +404,7 @@ class ApiAiCallController extends Controller
             $request->validate(
                 [
                     'camp_name' => 'required|string|min:5|max:50',
-                    'emp_group' => 'required|string',
+                    'users_group' => 'required|string',
                     'training_module' => 'nullable|integer',
                     'scorm_training' => 'nullable|integer',
                     'training_lang' => 'nullable|string',
@@ -423,12 +423,12 @@ class ApiAiCallController extends Controller
             );
 
             if ($request->employee_type == 'normal') {
-                if (!UsersGroup::where('group_id', $request->emp_group)->where('users', '!=', null)->exists()) {
+                if (!UsersGroup::where('group_id', $request->users_group)->where('users', '!=', null)->exists()) {
                     return response()->json(['success' => false, 'message' => __('Employee Group does not exist or No user found in group')], 422);
                 }
 
                 //checking if all users have valid mobile number
-                $hasPhoneNo = $this->groupHasPhoneNumber($request->emp_group);
+                $hasPhoneNo = $this->groupHasPhoneNumber($request->users_group);
 
                 if (!$hasPhoneNo) {
                     return response()->json(['success' => false, 'message' => __('Please check if selected employee division has valid phone number')], 422);
@@ -455,8 +455,8 @@ class ApiAiCallController extends Controller
                 'campaign_id' => $campId,
                 'campaign_name' => $request->camp_name,
                 'employee_type' => $request->employee_type,
-                'emp_group' => $request->emp_group,
-                'emp_grp_name' => $request->emp_group_name,
+                'users_group' => $request->users_group,
+                'users_grp_name' => $request->users_grp_name,
                 'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : $request->training_module,
                 'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : $request->scorm_training,
                 'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
@@ -523,14 +523,14 @@ class ApiAiCallController extends Controller
         if ($campaign) {
 
             if ($campaign->employee_type == 'normal') {
-                $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+                $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
                 $userIds = json_decode($userIdsJson, true);
                 $users = Users::whereIn('id', $userIds)->get();
             }
 
             if ($campaign->employee_type == 'bluecollar') {
 
-                $users = BlueCollarEmployee::where('group_id', $campaign->emp_group)->get();
+                $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
             }
 
 
@@ -539,7 +539,7 @@ class ApiAiCallController extends Controller
 
 
 
-            // $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+            // $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
             // $userIds = json_decode($userIdsJson, true);
             // $users = Users::whereIn('id', $userIds)->get();
 

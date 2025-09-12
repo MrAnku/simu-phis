@@ -14,8 +14,8 @@ class AiCallCampaign extends Model
     protected $fillable = [
         'campaign_id',
         'campaign_name',
-        'emp_group',
-        'emp_grp_name',
+        'users_group',
+        'users_grp_name',
         'training_module',
         'training_lang',
         'training_type',

@@ -165,7 +165,7 @@ class AicallController extends Controller
         $request->validate(
             [
                 'camp_name' => 'required|string|min:5|max:50',
-                'emp_group' => 'required|string',
+                'users_group' => 'required|string',
                 'training_module' => 'nullable|integer',
                 'training_type' => 'string',
                 'emp_group_name' => 'required|string',
@@ -184,7 +184,7 @@ class AicallController extends Controller
         $campId = Str::random(6);
 
         //checking if all users have valid mobile number
-        $isvalid = $this->checkValidMobile($request->emp_group);
+        $isvalid = $this->checkValidMobile($request->users_group);
 
         if (!$isvalid) {
             return redirect()->back()->with('error', __('Please check if selected employee group has valid phone number'));
@@ -193,8 +193,8 @@ class AicallController extends Controller
         AiCallCampaign::create([
             'campaign_id' => $campId,
             'campaign_name' => $request->camp_name,
-            'emp_group' => $request->emp_group,
-            'emp_grp_name' => $request->emp_group_name,
+            'users_group' => $request->users_group,
+            'users_grp_name' => $request->users_grp_name,
             'training_module' => $request->training_module ?? null,
             'training_lang' => $request->training_module ? $request->training_lang : null,
             'training_type' => $request->training_type ? $request->training_type : 'static_training',
@@ -263,7 +263,7 @@ class AicallController extends Controller
 
         if ($campaign) {
 
-            $userIdsJson = UsersGroup::where('group_id', $campaign->emp_group)->value('users');
+            $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
             $userIds = json_decode($userIdsJson, true);
             $users = Users::whereIn('id', $userIds)->get();
             if ($users) {

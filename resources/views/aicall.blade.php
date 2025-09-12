@@ -70,7 +70,7 @@
                                                         {{ $campaign->campaign_name ?? '' }}
                                                     </th>
                                                     <td>
-                                                        {{ $campaign->emp_grp_name ?? '' }}
+                                                        {{ $campaign->users_grp_name ?? '' }}
                                                     </td>
                                                     <td>
                                                         {{ $campaign->ai_agent_name ?? '' }}

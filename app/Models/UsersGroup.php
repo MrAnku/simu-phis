@@ -37,7 +37,7 @@ class UsersGroup extends Model
     }
     public function aiCampaigns(): HasMany
     {
-        return $this->hasMany(AiCallCampaign::class, 'emp_group', 'group_id');
+        return $this->hasMany(AiCallCampaign::class, 'users_group', 'group_id');
     }
     public function getUsersCountAttribute(): int
     {

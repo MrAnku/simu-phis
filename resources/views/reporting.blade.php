@@ -641,7 +641,7 @@
                                                                                 </td>
                                                                                 <td>{{ $ccamp->created_at }}</td>
                                                                                 <td>
-                                                                                    {{ $ccamp->emp_grp_name }}
+                                                                                    {{ $ccamp->users_grp_name }}
                                                                                 </td>
                                                                                 <td>
 
