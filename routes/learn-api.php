@@ -77,6 +77,7 @@ Route::prefix('learn')->group(function () {
             Route::get('/fetch-all-assigned-trainings', [ApiLearnBlueCollarController::class, 'fetchAllAssignedTrainings']);
             Route::put('/start-training-module', [ApiLearnBlueCollarController::class, 'startTrainingModule']);
             Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
+            Route::get('/fetch-languages', [ApiLearnController::class, 'fetchLanguages']);
         });
     });
 });
