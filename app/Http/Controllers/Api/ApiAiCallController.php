@@ -410,7 +410,7 @@ class ApiAiCallController extends Controller
                     'training_lang' => 'nullable|string',
                     'training_type' => 'nullable|string',
                     'employee_type' => 'required|in:normal,bluecollar',
-                    'emp_group_name' => 'required|string',
+                    'users_grp_name' => 'required|string',
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
                     'ai_phone' => 'required|string',
