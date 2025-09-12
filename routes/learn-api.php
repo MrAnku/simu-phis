@@ -61,6 +61,7 @@ Route::prefix('learn')->group(function () {
         Route::middleware('checkBlueCollarLearnToken')->group(function () {
             Route::get('/dashboard/metrics', [ApiLearnBlueCollarController::class, 'getDashboardMetrics']);
             Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
+            Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
             Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
             Route::put('/update-training-feedback', [ApiLearnBlueCollarController::class, 'updateTrainingFeedback']);
             Route::get('/fetch-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchScormTrainings']);
