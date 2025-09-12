@@ -16,7 +16,7 @@ class AiCallCampaign extends Model
         'campaign_name',
         'emp_group',
         'emp_grp_name',
-        'training',
+        'training_module',
         'training_lang',
         'training_type',
         'ai_agent',
@@ -35,7 +35,7 @@ class AiCallCampaign extends Model
     }
 
     public function trainingName(){
-        return $this->hasOne(TrainingModule::class, 'id', 'training');
+        return $this->hasOne(TrainingModule::class, 'id', 'training_module');
     }
 
     protected $appends = ['formatted_created_at'];

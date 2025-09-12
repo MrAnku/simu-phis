@@ -17,7 +17,7 @@ class AiCallCampLive extends Model
         'user_id',
         'user_name',
         'user_email',
-        'training',
+        'training_module',
         'training_lang',
         'training_type',
         'from_mobile',
@@ -44,7 +44,7 @@ class AiCallCampLive extends Model
     }
 
     public function trainingData(){
-        return $this->belongsTo(TrainingModule::class, 'training', 'id');
+        return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
 
     public function agentDetail(){
