@@ -168,7 +168,7 @@ class AicallController extends Controller
                 'users_group' => 'required|string',
                 'training_module' => 'nullable|integer',
                 'training_type' => 'string',
-                'emp_group_name' => 'required|string',
+                'users_grp_name' => 'required|string',
                 'ai_agent_name' => 'required|string',
                 'ai_agent' => 'required|string',
                 'ai_phone' => 'required|string'
