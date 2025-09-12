@@ -61,7 +61,7 @@ Route::prefix('learn')->group(function () {
         Route::middleware('checkBlueCollarLearnToken')->group(function () {
             Route::get('/dashboard/metrics', [ApiLearnBlueCollarController::class, 'getDashboardMetrics']);
             Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
-            Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
+
             Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
             Route::put('/update-training-feedback', [ApiLearnBlueCollarController::class, 'updateTrainingFeedback']);
             Route::get('/fetch-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchScormTrainings']);
@@ -78,7 +78,15 @@ Route::prefix('learn')->group(function () {
             Route::get('/fetch-all-assigned-trainings', [ApiLearnBlueCollarController::class, 'fetchAllAssignedTrainings']);
             Route::put('/start-training-module', [ApiLearnBlueCollarController::class, 'startTrainingModule']);
             Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
+
+            //missing routes
             Route::get('/fetch-languages', [ApiLearnController::class, 'fetchLanguages']);
+            Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
+            Route::get('/fetch-assigned-games', [ApiLearnBlueCollarController::class, 'fetchAssignedGames']);
+            Route::post('update-game-score', [ApiLearnBlueCollarController::class, 'updateGameScore']);
+            Route::get('/load-ai-training', [ApiLearnController::class, 'generateAiTraining']);
+            Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining']);
+            Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
         });
     });
 });
