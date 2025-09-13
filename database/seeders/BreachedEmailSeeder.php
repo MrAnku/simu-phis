@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Str;
 use App\Models\BreachedEmail;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -15,7 +16,7 @@ class BreachedEmailSeeder extends Seeder
     {
         $records = [
             [
-                'email' => 'sana@sparrowhost.in',
+                'email' => Str::random(10).'@sparrowhost.in',
                 'data' => '[
                             {
                                 "Name": "BVD",
@@ -48,7 +49,7 @@ class BreachedEmailSeeder extends Seeder
                 'company_id' => 'bc2d3bf2-4eb0-47db-8f1e-6d2a76b94608'
             ],
             [
-                'email' => 'sana@yopmail.com',
+                'email' => Str::random(10).'@sparrowhost.in',
                 'data' => '[
                         {
                             "Name": "BVD",
@@ -81,7 +82,7 @@ class BreachedEmailSeeder extends Seeder
                 'company_id' => 'bc2d3bf2-4eb0-47db-8f1e-6d2a76b94609'
             ],
             [
-                'email' => 'test@yopmail.com',
+                'email' => Str::random(10).'@sparrowhost.in',
                 'data' => '[
                         {
                             "Name": "BVD",
@@ -115,8 +116,10 @@ class BreachedEmailSeeder extends Seeder
             ]
         ];
 
-        foreach ($records as $record) {
+        for ($i = 0; $i < 10; $i++) {
+            foreach ($records as $record) {
             BreachedEmail::create($record);
+            }
         }
     }
 }
