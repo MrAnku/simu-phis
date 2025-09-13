@@ -246,8 +246,6 @@ class CampaignTrainingService
 
     private static function assignAllBlueCollarTrainings($campaign, $trainingModules = null, $scormTrainings = null)
     {
-        $trainingAssignedService = new TrainingAssignedService();
-
         $user_phone = $campaign->user_phone;
 
         if (!empty($trainingModules)) {
@@ -322,7 +320,6 @@ class CampaignTrainingService
                         'company_id' => $campaign->company_id
                     ];
 
-                    // $trainingAssignedService->assignNewTraining($campData);
 
                     BlueCollarScormAssignedUser::create($campData);
 
@@ -367,10 +364,13 @@ class CampaignTrainingService
 
     private static function assignSingleBlueCollarTraining($campaign)
     {
-        $trainingAssignedService = new TrainingAssignedService();
-
-        $user_phone = $campaign->user_phone;
-
+        // Logic to choose phone field from whatsapp or AI
+        if (isset($campaign->to_mobile) && !empty($campaign->to_mobile)) {
+            $user_phone = ltrim($campaign->to_mobile, '+');
+        } else {
+            $user_phone = $campaign->user_phone;
+        }
+        
         if ($campaign->training_module !== null) {
             $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $user_phone)
                 ->where('training', $campaign->training_module)
@@ -390,8 +390,6 @@ class CampaignTrainingService
                     'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                     'company_id' => $campaign->company_id
                 ];
-
-                // $trainingAssignedService->assignNewTraining($campData);
                 BlueCollarTrainingUser::create($campData);
 
                 $training = TrainingModule::find($campaign->training_module);
@@ -438,7 +436,7 @@ class CampaignTrainingService
 
                 BlueCollarScormAssignedUser::create($campData);
 
-                $scorm = TrainingModule::find($campaign->scorm_training);
+                $scorm = ScormTraining::find($campaign->scorm_training);
                 // Audit log
                 audit_log(
                     $campaign->company_id,

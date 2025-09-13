@@ -404,119 +404,11 @@ class ProcessAiCampaigns extends Command
         // Blue collar logic
         if ($campaign->employee_type === 'bluecollar') {
 
-            $user_phone = ltrim($campaign->to_mobile, '+');
-            // Assign normal training
-            if ($campaign->training_module !== null) {
-                $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $user_phone)
-                    ->where('training', $campaign->training_module)
-                    ->first();
+            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
 
-                // $assignedTrainingModule = BlueCollarTrainingUser::where('user_email', $campaign->user_email)
-                //     ->where('training', $campaign->training)
-                //     ->first();
-
-                if (!$assignedTrainingModule) {
-                    $campData = [
-                        'campaign_id' => $campaign->campaign_id,
-                        'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->user_name,
-                        'user_whatsapp' => $user_phone,
-                        'training' => $campaign->training_module,
-                        'training_lang' => $campaign->training_lang,
-                        'training_type' => $campaign->training_type,
-                        'assigned_date' => now()->toDateString(),
-                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'company_id' => $campaign->company_id
-                    ];
-
-                    $trainingAssigned = $trainingAssignedService->assignNewBlueCollarTraining($campData);
-
-                    $module = TrainingModule::find($campaign->training_module);
-                    audit_log(
-                        $campaign->company_id,
-                        $campaign->user_email,
-                        null,
-                        'TRAINING_ASSIGNED',
-                        "{$module->name} has been assigned to {$campaign->user_email}",
-                        'bluecollar'
-                    );
-
-                    if ($trainingAssigned['status'] == true) {
-                        echo $trainingAssigned['msg'];
-                    } else {
-                        echo 'Failed to assign training to ' . $campaign->user_email;
-                    }
-                } else {
-                    $assignedTrainingModule->update([
-                        'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'training_lang' => $campaign->training_lang,
-                        'training_type' => $campaign->training_type,
-                        'assigned_date' => now()->toDateString()
-                    ]);
-                }
-            }
-
-            // Assign SCORM training
-            if ($campaign->scorm_training !== null) {
-                $assignedTrainingModule = BlueCollarScormAssignedUser::where('user_whatsapp', $user_phone)
-                    ->where('scorm', $campaign->scorm_training)
-                    ->first();
-
-
-                if (!$assignedTrainingModule) {
-                    $campData = [
-                        'campaign_id' => $campaign->campaign_id,
-                        'user_id' => $campaign->user_id,
-                        'user_name' => $campaign->user_name,
-                        'user_whatsapp' => $user_phone,
-                        'scorm' => $campaign->scorm_training,
-                        'assigned_date' => now()->toDateString(),
-                        'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
-                        'company_id' => $campaign->company_id
-                    ];
-
-                    $trainingAssigned = $trainingAssignedService->assignNewBlueCollarScormTraining($campData);
-
-                    $scorm = ScormTraining::find($campaign->scorm_training);
-                    audit_log(
-                        $campaign->company_id,
-                        $campaign->user_email,
-                        null,
-                        'SCORM_ASSIGNED',
-                        "{$scorm->name} has been assigned to {$campaign->user_email}",
-                        'bluecollar'
-                    );
-                    if ($trainingAssigned['status'] == true) {
-                        echo $trainingAssigned['msg'];
-                    } else {
-                        echo 'Failed to assign training to ' . $campaign->user_email;
-                    }
-                }
-            }
-
-            $trainingNames = self::getAllTrainingNames($user_phone); // returns a collection
-
-            // Convert to comma-separated string (or keep as array if you prefer)
-            $trainingNamesString = $trainingNames->implode(', ');
-
-            // Prepare data object/array
-            $data = (object)[
-                'user_phone' => $user_phone,
-                'user_name' => $campaign->user_name,
-                'training_names' => $trainingNamesString
-            ];
-
-            $blueCollarWhatsappService = new BlueCollarWhatsappService($campaign->company_id);
-
-            $whatsapp_response = $blueCollarWhatsappService->sendTrainingAssign($data);
-
-            if ($whatsapp_response->successful()) {
-                return true;
-            } else {
-                return false;
-            }
+            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         } else {
-            // Normal employee logic (existing)
+            // Normal employee logic
             $sent = CampaignTrainingService::assignTraining($campaign);
 
             if ($sent) {
@@ -526,35 +418,5 @@ class ProcessAiCampaigns extends Command
             }
             $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         }
-    }
-
-    private static function getAllTrainingNames($user_phone)
-    {
-        $allAssignedTrainings = BlueCollarTrainingUser::with('trainingData', 'trainingGame')->where('user_whatsapp', $user_phone)->get();
-
-        $scormTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $user_phone)->get();
-
-        $trainingNames = collect();
-        $scormNames = collect();
-
-        if ($allAssignedTrainings->isNotEmpty()) {
-            $trainingNames = $allAssignedTrainings->map(function ($training) {
-                if ($training->training_type == 'games') {
-                    return $training->trainingGame->name;
-                }
-                return $training->trainingData->name;
-            });
-        }
-
-
-        if ($scormTrainings->isNotEmpty()) {
-            $scormNames = $scormTrainings->map(function ($training) {
-
-                return $training->scormTrainingData->name;
-            });
-        }
-
-        $trainingNames = $trainingNames->merge($scormNames)->filter();
-        return $trainingNames;
     }
 }

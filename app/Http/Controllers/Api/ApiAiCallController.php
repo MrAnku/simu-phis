@@ -435,13 +435,8 @@ class ApiAiCallController extends Controller
                 }
             }
 
-
-
-
             $companyId = Auth::user()->company_id;
             $campId = Str::random(6);
-
-
 
             if ($request->schedule_type === 'immediately') {
                 $scheduledAt = Carbon::now()->toDateTimeString();
@@ -529,22 +524,8 @@ class ApiAiCallController extends Controller
             }
 
             if ($campaign->employee_type == 'bluecollar') {
-
                 $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
             }
-
-
-
-
-
-
-
-            // $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
-            // $userIds = json_decode($userIdsJson, true);
-            // $users = Users::whereIn('id', $userIds)->get();
-
-
-
 
             if ($users) {
                 foreach ($users as $user) {
