@@ -16,6 +16,7 @@ use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
 use App\Models\Users;
 use App\Models\UsersGroup;
+use App\Services\BlueCollarCampTrainingService;
 use App\Services\BlueCollarWhatsappService;
 use App\Services\CampaignTrainingService;
 use Illuminate\Support\Facades\Http;
@@ -404,7 +405,7 @@ class ProcessAiCampaigns extends Command
         // Blue collar logic
         if ($campaign->employee_type === 'bluecollar') {
 
-            $sent = CampaignTrainingService::assignBlueCollarTraining($campaign);
+            $sent = BlueCollarCampTrainingService::assignBlueCollarTraining($campaign);
 
             $campaign->update(['sent' => 1, 'training_assigned' => 1]);
         } else {

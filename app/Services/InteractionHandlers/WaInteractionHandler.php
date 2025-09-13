@@ -6,6 +6,7 @@ use App\Models\WaCampaign;
 use Jenssegers\Agent\Agent;
 use App\Models\WaLiveCampaign;
 use App\Models\WhatsappActivity;
+use App\Services\BlueCollarCampTrainingService;
 use App\Services\CampaignTrainingService;
 
 class WaInteractionHandler
@@ -125,11 +126,11 @@ class WaInteractionHandler
                     $scormTrainings = json_decode($all_camp->scorm_training, true);
                 }
 
-                CampaignTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+                BlueCollarCampTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
 
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             } else {
-                CampaignTrainingService::assignBlueCollarTraining($campaign);
+                BlueCollarCampTrainingService::assignBlueCollarTraining($campaign);
 
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
