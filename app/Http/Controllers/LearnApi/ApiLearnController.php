@@ -64,6 +64,7 @@ class ApiLearnController extends Controller
             if (!$user) {
                 TrainingAssignedUser::where('user_email', $userEmail)->delete();
                 ScormAssignedUser::where('user_email', $userEmail)->delete();
+                AssignedPolicy::where('user_email', $userEmail)->delete();
                 return response()->json([
                     'success' => false,
                     'message' => 'You are no longer an employee on this platform.'
