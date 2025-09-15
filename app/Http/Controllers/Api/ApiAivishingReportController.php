@@ -280,7 +280,13 @@ class ApiAivishingReportController extends Controller
                     ->whereIn('user_id', $usersArray)
                     ->count();
 
-                $fellForSimulation = 0;
+
+                $fellForSimulation = AiCallCampLive::where('company_id', $companyId)
+                    ->where('compromised', 1)
+                    ->whereIn('user_id', $usersArray)
+                    ->whereBetween('created_at', [$monthStart, $monthEnd])
+                    ->count();
+
                 $transcriptions = 0;
                 $endResponses = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_end_response', '!=', null)
@@ -290,9 +296,6 @@ class ApiAivishingReportController extends Controller
                 if ($endResponses->isNotEmpty()) {
                     foreach ($endResponses as $response) {
                         $responseJson = json_decode($response->call_end_response, true);
-                        if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                            $fellForSimulation++;
-                        }
 
                         if (isset($responseJson['call']['transcript'])) {
                             $transcriptions++;
@@ -347,7 +350,10 @@ class ApiAivishingReportController extends Controller
                 $total = AiCallCampLive::where('company_id', $companyId)
                     ->count();
 
-                $fellForSimulation = 0;
+                $fellForSimulation = AiCallCampLive::where('company_id', $companyId)
+                    ->where('compromised', 1)
+                    ->count();
+
                 $transcriptions = 0;
                 $endResponses = AiCallCampLive::where('company_id', $companyId)
                     ->where('call_end_response', '!=', null)
@@ -355,10 +361,7 @@ class ApiAivishingReportController extends Controller
                 if ($endResponses->isNotEmpty()) {
                     foreach ($endResponses as $response) {
                         $responseJson = json_decode($response->call_end_response, true);
-                        if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                            $fellForSimulation++;
-                        }
-
+                      
                         if (isset($responseJson['call']['transcript'])) {
                             $transcriptions++;
                         }
@@ -427,7 +430,10 @@ class ApiAivishingReportController extends Controller
                     return $campaign->individualCamps->where('call_send_response', '!=', null)->count();
                 });
 
-                $fellForSimulation = 0;
+                $fellForSimulation = $group->aiCampaigns->sum(function ($campaign) {
+                    return $campaign->individualCamps->where('compromised', 1)->count();
+                });
+
                 $transcriptions = 0;
                 $endResponses = $group->aiCampaigns->filter(function ($campaign) {
                     return $campaign->individualCamps->contains(function ($camp) {
@@ -437,10 +443,7 @@ class ApiAivishingReportController extends Controller
                 if ($endResponses->isNotEmpty()) {
                     foreach ($endResponses as $response) {
                         $responseJson = json_decode($response->call_end_response, true);
-                        if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                            $fellForSimulation++;
-                        }
-
+                      
                         if (isset($responseJson['call']['transcript'])) {
                             $transcriptions++;
                         }
@@ -488,7 +491,10 @@ class ApiAivishingReportController extends Controller
                     return $campaign->individualCamps->where('call_send_response', '!=', null)->count();
                 });
 
-                $fellForSimulation = 0;
+                 $fellForSimulation = $group->aiCampaigns->sum(function ($campaign) {
+                    return $campaign->individualCamps->where('compromised', 1)->count();
+                });
+
                 $transcriptions = 0;
                 $endResponses = $group->aiCampaigns->flatMap(function ($campaign) {
                     return $campaign->individualCamps->filter(function ($camp) {
@@ -499,10 +505,7 @@ class ApiAivishingReportController extends Controller
                 if ($endResponses->isNotEmpty()) {
                     foreach ($endResponses as $response) {
                         $responseJson = json_decode($response->call_end_response, true);
-                        if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                            $fellForSimulation++;
-                        }
-
+                       
                         if (isset($responseJson['call']['transcript'])) {
                             $transcriptions++;
                         }
@@ -560,20 +563,13 @@ class ApiAivishingReportController extends Controller
                 ->whereIn('user_id', $usersArray)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
-            $fellInSimulation = 0;
-            $endResponses = AiCallCampLive::where('company_id', $companyId)
-                ->where('call_end_response', '!=', null)
+
+
+            $fellInSimulation = AiCallCampLive::where('company_id', $companyId)
+                ->where('compromised', 1)
                 ->whereIn('user_id', $usersArray)
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->get();
-            if ($endResponses->isNotEmpty()) {
-                foreach ($endResponses as $response) {
-                    $responseJson = json_decode($response->call_end_response, true);
-                    if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                        $fellInSimulation++;
-                    }
-                }
-            }
+                ->count();
 
             return [
                 'total_calls' => $totalCalls,
@@ -597,18 +593,10 @@ class ApiAivishingReportController extends Controller
             $waitingCalls = AiCallCampLive::where('company_id', $companyId)
                 ->where('status', 'waiting')
                 ->count();
-            $fellInSimulation = 0;
-            $endResponses = AiCallCampLive::where('company_id', $companyId)
-                ->where('call_end_response', '!=', null)
-                ->get();
-            if ($endResponses->isNotEmpty()) {
-                foreach ($endResponses as $response) {
-                    $responseJson = json_decode($response->call_end_response, true);
-                    if (isset($responseJson['args']['fell_for_simulation']) && $responseJson['args']['fell_for_simulation'] === true) {
-                        $fellInSimulation++;
-                    }
-                }
-            }
+         
+            $fellInSimulation = AiCallCampLive::where('company_id', $companyId)
+                ->where('compromised', 1)
+                ->count();
 
             return [
                 'total_calls' => $totalCalls,
