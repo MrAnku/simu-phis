@@ -118,7 +118,7 @@ Route::domain(checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->grou
     });
 });
 
-Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'hook-limiter'])->group(function () {
+Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'throttle:hook-limiter'])->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
@@ -149,7 +149,7 @@ Route::get('/test/scorm/{id}', [TestController::class, 'testScorm'])
     ->name('test.scorm');
 
 
-Route::middleware('hook-limiter')->group(function () {
+Route::middleware('throttle:hook-limiter')->group(function () {
 
     Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
     Route::post('/phish-triage/log-report', [PhishTriageController::class, 'logReport']);
