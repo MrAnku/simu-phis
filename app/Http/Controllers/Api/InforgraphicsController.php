@@ -40,7 +40,7 @@ class InforgraphicsController extends Controller
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                'description' => 'required|string|max:2000',
                 'category' => 'required|string|max:255',
                 'file' => 'required|file|mimes:jpg,jpeg,png|max:6048',
             ]);
