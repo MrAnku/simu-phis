@@ -35,9 +35,14 @@ class SendInfographics extends Command
      */
     public function handle()
     {
-        $this->processScheduledCampaigns();
-        $this->sendCampaignLiveEmails();
-        $this->checkCompletedCampaigns();
+        try {
+            $this->processScheduledCampaigns();
+            $this->sendCampaignLiveEmails();
+            $this->checkCompletedCampaigns();
+        } catch (\Exception $e) {
+            echo 'Error occurred: ' . $e->getMessage() . "\n";
+        }
+        
     }
 
     private function processScheduledCampaigns()
@@ -103,7 +108,7 @@ class SendInfographics extends Command
                     'user_name' => $user->user_name,
                     'user_email' => $user->user_email,
                     'sent' => 0,
-                    'infographic' => collect($campaign->infographics)->random(),
+                    'infographic' => $this->getRandom($campaign->infographics),
                     'company_id' => $campaign->company_id,
                 ]);
 
@@ -120,6 +125,16 @@ class SendInfographics extends Command
 
             echo 'Inforgraphics Campaign is live' . "\n";
         }
+    }
+
+    private function getRandom($infographics)
+    {
+        $infographicIds = json_decode($infographics, true);
+        if (empty($infographicIds)) {
+            return null;
+        }
+        $randomIndex = array_rand($infographicIds);
+        return $infographicIds[$randomIndex];
     }
 
     private function sendCampaignLiveEmails()
@@ -158,7 +173,19 @@ class SendInfographics extends Command
 
             foreach ($campaigns as $campaign) {
 
+                if($campaign->infographic == null){
+                    echo 'No infographic assigned for user ' . $campaign->user_email . "\n";
+                    $campaign->update(['sent' => 1]);
+                    continue;
+                }
+
                 $infographic = Inforgraphic::where('id', $campaign->infographic)->first();
+
+                if (!$infographic) {
+                    echo 'Infographic not found for user ' . $campaign->user_email . "\n";
+                    $campaign->update(['sent' => 1]);
+                    continue;
+                }
 
                 $mailData = [
                     'user_name' => $campaign->user_name,
