@@ -108,7 +108,7 @@ class SendInfographics extends Command
                     'user_name' => $user->user_name,
                     'user_email' => $user->user_email,
                     'sent' => 0,
-                    'infographic' => $this->getRandom($campaign->infographics),
+                    'infographic' => $this->getRandom($campaign->inforgraphics),
                     'company_id' => $campaign->company_id,
                 ]);
 
