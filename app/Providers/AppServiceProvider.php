@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         RateLimiter::for('limiter', function (Request $request) {
+            // No limit for localhost
+            if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
+                return Limit::none();
+            }
 
             return $request->user()
                 ? Limit::perMinutes(30, 100)->by($request->user()->id)->response(function () {
@@ -39,6 +43,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('learner-limiter', function (Request $request) {
+            // No limit for localhost
+            if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
+                return Limit::none();
+            }
+
             if ($request->is('api/learn/create-new-token') || $request->is('api/learn/blue-collar/create-new-token')) {  // Sensitive route
                 return Limit::perMinutes(30, 5)->by(getClientIp())->response(function () {
                     return response()->json(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
@@ -51,6 +60,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('hook-limiter', function (Request $request) {
+
+            // No limit for localhost
+            if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
+                return Limit::none();
+            }
 
             return Limit::perMinutes(30, 20)->by(getClientIp())->response(function () {
                 return response()->json(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
