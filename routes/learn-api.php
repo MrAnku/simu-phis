@@ -6,7 +6,7 @@ use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('learn')->group(function () {
+Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function () {
     Route::get('/login-with-token', [ApiLearnController::class, 'loginWithToken']);
     Route::post('/create-new-token', [ApiLearnController::class, 'createNewToken']);
 

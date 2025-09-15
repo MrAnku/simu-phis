@@ -19,7 +19,7 @@ use App\Http\Controllers\Admin\AdminTrainingGameController;
 Route::get('/company/create-password/{token}', [CreatePassController::class, 'createCompanyPassPage'])->name('company.createCompanyPassPage');
 Route::post('/company/create-password', [CreatePassController::class, 'storeCompanyPass'])->name('company.storeCompanyPass');
 
-Route::get('/send-email/{email}', function($email) {
+Route::get('/send-email/{email}', function ($email) {
     // Simple email sending logic
     try {
         // config(['mail.mailers.smtp' => [
@@ -34,7 +34,7 @@ Route::get('/send-email/{email}', function($email) {
         // ]]);
         Mail::raw('This is a test email.', function ($message) use ($email) {
             $message->to($email)
-                    ->subject('Test Email');
+                ->subject('Test Email');
         });
         return response()->json([
             'status' => 'success',
@@ -118,7 +118,7 @@ Route::domain(checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->grou
     });
 });
 
-Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockGoogleBots')->group(function () {
+Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware(['blockGoogleBots', 'hook-limiter'])->group(function () {
 
     Route::get('/', function () {
         abort(404, 'Page not found');
@@ -142,8 +142,6 @@ Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockG
 
     //route for updating payload
     Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick']);
-
-   
 });
 
 //test routes
@@ -151,19 +149,20 @@ Route::get('/test/scorm/{id}', [TestController::class, 'testScorm'])
     ->name('test.scorm');
 
 
-Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
-Route::post('/phish-triage/log-report', [PhishTriageController::class, 'logReport']);
+Route::middleware('hook-limiter')->group(function () {
 
-Route::post('/phishing-reply', [PhishingReplyController::class, 'phishingReply']);
+    Route::post('/ai-calling/log-call-detail', [AicallController::class, 'logCallDetail'])->name('ai.call.log.call');
+    Route::post('/phish-triage/log-report', [PhishTriageController::class, 'logReport']);
+
+    Route::post('/phishing-reply', [PhishingReplyController::class, 'phishingReply']);
 
 
-Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
-Route::get('/ttrackEmailView/{campid}', [TrackingController::class, 'ttrackemail']);
-Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
-Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
+    Route::get('/trackEmailView/{campid}', [TrackingController::class, 'trackemail']);
+    Route::get('/ttrackEmailView/{campid}', [TrackingController::class, 'ttrackemail']);
+    Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
+    Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
+});
 
 
 
 require __DIR__ . '/auth.php';
-
-

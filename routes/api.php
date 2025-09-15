@@ -56,33 +56,37 @@ use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
 use App\Http\Controllers\PhishingReplyController;
 
-Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
+Route::middleware('throttle:limiter')->group(function () {
+
+    Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
 
-Route::post('company/create-password/token-check', [AuthenticatedSessionController::class, 'tokenCheck']);
+    Route::post('company/create-password/token-check', [AuthenticatedSessionController::class, 'tokenCheck']);
 
-Route::post('company/create-password', [AuthenticatedSessionController::class, 'createPassword']);
+    Route::post('company/create-password', [AuthenticatedSessionController::class, 'createPassword']);
 
-Route::post('login', [AuthenticatedSessionController::class, 'login']);
-
-
-Route::get('sso/validate', [SSOController::class, 'ssoValidate']);
-Route::get('sso-learner/validate', [SSOController::class, 'ssoValidateLearner']);
-
-Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
-
-Route::post('verify-otp', [AuthenticatedSessionController::class, 'verifyOTP']);
-
-Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPassword']);
-Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
-Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
-
-Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
-Route::post('/add-quishing-template-bulk', [ApiQuishingEmailController::class, 'addQuishingTemplateBulk']);
+    Route::post('login', [AuthenticatedSessionController::class, 'login']);
 
 
-Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
-Route::middleware(['auth:api', 'timezone'])->group(function () {
+    Route::get('sso/validate', [SSOController::class, 'ssoValidate']);
+    Route::get('sso-learner/validate', [SSOController::class, 'ssoValidateLearner']);
+
+    Route::post('forgot-password', [AuthenticatedSessionController::class, 'forgotPassword']);
+
+    Route::post('verify-otp', [AuthenticatedSessionController::class, 'verifyOTP']);
+
+    Route::post('reset-password', [AuthenticatedSessionController::class, 'resetPassword']);
+    Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
+    Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
+
+    Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
+    Route::post('/add-quishing-template-bulk', [ApiQuishingEmailController::class, 'addQuishingTemplateBulk']);
+
+    Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
+});
+
+
+Route::middleware(['auth:api', 'timezone', 'throttle:limiter'])->group(function () {
 
     Route::get('/dashboard', [ApiDashboardController::class, 'index']);
     Route::get('/dashboard/campaign-card/sort-by-time', [ApiDashboardController::class, 'sortByTimeCampaignCard']);
@@ -368,7 +372,6 @@ Route::middleware(['auth:api', 'timezone'])->group(function () {
         Route::get('/area', [CustomisedReportingController::class, 'areaData']); //common
         Route::get('/table', [CustomisedReportingController::class, 'tableData']);
         Route::get('/bubble', [CustomisedReportingController::class, 'bubbleData']);
-
     });
 
     Route::prefix('employees')->group(function () {
