@@ -13,6 +13,7 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Http\Request;
 use App\Models\TrainingGame;
 use App\Models\TrainingModule;
+use App\Models\TranslatedTraining;
 use App\Models\WaLiveCampaign;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -404,6 +405,7 @@ class ApiTrainingModuleController extends Controller
                 ->update($updateData);
 
             if ($isTrainingUpdated) {
+                TranslatedTraining::where('training_id', $request->input('gamifiedTrainingId'))->delete();
                 log_action("Gamified training module updated");
                 return response()->json([
                     'success' => true,
@@ -575,6 +577,7 @@ class ApiTrainingModuleController extends Controller
             $isTrainingUpdated = TrainingModule::where('id', $trainingModuleId)->update($updateData);
 
             if ($isTrainingUpdated) {
+                TranslatedTraining::where('training_id', $trainingModuleId)->delete();
                 log_action("Training module updated");
                 return response()->json([
                     'success' => true,
@@ -645,6 +648,7 @@ class ApiTrainingModuleController extends Controller
             $trainingModule = TrainingModule::where('id', $trainingId)->where('company_id', $company_id)->first();
 
             $isDeleted  = $trainingModule->delete();
+            TranslatedTraining::where('training_id', $trainingId)->delete();
 
             // Delete cover image if not default
             if ($isDeleted && $coverImage !== 'defaultTraining.jpg') {

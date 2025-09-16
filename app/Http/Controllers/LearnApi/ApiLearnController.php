@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers\LearnApi;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
 use App\Models\Badge;
 use App\Models\Users;
+
+use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
 use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
+use App\Models\TranslatedTraining;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
-use App\Services\NormalEmpLearnService;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
@@ -1148,8 +1149,21 @@ class ApiLearnController extends Controller
 
                 if ($moduleLanguage !== 'en') {
                     try {
-                        $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
-                        $translatedArray = json_decode($translatedJson_quiz, true);
+                        $existingTranslation = TranslatedTraining::where('training_id', $id)
+                            ->where('language', $moduleLanguage)
+                            ->first();
+
+                        if ($existingTranslation) {
+                            $translatedArray = json_decode($existingTranslation->json_quiz, true);
+                        } else {
+                            $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+                            TranslatedTraining::create([
+                                'training_id' => $id,
+                                'language' => $moduleLanguage,
+                                'json_quiz' => $translatedJson_quiz,
+                            ]);
+                            $translatedArray = json_decode($translatedJson_quiz, true);
+                        }
 
                         if ($translatedArray) {
                             $translatedArray = changeTranslatedQuizVideoUrl($translatedArray, $moduleLanguage);
@@ -1175,8 +1189,21 @@ class ApiLearnController extends Controller
 
                 if ($moduleLanguage !== 'en') {
                     try {
+                        $existingTranslation = TranslatedTraining::where('training_id', $id)
+                            ->where('language', $moduleLanguage)
+                            ->first();
+                        if ($existingTranslation) {
+                            $quizInArray = json_decode($existingTranslation->json_quiz, true);
+                            $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                            return response()->json(['success' => true, 'message' => __('Converted Json Quiz retreived successfully'), 'data' => $quizInArray], 200);
+                        }
                         $quizInArray = json_decode($trainingData->json_quiz, true);
                         $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                        TranslatedTraining::create([
+                            'training_id' => $id,
+                            'language' => $moduleLanguage,
+                            'json_quiz' => json_encode($quizInArray, JSON_UNESCAPED_UNICODE),
+                        ]);
                         return $this->translateJsonData($quizInArray, $moduleLanguage);
                     } catch (\Exception $e) {
                         Log::error('Gamified translation failed', [
