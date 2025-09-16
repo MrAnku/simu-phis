@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         RateLimiter::for('limiter', function (Request $request) {
+            return Limit::none();
             // No limit for localhost
             if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
                 return Limit::none();
@@ -43,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('learner-limiter', function (Request $request) {
+            return Limit::none();
             // No limit for localhost
             if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
                 return Limit::none();
@@ -60,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('hook-limiter', function (Request $request) {
+            return Limit::none();
 
             // No limit for localhost
             if (getClientIp() === '127.0.0.1' || getClientIp() === '::1') {
