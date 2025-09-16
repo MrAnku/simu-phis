@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return $request->user()
-                ? Limit::perMinutes(30, 100)->by($request->user()->id)->response(function () {
+                ? Limit::perMinutes(30, 500)->by($request->user()->id)->response(function () {
                     return response()->json(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
                 })
                 : Limit::perMinutes(30, 5)->by(getClientIp())->response(function () {
@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
                 });
             }
 
-            return Limit::perMinutes(30, 50)->by(getClientIp())->response(function () {
+            return Limit::perMinutes(30, 100)->by(getClientIp())->response(function () {
                 return response()->json(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
             });
         });
