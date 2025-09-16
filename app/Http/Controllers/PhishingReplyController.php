@@ -36,27 +36,30 @@ class PhishingReplyController extends Controller
         }
         $companyId = $user->company_id;
 
-        if(!$this->isValidCompany($companyId)) {
+        if (!$this->isValidCompany($companyId)) {
             \Log::info('Company is not valid');
             return response()->json(['success' => false, 'message' => 'Company is not valid'], 423);
         }
 
-        if(!$this->isPhishReplyEnabled($companyId)) {
+        if (!$this->isPhishReplyEnabled($companyId)) {
             \Log::info('Phishing reply is not enabled for this company');
             return response()->json(['success' => false, 'message' => 'Phishing reply is not enabled for this company'], 423);
         }
 
-        if(!$this->hasCampaignIdAndCampaignType($originalMessage)) {
+        if (!$this->hasCampaignIdAndCampaignType($originalMessage)) {
             \Log::info('Invalid campaign ID or message');
             return response()->json(['success' => false, 'message' => 'Invalid campaign ID or message'], 424);
         }
 
-        if(!$this->isValidCampaignIdAndType()) {
+        if (!$this->isValidCampaignIdAndType()) {
             \Log::info('Invalid campaign ID or type');
             return response()->json(['success' => false, 'message' => 'Invalid campaign ID or type'], 425);
         }
 
-         PhishingReply::create([
+        // filter the last message text from the start 
+        $lastMsg = $this->extractReplyText($lastMsg);
+
+        PhishingReply::create([
             'from_address'   => $fromAddress,
             'subject'        => $subject,
             'headers'        => "This is the header",
@@ -69,83 +72,26 @@ class PhishingReplyController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Phishing reply saved.'], 201);
 
-        // // Extract basic fields
-        // // $fromAddress = $data['from'] ?? null;
-        // // $subject = $data['subject'] ?? null;
-        // // $headers = null;
-        // // if (!empty($data['raw'])) {
-        // //     $lines = preg_split('/\r\n|\n|\r/', $data['raw']);
-        // //     $headers = $lines[0] ?? null;
-        // // }
+       
+    }
+    private function extractReplyText($message)
+    {
+        // Remove quoted lines (multiple formats)
+        $patterns = [
+            '/^(>.*(\r\n|\n|\r))+/m',           // > quoted lines
+            '/^On .* wrote:.*$/m',              // "On date, person wrote:"
+            '/-----Original Message-----.*$/s', // Outlook format
+            '/________________________________.*$/s', // Outlook separator
+        ];
 
-        // // $body = $data['raw'] ?? null;
-        // // $replyMsg = null;
+        foreach ($patterns as $pattern) {
+            $message = preg_replace($pattern, '', $message);
+        }
 
-        // // if ($body) {
-        // //     $body = quoted_printable_decode($body);
+        // Remove signatures (common patterns)
+        $message = preg_replace('/\n--\s*\n.*$/s', '', $message);
 
-        // //     // Extract text/plain part from raw email
-        // //     if (preg_match('/Content-Type:\s*text\/plain.*?(\r\n\r\n|\n\n)(.*?)(--[^\r\n]*)/is', $body, $matches)) {
-        // //         $fullText = trim($matches[2]);
-        // //         // Split at reply marker
-        // //         $replyMsg = preg_split('/\r?\nOn /', $fullText)[0];
-        // //         $replyMsg = trim($replyMsg);
-        // //     } else {
-        // //         $replyMsg = strtok($body, "\n");
-        // //     }
-
-        // //     $replyMsg = mb_convert_encoding($replyMsg, 'UTF-8', 'UTF-8');
-        // // }
-        // // if ($headers) {
-        // //     $headers = mb_convert_encoding($headers, 'UTF-8', 'UTF-8');
-        // // }
-
-        // // // Extract campaign_id and campaign_type from HTML body
-        // // $campaignId = null;
-        // // $campaignType = null;
-        // // libxml_use_internal_errors(true);
-        // // $dom = new \DOMDocument();
-        // // $dom->loadHTML($body);
-        // // libxml_clear_errors();
-        // // foreach ($dom->getElementsByTagName('input') as $input) {
-        // //     $id = $input->getAttribute('id');
-        // //     if (strpos($id, 'campaign_id') !== false) {
-        // //         $campaignId = $input->getAttribute('value');
-        // //     }
-        // //     if (strpos($id, 'campaign_type') !== false) {
-        // //         $campaignType = $input->getAttribute('value');
-        // //     }
-        // // }
-
-        // // Validate user exists
-        // $user = Users::where('user_email', $fromAddress)->first();
-        // if (!$user) {
-        //     return response()->json(['success' => false, 'message' => 'User not found.'], 422);
-        // }
-        // $companyId = $user->company_id;
-
-        // // Validate campaign_id exists in correct table
-        // if ($campaignType === 'email') {
-        //     $campaignExists = CampaignLive::where('campaign_id', $campaignId)->exists();
-        // } else {
-        //     $campaignExists = QuishingLiveCamp::where('campaign_id', $campaignId)->exists();
-        // }
-        // if (!$campaignExists) {
-        //     return response()->json(['success' => false, 'message' => 'Campaign not found.'], 422);
-        // }
-
-        // // Save to DB
-        // PhishingReply::create([
-        //     'from_address'   => $fromAddress,
-        //     'subject'        => $subject,
-        //     'headers'        => $headers,
-        //     'body'           => $replyMsg,
-        //     'campaign_id'    => $campaignId,
-        //     'campaign_type'  => $campaignType,
-        //     'company_id'     => $companyId,
-        // ]);
-
-        // return response()->json(['success' => true, 'message' => 'Phishing reply saved.'], 201);
+        return trim($message);
     }
 
     private function hasCampaignIdAndCampaignType($originalMessage): bool
@@ -153,13 +99,13 @@ class PhishingReplyController extends Controller
         if (!$originalMessage) {
             return false;
         }
-        
+
         // Decode the message if it's URL/quoted-printable encoded
         $decodedMessage = quoted_printable_decode($originalMessage);
-        
+
         $campaignId = null;
         $campaignType = null;
-        
+
         // Try to extract from decoded message first
         if (preg_match('/id="[^"]*campaign_id"[^>]*value="([^"]+)"/', $decodedMessage, $idMatch)) {
             $campaignId = $idMatch[1];
@@ -167,7 +113,7 @@ class PhishingReplyController extends Controller
         if (preg_match('/id="[^"]*campaign_type"[^>]*value="([^"]+)"/', $decodedMessage, $typeMatch)) {
             $campaignType = $typeMatch[1];
         }
-        
+
         // If not found in decoded message, try original message
         if (!$campaignId || !$campaignType) {
             if (preg_match('/id="[^"]*campaign_id"[^>]*value="([^"]+)"/', $originalMessage, $idMatch)) {
@@ -177,21 +123,21 @@ class PhishingReplyController extends Controller
                 $campaignType = $typeMatch[1];
             }
         }
-        
+
         if ($campaignId && $campaignType) {
             $this->campaignId = $campaignId;
             $this->campaignType = $campaignType;
             return true;
         }
-        
+
         return false;
     }
 
     private function isValidCampaignIdAndType(): bool
     {
-        if($this->campaignType === 'email') {
+        if ($this->campaignType === 'email') {
             return CampaignLive::where('campaign_id', $this->campaignId)->exists();
-        } elseif($this->campaignType === 'quishing') {
+        } elseif ($this->campaignType === 'quishing') {
             return QuishingLiveCamp::where('campaign_id', $this->campaignId)->exists();
         }
         return false;

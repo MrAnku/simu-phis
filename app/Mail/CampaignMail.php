@@ -36,7 +36,7 @@ class CampaignMail extends Mailable
                 $this->mailData['from_name']
             ),
             subject: $this->mailData['email_subject'],
-            replyTo: [new Address($cid . '@suspend.page')],
+            replyTo: [new Address($cid . '@' . env('REPLY_DOMAIN'))],
         );
     }
     
