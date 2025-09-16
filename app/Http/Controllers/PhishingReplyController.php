@@ -55,6 +55,10 @@ class PhishingReplyController extends Controller
             \Log::info('Invalid campaign ID or type');
             return response()->json(['success' => false, 'message' => 'Invalid campaign ID or type'], 425);
         }
+        if($this->alreadyReplied($fromAddress)){
+            \Log::info('User has already replied to this campaign');
+            return response()->json(['success' => false, 'message' => 'User has already replied to this campaign'], 426);
+        }
 
         // filter the last message text from the start 
         $lastMsg = $this->extractReplyText($lastMsg);
@@ -73,6 +77,14 @@ class PhishingReplyController extends Controller
         return response()->json(['success' => true, 'message' => 'Phishing reply saved.'], 201);
 
        
+    }
+
+    private function alreadyReplied($fromAddress): bool
+    {
+        return PhishingReply::where('from_address', $fromAddress)
+            ->where('campaign_id', $this->campaignId)
+            ->where('campaign_type', $this->campaignType)
+            ->exists();
     }
     private function extractReplyText($message)
     {
