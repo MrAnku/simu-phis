@@ -71,7 +71,6 @@ class ProcessAiCampaigns extends Command
                             ->orWhere('status', 'busy')
                             ->orWhere('status', 'canceled');
                     })
-                    ->take(1)
                     ->get();
 
                 $url = 'https://callapi3.sparrowhost.net/call';
