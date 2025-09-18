@@ -10,6 +10,8 @@ class WebsiteCloneJob extends Model
         'url',
         'status',
         'file_url',
+        'site_type',
+        'task_id',
         'error_message',
         'company_id',
     ];

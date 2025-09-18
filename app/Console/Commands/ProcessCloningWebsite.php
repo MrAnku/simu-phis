@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use App\Models\WebsiteCloneJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -29,10 +30,102 @@ class ProcessCloningWebsite extends Command
      */
     public function handle()
     {
+        $this->processSpaCloning();
+        $this->checkSpaStatus();
+        $this->processStaticCloning();
+    }
+    private function processSpaCloning()
+    {
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
+
+        if ($companies->isEmpty()) {
+            return;
+        }
+        foreach ($companies as $company) {
+            try {
+                $cloneJobInQueue = WebsiteCloneJob::where('company_id', $company->company_id)
+                    ->where('status', 'pending')
+                    ->where('site_type', 'spa')
+                    ->first();
+                if (!$cloneJobInQueue) {
+                    continue;
+                }
+
+                $response = Http::post('http://103.115.19.53:2000/clone', [
+                    'url' => $cloneJobInQueue->url,
+                    'keep_js' => true,
+                ]);
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $cloneJobInQueue->update([
+                        'status' => 'processing',
+                        'task_id' => $data['task_id'] ?? null,
+                    ]);
+                    echo "Started cloning for company ID {$company->company_id}, task ID: " . ($data['task_id'] ?? 'N/A') . "\n";
+                }
+               
+            } catch (\Exception $e) {
+                \Log::error("Error creating job for company ID {$company->id}: " . $e->getMessage());
+            }
+        }
+    }
+    private function checkSpaStatus()
+    {
+        $companies = Company::where('approved', 1)
+            ->where('role', null)
+            ->where('service_status', 1)
+            ->get();
+
+        if ($companies->isEmpty()) {
+            return;
+        }
+        foreach ($companies as $company) {
+            try {
+                $cloneJobInQueue = WebsiteCloneJob::where('company_id', $company->company_id)
+                    ->where('status', 'processing')
+                    ->where('site_type', 'spa')
+                    ->first();
+                if (!$cloneJobInQueue) {
+                    continue;
+                }
+
+                $taskId = $cloneJobInQueue->task_id;
+                if (!$taskId) {
+                    continue;
+                }
+
+                $response = Http::get("http://103.115.19.53:2000/tasks/{$taskId}");
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if($data['state'] && $data['state'] === 'SUCCESS'){
+
+                        $cloneJobInQueue->update([
+                            'status' => 'completed',
+                            'file_url' => $data['info']['html_path'] ?? null,
+                        ]);
+                        echo "Cloning completed for company ID {$company->company_id}\n";
+
+                    }
+                   
+                }
+
+            } catch (\Exception $e) {
+                \Log::error("Error checking status for company ID {$company->id}: " . $e->getMessage());
+            }
+        }
+    }
+
+    public function processStaticCloning()
+    {
+        
         ini_set('max_execution_time', 300);
 
         // Create job record
-        $jobRecord = WebsiteCloneJob::where('status', 'pending')->first();
+        $jobRecord = WebsiteCloneJob::where('status', 'pending')
+        ->where('site_type', 'static')->first();
         if (!$jobRecord) {
             return;
         }
