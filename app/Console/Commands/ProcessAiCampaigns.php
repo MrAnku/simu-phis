@@ -82,6 +82,11 @@ class ProcessAiCampaigns extends Command
                         continue;
                     }
 
+                    if ($pendingCall->calls_sent >= 3) {
+                        
+                        continue;
+                    }
+
                     setCompanyTimezone($pendingCall->company_id);
 
                     // Make the HTTP request
@@ -104,6 +109,7 @@ class ProcessAiCampaigns extends Command
                         $pendingCall->call_send_response = json_encode($callResponse, true);
                         $pendingCall->status = 'waiting';
                         $pendingCall->save();
+                        $pendingCall->increment('calls_sent');
                         echo $response->body() . "\n";
 
                         // Mark the AiCallCampaign as completed after call is initiated
