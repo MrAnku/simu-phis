@@ -681,6 +681,9 @@ class ApiAiCallController extends Controller
                 $callReport['disconnect_reason'] = 'user_hangup';
                 $callReport['call_status'] = $localReport->status;
                 $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
+                if($localReport->compromised == 1){
+                    $callReport['interactions'] = null;
+                }
                 $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";
                 $localReport->call_report = json_encode($callReport);
                 $localReport->save();
@@ -688,6 +691,9 @@ class ApiAiCallController extends Controller
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             } else {
                 $callReport = json_decode($localReport->call_report, true);
+                if ($localReport->compromised == 1) {
+                    $callReport['interactions'] = null;
+                }
 
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             }
