@@ -649,54 +649,60 @@ if (!function_exists('translateHtmlToAmharic')) {
         $apiKey = env('OPENAI_API_KEY');
         $endpoint = 'https://api.openai.com/v1/chat/completions';
 
-        // Step 1: Split HTML into chunks (e.g., by <div> or <p>)
-        $chunks = preg_split('/(?=<div|<p|<section|<article|<table|<ul|<ol|<h[1-6])/i', $htmlContent, -1, PREG_SPLIT_NO_EMPTY);
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML(mb_convert_encoding($htmlContent, 'HTML-ENTITIES', 'UTF-8'));
+        libxml_clear_errors();
 
-        $translatedChunks = [];
+        $xpath = new \DOMXPath($dom);
 
-        foreach ($chunks as $index => $chunk) {
-            $messages = [
-                [
-                    "role" => "system",
-                    "content" => "You are a professional translator. Translate only the visible text in the HTML into Amharic. Do not alter the structure, tags, attributes, or inline styles."
-                ],
-                [
-                    "role" => "user",
-                    "content" => "Translate this HTML into Amharic, keeping the HTML unchanged:\n\n$chunk"
-                ]
-            ];
+        // Get all text nodes (ignore scripts and styles)
+        $nodes = $xpath->query('//text()[normalize-space() and not(ancestor::script) and not(ancestor::style)]');
 
-            try {
-                $response = Http::timeout(60)
-                    ->retry(3, 5000)
-                    ->withHeaders([
-                        'Authorization' => "Bearer {$apiKey}",
-                        'Content-Type'  => 'application/json',
-                    ])->post($endpoint, [
-                        'model' => 'gpt-4o',
-                        'messages' => $messages,
-                        'temperature' => 0.2,
-                        'max_tokens' => 2048,
-                    ]);
+        foreach ($nodes as $node) {
+            $originalText = trim($node->nodeValue);
 
-                if ($response->successful()) {
-                    $translatedChunk = $response->json()['choices'][0]['message']['content'] ?? '';
-                    $translatedChunks[] = $translatedChunk;
-                } else {
-                    // \Log::error("Chunk $index failed", ['status' => $response->status(), 'body' => $response->body()]);
-                    $translatedChunks[] = $chunk; // fallback to original
+            if ($originalText !== '') {
+                $messages = [
+                    [
+                        "role" => "system",
+                        "content" => "You are a professional translator. Translate ONLY the text into Amharic. Do not translate HTML entities, and do not add or remove anything else."
+                    ],
+                    [
+                        "role" => "user",
+                        "content" => $originalText
+                    ]
+                ];
+
+                try {
+                    $response = Http::timeout(60)
+                        ->retry(3, 5000)
+                        ->withHeaders([
+                            'Authorization' => "Bearer {$apiKey}",
+                            'Content-Type'  => 'application/json',
+                        ])->post($endpoint, [
+                            'model' => 'gpt-4o',
+                            'messages' => $messages,
+                            'temperature' => 0.2,
+                            'max_tokens' => 2048,
+                        ]);
+
+                    if ($response->successful()) {
+                        $translatedText = $response->json()['choices'][0]['message']['content'] ?? $originalText;
+                        $node->nodeValue = $translatedText;
+                    }
+                    // small delay to avoid rate limits
+                    sleep(1);
+                } catch (\Exception $e) {
+                    // fallback to original text if error
+                    $node->nodeValue = $originalText;
                 }
-
-                // Sleep to avoid hitting rate limits
-                sleep(1);
-            } catch (\Exception $e) {
-                // \Log::error("Chunk $index exception", ['error' => $e->getMessage()]);
-                $translatedChunks[] = $chunk; // fallback to original
             }
         }
 
-        // Step 3: Combine all translated chunks
-        return implode('', $translatedChunks);
+        // Get the updated HTML (remove <!DOCTYPE ...>)
+        $body = $dom->saveHTML($dom->documentElement);
+        return $body;
     }
 }
 
