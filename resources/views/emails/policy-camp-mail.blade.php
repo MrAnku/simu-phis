@@ -84,7 +84,12 @@
 
             <div class="report-box">
                 <p><strong>{{__('Policy Assignment Notification')}}</strong></p>
-                <p>📄 <span class="label">{{__('Policy Name:')}}</span> {{ $mailData['policy_name'] }}</p>
+                <p>📄 <span class="label">{{ __('Policy Name(s):') }}</span></p>
+                <ul>
+                    @foreach($mailData['policy_names'] as $policyName)
+                    <li>{{ $policyName }}</li>
+                    @endforeach
+                </ul>
                 <p>📅 <span class="label">{{__('Assigned On:')}}</span> {{ $mailData['assigned_at'] }}</p>
                 <a href="{{ $learnDomain }}" class="button">{{__('Login to Learning Portal')}}</a>
             </div>
@@ -97,4 +102,5 @@
         </div>
     </div>
 </body>
+
 </html>

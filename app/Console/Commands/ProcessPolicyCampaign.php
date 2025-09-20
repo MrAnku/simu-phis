@@ -98,6 +98,8 @@ class ProcessPolicyCampaign extends Command
         $userIds = json_decode($userIdsJson, true);
         $users = Users::whereIn('id', $userIds)->get();
 
+        $policies = json_decode($campaign->policy, true);
+
         // Check if users exist in the group
         if (!$users->isEmpty()) {
             foreach ($users as $user) {
@@ -107,7 +109,7 @@ class ProcessPolicyCampaign extends Command
                     'user_name' => $user->user_name,
                     'user_email' => $user->user_email,
                     'sent' => '0',
-                    'policy' => $campaign->policy,
+                    'policy' => $policies[array_rand($policies)],
                     'company_id' => $campaign->company_id,
                 ]);
 
@@ -162,18 +164,58 @@ class ProcessPolicyCampaign extends Command
             }
 
             foreach ($campaigns as $campaign) {
+                $allCampaigns = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->first();
+                $policies = json_decode($allCampaigns->policy, true);
 
-                $policy = Policy::where('id', $campaign->policy)->first();
+                // Ensure $policies is always an array
+                if (!is_array($policies)) {
+                    $policies = [$policies];
+                }
 
+                $policyNames = [];
+                foreach ($policies as $policyId) {
+                    $policy = Policy::where('id', $policyId)->first();
+                    if (!$policy) continue;
+
+                    $policyNames[] = $policy->policy_name;
+
+                    // Assign policy if not already assigned
+                    $isPolicyExists = AssignedPolicy::where('user_email', $campaign->user_email)
+                        ->where('policy', $policyId)
+                        ->exists();
+
+                    if (!$isPolicyExists) {
+                        AssignedPolicy::create([
+                            'campaign_id' => $campaign->campaign_id,
+                            'user_name' => $campaign->user_name,
+                            'user_email' => $campaign->user_email,
+                            'policy' => $policyId,
+                            'company_id' => $campaign->company_id,
+                        ]);
+
+                        // Audit log
+                        audit_log(
+                            $campaign->company_id,
+                            $campaign->user_email,
+                            null,
+                            'POLICY_ASSIGNED',
+                            "'{$policy->policy_name}' has been assigned to {$campaign->user_email}",
+                            'normal'
+                        );
+                    }
+                }
+
+                // Prepare mail data with all policy names
                 $mailData = [
                     'user_name' => $campaign->user_name,
                     'company_name' => $companyName,
                     'assigned_at' => $campaign->created_at,
-                    'policy_name' => $policy->policy_name,
+                    'policy_names' => $policyNames, // Pass as array
                     'logo' => $companyLogo,
                     'company_id' => $campaign->company_id,
                     'learn_domain' => $learnDomain,
                 ];
+
                 try {
                     $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
                 } catch (\Exception $e) {
@@ -183,32 +225,6 @@ class ProcessPolicyCampaign extends Command
                 if ($isMailSent) {
                     echo 'Email sent to ' . $campaign->user_email . "\n";
                     $campaign->update(['sent' => 1]);
-
-                    $isPolicyExists = AssignedPolicy::where('user_email', $campaign->user_email)
-                        ->where('policy', $campaign->policy)
-                        ->exists();
-
-                    if ($isPolicyExists) {
-                        echo 'Policy already assigned to ' . $campaign->user_email . "\n";
-                        continue;
-                    }
-                    AssignedPolicy::create([
-                        'campaign_id' => $campaign->campaign_id,
-                        'user_name' => $campaign->user_name,
-                        'user_email' => $campaign->user_email,
-                        'policy' => $campaign->policy,
-                        'company_id' => $campaign->company_id,
-                    ]);
-
-                    // Audit log
-                    audit_log(
-                        $campaign->company_id,
-                        $campaign->user_email,
-                        null,
-                        'POLICY_ASSIGNED',
-                        "'{$policy->policy_name}' has been assigned to {$campaign->user_email}",
-                        'normal'
-                    );
                 } else {
                     echo 'Failed to send email to ' . $campaign->user_email . "\n";
                 }

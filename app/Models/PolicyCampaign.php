@@ -26,16 +26,22 @@ class PolicyCampaign extends Model
         return $this->hasMany(PolicyCampaignLive::class, 'campaign_id', 'campaign_id');
     }
 
-    public function policyDetail()
+    public function getPolicyDetailAttribute()
     {
-        return $this->belongsTo(Policy::class, 'policy', 'id');
+        $ids = json_decode($this->policy, true) ?? [];
+        if (empty($ids)) {
+            return [];
+        }
+        return Policy::whereIn('id', $ids)->get();
     }
 
-    public function groupDetail(){
+    public function groupDetail()
+    {
         return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
     }
 
-    public function assignedPolicies(){
-        return $this->hasMany(AssignedPolicy::class, 'campaign_id', 'campaign_id'); 
+    public function assignedPolicies()
+    {
+        return $this->hasMany(AssignedPolicy::class, 'campaign_id', 'campaign_id');
     }
 }

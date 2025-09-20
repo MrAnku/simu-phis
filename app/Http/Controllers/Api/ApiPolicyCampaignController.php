@@ -19,7 +19,7 @@ class ApiPolicyCampaignController extends Controller
             $request->validate([
                 'campaign_name' => 'required|string|max:255',
                 'users_group' => 'required|string',
-                'policy' => 'required|exists:policies,id',
+                'policy' => 'required|array',
                 'scheduled_at' => 'required|string',
             ]);
             // check if scheduled_at is less than current time then the status will be running else pending
@@ -27,13 +27,13 @@ class ApiPolicyCampaignController extends Controller
             $currentTime = time();
             $status = $scheduledAt < $currentTime ? 'running' : 'pending';
 
-
+            $policies = $request->policy;
 
             $campaign = PolicyCampaign::create([
                 'campaign_name' => $request->campaign_name,
                 'campaign_id' => Str::random(6),
                 'users_group' => $request->users_group,
-                'policy' => $request->policy,
+                'policy' => json_encode($policies),
                 'status' => $status,
                 'scheduled_at' => $request->scheduled_at,
                 'company_id' => Auth::user()->company_id,
@@ -63,7 +63,7 @@ class ApiPolicyCampaignController extends Controller
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
                         'sent' => 0,
-                        'policy' => $campaign->policy,
+                        'policy' => $policies[array_rand($policies)],
                         'company_id' => Auth::user()->company_id,
                     ]);
 
@@ -102,10 +102,15 @@ class ApiPolicyCampaignController extends Controller
     public function detail(Request $request)
     {
         try {
-            $campaigns = PolicyCampaign::with(['campLive', 'assignedPolicies', 'policyDetail', 'groupDetail'])
+            $campaigns = PolicyCampaign::with(['campLive', 'assignedPolicies', 'groupDetail'])
                 ->where('company_id', Auth::user()->company_id)
                 ->orderBy('created_at', 'desc')
                 ->get();
+
+            // Append policy_detail attribute to each campaign
+            $campaigns->each(function ($campaign) {
+                $campaign->policy_detail = $campaign->policy_detail;
+            });
 
             return response()->json([
                 'success' => true,
