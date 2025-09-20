@@ -465,6 +465,7 @@ class ApiEmployeesController extends Controller
             'total_campaigns' => AiCallCampLive::where('user_email', $email)->count(),
             'total_calls_sent' => AiCallCampLive::where('user_email', $email)->where('call_send_response', '!=', null)->count(),
             'total_calls_responded' => AiCallCampLive::where('user_email', $email)->where('call_end_response', '!=', null)->count(),
+            'in_attack' => AiCallCampLive::where('user_email', $email)->where('compromised', 1)->count()
         ];
 
         return [
