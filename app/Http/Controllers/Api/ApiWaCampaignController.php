@@ -495,8 +495,16 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
             $companyId = Auth::user()->company_id;
-            if ($type == "normal") {
+             if ($type == "normal") {
                 $result = UsersGroup::where('company_id', $companyId)->get();
+
+                // Add users_count to each group
+                $result->transform(function ($group) {
+                    $userIds = $group->users ? json_decode($group->users, true) : [];
+                    $group->users_count = is_array($userIds) ? count($userIds) : 0;
+                    return $group;
+                });
+
                 if ($result->isEmpty()) {
                     return response()->json([
                         'success' => false,
@@ -511,7 +519,16 @@ class ApiWaCampaignController extends Controller
             }
             if ($type == "bluecollar") {
                 $result = BlueCollarGroup::where('company_id', $companyId)
-                    ->whereHas('bluecollarusers')->get();
+                    ->whereHas('bluecollarusers')
+                    ->withCount('bluecollarusers')
+                    ->get();
+
+                // Rename bluecollarusers_count to users_count for consistency
+                $result->transform(function ($group) {
+                    $group->users_count = $group->bluecollarusers_count ?? 0;
+                    unset($group->bluecollarusers_count);
+                    return $group;
+                });
 
                 return response()->json([
                     'success' => true,
