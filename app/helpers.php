@@ -93,11 +93,9 @@ if (!function_exists('translateQuizUsingAi')) {
     {
         $apiKey = env('OPENAI_API_KEY');
         $apiEndpoint = "https://api.openai.com/v1/chat/completions";
-        // $file = public_path($tempBodyFile);
-        // $fileContent = file_get_contents($tempBodyFile);
-        // return response($fileContent, 200)->header('Content-Type', 'text/html');
 
         $quizJson = json_encode($quiz, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        \Log::info("Original quiz JSON: " . $quizJson);
 
         $prompt = "Translate this quiz into '{$targetLang}' language. 
                 Translate **only** the values of the objects, **not** the keys.
@@ -107,12 +105,14 @@ if (!function_exists('translateQuizUsingAi')) {
                 Return a **valid JSON object** without any additional text or formatting.
 
                 Here is the quiz JSON:\n\n{$quizJson}";
+        \Log::info("Translation prompt: " . $prompt);
 
         $requestBody = [
-            "model" => "gpt-4o-mini",
+            "model" => "gpt-4o",
             "messages" => [["role" => "user", "content" => $prompt]],
             "temperature" => 0.7
         ];
+        \Log::info("Request body: " . json_encode($requestBody));
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -120,15 +120,27 @@ if (!function_exists('translateQuizUsingAi')) {
         ])->post($apiEndpoint, $requestBody);
 
         if ($response->failed()) {
-            // return 'Failed to fetch translation' . json_encode($response->body());
+            \Log::error("Translation API failed: " . $response->body());
             return $quiz;
         }
+
         $responseData = $response->json();
+        \Log::info("Translation API response: " . json_encode($responseData));
+
         $translatedJsonQuiz = $responseData['choices'][0]['message']['content'] ?? null;
 
+        if ($translatedJsonQuiz) {
+            // Remove ```json ... ``` or ``` ... ```
+            $translatedJsonQuiz = preg_replace('/^```(json)?\s*|\s*```$/i', '', $translatedJsonQuiz);
+            $translatedJsonQuiz = trim($translatedJsonQuiz);
+        }
+
+        \Log::info("Cleaned Translated quiz JSON: " . $translatedJsonQuiz);
         return trim($translatedJsonQuiz);
     }
 }
+
+
 
 function translateQuizInChunks($quiz, $targetLang)
 {
