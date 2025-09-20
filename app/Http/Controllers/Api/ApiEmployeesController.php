@@ -291,13 +291,16 @@ class ApiEmployeesController extends Controller
             if (!$exist) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
+            $empReport = new EmployeeReport($email, $companyId);
+            $acceptedPolicies = $empReport->policiesAcceptedNames();
 
             $data = [
                 'personal' => $exist,
                 'campaigns' => $this->getCampaigns($email),
                 'training_assigned' => $this->getTrainingAssigned($email),
                 'security_score' => $this->getSecurityScore($email),
-                'emails_viewed' => $this->getEmailViewed($email)
+                'emails_viewed' => $this->getEmailViewed($email),
+                'accepted_policies' => $acceptedPolicies,
             ];
 
             $aiAnalysis = $this->getAIAnalysis($data);

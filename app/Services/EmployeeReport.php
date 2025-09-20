@@ -3,15 +3,16 @@
 namespace App\Services;
 
 use App\Models\Users;
+use App\Models\Policy;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
+use App\Models\ScormTraining;
 use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
-use App\Models\ScormTraining;
 use App\Models\TrainingAssignedUser;
 
 class EmployeeReport
@@ -280,6 +281,19 @@ class EmployeeReport
 
             return $totalCampaigns > 0 ? round(($totalClicks / $totalCampaigns) * 100) : 0;
         }
+    }
+
+    public function policiesAcceptedNames(): array
+    {
+        $assignedPolicies = AssignedPolicy::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('accepted', 1)
+            ->pluck('policy')
+            ->toArray();
+        if (empty($assignedPolicies)) {
+            return [];
+        }
+        return Policy::whereIn('id', $assignedPolicies)->pluck('policy_name')->toArray();
     }
 
     public function assignedTrainings($email = null): int
