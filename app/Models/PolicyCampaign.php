@@ -16,6 +16,8 @@ class PolicyCampaign extends Model
         'status',
     ];
 
+    protected $appends = ['policy_detail', 'assigned_policies'];
+
     public function getScheduledAtAttribute($value)
     {
         return $value ? \Carbon\Carbon::parse($value)->format('d M Y h:i A') : null;
@@ -40,8 +42,11 @@ class PolicyCampaign extends Model
         return $this->belongsTo(UsersGroup::class, 'users_group', 'group_id');
     }
 
-    public function assignedPolicies()
+    public function getAssignedPoliciesAttribute()
     {
-        return $this->hasMany(AssignedPolicy::class, 'campaign_id', 'campaign_id');
+        $policyIds = json_decode($this->policy, true) ?? [];
+        return AssignedPolicy::with('policyData')
+            ->whereIn('policy', $policyIds)
+            ->get();
     }
 }

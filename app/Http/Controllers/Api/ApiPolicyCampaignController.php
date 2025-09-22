@@ -102,15 +102,10 @@ class ApiPolicyCampaignController extends Controller
     public function detail(Request $request)
     {
         try {
-            $campaigns = PolicyCampaign::with(['campLive', 'assignedPolicies', 'assignedPolicies.policyData', 'groupDetail'])
+            $campaigns = PolicyCampaign::with(['campLive', 'groupDetail'])
                 ->where('company_id', Auth::user()->company_id)
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            // Append policy_detail attribute to each campaign
-            $campaigns->each(function ($campaign) {
-                $campaign->policy_detail = $campaign->policy_detail;
-            });
 
             return response()->json([
                 'success' => true,
