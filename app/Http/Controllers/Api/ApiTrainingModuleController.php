@@ -511,7 +511,7 @@ class ApiTrainingModuleController extends Controller
             'mModuleLang' => 'nullable|string|max:255',
             'estimated_time' => 'required|numeric',
             'updatedjsonData' => 'required|json',
-            // 'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
+            'mCoverFile' => 'nullable|file|mimes:jpg,jpeg,png',
             'security' => 'nullable|string|max:255',
             'training_type' => 'nullable|string|max:255',
             'core_behaviour' => 'nullable|string|max:255',
@@ -559,22 +559,23 @@ class ApiTrainingModuleController extends Controller
                 'language' =>  null,
                 'program_resources' => $programResources,
             ];
-            // return $request->file('mCoverFile');
-            if ($request->hasFile('mCoverFile')) {
-                $file = $request->file('mCoverFile');
 
-                // Generate a random name for the file
-                $randomName = generateRandom(32);
-                $extension = $file->getClientOriginalExtension();
-                $newFilename = $randomName . '.' . $extension;
-
-                $filePath = $request->file('mCoverFile')->storeAs('/uploads/trainingModule', $newFilename, 's3');
-                $updateData['cover_image'] = $newFilename;
-            }
-            // return $trainingModuleId;
-            // $updateData['cover_image'] = "default image";
+            $trainingModule = TrainingModule::find($trainingModuleId);
 
             $isTrainingUpdated = TrainingModule::where('id', $trainingModuleId)->update($updateData);
+
+            if ($request->hasFile('mCoverFile')) {
+                // Get the previous file path
+                $oldFilePath = ltrim($trainingModule->cover_image, '/');
+
+                // Get new file content
+                $newFileContent = file_get_contents($request->file('mCoverFile')->getRealPath());
+
+                // Overwrite the previous file in S3
+                Storage::disk('s3')->put($oldFilePath, $newFileContent);
+
+                $isTrainingUpdated = true; // Since we updated the file, consider it as an update
+            }
 
             if ($isTrainingUpdated) {
                 TranslatedTraining::where('training_id', $trainingModuleId)->delete();

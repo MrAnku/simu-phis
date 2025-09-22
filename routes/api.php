@@ -280,7 +280,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter'])->group(function 
         Route::get('/', [ApiTrainingModuleController::class, 'trainings']);
         Route::get('/training_page', [ApiTrainingModuleController::class, 'trainingPage']);
         Route::get('/getby/{id}', [ApiTrainingModuleController::class, 'getTrainingById']);
-        Route::put('/update', [ApiTrainingModuleController::class, 'updateTrainingModule']);
+        Route::post('/update', [ApiTrainingModuleController::class, 'updateTrainingModule']);
         Route::delete('/delete', [ApiTrainingModuleController::class, 'deleteTraining']);
         Route::get('/training-modules', [ApiTrainingModuleController::class, 'index']);
         Route::post('/add', [ApiTrainingModuleController::class, 'addTraining']);
