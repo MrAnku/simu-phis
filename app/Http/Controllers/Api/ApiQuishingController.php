@@ -103,7 +103,7 @@ class ApiQuishingController extends Controller
                 'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
                 'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
                 'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
-
+                'training_on_click'  => $request->training_on_click ?? 0,
                 'quishing_material'  => !empty($quishingMaterials) ? json_encode($quishingMaterials) : null,
                 'sender_profile'   => $request->sender_profile ?? null,
                 'quishing_lang'      => $request->quishing_language ?? null,
