@@ -386,23 +386,26 @@ class ApiTrainingModuleController extends Controller
                 'module_language' => 'en',
             ];
 
-            // Handle cover image if provided
-            if ($request->hasFile('cover_file')) {
-
-                $file = $request->file('cover_file');
-
-                // Generate a random name for the file
-                $randomName = generateRandom(32);
-                $extension = $file->getClientOriginalExtension();
-                $newFilename = $randomName . '.' . $extension;
-
-                $filePath = $request->file('cover_file')->storeAs('/uploads/trainingModule', $newFilename, 's3');
-                $updateData['cover_image'] = $newFilename;
-            }
+            $trainingModule = TrainingModule::find($request->input('gamifiedTrainingId'));
 
             $isTrainingUpdated = TrainingModule::where('id', $request->input('gamifiedTrainingId'))
                 ->where('company_id', $company_id)
                 ->update($updateData);
+
+            // Handle cover image if provided
+            if ($request->hasFile('cover_file')) {
+
+                // Get the previous file path
+                $oldFilePath = ltrim($trainingModule->cover_image, '/');
+
+                // Get new file content
+                $newFileContent = file_get_contents($request->file('cover_file')->getRealPath());
+
+                // Overwrite the previous file in S3
+                Storage::disk('s3')->put($oldFilePath, $newFileContent);
+
+                $isTrainingUpdated = true; // Since we updated the file, consider it as an update
+            }
 
             if ($isTrainingUpdated) {
                 TranslatedTraining::where('training_id', $request->input('gamifiedTrainingId'))->delete();

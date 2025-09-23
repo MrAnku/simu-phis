@@ -288,7 +288,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter'])->group(function 
         Route::get('/preview-content/{trainingid}/{lang}', [ApiTrainingModuleController::class, 'loadPreviewTrainingContent']);
         Route::get('/games', [ApiTrainingModuleController::class, 'getGames']);
         Route::post('/add-gamified-training', [ApiTrainingModuleController::class, 'addGamifiedTraining']);
-        Route::put('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
+        Route::post('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
         Route::post('/duplicate/{id?}', [ApiTrainingModuleController::class, 'duplicate']);
     });
 
