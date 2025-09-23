@@ -31,8 +31,22 @@ class QuishingInteractionHandler
 
             QuishingActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("QR Scanned and visited to phishing link by {$campaignLive->user_email} in QR simulation.", 'company', $companyId);
+
+            if ($this->trainingOnClick()) {
+                $this->assignTraining();
+            }
         }
     }
+    public function trainingOnClick(): bool
+    {
+        $campaignLive = QuishingLiveCamp::where('id', $this->campLiveId)->first();
+        if (!$campaignLive) {
+            return false;
+        }
+        $trainingOnClick = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->value('training_on_click');
+        return (bool)$trainingOnClick;
+    }
+
 
     public function handleCompromisedEmail($companyId)
     {
@@ -90,7 +104,7 @@ class QuishingInteractionHandler
         setCompanyTimezone($campaign->company_id);
 
         $allCamp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
-        
+
         $trainingModules = $allCamp->training_module ? json_decode($allCamp->training_module, true) : [];
         $scormTrainings = $allCamp->scorm_training ? json_decode($allCamp->scorm_training, true) : [];
 

@@ -156,6 +156,9 @@ class ShowWebsiteController extends Controller
             // Quishing Campaign
             if ($qsh == 1) {
                 $handler = new QuishingInteractionHandler($campid);
+                if ($handler->trainingOnClick()) {
+                    return;
+                }
                 return $handler->assignTraining();
 
 
@@ -169,14 +172,17 @@ class ShowWebsiteController extends Controller
                 // return;
             } else if ($wsh == 1) {
                 $handler = new WaInteractionHandler($campid);
+                if ($handler->trainingOnClick()) {
+                    return;
+                }
                 return $handler->assignTraining();
-                // $this->assignTrainingByWhatsapp($campid);
-                // return;
             } else {
                 $handler = new EmailInteractionHandler($campid);
+                if ($handler->trainingOnClick()) {
+                    return;
+                }
                 return $handler->assignTraining();
             }
-
         }
     }
 
@@ -195,7 +201,7 @@ class ShowWebsiteController extends Controller
             if ($tprm == 1) {
                 $companyId = TprmUsers::where('id', $userid)->value('company_id');
             }
-            if($wsh == 1){
+            if ($wsh == 1) {
                 $companyId = WaLiveCampaign::where('id', $campid)->value('company_id');
             }
 
@@ -236,7 +242,7 @@ class ShowWebsiteController extends Controller
             if ($tprm == 1) {
                 $companyId = TprmUsers::where('id', $userid)->value('company_id');
             }
-            if($wsh == 1){
+            if ($wsh == 1) {
                 $companyId = WaLiveCampaign::where('id', $campid)->value('company_id');
             }
 

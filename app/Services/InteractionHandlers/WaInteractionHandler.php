@@ -29,7 +29,20 @@ class WaInteractionHandler
 
             WhatsappActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("Visited to phishing website by {$campaignLive->user_name} in WhatsApp simulation.", 'company', $companyId);
+
+            if ($this->trainingOnClick()) {
+                $this->assignTraining();
+            }
         }
+    }
+    public function trainingOnClick() :bool
+    {
+        $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)->first();
+        if (!$campaignLive) {
+            return false;
+        }
+        $trainingOnClick = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->value('training_on_click');
+        return (bool)$trainingOnClick;
     }
 
     public function handleCompromisedMsg($companyId)

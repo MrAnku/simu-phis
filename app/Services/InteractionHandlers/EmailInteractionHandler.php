@@ -31,7 +31,21 @@ class EmailInteractionHandler
 
             EmailCampActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("Phishing email payload clicked by {$campaignLive->user_email} in email simulation.", 'company', $companyId);
+
+            if ($this->trainingOnClick()) {
+                $this->assignTraining();
+            }
         }
+    }
+
+    public function trainingOnClick() :bool
+    {
+        $campaignLive = CampaignLive::where('id', $this->campLiveId)->first();
+        if (!$campaignLive) {
+            return false;
+        }
+        $trainingOnClick = Campaign::where('campaign_id', $campaignLive->campaign_id)->value('training_on_click');
+        return (bool)$trainingOnClick;
     }
 
     public function handleCompromisedEmail($companyId)
