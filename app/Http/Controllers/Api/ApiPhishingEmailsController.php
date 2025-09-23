@@ -44,6 +44,13 @@ class ApiPhishingEmailsController extends Controller
                 });
             }
 
+            // Filter by category
+            if ($request->filled('category')) {
+                $category = $request->input('category');
+                $defaultQuery->where('category', $category);
+                $customQuery->where('category', $category);
+            }
+
             if ($request->filled('difficulty')) {
                 $difficulty = $request->input('difficulty');
                 $defaultQuery->where('difficulty', $difficulty);
@@ -145,7 +152,8 @@ class ApiPhishingEmailsController extends Controller
                 'difficulty' => 'required|string|max:30',
                 'file' => 'required|file|mimes:html',
                 'phishing_website' => 'required|numeric',
-                'sender_profile' => 'required|numeric'
+                'sender_profile' => 'required|numeric',
+                'category' => 'nullable|string|max:255',
             ]);
 
             $phishingEmail = PhishingEmail::find($data['id']);
@@ -158,24 +166,25 @@ class ApiPhishingEmailsController extends Controller
             }
 
             // Get the previous file path
-            $oldFilePath = ltrim($phishingEmail->mailBodyFilePath, '/');
+            // $oldFilePath = ltrim($phishingEmail->mailBodyFilePath, '/');
 
-            // Get new file content
-            $newFileContent = file_get_contents($request->file('file')->getRealPath());
+            // // Get new file content
+            // $newFileContent = file_get_contents($request->file('file')->getRealPath());
 
-            // Overwrite the previous file in S3
-            Storage::disk('s3')->put($oldFilePath, $newFileContent);
+            // // Overwrite the previous file in S3
+            // Storage::disk('s3')->put($oldFilePath, $newFileContent);
 
             // Update other fields in the database
             PhishingEmail::where('id', $data['id'])->update([
                 'name' => $data['name'],
                 'email_subject' => $data['email_subject'],
                 'difficulty' => $data['difficulty'],
+                'category' => $data['category'] ?? $phishingEmail->category,
                 'website' => $data['phishing_website'],
                 'senderProfile' => $data['sender_profile']
             ]);
 
-            log_action("Email template updated successfully (ID: {$data['id']})");
+            log_action("Email template updated successfully (Name: {$data['name']})");
 
             return response()->json([
                 'success' => true,
@@ -231,27 +240,19 @@ class ApiPhishingEmailsController extends Controller
                     'message' => "Campaigns are associated with this template, delete campaigns first",
                 ], 422);
             }
+            log_action("Email Template (Name: {$template->name}) deleted successfully");
 
-            $isDeleted = $template->delete();
+
+            $template->delete();
 
             // Delete the file from S3
             Storage::disk('s3')->delete($template->mailBodyFilePath);
 
-            if ($isDeleted) {
-                log_action("Email Template (ID: $tempid) deleted successfully");
-
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Email Template deleted successfully.')
-                ], 200);
-            } else {
-                log_action("Failed to delete Email Template (ID: $tempid)");
-
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Failed to delete Email Template.')
-                ], 500);
-            }
+           
+            return response()->json([
+                'success' => true,
+                'message' => __('Email Template deleted successfully.')
+            ], 200);
         } catch (\Exception $e) {
             log_action("Exception while deleting template: " . $e->getMessage());
 
@@ -287,6 +288,7 @@ class ApiPhishingEmailsController extends Controller
                 'difficulty' => 'required|string|max:30',
                 'eAssoWebsite' => 'required|string|max:255',
                 'eSenderProfile' => 'required|string|max:255',
+                'category' => 'nullable|string|max:255',
             ]);
 
             $company_id = Auth::user()->company_id;
@@ -304,6 +306,7 @@ class ApiPhishingEmailsController extends Controller
                 'name' => $request->input('eTempName'),
                 'email_subject' => $request->input('eSubject'),
                 'difficulty' => $request->input('difficulty'),
+                'category' => $request->input('category') ?? 'uncategorized',
                 'mailBodyFilePath' =>  "/" . $filePath,
                 'website' => $request->input('eAssoWebsite'),
                 'senderProfile' => $request->input('eSenderProfile'),

@@ -25,18 +25,30 @@ use Symfony\Component\DomCrawler\Crawler;
 class ApiPhishingWebsitesController extends Controller
 {
     //
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             $company_id = Auth::user()->company_id;
 
-            // Get all phishing websites related to the company or default ones
-            $phishingWebsites = PhishingWebsite::where('company_id', $company_id)
-                ->orWhere('company_id', 'default')
-                ->paginate(9); // Fetch results as a collection
+            // Start with base query
+            $query = PhishingWebsite::where('company_id', $company_id)
+                ->orWhere('company_id', 'default');
 
-            $default = PhishingWebsite::where('company_id', 'default')->paginate(9);
-            $custom = PhishingWebsite::where('company_id', $company_id)->paginate(9);
+            $defaultQuery = PhishingWebsite::where('company_id', 'default');
+            $customQuery = PhishingWebsite::where('company_id', $company_id);
+
+            // Apply filters
+            if ($request->filled('category')) {
+                $category = $request->input('category');
+                $query->where('category', $category);
+                $defaultQuery->where('category', $category);
+                $customQuery->where('category', $category);
+            }
+
+            // Execute pagination after applying filters
+            $phishingWebsites = $query->paginate(9);
+            $default = $defaultQuery->paginate(9);
+            $custom = $customQuery->paginate(9);
 
             return response()->json([
                 'success' => true,
@@ -188,6 +200,7 @@ class ApiPhishingWebsitesController extends Controller
                 'name' => 'required|string|max:255',
                 'file' => 'required|file|mimes:html',
                 'domain' => 'required|string|max:255',
+                'category' => 'nullable|string|max:255',
             ]);
 
             $phishingWebsite = PhishingWebsite::find($data['id']);
@@ -211,9 +224,10 @@ class ApiPhishingWebsitesController extends Controller
             PhishingWebsite::where('id', $data['id'])
                 ->update([
                     'name' => $data['name'],
-                    'domain' => $data['domain']
+                    'domain' => $data['domain'],
+                    'category' => $data['category'] ?? $phishingWebsite->category,
                 ]);
-            log_action("Phishing website updated successfully (ID: {$data['id']})");
+            log_action("Phishing website updated successfully (Name: {$data['name']})");
 
             return response()->json([
                 'success' => true,
@@ -302,6 +316,7 @@ class ApiPhishingWebsitesController extends Controller
                 'webFile'   => 'required|file|mimes:html',
                 'subdomain' => 'nullable|string|max:255',
                 'domain'    => 'required|string|max:255',
+                'category'  => 'nullable|string|max:255',
             ]);
 
             // Step 3: Build full domain
@@ -337,6 +352,7 @@ class ApiPhishingWebsitesController extends Controller
             $phishingWebsite->name = $validated['webName'];
             $phishingWebsite->file = $targetDir;
             $phishingWebsite->domain = $fullDomain;
+            $phishingWebsite->category = $validated['category'] ?? 'uncategorized';
             $phishingWebsite->company_id = $company_id;
             $phishingWebsite->save();
 
