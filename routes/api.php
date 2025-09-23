@@ -290,6 +290,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter'])->group(function 
         Route::post('/add-gamified-training', [ApiTrainingModuleController::class, 'addGamifiedTraining']);
         Route::post('/update-gamified-training', [ApiTrainingModuleController::class, 'updateGamifiedTraining']);
         Route::post('/duplicate/{id?}', [ApiTrainingModuleController::class, 'duplicate']);
+        Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
     });
 
     Route::prefix('support')->group(function () {
