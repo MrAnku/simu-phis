@@ -825,6 +825,15 @@ class ApiAiCallController extends Controller
                 ], 422);
             }
 
+            //check if the agent is available 
+            $agentExists = AiCallLikelifeAgent::where('agent_id', $campaign->ai_agent)->exists();
+            if (!$agentExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('The agent associated with this campaign is no longer available. Please create new campaign.'),
+                ], 422);
+            }
+
             $company_id = Auth::user()->company_id;
 
             AiCallCampaign::where('campaign_id', $campid)
