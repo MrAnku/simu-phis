@@ -191,6 +191,9 @@ class ProcessAiCampaigns extends Command
                         continue;
                     }
 
+                     $training_mods = json_decode($campaign->training_module, true);
+                    $scorms = json_decode($campaign->scorm_training, true);
+
                     AiCallCampLive::create([
                         'campaign_id' => $campaign->campaign_id,
                         'campaign_name' => $campaign->campaign_name,
@@ -198,8 +201,8 @@ class ProcessAiCampaigns extends Command
                         'user_id' => $user->id,
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
-                        'training_module' => $campaign->training_module ?? null,
-                        'scorm_training' => $campaign->scorm_training ?? null,
+                        'training_module' => (empty($training_mods) ? null :  $training_mods[array_rand($training_mods)]),
+                        'scorm_training' => (empty($scorms) ? null :  $scorms[array_rand($scorms)]),
                         'training_lang' => $campaign->training_lang ?? null,
                         'training_type' => $campaign->training_type ?? null,
                         'from_mobile' => $campaign->phone_no,

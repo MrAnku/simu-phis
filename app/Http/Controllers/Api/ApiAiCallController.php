@@ -391,13 +391,24 @@ class ApiAiCallController extends Controller
 
             $input = $request->all();
             foreach ($input as $key => $value) {
-                if (preg_match('/<[^>]*>|<\?php/', $value)) {
-                    return response()->json(['success' => false, 'message' => __('Invalid input detected.')], 422);
+                if (is_array($value)) {
+                    array_walk_recursive($value, function ($item) {
+                        if (preg_match('/<[^>]*>|<\?php/', $item)) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => __('Invalid input detected.')
+                            ], 422);
+                        }
+                    });
+                } else {
+                    if (preg_match('/<[^>]*>|<\?php/', $value)) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => __('Invalid input detected.')
+                        ], 422);
+                    }
                 }
             }
-            array_walk_recursive($input, function (&$input) {
-                $input = strip_tags($input);
-            });
             $request->merge($input);
 
             //xss check end
@@ -405,8 +416,8 @@ class ApiAiCallController extends Controller
                 [
                     'camp_name' => 'required|string|min:5|max:50',
                     'users_group' => 'required|string',
-                    'training_module' => 'nullable|integer',
-                    'scorm_training' => 'nullable|integer',
+                    'training_module' => 'nullable|array',
+                    'scorm_training' => 'nullable|array',
                     'training_lang' => 'nullable|string',
                     'training_type' => 'nullable|string',
                     'employee_type' => 'required|in:normal,bluecollar',
@@ -415,7 +426,8 @@ class ApiAiCallController extends Controller
                     'ai_agent' => 'required|string',
                     'ai_phone' => 'required|string',
                     'scheduled_at' => 'required_if:schedule_type,schedule|string',
-                    'schedule_type' => 'required|string|in:immediately,schedule'
+                    'schedule_type' => 'required|string|in:immediately,schedule',
+                    'training_assignment' => 'required|string|in:random,all'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -452,8 +464,9 @@ class ApiAiCallController extends Controller
                 'employee_type' => $request->employee_type,
                 'users_group' => $request->users_group,
                 'users_grp_name' => $request->users_grp_name,
-                'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : $request->training_module,
-                'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : $request->scorm_training,
+                'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : json_encode($request->training_module),
+                'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : json_encode($request->scorm_training),
+                'training_assignment' => ($request->campaign_type == 'phishing') ? null : $request->training_assignment,
                 'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
                 'training_type' => $request->campaign_type == 'phishing' ? null : $request->training_type,
                 'ai_agent' => $request->ai_agent,
@@ -534,6 +547,9 @@ class ApiAiCallController extends Controller
                         continue;
                     }
 
+                    $training_mods = json_decode($campaign->training_module, true);
+                    $scorms = json_decode($campaign->scorm_training, true);
+
                     AiCallCampLive::create([
                         'campaign_id' => $campaign->campaign_id,
                         'campaign_name' => $campaign->campaign_name,
@@ -541,8 +557,8 @@ class ApiAiCallController extends Controller
                         'user_id' => $user->id,
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
-                        'training_module' => $campaign->training_module ?? null,
-                        'scorm_training' => $campaign->scorm_training ?? null,
+                        'training_module' => (empty($training_mods) ? null :  $training_mods[array_rand($training_mods)]),
+                        'scorm_training' => (empty($scorms) ? null :  $scorms[array_rand($scorms)]),
                         'training_lang' => $campaign->training_lang ?? null,
                         'training_type' => $campaign->training_type ?? null,
                         'from_mobile' => $campaign->phone_no,
@@ -681,7 +697,7 @@ class ApiAiCallController extends Controller
                 $callReport['disconnect_reason'] = 'user_hangup';
                 $callReport['call_status'] = $localReport->status;
                 $callReport['compromised'] = $localReport->compromised == 1 ? "Yes" : "No";
-                if($localReport->compromised == 1){
+                if ($localReport->compromised == 1) {
                     $callReport['interactions'] = null;
                 }
                 $callReport['training_assigned'] = $localReport->training_assigned == 1 ? "Yes" : "No";

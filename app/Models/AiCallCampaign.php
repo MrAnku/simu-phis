@@ -27,7 +27,8 @@ class AiCallCampaign extends Model
         'scorm_training',
         'launch_time',
         'launch_type',
-        'employee_type'
+        'employee_type',
+        'training_assignment'
     ];
 
     public function individualCamps(){
