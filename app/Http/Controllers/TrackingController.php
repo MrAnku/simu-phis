@@ -116,7 +116,7 @@ class TrackingController extends Controller
     public function googleReport(Request $request)
     {
         // Log the details to a specific log file
-        Log::channel('google_report')->info('Google Phish Report', [
+        Log::info('Google Phish Report', [
            
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
