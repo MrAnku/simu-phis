@@ -161,6 +161,7 @@ Route::middleware('throttle:hook-limiter')->group(function () {
     Route::get('/ttrackEmailView/{campid}', [TrackingController::class, 'ttrackemail']);
     Route::get('/qrcodes/{filename}', [TrackingController::class, 'trackquishing']);
     Route::post('/outlook-phish-report', [TrackingController::class, 'outlookPhishReport']);
+    Route::post('/googlereport', [TrackingController::class, 'googleReport']);
 });
 
 
