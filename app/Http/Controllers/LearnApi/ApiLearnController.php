@@ -1001,14 +1001,34 @@ class ApiLearnController extends Controller
 
             $certificates = TrainingAssignedUser::where('user_email', $request->email)
                 ->where('certificate_path', '!=', null)
-                ->pluck('certificate_path');
+                ->with('trainingData')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'training_name' => $item->trainingData->name ?? null,
+                        'certificate_path' => $item->certificate_path
+                    ];
+                });
 
+            $scormCertificates = ScormAssignedUser::where('user_email', $request->email)
+                ->where('certificate_path', '!=', null)
+                ->with('scormTrainingData')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'training_name' => $item->scormTrainingData->name ?? null,
+                        'certificate_path' => $item->certificate_path
+                    ];
+                });
             return response()->json([
                 'success' => true,
                 'message' => __('Training achivements retrieved successfully'),
                 'data' => [
                     'badges' => $badges,
-                    'certificates' => $certificates,
+                    'certificates' => [
+                        'certificates' => $certificates,
+                        'scorm_certificates' => $scormCertificates
+                    ]
                 ]
             ], 200);
         } catch (ValidationException $e) {
