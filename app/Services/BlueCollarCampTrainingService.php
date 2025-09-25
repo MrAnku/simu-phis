@@ -21,7 +21,9 @@ class BlueCollarCampTrainingService
 
     private static function assignAllBlueCollarTrainings($campaign, $trainingModules = null, $scormTrainings = null)
     {
-         // Logic to choose phone field from whatsapp or AI
+        $trainingAssignedService = new TrainingAssignedService();
+
+        // Logic to choose phone field from whatsapp or AI
         if (isset($campaign->to_mobile) && !empty($campaign->to_mobile)) {
             $user_phone = ltrim($campaign->to_mobile, '+');
         } else {
@@ -50,8 +52,12 @@ class BlueCollarCampTrainingService
                         'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                         'company_id' => $campaign->company_id
                     ];
+                    $trainingAssigned = $trainingAssignedService->assignNewBlueCollarTraining($campData);
 
-                    BlueCollarTrainingUser::create($campData);
+                    if ($trainingAssigned['status'] == 1) {
+                        echo $trainingAssigned['msg'];
+                    }
+
 
                     $module = TrainingModule::find($training);
                     // Audit log
@@ -97,9 +103,11 @@ class BlueCollarCampTrainingService
                         'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                         'company_id' => $campaign->company_id
                     ];
+                    $trainingAssigned = $trainingAssignedService->assignNewBlueCollarScormTraining($campData);
 
-
-                    BlueCollarScormAssignedUser::create($campData);
+                    if ($trainingAssigned['status'] == 1) {
+                        echo $trainingAssigned['msg'];
+                    }
 
                     $scorm = ScormTraining::find($training);
                     // Audit log
@@ -141,13 +149,15 @@ class BlueCollarCampTrainingService
 
     private static function assignSingleBlueCollarTraining($campaign)
     {
+        $trainingAssignedService = new TrainingAssignedService();
+
         // Logic to choose phone field from whatsapp or AI
         if (isset($campaign->to_mobile) && !empty($campaign->to_mobile)) {
             $user_phone = ltrim($campaign->to_mobile, '+');
         } else {
             $user_phone = $campaign->user_phone;
         }
-        
+
         if ($campaign->training_module !== null) {
             $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $user_phone)
                 ->where('training', $campaign->training_module)
@@ -167,7 +177,11 @@ class BlueCollarCampTrainingService
                     'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                     'company_id' => $campaign->company_id
                 ];
-                BlueCollarTrainingUser::create($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewBlueCollarTraining($campData);
+
+                if ($trainingAssigned['status'] == 1) {
+                    echo $trainingAssigned['msg'];
+                }
 
                 $training = TrainingModule::find($campaign->training_module);
                 audit_log(
@@ -211,7 +225,11 @@ class BlueCollarCampTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                BlueCollarScormAssignedUser::create($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewBlueCollarScormTraining($campData);
+
+                if ($trainingAssigned['status'] == 1) {
+                    echo $trainingAssigned['msg'];
+                }
 
                 $scorm = ScormTraining::find($campaign->scorm_training);
                 // Audit log

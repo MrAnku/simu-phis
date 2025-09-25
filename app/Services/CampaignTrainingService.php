@@ -54,7 +54,11 @@ class CampaignTrainingService
                         'company_id' => $campaign->company_id
                     ];
 
-                    $trainingAssignedService->assignNewTraining($campData);
+                    $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+                    if($trainingAssigned['status'] == 1){
+                        echo $trainingAssigned['msg'];
+                    }
 
                     $module = TrainingModule::find($training);
                     // Audit log
@@ -96,7 +100,11 @@ class CampaignTrainingService
                         'scorm_due_date' => now()->addDays($campaign->days_until_due)->toDateString(),
                         'company_id' => $campaign->company_id
                     ];
-                    $trainingAssignedService->assignNewScormTraining($campData);
+                    $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
+
+                    if($trainingAssigned['status'] == 1){
+                        echo $trainingAssigned['msg'];
+                    }
 
                     $scorm = ScormTraining::find($training);
                     // Audit log
@@ -157,7 +165,11 @@ class CampaignTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                $trainingAssignedService->assignNewTraining($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+                if($trainingAssigned['status'] == 1){
+                        echo $trainingAssigned['msg'];
+                    }
 
                 $module = TrainingModule::find($campaign->training_module);
                 // Audit log
@@ -200,7 +212,11 @@ class CampaignTrainingService
                     'company_id' => $campaign->company_id
                 ];
 
-                $trainingAssignedService->assignNewScormTraining($campData);
+                $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
+
+                if($trainingAssigned['status'] == 1){
+                        echo $trainingAssigned['msg'];
+                    }
 
                 $scorm = ScormTraining::find($campaign->scorm_training);
                 // Audit log
