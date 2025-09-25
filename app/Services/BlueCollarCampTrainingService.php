@@ -21,7 +21,12 @@ class BlueCollarCampTrainingService
 
     private static function assignAllBlueCollarTrainings($campaign, $trainingModules = null, $scormTrainings = null)
     {
-        $user_phone = $campaign->user_phone;
+         // Logic to choose phone field from whatsapp or AI
+        if (isset($campaign->to_mobile) && !empty($campaign->to_mobile)) {
+            $user_phone = ltrim($campaign->to_mobile, '+');
+        } else {
+            $user_phone = $campaign->user_phone;
+        }
 
         if (!empty($trainingModules)) {
             foreach ($trainingModules as $training) {

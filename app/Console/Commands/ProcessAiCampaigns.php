@@ -82,7 +82,7 @@ class ProcessAiCampaigns extends Command
                     }
 
                     if ($pendingCall->calls_sent >= 3) {
-                        
+
                         continue;
                     }
 
@@ -191,7 +191,7 @@ class ProcessAiCampaigns extends Command
                         continue;
                     }
 
-                     $training_mods = json_decode($campaign->training_module, true);
+                    $training_mods = json_decode($campaign->training_module, true);
                     $scorms = json_decode($campaign->scorm_training, true);
 
                     AiCallCampLive::create([
@@ -408,24 +408,40 @@ class ProcessAiCampaigns extends Command
     {
         setCompanyTimezone($campaign->company_id);
 
-        $trainingAssignedService = new TrainingAssignedService();
+        $all_camp = AiCallCampaign::where('campaign_id', $campaign->campaign_id)->first();
 
-        // Blue collar logic
-        if ($campaign->employee_type === 'bluecollar') {
+        $trainingModules = [];
+        $scormTrainings = [];
 
-            $sent = BlueCollarCampTrainingService::assignBlueCollarTraining($campaign);
+        if ($all_camp->training_module !== null) {
+            $trainingModules = json_decode($all_camp->training_module, true);
+        }
 
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-        } else {
-            // Normal employee logic
-            $sent = CampaignTrainingService::assignTraining($campaign);
+        if ($all_camp->scorm_training !== null) {
+            $scormTrainings = json_decode($all_camp->scorm_training, true);
+        }
+
+        if ($campaign->employee_type == 'normal') {
+            if ($all_camp->training_assignment == 'all') {
+                $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
+            } else {
+                $sent = CampaignTrainingService::assignTraining($campaign);
+            }
 
             if ($sent) {
-                echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
-            } else {
-                echo 'Failed to assign training to ' . $campaign->user_email . "\n";
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
-            $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+        } else {
+            if ($all_camp->training_assignment == 'all') {
+
+                $sent = BlueCollarCampTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
+            } else {
+                $sent = BlueCollarCampTrainingService::assignBlueCollarTraining($campaign);
+            }
+
+            if ($sent) {
+                $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
         }
     }
 }

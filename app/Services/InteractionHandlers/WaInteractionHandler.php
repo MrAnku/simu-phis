@@ -35,7 +35,7 @@ class WaInteractionHandler
             }
         }
     }
-    public function trainingOnClick() :bool
+    public function trainingOnClick(): bool
     {
         $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)->first();
         if (!$campaignLive) {
@@ -105,19 +105,20 @@ class WaInteractionHandler
         //checking assignment
         $all_camp = WaCampaign::where('campaign_id', $campaign->campaign_id)->first();
 
+        $trainingModules = [];
+        $scormTrainings = [];
+
+        if ($all_camp->training_module !== null) {
+            $trainingModules = json_decode($all_camp->training_module, true);
+        }
+
+        if ($all_camp->scorm_training !== null) {
+            $scormTrainings = json_decode($all_camp->scorm_training, true);
+        }
+
         if ($campaign->employee_type == 'normal') {
             if ($all_camp->training_assignment == 'all') {
-                $trainingModules = [];
-                $scormTrainings = [];
-
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
+                 
                 CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
 
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -128,17 +129,7 @@ class WaInteractionHandler
             }
         } else {
             if ($all_camp->training_assignment == 'all') {
-                $trainingModules = [];
-                $scormTrainings = [];
-
-                if ($all_camp->training_module !== null) {
-                    $trainingModules = json_decode($all_camp->training_module, true);
-                }
-
-                if ($all_camp->scorm_training !== null) {
-                    $scormTrainings = json_decode($all_camp->scorm_training, true);
-                }
-
+                
                 BlueCollarCampTrainingService::assignBlueCollarTraining($campaign, $trainingModules, $scormTrainings);
 
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
@@ -148,6 +139,5 @@ class WaInteractionHandler
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
             }
         }
-
     }
 }

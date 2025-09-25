@@ -31,12 +31,21 @@ class AiCallCampaign extends Model
         'training_assignment'
     ];
 
-    public function individualCamps(){
+    public function individualCamps()
+    {
         return $this->hasMany(AiCallCampLive::class, 'campaign_id', 'campaign_id');
     }
 
-    public function trainingName(){
-        return $this->hasOne(TrainingModule::class, 'id', 'training_module');
+    public function trainingModules()
+    {
+        $ids = json_decode($this->training_module, true);
+        return TrainingModule::whereIn('id', $ids ?? []);
+    }
+
+     public function scormTrainings()
+    {
+        $ids = json_decode($this->scorm_training, true);
+        return ScormTraining::whereIn('id', $ids ?? []);
     }
 
     protected $appends = ['formatted_created_at'];
@@ -45,5 +54,4 @@ class AiCallCampaign extends Model
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
     }
-    
 }

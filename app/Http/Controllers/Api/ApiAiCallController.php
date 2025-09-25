@@ -32,7 +32,15 @@ class ApiAiCallController extends Controller
 
             $empGroups = UsersGroup::where('company_id', $companyId)->where('users', '!=', null)->get();
             $trainings = TrainingModule::where('company_id', 'default')->orWhere('company_id', $companyId)->get();
-            $campaigns = AiCallCampaign::with('trainingName')->where('company_id', $companyId)->orderBy('id', 'desc')->get();
+            $campaigns = AiCallCampaign::where('company_id', $companyId)->orderBy('id', 'desc')->get();
+
+            $campaigns->each(function ($campaign) {
+                if($campaign->training_module == null && $campaign->scorm_training == null){
+                    $campaign->campaign_type = 'phishing';
+                }else{
+                    $campaign->campaign_type = 'phishing_and_training';
+                }
+            });
             // $agents = AiCallAgent::where('company_id', $companyId)->orWhere('company_id', 'default')->get();
             $agents = AiCallLikelifeAgent::where('company_id', $companyId)->get([
                 'agent_name',
@@ -594,9 +602,15 @@ class ApiAiCallController extends Controller
                 ], 422);
             }
 
-            $campaign = AiCallCampaign::with(['individualCamps', 'trainingName'])
+            $campaign = AiCallCampaign::with(['individualCamps'])
                 ->where('campaign_id', $id)
                 ->first();
+
+            $trainingModules = $campaign->trainingModules()->get();
+            $campaign->training_modules_data = $trainingModules;
+
+            $scormTrainings = $campaign->scormTrainings()->get();
+            $campaign->scorm_trainings_data = $scormTrainings;
 
             if ($campaign) {
                 return response()->json([
