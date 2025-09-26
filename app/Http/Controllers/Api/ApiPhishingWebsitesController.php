@@ -40,6 +40,8 @@ class ApiPhishingWebsitesController extends Controller
             // Apply filters
             if ($request->filled('category')) {
                 $category = $request->input('category');
+
+                $category = preg_replace('/(?<!E)-/', ' ', $category);
                 $query->where('category', $category);
                 $defaultQuery->where('category', $category);
                 $customQuery->where('category', $category);

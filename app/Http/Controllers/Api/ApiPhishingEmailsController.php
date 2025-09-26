@@ -47,7 +47,7 @@ class ApiPhishingEmailsController extends Controller
             // Filter by category
             if ($request->filled('category')) {
                 $category = $request->input('category');
-                $category = str_replace('-', ' ', $category);
+                $category = preg_replace('/(?<!E)-/', ' ', $category);
                 $defaultQuery->where('category', $category);
                 $customQuery->where('category', $category);
             }
