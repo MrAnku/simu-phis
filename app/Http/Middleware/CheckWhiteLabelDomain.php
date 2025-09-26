@@ -41,7 +41,7 @@ class CheckWhiteLabelDomain
             $companyLogoLight = "/assets/images/simu-logo.png";
             $companyLogoDark = "/assets/images/simu-logo-dark.png";
             $companyFavicon = "/assets/images/simu-icon.png";
-            $companyName = 'simUphish';
+            $companyName = env('APP_NAME');
             $companyDomain = env('SIMUPHISH_URL');
             $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');
         }

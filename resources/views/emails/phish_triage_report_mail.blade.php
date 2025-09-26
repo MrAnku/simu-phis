@@ -75,7 +75,7 @@
 
     <div class="container">
         <div class="logo">
-            <img src="{{ asset('/assets/images/simu-logo-dark.png') }}" alt="simUphish Logo">
+            <img src="{{ env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png' }}" alt="simUphish Logo">
         </div>
 
         <div class="content">

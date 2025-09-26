@@ -389,7 +389,7 @@ if (!function_exists('checkWhitelabeled')) {
             'company_email' => env('MAIL_FROM_ADDRESS'),
             'learn_domain' => env('SIMUPHISH_LEARNING_URL'),
             'company_name' => env('APP_NAME'),
-            'logo' => env('APP_URL') . '/assets/images/simu-logo-dark.png',
+            'logo' => env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png',
             'company_id' => $company_id,
         ];
     }

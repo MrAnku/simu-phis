@@ -982,7 +982,7 @@ class ApiSettingsController extends Controller
 
         return [
             'portal_domain' => 'app.simuphish.com',
-            'company_name' => 'simUphish',
+            'company_name' => env('APP_NAME'),
         ];
     }
 
