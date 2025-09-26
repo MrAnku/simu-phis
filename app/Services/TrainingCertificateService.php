@@ -72,6 +72,7 @@ class TrainingCertificateService
 
         $pdf = Pdf::loadHTML($certificateHtml);
         $pdf->setOptions(['isRemoteEnabled' => true]);
+        $pdf->setPaper('a4', 'landscape'); // Set orientation to landscape
         $pdfContent = $pdf->output();
         return $pdfContent;
     }
