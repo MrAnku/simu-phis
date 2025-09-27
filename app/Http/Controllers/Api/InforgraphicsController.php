@@ -89,16 +89,34 @@ class InforgraphicsController extends Controller
             $id = base64_decode($id);
 
             $infographic = Inforgraphic::findOrFail($id);
+            if(!$infographic){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Infographic not found'
+                ], 404);
+            }
 
-            $infographic->delete();
+            // $infographic->delete();
 
-            InfoGraphicLiveCampaign::where('infographic', $id)
+            $hasCampaign = InfoGraphicLiveCampaign::where('infographic', $id)
                 ->where('company_id', Auth::user()->company_id)
-                ->delete();
+                ->exists();
+            if ($hasCampaign) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Infographic is being used in a campaign and cannot be deleted. Please delete the associated campaign first.'
+                ], 400);
+            }
+
+            // Delete the file from S3
+            if ($infographic->file_path) {
+                Storage::disk('s3')->delete(ltrim($infographic->file_path, '/'));
+            }   
+            $infographic->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inforgraphic deleted successfully'
+                'message' => 'Infographic deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
