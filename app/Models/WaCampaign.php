@@ -18,6 +18,7 @@ class WaCampaign extends Model
         'training_lang',
         'training_type',
         'training_on_click',
+        'compromise_on_click',
         'template_name',
         'users_group',
         'schedule_type',
