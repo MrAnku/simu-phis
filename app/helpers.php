@@ -8,18 +8,23 @@ use App\Models\Badge;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\SiemLog;
-use App\Mail\CampaignMail;
 use App\Models\AuditLog;
+use App\Mail\CampaignMail;
 use App\Models\UsersGroup;
 use Illuminate\Support\Str;
+use App\Models\CampaignLive;
+use App\Models\Notification;
 use App\Models\SiemProvider;
 use App\Models\TprmActivity;
 use App\Models\ScormTraining;
 use App\Models\PhishingDomain;
+use App\Models\WaLiveCampaign;
 use App\Models\CompanySettings;
 use App\Models\QuishingActivity;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
-use App\Models\Notification;
+use App\Models\SmishingLiveCampaign;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -1081,4 +1086,25 @@ if (!function_exists('audit_log')) {
             'user_agent'    => request()->header('User-Agent'),
         ]);
     }
+}
+
+if (!function_exists('defaultNotificationLang')) {
+    function defaultNotificationLang($queryParams)
+    {
+       if(array_key_exists('wsh', $queryParams)){
+        $companyId = WaLiveCampaign::where('id', $queryParams['token'])->value('company_id');
+       }else if(array_key_exists('tprm', $queryParams)){
+        $companyId = TprmCampaignLive::where('id', $queryParams['token'])->value('company_id');
+       }else if(array_key_exists('smi', $queryParams)){
+        $companyId = SmishingLiveCampaign::where('id', $queryParams['token'])->value('company_id');
+       }else if(array_key_exists('qsh', $queryParams)){
+        $companyId = QuishingLiveCamp::where('id', $queryParams['token'])->value('company_id');
+       }else{
+        $companyId = CampaignLive::where('id', $queryParams['token'])->value('company_id');
+       }
+       if($companyId){
+        return CompanySettings::where('company_id', $companyId)->value('default_notifications_lang') ?? 'en';
+       }
+       return 'en';
+   }
 }

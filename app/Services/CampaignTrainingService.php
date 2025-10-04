@@ -57,7 +57,7 @@ class CampaignTrainingService
                     $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
                     if($trainingAssigned['status'] == 1){
-                        echo $trainingAssigned['msg'];
+                        // echo $trainingAssigned['msg'];
                     }
 
                     $module = TrainingModule::find($training);
@@ -103,7 +103,7 @@ class CampaignTrainingService
                     $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
                     if($trainingAssigned['status'] == 1){
-                        echo $trainingAssigned['msg'];
+                        // echo $trainingAssigned['msg'];
                     }
 
                     $scorm = ScormTraining::find($training);
@@ -168,7 +168,7 @@ class CampaignTrainingService
                 $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
                 if($trainingAssigned['status'] == 1){
-                        echo $trainingAssigned['msg'];
+                        // echo $trainingAssigned['msg'];
                     }
 
                 $module = TrainingModule::find($campaign->training_module);
@@ -215,7 +215,7 @@ class CampaignTrainingService
                 $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
                 if($trainingAssigned['status'] == 1){
-                        echo $trainingAssigned['msg'];
+                        // echo $trainingAssigned['msg'];
                     }
 
                 $scorm = ScormTraining::find($campaign->scorm_training);

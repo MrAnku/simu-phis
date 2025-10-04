@@ -48,6 +48,29 @@ class EmailInteractionHandler
         return (bool)$trainingOnClick;
     }
 
+    public function compromiseOnClick(): bool
+    {
+        $campaignLive = CampaignLive::where('id', $this->campLiveId)->first();
+        if (!$campaignLive) {
+            return false;
+        }
+        $compromiseOnClick = Campaign::where('campaign_id', $campaignLive->campaign_id)->value('compromise_on_click');
+        if($compromiseOnClick == 0){
+            return false;
+        }
+        if($campaignLive->payload_clicked == 0){
+            $this->updatePayloadClick($campaignLive->company_id);
+        }
+        if($campaignLive->emp_compromised == 0){
+            $this->handleCompromisedEmail($campaignLive->company_id);
+        }
+        if($campaignLive->training_assigned == 0 && ($campaignLive->training_module != null || $campaignLive->scorm_training != null)){
+            $this->assignTraining();
+        }
+        
+        return true;
+    }
+
     public function handleCompromisedEmail($companyId)
     {
         $campaignLive = CampaignLive::where('id', $this->campLiveId)

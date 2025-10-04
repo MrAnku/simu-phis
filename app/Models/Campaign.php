@@ -24,6 +24,7 @@ class Campaign extends Model
         'training_lang',
         'training_type',
         'training_on_click',
+        'compromise_on_click',
         'phishing_material',
         'sender_profile',
         'email_lang',

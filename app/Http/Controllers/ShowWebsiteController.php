@@ -31,6 +31,7 @@ class ShowWebsiteController extends Controller
         $c = $queryParams['c'] ?? null;
         $p = $queryParams['p'] ?? null;
         $l = $queryParams['l'] ?? null;
+        $usrid = $queryParams['usrid'] ?? null;
 
         $visited = DB::table('phish_websites_sessions')->where([
             'user' => $dynamicvalue,
@@ -46,6 +47,12 @@ class ShowWebsiteController extends Controller
                 $website = PhishingWebsite::find($p);
 
                 if ($website) {
+                    if ($this->compromiseOnClick($queryParams)) {
+
+                        return $this->showAlertPage(request()->merge([
+                            'lang' => $usrid != null ? defaultNotificationLang($queryParams) : 'en'
+                        ]));
+                    }
                     $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
                     return response($content)->header('Content-Type', 'text/html');
                 } else {
@@ -69,11 +76,51 @@ class ShowWebsiteController extends Controller
                     'expiry' => now()->addMinutes(10)
                 ]);
 
+                if ($this->compromiseOnClick($queryParams)) {
+
+                    return $this->showAlertPage(request()->merge([
+                        'lang' => $usrid != null ? defaultNotificationLang($queryParams) : 'en'
+                    ]));
+                }
+
                 $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
                 return response($content)->header('Content-Type', 'text/html');
             } else {
                 abort(404);
             }
+        }
+    }
+
+    private function compromiseOnClick($queryParams): bool
+    {
+        $campLiveId = $queryParams['token'] ?? null;
+        if (!$campLiveId) {
+            return false;
+        }
+
+        if (array_key_exists('qsh', $queryParams)) {
+            $campLiveId = $queryParams['token'] ?? null;
+            $handler = new QuishingInteractionHandler($campLiveId);
+            if ($handler->compromiseOnClick()) {
+                return true;
+            }
+            return false;
+
+        } else if (array_key_exists('wsh', $queryParams)) {
+            $campLiveId = $queryParams['token'] ?? null;
+            $handler = new WaInteractionHandler($campLiveId);
+            if ($handler->compromiseOnClick()) {
+                return true;
+            }
+            return false;
+            
+        } else {
+
+            $handler = new EmailInteractionHandler($campLiveId);
+            if ($handler->compromiseOnClick()) {
+                return true;
+            }
+            return false;
         }
     }
 

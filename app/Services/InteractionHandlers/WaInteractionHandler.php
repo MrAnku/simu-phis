@@ -45,6 +45,29 @@ class WaInteractionHandler
         return (bool)$trainingOnClick;
     }
 
+    public function compromiseOnClick(): bool
+    {
+         $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)->first();
+        if (!$campaignLive) {
+            return false;
+        }
+        $compromiseOnClick = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->value('compromise_on_click');
+        if($compromiseOnClick == 0){
+            return false;
+        }
+        if($campaignLive->payload_clicked == 0){
+            $this->updatePayloadClick($campaignLive->company_id);
+        }
+        if($campaignLive->compromised == 0){
+            $this->handleCompromisedMsg($campaignLive->company_id);
+        }
+        if($campaignLive->training_assigned == 0 && ($campaignLive->training_module != null || $campaignLive->scorm_training != null)){
+            $this->assignTraining();
+        }
+        
+        return true;
+    }
+
     public function handleCompromisedMsg($companyId)
     {
         $campaignLive = WaLiveCampaign::where('id', $this->campLiveId)
