@@ -435,7 +435,8 @@ class ApiAiCallController extends Controller
                     'ai_phone' => 'required|string',
                     'scheduled_at' => 'required_if:schedule_type,schedule|string',
                     'schedule_type' => 'required|string|in:immediately,schedule',
-                    'training_assignment' => 'required|string|in:random,all'
+                    'training_assignment' => 'required|string|in:random,all',
+                    'selected_users' => 'nullable|array'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -471,6 +472,7 @@ class ApiAiCallController extends Controller
                 'campaign_name' => $request->camp_name,
                 'employee_type' => $request->employee_type,
                 'users_group' => $request->users_group,
+                'selected_users' => $request->selected_users != null ? json_encode($request->selected_users) : null,
                 'users_grp_name' => $request->users_grp_name,
                 'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : json_encode($request->training_module),
                 'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : json_encode($request->scorm_training),
@@ -541,11 +543,19 @@ class ApiAiCallController extends Controller
             if ($campaign->employee_type == 'normal') {
                 $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
                 $userIds = json_decode($userIdsJson, true);
-                $users = Users::whereIn('id', $userIds)->get();
+                if ($campaign->selected_users == null) {
+                    $users = Users::whereIn('id', $userIds)->get();
+                } else {
+                    $users = Users::whereIn('id', json_decode($campaign->selected_users, true))->get();
+                }
             }
 
             if ($campaign->employee_type == 'bluecollar') {
-                $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
+                if ($campaign->selected_users == null) {
+                    $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
+                } else {
+                    $users = BlueCollarEmployee::whereIn('id', json_decode($campaign->selected_users, true))->get();
+                }
             }
 
             if ($users) {

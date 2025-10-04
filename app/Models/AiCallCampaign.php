@@ -15,6 +15,7 @@ class AiCallCampaign extends Model
         'campaign_id',
         'campaign_name',
         'users_group',
+        'selected_users',
         'users_grp_name',
         'training_module',
         'training_lang',

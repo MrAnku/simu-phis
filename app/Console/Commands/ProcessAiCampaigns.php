@@ -171,12 +171,20 @@ class ProcessAiCampaigns extends Command
             if ($campaign->employee_type == 'normal') {
                 $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
                 $userIds = json_decode($userIdsJson, true);
-                $users = Users::whereIn('id', $userIds)->get();
+                if ($campaign->selected_users == null) {
+                    $users = Users::whereIn('id', $userIds)->get();
+                } else {
+                    $users = Users::whereIn('id', json_decode($campaign->selected_users, true))->get();
+                }
             }
 
             if ($campaign->employee_type == 'bluecollar') {
 
-                $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
+                if ($campaign->selected_users == null) {
+                    $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
+                } else {
+                    $users = BlueCollarEmployee::whereIn('id', json_decode($campaign->selected_users, true))->get();
+                }
             }
 
 
