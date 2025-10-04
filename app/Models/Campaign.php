@@ -18,6 +18,7 @@ class Campaign extends Model
         'campaign_name',
         'campaign_type',
         'users_group',
+        'selected_users',
         'training_module',
         'training_assignment',
         'days_until_due',

@@ -106,9 +106,11 @@ class ProcessCampaigns extends Command
       return;
     }
     $userIds = json_decode($userIdsJson, true);
-    $users = Users::whereIn('id', $userIds)->get();
-    // $users = Users::where('group_id', $campaign->users_group)->get();
-
+    if ($campaign->selected_users == null) {
+      $users = Users::whereIn('id', $userIds)->get();
+    } else {
+      $users = Users::whereIn('id', json_decode($campaign->selected_users, true))->get();
+    }
     // Check if users exist in the group
     if (!$users->isEmpty()) {
       foreach ($users as $user) {

@@ -179,7 +179,12 @@ class ApiCampaignController extends Controller
 
         $userIdsJson = UsersGroup::where('group_id', $data['users_group'])->value('users');
         $userIds = json_decode($userIdsJson, true);
-        $users = Users::whereIn('id', $userIds)->get();
+        if($data['selected_users'] == null){
+            $users = Users::whereIn('id', $userIds)->get();
+        }else{
+            $users = Users::whereIn('id', $data['selected_users'])->get();
+        }
+        
 
         // $users = User::where('group_id', $data['users_group'])->get();
 
@@ -234,6 +239,7 @@ class ApiCampaignController extends Controller
             'campaign_name' => $data['camp_name'],
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
+            'selected_users' => $data['selected_users'] != null ? json_encode($data['selected_users']) : null,
             'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : json_encode($data['training_mod']),
             'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
@@ -278,6 +284,7 @@ class ApiCampaignController extends Controller
             'campaign_name' => $data['camp_name'],
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
+            'selected_users' => $data['selected_users'] != null ? json_encode($data['selected_users']) : null,
             'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : json_encode($data['training_mod']),
             'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
@@ -350,6 +357,7 @@ class ApiCampaignController extends Controller
             'campaign_name' => $data['camp_name'],
             'campaign_type' => $data['campaign_type'],
             'users_group' => $data['users_group'],
+            'selected_users' => $data['selected_users'] != null ? json_encode($data['selected_users']) : null,
             'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : json_encode($data['training_mod']),
             'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
 
