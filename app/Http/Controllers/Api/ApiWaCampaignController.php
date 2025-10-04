@@ -94,7 +94,8 @@ class ApiWaCampaignController extends Controller
                 'users_group' => 'required|string|max:255',
                 'schedule_type' => 'required|in:immediately,scheduled',
                 'launch_time' => 'nullable|date',
-                'variables' => 'required|array'
+                'variables' => 'required|array',
+                'selected_users' => 'nullable|array',
             ]);
 
             //check if the selected users group has users has whatsapp number
@@ -147,6 +148,7 @@ class ApiWaCampaignController extends Controller
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],
                 'users_group' => $validated['users_group'],
+                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
                 'schedule_type' => $validated['schedule_type'],
                 'launch_time' => now(),
                 'status' => 'running',
@@ -157,12 +159,20 @@ class ApiWaCampaignController extends Controller
             if ($validated['employee_type'] == 'normal') {
                 $userIdsJson = UsersGroup::where('group_id', $validated['users_group'])->value('users');
                 $userIds = json_decode($userIdsJson, true);
-                $users = Users::whereIn('id', $userIds)->get();
+                if ($validated['selected_users'] == null) {
+                    $users = Users::whereIn('id', $userIds)->get();
+                } else {
+                    $users = Users::whereIn('id', $validated['selected_users'])->get();
+                }
             }
 
             if ($validated['employee_type'] == 'bluecollar') {
 
-                $users = BlueCollarEmployee::where('group_id', $validated['users_group'])->get();
+                if ($validated['selected_users'] == null) {
+                    $users = BlueCollarEmployee::where('group_id', $validated['users_group'])->get();
+                } else {
+                    $users = BlueCollarEmployee::whereIn('id', $validated['selected_users'])->get();
+                }
             }
 
 
@@ -253,6 +263,7 @@ class ApiWaCampaignController extends Controller
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],
                 'users_group' => $validated['users_group'],
+                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
                 'schedule_type' => $validated['schedule_type'],
                 'launch_time' => $validated['launch_time'],
                 'status' => 'pending',
@@ -501,7 +512,7 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
             $companyId = Auth::user()->company_id;
-             if ($type == "normal") {
+            if ($type == "normal") {
                 $result = UsersGroup::where('company_id', $companyId)->get();
 
                 // Add users_count to each group

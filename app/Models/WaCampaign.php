@@ -21,6 +21,7 @@ class WaCampaign extends Model
         'compromise_on_click',
         'template_name',
         'users_group',
+        'selected_users',
         'schedule_type',
         'launch_time',
         'status',
