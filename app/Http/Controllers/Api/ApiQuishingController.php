@@ -61,7 +61,7 @@ class ApiQuishingController extends Controller
     {
         try {
             // XSS attack prevention
-            $campData = $request->except(['quishing_materials', 'training_modules', 'scorm_training']);
+            $campData = $request->except(['quishing_materials', 'training_modules', 'scorm_training', 'selected_users']);
             foreach ($campData as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
@@ -80,7 +80,11 @@ class ApiQuishingController extends Controller
 
             $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
             $userIds = json_decode($userIdsJson, true);
-            $users = Users::whereIn('id', $userIds)->get();
+            if ($request->selected_users == null) {
+                $users = Users::whereIn('id', $userIds)->get();
+            } else {
+                $users = Users::whereIn('id', $request->selected_users)->get();
+            }
 
             if (!$users || $users->isEmpty()) {
                 return response()->json([
@@ -96,7 +100,7 @@ class ApiQuishingController extends Controller
                 'campaign_name'      => $request->campaign_name,
                 'campaign_type'      => $request->campaign_type,
                 'users_group'        => $request->employee_group,
-
+                'selected_users'     => $request->selected_users != null ? json_encode($request->selected_users) : null,
                 'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules) ? null : json_encode($trainingModules),
                 'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings) ? null : json_encode($scormTrainings),
                 'training_assignment' => $request->campaign_type === 'quishing' ? null : $request->training_assignment,
