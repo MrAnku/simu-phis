@@ -95,7 +95,7 @@ class ApiWaCampaignController extends Controller
                 'schedule_type' => 'required|in:immediately,scheduled',
                 'launch_time' => 'nullable|date',
                 'variables' => 'required|array',
-                'selected_users' => 'nullable|array',
+                'selected_users' => 'nullable|string',
             ]);
 
             //check if the selected users group has users has whatsapp number
@@ -148,7 +148,7 @@ class ApiWaCampaignController extends Controller
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],
                 'users_group' => $validated['users_group'],
-                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
+                'selected_users' => $validated['selected_users'] != 'null' ? $validated['selected_users'] : null,
                 'schedule_type' => $validated['schedule_type'],
                 'launch_time' => now(),
                 'status' => 'running',
@@ -159,19 +159,19 @@ class ApiWaCampaignController extends Controller
             if ($validated['employee_type'] == 'normal') {
                 $userIdsJson = UsersGroup::where('group_id', $validated['users_group'])->value('users');
                 $userIds = json_decode($userIdsJson, true);
-                if ($validated['selected_users'] == null) {
+                if ($validated['selected_users'] == 'null') {
                     $users = Users::whereIn('id', $userIds)->get();
                 } else {
-                    $users = Users::whereIn('id', $validated['selected_users'])->get();
+                    $users = Users::whereIn('id', json_decode($validated['selected_users'], true))->get();
                 }
             }
 
             if ($validated['employee_type'] == 'bluecollar') {
 
-                if ($validated['selected_users'] == null) {
+                if ($validated['selected_users'] == 'null') {
                     $users = BlueCollarEmployee::where('group_id', $validated['users_group'])->get();
                 } else {
-                    $users = BlueCollarEmployee::whereIn('id', $validated['selected_users'])->get();
+                    $users = BlueCollarEmployee::whereIn('id', json_decode($validated['selected_users'], true))->get();
                 }
             }
 
@@ -263,7 +263,7 @@ class ApiWaCampaignController extends Controller
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],
                 'users_group' => $validated['users_group'],
-                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
+                'selected_users' => $validated['selected_users'] != 'null' ? $validated['selected_users'] : null,
                 'schedule_type' => $validated['schedule_type'],
                 'launch_time' => $validated['launch_time'],
                 'status' => 'pending',

@@ -80,10 +80,10 @@ class ApiQuishingController extends Controller
 
             $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
             $userIds = json_decode($userIdsJson, true);
-            if ($request->selected_users == null) {
+            if ($request->selected_users == 'null') {
                 $users = Users::whereIn('id', $userIds)->get();
             } else {
-                $users = Users::whereIn('id', $request->selected_users)->get();
+                $users = Users::whereIn('id', json_decode($request->selected_users, true))->get();
             }
 
             if (!$users || $users->isEmpty()) {
@@ -100,7 +100,7 @@ class ApiQuishingController extends Controller
                 'campaign_name'      => $request->campaign_name,
                 'campaign_type'      => $request->campaign_type,
                 'users_group'        => $request->employee_group,
-                'selected_users'     => $request->selected_users != null ? json_encode($request->selected_users) : null,
+                'selected_users'     => $request->selected_users != 'null' ? $request->selected_users : null,
                 'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules) ? null : json_encode($trainingModules),
                 'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings) ? null : json_encode($scormTrainings),
                 'training_assignment' => $request->campaign_type === 'quishing' ? null : $request->training_assignment,
