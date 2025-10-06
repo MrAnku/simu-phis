@@ -1681,8 +1681,6 @@ class ApiLearnController extends Controller
 
             if ($response->failed()) {
 
-                log_action("Failed to generate AI Training on topic {$topic}");
-
                 return response()->json([
                     'success' => false,
                     'message' => $response->body()
@@ -1696,15 +1694,11 @@ class ApiLearnController extends Controller
 
             if (json_last_error() !== JSON_ERROR_NONE) {
 
-                log_action("Failed to decode JSON from AI Training on topic {$topic}");
-
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to decode JSON from AI response'
                 ], 422);
             }
-
-            log_action("AI Training generated on topic: {$topic}");
 
             return response()->json([
                 'success' => true,
@@ -1714,8 +1708,6 @@ class ApiLearnController extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-
-            log_action("Failed to generate AI Training on topic {$topic}");
 
             return response()->json([
                 'success' => false,
