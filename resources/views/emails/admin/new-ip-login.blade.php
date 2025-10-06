@@ -48,7 +48,7 @@
 
                             <p style="font-size:14px; line-height:20px; color:#666; margin:20px 0 0;">
                                 Need help? Visit our
-                                <a href="mailto:support@{{ env('APP_NAME') }}.com"
+                                <a href="mailto:{{ 'support@' . env('APP_NAME') }}.com"
                                     style="color:#0066cc; text-decoration:none;">Support Center</a>.
                             </p>
                         </td>
