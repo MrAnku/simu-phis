@@ -167,6 +167,9 @@ class AuthService
 
         $cookie = cookie('jwt', $token, env('JWT_TTL', 1440));
         $enabledFeatureCookie = cookie('enabled_feature', $enabledFeatures, env('JWT_TTL', 1440));
+        // Check and send alert for new IP login
+        $alert = new LoginAlertService($this->company);
+        $alert->checkAndSendAlert();
 
         return response()->json([
             'token' => $token,

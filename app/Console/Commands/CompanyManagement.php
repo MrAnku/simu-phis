@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use Carbon\Carbon;
 use App\Models\Company;
+use App\Models\NewIpLogin;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Admin\CompanyManagementMail;
+use App\Mail\NewIpLoginAlert;
 
 class CompanyManagement extends Command
 {
@@ -31,6 +33,7 @@ class CompanyManagement extends Command
     {
         $this->checkCompanyLicense();
         $this->needSupport();
+        $this->alertNewIpLogins();
     }
 
     private function checkCompanyLicense()
@@ -45,7 +48,7 @@ class CompanyManagement extends Command
         }
         foreach ($companies as $company) {
 
-             //check if the company id exists in the alert table
+            //check if the company id exists in the alert table
             if (!$company->alert()->exists()) {
                 $company->alert()->create([
                     'company_id' => $company->company_id
@@ -86,7 +89,7 @@ class CompanyManagement extends Command
             return;
         }
         foreach ($companies as $company) {
-            
+
             if ($company->alert?->need_support == null && $company->license?->expiry > now()) {
                 $companyCreatedDate = Carbon::parse($company->created_at);
 
@@ -100,6 +103,24 @@ class CompanyManagement extends Command
                         echo "Failed to send support email to {$company->email}: " . $e->getMessage();
                     }
                 }
+            }
+        }
+    }
+
+    private function alertNewIpLogins()
+    {
+        $pendingAlerts = NewIpLogin::where('notified', 0)->get();
+        foreach ($pendingAlerts as $alert) {
+            try {
+                Mail::to($alert->email)->send(new NewIpLoginAlert(
+                    $alert->email,
+                    $alert->login_time,
+                    $alert->ip_address
+                ));
+                $alert->notified = 1;
+                $alert->save();
+            } catch (\Exception $e) {
+                echo "Failed to send new IP login alert to admin: " . $e->getMessage();
             }
         }
     }
