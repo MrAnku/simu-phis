@@ -333,7 +333,7 @@ class ApiLearnController extends Controller
 
                 setCompanyTimezone($rowData->company_id);
 
-                log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
+                log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
 
                 $passingScore = (int)$rowData->trainingData->passing_score;
 
@@ -494,7 +494,7 @@ class ApiLearnController extends Controller
 
                 setCompanyTimezone($rowData->company_id);
 
-                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'company', $rowData->company_id);
 
                 $passingScore = (int)$rowData->scormTrainingData->passing_score;
 
@@ -1219,12 +1219,13 @@ class ApiLearnController extends Controller
                         }
                         $quizInArray = json_decode($trainingData->json_quiz, true);
                         $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                        $companyId = $trainingData->company_id;
                         TranslatedTraining::create([
                             'training_id' => $id,
                             'language' => $moduleLanguage,
                             'json_quiz' => json_encode($quizInArray, JSON_UNESCAPED_UNICODE),
                         ]);
-                        return $this->translateJsonData($quizInArray, $moduleLanguage);
+                        return $this->translateJsonData($quizInArray, $moduleLanguage, $companyId);
                     } catch (\Exception $e) {
                         Log::error('Gamified translation failed', [
                             'error' => $e->getMessage(),
@@ -1256,7 +1257,7 @@ class ApiLearnController extends Controller
         }
     }
 
-    private function translateJsonData($json, $lang)
+    private function translateJsonData($json, $lang, $companyId)
     {
         try {
             $langName = langName($lang);
@@ -1329,7 +1330,7 @@ class ApiLearnController extends Controller
                 ];
 
                 Log::error("Translation API failed", $errorDetails);
-                log_action("Failed to translate JSON data for language: {$langName}", 'learner', 'learner');
+                log_action("Failed to translate JSON data for language: {$langName}", 'company', $companyId);
 
                 return response()->json(['success' => false, 'message' => 'Translation service failed. Status: ' . $response->status(), 'data' => $errorDetails],  422);
 
@@ -1431,7 +1432,7 @@ class ApiLearnController extends Controller
                 Log::warning("Amharic translation may not contain proper Amharic text");
             }
 
-            log_action("JSON data successfully translated to {$langName}", 'learner', 'learner');
+            log_action("JSON data successfully translated to {$langName}", 'company', $companyId);
             return response()->json(['success' => true, 'message' => 'Translated Json retreived successfully', 'data' => $translatedData],  200);
 
             // return response()->json([
@@ -1447,7 +1448,7 @@ class ApiLearnController extends Controller
                 'line' => $e->getLine()
             ]);
 
-            log_action("Exception during JSON translation: " . $e->getMessage(), 'learner', 'learner');
+            log_action("Exception during JSON translation: " . $e->getMessage(), 'company', $companyId);
 
             return response()->json(['success' => false, 'message' => 'Translation failed: ' . $e->getMessage(), 'data' => [
                 'exception_class' => get_class($e),
@@ -1680,7 +1681,7 @@ class ApiLearnController extends Controller
 
             if ($response->failed()) {
 
-                log_action("Failed to generate AI Training on topic {$topic}", 'learner', 'learner');
+                log_action("Failed to generate AI Training on topic {$topic}");
 
                 return response()->json([
                     'success' => false,
@@ -1695,7 +1696,7 @@ class ApiLearnController extends Controller
 
             if (json_last_error() !== JSON_ERROR_NONE) {
 
-                log_action("Failed to decode JSON from AI Training on topic {$topic}", 'learner', 'learner');
+                log_action("Failed to decode JSON from AI Training on topic {$topic}");
 
                 return response()->json([
                     'success' => false,
@@ -1703,7 +1704,7 @@ class ApiLearnController extends Controller
                 ], 422);
             }
 
-            log_action("AI Training generated on topic: {$topic}", 'learner', 'learner');
+            log_action("AI Training generated on topic: {$topic}");
 
             return response()->json([
                 'success' => true,
@@ -1714,7 +1715,7 @@ class ApiLearnController extends Controller
             ], 200);
         } catch (\Exception $e) {
 
-            log_action("Failed to generate AI Training on topic {$topic}", 'learner', 'learner');
+            log_action("Failed to generate AI Training on topic {$topic}");
 
             return response()->json([
                 'success' => false,

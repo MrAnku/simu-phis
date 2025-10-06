@@ -82,7 +82,7 @@ class ApiLearnPolicyController extends Controller
                 'reading_time' => $request->input('reading_time'),
             ]);
 
-            log_action("Policy with ID {$policyId} accepted by user", 'learner', 'learner');
+            log_action("Policy with ID {$policyId} accepted by user", 'company', $companyId);
 
             return response()->json([
                 'success' => true,

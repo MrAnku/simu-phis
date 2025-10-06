@@ -382,7 +382,7 @@ class ApiLearnBlueCollarController extends Controller
 
                 setCompanyTimezone($rowData->company_id);
 
-                log_action("{$user} scored {$request->trainingScore}% in training", 'learner', 'learner');
+                log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
 
                 $passingScore = (int)$rowData->trainingData->passing_score;
 
@@ -675,7 +675,7 @@ class ApiLearnBlueCollarController extends Controller
 
                 setCompanyTimezone($rowData->company_id);
 
-                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                log_action("{$user} scored {$request->scormTrainingScore}% in training", 'company', $rowData->company_id);
 
                 $passingScore = (int)$rowData->scormTrainingData->passing_score;
 
@@ -750,7 +750,7 @@ class ApiLearnBlueCollarController extends Controller
                         ], 422);
                     }
 
-                    log_action("{$user} scored {$request->scormTrainingScore}% in training", 'learner', 'learner');
+                    log_action("{$user} scored {$request->scormTrainingScore}% in training", 'company', $rowData->company_id);
                 }
             }
             return response()->json(['success' => true, 'message' => 'Score updated'], 200);
