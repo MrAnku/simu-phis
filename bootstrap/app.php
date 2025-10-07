@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isValidLearnerToken' => \App\Http\Middleware\LearnerTokenValidator::class,
             'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
             'timezone' => \App\Http\Middleware\SetUserTimezone::class,
+            'setLocale' => \App\Http\Middleware\SetLocale::class,
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
             'jwt.auth' => JWTAuthMiddleware::class,
             'checkLearnToken' => \App\Http\Middleware\checkLearnToken::class,

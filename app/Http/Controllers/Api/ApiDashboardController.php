@@ -25,6 +25,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TrainingAssignedUser;
 use App\Services\CompanyReport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ApiDashboardController extends Controller
 {
@@ -2074,6 +2075,44 @@ class ApiDashboardController extends Controller
                 'totallySafe' => $totallySafe,
                 'totallySafePercent' => $totallySafePercent
             ];
+        }
+    }
+
+    public function currentLanguage()
+    {
+        try {
+            $user = Auth::user();
+            return response()->json(['language' => $user->lang], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function changeLanguage(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $request->validate([
+                'language' => 'required|string|in:en,ar'
+            ]);
+
+            $user->lang = $request->input('language');
+            $user->save();
+
+            return response()->json(['message' => 'Language changed!'], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

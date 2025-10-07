@@ -86,7 +86,10 @@ Route::middleware('throttle:limiter')->group(function () {
 });
 
 
-Route::middleware(['auth:api', 'timezone', 'throttle:limiter'])->group(function () {
+Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->group(function () {
+
+    Route::get('/current-language', [ApiDashboardController::class, 'currentLanguage']);
+    Route::put('/change-language', [ApiDashboardController::class, 'changeLanguage']);
 
     Route::get('/dashboard', [ApiDashboardController::class, 'index']);
     Route::get('/dashboard/campaign-card/sort-by-time', [ApiDashboardController::class, 'sortByTimeCampaignCard']);
