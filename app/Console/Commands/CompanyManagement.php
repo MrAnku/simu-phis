@@ -65,11 +65,11 @@ class CompanyManagement extends Command
             ) {
                 echo ("Company {$company->company_name} license has expired. \n");
                 try {
-                    $ccMailAddress = Company::where('company_id', $company->company_id)->value('account_manager');
-                    if (!$ccMailAddress) {
-                        $ccMailAddress = 'contact@simuphish.com';
+                    $acManagerMailAddress = Company::where('company_id', $company->company_id)->value('account_manager');
+                    if (!$acManagerMailAddress) {
+                        $acManagerMailAddress = 'contact@simuphish.com';
                     }
-                    Mail::to($company->email)->send(new CompanyManagementMail($company, 'license_expired', $ccMailAddress));
+                    Mail::to($company->email)->send(new CompanyManagementMail($company, 'license_expired', $acManagerMailAddress));
 
                     $company->alert?->update(['license_expired' => now()]);
                 } catch (\Exception $e) {
@@ -101,11 +101,11 @@ class CompanyManagement extends Command
                 if ($companyCreatedDate->lessThan(now()->subDays(15))) {
                     echo ("Send Company support email to {$company->company_name}.");
                     try {
-                        $ccMailAddress = Company::where('company_id', $company->company_id)->value('account_manager');
-                        if (!$ccMailAddress) {
-                            $ccMailAddress = 'contact@simuphish.com';
+                        $acManagerMailAddress = Company::where('company_id', $company->company_id)->value('account_manager');
+                        if (!$acManagerMailAddress) {
+                            $acManagerMailAddress = 'contact@simuphish.com';
                         }
-                        Mail::to($company->email)->send(new CompanyManagementMail($company, 'need_support', $ccMailAddress));
+                        Mail::to($company->email)->send(new CompanyManagementMail($company, 'need_support', $acManagerMailAddress));
                         $company->alert?->update(['need_support' => now()]);
                     } catch (\Exception $e) {
                         echo "Failed to send support email to {$company->email}: " . $e->getMessage();

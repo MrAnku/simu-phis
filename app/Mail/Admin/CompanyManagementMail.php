@@ -17,16 +17,16 @@ class CompanyManagementMail extends Mailable
     public $type;
     public $subject;
     public $view;
-    public $ccMailAddress;
+    public $acManagerMailAddress;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($company, $type = 'default', $ccMailAddress)
+    public function __construct($company, $type = 'default', $acManagerMailAddress)
     {
         $this->company = $company;
         $this->type = $type;
-        $this->ccMailAddress = $ccMailAddress;
+        $this->acManagerMailAddress = $acManagerMailAddress;
         if($type === 'license_expired') {
             $this->subject = "License Expiration Notification";
             $this->view = 'emails.admin.license_expired';
@@ -44,7 +44,7 @@ class CompanyManagementMail extends Mailable
     {
         return new Envelope(
             subject: $this->subject,
-            cc: [$this->ccMailAddress, $this->company->partner?->email]
+            cc: [$this->acManagerMailAddress, $this->company->partner?->email]
         );
     }
 
