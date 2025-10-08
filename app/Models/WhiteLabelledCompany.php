@@ -24,4 +24,13 @@ class WhiteLabelledCompany extends Model
         'approved_by_partner',
         'service_status',
     ];
+
+    public function smtp()
+    {
+        return $this->hasOne(WhiteLabelledSmtp::class, 'company_id', 'company_id');
+    }
+    public function whatsappConfig()
+    {
+        return $this->hasOne(WhiteLabelledWhatsappConfig::class, 'company_id', 'company_id');
+    }
 }
