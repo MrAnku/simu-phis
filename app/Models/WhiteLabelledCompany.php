@@ -23,6 +23,7 @@ class WhiteLabelledCompany extends Model
         'company_name',
         'approved_by_partner',
         'service_status',
+        'managed_smtp'
     ];
 
     public function smtp()

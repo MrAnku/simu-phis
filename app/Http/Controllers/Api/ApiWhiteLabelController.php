@@ -26,15 +26,29 @@ class ApiWhiteLabelController extends Controller
                 'dark_logo' => 'required|mimes:png',
                 'light_logo' => 'required|mimes:png',
                 'favicon' => 'required|mimes:png',
-                'smtp_host' => 'required|string|max:255',
-                'smtp_port' => 'required|integer',
-                'smtp_username' => 'required|string|max:255',
-                'smtp_password' => 'required|string|max:255',
-                'smtp_encryption' => 'required|string',
+                'managed_smtp' => 'required|boolean',
                 'from_address' => 'required',
                 'from_name' => 'required|string|max:255',
                 'is_default_wa_config' => 'required|boolean',
             ]);
+            if($request->managed_smtp == false){
+                $request->validate([
+                    'smtp_host' => 'required|string|max:255',
+                    'smtp_port' => 'required|integer|in:465,587',
+                    'smtp_username' => 'required|string|max:255',
+                    'smtp_password' => 'required|string|max:255',
+                    'smtp_encryption' => 'nullable|string|in:tls,ssl',
+                ]);
+            }else{
+                // Set default SMTP credentials from environment variables
+                $request->merge([
+                    'smtp_host' => env('MAIL_HOST'),
+                    'smtp_port' => env('MAIL_PORT'),
+                    'smtp_username' => env('MAIL_USERNAME'),
+                    'smtp_password' => env('MAIL_PASSWORD'),
+                    'smtp_encryption' => env('MAIL_ENCRYPTION'),
+                ]);
+            }
 
             $whiteLabelExists = WhiteLabelledCompany::where('company_id', Auth::user()->company_id)->exists();
             if ($whiteLabelExists) {
@@ -60,11 +74,11 @@ class ApiWhiteLabelController extends Controller
                 ], 422);
             }
 
-            $smtpUsernameExists = WhiteLabelledSmtp::where('smtp_username', $request->smtp_username)->exists();
+            $smtpUsernameExists = WhiteLabelledSmtp::where('from_address', $request->from_address)->exists();
             if ($smtpUsernameExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'SMTP username already added by another company.'
+                    'message' => 'SMTP from address already added by another company.'
                 ], 422);
             }
 
@@ -114,6 +128,7 @@ class ApiWhiteLabelController extends Controller
                 'light_logo' => "/" . $lightLogoPath,
                 'favicon' => "/" . $faviconLogoPath,
                 'company_name' => $request->company_name,
+                'managed_smtp' => $request->managed_smtp,
             ]);
 
             if ($isCreatedWhitLabel) {
@@ -183,7 +198,7 @@ class ApiWhiteLabelController extends Controller
 
             Mail::raw('This is a test email.', function ($message) use ($credentials) {
             $message->from($credentials['from_address'], $credentials['from_name']);
-            $message->to($credentials['from_address']);
+            $message->to("test@yopmail.com");
             $message->subject('Test Email');
             });
 
