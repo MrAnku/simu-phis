@@ -42,3 +42,7 @@ Schedule::command('app:sync-logs')
     ->runInBackground()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/cron/sync-logs.log'));
+
+Schedule::command('report:monthly')
+    ->monthlyOn(1, '09:00')
+    ->appendOutputTo(storage_path('logs/cron/monthly-report.log'));
