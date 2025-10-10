@@ -31,7 +31,7 @@ class ApiWhiteLabelController extends Controller
                 'from_name' => 'required|string|max:255',
                 'is_default_wa_config' => 'required|boolean',
             ]);
-            if($request->managed_smtp == false){
+            if ($request->managed_smtp == false) {
                 $request->validate([
                     'smtp_host' => 'required|string|max:255',
                     'smtp_port' => 'required|integer|in:465,587',
@@ -39,7 +39,7 @@ class ApiWhiteLabelController extends Controller
                     'smtp_password' => 'required|string|max:255',
                     'smtp_encryption' => 'nullable|string|in:tls,ssl',
                 ]);
-            }else{
+            } else {
                 // Set default SMTP credentials from environment variables
                 $request->merge([
                     'smtp_host' => env('MAIL_HOST'),
@@ -47,6 +47,14 @@ class ApiWhiteLabelController extends Controller
                     'smtp_username' => env('MAIL_USERNAME'),
                     'smtp_password' => env('MAIL_PASSWORD'),
                     'smtp_encryption' => env('MAIL_ENCRYPTION'),
+                ]);
+            }
+
+            if ($request->is_default_wa_config == false) {
+                $request->validate([
+                    'from_phone_id' => 'required|integer',
+                    'access_token' => 'required|string',
+                    'business_id' => 'required|integer',
                 ]);
             }
 
@@ -143,12 +151,7 @@ class ApiWhiteLabelController extends Controller
                     'company_id' => Auth::user()->company_id,
                 ]);
 
-                if($request->is_default_wa_config == false){
-                    $request->validate([
-                        'from_phone_id' => 'required|integer',
-                        'access_token' => 'required|string',
-                        'business_id' => 'required|integer',
-                    ]);
+                if ($request->is_default_wa_config == false) {
 
                     WhiteLabelledWhatsappConfig::create([
                         'from_phone_id' => $request->from_phone_id,
@@ -187,19 +190,19 @@ class ApiWhiteLabelController extends Controller
             $backup = config('mail.mailers.smtp');
 
             config([
-            'mail.mailers.smtp.host' => $credentials['smtp_host'],
-            'mail.mailers.smtp.port' => $credentials['smtp_port'],
-            'mail.mailers.smtp.username' => $credentials['smtp_username'],
-            'mail.mailers.smtp.password' => $credentials['smtp_password'],
-            'mail.mailers.smtp.encryption' => $credentials['smtp_encryption'],
-            'mail.from.address' => $credentials['from_address'],
-            'mail.from.name' => $credentials['from_name'],
+                'mail.mailers.smtp.host' => $credentials['smtp_host'],
+                'mail.mailers.smtp.port' => $credentials['smtp_port'],
+                'mail.mailers.smtp.username' => $credentials['smtp_username'],
+                'mail.mailers.smtp.password' => $credentials['smtp_password'],
+                'mail.mailers.smtp.encryption' => $credentials['smtp_encryption'],
+                'mail.from.address' => $credentials['from_address'],
+                'mail.from.name' => $credentials['from_name'],
             ]);
 
             Mail::raw('This is a test email.', function ($message) use ($credentials) {
-            $message->from($credentials['from_address'], $credentials['from_name']);
-            $message->to("test@yopmail.com");
-            $message->subject('Test Email');
+                $message->from($credentials['from_address'], $credentials['from_name']);
+                $message->to("test@yopmail.com");
+                $message->subject('Test Email');
             });
 
             // Restore original config
@@ -209,10 +212,9 @@ class ApiWhiteLabelController extends Controller
         } catch (\Exception $e) {
             // Restore original config in case of error
             if (isset($backup)) {
-            config(['mail.mailers.smtp' => $backup]);
+                config(['mail.mailers.smtp' => $backup]);
             }
             return false;
         }
     }
-    
 }
