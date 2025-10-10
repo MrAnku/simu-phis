@@ -39,6 +39,7 @@ use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
+use App\Services\Reports\OverallNormalEmployeeReport;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -2033,307 +2034,18 @@ class ApiReportingController extends Controller
         }
     }
 
-
     public function fetchUsersReport()
     {
         try {
             $companyId = Auth::user()->company_id;
-            $allUsers = Users::where('company_id', $companyId)->get();
-            $userDetails = [];
-            $totalNormalUsers = count($allUsers);
-
-            $riskScoreRanges = [
-                'poor' => [0, 20],
-                'fair' => [21, 40],
-                'good' => [41, 60],
-                'verygood' => [61, 80],
-                'excellent' => [81, 100],
-            ];
-
-            // Handle case when there are no users
-            if ($totalNormalUsers === 0) {
-                $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
-                $totalBlueCollarUsers = count($blueCollarUsers);
-                $userDetails = [];
-                foreach ($blueCollarUsers as $user) {
-                    $riskScore = 100;
-                    $riskLevel = 'excellent';
-                    $userDetails[] = [
-                        'user_name' => $user->user_name,
-                        'user_email' => '',
-                        'whatsapp_no' => $user->whatsapp,
-                        'user_type' => 'blue-collar',
-                        'division' => $user->blueCollarGroup ? $user->blueCollarGroup->group_name : 'N/A',
-                        'user_job_title' => $user->user_job_title,
-                        'breach_scan_date' => $user->breach_scan_date ?? null,
-                        'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
-                        'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
-                        'campaigns' => [
-                            'email' => [
-                                'totalCampaigns' => 0,
-                                'totalTrainings' => 0,
-                                'payload_clicked' => 0,
-                                'compromised' => 0,
-                                'email_reported' => 0,
-                            ],
-                            'whatsapp' => [
-                                'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                    ->where('company_id', $companyId)
-                                    ->count(),
-                                'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
-                                    ->where('company_id', $companyId)
-                                    ->count(),
-                                'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                    ->where('company_id', $companyId)
-                                    ->where('payload_clicked', 1)
-                                    ->count(),
-                                'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                    ->where('company_id', $companyId)
-                                    ->where('compromised', 1)
-                                    ->count(),
-                            ],
-                            'ai_vishing' => [
-                                'totalCampaigns' => 0,
-                                'totalTrainings' => 0,
-                                'call_send' => 0,
-                                'call_reported' => 0,
-                            ],
-                            'quishing' => [
-                                'totalCampaigns' => 0,
-                                'totalTrainings' => 0,
-                                'qr_scanned' => 0,
-                                'compromised' => 0,
-                                'email_reported' => 0,
-                            ],
-                            'tprm' => [
-                                'totalCampaigns' => 0,
-                                'totalTrainings' => 0,
-                                'payload_clicked' => 0,
-                                'compromised' => 0,
-                            ],
-                        ],
-                        'risk_score' => $riskScore,
-                        'risk_level' => $riskLevel,
-                    ];
-                }
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Users report fetched successfully'),
-                    'data' => [
-                        'total_users' => $totalBlueCollarUsers,
-                        'user_details' => $userDetails
-                    ]
-                ], 200);
-            }
-
-            foreach ($allUsers as $user) {
-
-                // Email simulation
-                $totalSimulations = CampaignLive::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->count();
-                $compromisedSimulations = CampaignLive::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->where('emp_compromised', 1)
-                    ->count();
-
-                // Quishing simulation
-                $totalQuishing = QuishingLiveCamp::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->count();
-                $compromisedQuishing = QuishingLiveCamp::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->where('compromised', 1)
-                    ->count();
-
-                // TPRM simulation
-                $totalTprm = TprmCampaignLive::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->count();
-                $compromisedTprm = TprmCampaignLive::where('user_email', $user->user_email)
-                    ->where('company_id', $companyId)
-                    ->where('emp_compromised', 1)
-                    ->count();
-
-                // WhatsApp simulation
-                $totalWhatsapp = WaLiveCampaign::where('company_id', $companyId)
-                    ->where('user_id', $user->id)
-                    ->count();
-                $compromisedWhatsapp = WaLiveCampaign::where('company_id', $companyId)
-                    ->where('user_id', $user->id)
-                    ->where('compromised', 1)
-                    ->count();
-
-                $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-                $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
-
-                $riskScore = $totalAll > 0
-                    ? 100 - round(($compromisedAll / $totalAll) * 100)
-                    : 100; // Assume excellent if no simulations
-
-                // Determine risk level
-                $riskLevel = 'unknown';
-                foreach ($riskScoreRanges as $label => [$min, $max]) {
-                    if ($riskScore >= $min && $riskScore <= $max) {
-                        $riskLevel = $label;
-                        break;
-                    }
-                }
-
-                $userDetails[] = [
-                    'user_name' => $user->user_name,
-                    'user_email' => $user->user_email,
-                    'whatsapp_no' => $user->whatsapp,
-                    'user_type' => 'normal',
-                    'division' => 'N/A',
-                    'user_job_title' => $user->user_job_title,
-                    'breach_scan_date' => $user->breach_scan_date ?? null,
-                    'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
-                    'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
-                    'campaigns' => [
-                        'email' => [
-                            'totalCampaigns' => $totalSimulations,
-                            'totalTrainings' => TrainingAssignedUser::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->count(),
-                            'payload_clicked' => CampaignLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('payload_clicked', 1)
-                                ->count(),
-                            'compromised' => $compromisedSimulations,
-                            'email_reported' => CampaignLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('email_reported', 1)
-                                ->count(),
-                        ],
-                        'whatsapp' => [
-                            'totalCampaigns' => 0,
-                            'totalTrainings' => 0,
-                            'payload_clicked' => 0,
-                            'compromised' => 0,
-                        ],
-                        'ai_vishing' => [
-                            'totalCampaigns' => AiCallCampLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->count(),
-                            'totalTrainings' => AiCallCampLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('training_assigned', 1)
-                                ->count(),
-                            'call_send' => AiCallCampLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->whereNotNull('call_send_response')
-                                ->count(),
-                            'call_reported' => AiCallCampLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->whereNotNull('call_report')
-                                ->count(),
-                        ],
-                        'quishing' => [
-                            'totalCampaigns' => $totalQuishing,
-                            'totalTrainings' => QuishingLiveCamp::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('training_assigned', 1)
-                                ->count(),
-                            'qr_scanned' => QuishingLiveCamp::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('qr_scanned', 1)
-                                ->count(),
-                            'compromised' => $compromisedQuishing,
-                            'email_reported' => QuishingLiveCamp::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('email_reported', 1)
-                                ->count(),
-                        ],
-                        'tprm' => [
-                            'totalCampaigns' => $totalTprm,
-                            'totalTrainings' => TprmCampaignLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('training_assigned', 1)
-                                ->count(),
-                            'payload_clicked' => TprmCampaignLive::where('user_email', $user->user_email)
-                                ->where('company_id', $companyId)
-                                ->where('payload_clicked', 1)
-                                ->count(),
-                            'compromised' => $compromisedTprm,
-                        ],
-                    ],
-                    'risk_score' => $riskScore,
-                    'risk_level' => $riskLevel,
-                ];
-            }
-
-            $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
-            $totalBlueCollarUsers = count($blueCollarUsers);
-
-            foreach ($blueCollarUsers as $user) {
-                $userDetails[] = [
-                    'user_name' => $user->user_name,
-                    'user_email' => '',
-                    'whatsapp_no' => $user->whatsapp,
-                    'user_type' => 'blue-collar',
-                    'division' => $user->blueCollarGroup->group_name ?? 'N/A',
-                    'user_job_title' => $user->user_job_title,
-                    'breach_scan_date' => $user->breach_scan_date ?? null,
-                    'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
-                    'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
-                    'campaigns' => [
-                        'email' => [
-                            'totalCampaigns' => 0,
-                            'totalTrainings' => 0,
-                            'payload_clicked' => 0,
-                            'compromised' => 0,
-                            'email_reported' => 0,
-                        ],
-                        'whatsapp' => [
-                            'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                ->where('company_id', $companyId)
-                                ->count(),
-                            'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
-                                ->where('company_id', $companyId)
-                                ->count(),
-                            'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                ->where('company_id', $companyId)
-                                ->where('payload_clicked', 1)
-                                ->count(),
-                            'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
-                                ->where('company_id', $companyId)
-                                ->where('compromised', 1)
-                                ->count(),
-                        ],
-                        'ai_vishing' => [
-                            'totalCampaigns' => 0,
-                            'totalTrainings' => 0,
-                            'call_send' => 0,
-                            'call_reported' => 0,
-                        ],
-                        'quishing' => [
-                            'totalCampaigns' => 0,
-                            'totalTrainings' => 0,
-                            'qr_scanned' => 0,
-                            'compromised' => 0,
-                            'email_reported' => 0,
-                        ],
-                        'tprm' => [
-                            'totalCampaigns' => 0,
-                            'totalTrainings' => 0,
-                            'payload_clicked' => 0,
-                            'compromised' => 0,
-                        ],
-                    ],
-                    'risk_score' => $riskScore,
-                    'risk_level' => $riskLevel,
-                ];
-            }
-
+            $usersReport = new OverallNormalEmployeeReport($companyId);
+            $reportData = $usersReport->generateReport();
             return response()->json([
                 'success' => true,
                 'message' => __('Users report fetched successfully'),
-                'data' => [
-                    'total_users' => $totalNormalUsers + $totalBlueCollarUsers,
-                    'user_details' => $userDetails
-                ]
+                'data' => $reportData
             ], 200);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -2341,6 +2053,315 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
+
+
+    // public function fetchUsersReport()
+    // {
+    //     try {
+    //         $companyId = Auth::user()->company_id;
+    //         $allUsers = Users::where('company_id', $companyId)->get();
+    //         $userDetails = [];
+    //         $totalNormalUsers = count($allUsers);
+
+    //         $riskScoreRanges = [
+    //             'poor' => [0, 20],
+    //             'fair' => [21, 40],
+    //             'good' => [41, 60],
+    //             'verygood' => [61, 80],
+    //             'excellent' => [81, 100],
+    //         ];
+
+    //         // Handle case when there are no users
+    //         if ($totalNormalUsers === 0) {
+    //             $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
+    //             $totalBlueCollarUsers = count($blueCollarUsers);
+    //             $userDetails = [];
+    //             foreach ($blueCollarUsers as $user) {
+    //                 $riskScore = 100;
+    //                 $riskLevel = 'excellent';
+    //                 $userDetails[] = [
+    //                     'user_name' => $user->user_name,
+    //                     'user_email' => '',
+    //                     'whatsapp_no' => $user->whatsapp,
+    //                     'user_type' => 'blue-collar',
+    //                     'division' => $user->blueCollarGroup ? $user->blueCollarGroup->group_name : 'N/A',
+    //                     'user_job_title' => $user->user_job_title,
+    //                     'breach_scan_date' => $user->breach_scan_date ?? null,
+    //                     'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+    //                     'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+    //                     'campaigns' => [
+    //                         'email' => [
+    //                             'totalCampaigns' => 0,
+    //                             'totalTrainings' => 0,
+    //                             'payload_clicked' => 0,
+    //                             'compromised' => 0,
+    //                             'email_reported' => 0,
+    //                         ],
+    //                         'whatsapp' => [
+    //                             'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                                 ->where('company_id', $companyId)
+    //                                 ->count(),
+    //                             'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+    //                                 ->where('company_id', $companyId)
+    //                                 ->count(),
+    //                             'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                                 ->where('company_id', $companyId)
+    //                                 ->where('payload_clicked', 1)
+    //                                 ->count(),
+    //                             'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                                 ->where('company_id', $companyId)
+    //                                 ->where('compromised', 1)
+    //                                 ->count(),
+    //                         ],
+    //                         'ai_vishing' => [
+    //                             'totalCampaigns' => 0,
+    //                             'totalTrainings' => 0,
+    //                             'call_send' => 0,
+    //                             'call_reported' => 0,
+    //                         ],
+    //                         'quishing' => [
+    //                             'totalCampaigns' => 0,
+    //                             'totalTrainings' => 0,
+    //                             'qr_scanned' => 0,
+    //                             'compromised' => 0,
+    //                             'email_reported' => 0,
+    //                         ],
+    //                         'tprm' => [
+    //                             'totalCampaigns' => 0,
+    //                             'totalTrainings' => 0,
+    //                             'payload_clicked' => 0,
+    //                             'compromised' => 0,
+    //                         ],
+    //                     ],
+    //                     'risk_score' => $riskScore,
+    //                     'risk_level' => $riskLevel,
+    //                 ];
+    //             }
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => __('Users report fetched successfully'),
+    //                 'data' => [
+    //                     'total_users' => $totalBlueCollarUsers,
+    //                     'user_details' => $userDetails
+    //                 ]
+    //             ], 200);
+    //         }
+
+    //         foreach ($allUsers as $user) {
+
+    //             // Email simulation
+    //             $totalSimulations = CampaignLive::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->count();
+    //             $compromisedSimulations = CampaignLive::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->where('emp_compromised', 1)
+    //                 ->count();
+
+    //             // Quishing simulation
+    //             $totalQuishing = QuishingLiveCamp::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->count();
+    //             $compromisedQuishing = QuishingLiveCamp::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->where('compromised', 1)
+    //                 ->count();
+
+    //             // TPRM simulation
+    //             $totalTprm = TprmCampaignLive::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->count();
+    //             $compromisedTprm = TprmCampaignLive::where('user_email', $user->user_email)
+    //                 ->where('company_id', $companyId)
+    //                 ->where('emp_compromised', 1)
+    //                 ->count();
+
+    //             // WhatsApp simulation
+    //             $totalWhatsapp = WaLiveCampaign::where('company_id', $companyId)
+    //                 ->where('user_id', $user->id)
+    //                 ->count();
+    //             $compromisedWhatsapp = WaLiveCampaign::where('company_id', $companyId)
+    //                 ->where('user_id', $user->id)
+    //                 ->where('compromised', 1)
+    //                 ->count();
+
+    //             $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
+    //             $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
+
+    //             $riskScore = $totalAll > 0
+    //                 ? 100 - round(($compromisedAll / $totalAll) * 100)
+    //                 : 100; // Assume excellent if no simulations
+
+    //             // Determine risk level
+    //             $riskLevel = 'unknown';
+    //             foreach ($riskScoreRanges as $label => [$min, $max]) {
+    //                 if ($riskScore >= $min && $riskScore <= $max) {
+    //                     $riskLevel = $label;
+    //                     break;
+    //                 }
+    //             }
+
+    //             $userDetails[] = [
+    //                 'user_name' => $user->user_name,
+    //                 'user_email' => $user->user_email,
+    //                 'whatsapp_no' => $user->whatsapp,
+    //                 'user_type' => 'normal',
+    //                 'division' => 'N/A',
+    //                 'user_job_title' => $user->user_job_title,
+    //                 'breach_scan_date' => $user->breach_scan_date ?? null,
+    //                 'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+    //                 'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+    //                 'campaigns' => [
+    //                     'email' => [
+    //                         'totalCampaigns' => $totalSimulations,
+    //                         'totalTrainings' => TrainingAssignedUser::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->count(),
+    //                         'payload_clicked' => CampaignLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('payload_clicked', 1)
+    //                             ->count(),
+    //                         'compromised' => $compromisedSimulations,
+    //                         'email_reported' => CampaignLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('email_reported', 1)
+    //                             ->count(),
+    //                     ],
+    //                     'whatsapp' => [
+    //                         'totalCampaigns' => 0,
+    //                         'totalTrainings' => 0,
+    //                         'payload_clicked' => 0,
+    //                         'compromised' => 0,
+    //                     ],
+    //                     'ai_vishing' => [
+    //                         'totalCampaigns' => AiCallCampLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->count(),
+    //                         'totalTrainings' => AiCallCampLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('training_assigned', 1)
+    //                             ->count(),
+    //                         'call_send' => AiCallCampLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->whereNotNull('call_send_response')
+    //                             ->count(),
+    //                         'call_reported' => AiCallCampLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->whereNotNull('call_report')
+    //                             ->count(),
+    //                     ],
+    //                     'quishing' => [
+    //                         'totalCampaigns' => $totalQuishing,
+    //                         'totalTrainings' => QuishingLiveCamp::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('training_assigned', 1)
+    //                             ->count(),
+    //                         'qr_scanned' => QuishingLiveCamp::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('qr_scanned', 1)
+    //                             ->count(),
+    //                         'compromised' => $compromisedQuishing,
+    //                         'email_reported' => QuishingLiveCamp::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('email_reported', 1)
+    //                             ->count(),
+    //                     ],
+    //                     'tprm' => [
+    //                         'totalCampaigns' => $totalTprm,
+    //                         'totalTrainings' => TprmCampaignLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('training_assigned', 1)
+    //                             ->count(),
+    //                         'payload_clicked' => TprmCampaignLive::where('user_email', $user->user_email)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('payload_clicked', 1)
+    //                             ->count(),
+    //                         'compromised' => $compromisedTprm,
+    //                     ],
+    //                 ],
+    //                 'risk_score' => $riskScore,
+    //                 'risk_level' => $riskLevel,
+    //             ];
+    //         }
+
+    //         $blueCollarUsers = BlueCollarEmployee::where('company_id', $companyId)->get();
+    //         $totalBlueCollarUsers = count($blueCollarUsers);
+
+    //         foreach ($blueCollarUsers as $user) {
+    //             $userDetails[] = [
+    //                 'user_name' => $user->user_name,
+    //                 'user_email' => '',
+    //                 'whatsapp_no' => $user->whatsapp,
+    //                 'user_type' => 'blue-collar',
+    //                 'division' => $user->blueCollarGroup->group_name ?? 'N/A',
+    //                 'user_job_title' => $user->user_job_title,
+    //                 'breach_scan_date' => $user->breach_scan_date ?? null,
+    //                 'breach_scan_status' => $user->breach_scan_date ? 'Breached' : 'Not Breached',
+    //                 'user_created_at' => $user->created_at->format('Y-m-d H:i:s'),
+    //                 'campaigns' => [
+    //                     'email' => [
+    //                         'totalCampaigns' => 0,
+    //                         'totalTrainings' => 0,
+    //                         'payload_clicked' => 0,
+    //                         'compromised' => 0,
+    //                         'email_reported' => 0,
+    //                     ],
+    //                     'whatsapp' => [
+    //                         'totalCampaigns' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                             ->where('company_id', $companyId)
+    //                             ->count(),
+    //                         'totalTrainings' => BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+    //                             ->where('company_id', $companyId)
+    //                             ->count(),
+    //                         'payload_clicked' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('payload_clicked', 1)
+    //                             ->count(),
+    //                         'compromised' => WaLiveCampaign::where('user_phone', $user->whatsapp)
+    //                             ->where('company_id', $companyId)
+    //                             ->where('compromised', 1)
+    //                             ->count(),
+    //                     ],
+    //                     'ai_vishing' => [
+    //                         'totalCampaigns' => 0,
+    //                         'totalTrainings' => 0,
+    //                         'call_send' => 0,
+    //                         'call_reported' => 0,
+    //                     ],
+    //                     'quishing' => [
+    //                         'totalCampaigns' => 0,
+    //                         'totalTrainings' => 0,
+    //                         'qr_scanned' => 0,
+    //                         'compromised' => 0,
+    //                         'email_reported' => 0,
+    //                     ],
+    //                     'tprm' => [
+    //                         'totalCampaigns' => 0,
+    //                         'totalTrainings' => 0,
+    //                         'payload_clicked' => 0,
+    //                         'compromised' => 0,
+    //                     ],
+    //                 ],
+    //                 'risk_score' => $riskScore,
+    //                 'risk_level' => $riskLevel,
+    //             ];
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => __('Users report fetched successfully'),
+    //             'data' => [
+    //                 'total_users' => $totalNormalUsers + $totalBlueCollarUsers,
+    //                 'user_details' => $userDetails
+    //             ]
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => __('Error: ') . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function fetchUsersReporting()
     {
@@ -2714,7 +2735,7 @@ class ApiReportingController extends Controller
             }
 
             //process scorm trainings
-           $assignedScorm = ScormAssignedUser::where('company_id', $companyId)->count();
+            $assignedScorm = ScormAssignedUser::where('company_id', $companyId)->count();
             $overallStats['scorm_training_users'] = $assignedScorm;
 
             //ai training
@@ -3043,10 +3064,10 @@ class ApiReportingController extends Controller
                     'accepted_date' => $assignedPolicy->accepted_at
                         ? Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
                         : 'Not Accepted',
-                    'reading_time' => $assignedPolicy->reading_time 
-                        ? ($assignedPolicy->reading_time < 60 
-                            ? round($assignedPolicy->reading_time, 2) . ' seconds' 
-                            : round($assignedPolicy->reading_time / 60, 2) . ' minutes') 
+                    'reading_time' => $assignedPolicy->reading_time
+                        ? ($assignedPolicy->reading_time < 60
+                            ? round($assignedPolicy->reading_time, 2) . ' seconds'
+                            : round($assignedPolicy->reading_time / 60, 2) . ' minutes')
                         : 'N/A',
                     'user_email' => $assignedPolicy->user_email,
                     'user_name' => $assignedPolicy->user_name,
@@ -3066,10 +3087,10 @@ class ApiReportingController extends Controller
                     'users_accepted_policy' => $usersAccepted,
                     'users_not_accepted_policy' => $usersNotAccepted,
                     'assigned_policies' => $assignedPolicyDetails,
-                    'average_time_to_accept' => $averageTimeToAccept 
-                        ? ($averageTimeToAccept < 60 
-                            ? round($averageTimeToAccept, 2) . ' seconds' 
-                            : round($averageTimeToAccept / 60, 2) . ' minutes') 
+                    'average_time_to_accept' => $averageTimeToAccept
+                        ? ($averageTimeToAccept < 60
+                            ? round($averageTimeToAccept, 2) . ' seconds'
+                            : round($averageTimeToAccept / 60, 2) . ' minutes')
                         : 'N/A',
                 ]
             ], 200);

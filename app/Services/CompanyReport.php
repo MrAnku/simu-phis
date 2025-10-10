@@ -72,6 +72,14 @@ class CompanyReport
         return $query->count() + $quishingQuery->count();
     }
 
+    public function trainingScoreAverage($trainingType): float
+    {
+        $assignedUsers = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('training_type', $trainingType)
+            ->avg('personal_best');
+        return $assignedUsers ? round($assignedUsers, 2) : 0.00;
+    }
+
     public function emailViewed($forMonth = null): int
     {
         $emailQuery = CampaignLive::where('company_id', $this->companyId)
@@ -173,6 +181,19 @@ class CompanyReport
         return $query->count() + $scormQuery->count();
     }
 
+    public function totalTrainingStarted($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)->where('training_started', 1);
+        $scormQuery = ScormAssignedUser::where('company_id', $this->companyId)->where('scorm_started', 1);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+            $scormQuery->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count() + $scormQuery->count();
+    }
+
     public function completedTraining($forMonth = null): int
     {
         $query = TrainingAssignedUser::where('company_id', $this->companyId)
@@ -186,6 +207,71 @@ class CompanyReport
         }
 
         return $query->count() + $scormQuery->count();
+    }
+
+    public function totalBadgesAssigned($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('badge', '!=', null);
+        $scormQuery = ScormAssignedUser::where('company_id', $this->companyId)
+            ->where('badge', '!=', null);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+            $scormQuery->whereMonth('created_at', $forMonth);
+        }
+        $badges = 0;
+
+        $training = $query->get();
+        $scorm = $scormQuery->get();
+        foreach ($training as $item) {
+            $badges = json_decode($item->badge, true);
+            $badges += is_array($badges) ? count($badges) : 0;
+        }
+        foreach ($scorm as $item) {
+            $badges = json_decode($item->badge, true);
+            $badges += is_array($badges) ? count($badges) : 0;
+        }
+
+        return $badges;
+    }
+
+    public function totalGameAssigned($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('training_type', 'games');
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
+    public function totalGameStarted($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('training_type', 'games')
+            ->where('training_started', 1);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
+    public function completedGame($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('training_type', 'games')
+            ->where('completed', 1);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
     }
 
     public function inProgressTraining($forMonth = null): int

@@ -513,14 +513,21 @@ class EmployeeReport
         return $totalCertificates;
     }
 
-    public function ignoreRate(): float
+    public function totalIgnored(): int
     {
         $totalSimulations = $this->totalSimulations();
         $emailViewed = $this->emailViewed();
         $payloadClicked = $this->payloadClicked();
         $compromised = $this->compromised();
         $emailReported = $this->emailReported();
-        $ignored = $totalSimulations - ($emailViewed + $payloadClicked + $compromised + $emailReported);
+
+        return $totalSimulations - ($emailViewed + $payloadClicked + $compromised + $emailReported);
+    }
+
+    public function ignoreRate(): float
+    {
+        $totalSimulations = $this->totalSimulations();
+        $ignored = $this->totalIgnored();
 
         return $totalSimulations > 0 ? round(($ignored / $totalSimulations) * 100, 2) : 0;
     }
