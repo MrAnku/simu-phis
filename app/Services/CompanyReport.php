@@ -225,12 +225,14 @@ class CompanyReport
         $training = $query->get();
         $scorm = $scormQuery->get();
         foreach ($training as $item) {
-            $badges = json_decode($item->badge, true);
-            $badges += is_array($badges) ? count($badges) : 0;
+            // $badges = json_decode($item->badge, true);
+            // $badges += is_array($badges) ? count($badges) : 0;
+            $badges++;
         }
         foreach ($scorm as $item) {
-            $badges = json_decode($item->badge, true);
-            $badges += is_array($badges) ? count($badges) : 0;
+            // $badges = json_decode($item->badge, true);
+            // $badges += is_array($badges) ? count($badges) : 0;
+            $badges++;
         }
 
         return $badges;
