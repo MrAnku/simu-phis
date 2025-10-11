@@ -634,7 +634,7 @@ class ApiTrainingModuleController extends Controller
             if ($emailCampExists || $aiCallCampExists || $quishingCampExists || $smishingCampExists || $tprmCampExists || $waCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this training, delete campaigns first",
+                    'message' => __("Campaigns are associated with this training, delete campaigns first"),
                 ], 422);
             }
 
@@ -644,7 +644,7 @@ class ApiTrainingModuleController extends Controller
             if ($trainingAssigned || $blueCollarTrainingAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This Training is assigned to users, you cannot delete it.",
+                    'message' => __("This Training is assigned to users, you cannot delete it."),
                 ], 422);
             }
 
@@ -894,7 +894,7 @@ class ApiTrainingModuleController extends Controller
             if (!Storage::disk('s3')->exists($originalPath)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Original HTML file not found in S3.')
+                    'message' => __('Original HTML file not found')
                 ], 404);
             }
 
@@ -906,7 +906,7 @@ class ApiTrainingModuleController extends Controller
             if (empty($fileContent)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to read original HTML file from S3.')
+                    'message' => __('Failed to read original HTML file')
                 ], 500);
             }
 

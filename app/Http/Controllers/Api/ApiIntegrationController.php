@@ -51,7 +51,7 @@ class ApiIntegrationController extends Controller
         }
         return response()->json([
             'success' => true,
-            'message' => 'Integration configurations retrieved successfully.',
+            'message' => __('Integration configurations retrieved successfully.'),
             'data' => [
                 'whatsapp_config' => $whatsappConfig,
                 'siem_config' => $siemConfig,

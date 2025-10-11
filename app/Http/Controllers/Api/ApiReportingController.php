@@ -804,7 +804,7 @@ class ApiReportingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'WhatsApp campaign report fetched successfully',
+                'message' => __('WhatsApp campaign report fetched successfully'),
                 'data' =>  $allUsers
             ], 200);
             // return response()->json(['html' => $responseHtml]);
@@ -843,7 +843,7 @@ class ApiReportingController extends Controller
             if ($allUsers->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No records found',
+                    'message' => __('No records found'),
                     'data' => []
                 ], 404);
             }
@@ -863,7 +863,7 @@ class ApiReportingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'AI calling campaign report fetched successfully',
+                'message' => __('AI calling campaign report fetched successfully'),
                 'data' => $data
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -874,7 +874,7 @@ class ApiReportingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong',
+                'message' => __('Something went wrong'),
                 'error' => $e->getMessage()
             ], 500);
         }
