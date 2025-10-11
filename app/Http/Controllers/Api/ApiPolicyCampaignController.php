@@ -82,19 +82,19 @@ class ApiPolicyCampaignController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Policy campaign created successfully',
+                'message' => __('Policy campaign created successfully'),
                 'data' => $campaign
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
+                'message' => __('Validation error'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -114,7 +114,7 @@ class ApiPolicyCampaignController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

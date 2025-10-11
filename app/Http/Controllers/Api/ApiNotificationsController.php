@@ -17,19 +17,19 @@ class ApiNotificationsController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $notifications,
-                'message' => 'Notifications retrieved successfully.'
+                'message' => __('Notifications retrieved successfully.')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -43,12 +43,12 @@ class ApiNotificationsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'All notifications marked as read.'
+                'message' => __('All notifications marked as read.')
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

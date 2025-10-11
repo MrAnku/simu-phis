@@ -116,7 +116,7 @@ class ApiWaCampaignController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __("Error") . " :" . $e->validator->errors()->first(),
+                'message' => __("Error: ") . " :" . $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -693,32 +693,32 @@ class ApiWaCampaignController extends Controller
                         'success' => true,
                         'template_id' => $templateId,
                         'data' => $responseData,
-                        'message' => 'Template request submitted successfully.',
+                        'message' => __('Template request submitted successfully.'),
                     ], 200);
                 }
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Template ID not returned by WhatsApp API.',
+                    'message' => __('Template ID not returned by WhatsApp API.'),
                 ], 500);
             }
 
             // Handle API errors
             return response()->json([
                 'success' => false,
-                'message' => $response->json()['error']['message'] ?? 'Failed to submit template request.',
+                'message' => $response->json()['error']['message'] ?? __('Failed to submit template request.'),
             ], $response->status());
         } catch (ValidationException $e) {
             // Handle connection or other unexpected errors
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->validator->errors()->first(),
+                'message' => __('Failed to connect to WhatsApp Cloud API: ') . $e->validator->errors()->first(),
             ], 500);
         } catch (\Exception $e) {
             // Handle connection or other unexpected errors
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->getMessage(),
+                'message' => __('Failed to connect to WhatsApp Cloud API: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -767,12 +767,12 @@ class ApiWaCampaignController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $response->json()['error']['message'] ?? 'Failed to check template status.',
+                'message' => $response->json()['error']['message'] ?? __('Failed to check template status.'),
             ], $response->status());
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to WhatsApp Cloud API: ' . $e->getMessage(),
+                'message' => __('Failed to connect to WhatsApp Cloud API: ') . $e->getMessage(),
             ], 500);
         }
     }
@@ -895,7 +895,7 @@ class ApiWaCampaignController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete template: ' . $e->getMessage(),
+                'message' => __('Failed to delete template: ') . $e->getMessage(),
             ], 500);
         }
     }

@@ -30,7 +30,7 @@ class InforgraphicsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch infographics'
+                'message' => __('Failed to fetch infographics')
             ], 500);
         }
     }
@@ -61,17 +61,17 @@ class InforgraphicsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Infographic saved successfully'
+                'message' => __('Infographic saved successfully')
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed: ' . $e->validator->errors()->first(),
+                'message' => __('Validation failed: ') . $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage()
             ], 422);
         }
     }
@@ -83,7 +83,7 @@ class InforgraphicsController extends Controller
             if (!$id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Infographic ID is required'
+                    'message' => __('Infographic ID is required')
                 ], 400);
             }
             $id = base64_decode($id);
@@ -92,7 +92,7 @@ class InforgraphicsController extends Controller
             if(!$infographic){
                 return response()->json([
                     'success' => false,
-                    'message' => 'Infographic not found'
+                    'message' => __('Infographic not found')
                 ], 404);
             }
 
@@ -104,7 +104,7 @@ class InforgraphicsController extends Controller
             if ($hasCampaign) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Infographic is being used in a campaign and cannot be deleted. Please delete the associated campaign first.'
+                    'message' => __('Infographic is being used in a campaign and cannot be deleted. Please delete the associated campaign first.')
                 ], 400);
             }
 
@@ -116,12 +116,12 @@ class InforgraphicsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Infographic deleted successfully'
+                'message' => __('Infographic deleted successfully')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -212,19 +212,19 @@ class InforgraphicsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Infographic campaign created successfully',
+                'message' => __('Infographic campaign created successfully'),
                 'data' => $campaign
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
+                'message' => __('Validation error'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -241,7 +241,7 @@ class InforgraphicsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch campaigns: ' . $e->getMessage()
+                'message' => __('Failed to fetch campaigns: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -250,7 +250,7 @@ class InforgraphicsController extends Controller
         if (!$campaign_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Campaign ID is required'
+                'message' => __('Campaign ID is required')
             ], 400);
         }
 
@@ -263,7 +263,7 @@ class InforgraphicsController extends Controller
             if (!$campaign) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Campaign not found'
+                    'message' => __('Campaign not found')
                 ], 404);
             }
 
@@ -274,7 +274,7 @@ class InforgraphicsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch campaign details: ' . $e->getMessage()
+                'message' => __('Failed to fetch campaign details: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -286,7 +286,7 @@ class InforgraphicsController extends Controller
             if (!$campaign_id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Campaign ID is required'
+                    'message' => __('Campaign ID is required')
                 ], 400);
             }
             InfoGraphicCampaign::where('campaign_id', $campaign_id)
@@ -299,12 +299,12 @@ class InforgraphicsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Campaign deleted successfully'
+                'message' => __('Campaign deleted successfully')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete campaign: ' . $e->getMessage()
+                'message' => __('Failed to delete campaign: ') . $e->getMessage()
             ], 500);
         }
     }

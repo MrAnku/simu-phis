@@ -52,7 +52,7 @@ class ApiScormTrainingController extends Controller
                     if (preg_match('/\.(php|exe|sh|bat|py|pl|cgi|asp|jsp|wsf|vbs|dll|com|scr|pif|jar|msi|cmd)$/i', $filename)) {
                         $zip->close();
                         @unlink($tmpZipPath);
-                        return response()->json(['success' => false, 'message' => 'Malicious or executable file detected in SCORM zip.'], 422);
+                        return response()->json(['success' => false, 'message' => __('Malicious or executable file detected in SCORM zip.')], 422);
                     }
                 }
 
@@ -60,7 +60,7 @@ class ApiScormTrainingController extends Controller
                 if ($request->entry_point && !$zip->locateName($request->entry_point)) {
                     $zip->close();
                     @unlink($tmpZipPath);
-                    return response()->json(['success' => false, 'message' => 'Entry point file not found in SCORM zip.'], 422);
+                    return response()->json(['success' => false, 'message' => __('Entry point file not found in SCORM zip.')], 422);
                 }
 
 
@@ -93,7 +93,7 @@ class ApiScormTrainingController extends Controller
                 ], 201);
             } else {
                 @unlink($tmpZipPath);
-                return response()->json(['success' => false, 'message' => 'Failed to extract SCORM zip file'], 422);
+                return response()->json(['success' => false, 'message' => __('Failed to extract SCORM zip file')], 422);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -148,7 +148,7 @@ class ApiScormTrainingController extends Controller
             if ($emailCampExists || $aiCallCampExists || $quishCampExists || $waLiveCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this scorm, delete campaigns first",
+                    'message' => __("Campaigns are associated with this scorm, delete campaigns first"),
                 ], 422);
             }
             
@@ -158,7 +158,7 @@ class ApiScormTrainingController extends Controller
             if ($scormAssigned || $blueCollarScormAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This Training is assigned to users, you cannot delete it.",
+                    'message' => __("This Training is assigned to users, you cannot delete it."),
                 ], 422);
             }
 
@@ -239,13 +239,13 @@ class ApiScormTrainingController extends Controller
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

@@ -41,7 +41,7 @@ class ApiLearnController extends Controller
             if (!$token) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Token is required!'
+                    'message' => __('Token is required!')
                 ], 422);
             }
 
@@ -50,7 +50,7 @@ class ApiLearnController extends Controller
             if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Your training session has expired!'
+                    'message' => __('Your training session has expired!')
                 ], 422);
             }
 
@@ -68,7 +68,7 @@ class ApiLearnController extends Controller
                 AssignedPolicy::where('user_email', $userEmail)->delete();
                 return response()->json([
                     'success' => false,
-                    'message' => 'You are no longer an employee on this platform.'
+                    'message' => __('You are no longer an employee on this platform.')
                 ], 404);
             }
 
@@ -81,19 +81,19 @@ class ApiLearnController extends Controller
                     'employee_type' => $employeeType,
                     'user_name' => $userName
                 ],
-                'message' => 'You can Login now'
+                'message' => __('You can Login now')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -110,7 +110,7 @@ class ApiLearnController extends Controller
             if (!$hasTraining && !$hasPolicy && !$hasScormAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No training or policy has been assigned to this email.'
+                    'message' => __('No training or policy has been assigned to this email.')
                 ], 422);
             }
 
@@ -157,7 +157,7 @@ class ApiLearnController extends Controller
             if (!$inserted) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to create token'
+                    'message' => __('Failed to create token')
                 ], 422);
             }
 
@@ -174,18 +174,18 @@ class ApiLearnController extends Controller
             Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
             // Return success response
-            return response()->json(['success' => true, 'message' => 'Mail sent successfully'], 200);
+            return response()->json(['success' => true, 'message' => __('Mail sent successfully')], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -215,19 +215,19 @@ class ApiLearnController extends Controller
                     'riskLevel' => $riskLevel,
                     'currentUserRank' => $currentUserRank,
                 ],
-                'message' => 'Fetched dashboard metrics successfully'
+                'message' => __('Fetched dashboard metrics successfully')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -243,7 +243,7 @@ class ApiLearnController extends Controller
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No user found with this email.'
+                    'message' => __('No user found with this email.')
                 ], 404);
             }
 
@@ -277,19 +277,19 @@ class ApiLearnController extends Controller
                         ->where('training_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
                 ],
-                'message' => 'Courses fetched successfully for ' . $request->email
+                'message' => __('Courses fetched successfully for :email', ['email' => $request->email])
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -404,18 +404,18 @@ class ApiLearnController extends Controller
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
                 }
             }
-            return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+            return response()->json(['success' => true, 'message' => __('Score updated')], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -439,19 +439,19 @@ class ApiLearnController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Feedback updated successfully.'
+                'message' => __('Feedback updated successfully.')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -565,18 +565,18 @@ class ApiLearnController extends Controller
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
                 }
             }
-            return response()->json(['success' => true, 'message' => 'Score updated'], 200);
+            return response()->json(['success' => true, 'message' => __('Score updated')], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -600,19 +600,19 @@ class ApiLearnController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Feedback updated successfully.'
+                'message' => __('Feedback updated successfully.')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

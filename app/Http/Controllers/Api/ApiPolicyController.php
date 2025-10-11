@@ -21,13 +21,13 @@ class ApiPolicyController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $policies,
-                'message' => 'Policies fetched successfully'
+                'message' => __('Policies fetched successfully')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -69,18 +69,18 @@ class ApiPolicyController extends Controller
                 'company_id' => Auth::user()->company_id,
             ]);
             log_action("Policy created for company : " . Auth::user()->company_name);
-            return response()->json(['success' => true, 'message' => 'Policy added successfully'], 201);
+            return response()->json(['success' => true, 'message' => __('Policy added successfully')], 201);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -119,7 +119,7 @@ class ApiPolicyController extends Controller
                 if ($request->json_quiz == null) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Please provide a valid JSON quiz'
+                        'message' => __('Please provide a valid JSON quiz')
                     ], 422);
                 }
                 $json_quiz = $request->json_quiz;
@@ -134,18 +134,18 @@ class ApiPolicyController extends Controller
             $policy->save();
 
             log_action("Policy updated : " . $policy->policy_name);
-            return response()->json(['success' => true, 'message' => 'Policy updated successfully'], 200);
+            return response()->json(['success' => true, 'message' => __('Policy updated successfully')], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -157,7 +157,7 @@ class ApiPolicyController extends Controller
             if (!$request->query('user_email')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User email is required'
+                    'message' => __('User email is required')
                 ], 400);
             }
             $user_email = $request->query('user_email');
@@ -165,13 +165,13 @@ class ApiPolicyController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $assignedPolicy,
-                'message' => 'Assigned policies fetched successfully'
+                'message' => __('Assigned policies fetched successfully')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -193,7 +193,7 @@ class ApiPolicyController extends Controller
                 if ($request->json_quiz_response == null) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Quiz response is required for policies with quizzes'
+                        'message' => __('Quiz response is required for policies with quizzes')
                     ], 422);
                 }
                 $json_quiz_response = $request->json_quiz_response;
@@ -212,7 +212,7 @@ class ApiPolicyController extends Controller
             if (!$isUpdated) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to accept policy.'
+                    'message' => __('Failed to accept policy.')
                 ], 422);
             }
 
@@ -227,19 +227,19 @@ class ApiPolicyController extends Controller
             );
             return response()->json([
                 'success' => true,
-                'message' => 'Policy accepted successfully'
+                'message' => __('Policy accepted successfully')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -250,7 +250,7 @@ class ApiPolicyController extends Controller
             if (!$request->route('encoded_id')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Policy ID is required'
+                    'message' => __('Policy ID is required')
                 ], 422);
             }
             $id = base64_decode($request->route('encoded_id'));
@@ -259,7 +259,7 @@ class ApiPolicyController extends Controller
             if (!$policy) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Policy not found'
+                    'message' => __('Policy not found')
                 ], 422);
             }
 
@@ -268,7 +268,7 @@ class ApiPolicyController extends Controller
             if ($policyCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this policy, delete campaigns first",
+                    'message' => __('Campaigns are associated with this policy, delete campaigns first'),
                 ], 422);
             }
 
@@ -276,7 +276,7 @@ class ApiPolicyController extends Controller
             if ($assignedPolicy) {
                 return response()->json([
                     'success' => false,
-                    'message' => "This policy is assigned to users, you cannot delete it.",
+                    'message' => __('This policy is assigned to users, you cannot delete it.'),
                 ], 422);
             }
 
@@ -284,13 +284,13 @@ class ApiPolicyController extends Controller
             log_action("Policy deleted : " . $policy->policy_name);
             return response()->json([
                 'success' => true,
-                'message' => 'Policy deleted successfully'
+                'message' => __('Policy deleted successfully')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -301,7 +301,7 @@ class ApiPolicyController extends Controller
             if (!$request->route('campaign_id')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Campaign ID is required'
+                    'message' => __('Campaign ID is required')
                 ], 422);
             }
 
@@ -312,7 +312,7 @@ class ApiPolicyController extends Controller
             if (!$policyCampaign) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Policy Campaign not found'
+                    'message' => __('Policy Campaign not found')
                 ], 422);
             }
             PolicyCampaignLive::where('campaign_id', $campaign_id)->delete();
@@ -321,13 +321,13 @@ class ApiPolicyController extends Controller
             log_action("Policy Campaign deleted : " . $policyCampaign->campaign_name);
             return response()->json([
                 'success' => true,
-                'message' => 'Policy Campaign deleted successfully'
+                'message' => __('Policy Campaign deleted successfully')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

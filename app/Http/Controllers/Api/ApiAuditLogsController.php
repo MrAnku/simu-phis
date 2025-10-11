@@ -52,13 +52,13 @@ class ApiAuditLogsController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $logs,
-                'message' => 'Audit logs fetched successfully.'
+                'message' => __('Audit logs fetched successfully.')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -85,13 +85,13 @@ class ApiAuditLogsController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $actions,
-                'message' => 'Audit actions fetched successfully.'
+                'message' => __('Audit actions fetched successfully.')
             ], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -111,12 +111,12 @@ class ApiAuditLogsController extends Controller
                     'normal_users' => $normalUsers,
                     'blue_collar_users' => $blueCollarUsers
                 ],
-                'message' => 'Users fetched successfully.'
+                'message' => __('Users fetched successfully.')
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

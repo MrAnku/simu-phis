@@ -33,7 +33,7 @@ class ApiCustomCertificate extends Controller
                 if (strpos($templateContent, $shortcode) === false) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Missing required shortcode: $shortcode"
+                        'message' => __("Missing required shortcode: :shortcode", ['shortcode' => $shortcode])
                     ], 422);
                 }
             }
@@ -53,21 +53,21 @@ class ApiCustomCertificate extends Controller
                 'layout_name' => $request->layout_name,
             ]);
             if ($template) {
-                return response()->json(['success' => true, 'message' => 'Template saved successfully.'], 200);
+                return response()->json(['success' => true, 'message' => __('Template saved successfully.')], 200);
             } else {
-                return response()->json(['success' => false, 'message' => 'Failed to save template.'], 500);
+                return response()->json(['success' => false, 'message' => __('Failed to save template.')], 500);
             }
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -98,12 +98,12 @@ class ApiCustomCertificate extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -115,13 +115,13 @@ class ApiCustomCertificate extends Controller
             $templates = CertificateTemplate::where('company_id', $companyId)
             ->orWhere('company_id', 'default')
             ->get();
-           
-            return response()->json(['success' => true, 'message' => 'Certificate templates fetched successfully.', 'data' => $templates], 200);
+
+            return response()->json(['success' => true, 'message' => __('Certificate templates fetched successfully.'), 'data' => $templates], 200);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -149,7 +149,7 @@ class ApiCustomCertificate extends Controller
                 if (strpos($templateContent, $shortcode) === false) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Missing required shortcode: $shortcode"
+                        'message' => __("Missing required shortcode: :shortcode", ['shortcode' => $shortcode])
                     ], 422);
                 }
             }
@@ -159,7 +159,7 @@ class ApiCustomCertificate extends Controller
             $template = CertificateTemplate::find($request->template_id);
 
             if (!$template) {
-                return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
+                return response()->json(['success' => false, 'message' => __('Certificate template not found.')], 404);
             }
 
             // Get the previous file path
@@ -177,19 +177,19 @@ class ApiCustomCertificate extends Controller
             ]);
 
             if ($templateUpdated) {
-                return response()->json(['success' => true, 'message' => 'Certificate template updated successfully.'], 200);
+                return response()->json(['success' => true, 'message' => __('Certificate template updated successfully.')], 200);
             }
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -199,31 +199,31 @@ class ApiCustomCertificate extends Controller
         try {
             $templateId = $request->route('id');
             if (!$templateId) {
-                return response()->json(['success' => false, 'message' => 'Template ID is required.'], 422);
+                return response()->json(['success' => false, 'message' => __('Template ID is required.')], 422);
             }
 
             $companyId = Auth::user()->company_id;
             $template = CertificateTemplate::where('id', $templateId)->where('company_id', $companyId)->first();
 
             if (!$template) {
-                return response()->json(['success' => false, 'message' => 'Certificate template not found.'], 404);
+                return response()->json(['success' => false, 'message' => __('Certificate template not found.')], 404);
             }
 
             if ($template->selected) {
-                return response()->json(['success' => false, 'message' => 'Cannot delete a selected template. Please unselect it first.'], 422);
+                return response()->json(['success' => false, 'message' => __('Cannot delete a selected template. Please unselect it first.')], 422);
             }
             // Delete the file from S3
             Storage::disk('s3')->delete($template->filepath);
 
             $templateDeleted = $template->delete();
             if ($templateDeleted) {
-                return response()->json(['success' => true, 'message' => 'Certificate template deleted successfully.'], 200);
+                return response()->json(['success' => true, 'message' => __('Certificate template deleted successfully.')], 200);
             }
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

@@ -35,7 +35,7 @@ class ApiTriggerController extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -58,10 +58,10 @@ class ApiTriggerController extends Controller
                 ->exists();
 
             if ($exists) {
-                return response()->json(['success' => false, 'message' => 'Trigger event already exists. You can update it instead.'], 409);
+                return response()->json(['success' => false, 'message' => __('Trigger event already exists. You can update it instead.')], 409);
             }
             if (!$request->training && !$request->policy && !$request->scorm) {
-                return response()->json(['success' => false, 'message' => 'At least one trigger type (training, policy, scorm) must be provided.'], 400);
+                return response()->json(['success' => false, 'message' => __('At least one trigger type (training, policy, scorm) must be provided.')], 400);
             }
 
             $trigger = new CompanyTrigger();
@@ -74,11 +74,11 @@ class ApiTriggerController extends Controller
             $trigger->company_id = Auth::user()->company_id;
             $trigger->save();
 
-            return response()->json(['success' => true, 'message' => 'Trigger added successfully'], 201);
+            return response()->json(['success' => true, 'message' => __('Trigger added successfully')], 201);
         } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+            return response()->json(['success' => false, 'message' => __('Validation Error: ') .$e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -100,7 +100,7 @@ class ApiTriggerController extends Controller
                 ->where('company_id', Auth::user()->company_id)
                 ->exists();
             if($employeeTypeExists){
-                return response()->json(['success' => false, 'message' => 'This employee type trigger already exists. You can update it instead.'], 409);
+                return response()->json(['success' => false, 'message' => __('This employee type trigger already exists. You can update it instead.')], 409);
             }
 
 
@@ -109,7 +109,7 @@ class ApiTriggerController extends Controller
                 ->first();
 
             if (!$trigger) {
-                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+                return response()->json(['success' => false, 'message' => __('Trigger not found')], 404);
             }
 
             if ($request->has('event_type')) {
@@ -131,11 +131,11 @@ class ApiTriggerController extends Controller
 
             $trigger->save();
 
-            return response()->json(['success' => true, 'message' => 'Trigger updated successfully'], 200);
+            return response()->json(['success' => true, 'message' => __('Trigger updated successfully')], 200);
         } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+            return response()->json(['success' => false, 'message' => __('Validation Error: ') .$e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -147,15 +147,15 @@ class ApiTriggerController extends Controller
                 ->first();
 
             if (!$trigger) {
-                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+                return response()->json(['success' => false, 'message' => __('Trigger not found')], 404);
             }
 
             $trigger->status = !$trigger->status;
             $trigger->save();
 
-            return response()->json(['success' => true, 'message' => 'Trigger updated'], 200);
+            return response()->json(['success' => true, 'message' => __('Trigger updated')], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -167,14 +167,14 @@ class ApiTriggerController extends Controller
                 ->first();
 
             if (!$trigger) {
-                return response()->json(['success' => false, 'message' => 'Trigger not found'], 404);
+                return response()->json(['success' => false, 'message' => __('Trigger not found')], 404);
             }
 
             $trigger->delete();
 
-            return response()->json(['success' => true, 'message' => 'Trigger deleted successfully'], 200);
+            return response()->json(['success' => true, 'message' => __('Trigger deleted successfully')], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

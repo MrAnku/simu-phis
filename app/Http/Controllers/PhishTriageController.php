@@ -105,7 +105,7 @@ class PhishTriageController extends Controller
             Mail::to($company->email)->send(new PhishTriageReportMail($mailData));
         }
 
-        return response()->json(['message' => 'Report logged successfully'], 200);
+        return response()->json(['message' => __('Report logged successfully')], 200);
     }
 
     private function checkSimulationEmail($body)
@@ -255,7 +255,7 @@ class PhishTriageController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => json_decode($phishTriageReportLog->ai_analysis),
-                'message' => 'AI analysis already completed for this log.'
+                'message' => __('AI analysis already completed for this log.')
             ], 200);
         }
 
@@ -318,31 +318,31 @@ class PhishTriageController extends Controller
                         return response()->json([
                             'success' => true,
                             'data' => $decoded,
-                            'message' => 'AI analysis completed successfully.',
+                            'message' => __('AI analysis completed successfully.'),
                         ], 200);
                     } else {
                         return response()->json([
                             'success' => false,
-                            'message' => 'Invalid JSON format returned from AI.',
+                            'message' => __('Invalid JSON format returned from AI.'),
                             'raw' => $content
                         ], 422);
                     }
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Empty AI response for this log.'
+                        'message' => __('Empty AI response for this log.')
                     ], 422);
                 }
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => "OpenAI API error: " . $response->body()
+                    'message' => __('OpenAI API error: ') . $response->body()
                 ], 422);
             }
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => "Exception during AI analysis: " . $e->getMessage()
+                'message' => __("Exception during AI analysis: ") . $e->getMessage()
             ], 500);
         }
     }
@@ -351,7 +351,7 @@ class PhishTriageController extends Controller
     {
         $domain = $request->route('domain');
         if (!$domain) {
-            return response()->json(['error' => 'Domain is required'], 400);
+            return response()->json(['error' => __('Domain is required')], 400);
         }
 
         // SPF Check
@@ -461,7 +461,7 @@ class PhishTriageController extends Controller
         Cache::put("outlook_token_$companyId", $data['access_token'], now()->addMinutes(55));
         Cache::put("outlook_refresh_$companyId", $data['refresh_token'], now()->addDays(30));
 
-        return response()->json(['success' => true, 'message' => 'Authenticated Successfully']);
+        return response()->json(['success' => true, 'message' => __('Authenticated Successfully')]);
     }
 
     private function getAppToken()
@@ -497,14 +497,14 @@ class PhishTriageController extends Controller
         $reportedEmail = PhishTriageReportLog::find($id);
         if (!$reportedEmail) {
             // \Log::error('Report not found', ['id' => $id]);
-            return response()->json(['success' => false, 'message' => 'Report not found'], 404);
+            return response()->json(['success' => false, 'message' => __('Report not found')], 404);
         }
 
         // Assume PhishTriageReportLog has a field 'reported_by_email' with the user's email address
         $targetUserEmail = $reportedEmail->user_email;
         if (!$targetUserEmail) {
             // \Log::error('Reported user email not found', ['id' => $id]);
-            return response()->json(['success' => false, 'message' => 'Reported user email not found'], 400);
+            return response()->json(['success' => false, 'message' => __('Reported user email not found')], 400);
         }
 
         $headerString = $reportedEmail->headers;
@@ -514,7 +514,7 @@ class PhishTriageController extends Controller
         preg_match('/Message-ID:\s*<([^>]+)>/i', $headerString, $matches);
         if (empty($matches[1])) {
             // \Log::error('Message ID not found in headers', ['headers' => $headerString]);
-            return response()->json(['success' => false, 'message' => 'Message ID not found in headers'], 404);
+            return response()->json(['success' => false, 'message' => __('Message ID not found in headers')], 404);
         }
         $internetMessageId = "<{$matches[1]}>";
         // \Log::info('Internet Message ID', ['internetMessageId' => $internetMessageId]);
@@ -523,7 +523,7 @@ class PhishTriageController extends Controller
         $token = $this->getAppToken();
         if (!$token) {
             // \Log::error('Application token not retrieved');
-            return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
+            return response()->json(['success' => false, 'message' => __('Authentication failed')], 401);
         }
 
         // Find Graph API message ID in the target user's mailbox
@@ -535,13 +535,13 @@ class PhishTriageController extends Controller
             $graphMessage = $response->json()['value'][0] ?? null;
             if (!$graphMessage) {
                 // \Log::error('Graph message not found', ['internetMessageId' => $internetMessageId, 'user' => $targetUserEmail]);
-                return response()->json(['success' => false, 'message' => 'Graph message not found'], 404);
+                return response()->json(['success' => false, 'message' => __('Graph message not found')], 404);
             }
             $messageId = $graphMessage['id'];
             // \Log::info('Graph Message ID', ['messageId' => $messageId, 'user' => $targetUserEmail]);
         } catch (\Exception $e) {
             // \Log::error('Failed to fetch Graph message', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
-            return response()->json(['success' => false, 'message' => 'Failed to fetch message: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Failed to fetch message: ') . $e->getMessage()], 500);
         }
 
         // Perform the requested action
@@ -573,14 +573,14 @@ class PhishTriageController extends Controller
 
                 default:
                     // \Log::error('Invalid action', ['action' => $action]);
-                    return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
+                    return response()->json(['success' => false, 'message' => __('Invalid action')], 400);
             }
         } catch (\Exception $e) {
             // \Log::error('API or database error', ['error' => $e->getMessage(), 'user' => $targetUserEmail]);
-            return response()->json(['success' => false, 'message' => 'Action failed: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Action failed: ') . $e->getMessage()], 500);
         }
 
-        return response()->json(['success' => true, 'message' => 'Action performed successfully']);
+        return response()->json(['success' => true, 'message' => __('Action performed successfully')]);
     }
 
 

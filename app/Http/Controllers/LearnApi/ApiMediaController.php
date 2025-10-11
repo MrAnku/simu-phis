@@ -80,13 +80,13 @@ class ApiMediaController extends Controller
             log_action("File uploaded");
             return response()->json([
                 'success' => true,
-                'message' => 'File uploaded successfully.'
+                'message' => __('File uploaded successfully.')
             ], 201);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
@@ -125,7 +125,7 @@ class ApiMediaController extends Controller
 
             log_action("File deleted");
 
-            return response()->json(['success' => true, 'message' => 'File deleted successfully.'], 200);
+            return response()->json(['success' => true, 'message' => __('File deleted successfully.')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
@@ -160,6 +160,6 @@ class ApiMediaController extends Controller
 
         fclose($handle);
 
-        return response()->json(['message' => 'File split into chunks successfully.']);
+        return response()->json(['message' => __('File split into chunks successfully.')]);
     }
 }

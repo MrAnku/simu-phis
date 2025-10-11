@@ -27,7 +27,7 @@ class NoActivityUsersController extends Controller
             if (!$campaignUser) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Campaign user not found',
+                    'message' => __('Campaign user not found'),
                 ], 404);
             }
             //check training assignment
@@ -36,7 +36,7 @@ class NoActivityUsersController extends Controller
             if(!$trainingAssignment) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Training assignment not found for this campaign',
+                    'message' => __('Training assignment not found for this campaign'),
                 ], 404);
             }
             if($trainingAssignment == 'random'){
@@ -46,7 +46,7 @@ class NoActivityUsersController extends Controller
                 if (empty($trainings)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'No trainings found for this campaign',
+                        'message' => __('No trainings found for this campaign'),
                     ], 404);
                 }
                 $sent = CampaignTrainingService::assignTraining($campaignUser, $trainings);
@@ -55,7 +55,7 @@ class NoActivityUsersController extends Controller
             if(!$sent){
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to assign training',
+                    'message' => __('Failed to assign training'),
                 ], 500);
             }
 
@@ -63,18 +63,18 @@ class NoActivityUsersController extends Controller
             log_action("Training assigned successfully to $campaignUser->user_email");
             return response()->json([
                 'success' => true,
-                'message' => 'Training assigned successfully',
+                'message' => __('Training assigned successfully'),
             ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->validator->errors()->first(),
+                'message' => __('Validation error: ') . $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => __('Error: ') . $e->getMessage(),
             ], 500);
         }
     }

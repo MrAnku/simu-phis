@@ -34,7 +34,7 @@ class ApiCompanyLogsController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Error: ' . $e->getMessage()
+                'error' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }

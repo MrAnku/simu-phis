@@ -238,7 +238,7 @@ class ApiPhishingEmailsController extends Controller
             if ($emailCampExists || $tprmCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this template, delete campaigns first",
+                    'message' => __("Campaigns are associated with this template, delete campaigns first"),
                 ], 422);
             }
             log_action("Email Template (Name: {$template->name}) deleted successfully");

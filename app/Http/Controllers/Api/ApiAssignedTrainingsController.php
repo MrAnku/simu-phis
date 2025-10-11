@@ -28,18 +28,18 @@ class ApiAssignedTrainingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Employees with trainings fetched successfully.',
+                'message' => __('Employees with trainings fetched successfully.'),
                 'data' => array_values($employees)
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -98,18 +98,18 @@ class ApiAssignedTrainingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Fetch Blue Collar Employees with trainings fetched successfully.',
+                'message' => __('Fetch Blue Collar Employees with trainings fetched successfully.'),
                 'data' => array_values($employees)
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -200,18 +200,18 @@ class ApiAssignedTrainingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Training details fetched successfully.',
+                'message' => __('Training details fetched successfully.'),
                 'data' => $result
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -263,18 +263,18 @@ class ApiAssignedTrainingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Game details fetched successfully.',
+                'message' => __('Game details fetched successfully.'),
                 'data' => $result
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -324,18 +324,18 @@ class ApiAssignedTrainingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'SCORM details fetched successfully.',
+                'message' => __('SCORM details fetched successfully.'),
                 'data' => $result
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -364,23 +364,23 @@ class ApiAssignedTrainingsController extends Controller
             if ($trainingDeleted) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Training deleted successfully.'
+                    'message' => __('Training deleted successfully.')
                 ], 200);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Assigned Training not found.'
+                    'message' => __('Assigned Training not found.')
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -409,23 +409,23 @@ class ApiAssignedTrainingsController extends Controller
             if ($trainingDeleted) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Scorm deleted successfully.'
+                    'message' => __('Scorm deleted successfully.')
                 ], 200);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Assigned Scorm not found.'
+                    'message' => __('Assigned Scorm not found.')
                 ], 404);
             }
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }
