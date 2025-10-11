@@ -62,7 +62,7 @@ class ApiWhiteLabelController extends Controller
             if ($whiteLabelExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'White Label already added for your company.'
+                    'message' => __('White Label already added for your company.')
                 ], 422);
             }
 
@@ -70,7 +70,7 @@ class ApiWhiteLabelController extends Controller
             if ($domainExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Domain already added by another company.'
+                    'message' => __('Domain already added by another company.')
                 ], 422);
             }
 
@@ -78,7 +78,7 @@ class ApiWhiteLabelController extends Controller
             if ($learnDomainExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Learn domain already added by another company.'
+                    'message' => __('Learn domain already added by another company.')
                 ], 422);
             }
 
@@ -86,7 +86,7 @@ class ApiWhiteLabelController extends Controller
             if ($smtpUsernameExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'SMTP from address already added by another company.'
+                    'message' => __('SMTP from address already added by another company.')
                 ], 422);
             }
 
@@ -103,7 +103,7 @@ class ApiWhiteLabelController extends Controller
             if (!$this->checkSmtpConnection($smtpCredentials)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid SMTP credentials.'
+                    'message' => __('Invalid SMTP credentials.')
                 ], 422);
             }
 
@@ -171,13 +171,13 @@ class ApiWhiteLabelController extends Controller
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error: ' . $e->getMessage()
+                'message' => __('Validation error: ') . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
         }
     }

@@ -483,7 +483,7 @@ EOT;
 
                 return response()->json([
                     'status' => false,
-                    'message' => 'Failed to generate email template: ' . $errorMessage,
+                    'message' => __('Failed to generate email template: ') . $errorMessage,
                 ], 500);
             }
 
@@ -498,7 +498,7 @@ EOT;
                 log_action("Invalid HTML structure generated for prompt: {$request->prompt}");
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid HTML template structure',
+                    'message' => __('Invalid HTML template structure'),
                 ], 500);
             }
 
@@ -507,7 +507,7 @@ EOT;
                 log_action("Generated HTML contains <style> tags for prompt: {$request->prompt}");
                 return response()->json([
                     'status' => false,
-                    'message' => 'Generated template contains unsupported <style> tags',
+                    'message' => __('Generated template contains unsupported <style> tags'),
                 ], 500);
             }
 
@@ -516,7 +516,7 @@ EOT;
                 log_action("Generated HTML contains <table> tags for prompt: {$request->prompt}");
                 return response()->json([
                     'status' => false,
-                    'message' => 'Generated template contains unsupported <table> tags',
+                    'message' => __('Generated template contains unsupported <table> tags'),
                 ], 500);
             }
 
@@ -591,7 +591,7 @@ EOT;
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed.',
+                'message' => __('Validation failed.'),
                 'errors' => $e->errors()
             ], 422);
         }
@@ -626,7 +626,7 @@ EOT;
 
             return response()->json([
                 'status' => true,
-                'message' => 'Template saved successfully.'
+                'message' => __('Template saved successfully.')
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -679,7 +679,7 @@ EOT;
             if (!Storage::disk('s3')->exists($originalPath)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Original HTML file not found in S3.')
+                    'message' => __('Original HTML file not found')
                 ], 404);
             }
 
@@ -691,7 +691,7 @@ EOT;
             if (empty($fileContent)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to read original HTML file from S3.')
+                    'message' => __('Failed to read original HTML file')
                 ], 500);
             }
 

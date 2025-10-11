@@ -44,7 +44,7 @@ class ApiOutlookAdController extends Controller
         if (!$request->has('code')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Authorization failed!'
+                'message' => __('Authorization failed!')
             ], 403);
         }
 
@@ -69,7 +69,7 @@ class ApiOutlookAdController extends Controller
         if (!$request->has('code')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Authorization failed!'
+                'message' => __('Authorization failed!')
             ], 403);
         }
 

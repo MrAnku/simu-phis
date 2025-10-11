@@ -65,7 +65,7 @@ class ApiBlueCollarController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -288,7 +288,7 @@ class ApiBlueCollarController extends Controller
                 return response()->json(['success' => true, 'data' => [], 'message' => __('No employees found')]);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -328,7 +328,7 @@ class ApiBlueCollarController extends Controller
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -428,7 +428,7 @@ class ApiBlueCollarController extends Controller
             log_action("Blue Collar User added : {$request->usrName}");
             return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -473,7 +473,7 @@ class ApiBlueCollarController extends Controller
             log_action("Blue Collar User updated : {$request->usrName}");
             return response()->json(['success' => true, 'message' => __('Employee Updated Successfully')], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 
@@ -521,7 +521,7 @@ class ApiBlueCollarController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             log_action("An error occurred while deleting the Blue Collar group");
-            return response()->json(['success' => false, 'message' => __('Error : ') . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

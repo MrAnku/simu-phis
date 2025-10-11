@@ -603,7 +603,7 @@ class ApiEmployeesController extends Controller
             ];
 
             if (in_array($domain, $notAllowedDomains)) {
-                return response()->json(['success' => false, 'message' => __('This email provider is not allowed.')], 422);
+                return response()->json(['success' => false, 'message' => __('This email provider is not allowed')], 422);
             }
 
             $companyId = Auth::user()->company_id; // Assuming company_id is stored in the authenticated user
@@ -1312,7 +1312,7 @@ class ApiEmployeesController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "LDAP Config Saved"
+                'message' => __("LDAP Config Saved")
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);

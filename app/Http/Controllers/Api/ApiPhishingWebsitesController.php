@@ -155,7 +155,7 @@ class ApiPhishingWebsitesController extends Controller
             if ($phishingEmailExists || $qshTemplateExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Templates are associated with this website, delete templates first",
+                    'message' => __("Templates are associated with this website, delete templates first"),
                 ], 422);
             }
 
@@ -165,7 +165,7 @@ class ApiPhishingWebsitesController extends Controller
             if ($waCampExists || $smishCampExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Campaigns are associated with this website, delete campaigns first",
+                    'message' => __("Campaigns are associated with this website, delete campaigns first"),
                 ], 422);
             }
 
@@ -797,7 +797,7 @@ class ApiPhishingWebsitesController extends Controller
             if ($hasAccessibilityFeatures) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'The website includes dynamic accessibility features (e.g., text resizing, contrast toggle), indicating heavy JavaScript usage, which may not be suitable for cloning.'
+                    'message' => __('The website includes dynamic accessibility features (e.g., text resizing, contrast toggle), indicating heavy JavaScript usage, which may not be suitable for cloning.')
                 ], 400);
                 
             }
@@ -855,7 +855,7 @@ class ApiPhishingWebsitesController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Website cloning job has been queued.',
+            'message' => __('Website cloning job has been queued.'),
         ]);
     }
 
@@ -874,7 +874,7 @@ class ApiPhishingWebsitesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
     }
