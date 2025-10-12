@@ -53,6 +53,7 @@ class OverallReportMail extends Mailable
                 'quish_camp_data' => $this->reportData['quish_camp_data'],
                 'wa_camp_data' => $this->reportData['wa_camp_data'],
                 'ai_camp_data' => $this->reportData['ai_camp_data'],
+                'most_compromised_employees' => $this->reportData['most_compromised_employees'],
             ]
         );
     }

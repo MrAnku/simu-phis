@@ -15,6 +15,7 @@ use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\WaLiveCampaign;
 use App\Services\CompanyReport;
+use App\Services\Reports\OverallNormalEmployeeReport;
 use App\Services\Simulations\EmailCampReport;
 use App\Services\Simulations\QuishingCampReport;
 use App\Services\Simulations\VishingCampReport;
@@ -51,11 +52,12 @@ class SimpleMonthlyReport extends Command
             $quishingCampReport = new QuishingCampReport($companyId);
             $waCampReport = new WhatsappCampReport($companyId);
             $aiVishReport = new VishingCampReport($companyId);
+            $overallReport = new OverallNormalEmployeeReport($companyId);
 
             // Get basic metrics with error handling
             $data = [
                 'company_name' => $company->company_name ?? 'Unknown Company',
-                'total_users' => Users::where('company_id', $companyId)->count(),
+                'total_users' => Users::where('company_id', $companyId)->count() + BlueCollarEmployee::where('company_id', $companyId)->count(),
                 'blue_collar_employees' => BlueCollarEmployee::where('company_id', $companyId)->count(),
 
                 'email_camp_data' => [
@@ -65,6 +67,7 @@ class SimpleMonthlyReport extends Command
                     'payload_clicked' => $emailCampReport->payloadClicked() ?? 0,
                     'email_reported' => $emailCampReport->emailReported() ?? 0,
                     'compromised' => $emailCampReport->compromised() ?? 0,
+                    'total_attempts' => $emailCampReport->totalAttempts() ?? 0
                 ],
 
                 'quish_camp_data' => [
@@ -74,6 +77,7 @@ class SimpleMonthlyReport extends Command
                     'qr_scanned' => $quishingCampReport->qrScanned() ?? 0,
                     'email_reported' => $quishingCampReport->emailReported() ?? 0,
                     'compromised' => $quishingCampReport->compromised() ?? 0,
+                    'total_attempts' => $quishingCampReport->totalAttempts() ?? 0
                 ],
 
                 'wa_camp_data' => [
@@ -81,7 +85,8 @@ class SimpleMonthlyReport extends Command
                     'message_sent' => $waCampReport->messageSent() ?? 0,
                     'message_viewed' => $waCampReport->messageViewed() ?? 0,
                     'link_clicked' => $waCampReport->linkClicked() ?? 0,
-                    'compromised' => $waCampReport->compromised() ?? 0
+                    'compromised' => $waCampReport->compromised() ?? 0,
+                    'total_attempts' => $waCampReport->totalAttempts() ?? 0
                 ],
 
                 'ai_camp_data' => [
@@ -89,7 +94,8 @@ class SimpleMonthlyReport extends Command
                     'calls_sent' => $aiVishReport->callsSent() ?? 0,
                     'calls_received' => $aiVishReport->callsReceived() ?? 0,
                     'compromised' => $aiVishReport->compromised() ?? 0,
-                    'completed_calls' => $aiVishReport->completedCalls() ?? 0
+                    'completed_calls' => $aiVishReport->completedCalls() ?? 0,
+                    'total_attempts' => $aiVishReport->totalAttempts() ?? 0
                 ],
 
                 'training_assigned' => $companyReport->totalTrainingAssigned() ?? 0,
@@ -97,7 +103,8 @@ class SimpleMonthlyReport extends Command
                 'total_Policies' => Policy::where('company_id', $companyId)->count(),
                 'assigned_Policies' => AssignedPolicy::where('company_id', $companyId)->count(),
                 'acceptance_Policies' => AssignedPolicy::where('company_id', $companyId)->where('accepted', 1)->count(),
-                'riskScore' => $companyReport->calculateOverallRiskScore()
+                'riskScore' => $companyReport->calculateOverallRiskScore(),
+                'most_compromised_employees' => $overallReport->mostCompromisedEmployees(),
             ];
 
             // Calculate aggregate metrics for backward compatibility
@@ -107,10 +114,10 @@ class SimpleMonthlyReport extends Command
                 ($data['wa_camp_data']['whatsapp_campaign'] ?? 0) + ($data['ai_camp_data']['ai_vishing'] ?? 0);
 
             // Calculate total compromised accounts from all campaign types
-            $totalCompromised = ($data['email_camp_data']['compromised'] ?? 0) + 
-                               ($data['quish_camp_data']['compromised'] ?? 0) + 
-                               ($data['wa_camp_data']['compromised'] ?? 0) + 
-                               ($data['ai_camp_data']['compromised'] ?? 0);
+            $totalCompromised = ($data['email_camp_data']['compromised'] ?? 0) +
+                ($data['quish_camp_data']['compromised'] ?? 0) +
+                ($data['wa_camp_data']['compromised'] ?? 0) +
+                ($data['ai_camp_data']['compromised'] ?? 0);
 
             // Calculate risk text based on risk score
             $riskScore = $data['riskScore'] ?? 0;
@@ -131,10 +138,13 @@ class SimpleMonthlyReport extends Command
             $data['payload_clicked'] = $totalPayloadClicked;
             $data['totalCompromised'] = $totalCompromised;
             $data['riskText'] = $riskText;
-            $data['click_rate'] = $totalEmailsSent > 0 ? round(($totalPayloadClicked / $totalEmailsSent) * 100, 1) : 0;
+            $data['click_rate'] = $companyReport->clickRate();
+
+            // print_r($data);
+            // return;
 
             // Generate PDF
-            $pdf = Pdf::loadView('overall-report', $data);
+            $pdf = Pdf::loadView('new-overall-report', $data);
             $pdfContent = $pdf->output();
 
             // Send email with PDF attachment

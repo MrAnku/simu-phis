@@ -73,4 +73,15 @@ class EmailCampReport
         return $query->count();
     }
 
+    public function totalAttempts($forMonth = null): int
+    {
+        $query = CampaignLive::where('company_id', $this->companyId);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
 }

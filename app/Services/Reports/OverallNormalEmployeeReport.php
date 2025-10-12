@@ -208,7 +208,7 @@ class OverallNormalEmployeeReport
         return $mostCompletedTrainingIds;
     }
 
-    private function mostCompromisedEmployees(): array
+    public function mostCompromisedEmployees(): array
     {
         $companyReport = new CompanyReport($this->companyId);
         $employees = $companyReport->employees();
