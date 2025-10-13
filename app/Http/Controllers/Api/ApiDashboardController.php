@@ -1744,9 +1744,9 @@ class ApiDashboardController extends Controller
         }
     }
 
-    private function clicksInWeekDays($usersArray = null, $months = null)
+    public function clicksInWeekDays($usersArray = null, $months = null, $company_id = null)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = $company_id ?? Auth::user()->company_id;
 
         if ($usersArray && $months) {
 

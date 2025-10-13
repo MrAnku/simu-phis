@@ -88,7 +88,7 @@ class OverallNormalEmployeeReport
         return $breachedEmails;
     }
 
-    private function riskAnalysis(): array
+    public function riskAnalysis(): array
     {
 
         //users who are compromised less than or equal to 3 times
@@ -151,7 +151,7 @@ class OverallNormalEmployeeReport
         ];
     }
 
-    private function scoreAverage(): array
+    public function scoreAverage(): array
     {
         $companyReport = new CompanyReport($this->companyId);
         // Logic to calculate score averages
@@ -226,7 +226,7 @@ class OverallNormalEmployeeReport
         return $compromiseData;
     }
 
-    private function mostClickedEmployees(): array
+    public function mostClickedEmployees(): array
     {
         $companyReport = new CompanyReport($this->companyId);
         $employees = $companyReport->employees();

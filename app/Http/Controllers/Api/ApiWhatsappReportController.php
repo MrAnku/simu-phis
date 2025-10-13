@@ -326,9 +326,9 @@ class ApiWhatsappReportController extends Controller
 
 
     }
-    private function eventsOverTime($usersArray = null, $months = null)
+    public function eventsOverTime($usersArray = null, $months = null, $company_id = null)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = $company_id ?? Auth::user()->company_id;
         $now = Carbon::now();
         $chartData = [];
 

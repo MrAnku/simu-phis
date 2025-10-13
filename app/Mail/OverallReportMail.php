@@ -54,6 +54,15 @@ class OverallReportMail extends Mailable
                 'wa_camp_data' => $this->reportData['wa_camp_data'],
                 'ai_camp_data' => $this->reportData['ai_camp_data'],
                 'most_compromised_employees' => $this->reportData['most_compromised_employees'],
+                'most_clicked_emp' => $this->reportData['most_clicked_emp'],
+                'phish_clicks_weekly' => $this->reportData['phish_clicks_weekly'],
+                'avg_scores' => $this->reportData['avg_scores'],
+                'riskAnalysis' => $this->reportData['riskAnalysis'],
+                'certifiedUsers' => $this->reportData['certifiedUsers'],
+                'totalTrainingStarted' => $this->reportData['totalTrainingStarted'],
+                'totalBadgesAssigned' => $this->reportData['totalBadgesAssigned'],
+                'trainingStatusDistribution' => $this->reportData['trainingStatusDistribution'],
+                'wa_events_over_time' => $this->reportData['wa_events_over_time'],
             ]
         );
     }
