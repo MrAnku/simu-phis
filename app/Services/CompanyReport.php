@@ -211,6 +211,21 @@ class CompanyReport
         return $query->count() + $scormQuery->count();
     }
 
+    public function pendingTraining($forMonth = null): int
+    {
+        $query = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('completed', 0);
+        $scormQuery = ScormAssignedUser::where('company_id', $this->companyId)
+            ->where('completed', 0);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+            $scormQuery->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count() + $scormQuery->count();
+    }
+
     public function totalBadgesAssigned($forMonth = null): int
     {
         $query = TrainingAssignedUser::where('company_id', $this->companyId)
@@ -334,6 +349,18 @@ class CompanyReport
 
         if ($totalTraining > 0) {
             return round(($completedTraining / $totalTraining) * 100, 2);
+        }
+
+        return 0.00;
+    }
+
+    public function trainingPendingRate(): float
+    {
+        $totalTraining = $this->totalTrainingAssigned();
+        $pendingTraining = $this->pendingTraining();
+
+        if ($totalTraining > 0) {
+            return round(($pendingTraining / $totalTraining) * 100, 2);
         }
 
         return 0.00;
@@ -651,5 +678,62 @@ class CompanyReport
         }
 
         return 100.00;
+    }
+    
+    public function totalPoliciesAssigned($forMonth = null): int
+    {
+        $query = AssignedPolicy::where('company_id', $this->companyId);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
+    public function acceptedPolicies($forMonth = null): int
+    {
+        $query = AssignedPolicy::where('company_id', $this->companyId)->where('accepted', 1);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
+    public function acceptedPoliciesRate(): float
+    {
+        $totalPolicies = $this->totalPoliciesAssigned();
+        $acceptedPolicies = $this->acceptedPolicies();
+
+        if ($totalPolicies > 0) {
+            return round(($acceptedPolicies / $totalPolicies) * 100, 2);
+        }
+
+        return 0.00;
+    }
+
+    public function notAcceptedPolicies($forMonth = null): int
+    {
+        $query = AssignedPolicy::where('company_id', $this->companyId)->where('accepted', 0);
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
+
+    public function notAcceptedPoliciesRate(): float
+    {
+        $totalPolicies = $this->totalPoliciesAssigned();
+        $notAcceptedPolicies = $this->notAcceptedPolicies();
+
+        if ($totalPolicies > 0) {
+            return round(($notAcceptedPolicies / $totalPolicies) * 100, 2);
+        }
+
+        return 0.00;
     }
 }

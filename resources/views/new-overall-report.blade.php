@@ -552,7 +552,7 @@
                 <td style="width: 25%; padding: 0 8px 0 15px;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; height: 120px; box-sizing: border-box;">
                         <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 500; margin-bottom: 8px;">POLICY ASSIGNED</div>
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($assigned_Policies) }}</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($assigned_policies) }}</div>
                         <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Total Assigned</div>
                         <div style="height: 16px;"></div>
                     </div>
@@ -594,15 +594,15 @@
                         <span class="status-badge status-secure">SECURE</span>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <span style="font-size: 13px; color: #64748b;">Completed <span style="color: #10b981; font-weight: 600;">2 (20.0%)</span></span>
+                        <span style="font-size: 13px; color: #64748b;">Completed  <span style="font-size: 13px; font-weight: 600; color: #10b981;">{{ number_format($training_completed) }} ({{ number_format($training_completion_rate, 1) }}%)</span></span>
                         <div class="progress-bar" style="margin-top: 5px;">
-                            <div class="progress-fill green" style="width: 20%;"></div>
+                            <div class="progress-fill green" style="width: {{ $training_completion_rate }}%;"></div>
                         </div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Pending <span style="color: #ef4444; font-weight: 600;">8 (80.0%)</span></span>
+                        <span style="font-size: 13px; color: #64748b;">Pending <span style="color: #ef4444; font-weight: 600;">{{ number_format($pending_training) }} ({{  $training_pending_rate }}%)</span></span>
                         <div class="progress-bar" style="margin-top: 5px;">
-                            <div class="progress-fill red" style="width: 80%;"></div>
+                            <div class="progress-fill red" style="width: {{ $training_pending_rate }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -616,15 +616,15 @@
                         <span class="status-badge status-secure">SECURE</span>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <span style="font-size: 13px; color: #64748b;">Accepted <span style="color: #10b981; font-weight: 600;">2 (40.0%)</span></span>
+                        <span style="font-size: 13px; color: #64748b;">Accepted <span style="color: #10b981; font-weight: 600;">{{ number_format($accepted_policies) }} ({{ number_format($accepted_policies_rate, 1) }}%)</span></span>
                         <div class="progress-bar" style="margin-top: 5px;">
-                            <div class="progress-fill green" style="width: 40%;"></div>
+                            <div class="progress-fill green" style="width: {{ $accepted_policies_rate }}%;"></div>
                         </div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Not Accepted <span style="color: #ef4444; font-weight: 600;">3 (60.0%)</span></span>
+                        <span style="font-size: 13px; color: #64748b;">Not Accepted <span style="color: #ef4444; font-weight: 600;">{{ number_format($not_accepted_policies) }} ({{ $not_accepted_policies_rate }}%)</span></span>
                         <div class="progress-bar" style="margin-top: 5px;">
-                            <div class="progress-fill red" style="width: 60%;"></div>
+                            <div class="progress-fill red" style="width: {{ $not_accepted_policies_rate }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -645,18 +645,18 @@
                         <span class="status-badge status-secure">SECURE</span>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <span style="font-size: 13px; color: #64748b;">Total Simulations</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($wa_camp_data['total_attempts'] ?? 4) }}</span>
+                        <span style="font-size: 13px; color: #64748b;">Total Attempts</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $wa_camp_data['total_attempts'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <span style="font-size: 13px; color: #64748b;">Compromised</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($wa_camp_data['compromised'] ?? 0) }}</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $wa_camp_data['compromised'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Risk Score</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format(20) }}</span>
+                        <span style="font-size: 13px; color: #64748b;">Message Viewed</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $wa_camp_data['message_viewed'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                 </div>
@@ -670,18 +670,18 @@
                         <span class="status-badge status-risk">AT RISK</span>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <span style="font-size: 13px; color: #64748b;">Total Simulations</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($ai_camp_data['total_attempts'] ?? 7) }}</span>
+                        <span style="font-size: 13px; color: #64748b;">Total Attempts</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $ai_camp_data['total_attempts'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <span style="font-size: 13px; color: #64748b;">Compromised</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($ai_camp_data['compromised'] ?? 3) }}</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $ai_camp_data['compromised'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Risk Score</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format(20) }}/10</span>
+                        <span style="font-size: 13px; color: #64748b;">Call Reported</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $ai_camp_data['reported_calls'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                 </div>
@@ -698,18 +698,18 @@
                         <span class="status-badge status-risk">AT RISK</span>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <span style="font-size: 13px; color: #64748b;">Total Simulations</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($campaigns_sent ?? 8) }}</span>
+                        <span style="font-size: 13px; color: #64748b;">Total Attempts</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $email_camp_data['total_attempts'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <span style="font-size: 13px; color: #64748b;">Compromised</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($payload_clicked ?? 4) }}</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $email_camp_data['compromised'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Risk Score</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($click_rate ?? 22.2, 1) }}%</span>
+                        <span style="font-size: 13px; color: #64748b;">Email Reported</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $email_camp_data['email_reported'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                 </div>
@@ -723,18 +723,18 @@
                         <span class="status-badge status-secure">SECURE</span>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <span style="font-size: 13px; color: #64748b;">Total Simulations</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($quish_camp_data['total_attempts'] ?? 800) }}</span>
+                        <span style="font-size: 13px; color: #64748b;">Total Attempts</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $quish_camp_data['total_attempts'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <span style="font-size: 13px; color: #64748b;">Compromised</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format($quish_camp_data['compromised'] ?? 0) }}</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $quish_camp_data['compromised'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                     <div>
-                        <span style="font-size: 13px; color: #64748b;">Risk Score</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ number_format(100) }}/100</span>
+                        <span style="font-size: 13px; color: #64748b;">Email Reported</span>
+                        <span style="font-size: 16px; font-weight: 600; color: #1e293b; float: right;">{{ $quish_camp_data['email_reported'] }}</span>
                         <div style="clear: both;"></div>
                     </div>
                 </div>
@@ -794,10 +794,27 @@
                         <div class="status-icon">!</div>
                         <h3>Security Status</h3>
                     </div>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
-                        Security alert: {{ number_format($totalCompromised ?? 3) }} of {{ number_format(5300) }} total
-                        Reduce risk flag
+                     @php
+                $compromise_rate = $total_threats > 0 ? ($totalCompromised / $total_threats) * 100 : 0;
+                @endphp
+                
+                @if($compromise_rate > 30)
+                    <p style="font-size: 13px; color: #dc2626; margin-bottom: 15px;">
+                        <strong>🚨 Critical Security Alert:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents detected with a {{ number_format($compromise_rate, 1) }}% compromise rate across {{ number_format($total_users ?? 0) }} users. Immediate action required to strengthen security protocols and reduce vulnerability exposure through enhanced training and awareness programs.
                     </p>
+                @elseif($compromise_rate > 15)
+                    <p style="font-size: 13px; color: #f59e0b; margin-bottom: 15px;">
+                        <strong>⚠️ Security Warning:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Consider implementing additional security measures and training to reduce risk exposure across your {{ number_format($total_users ?? 0) }} users.
+                    </p>
+                @elseif($compromise_rate > 0)
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+                        <strong>📊 Security Notice:</strong> {{ number_format($totalCompromised ?? 0) }} minor security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Your security posture is generally good across {{ number_format($total_users ?? 0) }} users, but continue monitoring and maintain regular training schedules.
+                    </p>
+                @else
+                    <p style="font-size: 13px; color: #10b981; margin-bottom: 15px;">
+                        <strong>✅ Excellent Security Status:</strong> No security compromises detected across your {{ number_format($total_users ?? 0) }} users. Your organization demonstrates strong security awareness and effective training programs. Continue current security practices to maintain this excellent standard.
+                    </p>
+                @endif
                     
                     <!-- Horizontal Security Metrics -->
                     <div style="display: table; width: 100%; margin-top: auto;">
@@ -1115,19 +1132,8 @@
                         <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">
                             <span style="margin-right: 10px; color: #ef4444;">⚠</span>Most Compromised
                         </h3>
-                        
-                        @php
-                            $mostCompromised = $most_compromised_employees ?? [
-                                ['employee_name' => 'Amith', 'compromised' => 4],
-                                ['employee_name' => 'Anjali', 'compromised' => 4],
-                                ['employee_name' => 'tester_', 'compromised' => 4],
-                                ['employee_name' => 'Hritik', 'compromised' => 4],
-                                ['employee_name' => 'ujjawal', 'compromised' => 4]
-                            ];
-                        @endphp
-                        
                         <div style="margin: 15px 0;">
-                            @foreach($mostCompromised as $index => $employee)
+                            @foreach($most_compromised_employees as $index => $employee)
                                 @if($index < 5)
                                 <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
                                     <div style="display: table-cell; width: 70%; vertical-align: middle;">
@@ -1149,20 +1155,8 @@
                         <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">
                             <span style="margin-right: 10px; color: #f59e0b;">👆</span>Most Clicked
                         </h3>
-                        
-                        @php
-                            // For Most Clicked, we'll use the same data structure
-                            $mostClicked = $most_compromised_employees ?? [
-                                ['employee_name' => 'Amith', 'compromised' => 4],
-                                ['employee_name' => 'Anjali', 'compromised' => 4],
-                                ['employee_name' => 'tester_', 'compromised' => 4],
-                                ['employee_name' => 'Hritik', 'compromised' => 4],
-                                ['employee_name' => 'ujjawal', 'compromised' => 4]
-                            ];
-                        @endphp
-                        
                         <div style="margin: 15px 0;">
-                            @foreach($mostClicked as $index => $employee)
+                            @foreach($most_clicked_emp as $index => $employee)
                                 @if($index < 5)
                                 <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fffbeb; border-radius: 6px; border-left: 3px solid #f59e0b;">
                                     <div style="display: table-cell; width: 70%; vertical-align: middle;">

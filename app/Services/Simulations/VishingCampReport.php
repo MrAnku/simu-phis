@@ -132,4 +132,16 @@ class VishingCampReport
 
         return $query->count();
     }
+
+    public function reportedCalls($forMonth = null)
+    {
+        $query = AiCallCampLive::where('company_id', $this->companyId)
+            ->whereNotNull('call_report');
+
+        if ($forMonth) {
+            $query->whereMonth('created_at', $forMonth);
+        }
+
+        return $query->count();
+    }
 }
