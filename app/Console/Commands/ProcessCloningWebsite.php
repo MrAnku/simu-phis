@@ -54,7 +54,7 @@ class ProcessCloningWebsite extends Command
                     continue;
                 }
 
-                $response = Http::post('http://103.115.19.53:2000/clone', [
+                $response = Http::post('http://91.98.162.246:2000/clone', [
                     'url' => $cloneJobInQueue->url,
                     'keep_js' => true,
                 ]);
@@ -97,7 +97,7 @@ class ProcessCloningWebsite extends Command
                     continue;
                 }
 
-                $response = Http::get("http://103.115.19.53:2000/tasks/{$taskId}");
+                $response = Http::get("http://91.98.162.246:2000/tasks/{$taskId}");
                 if ($response->successful()) {
                     $data = $response->json();
                     if($data['state'] && $data['state'] === 'SUCCESS'){
