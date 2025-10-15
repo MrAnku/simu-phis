@@ -115,7 +115,10 @@ class ApiAiCallController extends Controller
                 AiCallLikelifeAgent::create($validated);
                 return response()->json([
                     'success' => true,
-                    'message' => __('AI Call Agent created successfully')
+                    'message' => __('AI Call Agent created successfully'),
+                    'data' => [
+                        'agent_id' => $data['agent_id']
+                    ]
                 ], 201);
             }
 
