@@ -14,6 +14,7 @@ use App\Mail\PolicyCampaignEmail;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Services\PolicyAssignedService;
 use App\Services\CheckWhitelabelService;
 
 class ProcessPolicyCampaign extends Command
@@ -150,84 +151,21 @@ class ProcessPolicyCampaign extends Command
 
                 continue;
             }
-            $isWhitelabeled = new CheckWhitelabelService($company_id);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whiteLableData = $isWhitelabeled->getWhiteLabelData();
-                $companyName = $whiteLableData->company_name;
-                $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-                $learnDomain = "https://" . $whiteLableData->learn_domain;
-                $isWhitelabeled->updateSmtpConfig();
-            } else {
-                $companyName = env('APP_NAME');
-                $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-                $learnDomain = env('SIMUPHISH_LEARNING_URL');
-            }
 
             foreach ($campaigns as $campaign) {
-                $allCampaigns = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->first();
-                $policies = json_decode($allCampaigns->policy, true);
 
-                // Ensure $policies is always an array
-                if (!is_array($policies)) {
-                    $policies = [$policies];
-                }
+                $policyService = new PolicyAssignedService(
+                    $campaign->campaign_id,
+                    $campaign->user_name,
+                    $campaign->user_email,
+                    $campaign->company_id
+                );
+                $policies = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->value('policy');
 
-                $policyNames = [];
-                foreach ($policies as $policyId) {
-                    $policy = Policy::where('id', $policyId)->first();
-                    if (!$policy) continue;
+                $policyService->assignPolicies($policies);
 
-                    $policyNames[] = $policy->policy_name;
+                $campaign->update(['sent' => 1]);
 
-                    // Assign policy if not already assigned
-                    $isPolicyExists = AssignedPolicy::where('user_email', $campaign->user_email)
-                        ->where('policy', $policyId)
-                        ->exists();
-
-                    if (!$isPolicyExists) {
-                        AssignedPolicy::create([
-                            'campaign_id' => $campaign->campaign_id,
-                            'user_name' => $campaign->user_name,
-                            'user_email' => $campaign->user_email,
-                            'policy' => $policyId,
-                            'company_id' => $campaign->company_id,
-                        ]);
-
-                        // Audit log
-                        audit_log(
-                            $campaign->company_id,
-                            $campaign->user_email,
-                            null,
-                            'POLICY_ASSIGNED',
-                            "'{$policy->policy_name}' has been assigned to {$campaign->user_email}",
-                            'normal'
-                        );
-                    }
-                }
-
-                // Prepare mail data with all policy names
-                $mailData = [
-                    'user_name' => $campaign->user_name,
-                    'company_name' => $companyName,
-                    'assigned_at' => $campaign->created_at,
-                    'policy_names' => $policyNames, // Pass as array
-                    'logo' => $companyLogo,
-                    'company_id' => $campaign->company_id,
-                    'learn_domain' => $learnDomain,
-                ];
-
-                try {
-                    $isMailSent = Mail::to($campaign->user_email)->send(new PolicyCampaignEmail($mailData));
-                } catch (\Exception $e) {
-                    echo 'Failed to send email: ' . $e->getMessage() . "\n";
-                }
-
-                if ($isMailSent) {
-                    echo 'Email sent to ' . $campaign->user_email . "\n";
-                    $campaign->update(['sent' => 1]);
-                } else {
-                    echo 'Failed to send email to ' . $campaign->user_email . "\n";
-                }
             }
         }
     }
