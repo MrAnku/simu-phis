@@ -60,143 +60,135 @@ class SendOverallReport extends Command
     private function generateAndSendReport($company)
     {
         try {
-            $companyId = $company->company_id;
-
-            $companyReport = new CompanyReport($companyId);
-            $emailCampReport = new EmailCampReport($companyId);
-            $quishingCampReport = new QuishingCampReport($companyId);
-            $waCampReport = new WhatsappCampReport($companyId);
-            $aiVishReport = new VishingCampReport($companyId);
-            $overallReport = new OverallNormalEmployeeReport($companyId);
-            $dashController = new ApiDashboardController();
-            $waController = new ApiWhatsappReportController();
-            $qrController = new ApiQuishingReportController();
-            $aiController = new ApiAivishingReportController();
-
-            // Get the report frequency for display
-            $reportFrequency = $company->company_settings->overall_report ?? 'monthly';
-
-            // Get basic metrics with error handling (overall data, no date filtering)
-            $data = [
-                'company_name' => $company->company_name,
-                'report_frequency' => ucfirst($reportFrequency),
-                'report_generated_at' => now()->format('Y-m-d H:i:s'),
-                'total_users' => Users::where('company_id', $companyId)->count() + BlueCollarEmployee::where('company_id', $companyId)->count(),
-                'blue_collar_employees' => BlueCollarEmployee::where('company_id', $companyId)->count(),
-
-                'email_camp_data' => [
-                    'email_campaign' => $companyReport->emailCampaigns() ?? 0,
-                    'email_sent' => $emailCampReport->emailSent() ?? 0,
-                    'payload_clicked' => $emailCampReport->payloadClicked() ?? 0,
-                    'email_reported' => $emailCampReport->emailReported() ?? 0,
-                    'compromised' => $emailCampReport->compromised() ?? 0,
-                    'total_attempts' => $emailCampReport->totalAttempts() ?? 0
-                ],
-
-                'quish_camp_data' => [
-                    'quishing_campaign' => $companyReport->quishingCampaigns() ?? 0,
-                    'email_sent' => $quishingCampReport->emailSent() ?? 0,
-                    'qr_scanned' => $quishingCampReport->qrScanned() ?? 0,
-                    'email_reported' => $quishingCampReport->emailReported() ?? 0,
-                    'compromised' => $quishingCampReport->compromised() ?? 0,
-                    'total_attempts' => $quishingCampReport->totalAttempts() ?? 0
-                ],
-
-                'wa_camp_data' => [
-                    'whatsapp_campaign' => $companyReport->whatsappCampaigns() ?? 0,
-                    'message_viewed' => $waCampReport->messageViewed() ?? 0,
-                    'link_clicked' => $waCampReport->linkClicked() ?? 0,
-                    'compromised' => $waCampReport->compromised() ?? 0,
-                    'total_attempts' => $waCampReport->totalAttempts() ?? 0
-                ],
-
-                'ai_camp_data' => [
-                    'ai_vishing' => $companyReport->aiCampaigns() ?? 0,
-                    'compromised' => $aiVishReport->compromised() ?? 0,
-                    'total_attempts' => $aiVishReport->totalAttempts() ?? 0,
-                    'reported_calls' => $aiVishReport->reportedCalls() ?? 0,
-                ],
-
-                'training_assigned' => $companyReport->totalTrainingAssigned() ?? 0,
-                'training_completed' => $companyReport->completedTraining() ?? 0,
-                'training_completion_rate' => $companyReport->trainingCompletionRate() ?? 0,
-                'pending_training' => $companyReport->pendingTraining() ?? 0,
-                'training_pending_rate' => $companyReport->trainingPendingRate() ?? 0,
-                'assigned_policies' => $companyReport->totalPoliciesAssigned() ?? 0,
-                'accepted_policies' => $companyReport->acceptedPolicies() ?? 0,
-                'accepted_policies_rate' => $companyReport->acceptedPoliciesRate() ?? 0,
-                'not_accepted_policies' => $companyReport->notAcceptedPolicies() ?? 0,
-                'not_accepted_policies_rate' => $companyReport->notAcceptedPoliciesRate() ?? 0,
-                'riskScore' => $companyReport->calculateOverallRiskScore(),
-                'most_compromised_employees' => $overallReport->mostCompromisedEmployees(),
-                'most_clicked_emp' => $overallReport->mostClickedEmployees(),
-                'phish_clicks_weekly' => $dashController->clicksInWeekDays(null, null, $companyId),
-                'avg_scores' => $overallReport->scoreAverage(),
-                'riskAnalysis' => $overallReport->riskAnalysis(),
-                'certifiedUsers' => $companyReport->certifiedUsers(),
-                'totalTrainingStarted' => $companyReport->totalTrainingStarted(),
-                'totalBadgesAssigned' => $companyReport->totalBadgesAssigned() ?? 0,
-                'trainingStatusDistribution' => $this->getTrainingStatusDistribution($companyId),
-                'wa_events_over_time' => $waController->eventsOverTime(null, null, $companyId),
-                'qr_events_over_time' => $qrController->eventsOverTime(null, null, $companyId),
-                'ai_events_over_time' => $aiController->eventsOverTime(null, null, $companyId),
-
-            ];
-
-            // Calculate aggregate metrics for backward compatibility
-            $totalEmailsSent = ($data['email_camp_data']['email_sent'] ?? 0) + ($data['quish_camp_data']['email_sent'] ?? 0);
-            $totalPayloadClicked = ($data['email_camp_data']['payload_clicked'] ?? 0) + ($data['quish_camp_data']['qr_scanned'] ?? 0) + ($data['wa_camp_data']['link_clicked'] ?? 0);
-            $totalCampaigns = ($data['email_camp_data']['email_campaign'] ?? 0) + ($data['quish_camp_data']['quishing_campaign'] ?? 0) +
-                ($data['wa_camp_data']['whatsapp_campaign'] ?? 0) + ($data['ai_camp_data']['ai_vishing'] ?? 0);
-
-            // Calculate total threats from all campaign types
-            $totalThreats = ($data['email_camp_data']['total_attempts'] ?? 0) +
-                ($data['quish_camp_data']['total_attempts'] ?? 0) +
-                ($data['wa_camp_data']['total_attempts'] ?? 0) +
-                ($data['ai_camp_data']['total_attempts'] ?? 0);
-
-            // Calculate total compromised accounts from all campaign types
-            $totalCompromised = ($data['email_camp_data']['compromised'] ?? 0) +
-                ($data['quish_camp_data']['compromised'] ?? 0) +
-                ($data['wa_camp_data']['compromised'] ?? 0) +
-                ($data['ai_camp_data']['compromised'] ?? 0);
-
-            // Calculate risk text based on risk score
-            $riskScore = $data['riskScore'] ?? 0;
-            $riskText = 'Unknown';
-            if ($riskScore <= 30) {
-                $riskText = 'Low Risk';
-            } elseif ($riskScore <= 60) {
-                $riskText = 'Moderate Risk';
-            } elseif ($riskScore <= 80) {
-                $riskText = 'High Risk';
-            } else {
-                $riskText = 'Critical Risk';
-            }
-
-            // Add calculated fields
-            $data['campaigns_sent'] = $totalCampaigns;
-            $data['emails_sent'] = $totalEmailsSent;
-            $data['payload_clicked'] = $totalPayloadClicked;
-            $data['totalCompromised'] = $totalCompromised;
-            $data['total_threats'] = $totalThreats;
-            $data['riskText'] = $riskText;
-            $data['click_rate'] = $companyReport->clickRate();
-
-            // print_r($data);
-            // return;
+            $data = $this->prepareReportData($company);
+            $aggregates = $this->calculateAggregates($data);
+            $riskText = $this->getRiskText($data['riskScore'] ?? 0);
+            $data = array_merge($data, $aggregates, ['riskText' => $riskText]);
 
             // Generate PDF
             $pdf = Pdf::loadView('new-overall-report', $data);
             $pdfContent = $pdf->output();
 
-            // save report in db as well as in s3
+            // Save report and send email
             $this->saveReport($company, $pdfContent);
-
-            // Send email with PDF attachment
             $this->sendReportEmail($company, $data, $pdfContent);
         } catch (\Exception $e) {
             echo "Error generating report for company {$company->company_name}: " . $e->getMessage() . "\n";
+        }
+    }
+
+    private function prepareReportData($company)
+    {
+        $companyId = $company->company_id;
+        $companyReport = new CompanyReport($companyId);
+        $emailCampReport = new EmailCampReport($companyId);
+        $quishingCampReport = new QuishingCampReport($companyId);
+        $waCampReport = new WhatsappCampReport($companyId);
+        $aiVishReport = new VishingCampReport($companyId);
+        $overallReport = new OverallNormalEmployeeReport($companyId);
+        $dashController = new ApiDashboardController();
+        $waController = new ApiWhatsappReportController();
+        $qrController = new ApiQuishingReportController();
+        $aiController = new ApiAivishingReportController();
+
+        $reportFrequency = $company->company_settings->overall_report ?? 'monthly';
+
+        return [
+            'company_name' => $company->company_name,
+            'report_frequency' => ucfirst($reportFrequency),
+            'report_generated_at' => now()->format('Y-m-d H:i:s'),
+            'total_users' => Users::where('company_id', $companyId)->count() + BlueCollarEmployee::where('company_id', $companyId)->count(),
+            'blue_collar_employees' => BlueCollarEmployee::where('company_id', $companyId)->count(),
+            'email_camp_data' => [
+                'email_campaign' => $companyReport->emailCampaigns() ?? 0,
+                'email_sent' => $emailCampReport->emailSent() ?? 0,
+                'payload_clicked' => $emailCampReport->payloadClicked() ?? 0,
+                'email_reported' => $emailCampReport->emailReported() ?? 0,
+                'compromised' => $emailCampReport->compromised() ?? 0,
+                'total_attempts' => $emailCampReport->totalAttempts() ?? 0
+            ],
+            'quish_camp_data' => [
+                'quishing_campaign' => $companyReport->quishingCampaigns() ?? 0,
+                'email_sent' => $quishingCampReport->emailSent() ?? 0,
+                'qr_scanned' => $quishingCampReport->qrScanned() ?? 0,
+                'email_reported' => $quishingCampReport->emailReported() ?? 0,
+                'compromised' => $quishingCampReport->compromised() ?? 0,
+                'total_attempts' => $quishingCampReport->totalAttempts() ?? 0
+            ],
+            'wa_camp_data' => [
+                'whatsapp_campaign' => $companyReport->whatsappCampaigns() ?? 0,
+                'message_viewed' => $waCampReport->messageViewed() ?? 0,
+                'link_clicked' => $waCampReport->linkClicked() ?? 0,
+                'compromised' => $waCampReport->compromised() ?? 0,
+                'total_attempts' => $waCampReport->totalAttempts() ?? 0
+            ],
+            'ai_camp_data' => [
+                'ai_vishing' => $companyReport->aiCampaigns() ?? 0,
+                'compromised' => $aiVishReport->compromised() ?? 0,
+                'total_attempts' => $aiVishReport->totalAttempts() ?? 0,
+                'reported_calls' => $aiVishReport->reportedCalls() ?? 0,
+            ],
+            'training_assigned' => $companyReport->totalTrainingAssigned() ?? 0,
+            'training_completed' => $companyReport->completedTraining() ?? 0,
+            'training_completion_rate' => $companyReport->trainingCompletionRate() ?? 0,
+            'pending_training' => $companyReport->pendingTraining() ?? 0,
+            'training_pending_rate' => $companyReport->trainingPendingRate() ?? 0,
+            'assigned_policies' => $companyReport->totalPoliciesAssigned() ?? 0,
+            'accepted_policies' => $companyReport->acceptedPolicies() ?? 0,
+            'accepted_policies_rate' => $companyReport->acceptedPoliciesRate() ?? 0,
+            'not_accepted_policies' => $companyReport->notAcceptedPolicies() ?? 0,
+            'not_accepted_policies_rate' => $companyReport->notAcceptedPoliciesRate() ?? 0,
+            'riskScore' => $companyReport->calculateOverallRiskScore(),
+            'most_compromised_employees' => $overallReport->mostCompromisedEmployees(),
+            'most_clicked_emp' => $overallReport->mostClickedEmployees(),
+            'phish_clicks_weekly' => $dashController->clicksInWeekDays(null, null, $companyId),
+            'avg_scores' => $overallReport->scoreAverage(),
+            'riskAnalysis' => $overallReport->riskAnalysis(),
+            'certifiedUsers' => $companyReport->certifiedUsers(),
+            'totalTrainingStarted' => $companyReport->totalTrainingStarted(),
+            'totalBadgesAssigned' => $companyReport->totalBadgesAssigned() ?? 0,
+            'trainingStatusDistribution' => $this->getTrainingStatusDistribution($companyId),
+            'wa_events_over_time' => $waController->eventsOverTime(null, null, $companyId),
+            'qr_events_over_time' => $qrController->eventsOverTime(null, null, $companyId),
+            'ai_events_over_time' => $aiController->eventsOverTime(null, null, $companyId),
+        ];
+    }
+
+    private function calculateAggregates($data)
+    {
+        $totalEmailsSent = ($data['email_camp_data']['email_sent'] ?? 0) + ($data['quish_camp_data']['email_sent'] ?? 0);
+        $totalPayloadClicked = ($data['email_camp_data']['payload_clicked'] ?? 0) + ($data['quish_camp_data']['qr_scanned'] ?? 0) + ($data['wa_camp_data']['link_clicked'] ?? 0);
+        $totalCampaigns = ($data['email_camp_data']['email_campaign'] ?? 0) + ($data['quish_camp_data']['quishing_campaign'] ?? 0) +
+            ($data['wa_camp_data']['whatsapp_campaign'] ?? 0) + ($data['ai_camp_data']['ai_vishing'] ?? 0);
+        $totalThreats = ($data['email_camp_data']['total_attempts'] ?? 0) +
+            ($data['quish_camp_data']['total_attempts'] ?? 0) +
+            ($data['wa_camp_data']['total_attempts'] ?? 0) +
+            ($data['ai_camp_data']['total_attempts'] ?? 0);
+        $totalCompromised = ($data['email_camp_data']['compromised'] ?? 0) +
+            ($data['quish_camp_data']['compromised'] ?? 0) +
+            ($data['wa_camp_data']['compromised'] ?? 0) +
+            ($data['ai_camp_data']['compromised'] ?? 0);
+
+        return [
+            'campaigns_sent' => $totalCampaigns,
+            'emails_sent' => $totalEmailsSent,
+            'payload_clicked' => $totalPayloadClicked,
+            'totalCompromised' => $totalCompromised,
+            'total_threats' => $totalThreats,
+            'click_rate' => $data['click_rate'] ?? null,
+        ];
+    }
+
+    private function getRiskText($riskScore)
+    {
+        if ($riskScore <= 30) {
+            return 'Low Risk';
+        } elseif ($riskScore <= 60) {
+            return 'Moderate Risk';
+        } elseif ($riskScore <= 80) {
+            return 'High Risk';
+        } else {
+            return 'Critical Risk';
         }
     }
 
