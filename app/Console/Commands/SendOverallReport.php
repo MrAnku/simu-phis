@@ -6,31 +6,43 @@ use App\Http\Controllers\Api\ApiAivishingReportController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
-use App\Models\Company;
-use App\Models\Users;
-use App\Models\TrainingAssignedUser;
-use App\Models\AssignedPolicy;
 use App\Mail\OverallReportMail;
 use App\Models\BlueCollarEmployee;
+use App\Models\Company;
 use App\Models\OverallReport;
-use App\Models\Policy;
+use App\Models\TrainingAssignedUser;
+use App\Models\Users;
 use App\Services\CompanyReport;
 use App\Services\Reports\OverallNormalEmployeeReport;
 use App\Services\Simulations\EmailCampReport;
 use App\Services\Simulations\QuishingCampReport;
 use App\Services\Simulations\VishingCampReport;
 use App\Services\Simulations\WhatsappCampReport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 
-class SimpleMonthlyReport extends Command
+class SendOverallReport extends Command
 {
-    protected $signature = 'report:generate';
-    protected $description = 'Generate overall reports for companies based on their frequency settings (weekly, monthly, quarterly, semiannually, annually)';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:send-overall-report';
 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
         // Fetch companies that have overall_report setting enabled (not null) in settings table
@@ -43,7 +55,7 @@ class SimpleMonthlyReport extends Command
                 $this->generateAndSendReport($company);
             }
         }
-    }   
+    }
 
     private function generateAndSendReport($company)
     {
@@ -138,10 +150,10 @@ class SimpleMonthlyReport extends Command
                 ($data['wa_camp_data']['whatsapp_campaign'] ?? 0) + ($data['ai_camp_data']['ai_vishing'] ?? 0);
 
             // Calculate total threats from all campaign types
-            $totalThreats = ($data['email_camp_data']['total_attempts'] ?? 0) + 
-                           ($data['quish_camp_data']['total_attempts'] ?? 0) + 
-                           ($data['wa_camp_data']['total_attempts'] ?? 0) + 
-                           ($data['ai_camp_data']['total_attempts'] ?? 0);
+            $totalThreats = ($data['email_camp_data']['total_attempts'] ?? 0) +
+                ($data['quish_camp_data']['total_attempts'] ?? 0) +
+                ($data['wa_camp_data']['total_attempts'] ?? 0) +
+                ($data['ai_camp_data']['total_attempts'] ?? 0);
 
             // Calculate total compromised accounts from all campaign types
             $totalCompromised = ($data['email_camp_data']['compromised'] ?? 0) +
@@ -208,7 +220,7 @@ class SimpleMonthlyReport extends Command
     {
         $relativePath = '/reports/' . $company->company_id . '/' . uniqid() . '.pdf';
 
-         // Save using Storage
+        // Save using Storage
         Storage::disk('s3')->put($relativePath, $pdfContent);
         $report_path = Storage::disk('s3')->path($relativePath);
 
@@ -220,14 +232,11 @@ class SimpleMonthlyReport extends Command
         echo "Report saved for: {$company->email}\n";
     }
 
-    /**
-     * Check if a report should be generated for this company based on frequency setting
-     */
     private function shouldGenerateReport($company): bool
     {
         // Get the company's report frequency setting
         $reportFrequency = $company->company_settings->overall_report ?? null;
-        
+
         if (!$reportFrequency) {
             return false; // No setting found
         }
@@ -251,9 +260,9 @@ class SimpleMonthlyReport extends Command
         // Check if it's exactly the time for the next report (using static date for testing)
         $currentDate = Carbon::now();
         $shouldGenerate = $currentDate->isSameDay($nextReportDate);
-        
+
         if ($shouldGenerate) {
-            echo "Time for {$reportFrequency} report for {$company->company_name}. Last report: {$lastReportDate->format('Y-m-d')}\n";
+            echo "{$reportFrequency} report for {$company->company_name}. Last report: {$lastReportDate->format('Y-m-d')}\n";
         } else {
             echo "Not time yet for {$company->company_name}. Next report due: {$nextReportDate->format('Y-m-d')}\n";
         }
@@ -261,12 +270,9 @@ class SimpleMonthlyReport extends Command
         return $shouldGenerate;
     }
 
-    /**
-     * Calculate the next report date based on frequency
-     */
     private function getNextReportDate(Carbon $lastReportDate, string $frequency): Carbon
     {
-        return match(strtolower($frequency)) {
+        return match (strtolower($frequency)) {
             'weekly' => $lastReportDate->copy()->addWeek(),
             'monthly' => $lastReportDate->copy()->addMonth(),
             'quarterly' => $lastReportDate->copy()->addMonths(3),
@@ -276,9 +282,6 @@ class SimpleMonthlyReport extends Command
         };
     }
 
-    /**
-     * Get training status distribution for the company based on fetchTrainingReporting pattern
-     */
     private function getTrainingStatusDistribution($companyId)
     {
         try {
