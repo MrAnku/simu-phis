@@ -1262,4 +1262,50 @@ class ApiSettingsController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function enableReport(Request $request)
+    {
+        try {
+            $request->validate([
+                'overall_report' => 'required|string|in:weekly,monthly,quarterly,annually,semi_annually',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $settings = CompanySettings::where('company_id', $companyId)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Company settings not found')], 404);
+            }
+
+            CompanySettings::where('company_id', $companyId)
+                ->update(['overall_report' => $request->overall_report]);
+
+            return response()->json(['success' => true, 'message' => __('Overall reporting updated successfully')], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function disableReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $settings = CompanySettings::where('company_id', $companyId)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Company settings not found')], 404);
+            }
+
+            CompanySettings::where('company_id', $companyId)
+                ->update(['overall_report' => null]);
+
+            return response()->json(['success' => true, 'message' => __('Overall reporting disabled successfully')], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
