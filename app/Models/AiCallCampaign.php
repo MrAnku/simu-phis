@@ -20,6 +20,7 @@ class AiCallCampaign extends Model
         'training_module',
         'training_lang',
         'training_type',
+        'policies',
         'ai_agent',
         'ai_agent_name',
         'phone_no',

@@ -2,26 +2,27 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Users;
 use App\Models\Company;
+use App\Models\UsersGroup;
+use App\Models\ScormTraining;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
-use App\Models\BlueCollarEmployee;
-use App\Models\BlueCollarScormAssignedUser;
-use App\Models\BlueCollarTrainingUser;
+use App\Models\TrainingModule;
+use Illuminate\Support\Carbon;
 use Illuminate\Console\Command;
 use App\Models\ScormAssignedUser;
-use App\Models\ScormTraining;
+use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\DB;
 use App\Models\TrainingAssignedUser;
-use App\Models\TrainingModule;
-use App\Models\Users;
-use App\Models\UsersGroup;
-use App\Services\BlueCollarCampTrainingService;
-use App\Services\BlueCollarWhatsappService;
-use App\Services\CampaignTrainingService;
 use Illuminate\Support\Facades\Http;
+use App\Models\BlueCollarTrainingUser;
+use App\Services\PolicyAssignedService;
+use App\Services\CampaignTrainingService;
 use App\Services\TrainingAssignedService;
-use Illuminate\Support\Carbon;
+use App\Models\BlueCollarScormAssignedUser;
+use App\Services\BlueCollarWhatsappService;
+use App\Services\BlueCollarCampTrainingService;
 
 class ProcessAiCampaigns extends Command
 {
@@ -337,61 +338,7 @@ class ProcessAiCampaigns extends Command
         return false;
     }
 
-    private function analyseAicallReports()
-    {
-        // Retrieve the log JSON data
-        $logData = DB::table('ai_call_all_logs')->where('locally_handled', 0)->get();
-
-        if ($logData) {
-
-            foreach ($logData as $singleLog) {
-
-                $logJson = json_decode($singleLog->log_json, true);
-
-                // Ensure call_id exists in the JSON
-                if (isset($logJson['call']['call_id'])) {
-                    $callId = $logJson['call']['call_id'];
-
-                    // Check if call_id exists in the other table (e.g., 'other_table_name')
-                    $existingRow = AiCallCampLive::where('call_id', $callId)->first();
-
-                    if ($existingRow) {
-
-                        if ($logJson['args']['fell_for_simulation'] == true) {
-
-                            if ($existingRow->training_module !== null) {
-
-                                $this->assignTraining($existingRow);
-                                $existingRow->update(['training_assigned' => 1]);
-                            }
-
-                            if ($existingRow->scorm_training !== null) {
-
-                                $this->assignTraining($existingRow);
-                                $existingRow->update(['training_assigned' => 1]);
-                            }
-                        }
-
-                        // If exists, update the JSON column of the found row
-                        $updatedJson = json_encode($logJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-                        DB::table('ai_call_camp_live')->where('id', $existingRow->id)->update([
-                            // 'call_time' => $logJson['start_timestamp'] ?? null,
-                            'training_assigned' => $logJson['args']['fell_for_simulation'] == true && $existingRow->training_module !== null ? 1 : 0,
-                            'compromised' => $logJson['args']['fell_for_simulation'] == true ? 1 : 0,
-                            'status' => 'completed',
-                            'call_end_response' => $updatedJson
-                        ]);
-
-
-                        DB::table('ai_call_all_logs')->where('id', $singleLog->id)->update([
-                            'locally_handled' => 1
-                        ]);
-                    }
-                }
-            }
-        }
-    }
+    
 
     private function checkAllAiCallsHandled()
     {
@@ -434,6 +381,20 @@ class ProcessAiCampaigns extends Command
                 $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
             } else {
                 $sent = CampaignTrainingService::assignTraining($campaign);
+            }
+
+            if ($campaign->camp?->policies != null) {
+                try {
+                    $policyService = new PolicyAssignedService(
+                        $campaign->campaign_id,
+                        $campaign->user_name,
+                        $campaign->user_email,
+                        $campaign->company_id
+                    );
+
+                    $policyService->assignPolicies($campaign->camp?->policies);
+                } catch (\Exception $e) {
+                }
             }
 
             if ($sent) {
