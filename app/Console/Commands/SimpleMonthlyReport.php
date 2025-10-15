@@ -12,6 +12,7 @@ use App\Models\TrainingAssignedUser;
 use App\Models\AssignedPolicy;
 use App\Mail\OverallReportMail;
 use App\Models\BlueCollarEmployee;
+use App\Models\OverallReport;
 use App\Models\Policy;
 use App\Services\CompanyReport;
 use App\Services\Reports\OverallNormalEmployeeReport;
@@ -21,23 +22,28 @@ use App\Services\Simulations\VishingCampReport;
 use App\Services\Simulations\WhatsappCampReport;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class SimpleMonthlyReport extends Command
 {
-    protected $signature = 'report:monthly';
-    protected $description = 'Generate overall monthly reports for all companies and send via email';
+    protected $signature = 'report:generate';
+    protected $description = 'Generate overall reports for companies based on their frequency settings (weekly, monthly, quarterly, semiannually, annually)';
 
     public function handle()
     {
-        // Get all companies
-        $companies = Company::all();
+        // Fetch companies that have overall_report setting enabled (not null) in settings table
+        $companies = Company::whereHas('company_settings', function ($query) {
+            $query->whereNotNull('overall_report');
+        })->get();
 
         foreach ($companies as $company) {
-            $this->generateAndSendReport($company);
+            if ($this->shouldGenerateReport($company)) {
+                $this->generateAndSendReport($company);
+            }
         }
-    }
+    }   
 
     private function generateAndSendReport($company)
     {
@@ -55,9 +61,14 @@ class SimpleMonthlyReport extends Command
             $qrController = new ApiQuishingReportController();
             $aiController = new ApiAivishingReportController();
 
-            // Get basic metrics with error handling
+            // Get the report frequency for display
+            $reportFrequency = $company->company_settings->overall_report ?? 'monthly';
+
+            // Get basic metrics with error handling (overall data, no date filtering)
             $data = [
                 'company_name' => $company->company_name,
+                'report_frequency' => ucfirst($reportFrequency),
+                'report_generated_at' => now()->format('Y-m-d H:i:s'),
                 'total_users' => Users::where('company_id', $companyId)->count() + BlueCollarEmployee::where('company_id', $companyId)->count(),
                 'blue_collar_employees' => BlueCollarEmployee::where('company_id', $companyId)->count(),
 
@@ -167,6 +178,9 @@ class SimpleMonthlyReport extends Command
             $pdf = Pdf::loadView('new-overall-report', $data);
             $pdfContent = $pdf->output();
 
+            // save report in db as well as in s3
+            $this->saveReport($company, $pdfContent);
+
             // Send email with PDF attachment
             $this->sendReportEmail($company, $data, $pdfContent);
         } catch (\Exception $e) {
@@ -187,7 +201,77 @@ class SimpleMonthlyReport extends Command
         // Send email using Mailable class
         Mail::to($email)->send(new OverallReportMail($data, $pdfContent));
 
-        echo "Report sent to: {$email}";
+        echo "Report sent to: {$email}\n";
+    }
+
+    private function saveReport($company, $pdfContent)
+    {
+        $relativePath = '/reports/' . $company->company_id . '/' . uniqid() . '.pdf';
+
+         // Save using Storage
+        Storage::disk('s3')->put($relativePath, $pdfContent);
+        $report_path = Storage::disk('s3')->path($relativePath);
+
+        OverallReport::create([
+            'company_id' => $company->company_id,
+            'report_path' => '/' . $report_path,
+        ]);
+
+        echo "Report saved for: {$company->email}\n";
+    }
+
+    /**
+     * Check if a report should be generated for this company based on frequency setting
+     */
+    private function shouldGenerateReport($company): bool
+    {
+        // Get the company's report frequency setting
+        $reportFrequency = $company->company_settings->overall_report ?? null;
+        
+        if (!$reportFrequency) {
+            return false; // No setting found
+        }
+
+        // Check if there's a previous report for this company
+        $lastReport = OverallReport::where('company_id', $company->company_id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // If no previous report exists, generate report (first time)
+        if (!$lastReport) {
+            echo "No previous report found for {$company->company_name}. Generating first report.\n";
+            return true;
+        }
+
+        // Calculate when next report should be generated based on frequency
+        $lastReportDate = Carbon::parse($lastReport->created_at);
+        $nextReportDate = $this->getNextReportDate($lastReportDate, $reportFrequency);
+
+        // Check if it's time for the next report
+        $shouldGenerate = now()->gte($nextReportDate);
+        
+        if ($shouldGenerate) {
+            echo "Time for {$reportFrequency} report for {$company->company_name}. Last report: {$lastReportDate->format('Y-m-d')}\n";
+        } else {
+            echo "Not time yet for {$company->company_name}. Next report due: {$nextReportDate->format('Y-m-d')}\n";
+        }
+
+        return $shouldGenerate;
+    }
+
+    /**
+     * Calculate the next report date based on frequency
+     */
+    private function getNextReportDate(Carbon $lastReportDate, string $frequency): Carbon
+    {
+        return match(strtolower($frequency)) {
+            'weekly' => $lastReportDate->copy()->addWeek(),
+            'monthly' => $lastReportDate->copy()->addMonth(),
+            'quarterly' => $lastReportDate->copy()->addMonths(3),
+            'semiannually' => $lastReportDate->copy()->addMonths(6),
+            'annually' => $lastReportDate->copy()->addYear(),
+            default => $lastReportDate->copy()->addMonth(), // Default to monthly
+        };
     }
 
     /**
