@@ -1279,6 +1279,7 @@ class ApiSettingsController extends Controller
             }
 
             CompanySettings::where('company_id', $companyId)
+                ->first()
                 ->update(['overall_report' => $request->overall_report]);
 
             return response()->json(['success' => true, 'message' => __('Overall reporting updated successfully')], 200);

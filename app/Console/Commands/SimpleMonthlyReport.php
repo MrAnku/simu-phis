@@ -234,7 +234,7 @@ class SimpleMonthlyReport extends Command
 
         // Check if there's a previous report for this company
         $lastReport = OverallReport::where('company_id', $company->company_id)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->first();
 
         // If no previous report exists, generate report (first time)
@@ -245,10 +245,12 @@ class SimpleMonthlyReport extends Command
 
         // Calculate when next report should be generated based on frequency
         $lastReportDate = Carbon::parse($lastReport->created_at);
+
         $nextReportDate = $this->getNextReportDate($lastReportDate, $reportFrequency);
 
-        // Check if it's time for the next report
-        $shouldGenerate = now()->gte($nextReportDate);
+        // Check if it's exactly the time for the next report (using static date for testing)
+        $currentDate = Carbon::now();
+        $shouldGenerate = $currentDate->isSameDay($nextReportDate);
         
         if ($shouldGenerate) {
             echo "Time for {$reportFrequency} report for {$company->company_name}. Last report: {$lastReportDate->format('Y-m-d')}\n";
@@ -268,7 +270,7 @@ class SimpleMonthlyReport extends Command
             'weekly' => $lastReportDate->copy()->addWeek(),
             'monthly' => $lastReportDate->copy()->addMonth(),
             'quarterly' => $lastReportDate->copy()->addMonths(3),
-            'semiannually' => $lastReportDate->copy()->addMonths(6),
+            'semi_annually' => $lastReportDate->copy()->addMonths(6),
             'annually' => $lastReportDate->copy()->addYear(),
             default => $lastReportDate->copy()->addMonth(), // Default to monthly
         };
