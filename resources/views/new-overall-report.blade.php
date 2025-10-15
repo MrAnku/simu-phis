@@ -12,12 +12,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
             background: #f8fafc;
             color: #1e293b;
             padding: 10px;
-            line-height: 1.3;
+            line-height: 1.5;
             margin: 0;
+            font-weight: 400;
+            letter-spacing: 0.3px;
         }
 
         .container {
@@ -38,25 +40,79 @@
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
         }
 
         .header p {
-            font-size: 13px;
+            font-size: 14px;
             color: #64748b;
+            font-style: italic;
+            font-weight: 300;
+        }
             margin-bottom: 3px;
         }
 
         .header .date {
-            font-size: 11px;
+            font-size: 12px;
             color: #94a3b8;
             text-align: right;
-            margin-top: 8px;
+            margin-top: 10px;
+            font-style: italic;
+            font-weight: 300;
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            letter-spacing: 0.5px;
+        }
+
+        /* Additional elegant typography */
+        h3, h4, h5 {
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+        
+        h3 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        h4 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        h5 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .recommendations h3,
+        .security-status h3 {
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+        
+        /* Enhance readability */
+        p {
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            line-height: 1.6;
+            letter-spacing: 0.2px;
+        }
+        
+        /* Make numbers more elegant */
+        .score-number,
+        .kpi-value {
+            font-family: 'Arial', 'Calibri', 'Times New Roman', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         /* Risk Score Section */
@@ -176,12 +232,15 @@
 
         /* Section Title */
         .section-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
             color: #1e293b;
-            margin-bottom: 15px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            text-transform: capitalize;
+            letter-spacing: 1px;
         }
 
         /* KPI Grid */
@@ -276,13 +335,15 @@
         }
 
         .column-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: #1e293b;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
+            letter-spacing: 0.8px;
         }
 
         .status-badge {
@@ -821,19 +882,19 @@
 
                     @if($compromise_rate > 30)
                     <p style="font-size: 13px; color: #dc2626; margin-bottom: 15px;">
-                        <strong>🚨 Critical Security Alert:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents detected with a {{ number_format($compromise_rate, 1) }}% compromise rate across {{ number_format($total_users ?? 0) }} users. Immediate action required to strengthen security protocols and reduce vulnerability exposure through enhanced training and awareness programs.
+                        <strong>Critical Security Alert:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents detected with a {{ number_format($compromise_rate, 1) }}% compromise rate across {{ number_format($total_users ?? 0) }} users. Immediate action required to strengthen security protocols and reduce vulnerability exposure through enhanced training and awareness programs.
                     </p>
                     @elseif($compromise_rate > 15)
                     <p style="font-size: 13px; color: #f59e0b; margin-bottom: 15px;">
-                        <strong>⚠️ Security Warning:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Consider implementing additional security measures and training to reduce risk exposure across your {{ number_format($total_users ?? 0) }} users.
+                        <strong> Security Warning:</strong> {{ number_format($totalCompromised ?? 0) }} security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Consider implementing additional security measures and training to reduce risk exposure across your {{ number_format($total_users ?? 0) }} users.
                     </p>
                     @elseif($compromise_rate > 0)
                     <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
-                        <strong>📊 Security Notice:</strong> {{ number_format($totalCompromised ?? 0) }} minor security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Your security posture is generally good across {{ number_format($total_users ?? 0) }} users, but continue monitoring and maintain regular training schedules.
+                        <strong> Security Notice:</strong> {{ number_format($totalCompromised ?? 0) }} minor security incidents recorded with a {{ number_format($compromise_rate, 1) }}% compromise rate. Your security posture is generally good across {{ number_format($total_users ?? 0) }} users, but continue monitoring and maintain regular training schedules.
                     </p>
                     @else
                     <p style="font-size: 13px; color: #10b981; margin-bottom: 15px;">
-                        <strong>✅ Excellent Security Status:</strong> No security compromises detected across your {{ number_format($total_users ?? 0) }} users. Your organization demonstrates strong security awareness and effective training programs. Continue current security practices to maintain this excellent standard.
+                        <strong> Excellent Security Status:</strong> No security compromises detected across your {{ number_format($total_users ?? 0) }} users. Your organization demonstrates strong security awareness and effective training programs. Continue current security practices to maintain this excellent standard.
                     </p>
                     @endif
 
@@ -869,34 +930,43 @@
                         <div style="margin: 20px auto; text-align: center;">
                             @php
                             $trainingAssigned = $training_assigned ?? 10;
-                            $trainingStarted = $totalTrainingStarted ?? 5;
+                            $trainingStarted = $totalTrainingStarted ?? 8;  // Total who started (includes completed)
                             $trainingCompleted = $training_completed ?? 2;
 
-                            $total = max($trainingAssigned, 1);
-                            $remaining = $trainingAssigned - $trainingStarted - $trainingCompleted;
+                            $total = $trainingAssigned + $trainingStarted + $trainingCompleted;
+                            
+                            // Prevent division by zero
+                            if ($total == 0) {
+                                $total = 1;
+                                $trainingAssigned = 1;
+                                $trainingStarted = 0;
+                                $trainingCompleted = 0;
+                            }
+                            
+                            // Calculate percentages for the three main categories based on actual values
+                            $assignedPercentage = ($trainingAssigned / $total) * 100;
+                            $startedPercentage = ($trainingStarted / $total) * 100;
+                            $completedPercentage = ($trainingCompleted / $total) * 100;
                             @endphp
 
-                            <!-- Donut using individual border segments -->
+                            <!-- Simple stacked circular progress representation -->
                             <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
-                                <!-- Base circle with light border -->
-                                <div style="width: 90px; height: 90px; border: 15px solid #f1f5f9; border-radius: 50%; background: white;"></div>
-
-                                <!-- Overlay colored segments -->
-                                <div style="position: absolute; top: 0; left: 0; width: 90px; height: 90px;">
-                                    @if($trainingCompleted > 0)
-                                    <!-- Green segment for completed (top quarter) -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-top: 15px solid #10b981; border-radius: 50%; position: absolute;"></div>
+                                <!-- Create simple visual representation using concentric circles -->
+                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #3b82f6; position: relative;">
+                                    <!-- Assigned (blue) - full circle base -->
+                                    
+                                    <!-- Started (orange) overlay -->
+                                    @if($startedPercentage > 0)
+                                    <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border-radius: 50%; background: #fb923c;"></div>
                                     @endif
-
-                                    @if($trainingStarted > 0)
-                                    <!-- Orange segment for started (right quarter) -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-right: 15px solid #fb923c; border-radius: 50%; position: absolute;"></div>
+                                    
+                                    <!-- Completed (green) overlay -->  
+                                    @if($completedPercentage > 0)
+                                    <div style="position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; border-radius: 50%; background: #10b981;"></div>
                                     @endif
-
-                                    @if($remaining > 0)
-                                    <!-- Blue segments for remaining (bottom and left quarters) -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-bottom: 15px solid #3b82f6; border-left: 15px solid #3b82f6; border-radius: 50%; position: absolute;"></div>
-                                    @endif
+                                    
+                                    <!-- White center to show as ring -->
+                                    <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
                                 </div>
                             </div>
                         </div>
@@ -949,14 +1019,10 @@
                         <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">Average Training Scores</h3>
 
                         @php
-                        $avgScores = $avg_scores ?? [];
-                        $staticScore = $avgScores['static_training'] ?? 24;
-                        $conversationalScore = $avgScores['conversational'] ?? 2;
-                        $gamifiedScore = $avgScores['gamified'] ?? 6;
-                        $aiScore = $avgScores['ai'] ?? 30;
-
-                        $maxScore = max($staticScore, $conversationalScore, $gamifiedScore, $aiScore);
-                        $maxScore = $maxScore > 0 ? $maxScore : 32; // Prevent division by zero
+                        $staticScore = $avg_scores['static_training'];
+                        $conversationalScore = $avg_scores['conversational_training'];
+                        $gamifiedScore = $avg_scores['gamified_training'];
+                        $aiScore = $avg_scores['ai_training'];
                         @endphp
 
                         <!-- Chart Container -->
@@ -1007,12 +1073,12 @@
                                     <!-- Gamified -->
                                     <div style="position: absolute; left: 62.5%; width: 25%; height: 120px; text-align: center;">
                                         @php $barHeight = max(($gamifiedScore / 100) * 120, 2); @endphp
-                                        <div style="position: absolute; bottom: 0; left: 20%; transform: translateX(-50%); background: #fb923c; width: 30px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0;">
+                                        <div style="position: absolute; bottom: 0; left: 15%; transform: translateX(-50%); background: #fb923c; width: 30px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0;">
                                             <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #1e293b; font-weight: 600;">{{ $gamifiedScore }}</div>
                                         </div>
                                     </div>
                                     <!-- AI -->
-                                    <div style="position: absolute; left: 87.5%; width: 25%; height: 120px; text-align: center;">
+                                    <div style="position: absolute; left: 87.5%; width: 20%; height: 120px; text-align: center;">
                                         @php $barHeight = max(($aiScore / 100) * 120, 2); @endphp
                                         <div style="position: absolute; bottom: 0; left: 15%; transform: translateX(-50%); background: #fb923c; width: 30px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0;">
                                             <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #1e293b; font-weight: 600;">{{ $aiScore }}</div>
@@ -1053,44 +1119,55 @@
                         </h3>
 
                         @php
-                        $riskData = $riskAnalysis ?? ['high_risk' => 0, 'moderate_risk' => 14, 'low_risk' => 1];
-                        $highRisk = $riskData['high_risk'] ?? 0;
-                        $moderateRisk = $riskData['moderate_risk'] ?? 14;
-                        $lowRisk = $riskData['low_risk'] ?? 1;
+                        $riskData = $riskAnalysis ?? ['in_high_risk' => 0, 'in_moderate_risk' => 14, 'in_low_risk' => 1];
+                        $highRisk = $riskData['in_high_risk'];
+                        $moderateRisk = $riskData['in_moderate_risk'];
+                        $lowRisk = $riskData['in_low_risk'];
                         $totalRisk = max(($highRisk + $moderateRisk + $lowRisk), 1);
                         @endphp
 
-                        <!-- Risk Distribution Donut Chart -->
+                        <!-- Risk Distribution Pie Chart -->
                         <div style="margin: 20px auto; text-align: center;">
-                            <!-- Donut using individual border segments -->
+                            <!-- Simple pie chart based on actual risk data -->
                             <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
-                                <!-- Base circle with light border -->
-                                <div style="width: 90px; height: 90px; border: 15px solid #f1f5f9; border-radius: 50%; background: white;"></div>
-
-                                <!-- Overlay colored segments based on proportions -->
-                                <div style="position: absolute; top: 0; left: 0; width: 90px; height: 90px;">
-                                    @php
-                                    // Calculate proportions for proper donut representation
-                                    $totalRiskCalc = max(($highRisk + $moderateRisk + $lowRisk), 1);
-                                    $moderatePercentage = ($moderateRisk / $totalRiskCalc) * 100;
-                                    $lowPercentage = ($lowRisk / $totalRiskCalc) * 100;
-                                    $highPercentage = ($highRisk / $totalRiskCalc) * 100;
-                                    @endphp
-
-                                    @if($moderateRisk > 0)
-                                    <!-- Orange segment for moderate risk - largest portion (about 93%) -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-top: 15px solid #fb923c; border-right: 15px solid #fb923c; border-bottom: 15px solid #fb923c; border-left: 15px solid #fb923c; border-radius: 50%; position: absolute;"></div>
+                                @php
+                                // Calculate risk percentages for visualization
+                                $totalRiskCalc = max(($highRisk + $moderateRisk + $lowRisk), 1);
+                                $moderatePercentage = ($moderateRisk / $totalRiskCalc) * 100;
+                                $lowPercentage = ($lowRisk / $totalRiskCalc) * 100;
+                                $highPercentage = ($highRisk / $totalRiskCalc) * 100;
+                                @endphp
+                                
+                                <!-- Base background color for largest category -->
+                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #f1f5f9; position: relative;">
+                                    
+                                    <!-- Show segments based on actual values -->
+                                    @if($lowRisk > 0 && $lowPercentage >= 50)
+                                    <!-- Low Risk (green) as main background if it's the majority -->
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
                                     @endif
-
-                                    @if($lowRisk > 0)
-                                    <!-- Green segment for low risk - small portion (about 7%) -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-right: 15px solid #10b981; border-radius: 50%; position: absolute; transform: rotate(45deg);"></div>
+                                    
+                                    @if($moderateRisk > 0 && $moderatePercentage >= 50)
+                                    <!-- Moderate Risk (orange) as main background if it's the majority -->
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #fb923c;"></div>
                                     @endif
-
-                                    @if($highRisk > 0)
-                                    <!-- Red segment for high risk -->
-                                    <div style="width: 90px; height: 90px; border: 15px solid transparent; border-top: 15px solid #ef4444; border-radius: 50%; position: absolute;"></div>
+                                    
+                                    @if($highRisk > 0 && $highPercentage >= 50)
+                                    <!-- High Risk (red) as main background if it's the majority -->
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #ef4444;"></div>
                                     @endif
+                                    
+                                    <!-- Add smaller segments for minority categories -->
+                                    @if($moderateRisk > 0 && $moderatePercentage < 50 && $moderatePercentage > 0)
+                                    <div style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: #fb923c;"></div>
+                                    @endif
+                                    
+                                    @if($highRisk > 0 && $highPercentage < 50 && $highPercentage > 0)
+                                    <div style="position: absolute; top: 25%; left: 25%; width: 50%; height: 50%; border-radius: 50%; background: #ef4444;"></div>
+                                    @endif
+                                    
+                                    <!-- Center hole to create donut effect -->
+                                    <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1416,7 +1493,7 @@
                 </div>
 
                 <div style="margin-top: 15px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">Monthly AI Vishing Success Rate Trends</div>
+                    <div style="font-size: 12px; color: #64748b;">Monthly AI Vishing g Fell For Simulation Rate Trends</div>
                 </div>
             </div>
         </div>
