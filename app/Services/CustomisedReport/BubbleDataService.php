@@ -48,15 +48,15 @@ class BubbleDataService
         $companyReport = new CompanyReport($this->companyId);
         $userGroups = $companyReport->userGroups();
         $data = [
-            'title' => 'Division Report',
-            'subtitle' => 'Division performance overview',
+            'title' => __('Division Report'),
+            'subtitle' => __('Division performance overview'),
             'type' => 'bubble',
             'data' => [],
             'series' => [],
             'xAxisKey' => 'compromise_rate',
             'yAxisKey' => 'risk_score',
             'sizeKey' => 'employees',
-            'description' => 'The performance of different division of their compromise rate and risk score.',
+            'description' => __('The performance of different division of their compromise rate and risk score.'),
         ];
         $keys = ['division_name', 'phishing_attacks', 'compromised', 'security_score', 'employees'];
 
@@ -78,7 +78,7 @@ class BubbleDataService
         foreach ($keys as $key) {
             $data['series'][] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'sizeKey' => $key
             ];

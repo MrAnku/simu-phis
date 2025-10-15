@@ -71,13 +71,13 @@ class TableDataService
         foreach ($keys as $key) {
             $columns[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'sortable' => true
             ];
         }
 
-        $title = "Employee Report";
-        $description = "This report provides an overview of employee performance and risk metrics.";
+        $title = __("Employee Report");
+        $description = __("This report provides an overview of employee performance and risk metrics.");
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
     }
@@ -115,13 +115,13 @@ class TableDataService
         foreach ($keys as $key) {
             $columns[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'sortable' => true
             ];
         }
 
-        $title = "Employee Training Report";
-        $description = "This report provides an overview of employee training progress.";
+        $title = __("Employee Training Report");
+        $description = __("This report provides an overview of employee training progress.");
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
     }
@@ -158,13 +158,13 @@ class TableDataService
         foreach ($keys as $key) {
             $columns[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'sortable' => true
             ];
         }
 
-        $title = "Game analytics";
-        $description = "This report provides an overview of employee training progress.";
+        $title = __("Game analytics");
+        $description = __("This report provides an overview of employee game performance.");
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
     }
@@ -200,13 +200,13 @@ class TableDataService
         foreach ($keys as $key) {
             $columns[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'sortable' => true
             ];
         }
 
-        $title = "Policy Overview";
-        $description = "This report provides an overview of assigned policies to the employees";
+        $title = __("Policy Overview");
+        $description = __("This report provides an overview of assigned policies to the employees");
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'columns' => $columns];
     }

@@ -66,8 +66,8 @@ class CardDataService
         $riskScore = $companyReport->calculateOverallRiskScore();
 
         return [
-            'title' => 'Overall Risk Score',
-            'period' => 'All time',
+            'title' => __('Overall Risk Score'),
+            'period' => __('All time'),
             'value' => $riskScore,
             'icon' => 'LucideAlert',
             'iconColor' => $riskScore < 50 ? 'text-red-500' : 'text-green-500',
@@ -80,8 +80,8 @@ class CardDataService
         $value = $companyReport->trainingCompletionRate();
 
         return [
-            'title' => 'Training Completion Rate',
-            'period' => 'All time',
+            'title' => __('Training Completion Rate'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideCheckCircle',
             'iconColor' => $value < 5 ? 'text-red-500' : 'text-green-500',
@@ -94,8 +94,8 @@ class CardDataService
         $value = $companyReport->compromiseRate();
 
         return [
-            'title' => 'Compromise Rate',
-            'period' => 'All time',
+            'title' => __('Compromise Rate'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideAlertTriangle',
             'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
@@ -108,8 +108,8 @@ class CardDataService
         $value = $companyReport->clickRate();
 
         return [
-            'title' => 'Click Rate',
-            'period' => 'All time',
+            'title' => __('Click Rate'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMousePointer',
             'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
@@ -122,8 +122,8 @@ class CardDataService
         $value = $companyReport->payloadClicked();
 
         return [
-            'title' => 'Phishing Email Clicks',
-            'period' => 'All time',
+            'title' => __('Phishing Email Clicks'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMousePointer',
             'iconColor' => $value < 5 ? 'text-green-500' : 'text-red-500',
@@ -136,8 +136,8 @@ class CardDataService
         $value = $companyReport->emailReported();
 
         return [
-            'title' => 'Emails Reported',
-            'period' => 'All time',
+            'title' => __('Emails Reported'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMailCheck',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
@@ -150,8 +150,8 @@ class CardDataService
         $value = $companyReport->emailCampaigns();
 
         return [
-            'title' => 'Email Campaigns',
-            'period' => 'All time',
+            'title' => __('Email Campaigns'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMails',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
@@ -164,8 +164,8 @@ class CardDataService
         $value = $companyReport->quishingCampaigns();
 
         return [
-            'title' => 'Quishing Campaigns',
-            'period' => 'All time',
+            'title' => __('Quishing Campaigns'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMailCheck',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
@@ -178,8 +178,8 @@ class CardDataService
         $value = $companyReport->aiCampaigns();
 
         return [
-            'title' => 'AI Vishing',
-            'period' => 'All time',
+            'title' => __('AI Vishing'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideSparkles',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
@@ -192,8 +192,8 @@ class CardDataService
         $value = $companyReport->tprmCampaigns();
 
         return [
-            'title' => 'TPRM Campaigns',
-            'period' => 'All time',
+            'title' => __('TPRM Campaigns'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideMailCheck',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',
@@ -206,8 +206,8 @@ class CardDataService
         $value = $companyReport->whatsappCampaigns();
 
         return [
-            'title' => 'WhatsApp Campaigns',
-            'period' => 'All time',
+            'title' => __('WhatsApp Campaigns'),
+            'period' => __('All time'),
             'value' => $value,
             'icon' => 'LucideSmartphone',
             'iconColor' => $value > 5 ? 'text-green-500' : 'text-red-500',

@@ -84,13 +84,13 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
-        $title = "Interaction Analytics";
-        $description = "The report overview of employee interaction of simulation.";
+        $title = __("Interaction Analytics");
+        $description = __("The report overview of employee interaction of simulation.");
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
     }
@@ -123,14 +123,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "Simulation Overview";
-        $description = "The simulation data report and analytics.";
+        $title = __("Simulation Overview");
+        $description = __("The simulation data report and analytics.");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -164,14 +164,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "Training Overview";
-        $description = "The training progress and analysis.";
+        $title = __("Training Overview");
+        $description = __("The training progress and analysis.");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -205,14 +205,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "Email Campaign Overview";
-        $description = "Email campaign and interaction overview";
+        $title = __("Email Campaign Overview");
+        $description = __("Email campaign and interaction overview");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -246,14 +246,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "Quishing Campaign Overview";
-        $description = "Quishing campaign and interaction overview";
+        $title = __("Quishing Campaign Overview");
+        $description = __("Quishing campaign and interaction overview");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -292,14 +292,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "Vishing Campaign Overview";
-        $description = "Vishing campaign and interaction overview";
+        $title = __("Vishing Campaign Overview");
+        $description = __("Vishing campaign and interaction overview");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -334,14 +334,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "TPRM Campaign Overview";
-        $description = "TPRM campaign and interaction overview";
+        $title = __("TPRM Campaign Overview");
+        $description = __("TPRM campaign and interaction overview");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
@@ -376,14 +376,14 @@ class LineDataService
         foreach ($keys as $key) {
             $series[] = [
                 'key' => $key,
-                'label' => ucwords(str_replace('_', ' ', $key)),
+                'label' => __(ucwords(str_replace('_', ' ', $key))),
                 'color' => '#' . substr(md5($key), 0, 6),
                 'type' => 'line'
             ];
         }
 
-        $title = "WhatsApp Campaign Overview";
-        $description = "WhatsApp campaign and interaction overview";
+        $title = __("WhatsApp Campaign Overview");
+        $description = __("WhatsApp campaign and interaction overview");
 
 
         return ['title' => $title, 'description' => $description, 'data' => $data, 'series' => $series];
