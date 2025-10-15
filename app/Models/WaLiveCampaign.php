@@ -31,6 +31,11 @@ class WaLiveCampaign extends Model
         'scorm_training',
     ];
 
+    public function camp()
+    {
+        return $this->belongsTo(WaCampaign::class, 'campaign_id', 'campaign_id');
+    }
+
     public function phishingWebsite()
     {
         return $this->belongsTo(PhishingWebsite::class, 'phishing_website', 'id');

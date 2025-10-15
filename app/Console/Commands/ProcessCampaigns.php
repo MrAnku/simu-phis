@@ -219,7 +219,7 @@ class ProcessCampaigns extends Command
             echo "Error sending training: " . $e->getMessage() . "\n";
           }
         }
-        if ($campaign->camp?->policies != null) {
+        if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
           try{
             $policyService = new PolicyAssignedService(
               $campaign->campaign_id,
