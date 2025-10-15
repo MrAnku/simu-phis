@@ -6,6 +6,7 @@ use Jenssegers\Agent\Agent;
 use App\Models\QuishingCamp;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
+use App\Services\PolicyAssignedService;
 use App\Services\CampaignTrainingService;
 
 class QuishingInteractionHandler
@@ -49,24 +50,24 @@ class QuishingInteractionHandler
 
     public function compromiseOnClick(): bool
     {
-         $campaignLive = QuishingLiveCamp::where('id', $this->campLiveId)->first();
+        $campaignLive = QuishingLiveCamp::where('id', $this->campLiveId)->first();
         if (!$campaignLive) {
             return false;
         }
         $compromiseOnClick = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->value('compromise_on_click');
-        if($compromiseOnClick == 0){
+        if ($compromiseOnClick == 0) {
             return false;
         }
-        if($campaignLive->qr_scanned == '0'){
+        if ($campaignLive->qr_scanned == '0') {
             $this->updatePayloadClick($campaignLive->company_id);
         }
-        if($campaignLive->compromised == '0'){
+        if ($campaignLive->compromised == '0') {
             $this->handleCompromisedEmail($campaignLive->company_id);
         }
-        if($campaignLive->training_assigned == '0' && ($campaignLive->training_module != null || $campaignLive->scorm_training != null)){
+        if ($campaignLive->training_assigned == '0' && ($campaignLive->training_module != null || $campaignLive->scorm_training != null)) {
             $this->assignTraining();
         }
-        
+
         return true;
     }
 
@@ -135,6 +136,20 @@ class QuishingInteractionHandler
             CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
         } else {
             CampaignTrainingService::assignTraining($campaign);
+        }
+        if ($campaign->camp?->policies != null) {
+            try {
+                $policyService = new PolicyAssignedService(
+                    $campaign->campaign_id,
+                    $campaign->user_name,
+                    $campaign->user_email,
+                    $campaign->company_id
+                );
+
+                $policyService->assignPolicies($campaign->camp?->policies);
+            } catch (\Exception $e) {
+                
+            }
         }
 
         $campaign->update(['sent' => '1', 'training_assigned' => '1']);

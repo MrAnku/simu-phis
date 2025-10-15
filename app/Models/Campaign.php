@@ -24,6 +24,7 @@ class Campaign extends Model
         'days_until_due',
         'training_lang',
         'training_type',
+        'policies',
         'training_on_click',
         'compromise_on_click',
         'phishing_material',

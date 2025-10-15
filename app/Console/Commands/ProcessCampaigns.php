@@ -20,6 +20,7 @@ use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
 use App\Services\CampaignTrainingService;
+use App\Services\PolicyAssignedService;
 use App\Services\TrainingAssignedService;
 
 class ProcessCampaigns extends Command
@@ -216,6 +217,21 @@ class ProcessCampaigns extends Command
             $this->sendOnlyTraining($campaign);
           } catch (\Exception $e) {
             echo "Error sending training: " . $e->getMessage() . "\n";
+          }
+        }
+        if ($campaign->camp?->policies != null) {
+          try{
+            $policyService = new PolicyAssignedService(
+              $campaign->campaign_id,
+              $campaign->user_name,
+              $campaign->user_email,
+              $campaign->company_id
+            );
+
+            $policyService->assignPolicies($campaign->camp->policies);
+
+          } catch (\Exception $e) {
+            echo "Error assigning policy: " . $e->getMessage() . "\n";
           }
         }
 

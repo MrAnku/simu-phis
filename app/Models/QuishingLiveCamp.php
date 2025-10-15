@@ -29,6 +29,10 @@ class QuishingLiveCamp extends Model
         'scorm_training'
     ];
 
+    public function camp(){
+        return $this->belongsTo(QuishingCamp::class, 'campaign_id', 'campaign_id');
+    }
+
     public function trainingData(){
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
