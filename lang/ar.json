@@ -539,6 +539,10 @@
   "No Answer": "لا إجابة",
   "Message Sent": "الرسالة المرسلة",
   "Message Viewed": "الرسالة المشاهدة",
+  "Quishing campaign data retrieved successfully": "تم استرداد بيانات حملة Quishing بنجاح",
+  "An error occurred while retrieving data": "حدث خطأ أثناء استرداد البيانات",
+  "No users found in the selected group": "لم يتم العثور على مستخدمين في المجموعة المحددة",
+  "Quishing campaign created successfully": "تم إنشاء حملة Quishing بنجاح",
 
     "Campaign Activity": "نشاط الحملة",
     "Dashboard": "لوحة القيادة",
