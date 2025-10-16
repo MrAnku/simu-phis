@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Models\InfoGraphicLiveCampaign;
 use App\Services\CheckWhitelabelService;
+use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -294,6 +295,9 @@ class ApiEmployeesController extends Controller
             $empReport = new EmployeeReport($email, $companyId);
             $acceptedPolicies = $empReport->policiesAcceptedNames();
 
+            $normalEmpLearnService = new NormalEmpLearnService();
+            $leaderboardDetails = $normalEmpLearnService->calculateLeaderboardRank($request->email);
+
             $data = [
                 'personal' => $exist,
                 'campaigns' => $this->getCampaigns($email),
@@ -301,6 +305,7 @@ class ApiEmployeesController extends Controller
                 'security_score' => $this->getSecurityScore($email),
                 'emails_viewed' => $this->getEmailViewed($email),
                 'accepted_policies' => $acceptedPolicies,
+                'leaderboard_details' => $leaderboardDetails,
             ];
 
             $aiAnalysis = $this->getAIAnalysis($data);

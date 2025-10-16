@@ -22,6 +22,7 @@ use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Services\CompanyReport;
 use Illuminate\Support\Facades\Auth;
@@ -2108,6 +2109,50 @@ class ApiDashboardController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->validator->errors()->first()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getLeaderboard()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
+
+            $allUsers = $trainingUsers->merge($scormUsers);
+
+            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $groupEmail) {
+                $average = $group->avg('personal_best');
+
+                return [
+                    'email' => $groupEmail,
+                    'name' => $group->first()->user_name ?? 'N/A',
+                    'average_score' => round($average, 2),
+                ];
+            })->filter(function ($user) {
+                return $user['average_score'] >= 10; // Filter users with score >= 10
+            })->sortByDesc('average_score')->values();
+
+
+            // Add leaderboard rank
+            $leaderboard = $grouped->map(function ($user, $index) {
+                $user['leaderboard_rank'] = $index + 1;
+                return $user;
+            });
+
+            return response()->json([
+                'data' => [
+                    'leaderboard' => $leaderboard
+                ],
+                'message' => 'Leaderboard fetched successfully!',
+                'success' => true
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -122,6 +122,8 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
     //new
     Route::get('/risk-comparison', [ApiDashboardController::class, 'riskComparison']);
 
+    Route::get('/get-leaderboard', [ApiDashboardController::class, 'getLeaderboard']);
+
     Route::prefix('customised-dashboard')->group(function () {
         Route::get('/', [ApiCustomisedDashController::class, 'index']);
         Route::put('/update-or-create', [ApiCustomisedDashController::class, 'updateOrCreate']);
