@@ -21,6 +21,7 @@ use App\Services\EmployeeService;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -296,7 +297,10 @@ class ApiEmployeesController extends Controller
             $acceptedPolicies = $empReport->policiesAcceptedNames();
 
             $normalEmpLearnService = new NormalEmpLearnService();
-            $leaderboardDetails = $normalEmpLearnService->calculateLeaderboardRank($request->email);
+            $leaderboardDetails = $normalEmpLearnService->calculateLeaderboardRank($email);
+
+            $learnApiController = new ApiLearnController();
+            $empBadgesData = $learnApiController->fetchTrainingBadges($email);
 
             $data = [
                 'personal' => $exist,
@@ -306,6 +310,7 @@ class ApiEmployeesController extends Controller
                 'emails_viewed' => $this->getEmailViewed($email),
                 'accepted_policies' => $acceptedPolicies,
                 'leaderboard_details' => $leaderboardDetails,
+                'employee_badges' => $empBadgesData,
             ];
 
             $aiAnalysis = $this->getAIAnalysis($data);

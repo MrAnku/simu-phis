@@ -10,6 +10,8 @@ use App\Models\TrainingModule;
 use App\Services\CompanyReport;
 use App\Services\EmployeeReport;
 use App\Models\TrainingAssignedUser;
+use App\Models\ScormAssignedUser;
+use App\Models\Badge;
 use App\Models\WaLiveCampaign;
 
 class OverallNormalEmployeeReport
@@ -23,7 +25,7 @@ class OverallNormalEmployeeReport
 
     public function generateReport(): array
     {
-        
+
         // Logic to generate overall normal employee report
         return [
             'total_employees' => $this->totalEmployees(),
@@ -40,6 +42,7 @@ class OverallNormalEmployeeReport
             'most_compromised_employees' => $this->mostCompromisedEmployees(),
             'most_clicked_employees' => $this->mostClickedEmployees(),
             'most_ignored_employees' => $this->mostIgnoredEmployees(),
+            'employee_badges' => $this->empBadges(),
 
         ];
     }
@@ -85,7 +88,7 @@ class OverallNormalEmployeeReport
 
     private function riskAnalysis(): array
     {
-        
+
         //users who are compromised less than or equal to 3 times
         $companyReport = new CompanyReport($this->companyId);
         $employees = $companyReport->employees();
@@ -108,7 +111,6 @@ class OverallNormalEmployeeReport
             'in_moderate_risk' => $inModerateRisk,
             'in_low_risk' => $inLowRisk,
         ];
-
     }
 
     private function trainingAnalysis(): array
@@ -256,5 +258,48 @@ class OverallNormalEmployeeReport
             }
         }
         return $ignoreData;
+    }
+
+    private function empBadges()
+    {
+        $badgeMap = Badge::pluck('name', 'id');
+
+        $trainings = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->whereNotNull('badge')
+            ->select(['user_name', 'user_email', 'badge'])
+            ->get();
+
+        $scorms = ScormAssignedUser::where('company_id', $this->companyId)
+            ->whereNotNull('badge')
+            ->select(['user_name', 'user_email', 'badge'])
+            ->get();
+
+        $records = $trainings->concat($scorms);
+
+        $uniqueUsers = $records
+            ->groupBy('user_email') // group all records of same user
+            ->map(function ($userRecords) use ($badgeMap) {
+                // Merge all badges arrays for the user
+                $allBadges = $userRecords->pluck('badge')
+                    ->flatMap(fn($b) => json_decode($b, true)) // convert JSON -> array
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $badgeNames = collect($allBadges)
+                    ->map(fn($id) => $badgeMap[$id] ?? "Unknown Badge")
+                    ->values()
+                    ->all();
+
+                return [
+                    'user_email'  => $userRecords->first()->user_email,
+                    'user_name'   => $userRecords->first()->user_name,
+                    'badge_count' => count($badgeNames),
+                    'badge'       => $badgeNames,
+                ];
+            })
+            ->values();
+
+        return $uniqueUsers;
     }
 }
