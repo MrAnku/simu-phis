@@ -96,6 +96,7 @@ class ApiWaCampaignController extends Controller
                 'launch_time' => 'nullable|date',
                 'variables' => 'required|array',
                 'selected_users' => 'nullable|string',
+                'policies' => 'nullable|array',
             ]);
 
             //check if the selected users group has users has whatsapp number
@@ -144,6 +145,7 @@ class ApiWaCampaignController extends Controller
                 'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
                 'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
                 'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
+                'policies' => (is_array($validated['policies']) && !empty($validated['policies'])) ? json_encode($validated['policies']) : null,
                 'training_on_click' => $validated['training_on_click'] == 'false' ? 0 : 1,
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],
@@ -259,6 +261,7 @@ class ApiWaCampaignController extends Controller
                 'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
                 'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
                 'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
+                'policies' => (is_array($validated['policies']) && !empty($validated['policies'])) ? json_encode($validated['policies']) : null,
                 'training_on_click' => $validated['training_on_click'] == 'false' ? 0 : 1,
                 'compromise_on_click' => $validated['compromise_on_click'] == 'false' ? 0 : 1,
                 'template_name' => $validated['template_name'],

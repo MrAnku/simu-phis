@@ -61,7 +61,7 @@ class ApiQuishingController extends Controller
     {
         try {
             // XSS attack prevention
-            $campData = $request->except(['quishing_materials', 'training_modules', 'scorm_training', 'selected_users']);
+            $campData = $request->except(['quishing_materials', 'training_modules', 'scorm_training', 'selected_users', 'policies']);
             foreach ($campData as $key => $value) {
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json([
@@ -107,6 +107,7 @@ class ApiQuishingController extends Controller
                 'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
                 'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
                 'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
+                'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
                 'training_on_click'  => $request->training_on_click == 'false' ? 0 : 1,
                 'compromise_on_click'  => $request->compromise_on_click == 'false' ? 0 : 1,
                 'quishing_material'  => !empty($quishingMaterials) ? json_encode($quishingMaterials) : null,

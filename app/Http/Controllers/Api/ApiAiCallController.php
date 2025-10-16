@@ -439,7 +439,8 @@ class ApiAiCallController extends Controller
                     'scheduled_at' => 'required_if:schedule_type,schedule|string',
                     'schedule_type' => 'required|string|in:immediately,schedule',
                     'training_assignment' => 'required|string|in:random,all',
-                    'selected_users' => 'nullable|array'
+                    'selected_users' => 'nullable|array',
+                    'policies' => 'nullable|array'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -482,6 +483,7 @@ class ApiAiCallController extends Controller
                 'training_assignment' => ($request->campaign_type == 'phishing') ? null : $request->training_assignment,
                 'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
                 'training_type' => $request->campaign_type == 'phishing' ? null : $request->training_type,
+                'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
                 'ai_agent' => $request->ai_agent,
                 'ai_agent_name' => $request->ai_agent_name,
                 'phone_no' => $request->ai_phone,
