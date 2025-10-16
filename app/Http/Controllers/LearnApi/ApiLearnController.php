@@ -41,7 +41,7 @@ class ApiLearnController extends Controller
             if (!$token) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Token is required!')
+                    'message' => 'Token is required!'
                 ], 422);
             }
 
@@ -50,7 +50,7 @@ class ApiLearnController extends Controller
             if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Your training session has expired!')
+                    'message' => 'Your training session has expired!'
                 ], 422);
             }
 
@@ -68,7 +68,7 @@ class ApiLearnController extends Controller
                 AssignedPolicy::where('user_email', $userEmail)->delete();
                 return response()->json([
                     'success' => false,
-                    'message' => __('You are no longer an employee on this platform.')
+                    'message' => 'You are no longer an employee on this platform.'
                 ], 404);
             }
 
@@ -81,19 +81,19 @@ class ApiLearnController extends Controller
                     'employee_type' => $employeeType,
                     'user_name' => $userName
                 ],
-                'message' => __('You can Login now')
+                'message' => 'You can Login now'
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => __('Validation error: ') . $e->getMessage()
+                'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => __('An error occurred: ') . $e->getMessage()
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -110,7 +110,7 @@ class ApiLearnController extends Controller
             if (!$hasTraining && !$hasPolicy && !$hasScormAssigned) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No training or policy has been assigned to this email.')
+                    'message' => 'No training or policy has been assigned to this email.'
                 ], 422);
             }
 
@@ -157,7 +157,7 @@ class ApiLearnController extends Controller
             if (!$inserted) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to create token')
+                    'message' => 'Failed to create token'
                 ], 422);
             }
 
@@ -174,18 +174,18 @@ class ApiLearnController extends Controller
             Mail::to($request->email)->send(new LearnerSessionRegenerateMail($mailData, $trainingModules));
 
             // Return success response
-            return response()->json(['success' => true, 'message' => __('Mail sent successfully')], 200);
+            return response()->json(['success' => true, 'message' => 'Mail sent successfully'], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => __('Validation error: ') . $e->getMessage()
+                'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => __('An error occurred: ') . $e->getMessage()
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }

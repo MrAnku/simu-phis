@@ -34,7 +34,7 @@ class ApiLearnBlueCollarController extends Controller
             if (!$hasTraining) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No training has been assigned to this whatsapp number.')
+                    'message' => 'No training has been assigned to this whatsapp number.'
                 ], 422);
             }
 
@@ -63,7 +63,7 @@ class ApiLearnBlueCollarController extends Controller
             if (!$inserted) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to create token')
+                    'message' => 'Failed to create token'
                 ], 422);
             }
 
@@ -73,25 +73,25 @@ class ApiLearnBlueCollarController extends Controller
             if ($whatsapp_response->successful()) {
                 return response()->json([
                     'success' => true,
-                    'message' => __('Session regenerated successfully')
+                    'message' => 'Session regenerated successfully'
                 ], 200);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Failed to send WhatsApp message')
+                    'message' => 'Failed to send WhatsApp message'
                 ], 422);
             }
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => __('Validation error: ') . $e->getMessage()
+                'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => __('An error occurred: ') . $e->getMessage()
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -113,7 +113,7 @@ class ApiLearnBlueCollarController extends Controller
             if (!$session || now()->greaterThan(Carbon::parse($session->expiry))) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Your training session has expired!')
+                    'message' => 'Your training session has expired!'
                 ], 422);
             }
 
@@ -129,7 +129,7 @@ class ApiLearnBlueCollarController extends Controller
                 BlueCollarScormAssignedUser::where('user_whatsapp', $userWhatsapp)->delete();
                 return response()->json([
                     'success' => false,
-                    'message' => __('You are no longer an employee on this platform.')
+                    'message' => 'You are no longer an employee on this platform.'
                 ], 404);
             }
 
@@ -142,19 +142,19 @@ class ApiLearnBlueCollarController extends Controller
                     'employee_type' => $employeeType,
                     'user_name' => $userName
                 ],
-                'message' => __('You can Login now')
+                'message' => 'You can Login now'
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => __('Validation error: ') . $e->getMessage()
+                'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => __('An error occurred: ') . $e->getMessage()
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }
