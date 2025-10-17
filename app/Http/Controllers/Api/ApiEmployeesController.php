@@ -299,8 +299,7 @@ class ApiEmployeesController extends Controller
             $normalEmpLearnService = new NormalEmpLearnService();
             $leaderboardDetails = $normalEmpLearnService->calculateLeaderboardRank($email);
 
-            $learnApiController = new ApiLearnController();
-            $empBadgesData = $learnApiController->fetchTrainingBadges($email);
+            $empBadgesData = $normalEmpLearnService->getAllEarnedBadges($email);
 
             $data = [
                 'personal' => $exist,

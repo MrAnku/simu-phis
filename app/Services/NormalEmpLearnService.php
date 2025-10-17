@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Badge;
 use App\Models\CampaignLive;
 use App\Models\CertificateTemplate;
 use App\Models\QuishingLiveCamp;
@@ -109,6 +110,43 @@ class NormalEmpLearnService
         return [
             'leaderboard' => $leaderboard,
             'current_user_rank' => $currentUserRank,
+        ];
+    }
+
+    public function getAllEarnedBadges($email)
+    {
+        $allBadgeIds = [];
+
+        // Collect badge IDs from training
+        $trainingWithBadges = TrainingAssignedUser::where('user_email', $email)
+            ->whereNotNull('badge')
+            ->get();
+
+        foreach ($trainingWithBadges as $training) {
+            $badgeIds = json_decode($training->badge, true) ?? [];
+            $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+        }
+
+        // Collect badge IDs from SCORM
+        $scormWithBadges = ScormAssignedUser::where('user_email', $email)
+            ->whereNotNull('badge')
+            ->get();
+
+        foreach ($scormWithBadges as $scorm) {
+            $badgeIds = json_decode($scorm->badge, true) ?? [];
+            $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
+        }
+
+        // Remove duplicate badge IDs
+        $uniqueBadgeIds = array_unique($allBadgeIds);
+
+        // Fetch badges
+        $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
+
+        return [
+            'badges' => $badges,
+            'total_badges' => count($badges),
+            'total_unlock_badges' => Badge::where('id', '!=', $uniqueBadgeIds)->count()
         ];
     }
 

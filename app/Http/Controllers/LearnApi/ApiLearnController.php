@@ -875,33 +875,9 @@ class ApiLearnController extends Controller
                 'email' => 'required|email|exists:users,user_email',
             ]);
 
-            $allBadgeIds = [];
-
-            // Collect badge IDs from training
-            $trainingWithBadges = TrainingAssignedUser::where('user_email', $request->email)
-                ->whereNotNull('badge')
-                ->get();
-
-            foreach ($trainingWithBadges as $training) {
-                $badgeIds = json_decode($training->badge, true) ?? [];
-                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
-            }
-
-            // Collect badge IDs from SCORM
-            $scormWithBadges = ScormAssignedUser::where('user_email', $request->email)
-                ->whereNotNull('badge')
-                ->get();
-
-            foreach ($scormWithBadges as $scorm) {
-                $badgeIds = json_decode($scorm->badge, true) ?? [];
-                $allBadgeIds = array_merge($allBadgeIds, $badgeIds);
-            }
-
-            // Remove duplicate badge IDs
-            $uniqueBadgeIds = array_unique($allBadgeIds);
-
-            // Fetch badges
-            $badges = Badge::whereIn('id', $uniqueBadgeIds)->get();
+            $allEarnedBadges = $this->normalEmpLearnService->getAllEarnedBadges($request->email);
+            $badges = $allEarnedBadges['badges'];
+            $totalUnlockBadges = $allEarnedBadges['total_unlock_badges'];
 
             return response()->json([
                 'success' => true,
@@ -909,7 +885,7 @@ class ApiLearnController extends Controller
                 'data' => [
                     'badges' => $badges,
                     'total_badges' => count($badges),
-                    'total_unlock_badges' => Badge::where('id', '!=', $uniqueBadgeIds)->count()
+                    'total_unlock_badges' => $totalUnlockBadges
                 ]
             ], 200);
         } catch (ValidationException $e) {
