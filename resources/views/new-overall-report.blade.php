@@ -708,7 +708,7 @@
                     <div class="column-title">
                         WhatsApp Threats
 
-                        @if($wa_camp_data['compromised'] >= $wa_camp_data['total_attempts'] / 2)
+                        @if($wa_camp_data['compromised'] > $wa_camp_data['total_attempts'] / 2)
                         <span class="status-badge status-risk">AT RISK</span>
                         @else
                         <span class="status-badge status-secure">SECURE</span>
@@ -737,7 +737,7 @@
                 <div class="column-card">
                     <div class="column-title">
                         AI Voice Phishing
-                        @if($ai_camp_data['compromised'] >= $ai_camp_data['total_attempts'] / 2)
+                        @if($ai_camp_data['compromised'] > $ai_camp_data['total_attempts'] / 2)
                         <span class="status-badge status-risk">AT RISK</span>
                         @else
                         <span class="status-badge status-secure">SECURE</span>
@@ -769,7 +769,7 @@
                 <div class="column-card">
                     <div class="column-title">
                         Email Threats
-                        @if($email_camp_data['compromised'] >= $email_camp_data['total_attempts'] / 2)
+                        @if($email_camp_data['compromised'] > $email_camp_data['total_attempts'] / 2)
                         <span class="status-badge status-risk">AT RISK</span>
                         @else
                         <span class="status-badge status-secure">SECURE</span>
@@ -799,7 +799,7 @@
                     <div class="column-title">
                         QR Code Threats
 
-                        @if($quish_camp_data['compromised'] >= $quish_camp_data['total_attempts'] / 2)
+                        @if($quish_camp_data['compromised'] > $quish_camp_data['total_attempts'] / 2)
                         <span class="status-badge status-risk">AT RISK</span>
                         @else
                         <span class="status-badge status-secure">SECURE</span>
