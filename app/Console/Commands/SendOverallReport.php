@@ -116,25 +116,74 @@ class SendOverallReport extends Command
                 $data['riskChartImageLocal'] = null;
             }
 
+            // Generate a donut PNG for the Overall Security Risk Score so dompdf gets a raster donut
+            try {
+                $score = isset($data['riskScore']) && is_numeric($data['riskScore']) ? round(floatval($data['riskScore']), 2) : 0;
+                $score = max(0, min(100, $score));
+
+                // Donut: one slice for the score, one for the remainder
+                $riskLabels = ['Risk', 'Remainder'];
+                $riskData = [(float)$score, (float)(100 - $score)];
+                $riskColors = ['#ef4444', '#e2e8f0']; // red for risk, neutral remainder
+
+                $riskChartOptions = [
+                    'responsive' => false,
+                    'maintainAspectRatio' => false,
+                    'cutout' => '70%',
+                    'layout' => ['padding' => 0],
+                    'plugins' => [
+                        'legend' => ['display' => false],
+                        'tooltip' => ['enabled' => false]
+                    ],
+                    'animation' => false,
+                    'elements' => ['arc' => ['borderWidth' => 0]]
+                ];
+
+                // Use the same square size as other donuts so it fits the circular container
+                $riskDonut = $this->generateDonutChartImage($riskLabels, $riskData, $company->company_id . '_riskdonut', $riskColors, $riskChartOptions, 280, 280);
+                if (is_array($riskDonut)) {
+                    // Provide both riskDonut* and riskGauge* keys for compatibility with Blade
+                    $data['riskDonutImage'] = $riskDonut['public_url'] ?? null;
+                    $data['riskDonutImageLocal'] = $riskDonut['local_file'] ?? null;
+                    $data['riskDonutImageBase64'] = $riskDonut['base64'] ?? null;
+
+                    // Mirror to legacy gauge keys so template doesn't break
+                    $data['riskGaugeImage'] = $data['riskDonutImage'];
+                    $data['riskGaugeImageLocal'] = $data['riskDonutImageLocal'];
+                    $data['riskGaugeImageBase64'] = $data['riskDonutImageBase64'];
+
+                    // Keep base64 available so Blade can embed a data URI for dompdf if needed.
+                    // (Previously we nulled base64 for console runs to prefer local file paths,
+                    //  but local file:// can be blocked by dompdf chroot or platform issues.
+                    //  Embedding as data:image/png;base64 is more reliable for PDF rendering.)
+                } else {
+                    $data['riskDonutImage'] = null;
+                    $data['riskDonutImageLocal'] = null;
+                    $data['riskDonutImageBase64'] = null;
+                    $data['riskGaugeImage'] = null;
+                    $data['riskGaugeImageLocal'] = null;
+                    $data['riskGaugeImageBase64'] = null;
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed generating risk donut for company ' . $company->company_id, ['exception' => $e->getMessage()]);
+                $data['riskDonutImage'] = null;
+                $data['riskDonutImageLocal'] = null;
+                $data['riskDonutImageBase64'] = null;
+                $data['riskGaugeImage'] = null;
+                $data['riskGaugeImageLocal'] = null;
+                $data['riskGaugeImageBase64'] = null;
+            }
+
             // Render the view to HTML first so we can inspect/verify embedding (debugging)
             $html = view('new-overall-report', $data)->render();
 
-            // Log whether base64 exists and HTML contains a data URI
+            // Log whether base64 exists and HTML contains a data URI (concise)
             try {
                 $base64Len = isset($data['donutChartImageBase64']) ? strlen($data['donutChartImageBase64']) : 0;
             } catch (\Throwable $e) {
                 $base64Len = 0;
             }
             Log::info("Donut base64 length at render", ['company' => $company->company_id, 'len' => $base64Len, 'has_data_uri' => (strpos($html, 'data:image/png;base64,') !== false)]);
-
-            // Save the rendered HTML to local storage for inspection
-            try {
-                $debugFilename = 'reports/debug_overall_report_' . $company->company_id . '_' . time() . '.html';
-                Storage::disk('local')->put($debugFilename, $html);
-                Log::info('Saved debug HTML for report render', ['file' => storage_path('app/' . $debugFilename)]);
-            } catch (\Exception $e) {
-                Log::warning('Failed to save debug HTML', ['msg' => $e->getMessage()]);
-            }
 
             // Load the exact rendered HTML into dompdf to ensure what we inspect is what dompdf receives
             $pdf = Pdf::loadHTML($html);
@@ -151,20 +200,16 @@ class SendOverallReport extends Command
 
             $pdfContent = $pdf->output();
 
-            // Save a debug copy of the generated PDF locally for inspection
-            try {
-                $debugPdfName = 'reports/debug_overall_report_' . $company->company_id . '_' . time() . '.pdf';
-                Storage::disk('local')->put($debugPdfName, $pdfContent);
-                Log::info('Saved debug PDF for inspection', ['file' => storage_path('app/' . $debugPdfName)]);
-            } catch (\Exception $e) {
-                Log::warning('Failed to save debug PDF locally', ['msg' => $e->getMessage()]);
-            }
+            // Do not persist debug PDF by default
 
             // Save report and send email
             $this->saveReport($company, $pdfContent);
             $this->sendReportEmail($company, $data, $pdfContent);
         } catch (\Exception $e) {
-            echo "Error generating report for company {$company->company_name}: " . $e->getMessage() . "\n";
+            $msg = $e->getMessage();
+            // Log error and present concise console message
+            Log::error('Error generating overall report', ['company' => $company->company_id, 'exception' => $msg]);
+            echo "Error generating report for company {$company->company_name}. Check logs for details.\n";
         }
     }
 
@@ -463,8 +508,34 @@ class SendOverallReport extends Command
      * Generate a donut chart image using QuickChart and save to storage/public/reports
      * Returns public URL or null on failure
      */
-    private function generateDonutChartImage(array $labels, array $data, $companyId, array $colors = null)
+    /**
+     * Generate a donut chart image using QuickChart and save to storage/public/reports
+     * Returns array with public_url, local_file, filename, base64 or null on failure
+     *
+     * @param array $labels
+     * @param array $data
+     * @param string $companyId
+     * @param array|null $colors
+     * @param array|null $chartOptions  Additional Chart.js options (merged into options)
+     * @param int $width
+     * @param int $height
+     */
+    private function generateDonutChartImage(array $labels, array $data, $companyId, array $colors = null, array $chartOptions = null, $width = 600, $height = 400)
     {
+        $defaultOptions = [
+            'plugins' => [
+                'legend' => ['display' => false]
+            ],
+            // ensure full circle by default
+        ];
+
+        // Merge chart options if provided (shallow merge is fine for our simple use)
+        if (is_array($chartOptions)) {
+            $options = array_merge($defaultOptions, $chartOptions);
+        } else {
+            $options = $defaultOptions;
+        }
+
         $chartConfig = [
             'type' => 'doughnut',
             'data' => [
@@ -476,14 +547,10 @@ class SendOverallReport extends Command
                     'borderWidth' => 0,
                 ]]
             ],
-            'options' => [
-                'plugins' => [
-                    'legend' => ['display' => false]
-                ]
-            ]
+            'options' => $options,
         ];
 
-        $payload = ['chart' => json_encode($chartConfig), 'width' => 600, 'height' => 400, 'format' => 'png', 'backgroundColor' => 'transparent'];
+    $payload = ['chart' => json_encode($chartConfig), 'width' => $width, 'height' => $height, 'format' => 'png', 'backgroundColor' => 'transparent'];
 
         $attempts = 0;
         $maxAttempts = 3;
@@ -503,9 +570,17 @@ class SendOverallReport extends Command
                     // Public URL
                     $publicUrl = asset('storage/' . $filename);
 
-                    // Local filesystem absolute path (use storage path) and file:// URL for dompdf local loading
+                    // Local filesystem absolute path (use storage path)
                     $localPath = Storage::disk('public')->path($filename);
-                    $localFileUrl = 'file://' . $localPath;
+                    // Normalize path for file:// URL (Windows needs file:///C:/path format)
+                    $normalized = str_replace('\\', '/', $localPath);
+                    if (preg_match('#^[A-Za-z]:/#', $normalized)) {
+                        // Windows absolute path like C:/...
+                        $localFileUrl = 'file:///' . $normalized;
+                    } else {
+                        // Unix-like absolute path
+                        $localFileUrl = 'file://' . $normalized;
+                    }
 
                     $base64 = base64_encode($bytes);
 

@@ -155,11 +155,13 @@
             height: 140px;
             margin: 15px auto;
             border-radius: 50%;
-            background: #e2e8f0;
-            border: 10px solid #ef4444;
-            border-top-color: #e2e8f0;
-            border-right-color: #e2e8f0;
-            transform: rotate(-90deg);
+            background: transparent;
+            transform: rotate(0deg); /* SVG handles rotation internally */
+        }
+
+        /* Helper class to push the chart down a bit so small indicator bars don't overlap the title */
+        .mt-chart {
+            margin-top: 22px !important;
         }
 
         .circular-progress::before {
@@ -173,9 +175,18 @@
             border-radius: 50%;
             z-index: 2;
         }
+        /* When we embed a raster donut image (QuickChart), the image already contains
+           the inner hole. Disable the pseudo-element overlay to avoid double masking
+           and alignment issues in PDF (dompdf). */
+        .circular-progress.no-overlay::before {
+            display: none;
+            content: none;
+        }
 
         .circular-progress svg {
-            display: none;
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         .progress-circle {
@@ -531,43 +542,104 @@
         </div>
 
         <!-- Overall Security Risk Score -->
-        <div class="risk-score-section">
-            <div class="risk-score-left">
-                <h2 class="risk-score-title">Overall Security Risk Score</h2>
-                <div class="circular-progress">
-                    <div class="score-text">
-                        <div class="score-number">{{ $riskScore}}</div>
-                        <div class="score-total">/100</div>
-                    </div>
-                </div>
-            </div>
+        <table class="risk-score-section" style="width: 100%; margin-bottom: 20px; min-height: 100px; border-collapse: collapse;">
+            <tr>
+                <td style="width: 50%; padding-right: 15px; vertical-align: top; text-align: center;">
+                    <h2 class="risk-score-title">Overall Security Risk Score</h2>
+                @php
+                    // Ensure risk score is numeric and clamped 0..100
+                    $scoreRaw = $riskScore ?? 0;
+                    $scoreVal = is_numeric($scoreRaw) ? (float) $scoreRaw : 0.0;
+                    $scoreVal = max(0, min(100, $scoreVal));
+                    // SVG gauge parameters
+                    $svgSize = 140; // overall square size
+                    $cx = $cy = $svgSize / 2;
+                    $radius = 56; // radius of circle
+                    $stroke = 12; // stroke width
+                    $circumference = 2 * pi() * $radius;
+                    $dash = $circumference;
+                    $dashOffset = $circumference * (1 - ($scoreVal / 100));
+                @endphp
 
-            @php
+                @php
+                    // Prefer server-generated raster (base64) for dompdf. Fallback order: base64 -> local file:// -> public url -> inline SVG
+                    $gBase = $riskDonutImageBase64 ?? $riskGaugeImageBase64 ?? null;
+                    $gLocal = $riskDonutImageLocal ?? $riskGaugeImageLocal ?? null;
+                    $gPublic = $riskDonutImage ?? $riskGaugeImage ?? null;
+
+                    // If a raster image exists, disable the inner overlay so the image's own cutout shows through
+                    $hasRaster = !empty($gBase) || !empty($gLocal) || !empty($gPublic);
+                    // Always add a small top margin class to prevent the small indicator color bar from overlapping the title
+                    $divClass = $hasRaster ? 'circular-progress no-overlay mt-chart' : 'circular-progress mt-chart';
+                @endphp
+
+                <div class="{{ $divClass }}" style="width: {{ $svgSize }}px; height: {{ $svgSize }}px; margin: 15px auto; position: relative;">
+
+                    @if(!empty($gBase))
+                        <img src="data:image/png;base64,{{ $gBase }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                    @elseif(!empty($gLocal))
+                        <img src="{{ $gLocal }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                    @elseif(!empty($gPublic))
+                        <img src="{{ $gPublic }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                    @else
+                        {{-- Inline SVG fallback for browsers or when image generation failed --}}
+                        @php
+                            // When score is exactly (or numerically very close to) 100,
+                            // use a butt linecap and a single dasharray so the arc closes perfectly
+                            // (round linecaps can leave a small visible gap at 100%).
+                            $isFullCircle = $scoreVal >= 100.0 - 1e-9;
+                            $fgLinecap = $isFullCircle ? 'butt' : 'round';
+                            $fgDasharray = $isFullCircle ? $dash : ($dash . ' ' . $dash);
+                            $fgDashoffset = $isFullCircle ? 0 : $dashOffset;
+                        @endphp
+
+                        <svg width="{{ $svgSize }}" height="{{ $svgSize }}" viewBox="0 0 {{ $svgSize }} {{ $svgSize }}" role="img" aria-label="Overall Security Risk Score">
+                            <g transform="rotate(-90 {{ $cx }} {{ $cy }})">
+                                <!-- Background ring -->
+                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $radius }}" fill="none" stroke="#e2e8f0" stroke-width="{{ $stroke }}" />
+                                <!-- Foreground (value) ring -->
+                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $radius }}" fill="none" stroke="#ef4444" stroke-width="{{ $stroke }}" stroke-linecap="{{ $fgLinecap }}"
+                                    stroke-dasharray="{{ $fgDasharray }}" stroke-dashoffset="{{ $fgDashoffset }}" />
+                            </g>
+                        </svg>
+                    @endif
+
+                </div>
+
+                {{-- Numeric score shown below the chart (PDF-friendly) --}}
+                <div style="text-align: center; margin-top: 8px;">
+                    <div class="score-number" style="font-size: 22px;">{{ number_format($scoreVal, 2) }}</div>
+                    <div class="score-total" style="font-size: 12px; color: #64748b;">/100</div>
+                </td>
+                @php
             $clickRate = $click_rate ?? 0;
             $alertType = $clickRate > 20 ? 'HIGH PHISHING CLICK RATE DETECTED' : 'ELEVATED SECURITY AWARENESS';
             $alertMessage = $clickRate > 20 ? 'Immediate employee training recommended' : 'Continue current security practices';
             @endphp
 
-            <div class="alert-box">
-                <div class="alert-title">{{ $alertType }}</div>
-                <div class="alert-message">{{ $alertMessage }}</div>
+                <td style="width: 50%; vertical-align: middle; padding-left: 15px;">
+                    <div class="alert-box" style="display: block;">
+                        <div class="alert-title">{{ $alertType }}</div>
+                        <div class="alert-message">{{ $alertMessage }}</div>
 
-                <!-- Security Summary -->
-                <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(251, 146, 60, 0.3);">
-                    <div style="font-size: 12px; color: #92400e; line-height: 1.5; margin-bottom: 12px;">
-                        <strong>Current Status:</strong><br>
-                        • Click Rate: {{ number_format($click_rate ?? 0, 1) }}% <br>
-                        • High Risk Users: {{ number_format($payload_clicked ?? 0) }} employees
-                    </div>
+                        <!-- Security Summary -->
+                        <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(251, 146, 60, 0.3);">
+                            <div style="font-size: 12px; color: #92400e; line-height: 1.5; margin-bottom: 12px;">
+                                <strong>Current Status:</strong><br>
+                                • Click Rate: {{ number_format($click_rate ?? 0, 1) }}% <br>
+                                • High Risk Users: {{ number_format($payload_clicked ?? 0) }} employees
+                            </div>
 
-                    <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 4px;">
-                        <div style="font-size: 11px; color: #dc2626; font-weight: 600;">
-                            Priority: {{ $clickRate > 20 ? 'HIGH' : 'MEDIUM' }} • Act within {{ $clickRate > 20 ? '3 days' : '1 week' }}
+                            <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 4px;">
+                                <div style="font-size: 11px; color: #dc2626; font-weight: 600;">
+                                    Priority: {{ $clickRate > 20 ? 'HIGH' : 'MEDIUM' }} • Act within {{ $clickRate > 20 ? '3 days' : '1 week' }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </td>
+            </tr>
+        </table>
 
         <!-- Key Performance Indicators -->
         <div class="section-title">Key Performance Indicators</div>
