@@ -54,7 +54,6 @@
             color: #64748b;
             font-style: italic;
             font-weight: 300;
-        }
             margin-bottom: 3px;
         }
 
@@ -926,49 +925,59 @@
                             Training Analysis
                         </h3>
 
-                        <!-- Simple Border-based Donut Chart -->
+                        <!-- Simple Border-based Donut Chart or server-generated image -->
                         <div style="margin: 20px auto; text-align: center;">
                             @php
+                            // Ensure fallback values exist
                             $trainingAssigned = $training_assigned ?? 10;
                             $trainingStarted = $totalTrainingStarted ?? 8;  // Total who started (includes completed)
                             $trainingCompleted = $training_completed ?? 2;
-
-                            $total = $trainingAssigned + $trainingStarted + $trainingCompleted;
-                            
-                            // Prevent division by zero
-                            if ($total == 0) {
-                                $total = 1;
-                                $trainingAssigned = 1;
-                                $trainingStarted = 0;
-                                $trainingCompleted = 0;
-                            }
-                            
-                            // Calculate percentages for the three main categories based on actual values
-                            $assignedPercentage = ($trainingAssigned / $total) * 100;
-                            $startedPercentage = ($trainingStarted / $total) * 100;
-                            $completedPercentage = ($trainingCompleted / $total) * 100;
                             @endphp
 
-                            <!-- Simple stacked circular progress representation -->
-                            <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
-                                <!-- Create simple visual representation using concentric circles -->
-                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #3b82f6; position: relative;">
-                                    <!-- Assigned (blue) - full circle base -->
-                                    
-                                    <!-- Started (orange) overlay -->
-                                    @if($startedPercentage > 0)
-                                    <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border-radius: 50%; background: #fb923c;"></div>
-                                    @endif
-                                    
-                                    <!-- Completed (green) overlay -->  
-                                    @if($completedPercentage > 0)
-                                    <div style="position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; border-radius: 50%; background: #10b981;"></div>
-                                    @endif
-                                    
-                                    <!-- White center to show as ring -->
-                                    <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
+                            @php
+                                // Prefer base64 (embedded) for dompdf, then local file path, then public URL
+                                $donutBase64 = $donutChartImageBase64 ?? null;
+                                $donutLocal = $donutChartImageLocal ?? null;
+                                $donutPublic = $donutChartImage ?? null;
+                            @endphp
+
+                            @if(!empty($donutBase64))
+                                <div style="width:220px; height:160px; margin:0 auto;">
+                                    <img src="data:image/png;base64,{{ $donutBase64 }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
                                 </div>
-                            </div>
+                            @elseif(!empty($donutLocal) || !empty($donutPublic))
+                                @php $donutSrc = $donutLocal ?? $donutPublic; @endphp
+                                <div style="width: 220px; height: 160px; margin: 0 auto;">
+                                    <img src="{{ $donutSrc }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                                </div>
+                            @else
+                                @php
+                                $total = $trainingAssigned + $trainingStarted + $trainingCompleted;
+                                // Prevent division by zero
+                                if ($total == 0) {
+                                    $total = 1;
+                                    $trainingAssigned = 1;
+                                    $trainingStarted = 0;
+                                    $trainingCompleted = 0;
+                                }
+                                $assignedPercentage = ($trainingAssigned / $total) * 100;
+                                $startedPercentage = ($trainingStarted / $total) * 100;
+                                $completedPercentage = ($trainingCompleted / $total) * 100;
+                                @endphp
+
+                                <!-- Simple stacked circular progress representation (browser fallback) -->
+                                <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
+                                    <div style="width: 90px; height: 90px; border-radius: 50%; background: #3b82f6; position: relative;">
+                                        @if($startedPercentage > 0)
+                                        <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border-radius: 50%; background: #fb923c;"></div>
+                                        @endif
+                                        @if($completedPercentage > 0)
+                                        <div style="position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; border-radius: 50%; background: #10b981;"></div>
+                                        @endif
+                                        <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Legend -->
@@ -1126,10 +1135,26 @@
                         $totalRisk = max(($highRisk + $moderateRisk + $lowRisk), 1);
                         @endphp
 
-                        <!-- Risk Distribution Pie Chart -->
+                        <!-- Risk Distribution Pie Chart (prefer server-generated image for PDFs) -->
                         <div style="margin: 20px auto; text-align: center;">
-                            <!-- Simple pie chart based on actual risk data -->
-                            <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
+                            @php
+                                // Prefer base64 (embedded) for dompdf, then local file path, then public URL
+                                $riskBase64 = $riskChartImageBase64 ?? null;
+                                $riskLocal = $riskChartImageLocal ?? null;
+                                $riskPublic = $riskChartImage ?? null;
+                            @endphp
+
+                            @if(!empty($riskBase64))
+                                <div style="width:220px; height:160px; margin:0 auto;">
+                                    <img src="data:image/png;base64,{{ $riskBase64 }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                                </div>
+                            @elseif(!empty($riskLocal) || !empty($riskPublic))
+                                @php $riskSrc = $riskLocal ?? $riskPublic; @endphp
+                                <div style="width: 220px; height: 160px; margin: 0 auto;">
+                                    <img src="{{ $riskSrc }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                                </div>
+                            @else
+                                {{-- Fallback: simple pie/donut built with inline divs (browser-only) --}}
                                 @php
                                 // Calculate risk percentages for visualization
                                 $totalRiskCalc = max(($highRisk + $moderateRisk + $lowRisk), 1);
@@ -1137,39 +1162,33 @@
                                 $lowPercentage = ($lowRisk / $totalRiskCalc) * 100;
                                 $highPercentage = ($highRisk / $totalRiskCalc) * 100;
                                 @endphp
-                                
-                                <!-- Base background color for largest category -->
-                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #f1f5f9; position: relative;">
-                                    
-                                    <!-- Show segments based on actual values -->
-                                    @if($lowRisk > 0 && $lowPercentage >= 50)
-                                    <!-- Low Risk (green) as main background if it's the majority -->
-                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
-                                    @endif
-                                    
-                                    @if($moderateRisk > 0 && $moderatePercentage >= 50)
-                                    <!-- Moderate Risk (orange) as main background if it's the majority -->
-                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #fb923c;"></div>
-                                    @endif
-                                    
-                                    @if($highRisk > 0 && $highPercentage >= 50)
-                                    <!-- High Risk (red) as main background if it's the majority -->
-                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #ef4444;"></div>
-                                    @endif
-                                    
-                                    <!-- Add smaller segments for minority categories -->
-                                    @if($moderateRisk > 0 && $moderatePercentage < 50 && $moderatePercentage > 0)
-                                    <div style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: #fb923c;"></div>
-                                    @endif
-                                    
-                                    @if($highRisk > 0 && $highPercentage < 50 && $highPercentage > 0)
-                                    <div style="position: absolute; top: 25%; left: 25%; width: 50%; height: 50%; border-radius: 50%; background: #ef4444;"></div>
-                                    @endif
-                                    
-                                    <!-- Center hole to create donut effect -->
-                                    <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
+
+                                <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
+                                    <div style="width: 90px; height: 90px; border-radius: 50%; background: #f1f5f9; position: relative;">
+                                        @if($lowRisk > 0 && $lowPercentage >= 50)
+                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
+                                        @endif
+
+                                        @if($moderateRisk > 0 && $moderatePercentage >= 50)
+                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #fb923c;"></div>
+                                        @endif
+
+                                        @if($highRisk > 0 && $highPercentage >= 50)
+                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #ef4444;"></div>
+                                        @endif
+
+                                        @if($moderateRisk > 0 && $moderatePercentage < 50 && $moderatePercentage > 0)
+                                        <div style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: #fb923c;"></div>
+                                        @endif
+
+                                        @if($highRisk > 0 && $highPercentage < 50 && $highPercentage > 0)
+                                        <div style="position: absolute; top: 25%; left: 25%; width: 50%; height: 50%; border-radius: 50%; background: #ef4444;"></div>
+                                        @endif
+
+                                        <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         </div>
 
                         <!-- Risk Legend -->

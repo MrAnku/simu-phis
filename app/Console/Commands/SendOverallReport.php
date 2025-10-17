@@ -23,6 +23,8 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SendOverallReport extends Command
 {
@@ -61,13 +63,102 @@ class SendOverallReport extends Command
     {
         try {
             $data = $this->prepareReportData($company);
+
             $aggregates = $this->calculateAggregates($data);
             $riskText = $this->getRiskText($data['riskScore'] ?? 0);
             $data = array_merge($data, $aggregates, ['riskText' => $riskText]);
 
-            // Generate PDF
-            $pdf = Pdf::loadView('new-overall-report', $data);
+            // Generate donut chart image server-side and include in view data
+            try {
+                $labels = ['Assigned', 'Started', 'Completed'];
+                $donutData = [
+                    (int)($data['training_assigned'] ?? 0),
+                    (int)($data['totalTrainingStarted'] ?? 0),
+                    (int)($data['training_completed'] ?? 0),
+                ];
+                $chartResult = $this->generateDonutChartImage($labels, $donutData, $company->company_id);
+                if (is_array($chartResult)) {
+                    // public URL for browser previews, local file path (file:///) for dompdf, and base64 for embedding
+                    $data['donutChartImage'] = $chartResult['public_url'] ?? null;
+                    $data['donutChartImageLocal'] = $chartResult['local_file'] ?? null;
+                    $data['donutChartImageBase64'] = $chartResult['base64'] ?? null;
+                } else {
+                    $data['donutChartImage'] = null;
+                    $data['donutChartImageLocal'] = null;
+                }
+            } catch (\Exception $e) {
+                // don't fail the whole report if chart generation fails
+                $data['donutChartImage'] = null;
+                $data['donutChartImageLocal'] = null;
+            }
+
+            // Generate Risk Distribution donut server-side (High, Moderate, Low) with matching colors
+            try {
+                $riskLabels = ['High Risk', 'Moderate Risk', 'Low Risk'];
+                $riskData = [
+                    (int)($data['riskAnalysis']['in_high_risk'] ?? 0),
+                    (int)($data['riskAnalysis']['in_moderate_risk'] ?? 0),
+                    (int)($data['riskAnalysis']['in_low_risk'] ?? 0),
+                ];
+                // Colors: High=red, Moderate=orange, Low=green
+                $riskColors = ['#ef4444', '#fb923c', '#10b981'];
+                $riskChart = $this->generateDonutChartImage($riskLabels, $riskData, $company->company_id . '_risk', $riskColors);
+                if (is_array($riskChart)) {
+                    $data['riskChartImage'] = $riskChart['public_url'] ?? null;
+                    $data['riskChartImageLocal'] = $riskChart['local_file'] ?? null;
+                    $data['riskChartImageBase64'] = $riskChart['base64'] ?? null;
+                } else {
+                    $data['riskChartImage'] = null;
+                    $data['riskChartImageLocal'] = null;
+                }
+            } catch (\Exception $e) {
+                $data['riskChartImage'] = null;
+                $data['riskChartImageLocal'] = null;
+            }
+
+            // Render the view to HTML first so we can inspect/verify embedding (debugging)
+            $html = view('new-overall-report', $data)->render();
+
+            // Log whether base64 exists and HTML contains a data URI
+            try {
+                $base64Len = isset($data['donutChartImageBase64']) ? strlen($data['donutChartImageBase64']) : 0;
+            } catch (\Throwable $e) {
+                $base64Len = 0;
+            }
+            Log::info("Donut base64 length at render", ['company' => $company->company_id, 'len' => $base64Len, 'has_data_uri' => (strpos($html, 'data:image/png;base64,') !== false)]);
+
+            // Save the rendered HTML to local storage for inspection
+            try {
+                $debugFilename = 'reports/debug_overall_report_' . $company->company_id . '_' . time() . '.html';
+                Storage::disk('local')->put($debugFilename, $html);
+                Log::info('Saved debug HTML for report render', ['file' => storage_path('app/' . $debugFilename)]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to save debug HTML', ['msg' => $e->getMessage()]);
+            }
+
+            // Load the exact rendered HTML into dompdf to ensure what we inspect is what dompdf receives
+            $pdf = Pdf::loadHTML($html);
+            // Allow dompdf to fetch remote images if needed
+            try {
+                $pdf->setOptions([
+                    'isRemoteEnabled' => true,
+                    'isHtml5ParserEnabled' => true,
+                    'isPhpEnabled' => true,
+                ]);
+            } catch (\Throwable $e) {
+                // ignore if the underlying PDF wrapper doesn't support setOptions here
+            }
+
             $pdfContent = $pdf->output();
+
+            // Save a debug copy of the generated PDF locally for inspection
+            try {
+                $debugPdfName = 'reports/debug_overall_report_' . $company->company_id . '_' . time() . '.pdf';
+                Storage::disk('local')->put($debugPdfName, $pdfContent);
+                Log::info('Saved debug PDF for inspection', ['file' => storage_path('app/' . $debugPdfName)]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to save debug PDF locally', ['msg' => $e->getMessage()]);
+            }
 
             // Save report and send email
             $this->saveReport($company, $pdfContent);
@@ -250,7 +341,9 @@ class SendOverallReport extends Command
         $nextReportDate = $this->getNextReportDate($lastReportDate, $reportFrequency);
 
         // Check if it's exactly the time for the next report (using static date for testing)
-        $currentDate = Carbon::now();
+        $currentDate = '2025-10-24'; // Static date for testing
+        $currentDate = Carbon::parse($currentDate);
+        // $currentDate = Carbon::now();
         $shouldGenerate = $currentDate->isSameDay($nextReportDate);
 
         if ($shouldGenerate) {
@@ -364,5 +457,84 @@ class SendOverallReport extends Command
                 'overdue_percentage' => 0
             ];
         }
+    }
+
+    /**
+     * Generate a donut chart image using QuickChart and save to storage/public/reports
+     * Returns public URL or null on failure
+     */
+    private function generateDonutChartImage(array $labels, array $data, $companyId, array $colors = null)
+    {
+        $chartConfig = [
+            'type' => 'doughnut',
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [[
+                    'data' => $data,
+                    // Match legend: Assigned (blue), Started (orange), Completed (green) by default
+                    'backgroundColor' => $colors ?? ['#3498db', '#f39c12', '#2ecc71'],
+                    'borderWidth' => 0,
+                ]]
+            ],
+            'options' => [
+                'plugins' => [
+                    'legend' => ['display' => false]
+                ]
+            ]
+        ];
+
+        $payload = ['chart' => json_encode($chartConfig), 'width' => 600, 'height' => 400, 'format' => 'png', 'backgroundColor' => 'transparent'];
+
+        $attempts = 0;
+        $maxAttempts = 3;
+        $lastException = null;
+
+        while ($attempts < $maxAttempts) {
+            try {
+                $attempts++;
+                $response = Http::timeout(10)->post('https://quickchart.io/chart', $payload);
+
+                if ($response->successful() && strlen($response->body()) > 0) {
+                    $bytes = $response->body();
+                    $filename = 'reports/donut_' . $companyId . '_' . time() . '.png';
+                    // Save binary bytes to public storage
+                    Storage::disk('public')->put($filename, $bytes);
+
+                    // Public URL
+                    $publicUrl = asset('storage/' . $filename);
+
+                    // Local filesystem absolute path (use storage path) and file:// URL for dompdf local loading
+                    $localPath = Storage::disk('public')->path($filename);
+                    $localFileUrl = 'file://' . $localPath;
+
+                    $base64 = base64_encode($bytes);
+
+                    Log::info("Generated donut chart for company {$companyId}", ['attempts' => $attempts, 'file' => $filename, 'localPath' => $localPath]);
+
+                    return [
+                        'public_url' => $publicUrl,
+                        'local_file' => $localFileUrl,
+                        'filename' => $filename,
+                        'base64' => $base64,
+                    ];
+                }
+
+                // Non-successful response: log and retry
+                Log::warning("QuickChart returned non-success status for company {$companyId}", ['status' => $response->status(), 'attempt' => $attempts]);
+            } catch (\Exception $e) {
+                $lastException = $e;
+                Log::warning("QuickChart request failed (attempt {$attempts}) for company {$companyId}: {$e->getMessage()}");
+                // brief backoff before retrying
+                sleep(1 * $attempts);
+            }
+        }
+
+        if ($lastException) {
+            Log::error("Failed to generate donut chart for company {$companyId}", ['exception' => $lastException->getMessage()]);
+        } else {
+            Log::error("Failed to generate donut chart for company {$companyId}: unknown error after {$maxAttempts} attempts");
+        }
+
+        return null;
     }
 }
