@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Http\Controllers\Api\ApiDashboardController;
 use App\Models\AiCallCampLive;
 use App\Models\BreachedEmail;
 use App\Models\CampaignLive;
@@ -25,7 +26,7 @@ class OverallNormalEmployeeReport
 
     public function generateReport(): array
     {
-
+        $apiDashboardController = new ApiDashboardController();
         // Logic to generate overall normal employee report
         return [
             'total_employees' => $this->totalEmployees(),
@@ -43,6 +44,7 @@ class OverallNormalEmployeeReport
             'most_clicked_employees' => $this->mostClickedEmployees(),
             'most_ignored_employees' => $this->mostIgnoredEmployees(),
             'employee_badges' => $this->empBadges(),
+            'leaderboard' => $apiDashboardController->buildLeaderboard()
 
         ];
     }

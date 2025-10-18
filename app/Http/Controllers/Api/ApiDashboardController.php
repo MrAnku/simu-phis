@@ -2120,31 +2120,7 @@ class ApiDashboardController extends Controller
     public function getLeaderboard()
     {
         try {
-            $companyId = Auth::user()->company_id;
-
-            $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
-            $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
-
-            $allUsers = $trainingUsers->merge($scormUsers);
-
-            $grouped = $allUsers->groupBy('user_email')->map(function ($group, $groupEmail) {
-                $average = $group->avg('personal_best');
-
-                return [
-                    'email' => $groupEmail,
-                    'name' => $group->first()->user_name ?? 'N/A',
-                    'average_score' => round($average, 2),
-                ];
-            })->filter(function ($user) {
-                return $user['average_score'] >= 10; // Filter users with score >= 10
-            })->sortByDesc('average_score')->values();
-
-
-            // Add leaderboard rank
-            $leaderboard = $grouped->map(function ($user, $index) {
-                $user['leaderboard_rank'] = $index + 1;
-                return $user;
-            });
+            $leaderboard = $this->buildLeaderboard();
 
             return response()->json([
                 'data' => [
@@ -2159,5 +2135,36 @@ class ApiDashboardController extends Controller
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function buildLeaderboard()
+    {
+        $companyId = Auth::user()->company_id;
+
+        $trainingUsers = TrainingAssignedUser::where('company_id', $companyId)->get();
+        $scormUsers = ScormAssignedUser::where('company_id', $companyId)->get();
+
+        $allUsers = $trainingUsers->merge($scormUsers);
+
+        $grouped = $allUsers->groupBy('user_email')->map(function ($group, $groupEmail) {
+            $average = $group->avg('personal_best');
+
+            return [
+                'email' => $groupEmail,
+                'name' => $group->first()->user_name ?? 'N/A',
+                'average_score' => round($average, 2),
+            ];
+        })->filter(function ($user) {
+            return $user['average_score'] >= 10; // Filter users with score >= 10
+        })->sortByDesc('average_score')->values();
+
+
+        // Add leaderboard rank
+        $leaderboard = $grouped->map(function ($user, $index) {
+            $user['leaderboard_rank'] = $index + 1;
+            return $user;
+        });
+
+        return $leaderboard;
     }
 }
