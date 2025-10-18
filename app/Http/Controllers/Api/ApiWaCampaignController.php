@@ -372,7 +372,10 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign fetched successfully!'),
-                'data' => $campaigns
+                'data' => [
+                    'campaign' => $campaign,
+                    'camp_live' => $campaigns
+                    ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -28,7 +28,13 @@ class QuishingCamp extends Model
         'scorm_training'
     ];
 
-    protected $appends = ['formatted_created_at'];
+    protected $appends = ['formatted_created_at', 'policies_used'];
+
+    public function getPoliciesUsedAttribute()
+    {
+        $ids = json_decode($this->attributes['policies'], true);
+        return Policy::whereIn('id', $ids ?? [])->select('policy_name', 'policy_description')->get();
+    }
 
     public function trainingModules()
     {

@@ -11,7 +11,7 @@ class Campaign extends Model
     use HasFactory;
 
     protected $table = 'all_campaigns';
-    protected $appends = ['formatted_created_at'];
+    protected $appends = ['formatted_created_at', 'policies_used'];
 
     protected $fillable = [
         'campaign_id',
@@ -41,6 +41,12 @@ class Campaign extends Model
         'company_id',
         'scorm_training'
     ];
+
+    public function getPoliciesUsedAttribute()
+    {
+        $ids = json_decode($this->attributes['policies'], true);
+        return Policy::whereIn('id', $ids ?? [])->select('policy_name', 'policy_description')->get();
+    }
 
     public function trainingModules()
     {

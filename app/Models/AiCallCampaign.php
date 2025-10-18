@@ -33,6 +33,15 @@ class AiCallCampaign extends Model
         'training_assignment'
     ];
 
+    protected $appends = ['formatted_created_at', 'policies_used'];
+
+    public function getPoliciesUsedAttribute()
+    {
+        $ids = json_decode($this->attributes['policies'], true);
+        return Policy::whereIn('id', $ids ?? [])->select('policy_name', 'policy_description')->get();
+    }
+
+
     public function individualCamps()
     {
         return $this->hasMany(AiCallCampLive::class, 'campaign_id', 'campaign_id');
@@ -50,8 +59,7 @@ class AiCallCampaign extends Model
         return ScormTraining::whereIn('id', $ids ?? []);
     }
 
-    protected $appends = ['formatted_created_at'];
-
+    
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
