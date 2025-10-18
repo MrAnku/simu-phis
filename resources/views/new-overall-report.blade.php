@@ -750,7 +750,10 @@
         </table>
 
         <!-- Training & Policy Compliance -->
-        <div class="section-title">Training & Policy Compliance</div>
+        {{-- Ensure this major section starts on a fresh page in PDFs to avoid orphans --}}
+    <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
+            <div class="section-title" style="margin-top: 8px;">Training & Policy Compliance</div>
+        </div>
         <div style="display: table; width: 100%; margin-bottom: 30px;">
             <!-- Training Progress Section -->
             <div style="display: table-cell; width: 50%; vertical-align: top; padding-right: 15px;">
@@ -924,7 +927,9 @@
         </div>
 
         <!-- Recommendations & Action Items -->
-        <div class="section-title">Recommendations & Action Items</div>
+    <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
+            <div class="section-title" style="margin-top: 8px;">Recommendations & Action Items</div>
+        </div>
         <div style="display: table; width: 100%; margin-bottom: 30px; min-height: 250px;">
             <!-- Recommendations Section -->
             <div style="display: table-cell; width: 50%; vertical-align: top; padding-right: 15px;">
@@ -1419,120 +1424,121 @@
     </div>
     </div>
 
-    
+
     <!-- Weekly Email Simulation Analytics -->
-<div style="page-break-before: auto; margin-top: 40px;">
-    <div class="section-title">Weekly Email Simulation Analytics</div>
+    {{-- Ensure this heading doesn't get orphaned at bottom of a page in PDF output. --}}
+    <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
+        <div class="section-title">Simulation Analytics</div>
 
-    <div style="display: table; width: 100%; margin-bottom: 30px;">
-        <!-- Overview Section -->
-        <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 20px;">
-            <div class="column-card" style="min-height: 200px;">
-                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 15px;">Overview</h3>
-                <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 15px;">
-                    Comprehensive phishing simulation conducted across all departments to assess employee security awareness and response to phishing attempts. This report provides insights into employee behavior patterns, identifies high-risk areas, and recommends targeted training initiatives.
-                </p>
+        <div style="display: table; width: 100%; margin-bottom: 30px;">
+            <!-- Overview Section -->
+            <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 20px;">
+                <div class="column-card" style="min-height: 200px;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 15px;">Overview</h3>
+                    <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 15px;">
+                        Comprehensive phishing simulation conducted across all departments to assess employee security awareness and response to phishing attempts. This report provides insights into employee behavior patterns, identifies high-risk areas, and recommends targeted training initiatives.
+                    </p>
 
-                @php
-                $weeklyClicks = $phish_clicks_weekly ?? [];
-                if (!is_array($weeklyClicks)) $weeklyClicks = [];
+                    @php
+                    $weeklyClicks = $phish_clicks_weekly ?? [];
+                    if (!is_array($weeklyClicks)) $weeklyClicks = [];
 
-                // Extract percentage values (ensure numeric)
-                $weeklyClicksArray = [];
-                for ($i = 0; $i < 7; $i++) {
-                    $weeklyClicksArray[$i] = isset($weeklyClicks[$i]['percentage'])
+                    // Extract percentage values (ensure numeric)
+                    $weeklyClicksArray = [];
+                    for ($i = 0; $i < 7; $i++) {
+                        $weeklyClicksArray[$i]=isset($weeklyClicks[$i]['percentage'])
                         ? (float) $weeklyClicks[$i]['percentage']
                         : 0;
-                }
+                        }
 
-                $weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                $hasWeeklyData = collect($weeklyClicksArray)->contains(fn($v) => (float) $v > 0);
-                @endphp
+                        $weekDays=['Sun', 'Mon' , 'Tue' , 'Wed' , 'Thu' , 'Fri' , 'Sat' ];
+                        $hasWeeklyData=collect($weeklyClicksArray)->contains(fn($v) => (float) $v > 0);
+                        @endphp
 
-                <!-- Always Visible Title -->
-                <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 10px; text-align: center;">
-                    Email Click Rate Over Time
-                </h4>
+                        <!-- Always Visible Title -->
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 10px; text-align: center;">
+                            Email Click Rate Over Time
+                        </h4>
 
-                <!-- Chart or No Data -->
-                @if($hasWeeklyData)
-                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #ffffff; min-height: 220px; display: flex; flex-direction: column;">
-                        <div style="position: relative; height: 180px;">
-                            <!-- Y-axis labels -->
-                            <div style="position: absolute; left: 0; top: 0; width: 40px; height: 140px;">
-                                @foreach([100,75,50,25,0] as $label)
-                                <div style="position: absolute; top: {{ 140 - ($label * 1.4) }}px; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
-                                    {{ $label }}%
+                        <!-- Chart or No Data -->
+                        @if($hasWeeklyData)
+                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #ffffff; min-height: 220px; display: flex; flex-direction: column;">
+                            <div style="position: relative; height: 180px;">
+                                <!-- Y-axis labels -->
+                                <div style="position: absolute; left: 0; top: 0; width: 40px; height: 140px;">
+                                    @foreach([100,75,50,25,0] as $label)
+                                    <div style="position: absolute; top: {{ 140 - ($label * 1.4) }}px; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                                        {{ $label }}%
+                                    </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
-                            </div>
 
-                            <!-- Grid lines -->
-                            <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px;">
-                                @foreach([0,25,50,75,100] as $line)
-                                <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: {{ $line }}%;"></div>
-                                @endforeach
+                                <!-- Grid lines (drawn behind bars) -->
+                                <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px; z-index: 1;">
+                                    @foreach([0,25,50,75,100] as $line)
+                                    <div style="position: absolute; width: 100%; height: 1px; background: rgba(242,246,249,0.95); top: {{ $line }}%;"></div>
+                                    @endforeach
 
-                                <!-- Bars -->
-                                <div style="display: table; width: 100%; height: 100%; table-layout: fixed;">
-                                    @foreach($weekDays as $index => $day)
-                                    @php
-                                    $percentage = $weeklyClicksArray[$index] ?? 0;
-                                    $barHeight = max(($percentage / 100) * 140, 3);
-                                    @endphp
-                                    <div style="display: table-cell; vertical-align: bottom; text-align: center;">
-                                        <div style="background: #fb923c; width: 24px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative;">
-                                            <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #1e293b; font-weight: 600;">{{ $percentage }}</div>
+                                    <!-- Bars (ensure bars render above the grid lines) -->
+                                    <div style="display: table; width: 100%; height: 100%; table-layout: fixed; position: relative; z-index: 2;">
+                                        @foreach($weekDays as $index => $day)
+                                        @php
+                                        $percentage = $weeklyClicksArray[$index] ?? 0;
+                                        // Only render a bar when percentage > 0. No numeric label on top per design.
+                                        $barHeight = $percentage > 0 ? max(($percentage / 100) * 140, 3) : 0;
+                                        @endphp
+                                        <div style="display: table-cell; vertical-align: bottom; text-align: center;">
+                                            @if($percentage > 0)
+                                            <div style="background: #fb923c; width: 24px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative; z-index: 3;"></div>
+                                            @endif
                                         </div>
+                                        @endforeach
                                     </div>
-                                    @endforeach
                                 </div>
-                            </div>
 
-                            <!-- X-axis labels -->
-                            <div style="position: absolute; left: 45px; bottom: 0; right: 0; height: 20px;">
-                                <div style="display: table; width: 100%; table-layout: fixed;">
-                                    @foreach($weekDays as $day)
-                                    <div style="display: table-cell; text-align: center;">
-                                        <span style="font-size: 11px; color: #64748b; font-weight: 500;">{{ $day }}</span>
+                                <!-- X-axis labels -->
+                                <div style="position: absolute; left: 45px; bottom: 0; right: 0; height: 20px;">
+                                    <div style="display: table; width: 100%; table-layout: fixed;">
+                                        @foreach($weekDays as $day)
+                                        <div style="display: table-cell; text-align: center;">
+                                            <span style="font-size: 11px; color: #64748b; font-weight: 500;">{{ $day }}</span>
+                                        </div>
+                                        @endforeach
                                     </div>
-                                    @endforeach
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @else
-                    <!-- No Data Message -->
-                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #ffffff; min-height: 120px; display: flex; justify-content: center; align-items: center; color: #6b7280; font-size: 14px;">
-                        No Data Available
-                    </div>
-                @endif
+                        @else
+                        <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; min-height: 200px; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 14px;">
+                            No Data Available
+                        </div>
+                        @endif
+                </div>
             </div>
-        </div>
 
-        <!-- Summary Section -->
-        <div style="display: table-cell; width: 40%; vertical-align: top; padding-left: 20px;">
-            <div class="column-card" style="min-height: 200px; text-align: center;">
-                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">Summary</h3>
+            <!-- Summary Section -->
+            <div style="display: table-cell; width: 40%; vertical-align: top; padding-left: 20px;">
+                <div class="column-card" style="min-height: 200px; text-align: center;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">Summary</h3>
 
-                <div style="margin-bottom: 25px;">
-                    <div style="font-size: 36px; font-weight: 700; color: #ef4444;">{{ number_format($click_rate) }}%</div>
-                    <div style="font-size: 12px; color: #64748b;">Click Rate</div>
-                </div>
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 36px; font-weight: 700; color: #ef4444;">{{ number_format($click_rate) }}%</div>
+                        <div style="font-size: 12px; color: #64748b;">Click Rate</div>
+                    </div>
 
-                <div style="margin-bottom: 25px;">
-                    <div style="font-size: 36px; font-weight: 700; color: #1e293b;">{{ number_format($campaigns_sent) }}</div>
-                    <div style="font-size: 12px; color: #64748b;">Total Simulations</div>
-                </div>
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b;">{{ number_format($campaigns_sent) }}</div>
+                        <div style="font-size: 12px; color: #64748b;">Total Simulations</div>
+                    </div>
 
-                <div>
-                    <div style="font-size: 36px; font-weight: 700; color: #f59e0b;">{{ number_format($payload_clicked) }}</div>
-                    <div style="font-size: 12px; color: #64748b;">High-risk Users</div>
+                    <div>
+                        <div style="font-size: 36px; font-weight: 700; color: #f59e0b;">{{ number_format($payload_clicked) }}</div>
+                        <div style="font-size: 12px; color: #64748b;">High-risk Users</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 
@@ -1542,21 +1548,17 @@
         <!-- AI Chart Section -->
         <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 15px;">
             <div class="column-card" style="min-height: 350px; text-align: center;">
-                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px; text-align: left;">
-                    AI Vishing Fell For Simulation Rate Over Time
-                </h3>
+                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 10px; text-align: left;">AI Vishing Fell For Simulation Rate Over Time</h3>
 
                 @php
                 $aiData = $ai_events_over_time ?? [];
                 $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                $aiSuccessRates = array_fill(0, 12, 0);
                 $fullMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                $aiSuccessRates = array_fill(0, 12, 0);
 
-                // Process AI data to extract monthly success rates
                 if (!empty($aiData)) {
                 foreach ($aiData as $monthData) {
                 if (isset($monthData['month']) && isset($monthData['fellForSimulationRate'])) {
-                // Extract month name from "Month YYYY" format
                 $monthName = explode(' ', $monthData['month'])[0] ?? '';
                 $monthIndex = array_search($monthName, $fullMonths);
                 if ($monthIndex !== false) {
@@ -1566,22 +1568,22 @@
                 }
                 }
 
-                $maxAiRate = max($aiSuccessRates) ?: 10; // Minimum scale of 10%
+                $hasAiData = array_sum($aiSuccessRates) > 0;
                 @endphp
 
-                <!-- AI Chart -->
+                @if($hasAiData)
+                <!-- Chart -->
                 <div style="margin: 30px auto 20px; text-align: center;">
                     <div style="position: relative; height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; background: #ffffff;">
-
                         <!-- Chart container -->
                         <div style="position: relative; height: 160px;">
                             <!-- Y-axis labels -->
                             <div style="position: absolute; left: 0; top: 0; width: 40px; height: 140px;">
                                 <div style="position: relative; height: 100%;">
                                     <div style="position: absolute; top: 0; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">100%</div>
-                                    <div style="position: absolute; top: 25%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">75%</div>
-                                    <div style="position: absolute; top: 50%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">50%</div>
-                                    <div style="position: absolute; top: 75%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">25%</div>
+                                    <div style="position: absolute; top: 25%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">75%</div>
+                                    <div style="position: absolute; top: 50%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">50%</div>
+                                    <div style="position: absolute; top: 75%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">25%</div>
                                     <div style="position: absolute; bottom: 0; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">0%</div>
                                 </div>
                             </div>
@@ -1597,7 +1599,7 @@
                                     <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 100%;"></div>
                                 </div>
 
-                                <!-- Chart bars container -->
+                                <!-- Bars -->
                                 <div style="position: relative; width: 100%; height: 100%; display: table; table-layout: fixed;">
                                     @foreach($months as $index => $month)
                                     @php
@@ -1606,8 +1608,7 @@
                                     @endphp
                                     <div style="display: table-cell; width: 8.33%; vertical-align: bottom; text-align: center; height: 140px;">
                                         @if($percentage > 0)
-                                        <div style="background: #ef4444; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative; vertical-align: bottom;">
-                                        </div>
+                                        <div style="background: #ef4444; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto;"></div>
                                         @endif
                                     </div>
                                     @endforeach
@@ -1618,7 +1619,7 @@
                             <div style="position: absolute; left: 45px; bottom: 0; right: 0; height: 20px;">
                                 <div style="display: table; width: 100%; table-layout: fixed;">
                                     @foreach($months as $month)
-                                    <div style="display: table-cell; width: 8.33%; text-align: center;">
+                                    <div style="display: table-cell; text-align: center;">
                                         <span style="font-size: 11px; color: #64748b; font-weight: 500;">{{ $month }}</span>
                                     </div>
                                     @endforeach
@@ -1629,8 +1630,14 @@
                 </div>
 
                 <div style="margin-top: 15px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">Monthly AI Vishing g Fell For Simulation Rate Trends</div>
+                    <div style="font-size: 12px; color: #64748b;">Monthly AI Vishing Fell For Simulation Rate Trends</div>
                 </div>
+                @else
+                <!-- No Data Available -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; min-height: 200px; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 14px;">
+                    No Data Available
+                </div>
+                @endif
             </div>
         </div>
 
@@ -1645,7 +1652,7 @@
 
                 <div style="margin-bottom: 15px;">
                     <h5 style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">Key Metrics:</h5>
-                    <ul style="font-size: 12px; color: #475569; line-height: 1.5; margin: 0; padding-left: 20px;">
+                    <ul style="font-size: 12px; color: #475569; line-height: 1.5; padding-left: 20px;">
                         <li style="margin-bottom: 5px;">Monthly simulation success rate</li>
                         <li style="margin-bottom: 5px;">Voice authentication bypass attempts</li>
                         <li style="margin-bottom: 5px;">Employee response patterns</li>
@@ -1653,13 +1660,15 @@
                 </div>
 
                 <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #ef4444;">
-                    <p style="font-size: 12px; color: #1e293b; margin: 0; font-weight: 500;">
+                    <p style="font-size: 12px; color: #1e293b; margin: 0;">
                         <strong>Security Insight:</strong> Higher success rates indicate need for enhanced voice verification protocols and AI detection training.
                     </p>
                 </div>
             </div>
         </div>
     </div>
+    <!-- AI Vishing Report -->
+
 
     <!-- WhatsApp Click Report -->
     <div style="display: table; width: 100%; margin-bottom: 30px;">
@@ -1674,14 +1683,12 @@
                 $waData = $wa_events_over_time ?? [];
                 $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 $fullMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                $currentMonth = date('n') - 1; // 0-based index
                 $waClickRates = array_fill(0, 12, 0);
 
                 // Process WhatsApp data to extract monthly click rates
                 if (!empty($waData)) {
                 foreach ($waData as $monthData) {
                 if (isset($monthData['month']) && isset($monthData['clickRate'])) {
-                // Extract month name from "Month YYYY" format
                 $monthName = explode(' ', $monthData['month'])[0] ?? '';
                 $monthIndex = array_search($monthName, $fullMonths);
                 if ($monthIndex !== false) {
@@ -1691,9 +1698,10 @@
                 }
                 }
 
-                $maxWaRate = max($waClickRates) ?: 10; // Minimum scale of 10%
+                $hasWaData = array_sum($waClickRates) > 0; // Check if there is any non-zero data
                 @endphp
 
+                @if($hasWaData)
                 <!-- WhatsApp Chart -->
                 <div style="margin: 30px auto 20px; text-align: center;">
                     <div style="position: relative; height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; background: #ffffff;">
@@ -1711,18 +1719,8 @@
                                 </div>
                             </div>
 
-                            <!-- Chart area -->
+                            <!-- Chart bars -->
                             <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px;">
-                                <!-- Grid lines -->
-                                <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 0;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 25%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 50%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 75%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 100%;"></div>
-                                </div>
-
-                                <!-- Chart bars container -->
                                 <div style="position: relative; width: 100%; height: 100%; display: table; table-layout: fixed;">
                                     @foreach($months as $index => $month)
                                     @php
@@ -1731,8 +1729,7 @@
                                     @endphp
                                     <div style="display: table-cell; width: 8.33%; vertical-align: bottom; text-align: center; height: 140px;">
                                         @if($percentage > 0)
-                                        <div style="background: #f59e0b; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative; vertical-align: bottom;">
-                                        </div>
+                                        <div style="background: #f59e0b; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto;"></div>
                                         @endif
                                     </div>
                                     @endforeach
@@ -1756,6 +1753,13 @@
                 <div style="margin-top: 15px; text-align: center;">
                     <div style="font-size: 12px; color: #64748b;">Monthly WhatsApp Click Rate Trends</div>
                 </div>
+
+                @else
+                <!-- No Data Available -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; min-height: 200px; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 14px;">
+                    No Data Available
+                </div>
+                @endif
             </div>
         </div>
 
@@ -1786,6 +1790,7 @@
         </div>
     </div>
 
+
     <!-- QR Code Scan Report -->
     <div style="display: table; width: 100%; margin-bottom: 30px;">
         <!-- QR Chart Section -->
@@ -1797,14 +1802,14 @@
 
                 @php
                 $qrData = $qr_events_over_time ?? [];
-                $qrScanRates = array_fill(0, 12, 0);
+                $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 $fullMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                $qrScanRates = array_fill(0, 12, 0);
 
                 // Process QR data to extract monthly scan rates
                 if (!empty($qrData)) {
                 foreach ($qrData as $monthData) {
                 if (isset($monthData['month']) && isset($monthData['scanRate'])) {
-                // Extract month name from "Month YYYY" format
                 $monthName = explode(' ', $monthData['month'])[0] ?? '';
                 $monthIndex = array_search($monthName, $fullMonths);
                 if ($monthIndex !== false) {
@@ -1814,9 +1819,10 @@
                 }
                 }
 
-                $maxQrRate = max($qrScanRates) ?: 10; // Minimum scale of 10%
+                $hasQrData = array_sum($qrScanRates) > 0; // Check if there is any non-zero data
                 @endphp
 
+                @if($hasQrData)
                 <!-- QR Chart -->
                 <div style="margin: 30px auto 20px; text-align: center;">
                     <div style="position: relative; height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; background: #ffffff;">
@@ -1834,18 +1840,8 @@
                                 </div>
                             </div>
 
-                            <!-- Chart area -->
+                            <!-- Chart bars -->
                             <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px;">
-                                <!-- Grid lines -->
-                                <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 0;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 25%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 50%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 75%;"></div>
-                                    <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 100%;"></div>
-                                </div>
-
-                                <!-- Chart bars container -->
                                 <div style="position: relative; width: 100%; height: 100%; display: table; table-layout: fixed;">
                                     @foreach($months as $index => $month)
                                     @php
@@ -1854,8 +1850,7 @@
                                     @endphp
                                     <div style="display: table-cell; width: 8.33%; vertical-align: bottom; text-align: center; height: 140px;">
                                         @if($percentage > 0)
-                                        <div style="background: #8b5cf6; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative; vertical-align: bottom;">
-                                        </div>
+                                        <div style="background: #8b5cf6; width: 16px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto;"></div>
                                         @endif
                                     </div>
                                     @endforeach
@@ -1879,6 +1874,13 @@
                 <div style="margin-top: 15px; text-align: center;">
                     <div style="font-size: 12px; color: #64748b;">Monthly QR Code Scan Rate Trends</div>
                 </div>
+
+                @else
+                <!-- No Data Available -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; min-height: 200px; background: #ffffff; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 14px;">
+                    No Data Available
+                </div>
+                @endif
             </div>
         </div>
 
@@ -1909,9 +1911,10 @@
         </div>
     </div>
 
+
     <!-- Training Report Section -->
 
-    <div style="page-break-before: auto; margin-top: 40px;">
+    <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
         <div class="section-title">Assigned Training Analytics</div>
 
         <!-- Training Status Distribution -->
