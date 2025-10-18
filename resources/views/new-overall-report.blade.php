@@ -612,29 +612,44 @@
                     <div class="score-total" style="font-size: 12px; color: #64748b;">/100</div>
                 </td>
                 @php
-            $clickRate = $click_rate ?? 0;
-            $alertType = $clickRate > 20 ? 'HIGH PHISHING CLICK RATE DETECTED' : 'ELEVATED SECURITY AWARENESS';
-            $alertMessage = $clickRate > 20 ? 'Immediate employee training recommended' : 'Continue current security practices';
-            @endphp
+                    // Safe defaults for values that may be undefined
+                    $clickPercent = isset($click_rate) ? (float) $click_rate : 0.0;
+                    $highRiskUsers = isset($payload_clicked) ? (int) $payload_clicked : 0;
+                    $riskScoreVal = isset($riskScore) ? (float) $riskScore : (isset($risk_score) ? (float)$risk_score : 0);
+                    $alertType = $clickPercent > 20 ? 'HIGH PHISHING CLICK RATE DETECTED' : 'ELEVATED SECURITY AWARENESS';
+                    $alertMessage = $clickPercent > 20 ? 'Immediate employee training recommended' : 'Continue current security practices';
+                @endphp
 
                 <td style="width: 50%; vertical-align: middle; padding-left: 15px;">
-                    <div class="alert-box" style="display: block;">
-                        <div class="alert-title">{{ $alertType }}</div>
-                        <div class="alert-message">{{ $alertMessage }}</div>
+                    <div style="background: #fffaf0; border: 1px solid #f6d365; border-radius: 8px; padding: 14px; text-align: left;">
+                        <div style="color: #92400e; font-weight: 700; font-size: 15px; margin-bottom: 6px;">{{ $alertType }}</div>
+                        <div style="color: #7a4b2a; font-size: 12px; margin-bottom: 10px;">{{ $alertMessage }}</div>
 
-                        <!-- Security Summary -->
-                        <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(251, 146, 60, 0.3);">
-                            <div style="font-size: 12px; color: #92400e; line-height: 1.5; margin-bottom: 12px;">
-                                <strong>Current Status:</strong><br>
-                                • Click Rate: {{ number_format($click_rate ?? 0, 1) }}% <br>
-                                • High Risk Users: {{ number_format($payload_clicked ?? 0) }} employees
-                            </div>
+                        <div style="border-top: 1px solid rgba(246, 214, 101, 0.4); padding-top: 10px; margin-top: 8px; font-size: 12px; color: #475569;">
+                            <strong>Current Status:</strong><br>
+                            • Click Rate: {{ number_format($clickPercent, 1) }}%<br>
+                            • High Risk Users: {{ number_format($highRiskUsers) }} employees<br>
+                            • Risk Score: {{ number_format($riskScoreVal, 1) }}/100
+                        </div>
 
-                            <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 4px;">
-                                <div style="font-size: 11px; color: #dc2626; font-weight: 600;">
-                                    Priority: {{ $clickRate > 20 ? 'HIGH' : 'MEDIUM' }} • Act within {{ $clickRate > 20 ? '3 days' : '1 week' }}
-                                </div>
-                            </div>
+                        <div style="margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">Risk Score Guide</div>
+                            <table style="width:100%; border-collapse: collapse; font-size:11px; color:#475569;">
+                                <tr>
+                                    <td style="width:33%; padding:4px 6px; vertical-align: top;">
+                                        <div style="background:#10b981; height:10px; border-radius:3px; margin-bottom:6px;"></div>
+                                        0 - 39: Low risk
+                                    </td>
+                                    <td style="width:33%; padding:4px 6px; vertical-align: top;">
+                                        <div style="background:#fb923c; height:10px; border-radius:3px; margin-bottom:6px;"></div>
+                                        40 - 69: Medium risk
+                                    </td>
+                                    <td style="width:34%; padding:4px 6px; vertical-align: top;">
+                                        <div style="background:#ef4444; height:10px; border-radius:3px; margin-bottom:6px;"></div>
+                                        70 - 100: High risk
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </td>
