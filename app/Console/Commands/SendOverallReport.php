@@ -386,7 +386,7 @@ class SendOverallReport extends Command
         $nextReportDate = $this->getNextReportDate($lastReportDate, $reportFrequency);
 
         // Check if it's exactly the time for the next report (using static date for testing)
-        $currentDate = '2025-10-24'; // Static date for testing
+        $currentDate = '2025-10-25'; // Static date for testing
         $currentDate = Carbon::parse($currentDate);
         // $currentDate = Carbon::now();
         $shouldGenerate = $currentDate->isSameDay($nextReportDate);

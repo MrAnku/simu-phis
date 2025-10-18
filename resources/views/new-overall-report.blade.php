@@ -69,28 +69,30 @@
         }
 
         /* Additional elegant typography */
-        h3, h4, h5 {
+        h3,
+        h4,
+        h5 {
             font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
             letter-spacing: 0.5px;
             line-height: 1.3;
             font-weight: 700;
         }
-        
+
         h3 {
             font-size: 20px;
             font-weight: 700;
         }
-        
+
         h4 {
             font-size: 18px;
             font-weight: 700;
         }
-        
+
         h5 {
             font-size: 16px;
             font-weight: 700;
         }
-        
+
         .recommendations h3,
         .security-status h3 {
             font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
@@ -98,14 +100,14 @@
             font-weight: 700;
             font-size: 20px;
         }
-        
+
         /* Enhance readability */
         p {
             font-family: 'Times New Roman', 'Arial', 'Calibri', serif;
             line-height: 1.6;
             letter-spacing: 0.2px;
         }
-        
+
         /* Make numbers more elegant */
         .score-number,
         .kpi-value {
@@ -156,7 +158,8 @@
             margin: 15px auto;
             border-radius: 50%;
             background: transparent;
-            transform: rotate(0deg); /* SVG handles rotation internally */
+            transform: rotate(0deg);
+            /* SVG handles rotation internally */
         }
 
         /* Helper class to push the chart down a bit so small indicator bars don't overlap the title */
@@ -175,6 +178,7 @@
             border-radius: 50%;
             z-index: 2;
         }
+
         /* When we embed a raster donut image (QuickChart), the image already contains
            the inner hole. Disable the pseudo-element overlay to avoid double masking
            and alignment issues in PDF (dompdf). */
@@ -546,7 +550,7 @@
             <tr>
                 <td style="width: 50%; padding-right: 15px; vertical-align: top; text-align: center;">
                     <h2 class="risk-score-title">Overall Security Risk Score</h2>
-                @php
+                    @php
                     // Ensure risk score is numeric and clamped 0..100
                     $scoreRaw = $riskScore ?? 0;
                     $scoreVal = is_numeric($scoreRaw) ? (float) $scoreRaw : 0.0;
@@ -559,9 +563,9 @@
                     $circumference = 2 * pi() * $radius;
                     $dash = $circumference;
                     $dashOffset = $circumference * (1 - ($scoreVal / 100));
-                @endphp
+                    @endphp
 
-                @php
+                    @php
                     // Prefer server-generated raster (base64) for dompdf. Fallback order: base64 -> local file:// -> public url -> inline SVG
                     $gBase = $riskDonutImageBase64 ?? $riskGaugeImageBase64 ?? null;
                     $gLocal = $riskDonutImageLocal ?? $riskGaugeImageLocal ?? null;
@@ -571,26 +575,32 @@
                     $hasRaster = !empty($gBase) || !empty($gLocal) || !empty($gPublic);
                     // Always add a small top margin class to prevent the small indicator color bar from overlapping the title
                     $divClass = $hasRaster ? 'circular-progress no-overlay mt-chart' : 'circular-progress mt-chart';
-                @endphp
+                    @endphp
 
-                <div class="{{ $divClass }}" style="width: {{ $svgSize }}px; height: {{ $svgSize }}px; margin: 15px auto; position: relative;">
-
-                    @if(!empty($gBase))
-                        <img src="data:image/png;base64,{{ $gBase }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
-                    @elseif(!empty($gLocal))
-                        <img src="{{ $gLocal }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
-                    @elseif(!empty($gPublic))
-                        <img src="{{ $gPublic }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                    @if($scoreVal == 0)
+                    {{-- When there's no score, show a compact centered message (smaller padding to avoid large gaps). --}}
+                    <div style="width: {{ $svgSize }}px; height: auto; padding: 8px 0; margin: 6px auto; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:14px;">
+                        No Data Available
+                    </div>
                     @else
+                    <div class="{{ $divClass }}" style="width: {{ $svgSize }}px; height: {{ $svgSize }}px; margin: 15px auto; position: relative;">
+
+                        @if(!empty($gBase))
+                        <img src="data:image/png;base64,{{ $gBase }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                        @elseif(!empty($gLocal))
+                        <img src="{{ $gLocal }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                        @elseif(!empty($gPublic))
+                        <img src="{{ $gPublic }}" alt="Risk gauge" style="width:100%; height:100%; display:block;" />
+                        @else
                         {{-- Inline SVG fallback for browsers or when image generation failed --}}
                         @php
-                            // When score is exactly (or numerically very close to) 100,
-                            // use a butt linecap and a single dasharray so the arc closes perfectly
-                            // (round linecaps can leave a small visible gap at 100%).
-                            $isFullCircle = $scoreVal >= 100.0 - 1e-9;
-                            $fgLinecap = $isFullCircle ? 'butt' : 'round';
-                            $fgDasharray = $isFullCircle ? $dash : ($dash . ' ' . $dash);
-                            $fgDashoffset = $isFullCircle ? 0 : $dashOffset;
+                        // When score is exactly (or numerically very close to) 100,
+                        // use a butt linecap and a single dasharray so the arc closes perfectly
+                        // (round linecaps can leave a small visible gap at 100%).
+                        $isFullCircle = $scoreVal >= 100.0 - 1e-9;
+                        $fgLinecap = $isFullCircle ? 'butt' : 'round';
+                        $fgDasharray = $isFullCircle ? $dash : ($dash . ' ' . $dash);
+                        $fgDashoffset = $isFullCircle ? 0 : $dashOffset;
                         @endphp
 
                         <svg width="{{ $svgSize }}" height="{{ $svgSize }}" viewBox="0 0 {{ $svgSize }} {{ $svgSize }}" role="img" aria-label="Overall Security Risk Score">
@@ -602,22 +612,25 @@
                                     stroke-dasharray="{{ $fgDasharray }}" stroke-dashoffset="{{ $fgDashoffset }}" />
                             </g>
                         </svg>
+                        @endif
+
+                    </div>
                     @endif
 
-                </div>
-
-                {{-- Numeric score shown below the chart (PDF-friendly) --}}
-                <div style="text-align: center; margin-top: 8px;">
-                    <div class="score-number" style="font-size: 22px;">{{ number_format($scoreVal, 2) }}</div>
-                    <div class="score-total" style="font-size: 12px; color: #64748b;">/100</div>
+                    {{-- Numeric score shown below the chart (PDF-friendly). Always render the score so it's visible even when the donut is unavailable. --}}
+                    <div style="text-align: center; margin-top: 6px;">
+                        <span style="font-size: 13px; color: #64748b; margin-right: 6px;">Risk Score :</span>
+                        <span class="score-number" style="font-size: 22px; display: inline-block; vertical-align: middle;">{{ number_format($scoreVal, 2) }}</span>
+                        <span class="score-total" style="font-size: 12px; color: #64748b; display: inline-block; vertical-align: middle; margin-left: 6px;">/100</span>
+                    </div>
                 </td>
                 @php
-                    // Safe defaults for values that may be undefined
-                    $clickPercent = isset($click_rate) ? (float) $click_rate : 0.0;
-                    $highRiskUsers = isset($payload_clicked) ? (int) $payload_clicked : 0;
-                    $riskScoreVal = isset($riskScore) ? (float) $riskScore : (isset($risk_score) ? (float)$risk_score : 0);
-                    $alertType = $clickPercent > 20 ? 'HIGH PHISHING CLICK RATE DETECTED' : 'ELEVATED SECURITY AWARENESS';
-                    $alertMessage = $clickPercent > 20 ? 'Immediate employee training recommended' : 'Continue current security practices';
+                // Safe defaults for values that may be undefined
+                $clickPercent = isset($click_rate) ? (float) $click_rate : 0.0;
+                $highRiskUsers = isset($payload_clicked) ? (int) $payload_clicked : 0;
+                $riskScoreVal = isset($riskScore) ? (float) $riskScore : (isset($risk_score) ? (float)$risk_score : 0);
+                $alertType = $clickPercent > 20 ? 'HIGH PHISHING CLICK RATE DETECTED' : 'ELEVATED SECURITY AWARENESS';
+                $alertMessage = $clickPercent > 20 ? 'Immediate employee training recommended' : 'Continue current security practices';
                 @endphp
 
                 <td style="width: 50%; vertical-align: middle; padding-left: 15px;">
@@ -1016,54 +1029,57 @@
                         <div style="margin: 20px auto; text-align: center;">
                             @php
                             // Ensure fallback values exist
-                            $trainingAssigned = $training_assigned ?? 10;
-                            $trainingStarted = $totalTrainingStarted ?? 8;  // Total who started (includes completed)
-                            $trainingCompleted = $training_completed ?? 2;
+                            $trainingAssigned = isset($training_assigned) ? (int) $training_assigned : 0;
+                            $trainingStarted = isset($totalTrainingStarted) ? (int) $totalTrainingStarted : 0; // Total who started (includes completed)
+                            $trainingCompleted = isset($training_completed) ? (int) $training_completed : 0;
+
+                            // Prefer base64 (embedded) for dompdf, then local file path, then public URL
+                            $donutBase64 = $donutChartImageBase64 ?? null;
+                            $donutLocal = $donutChartImageLocal ?? null;
+                            $donutPublic = $donutChartImage ?? null;
+
+                            $allZero = ($trainingAssigned === 0 && $trainingStarted === 0 && $trainingCompleted === 0);
                             @endphp
 
-                            @php
-                                // Prefer base64 (embedded) for dompdf, then local file path, then public URL
-                                $donutBase64 = $donutChartImageBase64 ?? null;
-                                $donutLocal = $donutChartImageLocal ?? null;
-                                $donutPublic = $donutChartImage ?? null;
-                            @endphp
-
-                            @if(!empty($donutBase64))
-                                <div style="width:220px; height:160px; margin:0 auto;">
-                                    <img src="data:image/png;base64,{{ $donutBase64 }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
-                                </div>
-                            @elseif(!empty($donutLocal) || !empty($donutPublic))
-                                @php $donutSrc = $donutLocal ?? $donutPublic; @endphp
-                                <div style="width: 220px; height: 160px; margin: 0 auto;">
-                                    <img src="{{ $donutSrc }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
-                                </div>
+                            @if($allZero)
+                            <div style="width:220px; height:160px; margin:20px auto; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:14px;">
+                                No Data Available
+                            </div>
                             @else
-                                @php
-                                $total = $trainingAssigned + $trainingStarted + $trainingCompleted;
-                                // Prevent division by zero
-                                if ($total == 0) {
-                                    $total = 1;
-                                    $trainingAssigned = 1;
-                                    $trainingStarted = 0;
-                                    $trainingCompleted = 0;
-                                }
-                                $assignedPercentage = ($trainingAssigned / $total) * 100;
-                                $startedPercentage = ($trainingStarted / $total) * 100;
-                                $completedPercentage = ($trainingCompleted / $total) * 100;
-                                @endphp
+                            @if(!empty($donutBase64))
+                            <div style="width:220px; height:160px; margin:0 auto;">
+                                <img src="data:image/png;base64,{{ $donutBase64 }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                            </div>
+                            @elseif(!empty($donutLocal) || !empty($donutPublic))
+                            @php $donutSrc = $donutLocal ?? $donutPublic; @endphp
+                            <div style="width: 220px; height: 160px; margin: 0 auto;">
+                                <img src="{{ $donutSrc }}" alt="Training status donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                            </div>
+                            @else
+                            @php
+                            $total = $trainingAssigned + $trainingStarted + $trainingCompleted;
+                            // Prevent division by zero
+                            if ($total == 0) {
+                            $total = 1;
+                            }
+                            $assignedPercentage = ($trainingAssigned / $total) * 100;
+                            $startedPercentage = ($trainingStarted / $total) * 100;
+                            $completedPercentage = ($trainingCompleted / $total) * 100;
+                            @endphp
 
-                                <!-- Simple stacked circular progress representation (browser fallback) -->
-                                <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
-                                    <div style="width: 90px; height: 90px; border-radius: 50%; background: #3b82f6; position: relative;">
-                                        @if($startedPercentage > 0)
-                                        <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border-radius: 50%; background: #fb923c;"></div>
-                                        @endif
-                                        @if($completedPercentage > 0)
-                                        <div style="position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; border-radius: 50%; background: #10b981;"></div>
-                                        @endif
-                                        <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
-                                    </div>
+                            <!-- Simple stacked circular progress representation (browser fallback) -->
+                            <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
+                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #3b82f6; position: relative;">
+                                    @if($startedPercentage > 0)
+                                    <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border-radius: 50%; background: #fb923c;"></div>
+                                    @endif
+                                    @if($completedPercentage > 0)
+                                    <div style="position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; border-radius: 50%; background: #10b981;"></div>
+                                    @endif
+                                    <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
                                 </div>
+                            </div>
+                            @endif
                             @endif
                         </div>
 
@@ -1149,7 +1165,7 @@
                                     <!-- 0% line (baseline) -->
                                     <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: #e2e8f0; opacity: 0.8;"></div>
                                 </div>
-                                
+
                                 <!-- Chart bars container with absolute positioning -->
                                 <div style="position: relative; width: 100%; height: 140px; top: 20px;">
                                     <!-- Static -->
@@ -1225,56 +1241,64 @@
                         <!-- Risk Distribution Pie Chart (prefer server-generated image for PDFs) -->
                         <div style="margin: 20px auto; text-align: center;">
                             @php
-                                // Prefer base64 (embedded) for dompdf, then local file path, then public URL
-                                $riskBase64 = $riskChartImageBase64 ?? null;
-                                $riskLocal = $riskChartImageLocal ?? null;
-                                $riskPublic = $riskChartImage ?? null;
+                            // Prefer base64 (embedded) for dompdf, then local file path, then public URL
+                            $riskBase64 = $riskChartImageBase64 ?? null;
+                            $riskLocal = $riskChartImageLocal ?? null;
+                            $riskPublic = $riskChartImage ?? null;
                             @endphp
 
-                            @if(!empty($riskBase64))
-                                <div style="width:220px; height:160px; margin:0 auto;">
-                                    <img src="data:image/png;base64,{{ $riskBase64 }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
-                                </div>
+                            @php
+                            $riskAllZero = ($highRisk === 0 && $moderateRisk === 0 && $lowRisk === 0);
+                            @endphp
+
+                            @if($riskAllZero)
+                            <div style="width:220px; height:160px; margin:20px auto; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:14px;">
+                                No Data Available
+                            </div>
+                            @elseif(!empty($riskBase64))
+                            <div style="width:220px; height:160px; margin:0 auto;">
+                                <img src="data:image/png;base64,{{ $riskBase64 }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                            </div>
                             @elseif(!empty($riskLocal) || !empty($riskPublic))
-                                @php $riskSrc = $riskLocal ?? $riskPublic; @endphp
-                                <div style="width: 220px; height: 160px; margin: 0 auto;">
-                                    <img src="{{ $riskSrc }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
-                                </div>
+                            @php $riskSrc = $riskLocal ?? $riskPublic; @endphp
+                            <div style="width: 220px; height: 160px; margin: 0 auto;">
+                                <img src="{{ $riskSrc }}" alt="Risk distribution donut" style="max-width:100%; height:auto; display:block; margin:0 auto;" />
+                            </div>
                             @else
-                                {{-- Fallback: simple pie/donut built with inline divs (browser-only) --}}
-                                @php
-                                // Calculate risk percentages for visualization
-                                $totalRiskCalc = max(($highRisk + $moderateRisk + $lowRisk), 1);
-                                $moderatePercentage = ($moderateRisk / $totalRiskCalc) * 100;
-                                $lowPercentage = ($lowRisk / $totalRiskCalc) * 100;
-                                $highPercentage = ($highRisk / $totalRiskCalc) * 100;
-                                @endphp
+                            {{-- Fallback: simple pie/donut built with inline divs (browser-only) --}}
+                            @php
+                            // Calculate risk percentages for visualization
+                            $totalRiskCalc = max(($highRisk + $moderateRisk + $lowRisk), 1);
+                            $moderatePercentage = ($moderateRisk / $totalRiskCalc) * 100;
+                            $lowPercentage = ($lowRisk / $totalRiskCalc) * 100;
+                            $highPercentage = ($highRisk / $totalRiskCalc) * 100;
+                            @endphp
 
-                                <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
-                                    <div style="width: 90px; height: 90px; border-radius: 50%; background: #f1f5f9; position: relative;">
-                                        @if($lowRisk > 0 && $lowPercentage >= 50)
-                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
-                                        @endif
+                            <div style="width: 90px; height: 90px; margin: 0 auto; position: relative;">
+                                <div style="width: 90px; height: 90px; border-radius: 50%; background: #f1f5f9; position: relative;">
+                                    @if($lowRisk > 0 && $lowPercentage >= 50)
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
+                                    @endif
 
-                                        @if($moderateRisk > 0 && $moderatePercentage >= 50)
-                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #fb923c;"></div>
-                                        @endif
+                                    @if($moderateRisk > 0 && $moderatePercentage >= 50)
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #fb923c;"></div>
+                                    @endif
 
-                                        @if($highRisk > 0 && $highPercentage >= 50)
-                                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #ef4444;"></div>
-                                        @endif
+                                    @if($highRisk > 0 && $highPercentage >= 50)
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: #ef4444;"></div>
+                                    @endif
 
-                                        @if($moderateRisk > 0 && $moderatePercentage < 50 && $moderatePercentage > 0)
+                                    @if($moderateRisk > 0 && $moderatePercentage < 50 && $moderatePercentage> 0)
                                         <div style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: #fb923c;"></div>
                                         @endif
 
-                                        @if($highRisk > 0 && $highPercentage < 50 && $highPercentage > 0)
-                                        <div style="position: absolute; top: 25%; left: 25%; width: 50%; height: 50%; border-radius: 50%; background: #ef4444;"></div>
-                                        @endif
+                                        @if($highRisk > 0 && $highPercentage < 50 && $highPercentage> 0)
+                                            <div style="position: absolute; top: 25%; left: 25%; width: 50%; height: 50%; border-radius: 50%; background: #ef4444;"></div>
+                                            @endif
 
-                                        <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
-                                    </div>
+                                            <div style="position: absolute; top: 30%; left: 30%; width: 40%; height: 40%; border-radius: 50%; background: white;"></div>
                                 </div>
+                            </div>
                             @endif
                         </div>
 
@@ -1344,19 +1368,24 @@
                             Most Compromised
                         </h3>
                         <div style="margin: 15px 0;">
-                            @foreach($most_compromised_employees as $index => $employee)
-                            @if($index < 5)
-                                <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
-                                <div style="display: table-cell; width: 70%; vertical-align: middle;">
-                                    <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
-                                </div>
-                                <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
-                                    <span style="font-size: 12px; font-weight: 600; color: #ef4444;">{{ $employee['compromised'] ?? 0 }} TIMES</span>
-                                </div>
+                            @if(empty($most_compromised_employees) || count($most_compromised_employees) == 0)
+                                <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
+                            
+                            @else
+                                @foreach($most_compromised_employees as $index => $employee)
+                                @if($index < 5)
+                                    <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
+                                    <div style="display: table-cell; width: 70%; vertical-align: middle;">
+                                        <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
+                                    </div>
+                                    <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
+                                        <span style="font-size: 12px; font-weight: 600; color: #ef4444;">{{ $employee['compromised'] ?? 0 }} TIMES</span>
+                                    </div>
+                            </div>
+                            @endif
+                            @endforeach
+                            @endif
                         </div>
-                        @endif
-                        @endforeach
-                    </div>
                 </div>
             </div>
 
@@ -1367,19 +1396,24 @@
                         Most Clicked
                     </h3>
                     <div style="margin: 15px 0;">
-                        @foreach($most_clicked_emp as $index => $employee)
-                        @if($index < 5)
-                            <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fffbeb; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                            <div style="display: table-cell; width: 70%; vertical-align: middle;">
-                                <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
-                            </div>
-                            <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
-                                <span style="font-size: 12px; font-weight: 600; color: #f59e0b;">{{ $employee['compromised'] ?? 0 }} CLICKS</span>
-                            </div>
+                        @if(empty($most_clicked_emp) || count($most_clicked_emp) == 0)
+                            <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
+                        
+                        @else
+                            @foreach($most_clicked_emp as $index => $employee)
+                            @if($index < 5)
+                                <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fffbeb; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                                <div style="display: table-cell; width: 70%; vertical-align: middle;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
+                                </div>
+                                <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #f59e0b;">{{ $employee['compromised'] ?? 0 }} CLICKS</span>
+                                </div>
+                        </div>
+                        @endif
+                        @endforeach
+                        @endif
                     </div>
-                    @endif
-                    @endforeach
-                </div>
             </div>
         </div>
     </div>
@@ -1416,7 +1450,7 @@
                                 $weeklyClicksArray[$i]=(float)$weeklyClicks[$i]['percentage'];
                                 } else {
                                 $weeklyClicksArray[$i]=0;
-                                }               
+                                }
                                 }
 
                                 $weekDays=['Sun', 'Mon' , 'Tue' , 'Wed' , 'Thu' , 'Fri' , 'Sat' ];
