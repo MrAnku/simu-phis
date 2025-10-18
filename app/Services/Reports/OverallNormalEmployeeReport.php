@@ -264,7 +264,8 @@ class OverallNormalEmployeeReport
 
     private function empBadges()
     {
-        $badgeMap = Badge::pluck('name', 'id');
+        // Build a map of badge id => ['name' => ..., 'description' => ...]
+        $badges = Badge::select(['id', 'name', 'description'])->get()->keyBy('id');
 
         $trainings = TrainingAssignedUser::where('company_id', $this->companyId)
             ->whereNotNull('badge')
@@ -280,16 +281,29 @@ class OverallNormalEmployeeReport
 
         $uniqueUsers = $records
             ->groupBy('user_email') // group all records of same user
-            ->map(function ($userRecords) use ($badgeMap) {
-                // Merge all badges arrays for the user
-                $allBadges = $userRecords->pluck('badge')
-                    ->flatMap(fn($b) => json_decode($b, true)) // convert JSON -> array
+            ->map(function ($userRecords) use ($badges) {
+                // Merge all badges arrays for the user (stored as JSON arrays in DB)
+                $allBadgeIds = $userRecords->pluck('badge')
+                    ->flatMap(fn($b) => json_decode($b, true) ?? []) // convert JSON -> array, guard null
                     ->unique()
                     ->values()
                     ->all();
 
-                $badgeNames = collect($allBadges)
-                    ->map(fn($id) => $badgeMap[$id] ?? "Unknown Badge")
+                // badge names (backward-compatible)
+                $badgeNames = collect($allBadgeIds)
+                    ->map(fn($id) => $badges[$id]->name ?? 'Unknown Badge')
+                    ->values()
+                    ->all();
+
+                // badge objects with description
+                $badgeObjects = collect($allBadgeIds)
+                    ->map(function ($id) use ($badges) {
+                        $badge = $badges[$id] ?? null;
+                        return [
+                            'name' => $badge->name ?? 'Unknown Badge',
+                            'description' => $badge->description ?? '',
+                        ];
+                    })
                     ->values()
                     ->all();
 
@@ -297,7 +311,7 @@ class OverallNormalEmployeeReport
                     'user_email'  => $userRecords->first()->user_email,
                     'user_name'   => $userRecords->first()->user_name,
                     'badge_count' => count($badgeNames),
-                    'badge'       => $badgeNames,
+                    'badges'      => $badgeObjects,
                 ];
             })
             ->values();
