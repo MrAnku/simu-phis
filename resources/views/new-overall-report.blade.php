@@ -1369,23 +1369,23 @@
                         </h3>
                         <div style="margin: 15px 0;">
                             @if(empty($most_compromised_employees) || count($most_compromised_employees) == 0)
-                                <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
-                            
+                            <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
+
                             @else
-                                @foreach($most_compromised_employees as $index => $employee)
-                                @if($index < 5)
-                                    <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
-                                    <div style="display: table-cell; width: 70%; vertical-align: middle;">
-                                        <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
-                                    </div>
-                                    <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
-                                        <span style="font-size: 12px; font-weight: 600; color: #ef4444;">{{ $employee['compromised'] ?? 0 }} TIMES</span>
-                                    </div>
-                            </div>
-                            @endif
-                            @endforeach
-                            @endif
+                            @foreach($most_compromised_employees as $index => $employee)
+                            @if($index < 5)
+                                <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
+                                <div style="display: table-cell; width: 70%; vertical-align: middle;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
+                                </div>
+                                <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
+                                    <span style="font-size: 12px; font-weight: 600; color: #ef4444;">{{ $employee['compromised'] ?? 0 }} TIMES</span>
+                                </div>
                         </div>
+                        @endif
+                        @endforeach
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -1397,149 +1397,145 @@
                     </h3>
                     <div style="margin: 15px 0;">
                         @if(empty($most_clicked_emp) || count($most_clicked_emp) == 0)
-                            <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
-                        
+                        <div style="padding: 10px 0 10px 20px; color:#64748b; font-size:15px;">No Data Available</div>
+
                         @else
-                            @foreach($most_clicked_emp as $index => $employee)
-                            @if($index < 5)
-                                <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fffbeb; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                                <div style="display: table-cell; width: 70%; vertical-align: middle;">
-                                    <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
-                                </div>
-                                <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
-                                    <span style="font-size: 12px; font-weight: 600; color: #f59e0b;">{{ $employee['compromised'] ?? 0 }} CLICKS</span>
-                                </div>
-                        </div>
-                        @endif
-                        @endforeach
-                        @endif
+                        @foreach($most_clicked_emp as $index => $employee)
+                        @if($index < 5)
+                            <div style="display: table; width: 100%; margin-bottom: 12px; padding: 12px; background: #fffbeb; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                            <div style="display: table-cell; width: 70%; vertical-align: middle;">
+                                <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $employee['employee_name'] ?? 'Unknown' }}</span>
+                            </div>
+                            <div style="display: table-cell; width: 30%; vertical-align: middle; text-align: right;">
+                                <span style="font-size: 12px; font-weight: 600; color: #f59e0b;">{{ $employee['compromised'] ?? 0 }} CLICKS</span>
+                            </div>
                     </div>
+                    @endif
+                    @endforeach
+                    @endif
+                </div>
             </div>
         </div>
     </div>
     </div>
 
+    
     <!-- Weekly Email Simulation Analytics -->
-    <div style="page-break-before: auto; margin-top: 40px;">
-        <div class="section-title">Weekly Email Simulation Analytics</div>
+<div style="page-break-before: auto; margin-top: 40px;">
+    <div class="section-title">Weekly Email Simulation Analytics</div>
 
-        <div style="display: table; width: 100%; margin-bottom: 30px;">
-            <!-- Overview Section -->
-            <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 20px;">
-                <div class="column-card" style="min-height: 200px;">
-                    <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 15px;">Overview</h3>
-                    <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 15px;">
-                        Comprehensive phishing simulation conducted across all departments to assess employee security awareness and response to phishing attempts. This report provides insights into employee behavior patterns, identifies high-risk areas, and recommends targeted training initiatives.
-                    </p>
+    <div style="display: table; width: 100%; margin-bottom: 30px;">
+        <!-- Overview Section -->
+        <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 20px;">
+            <div class="column-card" style="min-height: 200px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 15px;">Overview</h3>
+                <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 15px;">
+                    Comprehensive phishing simulation conducted across all departments to assess employee security awareness and response to phishing attempts. This report provides insights into employee behavior patterns, identifies high-risk areas, and recommends targeted training initiatives.
+                </p>
 
-                    <!-- Phishing Rate Chart -->
-                    <div style="margin-top: 25px;">
-                        <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 15px;">Email Click Rate Over Time</h4>
-                        <div style="position: relative; height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; background: #ffffff;">
-                            @php
-                            $weeklyClicks = $phish_clicks_weekly ?? [];
-                            // Ensure weeklyClicks is an array and extract percentage values
-                            if (!is_array($weeklyClicks)) {
-                            $weeklyClicks = [];
-                            }
+                @php
+                $weeklyClicks = $phish_clicks_weekly ?? [];
+                if (!is_array($weeklyClicks)) $weeklyClicks = [];
 
-                            // Extract percentage values from the array structure
-                            $weeklyClicksArray = [];
-                            for ($i = 0; $i < 7; $i++) {
-                                if (isset($weeklyClicks[$i]['percentage'])) {
-                                $weeklyClicksArray[$i]=(float)$weeklyClicks[$i]['percentage'];
-                                } else {
-                                $weeklyClicksArray[$i]=0;
-                                }
-                                }
+                // Extract percentage values (ensure numeric)
+                $weeklyClicksArray = [];
+                for ($i = 0; $i < 7; $i++) {
+                    $weeklyClicksArray[$i] = isset($weeklyClicks[$i]['percentage'])
+                        ? (float) $weeklyClicks[$i]['percentage']
+                        : 0;
+                }
 
-                                $weekDays=['Sun', 'Mon' , 'Tue' , 'Wed' , 'Thu' , 'Fri' , 'Sat' ];
-                                @endphp
+                $weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                $hasWeeklyData = collect($weeklyClicksArray)->contains(fn($v) => (float) $v > 0);
+                @endphp
 
-                                <!-- Chart container -->
-                                <div style="position: relative; height: 160px;">
-                                    <!-- Y-axis labels -->
-                                    <div style="position: absolute; left: 0; top: 0; width: 40px; height: 140px;">
-                                        <div style="position: relative; height: 100%;">
-                                            <div style="position: absolute; top: 0; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">100%</div>
-                                            <div style="position: absolute; top: 25%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">75%</div>
-                                            <div style="position: absolute; top: 50%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">50%</div>
-                                            <div style="position: absolute; top: 75%; right: 5px; font-size: 11px; color: #64748b; font-weight: 500; transform: translateY(-50%);">25%</div>
-                                            <div style="position: absolute; bottom: 0; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">0%</div>
-                                        </div>
-                                    </div>
+                <!-- Always Visible Title -->
+                <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 10px; text-align: center;">
+                    Email Click Rate Over Time
+                </h4>
 
-                                    <!-- Chart area -->
-                                    <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px;">
-                                        <!-- Grid lines -->
-                                        <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
-                                            <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 0;"></div>
-                                            <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 25%;"></div>
-                                            <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 50%;"></div>
-                                            <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 75%;"></div>
-                                            <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: 100%;"></div>
-                                        </div>
-
-                                        <!-- Chart bars container -->
-                                        <div style="position: relative; width: 100%; height: 100%; display: table; table-layout: fixed;">
-                                            @foreach($weekDays as $index => $day)
-                                            @php
-                                            $percentage = $weeklyClicksArray[$index] ?? 0;
-                                            $barHeight = ($percentage / 100) * 140;
-                                            @endphp
-                                            <div style="display: table-cell; width: 14.28%; vertical-align: bottom; text-align: center;">
-                                                @if($percentage > 0)
-                                                <div style="background: #fb923c; width: 24px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative;">
-                                                    <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #1e293b; font-weight: 600; white-space: nowrap;">{{ $percentage }}%</div>
-                                                </div>
-                                                @endif
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-
-                                    <!-- X-axis labels -->
-                                    <div style="position: absolute; left: 45px; bottom: 0; right: 0; height: 20px;">
-                                        <div style="display: table; width: 100%; table-layout: fixed;">
-                                            @foreach($weekDays as $day)
-                                            <div style="display: table-cell; width: 14.28%; text-align: center;">
-                                                <span style="font-size: 11px; color: #64748b; font-weight: 500;">{{ $day }}</span>
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
+                <!-- Chart or No Data -->
+                @if($hasWeeklyData)
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #ffffff; min-height: 220px; display: flex; flex-direction: column;">
+                        <div style="position: relative; height: 180px;">
+                            <!-- Y-axis labels -->
+                            <div style="position: absolute; left: 0; top: 0; width: 40px; height: 140px;">
+                                @foreach([100,75,50,25,0] as $label)
+                                <div style="position: absolute; top: {{ 140 - ($label * 1.4) }}px; right: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                                    {{ $label }}%
                                 </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Grid lines -->
+                            <div style="position: absolute; left: 45px; top: 0; right: 0; height: 140px;">
+                                @foreach([0,25,50,75,100] as $line)
+                                <div style="position: absolute; width: 100%; height: 1px; background: #f8fafc; top: {{ $line }}%;"></div>
+                                @endforeach
+
+                                <!-- Bars -->
+                                <div style="display: table; width: 100%; height: 100%; table-layout: fixed;">
+                                    @foreach($weekDays as $index => $day)
+                                    @php
+                                    $percentage = $weeklyClicksArray[$index] ?? 0;
+                                    $barHeight = max(($percentage / 100) * 140, 3);
+                                    @endphp
+                                    <div style="display: table-cell; vertical-align: bottom; text-align: center;">
+                                        <div style="background: #fb923c; width: 24px; height: {{ $barHeight }}px; border-radius: 2px 2px 0 0; margin: 0 auto; position: relative;">
+                                            <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #1e293b; font-weight: 600;">{{ $percentage }}</div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- X-axis labels -->
+                            <div style="position: absolute; left: 45px; bottom: 0; right: 0; height: 20px;">
+                                <div style="display: table; width: 100%; table-layout: fixed;">
+                                    @foreach($weekDays as $day)
+                                    <div style="display: table-cell; text-align: center;">
+                                        <span style="font-size: 11px; color: #64748b; font-weight: 500;">{{ $day }}</span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @else
+                    <!-- No Data Message -->
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #ffffff; min-height: 120px; display: flex; justify-content: center; align-items: center; color: #6b7280; font-size: 14px;">
+                        No Data Available
+                    </div>
+                @endif
             </div>
+        </div>
 
-            <!-- Summary Section -->
-            <div style="display: table-cell; width: 40%; vertical-align: top; padding-left: 20px;">
-                <div class="column-card" style="min-height: 200px; text-align: center;">
-                    <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">Summary</h3>
+        <!-- Summary Section -->
+        <div style="display: table-cell; width: 40%; vertical-align: top; padding-left: 20px;">
+            <div class="column-card" style="min-height: 200px; text-align: center;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">Summary</h3>
 
-                    <!-- Click Rate -->
-                    <div style="margin-bottom: 25px;">
-                        <div style="font-size: 36px; font-weight: 700; color: #ef4444; line-height: 1;">{{ number_format($click_rate) }}%</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Click Rate</div>
-                    </div>
+                <div style="margin-bottom: 25px;">
+                    <div style="font-size: 36px; font-weight: 700; color: #ef4444;">{{ number_format($click_rate) }}%</div>
+                    <div style="font-size: 12px; color: #64748b;">Click Rate</div>
+                </div>
 
-                    <!-- Total Simulations -->
-                    <div style="margin-bottom: 25px;">
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1;">{{ number_format($campaigns_sent) }}</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Total Simulations</div>
-                    </div>
+                <div style="margin-bottom: 25px;">
+                    <div style="font-size: 36px; font-weight: 700; color: #1e293b;">{{ number_format($campaigns_sent) }}</div>
+                    <div style="font-size: 12px; color: #64748b;">Total Simulations</div>
+                </div>
 
-                    <!-- High Risk Users -->
-                    <div>
-                        <div style="font-size: 36px; font-weight: 700; color: #f59e0b; line-height: 1;">{{ number_format($payload_clicked) }}</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 5px;">High-risk Users</div>
-                    </div>
+                <div>
+                    <div style="font-size: 36px; font-weight: 700; color: #f59e0b;">{{ number_format($payload_clicked) }}</div>
+                    <div style="font-size: 12px; color: #64748b;">High-risk Users</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+
+
 
     <!-- AI Vishing Report -->
     <div style="display: table; width: 100%; margin-bottom: 30px;">
