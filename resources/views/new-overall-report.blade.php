@@ -1926,17 +1926,7 @@
                             Assigned Training Status Distribution
                         </h3>
                         @php
-                        $trainingData = $trainingStatusDistribution ?? [
-                        'total_trainings' => 253,
-                        'completed' => 35,
-                        'in_progress' => 93,
-                        'not_started' => 126,
-                        'overdue' => 167,
-                        'completed_percentage' => 8,
-                        'in_progress_percentage' => 22,
-                        'not_started_percentage' => 30,
-                        'overdue_percentage' => 40
-                        ];
+                        $trainingData = $trainingStatusDistribution;
                         @endphp
                         <!-- Training Status Horizontal Bar Chart -->
                         <div style="margin: 5px auto; text-align: left;">
