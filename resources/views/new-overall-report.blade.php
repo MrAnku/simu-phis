@@ -540,7 +540,7 @@
         <!-- Header -->
         <div class="header">
             <h1>Platform Security Report</h1>
-            <p>{{ $company_name ?? 'Company Name' }}</p>
+            <p>{{ $company_name ?? 'simUphish' }}</p>
             <p>Comprehensive security analysis and risk assessment</p>
             <div class="date">{{ date('F d, Y') }}</div>
         </div>
@@ -678,7 +678,7 @@
                 <td style="width: 25%; padding: 0 8px 0 15px;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; height: 120px; box-sizing: border-box;">
                         <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 500; margin-bottom: 8px;">TOTAL USERS</div>
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($total_users ?? 13) }}</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($total_users ?? 0) }}</div>
                         <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Registered Employees</div>
                         <div style="height: 16px;"></div>
                     </div>
@@ -686,7 +686,7 @@
                 <td style="width: 25%; padding: 0 8px;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; height: 120px; box-sizing: border-box;">
                         <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 500; margin-bottom: 8px;">CAMPAIGNS SENT</div>
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($campaigns_sent ?? 8) }}</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($campaigns_sent ?? 0) }}</div>
                         <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Campaigns</div>
                         <div style="height: 16px;"></div>
                     </div>
@@ -694,15 +694,15 @@
                 <td style="width: 25%; padding: 0 8px;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; height: 120px; box-sizing: border-box;">
                         <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 500; margin-bottom: 8px;">PAYLOAD CLICKED</div>
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($payload_clicked ?? 4) }}</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($payload_clicked ?? 0) }}</div>
                         <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Click rate</div>
-                        <div style="font-size: 14px; color: #ef4444; font-weight: 600;">{{ number_format($click_rate ?? 22.2, 1) }}%</div>
+                        <div style="font-size: 14px; color: #ef4444; font-weight: 600;">{{ number_format($click_rate ?? 0, 1) }}%</div>
                     </div>
                 </td>
                 <td style="width: 25%; padding: 0 15px 0 8px;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; height: 120px; box-sizing: border-box;">
                         <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 500; margin-bottom: 8px;">TRAINING ASSIGNED</div>
-                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($training_assigned ?? 10) }}</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ number_format($training_assigned ?? 0) }}</div>
                         <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Total Assigned
 
                         </div>
@@ -750,7 +750,6 @@
         </table>
 
         <!-- Training & Policy Compliance -->
-        {{-- Ensure this major section starts on a fresh page in PDFs to avoid orphans --}}
     <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
             <div class="section-title" style="margin-top: 8px;">Training & Policy Compliance</div>
         </div>
@@ -937,11 +936,11 @@
                     <h3>Priority Actions:</h3>
                     <ul style="flex-grow: 1; margin: 0; padding-left: 20px;">
                         @php
-                        $riskScore = $riskScore ?? 61.1;
-                        $clickRate = $click_rate ?? 4.0;
+                        $riskScore = $riskScore ?? 0;
+                        $clickRate = $click_rate ?? 0;
                         $trainingCompleted = $training_completed ?? 0;
-                        $trainingAssigned = $training_assigned ?? 8;
-                        $compromised = $totalCompromised ?? 3;
+                        $trainingAssigned = $training_assigned ?? 0;
+                        $compromised = $totalCompromised ?? 0;
                         @endphp
 
                         @if($riskScore > 70)
@@ -1006,7 +1005,7 @@
                     <div style="display: table; width: 100%; margin-top: auto;">
                         <div style="display: table-cell; width: 50%; text-align: center; vertical-align: top;">
                             <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">AVG RISK</div>
-                            <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($riskScore ?? 61.1, 1) }}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($riskScore ?? 0.0, 1) }}</div>
                         </div>
                         <div style="display: table-cell; width: 50%; text-align: center; vertical-align: top;">
                             <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">COMPROMISED</div>
@@ -1120,11 +1119,11 @@
                         <div style="display: table; width: 100%; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
                             <div style="display: table-cell; width: 50%; text-align: center;">
                                 <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Badges Earned</div>
-                                <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($totalBadgesAssigned ?? 37) }}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($totalBadgesAssigned ?? 0) }}</div>
                             </div>
                             <div style="display: table-cell; width: 50%; text-align: center;">
                                 <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Certified</div>
-                                <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($certifiedUsers ?? 28) }}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: #1e293b;">{{ number_format($certifiedUsers ?? 0) }}</div>
                             </div>
                         </div>
                     </div>
@@ -1236,7 +1235,7 @@
                         </h3>
 
                         @php
-                        $riskData = $riskAnalysis ?? ['in_high_risk' => 0, 'in_moderate_risk' => 14, 'in_low_risk' => 1];
+                        $riskData = $riskAnalysis ?? ['in_high_risk' => 0, 'in_moderate_risk' => 0, 'in_low_risk' => 0];
                         $highRisk = $riskData['in_high_risk'];
                         $moderateRisk = $riskData['in_moderate_risk'];
                         $lowRisk = $riskData['in_low_risk'];
@@ -1426,7 +1425,6 @@
 
 
     <!-- Weekly Email Simulation Analytics -->
-    {{-- Ensure this heading doesn't get orphaned at bottom of a page in PDF output. --}}
     <div style="page-break-before: always; -webkit-region-break-before: always; margin-top: 8px;">
         <div class="section-title">Simulation Analytics</div>
 
@@ -2012,7 +2010,7 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p><strong>{{ $company_name ?? 'Company Name' }}</strong> - Platform Security Report</p>
+        <p><strong>{{ $company_name ?? 'simUphish' }}</strong> - Platform Security Report</p>
         <p>Generated on {{ date('F d, Y') }} | Confidential Information</p>
     </div>
     </div>
