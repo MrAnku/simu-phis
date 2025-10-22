@@ -21,16 +21,44 @@ class SendOverallReport extends Command
 
     public function handle()
     {
-        // Fetch companies that have overall_report setting enabled (not null) in settings table
-        $companies = Company::whereHas('company_settings', function ($query) {
+        // Fetch companies with overall_report enabled
+        $companiesQuery = Company::whereHas('company_settings', function ($query) {
             $query->whereNotNull('overall_report');
-        })->get();
+        });
 
+        $totalCompanies = $companiesQuery->count();
+        $batchSize = 2;
+
+        // Get last offset (start index)
+        $lastOffset = cache('overall_report_offset', 0);
+
+        // Fetch the next batch of companies
+        $companies = $companiesQuery
+            ->skip($lastOffset)
+            ->take($batchSize)
+            ->get();
+
+        // If no more companies, reset offset to 0
+        if ($companies->isEmpty()) {
+            $lastOffset = 0;
+            cache(['overall_report_offset' => 0]);
+            return;
+        }
+
+        // Process each company
         foreach ($companies as $company) {
             if ($this->isScheduledForReport($company)) {
                 $this->generateAndSendReport($company);
             }
         }
+
+        // Update offset for next run
+        $newOffset = $lastOffset + $batchSize;
+        if ($newOffset >= $totalCompanies) {
+            $newOffset = 0; // Reset after last batch
+        }
+
+        cache(['overall_report_offset' => $newOffset]);
     }
 
     private function generateAndSendReport($company)

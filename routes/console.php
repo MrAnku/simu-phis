@@ -14,6 +14,7 @@ $everyMinuteCommands = [
     'app:send-infographics',
     'app:company-management',
     'app:process-triggers',
+    'app:send-overall-report',
 ];
 
 if (! is_dir(storage_path('logs/cron'))) {
@@ -42,8 +43,3 @@ Schedule::command('app:sync-logs')
     ->runInBackground()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/cron/sync-logs.log'));
-
-Schedule::command('app:send-overall-report')
-    ->daily()
-    ->at('09:00')
-    ->appendOutputTo(storage_path('logs/cron/overall-report.log'));
