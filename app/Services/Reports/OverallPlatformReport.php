@@ -184,7 +184,8 @@ class OverallPlatformReport
         $aiController = new ApiAivishingReportController();
         $overallReportService = new OverallPlatformReport();
 
-        $userCount = Users::where('company_id', $companyId)->count();
+        $userCount = Users::where('company_id', $companyId)->distinct()
+            ->count('user_email');
         $blueCollarCount = BlueCollarEmployee::where('company_id', $companyId)->count();
         $totalUsers = $userCount + $blueCollarCount;
 
