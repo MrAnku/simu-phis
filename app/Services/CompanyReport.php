@@ -10,6 +10,8 @@ use App\Models\QuishingCamp;
 use App\Models\TprmCampaign;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
+use App\Models\AssignedPolicy;
+use App\Models\PolicyCampaignLive;
 use App\Models\WaLiveCampaign;
 use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
@@ -311,9 +313,11 @@ class CompanyReport
     public function overdueTraining($forMonth = null): int
     {
         $query = TrainingAssignedUser::where('company_id', $this->companyId)
-            ->where('training_due_date', '<', now());
+            ->where('training_due_date', '<', now())
+            ->where('completed', 0);
         $scormQuery = ScormAssignedUser::where('company_id', $this->companyId)
-            ->where('scorm_due_date', '<', now());
+            ->where('scorm_due_date', '<', now())
+            ->where('completed', 0);
 
         if ($forMonth) {
             $query->whereMonth('created_at', $forMonth);
@@ -417,5 +421,235 @@ class CompanyReport
         }
 
         return $query->count();
+    }
+
+    public function getDomainWiseEmailCamp($domain)
+    {
+        // Base query — common filters
+        $baseQuery = CampaignLive::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        // Use clone to reuse base query safely
+        $totalSimulations = (clone $baseQuery)
+            ->count();
+
+        $totalCompromised = (clone $baseQuery)
+            ->where('emp_compromised', 1)
+            ->count();
+
+        $totalPayloadClicked = (clone $baseQuery)
+            ->where('payload_clicked', 1)
+            ->count();
+
+        $emailReported = (clone $baseQuery)
+            ->where('email_reported', 1)
+            ->count();
+
+        $ignored = (clone $baseQuery)
+            ->where('payload_clicked', 0)
+            ->count();
+
+        return [
+            'total_simulations' => $totalSimulations,
+            'compromised' => $totalCompromised,
+            'payload_clicked' => $totalPayloadClicked,
+            'email_reported' => $emailReported,
+            'ignored' => $ignored,
+        ];
+    }
+
+    public function getDomainWiseQuishCamp($domain)
+    {
+        // Base query — common filters
+        $baseQuery = QuishingLiveCamp::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        // Use clone to reuse base query safely
+        $totalSimulations = (clone $baseQuery)
+           ->count();
+
+        $totalCompromised = (clone $baseQuery)
+            ->where('compromised', '1')
+            ->count();
+
+        $totalQrScanned = (clone $baseQuery)
+            ->where('qr_scanned', '1')
+            ->count();
+
+        $emailReported = (clone $baseQuery)
+            ->where('email_reported', '1')
+            ->count();
+
+        $ignored = (clone $baseQuery)
+            ->where('qr_scanned', '0')
+            ->count();
+
+        return [
+            'total_simulations' => $totalSimulations,
+            'compromised' => $totalCompromised,
+            'qr_scanned' => $totalQrScanned,
+            'email_reported' => $emailReported,
+            'ignored' => $ignored,
+        ];
+    }
+
+    public function getDomainWiseAiCamp($domain)
+    {
+        // Base query — common filters
+        $baseQuery = AiCallCampLive::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        // Use clone to reuse base query safely
+        $totalSimulations = (clone $baseQuery)
+          ->count();
+
+        $totalCompromised = (clone $baseQuery)
+            ->where('compromised', 1)
+            ->count();
+
+        $totalCallSent = (clone $baseQuery)
+            ->where('calls_sent', 1)
+            ->count();
+
+        $callReported = (clone $baseQuery)
+            ->whereNotNull('call_report')
+            ->count();
+
+        $completedCalls = (clone $baseQuery)
+            ->whereNotNull('call_end_response')
+            ->count();
+
+        return [
+            'total_simulations' => $totalSimulations,
+            'compromised' => $totalCompromised,
+            'call_sent' => $totalCallSent,
+            'call_reported' => $callReported,
+            'completed_calls' => $completedCalls,
+        ];
+    }
+
+    public function getDomainWiseWaCamp($domain)
+    {
+        // Base query — common filters
+        $baseQuery = WaLiveCampaign::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        // Use clone to reuse base query safely
+        $totalSimulations = (clone $baseQuery)
+           ->count();
+
+        $totalCompromised = (clone $baseQuery)
+            ->where('compromised', 1)
+            ->count();
+
+        $totalPayloadClicked = (clone $baseQuery)
+            ->where('payload_clicked', 1)
+            ->count();
+
+        $ignored = (clone $baseQuery)
+            ->where('payload_clicked', 0)
+            ->count();
+
+        return [
+            'total_simulations' => $totalSimulations,
+            'compromised' => $totalCompromised,
+            'payload_clicked' => $totalPayloadClicked,
+            'ignored' => $ignored,
+        ];
+    }
+
+    public function getDomainWiseTrainings($domain)
+    {
+        $trainingBaseQuery = TrainingAssignedUser::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        $scormBaseQuery = ScormAssignedUser::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain);
+
+        $totalAssigned = (clone $trainingBaseQuery)->count() + (clone $scormBaseQuery)->count();
+
+        $inProgressTrainings = (clone $trainingBaseQuery)
+            ->where('training_started', 1)
+            ->where('completed', 0)
+            ->count() + (clone $scormBaseQuery)
+            ->where('scorm_started', 1)
+            ->where('completed', 0)
+            ->count();
+
+        $notStartedTrainings = (clone $trainingBaseQuery)
+            ->where('training_started', 0)
+            ->count() + (clone $scormBaseQuery)
+            ->where('scorm_started', 0)
+            ->count();
+
+        $completedTrainings = (clone $trainingBaseQuery)
+            ->where('completed', 1)
+            ->count() + (clone $scormBaseQuery)
+            ->where('completed', 1)
+            ->count();
+
+        $overDueTrainings = (clone $trainingBaseQuery)
+            ->where('training_due_date', '<', now())
+            ->where('completed', 0)
+            ->count() + (clone $scormBaseQuery)
+            ->where('scorm_due_date', '<', now())
+            ->where('completed', 0)
+            ->count();
+
+        $certifiedTrainings = (clone $trainingBaseQuery)
+            ->whereNotNull('certificate_id')
+            ->count() + (clone $scormBaseQuery)
+            ->whereNotNull('certificate_id')
+            ->count();
+
+        return [
+            'total_assigned' => $totalAssigned,
+            'in_progress_trainings' => $inProgressTrainings,
+            'not_started_trainings' => $notStartedTrainings,
+            'completed_trainings' => $completedTrainings,
+            'overdue_trainings' => $overDueTrainings,
+            'certified_users' => $certifiedTrainings,
+        ];
+    }
+
+    public function getDomainWisePolicies($domain)
+    {
+        $totalSimulations = PolicyCampaignLive::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain)
+            ->count();
+
+        $assignedPolicies = AssignedPolicy::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain)
+            ->count();
+
+        $acceptedPolicies = AssignedPolicy::where('company_id', $this->companyId)
+            ->where('user_email', 'LIKE', '%' . $domain)
+            ->where('accepted', 1)
+            ->count();
+
+        return [
+            'total_simulations' => $totalSimulations,
+            'assigned_policies' => $assignedPolicies,
+            'accepted_policies' => $acceptedPolicies,
+        ];
+    }
+
+    public function calDomainRiskScore($domain): float
+    {
+        $payloadClicked = $this->getDomainWiseEmailCamp($domain)['payload_clicked'] + $this->getDomainWiseQuishCamp($domain)['qr_scanned'] + $this->getDomainWiseWaCamp($domain)['payload_clicked'] + $this->getDomainWiseAiCamp($domain)['compromised'];
+
+        $compromised = $this->getDomainWiseEmailCamp($domain)['compromised'] + $this->getDomainWiseQuishCamp($domain)['compromised'] + $this->getDomainWiseWaCamp($domain)['compromised'] + $this->getDomainWiseAiCamp($domain)['compromised'];
+        
+        $totalSimulations = $this->getDomainWiseEmailCamp($domain)['total_simulations'] + $this->getDomainWiseQuishCamp($domain)['total_simulations'] + $this->getDomainWiseWaCamp($domain)['total_simulations'] + $this->getDomainWiseAiCamp($domain)['total_simulations'];
+
+        $totalCompromised = $payloadClicked + $compromised;
+
+        if ($totalSimulations > 0) {
+            $rawScore = 100 - (($totalCompromised / $totalSimulations) * 100);
+            $clamped = max(0, min(100, $rawScore));
+            return round($clamped, 2); // ensures values like 2.1099999 become 2.11
+        }
+
+        return 100.00;
     }
 }

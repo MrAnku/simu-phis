@@ -359,6 +359,9 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
             Route::get('/qcsf-report', [ApiComplianceController::class, 'qcsfReport']);
             Route::get('/ocert-report', [ApiComplianceController::class, 'ocertReport']);
         });
+
+        // Domain Wise Reporting
+        Route::get('/fetch-domain-wise-report/{domain?}', [ApiReportingController::class, 'fetchDomainWiseReport']);
     });
 
     Route::prefix('customised-reporting')->group(function () {

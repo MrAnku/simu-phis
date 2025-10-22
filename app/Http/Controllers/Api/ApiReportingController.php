@@ -39,6 +39,8 @@ use App\Models\TrainingAssignedUser;
 use App\Models\WhatsAppCampaignUser;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\PolicyCampaignLive;
+use App\Services\CompanyReport;
 use App\Services\Reports\OverallNormalEmployeeReport;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
@@ -2045,7 +2047,6 @@ class ApiReportingController extends Controller
                 'message' => __('Users report fetched successfully'),
                 'data' => $reportData
             ], 200);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -3174,6 +3175,52 @@ class ApiReportingController extends Controller
                     'courses' => $courseDetails,
                     'training_due_date_details' => $DueDateDetails
                 ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchDomainWiseReport(Request $request)
+    {
+        try {
+           $domain = $request->route('domain');
+            if (!$domain) {
+                return response()->json(['success' => false, 'message' => __('Domain is required')], 422);
+            }
+            $companyId = Auth::user()->company_id;
+
+            $userDetails = Users::where('company_id', $companyId)
+                ->where('user_email', 'LIKE', '%' . $domain)
+                ->select(['user_name', 'user_email', 'whatsapp'])
+                ->get()->unique('user_email');
+
+            $companyReport = new CompanyReport($companyId);
+
+            $emailCamp = $companyReport->getDomainWiseEmailCamp($domain);
+            $quishCamp = $companyReport->getDomainWiseQuishCamp($domain);
+            $aiCamp = $companyReport->getDomainWiseAiCamp($domain);
+            $waCamp = $companyReport->getDomainWiseWaCamp($domain);
+            $trainings = $companyReport->getDomainWiseTrainings($domain);
+            $policies = $companyReport->getDomainWisePolicies($domain);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Domain wise report fetched successfully'),
+                'data' => [
+                    'user_details' => $userDetails->values(),
+                    'total_users' => $userDetails->count(),
+                    'email_campaigns' => $emailCamp,
+                    'quishing_campaigns' => $quishCamp,
+                    'ai_vishing_campaigns' => $aiCamp,
+                    'whatsapp_campaigns' => $waCamp,
+                    'trainings' => $trainings,
+                    'policies' => $policies,
+                    'domain_risk_score' => $companyReport->calDomainRiskScore($domain),
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
