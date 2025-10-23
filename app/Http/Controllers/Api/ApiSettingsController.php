@@ -734,13 +734,13 @@ class ApiSettingsController extends Controller
     {
         // return $request;
         try {
-            $pocAccount = Company::where('company_id', Auth::user()->company_id)
-                ->where('role', null)
-                ->where('account_type', 'poc')->exists();
+            // $pocAccount = Company::where('company_id', Auth::user()->company_id)
+            //     ->where('role', null)
+            //     ->where('account_type', 'poc')->exists();
 
-            if ($pocAccount) {
-                return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to this account')], 402);
-            }
+            // if ($pocAccount) {
+            //     return response()->json(['success' => false, 'message' => __('You cannot add sub-admins to this account')], 402);
+            // }
             $request->validate([
                 'email' => 'required|email|unique:company,email',
                 'full_name' => 'required|string|max:255',
