@@ -99,7 +99,7 @@
         
         <h2>Questions?</h2>
 
-        <p>Our partner team is here to help. Contact us at <a href="mailto:support@{{env('APP_NAME')}}.com">support@{{env('APP_NAME')}}.com</a> or call our partner hotline.</p>
+        <p>Our partner team is here to help. Contact us at <a href="mailto:support{{"@" . env('APP_NAME')}}.com">support{{"@" . env('APP_NAME')}}.com</a> or call our partner hotline.</p>
 
         <p>Together, let's make the digital world safer for everyone.</p>
         
