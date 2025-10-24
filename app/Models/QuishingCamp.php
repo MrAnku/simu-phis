@@ -30,7 +30,7 @@ class QuishingCamp extends Model
         'schedule_date',
         'time_zone',
         'start_time',
-        'end_time',
+        'end_time'
     ];
 
     protected $appends = ['formatted_created_at', 'policies_used'];

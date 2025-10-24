@@ -29,6 +29,7 @@ class WaLiveCampaign extends Model
         'training_assigned',
         'company_id',
         'scorm_training',
+        'send_time'
     ];
 
     public function camp()
@@ -67,6 +68,4 @@ class WaLiveCampaign extends Model
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
     }
-
-
 }

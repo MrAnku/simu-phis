@@ -57,80 +57,178 @@ class ProcessWhatsappCampaign extends Command
 
             setCompanyTimezone($company->company_id);
 
-            $campaigns = WaLiveCampaign::where('sent', 0)->where('company_id', $company->company_id)->take(5)->get();
-            if ($campaigns && $company->whatsappConfig) {
+            // =======================
+            $runningCampaigns = WaCampaign::where('company_id', $company->company_id)
+                ->where('status', 'running')
+                ->get();
 
-                foreach ($campaigns as $campaign) {
+            if ($runningCampaigns->isEmpty()) {
+                continue;
+            }
+
+            foreach ($runningCampaigns as $camp) {
+                $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
+
+                // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                date_default_timezone_set($campaignTimezone);
+                config(['app.timezone' => $campaignTimezone]);
+
+                $currentDateTime = Carbon::now();
+
+                // fetch due live campaigns for this campaign using campaign-local now
+                $dueLiveCamps = WaLiveCampaign::where('campaign_id', $camp->campaign_id)
+                    ->where('sent', '0')
+                    ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+                    ->take(5)->get();
+
+                if ($dueLiveCamps && $company->whatsappConfig) {
+                    foreach ($dueLiveCamps as $campaign) {
+
+                        $component_header = [];
+
+                        $user_name = [
+                            'type' => 'text',
+                            'text' => $campaign->user_name,
+                        ];
+
+                        $website = PhishingWebsite::find($campaign->phishing_website);
+
+                        if (!$website) {
+                            echo "Website not found \n";
+                            continue;
+                        }
+
+                        $website_link = [
+                            'type' => 'text',
+                            'text' => getWebsiteUrl($website, $campaign, 'wsh'),
+                        ];
+
+                        $variables = json_decode($campaign->variables, true);
+
+                        array_unshift($variables, $user_name);
+                        array_push($variables, $website_link);
 
 
-                    $component_header = [];
+                        try {
 
-                    $user_name = [
-                        'type' => 'text',
-                        'text' => $campaign->user_name,
-                    ];
-
-                    $website = PhishingWebsite::find($campaign->phishing_website);
-
-                    if (!$website) {
-                        echo "Website not found \n";
-                        continue;
-                    }
-
-                    $website_link = [
-                        'type' => 'text',
-                        'text' => getWebsiteUrl($website, $campaign, 'wsh'),
-                    ];
-
-                    $variables = json_decode($campaign->variables, true);
-
-                    array_unshift($variables, $user_name);
-                    array_push($variables, $website_link);
-
-
-                    try {
-
-                        $response = Http::withToken($company->whatsappConfig->access_token) // Set Bearer Token
-                            ->withoutVerifying() // Disable SSL verification
-                            ->post(
-                                'https://graph.facebook.com/v22.0/' . $company->whatsappConfig->from_phone_id . '/messages',
-                                [
-                                    "messaging_product" => "whatsapp",
-                                    "to" => $campaign->user_phone,
-                                    "type" => "template",
-                                    "template" => [
-                                        "name" => $campaign->template_name,
-                                        "language" => [
-                                            "code" => 'en'
-                                        ],
-                                        "components" => [
-                                            [
-                                                "type" => "body",
-                                                "parameters" => $variables
+                            $response = Http::withToken($company->whatsappConfig->access_token) // Set Bearer Token
+                                ->withoutVerifying() // Disable SSL verification
+                                ->post(
+                                    'https://graph.facebook.com/v22.0/' . $company->whatsappConfig->from_phone_id . '/messages',
+                                    [
+                                        "messaging_product" => "whatsapp",
+                                        "to" => $campaign->user_phone,
+                                        "type" => "template",
+                                        "template" => [
+                                            "name" => $campaign->template_name,
+                                            "language" => [
+                                                "code" => 'en'
+                                            ],
+                                            "components" => [
+                                                [
+                                                    "type" => "body",
+                                                    "parameters" => $variables
+                                                ]
                                             ]
                                         ]
                                     ]
-                                ]
-                            );
+                                );
 
-                        // Get the response
-                        $data = $response->json();
+                            // Get the response
+                            $data = $response->json();
 
-                        if ($response->successful()) {
-                            $campaign->sent = 1;
-                            $campaign->save();
-                            echo "WhatsApp message sent to " . $campaign->user_name . "\n";
+                            if ($response->successful()) {
+                                $campaign->sent = 1;
+                                $campaign->save();
+                                echo "WhatsApp message sent to " . $campaign->user_name . "\n";
 
-                            WhatsappActivity::where('campaign_live_id', $campaign->id)->update(['whatsapp_sent_at' => now()]);
-                        } else {
-                            echo json_encode($response->body());
+                                WhatsappActivity::where('campaign_live_id', $campaign->id)->update(['whatsapp_sent_at' => now()]);
+                            } else {
+                                echo json_encode($response->body());
+                            }
+                        } catch (\Exception $th) {
+                            echo $th->getMessage();
+                            continue;
                         }
-                    } catch (\Exception $th) {
-                        echo $th->getMessage();
-                        continue;
                     }
                 }
             }
+
+            // ==========================
+
+            // $campaigns = WaLiveCampaign::where('sent', 0)->where('company_id', $company->company_id)->take(5)->get();
+            // if ($campaigns && $company->whatsappConfig) {
+
+            //     foreach ($campaigns as $campaign) {
+
+
+            //         $component_header = [];
+
+            //         $user_name = [
+            //             'type' => 'text',
+            //             'text' => $campaign->user_name,
+            //         ];
+
+            //         $website = PhishingWebsite::find($campaign->phishing_website);
+
+            //         if (!$website) {
+            //             echo "Website not found \n";
+            //             continue;
+            //         }
+
+            //         $website_link = [
+            //             'type' => 'text',
+            //             'text' => getWebsiteUrl($website, $campaign, 'wsh'),
+            //         ];
+
+            //         $variables = json_decode($campaign->variables, true);
+
+            //         array_unshift($variables, $user_name);
+            //         array_push($variables, $website_link);
+
+
+            //         try {
+
+            //             $response = Http::withToken($company->whatsappConfig->access_token) // Set Bearer Token
+            //                 ->withoutVerifying() // Disable SSL verification
+            //                 ->post(
+            //                     'https://graph.facebook.com/v22.0/' . $company->whatsappConfig->from_phone_id . '/messages',
+            //                     [
+            //                         "messaging_product" => "whatsapp",
+            //                         "to" => $campaign->user_phone,
+            //                         "type" => "template",
+            //                         "template" => [
+            //                             "name" => $campaign->template_name,
+            //                             "language" => [
+            //                                 "code" => 'en'
+            //                             ],
+            //                             "components" => [
+            //                                 [
+            //                                     "type" => "body",
+            //                                     "parameters" => $variables
+            //                                 ]
+            //                             ]
+            //                         ]
+            //                     ]
+            //                 );
+
+            //             // Get the response
+            //             $data = $response->json();
+
+            //             if ($response->successful()) {
+            //                 $campaign->sent = 1;
+            //                 $campaign->save();
+            //                 echo "WhatsApp message sent to " . $campaign->user_name . "\n";
+
+            //                 WhatsappActivity::where('campaign_live_id', $campaign->id)->update(['whatsapp_sent_at' => now()]);
+            //             } else {
+            //                 echo json_encode($response->body());
+            //             }
+            //         } catch (\Exception $th) {
+            //             echo $th->getMessage();
+            //         }
+            //     }
+            // }
         }
     }
 
@@ -156,10 +254,10 @@ class ProcessWhatsappCampaign extends Command
 
             if ($campaigns) {
                 foreach ($campaigns as $campaign) {
-                    $launchTime = Carbon::parse($campaign->launch_time);
+                    $scheduleDate = Carbon::parse($campaign->schedule_date);
                     $currentDateTime = Carbon::now();
 
-                    if ($launchTime->lessThan($currentDateTime)) {
+                    if ($scheduleDate->lte($currentDateTime)) {
 
                         $this->makeCampaignLive($campaign);
 
@@ -195,13 +293,11 @@ class ProcessWhatsappCampaign extends Command
 
             if ($campaign->employee_type == 'bluecollar') {
 
-                 if ($campaign->selected_users == null) {
-                   $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
+                if ($campaign->selected_users == null) {
+                    $users = BlueCollarEmployee::where('group_id', $campaign->users_group)->get();
                 } else {
                     $users = BlueCollarEmployee::whereIn('id', json_decode($campaign->selected_users, true))->get();
                 }
-
-                
             }
 
 
@@ -209,11 +305,27 @@ class ProcessWhatsappCampaign extends Command
                 echo "No users found for the campaign.\n";
             }
 
+            $startTime = Carbon::parse($campaign->start_time);
+            $endTime = Carbon::parse($campaign->end_time);
+
+            // Convert both to timestamps (seconds)
+            $min = $startTime->timestamp;
+            $max = $endTime->timestamp;
+
             foreach ($users as $user) {
 
                 if (!$user->whatsapp) {
                     continue;
                 }
+
+                // Generate a random timestamp each time
+                $randomTimestamp = mt_rand($min, $max);
+                setCompanyTimezone($campaign->company_id);
+                $timeZone = config('app.timezone');
+
+                // Convert it back to readable datetime
+                $randomSendTime = Carbon::createFromTimestamp($randomTimestamp, $timeZone);
+
                 $camp_live = WaLiveCampaign::create([
                     'campaign_id' => $campaign->campaign_id,
                     'campaign_name' => $campaign->campaign_name,
@@ -234,6 +346,7 @@ class ProcessWhatsappCampaign extends Command
                     'template_name' => $campaign->template_name,
                     'variables' => $campaign->variables,
                     'company_id' => $campaign->company_id,
+                    'send_time' => $randomSendTime
                 ]);
 
                 WhatsappActivity::create([

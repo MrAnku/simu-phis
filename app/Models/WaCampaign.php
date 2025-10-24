@@ -29,6 +29,10 @@ class WaCampaign extends Model
         'variables',
         'company_id',
         'scorm_training',
+        'schedule_date',
+        'time_zone',
+        'start_time',
+        'end_time'
     ];
     protected $appends = ['formatted_created_at', 'policies_used'];
 
@@ -44,7 +48,7 @@ class WaCampaign extends Model
         $ids = json_decode($this->training_module, true);
         return TrainingModule::whereIn('id', $ids ?? []);
     }
-   
+
 
     public function trainingData()
     {
@@ -63,7 +67,7 @@ class WaCampaign extends Model
         return $this->hasMany(WhatsappActivity::class, 'campaign_id', 'campaign_id');
     }
 
-    
+
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;

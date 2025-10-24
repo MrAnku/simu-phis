@@ -97,6 +97,10 @@ class ApiWaCampaignController extends Controller
                 'variables' => 'required|array',
                 'selected_users' => 'nullable|string',
                 'policies' => 'nullable|array',
+                "schedule_date" => 'nullable|date|after_or_equal:today',
+                "time_zone" => 'nullable|string',
+                'start_time' => 'nullable|date_format:Y-m-d H:i:s',
+                'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 
             //check if the selected users group has users has whatsapp number
@@ -268,10 +272,14 @@ class ApiWaCampaignController extends Controller
                 'users_group' => $validated['users_group'],
                 'selected_users' => $validated['selected_users'] != 'null' ? $validated['selected_users'] : null,
                 'schedule_type' => $validated['schedule_type'],
-                'launch_time' => $validated['launch_time'],
+                'launch_time' => now(),
                 'status' => 'pending',
                 'variables' => json_encode($validated['variables']),
                 'company_id' => Auth::user()->company_id,
+                'schedule_date'      => $validated['schedule_date'],
+                'time_zone'      => $validated['time_zone'],
+                'start_time'      => $validated['start_time'],
+                'end_time'      => $validated['end_time'],
             ]);
 
             log_action("Whatsapp Campaign created : {$validated['campaign_name']}");
@@ -375,7 +383,7 @@ class ApiWaCampaignController extends Controller
                 'data' => [
                     'campaign' => $campaign,
                     'camp_live' => $campaigns
-                    ]
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
