@@ -35,9 +35,9 @@ class ApiAiCallController extends Controller
             $campaigns = AiCallCampaign::where('company_id', $companyId)->orderBy('id', 'desc')->get();
 
             $campaigns->each(function ($campaign) {
-                if($campaign->training_module == null && $campaign->scorm_training == null){
+                if ($campaign->training_module == null && $campaign->scorm_training == null) {
                     $campaign->campaign_type = 'phishing';
-                }else{
+                } else {
                     $campaign->campaign_type = 'phishing_and_training';
                 }
             });
@@ -440,7 +440,11 @@ class ApiAiCallController extends Controller
                     'schedule_type' => 'required|string|in:immediately,schedule',
                     'training_assignment' => 'required|string|in:random,all',
                     'selected_users' => 'nullable|array',
-                    'policies' => 'nullable|array'
+                    'policies' => 'nullable|array',
+                    "schedule_date" => 'nullable|date|after_or_equal:today',
+                    "time_zone" => 'nullable|string',
+                    'start_time' => 'nullable|date_format:Y-m-d H:i:s',
+                    'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -490,7 +494,11 @@ class ApiAiCallController extends Controller
                 'status' => $status,
                 'launch_time' => $scheduledAt,
                 'launch_type' => $request->schedule_type,
-                'company_id' => $companyId
+                'company_id' => $companyId,
+                'schedule_date' => $request->schedule_date,
+                'time_zone'      => $request->time_zone,
+                'start_time'      => $request->start_time,
+                'end_time'      => $request->end_time,
             ]);
 
             if ($status === 'running') {

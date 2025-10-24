@@ -30,7 +30,11 @@ class AiCallCampaign extends Model
         'launch_time',
         'launch_type',
         'employee_type',
-        'training_assignment'
+        'training_assignment',
+        'schedule_date',
+        'time_zone',
+        'start_time',
+        'end_time'
     ];
 
     protected $appends = ['formatted_created_at', 'policies_used'];
@@ -53,13 +57,13 @@ class AiCallCampaign extends Model
         return TrainingModule::whereIn('id', $ids ?? []);
     }
 
-     public function scormTrainings()
+    public function scormTrainings()
     {
         $ids = json_decode($this->scorm_training, true);
         return ScormTraining::whereIn('id', $ids ?? []);
     }
 
-    
+
     public function getFormattedCreatedAtAttribute()
     {
         return $this->created_at ? $this->created_at->format('d M Y h:i A') : null;
