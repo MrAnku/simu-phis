@@ -25,7 +25,12 @@ class QuishingCamp extends Model
         'quishing_lang',
         'status',
         'company_id',
-        'scorm_training'
+        'scorm_training',
+        'schedule_type',
+        'schedule_date',
+        'time_zone',
+        'start_time',
+        'end_time',
     ];
 
     protected $appends = ['formatted_created_at', 'policies_used'];

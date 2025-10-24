@@ -16,6 +16,7 @@ use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ApiQuishingController extends Controller
@@ -71,113 +72,197 @@ class ApiQuishingController extends Controller
                 }
             }
 
-            // Decode JSON arrays from JS frontend
-            // $trainingModules = json_decode($request->training_modules, true);
-            // $quishingMaterials = json_decode($request->quishing_materials, true);
-            $trainingModules = $request->training_modules;
-            $scormTrainings = $request->scorm_training;
-            $quishingMaterials = $request->quishing_materials;
-
-            $userIdsJson = UsersGroup::where('group_id', $request->employee_group)->value('users');
-            $userIds = json_decode($userIdsJson, true);
-            if ($request->selected_users == 'null') {
-                $users = Users::whereIn('id', $userIds)->get();
-            } else {
-                $users = Users::whereIn('id', json_decode($request->selected_users, true))->get();
-            }
-
-            if (!$users || $users->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('No users found in the selected group'),
-                ], 422);
-            }
+            $validated = $request->validate([
+                'campaign_name' => 'required|string|max:255',
+                'campaign_type' => 'required|in:quishing-training,quishing',
+                "employee_group" => 'required|string',
+                "training_modules" => 'nullable|array',
+                "scorm_training" => 'nullable|array',
+                'training_assignment' => 'nullable|in:all,random',
+                'days_until_due' => 'nullable|integer|min:1',
+                'training_language' => 'nullable|string|size:2',
+                'training_type' => 'nullable',
+                'training_on_click' => 'required|string|in:true,false',
+                'compromise_on_click' => 'required|string|in:true,false',
+                "quishing_materials" => 'required|array',
+                "quishing_language" => 'nullable|string',
+                "sender_profile" => 'nullable|string',
+                'selected_users' => 'nullable|string',
+                'policies' => 'nullable|array',
+                'schedule_type' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|date|after_or_equal:today',
+                "time_zone" => 'nullable|string',
+                'start_time' => 'nullable|date_format:Y-m-d H:i:s',
+                'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
+            ]);
 
             $campaign_id = Str::random(6);
 
-            QuishingCamp::create([
-                'campaign_id'        => $campaign_id,
-                'campaign_name'      => $request->campaign_name,
-                'campaign_type'      => $request->campaign_type,
-                'users_group'        => $request->employee_group,
-                'selected_users'     => $request->selected_users != 'null' ? $request->selected_users : null,
-                'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules) ? null : json_encode($trainingModules),
-                'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings) ? null : json_encode($scormTrainings),
-                'training_assignment' => $request->campaign_type === 'quishing' ? null : $request->training_assignment,
-                'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
-                'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
-                'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
-                'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
-                'training_on_click'  => $request->training_on_click == 'false' ? 0 : 1,
-                'compromise_on_click'  => $request->compromise_on_click == 'false' ? 0 : 1,
-                'quishing_material'  => !empty($quishingMaterials) ? json_encode($quishingMaterials) : null,
-                'sender_profile'   => $request->sender_profile ?? null,
-                'quishing_lang'      => $request->quishing_language ?? null,
-                'status'             => 'running',
-                'company_id'         => Auth::user()->company_id,
-            ]);
+            $validated = $request->all();
+            $launchType = $request->schedule_type;
+            $companyId = Auth::user()->company_id;
 
-            foreach ($users as $user) {
-                $camp_live = QuishingLiveCamp::create([
-                    'campaign_id'        => $campaign_id,
-                    'campaign_name'      => $request->campaign_name,
-                    'user_id'            => $user->id,
-                    'user_name'          => $user->user_name,
-                    'user_email'         => $user->user_email,
-
-                    'training_module'    => $request->campaign_type === 'quishing' || empty($trainingModules)
-                        ? null
-                        : $trainingModules[array_rand($trainingModules)],
-
-                    'scorm_training'    => $request->campaign_type === 'quishing' || empty($scormTrainings)
-                        ? null
-                        : $scormTrainings[array_rand($scormTrainings)],
-
-                    'days_until_due'     => $request->campaign_type === 'quishing' ? null : $request->days_until_due,
-                    'training_lang'      => $request->campaign_type === 'quishing' ? null : $request->training_language,
-                    'training_type'      => $request->campaign_type === 'quishing' ? null : $request->training_type,
-
-                    'quishing_material'  => $quishingMaterials[array_rand($quishingMaterials)],
-                    'sender_profile'     => $request->sender_profile ?? null,
-
-                    'quishing_lang'      => $request->quishing_language ?? null,
-                    'company_id'         => Auth::user()->company_id,
-                ]);
-                QuishingActivity::create([
-                    'campaign_id' => $camp_live->campaign_id,
-                    'campaign_live_id' => $camp_live->id,
-                    'company_id' => Auth::user()->company_id,
-                ]);
-
-                // Audit log
-                audit_log(
-                    Auth::user()->company_id,
-                    $user->user_email,
-                    null,
-                    'QUISHING_CAMPAIGN_SIMULATED',
-                    "The campaign ‘{$request->campaign_name}’ has been sent to {$user->user_email}",
-                    'normal'
-                );
+            if ($launchType === 'immediately') {
+                log_action("Quishing campaign created");
+                return $this->handleImmediateLaunch($validated, $campaign_id, $companyId);
             }
 
-            log_action("Quishing Campaign Created : {$request->campaign_name}");
+            if ($launchType === 'scheduled') {
+                log_action("Quishing campaign scheduled");
+                return $this->handleScheduledLaunch($validated, $campaign_id, $companyId);
+            }
 
+            log_action("Quishing campaign launched with invalid launch type");
             return response()->json([
-                'success' => true,
-                'message' => __('Quishing campaign created successfully'),
-            ]);
+                'success' => false,
+                'message' => __('Invalid launch type')
+            ], 422);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->validator->errors()->first(),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Campaign creation failed: ' . $e->getMessage()); // 🔍 For debugging
+            Log::error('Campaign creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function handleImmediateLaunch($data, $campId, $companyId)
+    {
+        $userIdsJson = UsersGroup::where('group_id', $data['employee_group'])->value('users');
+        $userIds = json_decode($userIdsJson, true);
+        if ($data['selected_users'] ==  'null') {
+            $users = Users::whereIn('id', $userIds)->get();
+        } else {
+            $users = Users::whereIn('id', json_decode($data['selected_users'], true))->get();
+        }
+
+        if (!$users || $users->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('No users found in the selected group'),
+            ], 422);
+        }
+
+        foreach ($users as $user) {
+            $camp_live = QuishingLiveCamp::create([
+                'campaign_id'        => $campId,
+                'campaign_name'      => $data['campaign_name'],
+                'user_id'            => $user->id,
+                'user_name'          => $user->user_name,
+                'user_email'         => $user->user_email,
+
+                'training_module'    => $data['campaign_type'] === 'quishing' || empty($data['training_modules'])
+                    ? null
+                    : $data['training_modules'][array_rand($data['training_modules'])],
+
+                'scorm_training'    => $data['campaign_type'] === 'quishing' || empty($data['scorm_training'])
+                    ? null
+                    : $data['scorm_training'][array_rand($data['scorm_training'])],
+
+                'days_until_due'     => $data['campaign_type'] === 'quishing' ? null : $data['days_until_due'],
+                'training_lang'      => $data['campaign_type'] === 'quishing' ? null : $data['training_language'],
+                'training_type'      => $data['campaign_type'] === 'quishing' ? null : $data['training_type'],
+
+                'quishing_material'  => $data['quishing_materials'][array_rand($data['quishing_materials'])],
+                'sender_profile'     => $data['sender_profile'] ?? null,
+
+                'quishing_lang'      => $data['quishing_language'] ?? null,
+                'company_id'         => Auth::user()->company_id,
+            ]);
+            QuishingActivity::create([
+                'campaign_id' => $camp_live->campaign_id,
+                'campaign_live_id' => $camp_live->id,
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+            // Audit log
+            audit_log(
+                Auth::user()->company_id,
+                $user->user_email,
+                null,
+                'QUISHING_CAMPAIGN_SIMULATED',
+                "The campaign ‘{$data['campaign_name']}’ has been sent to {$user->user_email}",
+                'normal'
+            );
+        }
+
+        QuishingCamp::create([
+            'campaign_id'        => $campId,
+            'campaign_name'      => $data['campaign_name'],
+            'campaign_type'      => $data['campaign_type'],
+            'users_group'        => $data['employee_group'],
+            'selected_users'     => $data['selected_users'] != 'null' ? $data['selected_users'] : null,
+            'training_module'    => $data['campaign_type'] === 'quishing' || empty($data['training_modules']) ? null : json_encode($data['training_modules']),
+            'scorm_training'    => $data['campaign_type'] === 'quishing' || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
+            'training_assignment' => $data['campaign_type'] === 'quishing' ? null : $data['training_assignment'],
+            'days_until_due'     => $data['campaign_type'] === 'quishing' ? null : $data['days_until_due'],
+            'training_lang'      => $data['campaign_type'] === 'quishing' ? null : $data['training_language'],
+            'training_type'      => $data['campaign_type'] === 'quishing' ? null : $data['training_type'],
+            'policies' => (is_array($data['policies']) && !empty($data['policies'])) ? json_encode($data['policies']) : null,
+            'training_on_click'  => $data['training_on_click'] == 'false' ? 0 : 1,
+            'compromise_on_click'  => $data['compromise_on_click'] == 'false' ? 0 : 1,
+            'quishing_material'  => !empty($data['quishing_materials']) ? json_encode($data['quishing_materials']) : null,
+            'sender_profile'   =>  $data['sender_profile'] ?? null,
+            'quishing_lang'      => $data['quishing_language'] ?? null,
+            'status'             => 'running',
+            'company_id'         => $companyId,
+            'schedule_type'      => $data['schedule_type'],
+            'schedule_date'      => $data['schedule_date'],
+            'time_zone'      => $data['time_zone'],
+            'start_time'      => $data['start_time'],
+            'end_time'      => $data['end_time'],
+        ]);
+
+        log_action('Quishing campaign created');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Campaign created and running!')
+        ]);
+    }
+
+    private function handleScheduledLaunch($data, $campId, $companyId)
+    {
+        QuishingCamp::create([
+            'campaign_id'        => $campId,
+            'campaign_name'      => $data['campaign_name'],
+            'campaign_type'      => $data['campaign_type'],
+            'users_group'        => $data['employee_group'],
+            'selected_users'     => $data['selected_users'] != 'null' ? $data['selected_users'] : null,
+            'training_module'    => $data['campaign_type'] === 'quishing' || empty($data['training_modules']) ? null : json_encode($data['training_modules']),
+            'scorm_training'    => $data['campaign_type'] === 'quishing' || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
+            'training_assignment' => $data['campaign_type'] === 'quishing' ? null : $data['training_assignment'],
+            'days_until_due'     => $data['campaign_type'] === 'quishing' ? null : $data['days_until_due'],
+            'training_lang'      => $data['campaign_type'] === 'quishing' ? null : $data['training_language'],
+            'training_type'      => $data['campaign_type'] === 'quishing' ? null : $data['training_type'],
+            'policies' => (is_array($data['policies']) && !empty($data['policies'])) ? json_encode($data['policies']) : null,
+            'training_on_click'  => $data['training_on_click'] == 'false' ? 0 : 1,
+            'compromise_on_click'  => $data['compromise_on_click'] == 'false' ? 0 : 1,
+            'quishing_material'  => !empty($data['quishing_materials']) ? json_encode($data['quishing_materials']) : null,
+            'sender_profile'   =>  $data['sender_profile'] ?? null,
+            'quishing_lang'      => $data['quishing_language'] ?? null,
+            'status'             => 'pending',
+            'company_id'         => $companyId,
+            'schedule_type'      => $data['schedule_type'],
+            'schedule_date'      => $data['schedule_date'],
+            'time_zone'      => $data['time_zone'],
+            'start_time'      => $data['start_time'],
+            'end_time'      => $data['end_time'],
+        ]);
+
+
+
+        log_action('Quishing campaign scheduled');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Campaign created and scheduled!')
+        ]);
     }
 
     public function deleteCampaign(Request $request)

@@ -10,6 +10,10 @@ use App\Models\OutlookDmiToken;
 use Endroid\QrCode\Color\Color;
 use Illuminate\Console\Command;
 use App\Models\QuishingActivity;
+use App\Models\QuishingLiveCamp;
+use App\Models\Users;
+use App\Models\UsersGroup;
+use Carbon\Carbon;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
@@ -49,57 +53,91 @@ class ProcessQuishing extends Command
             try {
                 setCompanyTimezone($company->company_id);
 
-                $quishingCampaigns = $company->quishingLiveCamps()
-                    ->where('sent', '0')
+                $campaigns = QuishingCamp::where('status', 'pending')
+                    ->where('company_id', $company->company_id)
                     ->get();
 
-                if ($quishingCampaigns->isEmpty()) {
+                if ($campaigns) {
+                    foreach ($campaigns as $campaign) {
+                        $scheduleDate = Carbon::parse($campaign->schedule_date);
+
+                        $currentDate = Carbon::today();
+
+                        if ($scheduleDate->lte($currentDate)) {
+
+                            $this->makeCampaignLive($campaign->campaign_id);
+
+                            $campaign->update(['status' => 'running']);
+                        }
+                    }
+                }
+               
+                $runningCampaigns = QuishingCamp::where('company_id', $company->company_id)
+                    ->where('status', 'running')
+                    ->get();
+
+                if ($runningCampaigns->isEmpty()) {
                     continue;
                 }
-                foreach ($quishingCampaigns as $campaign) {
-                    try {
-                        //get website url
-                        $quishingTemplate = $campaign->templateData()->first();
-                        if ($quishingTemplate->website !== null && $quishingTemplate->sender_profile !== null) {
+
+                foreach ($runningCampaigns as $camp) {
+                    $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
+
+                    // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                    date_default_timezone_set($campaignTimezone);
+                    config(['app.timezone' => $campaignTimezone]);
+
+                    $currentDateTime = Carbon::now();
+
+                    // fetch due live campaigns for this campaign using campaign-local now
+                    $dueLiveCamps = QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
+                        ->where('sent', '0')
+                        ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+                        ->get();
+
+                    foreach ($dueLiveCamps as $liveCamp) {
+                        try {
+                            // get template and website
+                            $quishingTemplate = $liveCamp->templateData()->first();
+                            if ($quishingTemplate === null || $quishingTemplate->website === null) {
+                                continue;
+                            }
+
                             $phishingWebsite = $quishingTemplate->website()->first();
-                            $websiteUrl = getWebsiteUrl($phishingWebsite, $campaign, 'qsh');
+                            $websiteUrl = getWebsiteUrl($phishingWebsite, $liveCamp, 'qsh');
 
-                            //get qrcode link
-                            $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
+                            // get qrcode link
+                            $qrcodeLink = $this->getQRlink($liveCamp->user_email, $websiteUrl, $liveCamp->id);
 
-                            //check if the campaign has sender profile
-                            if ($campaign->sender_profile !== null) {
-                                $senderProfile = SenderProfile::find($campaign->sender_profile);
+                            // check if the campaign has sender profile
+                            if ($liveCamp->sender_profile !== null) {
+                                $senderProfile = SenderProfile::find($liveCamp->sender_profile);
                             } else {
                                 $senderProfile = $quishingTemplate->senderProfile()->first();
                             }
 
                             $mailData = $this->prepareMailBody(
-                                $campaign,
+                                $liveCamp,
                                 $senderProfile,
                                 $quishingTemplate,
                                 $qrcodeLink
                             );
 
-
-
                             //send mail
                             $mailSent = sendPhishingMail($mailData);
-                            // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+
                             if ($mailSent) {
-
-                                QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                                echo "Mail sent to {$campaign->user_email} \n";
-                                $campaign->sent = '1';
-                                $campaign->save();
+                                QuishingActivity::where('campaign_live_id', $liveCamp->id)->update(['email_sent_at' => now()]);
+                                echo "Mail sent to {$liveCamp->user_email} \n";
+                                $liveCamp->sent = '1';
+                                $liveCamp->save();
                             } else {
                                 continue;
                             }
+                        } catch (\Exception $e) {
+                            echo "Error: " . $e->getMessage() . "\n";
+                            continue;
                         }
-                    } catch (\Exception $e) {
-                        echo "Error: " . $e->getMessage() . "\n";
-                        continue;
                     }
                 }
             } catch (\Exception $e) {
@@ -111,47 +149,162 @@ class ProcessQuishing extends Command
         $this->checkCompletedCampaigns();
     }
 
-    private function sendMailConditionally($mailData, $campaign, $company_id)
+    private function makeCampaignLive($campaignid)
     {
-        // check user email domain is outlook email
-        $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
-        if ($isOutlookEmail) {
-            echo "Outlook email detected: " . $campaign->user_email . "\n";
-            $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
-            if ($accessToken) {
-                echo "Access token found for company ID: " . $company_id . "\n";
+        $campaign = QuishingCamp::where('campaign_id', $campaignid)->first();
 
-                $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
-                if ($sent['success'] == true) {
-                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                    echo "Email sent to: " . $campaign->user_email . "\n";
-                } else {
-                    echo "Email not sent to: " . $campaign->user_email . "\n";
-                }
-            } else {
-                echo "No access token found for company ID: " . $company_id . "\n";
-                if (sendPhishingMail($mailData)) {
-
-                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                    echo "Email sent to: " . $campaign->user_email . "\n";
-                } else {
-                    echo "Email not sent to: " . $campaign->user_email . "\n";
-                }
-            }
+        // check if the group exists
+        $group = UsersGroup::where('group_id', $campaign->users_group)->first();
+        if (!$group) {
+            echo "Group not found for campaign ID: " . $campaignid . "\n";
+            return;
+        }
+        $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
+        if (!$userIdsJson) {
+            echo "No users found in group for campaign ID: " . $campaignid . "\n";
+            return;
+        }
+        $userIds = json_decode($userIdsJson, true);
+        if ($campaign->selected_users == null) {
+            $users = Users::whereIn('id', $userIds)->get();
         } else {
-            echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-            if (sendPhishingMail($mailData)) {
+            $users = Users::whereIn('id', json_decode($campaign->selected_users, true))->get();
+        }
 
-                $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+        $startTime = Carbon::parse($campaign->start_time);
+        $endTime = Carbon::parse($campaign->end_time);
 
-                echo "Email sent to: " . $campaign->user_email . "\n";
-            } else {
-                echo "Email not sent to: " . $campaign->user_email . "\n";
+        // Convert both to timestamps (seconds)
+        $min = $startTime->timestamp;
+        $max = $endTime->timestamp;
+
+
+        // Check if users exist in the group
+        if (!$users->isEmpty()) {
+            foreach ($users as $user) {
+                // Generate a random timestamp each time
+                $randomTimestamp = mt_rand($min, $max);
+                setCompanyTimezone($campaign->company_id);
+                $timeZone = config('app.timezone');
+
+                // Convert it back to readable datetime
+                $randomSendTime = Carbon::createFromTimestamp($randomTimestamp, $timeZone);
+
+                $camp_live = QuishingLiveCamp::create([
+
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_name' => $campaign->campaign_name,
+                    'user_id' => $user->id,
+                    'user_name' => $user->user_name,
+                    'user_email' => $user->user_email,
+                    'training_module' => $this->getRandomTrainingModule($campaign),
+                    'scorm_training' => $this->getRandomScormTraining($campaign),
+                    'days_until_due' => $campaign->days_until_due ?? null,
+                    'training_lang' => $campaign->training_lang ?? null,
+                    'training_type' => $campaign->training_type ?? null,
+                    'send_time' => $randomSendTime,
+                    'quishing_material'  => $this->getRandomQuishingMaterial($campaign),
+                    'sender_profile'     => $campaign->sender_profile ?? null,
+                    'quishing_lang'      => $campaign->quishing_lang ?? null,
+                    'company_id'         => $campaign->company_id,
+                ]);
+
+                QuishingActivity::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'campaign_live_id' => $camp_live->id,
+                    'company_id' => $campaign->company_id,
+                ]);
+
+                // Audit log
+                audit_log(
+                    $campaign->company_id,
+                    $campaign->user_email,
+                    null,
+                    'QUISHING_CAMPAIGN_SIMULATED',
+                    "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
+                    'normal'
+                );
             }
+
+            // Update the campaign status to 'running'
+            $campaign->update(['status' => 'running']);
+
+
+            echo "Campaign is live \n";
         }
     }
+
+    private function getRandomTrainingModule($campaign)
+    {
+        if ($campaign->campaign_type == "quishing" || $campaign->training_module == null) {
+            return null;
+        }
+        $trainingModules = json_decode($campaign->training_module, true);
+        return $trainingModules[array_rand($trainingModules)];
+    }
+
+    private function getRandomScormTraining($campaign)
+    {
+        if ($campaign->campaign_type == "quishing" || $campaign->scorm_training == null) {
+            return null;
+        }
+
+        $scormTrainings = json_decode($campaign->scorm_training, true);
+        return $scormTrainings[array_rand($scormTrainings)];
+    }
+
+    private function getRandomQuishingMaterial($campaign)
+    {
+
+        if ($campaign->campaign_type == "quishing") {
+            return null;
+        }
+
+        $quishingMaterials = json_decode($campaign->quishing_material, true);
+        return $quishingMaterials[array_rand($quishingMaterials)];
+    }
+
+    // private function sendMailConditionally($mailData, $campaign, $company_id)
+    // {
+    //     // check user email domain is outlook email
+    //     $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
+    //     if ($isOutlookEmail) {
+    //         echo "Outlook email detected: " . $campaign->user_email . "\n";
+    //         $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+    //         if ($accessToken) {
+    //             echo "Access token found for company ID: " . $company_id . "\n";
+
+    //             $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
+    //             if ($sent['success'] == true) {
+    //                 $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+    //                 echo "Email sent to: " . $campaign->user_email . "\n";
+    //             } else {
+    //                 echo "Email not sent to: " . $campaign->user_email . "\n";
+    //             }
+    //         } else {
+    //             echo "No access token found for company ID: " . $company_id . "\n";
+    //             if (sendPhishingMail($mailData)) {
+
+    //                 $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+    //                 echo "Email sent to: " . $campaign->user_email . "\n";
+    //             } else {
+    //                 echo "Email not sent to: " . $campaign->user_email . "\n";
+    //             }
+    //         }
+    //     } else {
+    //         echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
+    //         if (sendPhishingMail($mailData)) {
+
+    //             $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+    //             echo "Email sent to: " . $campaign->user_email . "\n";
+    //         } else {
+    //             echo "Email not sent to: " . $campaign->user_email . "\n";
+    //         }
+    //     }
+    // }
 
     private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)
     {

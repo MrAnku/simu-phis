@@ -20,6 +20,7 @@ class QuishingLiveCamp extends Model
         'sender_profile',
         'quishing_lang',
         'sent',
+        'send_time',
         'mail_open',
         'qr_scanned',
         'compromised',
@@ -29,15 +30,18 @@ class QuishingLiveCamp extends Model
         'scorm_training'
     ];
 
-    public function camp(){
+    public function camp()
+    {
         return $this->belongsTo(QuishingCamp::class, 'campaign_id', 'campaign_id');
     }
 
-    public function trainingData(){
+    public function trainingData()
+    {
         return $this->belongsTo(TrainingModule::class, 'training_module', 'id');
     }
 
-    public function templateData(){
+    public function templateData()
+    {
         return $this->belongsTo(QshTemplate::class, 'quishing_material', 'id');
     }
 
@@ -46,7 +50,7 @@ class QuishingLiveCamp extends Model
         return $this->hasOne(QuishingActivity::class, 'campaign_live_id', 'id');
     }
 
-    protected $appends = ['formatted_created_at','replied'];
+    protected $appends = ['formatted_created_at', 'replied'];
 
     public function getFormattedCreatedAtAttribute()
     {
@@ -57,5 +61,4 @@ class QuishingLiveCamp extends Model
     {
         return PhishingReply::where('from_address', $this->user_email)->exists() ? 1 : 0;
     }
-    
 }
