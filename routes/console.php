@@ -15,6 +15,7 @@ $everyMinuteCommands = [
     'app:company-management',
     'app:process-triggers',
     'app:send-overall-report',
+    'app:invite-partner'
 ];
 
 if (! is_dir(storage_path('logs/cron'))) {
