@@ -115,7 +115,7 @@ class ApiCampaignController extends Controller
                 "sender_profile" => 'nullable',
                 'selected_users' => 'nullable',
                 'policies' => 'nullable|array',
-                'schType' => 'required|in:immediately,scheduled',
+                'schType' => 'required|in:immediately,scheduled,schLater',
                 "schedule_date" => 'nullable|date|after_or_equal:today',
                 "schTimeZone" => 'nullable|string',
                 'schTimeStart' => [
