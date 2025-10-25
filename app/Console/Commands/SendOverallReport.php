@@ -26,6 +26,9 @@ class SendOverallReport extends Command
             $query->whereNotNull('overall_report');
         });
 
+        // Current time used for per-company checks
+        $currentDate = Carbon::now();
+
         $totalCompanies = $companiesQuery->count();
         $batchSize = 2;
 
@@ -45,8 +48,22 @@ class SendOverallReport extends Command
             return;
         }
 
-        // Process each company
+        // Process each company. Only send reports for companies whose creation date is at least one month ago.
         foreach ($companies as $company) {
+            // Ensure created_at is available and compute one month after creation
+            $createdAt = $company->created_at ? Carbon::parse($company->created_at) : null;
+            if (!$createdAt) {
+                // If no creation date, skip this company
+                continue;
+            }
+
+            $oneMonthAfterCreation = $createdAt->copy()->addMonth();
+
+            // Skip companies that have not yet exceeded one month since creation
+            if ($currentDate->lessThan($oneMonthAfterCreation)) {
+                continue;
+            }
+
             if ($this->isScheduledForReport($company)) {
                 $this->generateAndSendReport($company);
             }
