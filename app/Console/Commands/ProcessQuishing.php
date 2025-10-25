@@ -264,47 +264,47 @@ class ProcessQuishing extends Command
         return $quishingMaterials[array_rand($quishingMaterials)];
     }
 
-    // private function sendMailConditionally($mailData, $campaign, $company_id)
-    // {
-    //     // check user email domain is outlook email
-    //     $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
-    //     if ($isOutlookEmail) {
-    //         echo "Outlook email detected: " . $campaign->user_email . "\n";
-    //         $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
-    //         if ($accessToken) {
-    //             echo "Access token found for company ID: " . $company_id . "\n";
+    private function sendMailConditionally($mailData, $campaign, $company_id)
+    {
+        // check user email domain is outlook email
+        $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
+        if ($isOutlookEmail) {
+            echo "Outlook email detected: " . $campaign->user_email . "\n";
+            $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
+            if ($accessToken) {
+                echo "Access token found for company ID: " . $company_id . "\n";
 
-    //             $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
-    //             if ($sent['success'] == true) {
-    //                 $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
+                if ($sent['success'] == true) {
+                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
-    //                 echo "Email sent to: " . $campaign->user_email . "\n";
-    //             } else {
-    //                 echo "Email not sent to: " . $campaign->user_email . "\n";
-    //             }
-    //         } else {
-    //             echo "No access token found for company ID: " . $company_id . "\n";
-    //             if (sendPhishingMail($mailData)) {
+                    echo "Email sent to: " . $campaign->user_email . "\n";
+                } else {
+                    echo "Email not sent to: " . $campaign->user_email . "\n";
+                }
+            } else {
+                echo "No access token found for company ID: " . $company_id . "\n";
+                if (sendPhishingMail($mailData)) {
 
-    //                 $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
-    //                 echo "Email sent to: " . $campaign->user_email . "\n";
-    //             } else {
-    //                 echo "Email not sent to: " . $campaign->user_email . "\n";
-    //             }
-    //         }
-    //     } else {
-    //         echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-    //         if (sendPhishingMail($mailData)) {
+                    echo "Email sent to: " . $campaign->user_email . "\n";
+                } else {
+                    echo "Email not sent to: " . $campaign->user_email . "\n";
+                }
+            }
+        } else {
+            echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
+            if (sendPhishingMail($mailData)) {
 
-    //             $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+                $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
 
-    //             echo "Email sent to: " . $campaign->user_email . "\n";
-    //         } else {
-    //             echo "Email not sent to: " . $campaign->user_email . "\n";
-    //         }
-    //     }
-    // }
+                echo "Email sent to: " . $campaign->user_email . "\n";
+            } else {
+                echo "Email not sent to: " . $campaign->user_email . "\n";
+            }
+        }
+    }
 
     private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)
     {

@@ -73,10 +73,10 @@ class ProcessCampaigns extends Command
 
         if ($campaigns) {
           foreach ($campaigns as $campaign) {
-            $launchTime = Carbon::createFromFormat('m/d/Y g:i A', $campaign->launch_time);
-            $currentDateTime = Carbon::now();
+            $scheduleDate = Carbon::parse($campaign->schedule_date);
+            $currentDateTime =  Carbon::today();
 
-            if ($launchTime->lessThan($currentDateTime)) {
+            if ($scheduleDate->lte($currentDateTime)) {
 
               $this->makeCampaignLive($campaign->campaign_id);
 
@@ -112,9 +112,26 @@ class ProcessCampaigns extends Command
     } else {
       $users = Users::whereIn('id', json_decode($campaign->selected_users, true))->get();
     }
+
+    $startTime = Carbon::parse($campaign->startTime);
+    $endTime = Carbon::parse($campaign->endTime);
+
+    // Convert both to timestamps (seconds)
+    $min = $startTime->timestamp;
+    $max = $endTime->timestamp;
+
     // Check if users exist in the group
     if (!$users->isEmpty()) {
       foreach ($users as $user) {
+
+        // Generate a random timestamp each time
+        $randomTimestamp = mt_rand($min, $max);
+        setCompanyTimezone($campaign->company_id);
+        $timeZone = config('app.timezone');
+
+        // Convert it back to readable datetime
+        $randomSendTime = Carbon::createFromTimestamp($randomTimestamp, $timeZone);
+
         $camp_live = CampaignLive::create([
           'campaign_id' => $campaign->campaign_id,
           'campaign_name' => $campaign->campaign_name,
@@ -132,6 +149,7 @@ class ProcessCampaigns extends Command
           'email_lang' => $campaign->email_lang ?? null,
           'sent' => '0',
           'company_id' => $campaign->company_id,
+          'send_time' => $randomSendTime
         ]);
 
         EmailCampActivity::create([
@@ -191,8 +209,7 @@ class ProcessCampaigns extends Command
 
   private function sendCampaignLiveEmails()
   {
-    $companies = DB::table('company')
-      ->where('approved', 1)
+    $companies = Company::where('approved', 1)
       ->where('role', null)
       ->where('service_status', 1)
       ->get();
@@ -203,46 +220,63 @@ class ProcessCampaigns extends Command
     foreach ($companies as $company) {
       setCompanyTimezone($company->company_id);
 
-      $company_id = $company->company_id;
-
-      $campaigns = CampaignLive::where('sent', 0)
-        ->where('company_id', $company_id)
-        ->take(5)
+      $runningCampaigns = Campaign::where('company_id', $company->company_id)
+        ->where('status', 'running')
         ->get();
 
-      foreach ($campaigns as $campaign) {
+      if ($runningCampaigns->isEmpty()) {
+        continue;
+      }
 
-        if ($campaign->phishing_material == null) {
-          try {
-            $this->sendOnlyTraining($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending training: " . $e->getMessage() . "\n";
-            continue;
+      foreach ($runningCampaigns as $camp) {
+        $campaignTimezone = $camp->timeZone ?: $company->company_settings->time_zone;
+
+        // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        date_default_timezone_set($campaignTimezone);
+        config(['app.timezone' => $campaignTimezone]);
+
+        $currentDateTime = Carbon::now();
+
+        // fetch due live campaigns for this campaign using campaign-local now
+        $dueLiveCamps = CampaignLive::where('campaign_id', $camp->campaign_id)
+          ->where('sent', 0)
+          ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+          ->take(5)
+          ->get();
+
+        foreach ($dueLiveCamps as $campaign) {
+
+          if ($campaign->phishing_material == null) {
+            try {
+              $this->sendOnlyTraining($campaign);
+            } catch (\Exception $e) {
+              echo "Error sending training: " . $e->getMessage() . "\n";
+               continue;
+            }
           }
-        }
-        if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
-          try{
-            $policyService = new PolicyAssignedService(
-              $campaign->campaign_id,
-              $campaign->user_name,
-              $campaign->user_email,
-              $campaign->company_id
-            );
+          if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
+            try {
+              $policyService = new PolicyAssignedService(
+                $campaign->campaign_id,
+                $campaign->user_name,
+                $campaign->user_email,
+                $campaign->company_id
+              );
 
-            $policyService->assignPolicies($campaign->camp->policies);
-
-          } catch (\Exception $e) {
-            echo "Error assigning policy: " . $e->getMessage() . "\n";
-            continue;
+              $policyService->assignPolicies($campaign->camp->policies);
+            } catch (\Exception $e) {
+              echo "Error assigning policy: " . $e->getMessage() . "\n";
+               continue;
+            }
           }
-        }
 
-        if ($campaign->phishing_material) {
-          try {
-            $this->sendPhishingEmail($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending phishing email: " . $e->getMessage() . "\n";
-            continue;
+          if ($campaign->phishing_material) {
+            try {
+              $this->sendPhishingEmail($campaign);
+            } catch (\Exception $e) {
+              echo "Error sending phishing email: " . $e->getMessage() . "\n";
+               continue;
+            }
           }
         }
       }
@@ -393,8 +427,6 @@ class ProcessCampaigns extends Command
 
     return $mailBody;
   }
-
-
 
 
   private function sendMailConditionally($mailData, $campaign, $company_id)

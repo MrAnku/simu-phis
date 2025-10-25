@@ -96,6 +96,32 @@ class ApiCampaignController extends Controller
             }
             //xss check end
 
+            $validated = $request->validate([
+                'camp_name' => 'required|string|max:255',
+                'campaign_type' => 'required|in:Phishing & Training,Phishing,Training',
+                "users_group" => 'required|string',
+                "emailFreq" => 'required|in:one,weekly,monthly,quarterly',
+                "email_lang" => 'nullable|string',
+                "expire_after" => 'nullable',
+                "training_mod" => 'nullable|array',
+                "scorm_training" => 'nullable|array',
+                'training_assignment' => 'nullable|in:all,random',
+                'days_until_due' => 'nullable|integer|min:1',
+                'trainingLang' => 'nullable|string',
+                'training_type' => 'nullable',
+                'training_on_click' => 'required',
+                'compromise_on_click' => 'required',
+                "phish_material" => 'required|array',
+                "sender_profile" => 'nullable',
+                'selected_users' => 'nullable',
+                'policies' => 'nullable|array',
+                'schType' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|date|after_or_equal:today',
+                "schTimeZone" => 'nullable|string',
+                'schTimeStart' => 'nullable|date_format:Y-m-d H:i:s',
+                'schTimeEnd'   => 'nullable|date_format:Y-m-d H:i:s|after:schTimeStart'
+            ]);
+
             // Validate request input
             $validated = $request->all();
 
@@ -167,7 +193,7 @@ class ApiCampaignController extends Controller
     private function handleImmediateLaunch($data, $campId, $companyId)
     {
         // $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
-        $launchTimeFormatted = Carbon::now()->format("m/d/Y g:i A");
+        // $launchTimeFormatted = Carbon::now()->format("m/d/Y g:i A");
 
         $groupExists = UsersGroup::where('group_id', $data['users_group'])->exists();
         if (!$groupExists) {
@@ -179,12 +205,12 @@ class ApiCampaignController extends Controller
 
         $userIdsJson = UsersGroup::where('group_id', $data['users_group'])->value('users');
         $userIds = json_decode($userIdsJson, true);
-        if($data['selected_users'] == null){
+        if ($data['selected_users'] == null) {
             $users = Users::whereIn('id', $userIds)->get();
-        }else{
+        } else {
             $users = Users::whereIn('id', $data['selected_users'])->get();
         }
-        
+
 
         // $users = User::where('group_id', $data['users_group'])->get();
 
@@ -207,7 +233,7 @@ class ApiCampaignController extends Controller
                 'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
                 'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
                 'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
-                'launch_time' => $launchTimeFormatted,
+                'launch_time' => now(),
                 'phishing_material' => ($data['campaign_type'] == 'Training') ? null : $data['phish_material'][array_rand($data['phish_material'])],
                 'sender_profile' => $data['sender_profile'] ?? null,
                 'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
@@ -252,7 +278,7 @@ class ApiCampaignController extends Controller
             'phishing_material' => ($data['campaign_type'] == 'Training') ? null : json_encode($data['phish_material']),
             'sender_profile' => $data['sender_profile'] ?? null,
             'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
-            'launch_time' => $launchTimeFormatted,
+            'launch_time' => now(),
             'launch_type' => 'immediately',
             'email_freq' => $data['emailFreq'],
             'startTime' => '00:00:00',
@@ -273,12 +299,12 @@ class ApiCampaignController extends Controller
 
     private function handleScheduledLaunch($data, $campId, $companyId)
     {
-        $launchTime = $this->generateRandomDate(
-            $data['schBetRange'],
-            $data['schTimeStart'],
-            $data['schTimeEnd'],
-            config('app.timezone', 'Asia/Kolkata')
-        );
+        // $launchTime = $this->generateRandomDate(
+        //     $data['schBetRange'],
+        //     $data['schTimeStart'],
+        //     $data['schTimeEnd'],
+        //     config('app.timezone', 'Asia/Kolkata')
+        // );
 
         Campaign::create([
             'campaign_id' => $campId,
@@ -298,7 +324,7 @@ class ApiCampaignController extends Controller
             'phishing_material' => ($data['campaign_type'] == 'Training') ? null : json_encode($data['phish_material']),
             'sender_profile' => $data['sender_profile'] ?? null,
             'email_lang' => $data['email_lang'],
-            'launch_time' => $launchTime,
+            'launch_time' => now(),
             'launch_type' => 'scheduled',
             'email_freq' => $data['emailFreq'],
             'startTime' => $data['schTimeStart'],
@@ -307,6 +333,7 @@ class ApiCampaignController extends Controller
             'expire_after' => $data['expire_after'],
             'status' => 'pending',
             'company_id' => $companyId,
+            'schedule_date' => $data['schedule_date'],
         ]);
 
 

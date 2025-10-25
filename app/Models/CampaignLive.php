@@ -33,7 +33,8 @@ class CampaignLive extends Model
         'email_reported',
         'training_assigned',
         'company_id',
-        'scorm_training'
+        'scorm_training',
+        'send_time'
     ];
 
     public function camp(){

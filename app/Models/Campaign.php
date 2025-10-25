@@ -39,7 +39,8 @@ class Campaign extends Model
         'expire_after',
         'status',
         'company_id',
-        'scorm_training'
+        'scorm_training',
+        'schedule_date'
     ];
 
     public function getPoliciesUsedAttribute()
