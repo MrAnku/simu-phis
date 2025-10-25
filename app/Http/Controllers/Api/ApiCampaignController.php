@@ -100,7 +100,7 @@ class ApiCampaignController extends Controller
                 'camp_name' => 'required|string|max:255',
                 'campaign_type' => 'required|in:Phishing & Training,Phishing,Training',
                 "users_group" => 'required|string',
-                "emailFreq" => 'required|in:one,weekly,monthly,quarterly',
+                "emailFreq" => 'required|in:once,weekly,monthly,quarterly',
                 "email_lang" => 'nullable|string',
                 "expire_after" => 'nullable',
                 "training_mod" => 'nullable|array',
