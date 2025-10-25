@@ -92,7 +92,18 @@ class ApiQuishingController extends Controller
                 'schedule_type' => 'required|in:immediately,scheduled',
                 "schedule_date" => 'nullable|date|after_or_equal:today',
                 "time_zone" => 'nullable|string',
-                'start_time' => 'nullable|date_format:Y-m-d H:i:s',
+                'start_time' => [
+                    'nullable',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
                 'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 

@@ -64,8 +64,6 @@ class ProcessAiCampaigns extends Command
         }
         foreach ($companies as $company) {
             try {
-
-                // ==========================
                 $runningCampaigns = AiCallCampaign::where('company_id', $company->company_id)
                     ->where('status', 'running')
                     ->get();
@@ -148,68 +146,6 @@ class ProcessAiCampaigns extends Command
                         }
                     }
                 }
-                // ====================================
-
-
-
-
-
-                // $pendingCalls = AiCallCampLive::where('company_id', $company->company_id)
-                //     ->where(function ($q) {
-                //         $q->where('status', 'pending')
-                //             ->orWhere('status', 'no-answer')
-                //             ->orWhere('status', 'failed')
-                //             ->orWhere('status', 'busy')
-                //             ->orWhere('status', 'canceled');
-                //     })
-                //     ->get();
-
-                // $url = 'https://callapi3.sparrowhost.net/call';
-
-                // foreach ($pendingCalls as $pendingCall) {
-
-                //     if ($this->isRetellAgent($pendingCall->agent_id)) {
-                //         continue;
-                //     }
-
-                //     if ($pendingCall->calls_sent >= 3) {
-
-                //         continue;
-                //     }
-
-                //     setCompanyTimezone($pendingCall->company_id);
-
-                //     // Make the HTTP request
-                //     $requestBody = [
-                //         "user_id" => extractIntegers($pendingCall->company_id),
-                //         "agent_id" => $pendingCall->agent_id,
-                //         "twilio_account_sid" => env('TWILIO_ACCOUNT_SID'),
-                //         "twilio_auth_token" => env('TWILIO_AUTH_TOKEN'),
-                //         "twilio_phone_number" => env('TWILIO_PHONE_NUMBER'),
-                //         "recipient_phone_number" => $pendingCall->to_mobile
-                //     ];
-
-                //     $response = Http::post($url, $requestBody);
-
-                //     // Check for a successful response
-                //     if ($response->successful()) {
-                //         $callResponse = $response->json();
-                //         // // Return the response data
-                //         $pendingCall->call_id = $callResponse['call_sid'];
-                //         $pendingCall->call_send_response = json_encode($callResponse, true);
-                //         $pendingCall->status = 'waiting';
-                //         $pendingCall->save();
-                //         $pendingCall->increment('calls_sent');
-                //         echo $response->body() . "\n";
-
-                //         // Mark the AiCallCampaign as completed after call is initiated
-                //         AiCallCampaign::where('campaign_id', $pendingCall->campaign_id)
-                //             ->update(['status' => 'completed']);
-                //     } else {
-                //         // Handle the error, e.g., log the error or throw an exception
-                //         echo "Call Failed: " . $response->body() . "\n";
-                //     }
-                // }
             } catch (\Exception $e) {
                 echo "Something went wrong " . $e->getMessage();
                 continue;
@@ -279,12 +215,6 @@ class ProcessAiCampaigns extends Command
                     $users = BlueCollarEmployee::whereIn('id', json_decode($campaign->selected_users, true))->get();
                 }
             }
-
-
-
-            // $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)->value('users');
-            // $userIds = json_decode($userIdsJson, true);
-            // $users = Users::whereIn('id', $userIds)->get();
 
             $startTime = Carbon::parse($campaign->start_time);
             $endTime = Carbon::parse($campaign->end_time);

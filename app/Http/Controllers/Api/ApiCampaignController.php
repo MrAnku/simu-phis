@@ -118,7 +118,18 @@ class ApiCampaignController extends Controller
                 'schType' => 'required|in:immediately,scheduled',
                 "schedule_date" => 'nullable|date|after_or_equal:today',
                 "schTimeZone" => 'nullable|string',
-                'schTimeStart' => 'nullable|date_format:Y-m-d H:i:s',
+                'schTimeStart' => [
+                    'nullable',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
                 'schTimeEnd'   => 'nullable|date_format:Y-m-d H:i:s|after:schTimeStart'
             ]);
 
@@ -281,9 +292,6 @@ class ApiCampaignController extends Controller
             'launch_time' => now(),
             'launch_type' => 'immediately',
             'email_freq' => $data['emailFreq'],
-            'startTime' => '00:00:00',
-            'endTime' => '00:00:00',
-            'timeZone' => $data['schTimeZone'],
             'expire_after' => $data['expire_after'],
             'status' => 'running',
             'company_id' => $companyId,
