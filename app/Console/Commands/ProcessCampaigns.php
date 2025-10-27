@@ -13,6 +13,7 @@ use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Mail\TrainingAssignedEmail;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
@@ -484,7 +485,7 @@ class ProcessCampaigns extends Command
   private function updateRunningCampaigns()
   {
     try {
-      $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'one')->get();
+      $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'once')->get();
 
       foreach ($oneOffCampaigns as $campaign) {
 
@@ -497,7 +498,7 @@ class ProcessCampaigns extends Command
         }
       }
 
-      $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'one')->get();
+      $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'once')->get();
 
       if ($recurrCampaigns) {
 
@@ -509,8 +510,22 @@ class ProcessCampaigns extends Command
 
             if ($recurrCampaign->expire_after !== null) {
 
-              $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
-              $expire_after = Carbon::createFromFormat("Y-m-d", $recurrCampaign->expire_after);
+              try {
+                $launchTime = Carbon::parse($recurrCampaign->launch_time);
+              } catch (\Exception $e) {
+                Log::error("ProcessCampaigns: failed to parse launch_time for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
+                // skip this campaign and continue with others
+                continue;
+              }
+
+              try {
+                $expire_after = Carbon::parse($recurrCampaign->expire_after);
+              } catch (\Exception $e) {
+                Log::error("ProcessCampaigns: failed to parse expire_after for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
+                // If expire date is invalid, mark campaign as completed to avoid infinite loops
+                $recurrCampaign->update(['status' => 'completed']);
+                continue;
+              }
 
               if ($launchTime->lessThan($expire_after)) {
 
@@ -523,7 +538,7 @@ class ProcessCampaigns extends Command
                   case 'monthly':
                     $launchTime->addMonth();
                     break;
-                  case 'quaterly':
+                  case 'quarterly':
                     $launchTime->addMonths(3);
                     break;
                   default:
@@ -536,7 +551,12 @@ class ProcessCampaigns extends Command
               }
             } else {
 
-              $launchTime = Carbon::createFromFormat("m/d/Y g:i A", $recurrCampaign->launch_time);
+              try {
+                $launchTime = Carbon::parse($recurrCampaign->launch_time);
+              } catch (\Exception $e) {
+                Log::error("ProcessCampaigns: failed to parse launch_time for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
+                continue;
+              }
               $email_freq = $recurrCampaign->email_freq;
 
               switch ($email_freq) {
@@ -546,7 +566,7 @@ class ProcessCampaigns extends Command
                 case 'monthly':
                   $launchTime->addMonth();
                   break;
-                case 'quaterly':
+                case 'quarterly':
                   $launchTime->addMonths(3);
                   break;
                 default:

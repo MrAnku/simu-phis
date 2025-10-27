@@ -89,6 +89,8 @@ class ApiQuishingController extends Controller
                 "sender_profile" => 'nullable|string',
                 'selected_users' => 'nullable|string',
                 'policies' => 'nullable|array',
+                "email_freq" => 'required|in:once,weekly,monthly,quarterly',
+                'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                 'schedule_type' => 'required|in:immediately,scheduled',
                 "schedule_date" => 'nullable|date|after_or_equal:today',
                 "time_zone" => 'nullable|string',
@@ -227,6 +229,9 @@ class ApiQuishingController extends Controller
             'time_zone'      => $data['time_zone'],
             'start_time'      => $data['start_time'],
             'end_time'      => $data['end_time'],
+            'launch_date' => now(),
+            'email_freq' => $data['email_freq'],
+            'expire_after' => $data['expire_after'] ?? null,
         ]);
 
         log_action('Quishing campaign created');
@@ -264,6 +269,9 @@ class ApiQuishingController extends Controller
             'time_zone'      => $data['time_zone'],
             'start_time'      => $data['start_time'],
             'end_time'      => $data['end_time'],
+            'launch_date' => now(),
+            'email_freq' => $data['email_freq'],
+            'expire_after' => $data['expire_after'] ?? null,
         ]);
 
 

@@ -18,6 +18,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\ErrorCorrectionLevel;
+use Illuminate\Support\Facades\Log;
 
 class ProcessQuishing extends Command
 {
@@ -412,6 +413,106 @@ class ProcessQuishing extends Command
             if ($campaignLive == 0) {
                 $campaign->status = 'completed';
                 $campaign->save();
+            }
+        }
+
+        // Relaunch completed recurring quishing campaigns (weekly/monthly/quarterly)
+        $completedRecurring = QuishingCamp::where('status', 'completed')
+            ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
+            ->get();
+
+        foreach ($completedRecurring as $recurr) {
+            try {
+                // parse last launch_time
+                try {
+                    if (!empty($recurr->launch_date)) {
+                        // launch_date stores only date; use start of day as last launch
+                        $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
+                    
+                    } else {
+                        Log::error("ProcessQuishing: no launch_date for campaign {$recurr->campaign_id}");
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    Log::error("ProcessQuishing: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                    continue;
+                }
+
+                $nextLaunch = $lastLaunch->copy();
+
+                // echo $nextLaunch;
+                switch ($recurr->email_freq) {
+                    case 'weekly':
+                        $nextLaunch->addWeek();
+                        break;
+                    case 'monthly':
+                        $nextLaunch->addMonth();
+                        break;
+                    case 'quarterly':
+                        $nextLaunch->addMonths(3);
+                        break;
+                    default:
+                        continue 2;
+                }
+
+                // check expiry
+                if ($recurr->expire_after !== null) {
+                    try {
+                        $expireAt = Carbon::parse($recurr->expire_after);
+                    } catch (\Exception $e) {
+                        Log::error("ProcessQuishing: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        $recurr->update(['status' => 'completed']);
+                        continue;
+                    }
+
+                    if ($nextLaunch->greaterThan($expireAt)) {
+                        continue;
+                    }
+                }
+
+                if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
+                    // QuishingCamp stores launch_date (date-only). Update launch_date and status.
+                    $recurr->update([
+                        'launch_date' => $nextLaunch->toDateString(),
+                        'status' => 'running',
+                    ]);
+
+                    echo "Relaunching Quishing campaign {$recurr->campaign_id} (freq: {$recurr->email_freq}) for date {$nextLaunch->toDateString()}\n";
+
+                    // reset live rows for this campaign
+                    $liveRows = QuishingLiveCamp::where('campaign_id', $recurr->campaign_id)->get();
+                    $resetCount = 0;
+                    foreach ($liveRows as $live) {
+                        try {
+                            // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
+                            try {
+                                $currentSend = Carbon::parse($live->send_time);
+                                $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
+                            } catch (\Exception $e) {
+                                // fallback: if parsing fails, use nextLaunch at startOfDay
+                                $newSend = $nextLaunch->copy()->startOfDay();
+                            }
+
+                            $live->update([
+                                'sent' => '0',
+                                'mail_open' => '0',
+                                'qr_scanned' => '0',
+                                'compromised' => '0',
+                                'email_reported' => '0',
+                                'training_assigned' => '0',
+                                'send_time' => $newSend,
+                            ]);
+                            $resetCount++;
+                        } catch (\Exception $e) {
+                            Log::error("ProcessQuishing: failed to reset QuishingLiveCamp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        }
+                    }
+
+                    echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
+                }
+            } catch (\Exception $e) {
+                Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
+                continue;
             }
         }
     }

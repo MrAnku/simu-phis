@@ -103,6 +103,7 @@ class ApiCampaignController extends Controller
                 "emailFreq" => 'required|in:once,weekly,monthly,quarterly',
                 "email_lang" => 'nullable|string',
                 "expire_after" => 'nullable',
+                'expire_after' => 'required_if:emailFreq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                 "training_mod" => 'nullable|array',
                 "scorm_training" => 'nullable|array',
                 'training_assignment' => 'nullable|in:all,random',
