@@ -97,6 +97,8 @@ class ApiWaCampaignController extends Controller
                 'variables' => 'required|array',
                 'selected_users' => 'nullable|string',
                 'policies' => 'nullable|array',
+                "msg_freq" => 'required|in:once,weekly,monthly,quarterly',
+                'expire_after' => 'required_if:msg_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                 "schedule_date" => 'nullable|date|after_or_equal:today',
                 "time_zone" => 'nullable|string',
                 'start_time' => [
@@ -171,6 +173,9 @@ class ApiWaCampaignController extends Controller
                 'status' => 'running',
                 'variables' => json_encode($validated['variables']),
                 'company_id' => Auth::user()->company_id,
+                'launch_date' => now(),
+                'msg_freq' => $validated['msg_freq'],
+                'expire_after' => $validated['expire_after'] ?? null,
             ]);
 
             if ($validated['employee_type'] == 'normal') {
@@ -291,6 +296,9 @@ class ApiWaCampaignController extends Controller
                 'time_zone'      => $validated['time_zone'],
                 'start_time'      => $validated['start_time'],
                 'end_time'      => $validated['end_time'],
+                'launch_date' => now(),
+                'msg_freq' => $validated['msg_freq'],
+                'expire_after' => $validated['expire_after'] ?? null,
             ]);
 
             log_action("Whatsapp Campaign created : {$validated['campaign_name']}");

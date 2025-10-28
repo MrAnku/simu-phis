@@ -465,7 +465,7 @@ class ProcessQuishing extends Command
                         continue;
                     }
 
-                    if ($nextLaunch->greaterThan($expireAt)) {
+                    if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
                         continue;
                     }
                 }

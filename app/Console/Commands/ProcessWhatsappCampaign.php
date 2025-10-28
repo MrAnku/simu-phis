@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 use App\Models\WhatsappActivity;
 use App\Models\BlueCollarEmployee;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProcessWhatsappCampaign extends Command
 {
@@ -57,7 +58,6 @@ class ProcessWhatsappCampaign extends Command
 
             setCompanyTimezone($company->company_id);
 
-            // =======================
             $runningCampaigns = WaCampaign::where('company_id', $company->company_id)
                 ->where('status', 'running')
                 ->get();
@@ -153,82 +153,6 @@ class ProcessWhatsappCampaign extends Command
                     }
                 }
             }
-
-            // ==========================
-
-            // $campaigns = WaLiveCampaign::where('sent', 0)->where('company_id', $company->company_id)->take(5)->get();
-            // if ($campaigns && $company->whatsappConfig) {
-
-            //     foreach ($campaigns as $campaign) {
-
-
-            //         $component_header = [];
-
-            //         $user_name = [
-            //             'type' => 'text',
-            //             'text' => $campaign->user_name,
-            //         ];
-
-            //         $website = PhishingWebsite::find($campaign->phishing_website);
-
-            //         if (!$website) {
-            //             echo "Website not found \n";
-            //             continue;
-            //         }
-
-            //         $website_link = [
-            //             'type' => 'text',
-            //             'text' => getWebsiteUrl($website, $campaign, 'wsh'),
-            //         ];
-
-            //         $variables = json_decode($campaign->variables, true);
-
-            //         array_unshift($variables, $user_name);
-            //         array_push($variables, $website_link);
-
-
-            //         try {
-
-            //             $response = Http::withToken($company->whatsappConfig->access_token) // Set Bearer Token
-            //                 ->withoutVerifying() // Disable SSL verification
-            //                 ->post(
-            //                     'https://graph.facebook.com/v22.0/' . $company->whatsappConfig->from_phone_id . '/messages',
-            //                     [
-            //                         "messaging_product" => "whatsapp",
-            //                         "to" => $campaign->user_phone,
-            //                         "type" => "template",
-            //                         "template" => [
-            //                             "name" => $campaign->template_name,
-            //                             "language" => [
-            //                                 "code" => 'en'
-            //                             ],
-            //                             "components" => [
-            //                                 [
-            //                                     "type" => "body",
-            //                                     "parameters" => $variables
-            //                                 ]
-            //                             ]
-            //                         ]
-            //                     ]
-            //                 );
-
-            //             // Get the response
-            //             $data = $response->json();
-
-            //             if ($response->successful()) {
-            //                 $campaign->sent = 1;
-            //                 $campaign->save();
-            //                 echo "WhatsApp message sent to " . $campaign->user_name . "\n";
-
-            //                 WhatsappActivity::where('campaign_live_id', $campaign->id)->update(['whatsapp_sent_at' => now()]);
-            //             } else {
-            //                 echo json_encode($response->body());
-            //             }
-            //         } catch (\Exception $th) {
-            //             echo $th->getMessage();
-            //         }
-            //     }
-            // }
         }
     }
 
@@ -398,7 +322,7 @@ class ProcessWhatsappCampaign extends Command
     {
         $campaigns = WaCampaign::where('status', 'running')
             ->get();
-        if ($campaigns->isEmpty()) {
+        if (!$campaigns) {
             return;
         }
 
@@ -410,6 +334,101 @@ class ProcessWhatsappCampaign extends Command
                 $campaign->status = 'completed';
                 $campaign->save();
                 echo "Campaign " . $campaign->name . " has been marked as completed.\n";
+            }
+        }
+
+        // Relaunch completed recurring whatsapp campaigns (weekly/monthly/quarterly)
+        $completedRecurring = WaCampaign::where('status', 'completed')
+            ->whereIn('msg_freq', ['weekly', 'monthly', 'quarterly'])
+            ->get();
+
+        foreach ($completedRecurring as $recurr) {
+            try {
+                // parse last launch_time
+                try {
+                    if (!empty($recurr->launch_date)) {
+                        // launch_date stores only date; use start of day as last launch
+                        $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
+                    } else {
+                        Log::error("ProcessWhatsapp: no launch_date for campaign {$recurr->campaign_id}");
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    Log::error("ProcessWhatsapp: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                    continue;
+                }
+
+                $nextLaunch = $lastLaunch->copy();
+
+                switch ($recurr->msg_freq) {
+                    case 'weekly':
+                        $nextLaunch->addWeek();
+                        break;
+                    case 'monthly':
+                        $nextLaunch->addMonth();
+                        break;
+                    case 'quarterly':
+                        $nextLaunch->addMonths(3);
+                        break;
+                    default:
+                        continue 2;
+                }
+
+                // check expiry
+                if ($recurr->expire_after !== null) {
+                    try {
+                        $expireAt = Carbon::parse($recurr->expire_after);
+                    } catch (\Exception $e) {
+                        Log::error("ProcessQuishing: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        $recurr->update(['status' => 'completed']);
+                        continue;
+                    }
+
+                    if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
+                        continue;
+                    }
+                }
+
+                if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
+                    $recurr->update([
+                        'launch_date' => $nextLaunch->toDateString(),
+                        'status' => 'running',
+                    ]);
+
+                    echo "Relaunching whatsapp campaign {$recurr->campaign_id} (freq: {$recurr->msg_freq}) for date {$nextLaunch->toDateString()}\n";
+
+                    // reset live rows for this campaign
+                    $liveRows = WaLiveCampaign::where('campaign_id', $recurr->campaign_id)->get();
+                    $resetCount = 0;
+                    foreach ($liveRows as $live) {
+                        try {
+                            // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
+                            try {
+                                $currentSend = Carbon::parse($live->send_time);
+                                $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
+                            } catch (\Exception $e) {
+                                // fallback: if parsing fails, use nextLaunch at startOfDay
+                                $newSend = $nextLaunch->copy()->startOfDay();
+                            }
+
+                            $live->update([
+                                'sent' => 0,
+                                'payload_clicked' => 0,
+                                'compromised' => 0,
+                                'training_assigned' => 0,
+                                'send_time' => $newSend,
+                            ]);
+                            $resetCount++;
+                        } catch (\Exception $e) {
+                            Log::error("ProcessWhatsapp: failed to reset whatsapp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        }
+                    }
+
+                    echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
+                }
+            } catch (\Exception $e) {
+                Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
+                continue;
             }
         }
     }
