@@ -440,6 +440,8 @@ class ApiAiCallController extends Controller
                     'schedule_type' => 'required|string|in:immediately,schedule',
                     'training_assignment' => 'required|string|in:random,all',
                     'selected_users' => 'nullable|array',
+                    "call_freq" => 'required|in:once,weekly,monthly,quarterly',
+                    'expire_after' => 'required_if:call_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                     'policies' => 'nullable|array',
                     "schedule_date" => 'nullable|date|after_or_equal:today',
                     "time_zone" => 'nullable|string',
@@ -510,6 +512,9 @@ class ApiAiCallController extends Controller
                 'time_zone'      => $request->time_zone,
                 'start_time'      => $request->start_time,
                 'end_time'      => $request->end_time,
+                'launch_date' => now(),
+                'call_freq' => $request->call_freq,
+                'expire_after' => $request->expire_after ?? null,
             ]);
 
             if ($status === 'running') {

@@ -5,24 +5,16 @@ namespace App\Console\Commands;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\UsersGroup;
-use App\Models\ScormTraining;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
-use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
 use Illuminate\Console\Command;
-use App\Models\ScormAssignedUser;
 use App\Models\BlueCollarEmployee;
-use Illuminate\Support\Facades\DB;
-use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Http;
-use App\Models\BlueCollarTrainingUser;
 use App\Services\PolicyAssignedService;
 use App\Services\CampaignTrainingService;
-use App\Services\TrainingAssignedService;
-use App\Models\BlueCollarScormAssignedUser;
-use App\Services\BlueCollarWhatsappService;
 use App\Services\BlueCollarCampTrainingService;
+use Illuminate\Support\Facades\Log;
 
 class ProcessAiCampaigns extends Command
 {
@@ -50,6 +42,7 @@ class ProcessAiCampaigns extends Command
         $this->processAiCalls();
         // $this->analyseAicallReports();
         $this->checkAllAiCallsHandled();
+        $this->checkCompletedCampaigns();
     }
 
     private function processAiCalls()
@@ -449,6 +442,123 @@ class ProcessAiCampaigns extends Command
 
             if ($sent) {
                 $campaign->update(['sent' => 1, 'training_assigned' => 1]);
+            }
+        }
+    }
+
+    private function checkCompletedCampaigns()
+    {
+        $campaigns = AiCallCampaign::where('status', 'running')
+            ->get();
+        if (!$campaigns) {
+            return;
+        }
+
+        foreach ($campaigns as $campaign) {
+            $liveCampaigns = AiCallCampLive::where('campaign_id', $campaign->campaign_id)
+                ->where('calls_sent', 0)
+                ->count();
+            if ($liveCampaigns == 0) {
+                $campaign->status = 'completed';
+                $campaign->save();
+                echo "Campaign " . $campaign->name . " has been marked as completed.\n";
+            }
+        }
+
+        // Relaunch completed recurring whatsapp campaigns (weekly/monthly/quarterly)
+        $completedRecurring = AiCallCampaign::where('status', 'completed')
+            ->whereIn('call_freq', ['weekly', 'monthly', 'quarterly'])
+            ->get();
+
+        foreach ($completedRecurring as $recurr) {
+            try {
+                // parse last launch_time
+                try {
+                    if (!empty($recurr->launch_date)) {
+                        // launch_date stores only date; use start of day as last launch
+                        $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
+                    } else {
+                        Log::error("ProcessAiCamp: no launch_date for campaign {$recurr->campaign_id}");
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    Log::error("ProcessAiCamp: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                    continue;
+                }
+
+                $nextLaunch = $lastLaunch->copy();
+
+                switch ($recurr->call_freq) {
+                    case 'weekly':
+                        $nextLaunch->addWeek();
+                        break;
+                    case 'monthly':
+                        $nextLaunch->addMonth();
+                        break;
+                    case 'quarterly':
+                        $nextLaunch->addMonths(3);
+                        break;
+                    default:
+                        continue 2;
+                }
+
+                // check expiry
+                if ($recurr->expire_after !== null) {
+                    try {
+                        $expireAt = Carbon::parse($recurr->expire_after);
+                    } catch (\Exception $e) {
+                        Log::error("ProcessAiCamp: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        $recurr->update(['status' => 'completed']);
+                        continue;
+                    }
+
+                    if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
+                        continue;
+                    }
+                }
+
+                if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
+                    $recurr->update([
+                        'launch_date' => $nextLaunch->toDateString(),
+                        'status' => 'running',
+                    ]);
+
+                    echo "Relaunching ai call campaign {$recurr->campaign_id} (freq: {$recurr->call_freq}) for date {$nextLaunch->toDateString()}\n";
+
+                    // reset live rows for this campaign
+                    $liveRows = AiCallCampLive::where('campaign_id', $recurr->campaign_id)->get();
+                    $resetCount = 0;
+                    foreach ($liveRows as $live) {
+                        try {
+                            try {
+                                $currentSend = Carbon::parse($live->send_time);
+                                $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
+                            } catch (\Exception $e) {
+                                // fallback: if parsing fails, use nextLaunch at startOfDay
+                                $newSend = $nextLaunch->copy()->startOfDay();
+                            }
+
+                            $live->update([
+                                'calls_sent' => 0,
+                                'training_assigned' => 0,
+                                'compromised' => 0,
+                                'call_send_response' => null,
+                                'call_end_response' => null,
+                                'call_report' => null,
+                                'status' => 'pending',
+                                'send_time' => $newSend,
+                            ]);
+                            $resetCount++;
+                        } catch (\Exception $e) {
+                            Log::error("ProcessWhatsapp: failed to reset whatsapp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
+                        }
+                    }
+
+                    echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
+                }
+            } catch (\Exception $e) {
+                Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
+                continue;
             }
         }
     }

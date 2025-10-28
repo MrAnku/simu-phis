@@ -33,7 +33,8 @@ class AiCallCampLive extends Model
         'company_id',
         'scorm_training',
         'employee_type',
-        'send_time'
+        'send_time',
+        'calls_sent'
     ];
 
     public function camp(){
