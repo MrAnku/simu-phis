@@ -359,9 +359,9 @@ class ProcessCampaigns extends Command
       echo "Error fetching mail body: " . $e->getMessage() . "\n";
     }
 
+    $companyName = Company::where('company_id', $campaign->company_id)->value('company_name');
 
     $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-    // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
     $mailBody = str_replace(
       '{{tracker_img}}',
       '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">' .
@@ -372,14 +372,19 @@ class ProcessCampaigns extends Command
 
     if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
       $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
+      $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
       $mailBody = changeEmailLang($mailBody, $campaign->email_lang);
       $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+      $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
     } else if ($campaign->email_lang == 'am') {
       $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
+      $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
       $mailBody = translateHtmlToAmharic($mailBody);
       $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+      $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
     } else {
       $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+      $mailBody = str_replace('{{company_name}}', $companyName, $mailBody);
     }
 
     return $mailBody;

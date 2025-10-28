@@ -159,6 +159,8 @@ class ProcessQuishing extends Command
             return false;
         }
 
+        $companyName = Company::where('company_id', $campaign->company_id)->value('company_name');
+
         // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
         $mailBody = str_replace(
             '{{qr_code}}',
@@ -172,14 +174,19 @@ class ProcessQuishing extends Command
 
         if ($campaign->quishing_lang !== 'en' && $campaign->quishing_lang !== 'am') {
             $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
+            $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
             $mailBody = changeEmailLang($mailBody, $campaign->quishing_lang);
             $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+            $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
         } else if ($campaign->quishing_lang == 'am') {
             $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
+            $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
             $mailBody = translateHtmlToAmharic($mailBody);
             $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
+            $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
         } else {
             $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
+            $mailBody = str_replace('{{company_name}}', $companyName, $mailBody);
         }
 
         $mailData = [

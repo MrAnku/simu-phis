@@ -103,10 +103,10 @@ class ApiQuishingEmailController extends Controller
             $templateContent = file_get_contents($request->file('template_file')->getRealPath());
 
             // Check for placeholders
-            if (strpos($templateContent, '{{user_name}}') === false || strpos($templateContent, '{{qr_code}}') === false) {
+            if (strpos($templateContent, '{{tracker_img}}') === false || strpos($templateContent, '{{qr_code}}') === false || strpos($templateContent, '{{website_url}}') === false) {
                 return response()->json([
                     'status' => false,
-                    'message' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')
+                    'message' => __('The template file must contain {{tracker_img}}, {{qr_code}}, and {{website_url}} shortcodes.')
                 ], 422);
             }
 
