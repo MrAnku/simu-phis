@@ -20,12 +20,20 @@ class ApiPolicyCampaignController extends Controller
                 'campaign_name' => 'required|string|max:255',
                 'users_group' => 'required|string',
                 'policy' => 'required|array',
+                'schedule_type' => 'required|string|in:immediately,scheduled',
                 'scheduled_at' => 'required|string',
             ]);
             // check if scheduled_at is less than current time then the status will be running else pending
-            $scheduledAt = strtotime($request->scheduled_at);
-            $currentTime = time();
-            $status = $scheduledAt < $currentTime ? 'running' : 'pending';
+
+            $scheduledAt = now();
+            $status = 'running';
+            if($request->schedule_type === 'scheduled') {
+                $scheduledAt = $request->scheduled_at;
+                $status = 'pending';
+            }
+            // $scheduledAt = strtotime($request->scheduled_at);
+            // $currentTime = time();
+            // $status = $scheduledAt < $currentTime ? 'running' : 'pending';
 
             $policies = $request->policy;
 
@@ -35,7 +43,7 @@ class ApiPolicyCampaignController extends Controller
                 'users_group' => $request->users_group,
                 'policy' => json_encode($policies),
                 'status' => $status,
-                'scheduled_at' => $request->scheduled_at,
+                'scheduled_at' => $scheduledAt,
                 'company_id' => Auth::user()->company_id,
             ]);
             //send the employees to live table if status is running
