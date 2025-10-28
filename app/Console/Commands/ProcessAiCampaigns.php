@@ -472,7 +472,6 @@ class ProcessAiCampaigns extends Command
 
         foreach ($completedRecurring as $recurr) {
             try {
-                // parse last launch_time
                 try {
                     if (!empty($recurr->launch_date)) {
                         // launch_date stores only date; use start of day as last launch
@@ -523,11 +522,10 @@ class ProcessAiCampaigns extends Command
                         'status' => 'running',
                     ]);
 
-                    echo "Relaunching ai call campaign {$recurr->campaign_id} (freq: {$recurr->call_freq}) for date {$nextLaunch->toDateString()}\n";
+                    echo "Relaunching ai call campaign of id {$recurr->campaign_id}\n";
 
                     // reset live rows for this campaign
                     $liveRows = AiCallCampLive::where('campaign_id', $recurr->campaign_id)->get();
-                    $resetCount = 0;
                     foreach ($liveRows as $live) {
                         try {
                             try {
@@ -548,13 +546,10 @@ class ProcessAiCampaigns extends Command
                                 'status' => 'pending',
                                 'send_time' => $newSend,
                             ]);
-                            $resetCount++;
                         } catch (\Exception $e) {
                             Log::error("ProcessWhatsapp: failed to reset whatsapp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
                         }
                     }
-
-                    echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
                 }
             } catch (\Exception $e) {
                 Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());

@@ -514,11 +514,10 @@ class ProcessQuishing extends Command
                         'status' => 'running',
                     ]);
 
-                    echo "Relaunching Quishing campaign {$recurr->campaign_id} (freq: {$recurr->email_freq}) for date {$nextLaunch->toDateString()}\n";
+                    echo "Relaunching Quishing campaign of id {$recurr->campaign_id}\n";
 
                     // reset live rows for this campaign
                     $liveRows = QuishingLiveCamp::where('campaign_id', $recurr->campaign_id)->get();
-                    $resetCount = 0;
                     foreach ($liveRows as $live) {
                         try {
                             // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
@@ -539,13 +538,10 @@ class ProcessQuishing extends Command
                                 'training_assigned' => '0',
                                 'send_time' => $newSend,
                             ]);
-                            $resetCount++;
                         } catch (\Exception $e) {
                             Log::error("ProcessQuishing: failed to reset QuishingLiveCamp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
                         }
                     }
-
-                    echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
                 }
             } catch (\Exception $e) {
                 Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
