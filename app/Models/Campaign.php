@@ -40,7 +40,8 @@ class Campaign extends Model
         'status',
         'company_id',
         'scorm_training',
-        'schedule_date'
+        'schedule_date',
+        'launch_date'
     ];
 
     public function getPoliciesUsedAttribute()

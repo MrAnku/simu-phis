@@ -12,14 +12,10 @@ use App\Models\SenderProfile;
 use App\Models\OutlookDmiToken;
 use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Mail\TrainingAssignedEmail;
 use App\Models\PhishingEmail;
 use App\Models\PhishingWebsite;
-use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
-use Illuminate\Support\Facades\Mail;
 use App\Services\CampaignTrainingService;
 use App\Services\PolicyAssignedService;
 use App\Services\TrainingAssignedService;
@@ -49,7 +45,7 @@ class ProcessCampaigns extends Command
   {
     $this->processScheduledCampaigns();
     $this->sendCampaignLiveEmails();
-    $this->updateRunningCampaigns();
+    $this->checkCompletedCampaigns();
     $this->sendReminderMail();
   }
 
@@ -480,106 +476,119 @@ class ProcessCampaigns extends Command
     $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
-
-
-  private function updateRunningCampaigns()
+  private function checkCompletedCampaigns()
   {
-    try {
-      $oneOffCampaigns = Campaign::where('status', 'running')->where('email_freq', 'once')->get();
+    $campaigns = Campaign::where('status', 'running')
+      ->get();
+    if (!$campaigns) {
+      return;
+    }
 
-      foreach ($oneOffCampaigns as $campaign) {
-
-        $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $campaign->campaign_id)->count();
-
-        if ($checkSent == 0) {
-          Campaign::where('campaign_id', $campaign->campaign_id)->update(['status' => 'completed']);
-
-          echo 'Campaign completed';
-        }
+    foreach ($campaigns as $campaign) {
+      $liveCampaigns = CampaignLive::where('campaign_id', $campaign->campaign_id)
+        ->where('sent', 0)
+        ->count();
+      if ($liveCampaigns == 0) {
+        $campaign->status = 'completed';
+        $campaign->save();
+        echo "Campaign " . $campaign->name . " has been marked as completed.\n";
       }
+    }
 
-      $recurrCampaigns = Campaign::where('status', 'running')->where('email_freq', '!=', 'once')->get();
+    // Relaunch completed recurring whatsapp campaigns (weekly/monthly/quarterly)
+    $completedRecurring = Campaign::where('status', 'completed')
+      ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
+      ->get();
 
-      if ($recurrCampaigns) {
+    foreach ($completedRecurring as $recurr) {
+      try {
+        try {
+          if (!empty($recurr->launch_date)) {
+            // launch_date stores only date; use start of day as last launch
+            $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
+          } else {
+            Log::error("ProcessEmail: no launch_date for campaign {$recurr->campaign_id}");
+            continue;
+          }
+        } catch (\Exception $e) {
+          Log::error("ProcessEmail: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
+          continue;
+        }
 
-        foreach ($recurrCampaigns as $recurrCampaign) {
+        $nextLaunch = $lastLaunch->copy();
 
-          $checkSent = CampaignLive::where('sent', 0)->where('campaign_id', $recurrCampaign->campaign_id)->count();
+        switch ($recurr->email_freq) {
+          case 'weekly':
+            $nextLaunch->addWeek();
+            break;
+          case 'monthly':
+            $nextLaunch->addMonth();
+            break;
+          case 'quarterly':
+            $nextLaunch->addMonths(3);
+            break;
+          default:
+            continue 2;
+        }
 
-          if ($checkSent == 0) {
+        // check expiry
+        if ($recurr->expire_after !== null) {
+          try {
+            $expireAt = Carbon::parse($recurr->expire_after);
+          } catch (\Exception $e) {
+            Log::error("ProcessEmail: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
+            $recurr->update(['status' => 'completed']);
+            continue;
+          }
 
-            if ($recurrCampaign->expire_after !== null) {
-
-              try {
-                $launchTime = Carbon::parse($recurrCampaign->launch_time);
-              } catch (\Exception $e) {
-                Log::error("ProcessCampaigns: failed to parse launch_time for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
-                // skip this campaign and continue with others
-                continue;
-              }
-
-              try {
-                $expire_after = Carbon::parse($recurrCampaign->expire_after);
-              } catch (\Exception $e) {
-                Log::error("ProcessCampaigns: failed to parse expire_after for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
-                // If expire date is invalid, mark campaign as completed to avoid infinite loops
-                $recurrCampaign->update(['status' => 'completed']);
-                continue;
-              }
-
-              if ($launchTime->lessThan($expire_after)) {
-
-                $email_freq = $recurrCampaign->email_freq;
-
-                switch ($email_freq) {
-                  case 'weekly':
-                    $launchTime->addWeek();
-                    break;
-                  case 'monthly':
-                    $launchTime->addMonth();
-                    break;
-                  case 'quarterly':
-                    $launchTime->addMonths(3);
-                    break;
-                  default:
-                    break;
-                }
-
-                $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-              } else {
-                $recurrCampaign->update(['status' => 'completed']);
-              }
-            } else {
-
-              try {
-                $launchTime = Carbon::parse($recurrCampaign->launch_time);
-              } catch (\Exception $e) {
-                Log::error("ProcessCampaigns: failed to parse launch_time for campaign {$recurrCampaign->campaign_id} - " . $e->getMessage());
-                continue;
-              }
-              $email_freq = $recurrCampaign->email_freq;
-
-              switch ($email_freq) {
-                case 'weekly':
-                  $launchTime->addWeek();
-                  break;
-                case 'monthly':
-                  $launchTime->addMonth();
-                  break;
-                case 'quarterly':
-                  $launchTime->addMonths(3);
-                  break;
-                default:
-                  break;
-              }
-
-              $recurrCampaign->update(['launch_time' => $launchTime->format('m/d/Y g:i A'), 'status' => 'pending']);
-            }
+          if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
+            continue;
           }
         }
+
+        if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
+          $recurr->update([
+            'launch_date' => $nextLaunch->toDateString(),
+            'status' => 'running',
+          ]);
+
+          echo "Relaunching whatsapp campaign {$recurr->campaign_id} (freq: {$recurr->email_freq}) for date {$nextLaunch->toDateString()}\n";
+
+          // reset live rows for this campaign
+          $liveRows = CampaignLive::where('campaign_id', $recurr->campaign_id)->get();
+          $resetCount = 0;
+          foreach ($liveRows as $live) {
+            try {
+              // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
+              try {
+                $currentSendTime = Carbon::parse($live->send_time);
+                $newSendTime = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSendTime->format('H:i:s'));
+              } catch (\Exception $e) {
+                // fallback: if parsing fails, use nextLaunch at startOfDay
+                $newSendTime = $nextLaunch->copy()->startOfDay();
+              }
+
+              $live->update([
+                'sent' => 0,
+                'mail_open' => 0,
+                'payload_clicked' => 0,
+                'emp_compromised' => 0,
+                'email_reported' => 0,
+                'training_assigned' => 0,
+                'send_time' => $newSendTime,
+              ]);
+              $resetCount++;
+            } catch (\Exception $e) {
+              Log::error("ProcessEmail: failed to reset Email {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
+            }
+          }
+
+          echo "Reset {$resetCount} live rows for campaign {$recurr->campaign_id}\n";
+        }
+      } catch (\Exception $e) {
+        Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
+        continue;
       }
-    } catch (\Exception $e) {
-      echo "Error while updating running campaigns: " . $e->getMessage();
     }
   }
 
