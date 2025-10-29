@@ -1332,12 +1332,13 @@ class ApiEmployeesController extends Controller
     {
         try {
             $companyId = Auth::user()->company_id;
+
             // Retrieve LDAP/AD configuration from the database
             $ldapConfig = DB::table('ldap_ad_config')->where('company_id', $companyId)->first();
 
             if (!$ldapConfig) {
                 return response()->json([
-                    'success' => 0,
+                    'success' => false,
                     'message' => __('LDAP configuration not found in the database.'),
                 ], 404);
             }
@@ -1350,8 +1351,6 @@ class ApiEmployeesController extends Controller
 
             // Initialize LDAP connection
             $ldapConn = ldap_connect($ldapHost);
-            ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, 3);
-            ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, 0);
 
             if (!$ldapConn) {
                 return response()->json([
@@ -1360,10 +1359,14 @@ class ApiEmployeesController extends Controller
                 ], 422);
             }
 
+            ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, 3);
+            ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, 0);
+
             // Bind to the LDAP server with admin credentials
-            $ldapBind = @ldap_bnd($ldapConn, "CN=$adminUsername,$ldapDn", $adminPassword);
+            $ldapBind = @ldap_bind($ldapConn, "CN=$adminUsername,$ldapDn", $adminPassword);
 
             if (!$ldapBind) {
+                ldap_unbind($ldapConn);
                 return response()->json([
                     'success' => false,
                     'message' => __('LDAP bind failed. Check admin credentials.'),
@@ -1371,8 +1374,8 @@ class ApiEmployeesController extends Controller
             }
 
             // Search for all users in the AD
-            $searchFilter = "(objectClass=user)";
-            $attributes = ["samaccountname", "givenName", "sn", "mail"];
+            $searchFilter = "(&(objectClass=user)(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+            $attributes = ["samaccountname", "givenName", "sn", "mail", "displayName"];
             $result = @ldap_search($ldapConn, $ldapDn, $searchFilter, $attributes);
 
             if (!$result) {
@@ -1390,34 +1393,26 @@ class ApiEmployeesController extends Controller
                 ldap_unbind($ldapConn);
                 return response()->json([
                     'success' => false,
-                    'message' => __('No users found in the LDAP directory.'),
+                    'message' => __('No active users found in the LDAP directory.'),
                 ], 422);
             }
 
-            // Process and format user data
-            $users = [];
-            for ($i = 0; $i < $entries["count"]; $i++) {
-                $users[] = [
-                    'username' => $entries[$i]["samaccountname"][0] ?? 'N/A',
-                    'given_name' => $entries[$i]["givenname"][0] ?? 'N/A',
-                    'surname' => $entries[$i]["sn"][0] ?? 'N/A',
-                    'email' => $entries[$i]["mail"][0] ?? 'N/A',
-                ];
-            }
 
             // Close the LDAP connection
             ldap_unbind($ldapConn);
 
-            log_action("Users synchronized using LDAP");
+            log_action("LDAP sync completed: " . count($entries) . " new users synced");
 
-            // Return the user data as JSON
             return response()->json([
                 'success' => true,
-                'message' => __('User sync completed successfully.'),
-                'data' => $users,
+                'message' => __('LDAP sync completed successfully.'),
+                'data' => $entries,
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
         }
     }
 
