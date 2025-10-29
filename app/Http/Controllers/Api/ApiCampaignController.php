@@ -116,10 +116,11 @@ class ApiCampaignController extends Controller
                 'selected_users' => 'nullable',
                 'policies' => 'nullable|array',
                 'schType' => 'required|in:immediately,scheduled,schLater',
-                "schedule_date" => 'nullable|date|after_or_equal:today',
-                "schTimeZone" => 'nullable|string',
+                "schedule_date" => 'nullable|required_if:schType,scheduled|date|after_or_equal:today',
+                "schTimeZone" => 'nullable|string|required_if:schType,scheduled',
                 'schTimeStart' => [
                     'nullable',
+                    'required_if:schType,scheduled',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -130,7 +131,7 @@ class ApiCampaignController extends Controller
                         }
                     },
                 ],
-                'schTimeEnd'   => 'nullable|date_format:Y-m-d H:i:s|after:schTimeStart'
+                'schTimeEnd'   => 'nullable|required_if:schType,scheduled|date_format:Y-m-d H:i:s|after:schTimeStart'
             ]);
 
             // Validate request input
@@ -335,7 +336,7 @@ class ApiCampaignController extends Controller
             'email_lang' => $data['email_lang'],
             'launch_time' => now(),
             'launch_type' => 'scheduled',
-            'launch_date' => now(),
+            'launch_date' => $data['schedule_date'],
             'email_freq' => $data['emailFreq'],
             'startTime' => $data['schTimeStart'],
             'endTime' => $data['schTimeEnd'],

@@ -436,17 +436,18 @@ class ApiAiCallController extends Controller
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
                     'ai_phone' => 'required|string',
-                    'scheduled_at' => 'required_if:schedule_type,schedule|string',
-                    'schedule_type' => 'required|string|in:immediately,schedule',
+                    'schedule_type' => 'required|string|in:immediately,scheduled',
+                    'scheduled_at' => 'required_if:schedule_type,scheduled|string',
                     'training_assignment' => 'required|string|in:random,all',
                     'selected_users' => 'nullable|array',
                     "call_freq" => 'required|in:once,weekly,monthly,quarterly',
                     'expire_after' => 'required_if:call_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                     'policies' => 'nullable|array',
-                    "schedule_date" => 'nullable|date|after_or_equal:today',
-                    "time_zone" => 'nullable|string',
+                    "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                    "time_zone" => 'nullable|required_if:schedule_type,scheduled|string',
                     'start_time' => [
                         'nullable',
+                        'required_if:schedule_type,scheduled',
                         'date_format:Y-m-d H:i:s',
                         function ($attribute, $value, $fail) {
                             $inputDate = Carbon::parse($value)->startOfDay();
@@ -457,7 +458,7 @@ class ApiAiCallController extends Controller
                             }
                         },
                     ],
-                    'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
+                    'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -508,11 +509,11 @@ class ApiAiCallController extends Controller
                 'launch_time' => $scheduledAt,
                 'launch_type' => $request->schedule_type,
                 'company_id' => $companyId,
-                'schedule_date' => $request->schedule_date,
-                'time_zone'      => $request->time_zone,
-                'start_time'      => $request->start_time,
-                'end_time'      => $request->end_time,
-                'launch_date' => now(),
+                'schedule_date' => $request->schedule_type === 'scheduled' ? $request->schedule_date : null,
+                'time_zone'      => $request->schedule_type === 'scheduled' ? $request->time_zone : null,
+                'start_time'      => $request->schedule_type === 'scheduled' ? $request->start_time : null,
+                'end_time'      => $request->schedule_type === 'scheduled' ? $request->end_time : null,
+                'launch_date' => $request->schedule_type === 'immediately' ? now() : $request->schedule_date,
                 'call_freq' => $request->call_freq,
                 'expire_after' => $request->expire_after ?? null,
             ]);

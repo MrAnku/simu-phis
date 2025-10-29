@@ -92,10 +92,11 @@ class ApiQuishingController extends Controller
                 "email_freq" => 'required|in:once,weekly,monthly,quarterly',
                 'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                 'schedule_type' => 'required|in:immediately,scheduled',
-                "schedule_date" => 'nullable|date|after_or_equal:today',
-                "time_zone" => 'nullable|string',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
                 'start_time' => [
                     'nullable',
+                    'required_if:schedule_type,scheduled',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -106,7 +107,7 @@ class ApiQuishingController extends Controller
                         }
                     },
                 ],
-                'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 
             $campaign_id = Str::random(6);
@@ -225,10 +226,10 @@ class ApiQuishingController extends Controller
             'status'             => 'running',
             'company_id'         => $companyId,
             'schedule_type'      => $data['schedule_type'],
-            'schedule_date'      => $data['schedule_date'],
-            'time_zone'      => $data['time_zone'],
-            'start_time'      => $data['start_time'],
-            'end_time'      => $data['end_time'],
+            'schedule_date'      => $data['schedule_type'] === 'scheduled' ? $data['schedule_date'] : null,
+            'time_zone'      => $data['schedule_type'] === 'scheduled' ? $data['time_zone'] : null,
+            'start_time'      => $data['schedule_type'] === 'scheduled' ? $data['start_time'] : null,
+            'end_time'      => $data['schedule_type'] === 'scheduled' ? $data['end_time'] : null,
             'launch_date' => now(),
             'email_freq' => $data['email_freq'],
             'expire_after' => $data['expire_after'] ?? null,
@@ -269,7 +270,7 @@ class ApiQuishingController extends Controller
             'time_zone'      => $data['time_zone'],
             'start_time'      => $data['start_time'],
             'end_time'      => $data['end_time'],
-            'launch_date' => now(),
+            'launch_date' => $data['schedule_date'],
             'email_freq' => $data['email_freq'],
             'expire_after' => $data['expire_after'] ?? null,
         ]);

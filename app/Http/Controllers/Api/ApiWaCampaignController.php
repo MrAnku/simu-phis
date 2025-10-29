@@ -99,10 +99,11 @@ class ApiWaCampaignController extends Controller
                 'policies' => 'nullable|array',
                 "msg_freq" => 'required|in:once,weekly,monthly,quarterly',
                 'expire_after' => 'required_if:msg_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
-                "schedule_date" => 'nullable|date|after_or_equal:today',
-                "time_zone" => 'nullable|string',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "time_zone" => 'nullable|required_if:schedule_type,scheduled|string',
                 'start_time' => [
                     'nullable',
+                    'required_if:schedule_type,scheduled',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -113,7 +114,7 @@ class ApiWaCampaignController extends Controller
                         }
                     },
                 ],
-                'end_time'   => 'nullable|date_format:Y-m-d H:i:s|after:start_time'
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 
             //check if the selected users group has users has whatsapp number
@@ -296,7 +297,7 @@ class ApiWaCampaignController extends Controller
                 'time_zone'      => $validated['time_zone'],
                 'start_time'      => $validated['start_time'],
                 'end_time'      => $validated['end_time'],
-                'launch_date' => now(),
+                'launch_date' => $validated['schedule_date'],
                 'msg_freq' => $validated['msg_freq'],
                 'expire_after' => $validated['expire_after'] ?? null,
             ]);
