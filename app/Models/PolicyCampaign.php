@@ -16,11 +16,24 @@ class PolicyCampaign extends Model
         'status',
     ];
 
-    protected $appends = ['policy_detail', 'assigned_policies'];
+    protected $appends = ['policy_detail', 'assigned_policies', 'target_employees'];
 
     public function getScheduledAtAttribute($value)
     {
         return $value ? \Carbon\Carbon::parse($value)->format('d M Y h:i A') : null;
+    }
+
+    public function getTargetEmployeesAttribute()
+    {
+        $userIdsJson = UsersGroup::where('group_id', $this->users_group)
+            ->where('company_id', $this->company_id)
+            ->value('users');
+        if(!$userIdsJson) {
+            return [];
+        }
+
+        $userIds = json_decode($userIdsJson, true) ?? [];
+        return Users::whereIn('id', $userIds)->pluck('user_name')->toArray();
     }
 
     public function campLive()
