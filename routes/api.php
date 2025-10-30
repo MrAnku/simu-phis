@@ -2,59 +2,60 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
+use App\Http\Controllers\ComicsController;
+use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\Api\ApiAiCallController;
+use App\Http\Controllers\Api\ApiCustomCertifcate;
 use App\Http\Controllers\Api\ApiPolicyController;
+use App\Http\Controllers\PhishingReplyController;
+use App\Http\Controllers\Api\ApiCustomCertificate;
 use App\Http\Controllers\Api\ApiSupportController;
+use App\Http\Controllers\Api\ApiTriggerController;
+use App\Http\Controllers\Api\ApiAuditLogController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiSettingsController;
 use App\Http\Controllers\Api\ApiSmishingController;
+use App\Http\Controllers\Api\ApiAuditLogsController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiEmployeesController;
 use App\Http\Controllers\Api\ApiLanguagesController;
 use App\Http\Controllers\Api\ApiOutlookAdController;
 use App\Http\Controllers\Api\ApiReportingController;
 use App\Http\Controllers\Api\ApiBlueCollarController;
+use App\Http\Controllers\Api\ApiComplianceController;
 use App\Http\Controllers\Api\ApiTprmReportController;
 use App\Http\Controllers\Api\ApiWaCampaignController;
 use App\Http\Controllers\Api\ApiWhiteLabelController;
 use App\Http\Controllers\Api\InforgraphicsController;
-use App\Http\Controllers\Api\ApiCompanyLogsController;
+use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiMediaController;
+use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\NoActivityUsersController;
+use App\Http\Controllers\Api\ApiNotificationsController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
+use App\Http\Controllers\Api\ApiScormTrainingController;
 use App\Http\Controllers\Api\ApiSenderProfileController;
+use App\Http\Controllers\Api\ApiCustomisedDashController;
 use App\Http\Controllers\Api\ApiPhishingEmailsController;
 use App\Http\Controllers\Api\ApiPolicyCampaignController;
 use App\Http\Controllers\Api\ApiQuishingReportController;
 use App\Http\Controllers\Api\ApiTrainingModuleController;
 use App\Http\Controllers\Api\ApiWhatsappReportController;
 use App\Http\Controllers\Api\ApiAivishingReportController;
-use App\Http\Controllers\Api\ApiAssignedTrainingsController;
-use App\Http\Controllers\Api\ApiAuditLogController;
-use App\Http\Controllers\Api\ApiAuditLogsController;
-use App\Http\Controllers\Api\ApiComplianceController;
-use App\Http\Controllers\Api\ApiCustomCertifcate;
-use App\Http\Controllers\Api\ApiCustomCertificate;
-use App\Http\Controllers\Api\ApiCustomisedDashController;
 use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
-use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
-use App\Http\Controllers\Api\ApiNotificationsController;
-use App\Http\Controllers\Api\ApiScormTrainingController;
-use App\Http\Controllers\Api\ApiTriggerController;
 use App\Http\Controllers\Api\CustomisedReportingController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\SSOController;
-use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
-use App\Http\Controllers\LearnApi\ApiLearnController;
 use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
-use App\Http\Controllers\PhishingReplyController;
+use App\Http\Controllers\Api\ApiAssignedTrainingsController;
+use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
 Route::middleware('throttle:limiter')->group(function () {
 
@@ -189,6 +190,14 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/', [InforgraphicsController::class, 'index']);
         Route::post('/save', [InforgraphicsController::class, 'saveInfographics']);
         Route::delete('/delete/{encodedId?}', [InforgraphicsController::class, 'deleteInfographics']);
+    });
+
+    //comics 
+    Route::prefix('comics')->group(function () {
+        Route::get('/', [ComicsController::class, 'index']);
+        Route::post('/generate', [ComicsController::class, 'generateComic']);
+        Route::post('/save', [ComicsController::class, 'saveComic']);
+        Route::delete('/delete/{encodedId?}', [ComicsController::class, 'deleteComic']);
     });
 
     Route::prefix('infographics-campaign')->group(function () {

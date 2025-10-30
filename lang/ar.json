@@ -543,7 +543,12 @@
   "An error occurred while retrieving data": "حدث خطأ أثناء استرداد البيانات",
   "No users found in the selected group": "لم يتم العثور على مستخدمين في المجموعة المحددة",
   "Quishing campaign created successfully": "تم إنشاء حملة Quishing بنجاح",
-
+  "Comic generated successfully": "تم إنشاء الكوميك بنجاح",
+  "Failed to generate comics": "فشل في إنشاء الكوميك",
+  "Comic saved successfully": "تم حفظ الكوميك بنجاح",
+  "Comic ID is required": "معرف الكوميك مطلوب",
+  "Comic not found": "الكوميك غير موجود",
+  "Comic deleted successfully": "تم حذف الكوميك بنجاح",
     "Campaign Activity": "نشاط الحملة",
     "Dashboard": "لوحة القيادة",
     "Employees": "موظفين",
