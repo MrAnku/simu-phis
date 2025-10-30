@@ -46,59 +46,65 @@ class ProcessQuishing extends Command
             return;
         }
         foreach ($companies as $company) {
+            try {
+                setCompanyTimezone($company->company_id);
 
-            setCompanyTimezone($company->company_id);
+                $quishingCampaigns = $company->quishingLiveCamps()
+                    ->where('sent', '0')
+                    ->get();
 
-            $quishingCampaigns = $company->quishingLiveCamps()
-                ->where('sent', '0')
-                ->get();
-
-            if ($quishingCampaigns->isEmpty()) {
-                continue;
-            }
-            foreach ($quishingCampaigns as $campaign) {
-                //get website url
-                $quishingTemplate = $campaign->templateData()->first();
-                if ($quishingTemplate->website !== null && $quishingTemplate->sender_profile !== null) {
-                    $phishingWebsite = $quishingTemplate->website()->first();
-                    $websiteUrl = getWebsiteUrl($phishingWebsite, $campaign, 'qsh');
-
-                    //get qrcode link
-                    $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
-
-                    //check if the campaign has sender profile
-                    if ($campaign->sender_profile !== null) {
-                        $senderProfile = SenderProfile::find($campaign->sender_profile);
-                    } else {
-                        $senderProfile = $quishingTemplate->senderProfile()->first();
-                    }
-
+                if ($quishingCampaigns->isEmpty()) {
+                    continue;
+                }
+                foreach ($quishingCampaigns as $campaign) {
                     try {
-                        //prepare mail body
-                        $mailData = $this->prepareMailBody(
-                            $campaign,
-                            $senderProfile,
-                            $quishingTemplate,
-                            $qrcodeLink
-                        );
+                        //get website url
+                        $quishingTemplate = $campaign->templateData()->first();
+                        if ($quishingTemplate->website !== null && $quishingTemplate->sender_profile !== null) {
+                            $phishingWebsite = $quishingTemplate->website()->first();
+                            $websiteUrl = getWebsiteUrl($phishingWebsite, $campaign, 'qsh');
+
+                            //get qrcode link
+                            $qrcodeLink = $this->getQRlink($campaign->user_email, $websiteUrl, $campaign->id);
+
+                            //check if the campaign has sender profile
+                            if ($campaign->sender_profile !== null) {
+                                $senderProfile = SenderProfile::find($campaign->sender_profile);
+                            } else {
+                                $senderProfile = $quishingTemplate->senderProfile()->first();
+                            }
+
+                            $mailData = $this->prepareMailBody(
+                                $campaign,
+                                $senderProfile,
+                                $quishingTemplate,
+                                $qrcodeLink
+                            );
+
+
+
+                            //send mail
+                            $mailSent = sendPhishingMail($mailData);
+                            // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
+                            if ($mailSent) {
+
+                                QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
+
+                                echo "Mail sent to {$campaign->user_email} \n";
+                                $campaign->sent = '1';
+                                $campaign->save();
+                            } else {
+                                continue;
+                            }
+                        }
                     } catch (\Exception $e) {
                         echo "Error: " . $e->getMessage() . "\n";
                         continue;
                     }
-
-
-                    //send mail
-                    $mailSent = sendPhishingMail($mailData);
-                    // $this->sendMailConditionally($mailData, $campaign, $campaign->company_id);
-                    if ($mailSent) {
-
-                        QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                        echo "Mail sent to {$campaign->user_email} \n";
-                        $campaign->sent = '1';
-                        $campaign->save();
-                    }
                 }
+            } catch (\Exception $e) {
+                echo "Error: " . $e->getMessage() . "\n";
+                continue;
             }
         }
 

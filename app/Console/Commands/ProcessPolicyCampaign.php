@@ -140,32 +140,42 @@ class ProcessPolicyCampaign extends Command
             return;
         }
         foreach ($companies as $company) {
-            $company_id = $company->company_id;
-            setCompanyTimezone($company->company_id);
-            $campaigns = PolicyCampaignLive::where('sent', 0)
-                ->where('company_id', $company_id)
-                ->take(5)
-                ->get();
+            try {
 
-            if ($campaigns->isEmpty()) {
+                $company_id = $company->company_id;
+                setCompanyTimezone($company->company_id);
+                $campaigns = PolicyCampaignLive::where('sent', 0)
+                    ->where('company_id', $company_id)
+                    ->take(5)
+                    ->get();
 
+                if ($campaigns->isEmpty()) {
+
+                    continue;
+                }
+
+                foreach ($campaigns as $campaign) {
+
+                    try {
+                        $policyService = new PolicyAssignedService(
+                            $campaign->campaign_id,
+                            $campaign->user_name,
+                            $campaign->user_email,
+                            $campaign->company_id
+                        );
+                        $policies = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->value('policy');
+
+                        $policyService->assignPolicies($policies);
+
+                        $campaign->update(['sent' => 1]);
+                    } catch (\Exception $e) {
+                        echo "Error sending policy email: " . $e->getMessage() . "\n";
+                        continue;
+                    }
+                }
+            } catch (\Exception $e) {
+                echo "Error processing company ID {$company->company_id}: " . $e->getMessage() . "\n";
                 continue;
-            }
-
-            foreach ($campaigns as $campaign) {
-
-                $policyService = new PolicyAssignedService(
-                    $campaign->campaign_id,
-                    $campaign->user_name,
-                    $campaign->user_email,
-                    $campaign->company_id
-                );
-                $policies = PolicyCampaign::where('campaign_id', $campaign->campaign_id)->value('policy');
-
-                $policyService->assignPolicies($policies);
-
-                $campaign->update(['sent' => 1]);
-
             }
         }
     }

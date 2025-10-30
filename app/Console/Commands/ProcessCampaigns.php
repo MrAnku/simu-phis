@@ -217,6 +217,7 @@ class ProcessCampaigns extends Command
             $this->sendOnlyTraining($campaign);
           } catch (\Exception $e) {
             echo "Error sending training: " . $e->getMessage() . "\n";
+            continue;
           }
         }
         if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
@@ -232,6 +233,7 @@ class ProcessCampaigns extends Command
 
           } catch (\Exception $e) {
             echo "Error assigning policy: " . $e->getMessage() . "\n";
+            continue;
           }
         }
 
@@ -240,6 +242,7 @@ class ProcessCampaigns extends Command
             $this->sendPhishingEmail($campaign);
           } catch (\Exception $e) {
             echo "Error sending phishing email: " . $e->getMessage() . "\n";
+            continue;
           }
         }
       }
@@ -343,6 +346,7 @@ class ProcessCampaigns extends Command
         echo "Email sent to: " . $campaign->user_email . "\n";
       } else {
         echo "Email not sent to: " . $campaign->user_email . "\n";
+        throw new \Exception("Failed to send email to " . $campaign->user_email);
       }
 
       $campaign->update(['sent' => 1]);

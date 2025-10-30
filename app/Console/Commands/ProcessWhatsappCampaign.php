@@ -127,6 +127,7 @@ class ProcessWhatsappCampaign extends Command
                         }
                     } catch (\Exception $th) {
                         echo $th->getMessage();
+                        continue;
                     }
                 }
             }

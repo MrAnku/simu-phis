@@ -53,26 +53,32 @@ class ProcessTprmCampaigns extends Command
 
     foreach ($companies as $company) {
 
-      setCompanyTimezone($company->company_id);
+      try {
+        setCompanyTimezone($company->company_id);
 
-      $company_id = $company->company_id;
+        $company_id = $company->company_id;
 
-      $campaigns = TprmCampaignLive::where('sent', 0)
-        ->where('company_id', $company_id)
-        ->take(5)
-        ->get();
-
-
-      foreach ($campaigns as $campaign) {
+        $campaigns = TprmCampaignLive::where('sent', 0)
+          ->where('company_id', $company_id)
+          ->take(5)
+          ->get();
 
 
-        if ($campaign->phishing_material) {
-          try {
-            $this->sendPhishingEmail($campaign);
-          } catch (\Exception $e) {
-            echo "Error sending phishing email: " . $e->getMessage() . "\n";
+        foreach ($campaigns as $campaign) {
+
+
+          if ($campaign->phishing_material) {
+            try {
+              $this->sendPhishingEmail($campaign);
+            } catch (\Exception $e) {
+              echo "Error sending phishing email: " . $e->getMessage() . "\n";
+              continue;
+            }
           }
         }
+      } catch (\Exception $e) {
+        echo "Error processing company ID " . $company->company_id . ": " . $e->getMessage() . "\n";
+        continue;
       }
     }
   }
@@ -131,7 +137,9 @@ class ProcessTprmCampaigns extends Command
 
         echo "Email sent to: " . $campaign->user_email . "\n";
       } else {
+
         echo "Email not sent to: " . $campaign->user_email . "\n";
+        throw new \Exception("Failed to send email to " . $campaign->user_email);
       }
 
       $campaign->update(['sent' => 1]);
