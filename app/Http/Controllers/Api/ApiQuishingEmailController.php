@@ -20,14 +20,14 @@ class ApiQuishingEmailController extends Controller
         try {
             $company_id = Auth::user()->company_id;
             // Handle Search
-             // Base queries
+            // Base queries
             $defaultQuery = QshTemplate::with('senderProfile')
                 ->where('company_id', 'default');
 
             $customQuery = QshTemplate::with('senderProfile')
                 ->where('company_id', $company_id);
 
-             // Apply filters
+            // Apply filters
             if ($request->filled('search')) {
                 $searchTerm = $request->input('search');
                 $defaultQuery->where(function ($q) use ($searchTerm) {
@@ -178,10 +178,10 @@ class ApiQuishingEmailController extends Controller
             $templateContent = file_get_contents($request->file('template_file')->getRealPath());
 
             // Check for placeholders
-            if (strpos($templateContent, '{{user_name}}') === false || strpos($templateContent, '{{qr_code}}') === false) {
+            if (strpos($templateContent, '{{tracker_img}}') === false || strpos($templateContent, '{{qr_code}}') === false || strpos($templateContent, '{{website_url}}') === false) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('The template file must contain {{user_name}} and {{qr_code}} shortcodes.')
+                    'message' => __('The template file must contain {{tracker_img}}, {{qr_code}}, and {{website_url}} shortcodes.')
                 ], 422);
             }
 
@@ -420,6 +420,17 @@ class ApiQuishingEmailController extends Controller
                 'sender_profile' => 'required|numeric'
             ]);
 
+            // Read file contents
+            $templateContent = file_get_contents($request->file('file')->getRealPath());
+
+            // Check for placeholders
+            if (strpos($templateContent, '{{tracker_img}}') === false || strpos($templateContent, '{{qr_code}}') === false || strpos($templateContent, '{{website_url}}') === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('The template file must contain {{tracker_img}}, {{qr_code}}, and {{website_url}} shortcodes.')
+                ], 422);
+            }
+
             $quishingEmail = QshTemplate::find($data['id']);
             if (!$quishingEmail) {
 
@@ -429,7 +440,7 @@ class ApiQuishingEmailController extends Controller
                 ], 404);
             }
 
-             // Get the previous file path
+            // Get the previous file path
             $oldFilePath = ltrim($quishingEmail->file, '/');
 
             // Get new file content

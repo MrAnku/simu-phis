@@ -157,6 +157,18 @@ class ApiPhishingEmailsController extends Controller
                 'category' => 'nullable|string|max:255',
             ]);
 
+                 // Read file contents
+            $templateContent = file_get_contents($request->file('eMailFile')->getRealPath());
+
+            // Check for placeholders
+            if (strpos($templateContent, '{{tracker_img}}') === false || strpos($templateContent, '{{website_url}}') === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('The template file must contain {{tracker_img}} and {{website_url}} shortcodes.')
+                ], 422);
+            }
+
+
             $phishingEmail = PhishingEmail::find($data['id']);
             if (!$phishingEmail) {
 
@@ -298,7 +310,7 @@ class ApiPhishingEmailsController extends Controller
             // Check for placeholders
             if (strpos($templateContent, '{{tracker_img}}') === false || strpos($templateContent, '{{website_url}}') === false) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => __('The template file must contain {{tracker_img}} and {{website_url}} shortcodes.')
                 ], 422);
             }
