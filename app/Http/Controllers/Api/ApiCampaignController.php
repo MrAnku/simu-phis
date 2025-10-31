@@ -111,7 +111,7 @@ class ApiCampaignController extends Controller
                 'training_type' => 'nullable',
                 'training_on_click' => 'required',
                 'compromise_on_click' => 'required',
-                "phish_material" => 'required|array',
+                "phish_material" => 'nullable|array',
                 "sender_profile" => 'nullable',
                 'selected_users' => 'nullable',
                 'policies' => 'nullable|array',
