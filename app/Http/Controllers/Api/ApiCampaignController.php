@@ -357,36 +357,36 @@ class ApiCampaignController extends Controller
         ]);
     }
 
-    public function generateRandomDate($dateS, $timeS, $timeE, $timeZone = 'Asia/Kolkata')
-    {
-        $dateString = $dateS;
-        $timeStart = $timeS;
-        $timeEnd = $timeE;
+    // public function generateRandomDate($dateS, $timeS, $timeE, $timeZone = 'Asia/Kolkata')
+    // {
+    //     $dateString = $dateS;
+    //     $timeStart = $timeS;
+    //     $timeEnd = $timeE;
 
-        // Create a Carbon instance from the date string
-        $date = Carbon::createFromFormat('Y-m-d', $dateString, $timeZone);
+    //     // Create a Carbon instance from the date string
+    //     $date = Carbon::createFromFormat('Y-m-d', $dateString, $timeZone);
 
-        // Parse the start and end times
-        $startTime = Carbon::createFromFormat('H:i', $timeStart, $timeZone);
-        $endTime = Carbon::createFromFormat('H:i', $timeEnd, $timeZone);
+    //     // Parse the start and end times
+    //     $startTime = Carbon::createFromFormat('H:i', $timeStart, $timeZone);
+    //     $endTime = Carbon::createFromFormat('H:i', $timeEnd, $timeZone);
 
-        // Calculate the total minutes in the range
-        $totalMinutes = $startTime->diffInMinutes($endTime);
+    //     // Calculate the total minutes in the range
+    //     $totalMinutes = $startTime->diffInMinutes($endTime);
 
-        // Generate a random number of minutes to add to the start time
-        $randomMinutes = rand(0, $totalMinutes);
+    //     // Generate a random number of minutes to add to the start time
+    //     $randomMinutes = rand(0, $totalMinutes);
 
-        // Add the random minutes to the start time
-        $randomTime = $startTime->copy()->addMinutes($randomMinutes);
+    //     // Add the random minutes to the start time
+    //     $randomTime = $startTime->copy()->addMinutes($randomMinutes);
 
-        // Combine the date with the random time
-        $date->setTime($randomTime->hour, $randomTime->minute);
+    //     // Combine the date with the random time
+    //     $date->setTime($randomTime->hour, $randomTime->minute);
 
-        // Format the date and time as requested
-        $formattedDate = $date->format('m/d/Y h:i A');
+    //     // Format the date and time as requested
+    //     $formattedDate = $date->format('m/d/Y h:i A');
 
-        return $formattedDate;
-    }
+    //     return $formattedDate;
+    // }
 
     private function handleLaterLaunch($data, $campId, $companyId)
     {
@@ -413,7 +413,6 @@ class ApiCampaignController extends Controller
             'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
             'launch_time' => $launchTime,
             'launch_type' => 'schLater',
-            'launch_date' => now(),
             'email_freq' => $data['emailFreq'],
             'startTime' => $data['schTimeStart'],
             'endTime' => $data['schTimeEnd'],
@@ -663,7 +662,6 @@ class ApiCampaignController extends Controller
     public function rescheduleCampaign(Request $request)
     {
         try {
-            $companyId = Auth::user()->company_id;
             $campaignId = $request->route('campaign_id', null);
             if (!$campaignId) {
                 return response()->json([
@@ -671,14 +669,33 @@ class ApiCampaignController extends Controller
                     'message' => __('Campaign ID is required')
                 ], 422);
             }
+    
             $request->validate([
-                'schedule_type' => 'required'
+                'schedule_type' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "email_freq" => 'required|in:once,weekly,monthly,quarterly',
+                "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
+                'start_time' => [
+                    'nullable',
+                    'required_if:schedule_type,scheduled',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time',
+                'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
             ]);
 
             if ($request->schedule_type == 'immediately') {
 
-                $launchTime = Carbon::now()->format("m/d/Y g:i A");
-                $email_freq = $request->email_frequency;
+                $launchTime = now();
+                $email_freq = $request->email_freq;
                 $expire_after = $request->expire_after;
 
                 $isLive = $this->makeCampaignLive($campaignId, $launchTime, $email_freq, $expire_after);
@@ -694,17 +711,6 @@ class ApiCampaignController extends Controller
             }
 
             if ($request->schedule_type == 'scheduled') {
-
-
-                $schedule_date = $request->schedule_date;
-                $startTime = $request->start_time;
-                $endTime = $request->end_time;
-                $timeZone = $request->time_zone;
-                $email_freq = $request->email_frequency;
-                $expire_after = $request->expire_after;
-
-                $launchTime = $this->generateRandomDate($schedule_date, $startTime, $endTime);
-
                 $campaign = Campaign::where('campaign_id', $campaignId)
                     ->where('company_id', Auth::user()->company_id)
                     ->first();
@@ -715,13 +721,15 @@ class ApiCampaignController extends Controller
                     ], 404);
                 }
 
-                $campaign->launch_time = $launchTime;
+                $campaign->launch_time =  now();
                 $campaign->launch_type = 'scheduled';
-                $campaign->email_freq = $email_freq;
-                $campaign->startTime = $startTime;
-                $campaign->endTime = $endTime;
-                $campaign->timeZone = $timeZone;
-                $campaign->expire_after = $expire_after;
+                $campaign->schedule_date = $request->schedule_date;
+                $campaign->launch_date = $request->schedule_date;
+                $campaign->email_freq = $request->email_freq;
+                $campaign->startTime = $request->start_time;
+                $campaign->endTime = $request->end_time;
+                $campaign->timeZone = $request->time_zone;
+                $campaign->expire_after = $request->expire_after;
                 $campaign->status = 'pending';
                 $campaign->save();
             }
