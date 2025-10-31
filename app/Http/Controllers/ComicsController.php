@@ -23,12 +23,14 @@ class ComicsController extends Controller
     public function generateComic(Request $request)
     {
         try {
+            ini_set('max_execution_time', 30000); // 5 minutes
+            set_time_limit(30000);
             $request->validate([
                 'topic' => 'required|string|max:255',
             ]);
             $companyId = Auth::user()->company_id;
 
-            $response = Http::post('https://api.example.com/generate-comics', [
+            $response = Http::post('http://91.98.162.246:5555/api/v1/generate', [
                 'topic' => $request->input('topic'),
                 'company_id' => $companyId,
             ]);
