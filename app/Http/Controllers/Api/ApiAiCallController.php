@@ -423,20 +423,21 @@ class ApiAiCallController extends Controller
             $request->merge($input);
 
             //xss check end
-            $request->validate(
+            $validated = $request->validate(
                 [
                     'camp_name' => 'required|string|min:5|max:50',
                     'users_group' => 'required|string',
                     'training_module' => 'nullable|array',
                     'scorm_training' => 'nullable|array',
                     'training_lang' => 'nullable|string',
+                    'campaign_type' => 'required|in:phishing_and_training,phishing',
                     'training_type' => 'nullable|string',
                     'employee_type' => 'required|in:normal,bluecollar',
                     'users_grp_name' => 'required|string',
                     'ai_agent_name' => 'required|string',
                     'ai_agent' => 'required|string',
                     'ai_phone' => 'required|string',
-                    'schedule_type' => 'required|string|in:immediately,scheduled',
+                    'schedule_type' => 'required|in:immediately,scheduled,schLater',
                     'scheduled_at' => 'required_if:schedule_type,scheduled|string',
                     'training_assignment' => 'required|string|in:random,all',
                     'selected_users' => 'nullable|array',
@@ -480,57 +481,225 @@ class ApiAiCallController extends Controller
 
             $companyId = Auth::user()->company_id;
             $campId = Str::random(6);
+            $validated = $request->all();
+            $launchType = $request->schedule_type;
 
-            if ($request->schedule_type === 'immediately') {
-                $scheduledAt = Carbon::now()->toDateTimeString();
-            } else {
-                $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
+            if ($launchType === 'immediately') {
+                log_action("AI campaign created");
+                return $this->handleImmediateLaunch($validated, $campId, $companyId);
             }
 
-            $status = $request->schedule_type === 'immediately' ? 'running' : 'pending';
-
-            AiCallCampaign::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $request->camp_name,
-                'employee_type' => $request->employee_type,
-                'users_group' => $request->users_group,
-                'selected_users' => $request->selected_users != null ? json_encode($request->selected_users) : null,
-                'users_grp_name' => $request->users_grp_name,
-                'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : json_encode($request->training_module),
-                'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : json_encode($request->scorm_training),
-                'training_assignment' => ($request->campaign_type == 'phishing') ? null : $request->training_assignment,
-                'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
-                'training_type' => $request->campaign_type == 'phishing' ? null : $request->training_type,
-                'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
-                'ai_agent' => $request->ai_agent,
-                'ai_agent_name' => $request->ai_agent_name,
-                'phone_no' => $request->ai_phone,
-                'status' => $status,
-                'launch_time' => $scheduledAt,
-                'launch_type' => $request->schedule_type,
-                'company_id' => $companyId,
-                'schedule_date' => $request->schedule_type === 'scheduled' ? $request->schedule_date : null,
-                'time_zone'      => $request->schedule_type === 'scheduled' ? $request->time_zone : null,
-                'start_time'      => $request->schedule_type === 'scheduled' ? $request->start_time : null,
-                'end_time'      => $request->schedule_type === 'scheduled' ? $request->end_time : null,
-                'launch_date' => $request->schedule_type === 'immediately' ? now() : $request->schedule_date,
-                'call_freq' => $request->call_freq,
-                'expire_after' => $request->expire_after ?? null,
-            ]);
-
-            if ($status === 'running') {
-                $this->makeCampaignLive($campId);
+            if ($launchType === 'scheduled') {
+                log_action("AI campaign scheduled");
+                return $this->handleScheduledLaunch($validated, $campId, $companyId);
             }
 
-            log_action('Campaign for AI Vishing simulation created');
+            if ($request['schedule_type'] === 'schLater') {
+                log_action("AI campaign saved for scheduling later");
+                return $this->handleLaterLaunch($validated, $campId);
+            }
 
-            return response()->json(['success' => true, 'message' => __('Campaign created successfully.')], 201);
+            log_action("AI campaign launched with invalid launch type");
+            return response()->json([
+                'success' => false,
+                'message' => __('Invalid launch type')
+            ], 422);
+
+
+
+
+
+
+
+
+            // if ($request->schedule_type === 'immediately') {
+            //     $scheduledAt = Carbon::now()->toDateTimeString();
+            // } else {
+            //     $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
+            // }
+
+            // $status = $request->schedule_type === 'immediately' ? 'running' : 'pending';
+
+            // AiCallCampaign::create([
+            //     'campaign_id' => $campId,
+            //     'campaign_name' => $request->camp_name,
+            //     'employee_type' => $request->employee_type,
+            //     'users_group' => $request->users_group,
+            //     'selected_users' => $request->selected_users != null ? json_encode($request->selected_users) : null,
+            //     'users_grp_name' => $request->users_grp_name,
+            //     'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : json_encode($request->training_module),
+            //     'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : json_encode($request->scorm_training),
+            //     'training_assignment' => ($request->campaign_type == 'phishing') ? null : $request->training_assignment,
+            //     'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
+            //     'training_type' => $request->campaign_type == 'phishing' ? null : $request->training_type,
+            //     'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
+            //     'ai_agent' => $request->ai_agent,
+            //     'ai_agent_name' => $request->ai_agent_name,
+            //     'phone_no' => $request->ai_phone,
+            //     'status' => $status,
+            //     'launch_time' => $scheduledAt,
+            //     'launch_type' => $request->schedule_type,
+            //     'company_id' => $companyId,
+            //     'schedule_date' => $request->schedule_type === 'scheduled' ? $request->schedule_date : null,
+            //     'time_zone'      => $request->schedule_type === 'scheduled' ? $request->time_zone : null,
+            //     'start_time'      => $request->schedule_type === 'scheduled' ? $request->start_time : null,
+            //     'end_time'      => $request->schedule_type === 'scheduled' ? $request->end_time : null,
+            //     'launch_date' => $request->schedule_type === 'immediately' ? now() : $request->schedule_date,
+            //     'call_freq' => $request->call_freq,
+            //     'expire_after' => $request->expire_after ?? null,
+            // ]);
+
+            // if ($status === 'running') {
+            //     $this->makeCampaignLive($campId);
+            // }
+
+
+
+            // log_action('Campaign for AI Vishing simulation created');
+
+            // return response()->json(['success' => true, 'message' => __('Campaign created successfully.')], 201);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+
+    private function handleImmediateLaunch($validated, $campId)
+    {
+        try {
+            AiCallCampaign::create([
+                'campaign_id' => $campId,
+                'campaign_name' => $validated['camp_name'],
+                'employee_type' => $validated['employee_type'],
+                'users_group' => $validated['users_group'],
+                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
+                'users_grp_name' => $validated['users_grp_name'],
+                'training_module' => $validated['campaign_type'] == 'phishing' || empty($validated['training_module']) ? null : json_encode($validated['training_module']),
+                'scorm_training' => $validated['campaign_type'] == 'phishing' || empty($validated['scorm_training']) ? null : json_encode($validated['scorm_training']),
+                'training_assignment' => ($validated['campaign_type'] == 'phishing') ? null : $validated['training_assignment'],
+                'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
+                'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
+                'policies' => (is_array($validated['policies']) && !empty($validated['policies'])) ? json_encode($validated['policies']) : null,
+                'ai_agent' => $validated['ai_agent'],
+                'ai_agent_name' => $validated['ai_agent_name'],
+                'phone_no' => $validated['ai_phone'],
+                'status' => 'running',
+                'launch_time' => now(),
+                'launch_type' => $validated['schedule_type'],
+                'company_id' => Auth::user()->company_id,
+                'schedule_date' => $validated['schedule_type'] === 'scheduled' ? $validated['schedule_date'] : null,
+                'time_zone'      => $validated['schedule_type'] === 'scheduled' ? $validated['time_zone'] : null,
+                'start_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['start_time'] : null,
+                'end_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['end_time'] : null,
+                'launch_date' => $validated['schedule_type'] === 'immediately' ? now() : $validated['schedule_date'],
+                'call_freq' => $validated['call_freq'],
+                'expire_after' => $validated['expire_after'] ?? null,
+            ]);
+            $this->makeCampaignLive($campId);
+
+            log_action("AI Campaign Created");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign created successfully'),
+                'campaign_id' => $campId
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function handleScheduledLaunch($validated, $campId)
+    {
+        try {
+            AiCallCampaign::create([
+                'campaign_id' => $campId,
+                'campaign_name' => $validated['camp_name'],
+                'employee_type' => $validated['employee_type'],
+                'users_group' => $validated['users_group'],
+                'selected_users' => $validated['selected_users'] != null ? json_encode($validated['selected_users']) : null,
+                'users_grp_name' => $validated['users_grp_name'],
+                'training_module' => $validated['campaign_type'] == 'phishing' || empty($validated['training_module']) ? null : json_encode($validated['training_module']),
+                'scorm_training' => $validated['campaign_type'] == 'phishing' || empty($validated['scorm_training']) ? null : json_encode($validated['scorm_training']),
+                'training_assignment' => ($validated['campaign_type'] == 'phishing') ? null : $validated['training_assignment'],
+                'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
+                'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
+                'policies' => (is_array($validated['policies']) && !empty($validated['policies'])) ? json_encode($validated['policies']) : null,
+                'ai_agent' => $validated['ai_agent'],
+                'ai_agent_name' => $validated['ai_agent_name'],
+                'phone_no' => $validated['ai_phone'],
+                'status' => 'pending',
+                'launch_time' => now(),
+                'launch_type' => $validated['schedule_type'],
+                'company_id' => Auth::user()->company_id,
+                'schedule_date' => $validated['schedule_type'] === 'scheduled' ? $validated['schedule_date'] : null,
+                'time_zone'      => $validated['schedule_type'] === 'scheduled' ? $validated['time_zone'] : null,
+                'start_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['start_time'] : null,
+                'end_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['end_time'] : null,
+                'launch_date' => $validated['schedule_type'] === 'immediately' ? now() : $validated['schedule_date'],
+                'call_freq' => $validated['call_freq'],
+                'expire_after' => $validated['expire_after'] ?? null,
+            ]);
+
+            log_action("AI Campaign created : {$validated['camp_name']}");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign created successfully'),
+                'campaign_id' => $campId
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function handleLaterLaunch($data, $campId)
+    {
+        AiCallCampaign::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['camp_name'],
+            'employee_type' => $data['employee_type'],
+            'users_group' => $data['users_group'],
+            'selected_users' => $data['selected_users'] != null ? json_encode($data['selected_users']) : null,
+            'users_grp_name' => $data['users_grp_name'],
+            'training_module' => $data['campaign_type'] == 'phishing' || empty($data['training_module']) ? null : json_encode($data['training_module']),
+            'scorm_training' => $data['campaign_type'] == 'phishing' || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
+            'training_assignment' => ($data['campaign_type'] == 'phishing') ? null : $data['training_assignment'],
+            'training_lang' => $data['campaign_type'] == 'phishing' ? null : $data['training_lang'],
+            'training_type' => $data['campaign_type'] == 'phishing' ? null : $data['training_type'],
+            'policies' => (is_array($data['policies']) && !empty($data['policies'])) ? json_encode($data['policies']) : null,
+            'ai_agent' => $data['ai_agent'],
+            'ai_agent_name' => $data['ai_agent_name'],
+            'phone_no' => $data['ai_phone'],
+            'status' => 'not_scheduled',
+            'launch_time' => now(),
+            'launch_type' => $data['schedule_type'],
+            'company_id' => Auth::user()->company_id,
+            'schedule_date' => $data['schedule_type'] === 'scheduled' ? $data['schedule_date'] : null,
+            'time_zone'      => $data['schedule_type'] === 'scheduled' ? $data['time_zone'] : null,
+            'start_time'      => $data['schedule_type'] === 'scheduled' ? $data['start_time'] : null,
+            'end_time'      => $data['schedule_type'] === 'scheduled' ? $data['end_time'] : null,
+            'launch_date' => $data['schedule_type'] === 'immediately' ? now() : $data['schedule_date'],
+            'call_freq' => $data['call_freq'],
+            'expire_after' => $data['expire_after'] ?? null,
+        ]);
+
+        log_action('AI campaign created for schedule later');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Campaign saved successfully!')
+        ]);
+    }
+
     private function groupHasPhoneNumber($groupid)
     {
         // Retrieve the JSON-encoded users column and decode it
@@ -933,6 +1102,122 @@ class ApiAiCallController extends Controller
                 'success' => true,
                 'message' => __('Campaign relaunched successfully')
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function rescheduleCampaign(Request $request)
+    {
+        try {
+            $campaignId = $request->route('campaign_id', null);
+            if (!$campaignId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required')
+                ], 422);
+            }
+
+            $request->validate([
+                'schedule_type' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "call_freq" => 'required|in:once,weekly,monthly,quarterly',
+                "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
+                'start_time' => [
+                    'nullable',
+                    'required_if:schedule_type,scheduled',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time',
+                'expire_after' => 'required_if:call_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $campaign = AiCallCampaign::where('campaign_id', $campaignId)
+                ->where('company_id', $companyId)
+                ->first();
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found')
+                ], 404);
+            }
+
+            if ($request->schedule_type == 'immediately') {
+                $call_freq = $request->call_freq;
+                $expire_after = $request->expire_after;
+
+                // Retrieve the campaign instance
+                $campaign = AiCallCampaign::where('campaign_id', $campaignId)->where('company_id', $companyId)->first();
+
+                $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
+                if (!$groupExists) {
+                    return ['status' => 0, 'msg' => __('Group not found')];
+                }
+
+                // Retrieve the users in the specified group
+                $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
+                    ->where('company_id', $companyId)
+                    ->value('users');
+
+                $userIds = json_decode($userIdsJson, true);
+                $users = Users::whereIn('id', $userIds)->get();
+
+                // Check if users exist in the group
+                if ($users->isEmpty()) {
+                    return ['status' => 0, 'msg' => __('No employees available in this group')];
+                }
+
+                $this->makeCampaignLive($campaignId);
+
+                // Update the campaign status to 'running'
+                $campaign->update([
+                    'status' => 'running',
+                    'launch_type' => 'immediately',
+                    'launch_time' => now(),
+                    'call_freq' => $call_freq,
+                    'expire_after' => $expire_after
+                ]);
+            }
+
+            if ($request->launch_type == 'scheduled') {
+                $campaign->launch_time =  now();
+                $campaign->launch_type = 'scheduled';
+                $campaign->schedule_date = $request->schedule_date;
+                $campaign->launch_date = $request->schedule_date;
+                $campaign->call_freq = $request->call_freq;
+                $campaign->start_time = $request->start_time;
+                $campaign->end_time = $request->end_time;
+                $campaign->time_zone = $request->time_zone;
+                $campaign->expire_after = $request->expire_after;
+                $campaign->status = 'pending';
+                $campaign->save();
+            }
+
+            log_action('AI campaign rescheduled');
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign rescheduled successfully!')
+            ]);
+        } catch (ValidationException $e) {
+            log_action('Validation error occured while creating AI campaign');
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

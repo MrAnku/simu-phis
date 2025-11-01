@@ -128,6 +128,7 @@ class ApiWaCampaignController extends Controller
             }
 
             $campId = Str::random(6);
+            $validated = $request->all();
 
             if ($validated['schedule_type'] == 'immediately') {
                 log_action("WhatsApp campaign created");
@@ -161,8 +162,6 @@ class ApiWaCampaignController extends Controller
             ], 500);
         }
     }
-
-
 
     private function handleImmediateCampaign($validated, $campId)
     {
@@ -214,58 +213,12 @@ class ApiWaCampaignController extends Controller
                 }
             }
 
-
             if ($users->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('No employees available in this group')
                 ], 422);
             }
-
-            // foreach ($users as $user) {
-
-            //     if (!$user->whatsapp) {
-            //         continue;
-            //     }
-            //     $camp_live = WaLiveCampaign::create([
-            //         'campaign_id' => $campId,
-            //         'campaign_name' => $validated['campaign_name'],
-            //         'campaign_type' => $validated['campaign_type'],
-            //         'employee_type' => $validated['employee_type'],
-            //         'user_name' => $user->user_name,
-            //         'user_id' => $user->id,
-            //         'user_email' => $user->user_email ?? null,
-            //         'user_phone' => $user->whatsapp,
-            //         'phishing_website' => $validated['phishing_website'],
-            //         'training_module' => ($validated['campaign_type'] == 'phishing') || empty($validated['training_module']) ? null : $validated['training_module'][array_rand($validated['training_module'])],
-            //         'scorm_training' => ($validated['campaign_type'] == 'phishing') || empty($validated['scorm_training']) ? null : $validated['scorm_training'][array_rand($validated['scorm_training'])],
-            //         'training_assignment' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_assignment'],
-
-            //         'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
-            //         'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
-            //         'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
-            //         'template_name' => $validated['template_name'],
-            //         'variables' => json_encode($validated['variables']),
-            //         'company_id' => Auth::user()->company_id,
-            //     ]);
-
-            //     WhatsappActivity::create([
-            //         'campaign_id' => $camp_live->campaign_id,
-            //         'campaign_live_id' => $camp_live->id,
-            //         'company_id' => $camp_live->company_id,
-            //     ]);
-
-            //     // Audit log
-            //     audit_log(
-            //         Auth::user()->company_id,
-            //         $user->user_email ?? null,
-            //         $user->whatsapp ?? null,
-            //         'WHATSAPP_CAMPAIGN_SIMULATED',
-            //         "The campaign ‘{$validated['campaign_name']}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
-            //         $validated['employee_type']
-            //     );
-            // }
-
 
             $isLive = $this->makeCampaignLive($campId, $users);
 

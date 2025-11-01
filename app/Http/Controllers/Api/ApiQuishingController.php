@@ -171,49 +171,6 @@ class ApiQuishingController extends Controller
             ], 422);
         }
 
-        // foreach ($users as $user) {
-        //     $camp_live = QuishingLiveCamp::create([
-        //         'campaign_id'        => $campId,
-        //         'campaign_name'      => $data['campaign_name'],
-        //         'user_id'            => $user->id,
-        //         'user_name'          => $user->user_name,
-        //         'user_email'         => $user->user_email,
-
-        //         'training_module'    => $data['campaign_type'] === 'quishing' || empty($data['training_modules'])
-        //             ? null
-        //             : $data['training_modules'][array_rand($data['training_modules'])],
-
-        //         'scorm_training'    => $data['campaign_type'] === 'quishing' || empty($data['scorm_training'])
-        //             ? null
-        //             : $data['scorm_training'][array_rand($data['scorm_training'])],
-
-        //         'days_until_due'     => $data['campaign_type'] === 'quishing' ? null : $data['days_until_due'],
-        //         'training_lang'      => $data['campaign_type'] === 'quishing' ? null : $data['training_language'],
-        //         'training_type'      => $data['campaign_type'] === 'quishing' ? null : $data['training_type'],
-
-        //         'quishing_material'  => $data['quishing_materials'][array_rand($data['quishing_materials'])],
-        //         'sender_profile'     => $data['sender_profile'] ?? null,
-
-        //         'quishing_lang'      => $data['quishing_language'] ?? null,
-        //         'company_id'         => Auth::user()->company_id,
-        //     ]);
-        //     QuishingActivity::create([
-        //         'campaign_id' => $camp_live->campaign_id,
-        //         'campaign_live_id' => $camp_live->id,
-        //         'company_id' => Auth::user()->company_id,
-        //     ]);
-
-        //     // Audit log
-        //     audit_log(
-        //         Auth::user()->company_id,
-        //         $user->user_email,
-        //         null,
-        //         'QUISHING_CAMPAIGN_SIMULATED',
-        //         "The campaign ‘{$data['campaign_name']}’ has been sent to {$user->user_email}",
-        //         'normal'
-        //     );
-        // }
-
         QuishingCamp::create([
             'campaign_id'        => $campId,
             'campaign_name'      => $data['campaign_name'],

@@ -461,6 +461,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/fetch-call-recording/{callId?}', [ApiAiCallController::class, 'fetchCallRecording']);
         Route::post('/agent-req', [ApiAiCallController::class, 'agentRequest']);
         Route::put('/relaunch/{campaign_id?}', [ApiAiCallController::class, 'relaunchCampaign']);
+        Route::post('/reschedule/{campaign_id?}', [ApiAiCallController::class, 'rescheduleCampaign']);
     });
 
     Route::prefix('phishing-emails')->group(function () {
