@@ -132,10 +132,15 @@ class InforgraphicsController extends Controller
             $request->validate([
                 'campaign_name' => 'required|string|max:255',
                 'users_group' => 'required|string',
-                'infographics' => 'required|array',
+                'infographics' => 'nullable|array',
+                'comics' => 'nullable|array',
+                'comic_assignment' => 'required|string|in:random,all',
                 'scheduled_at' => 'required|string',
                 'schedule_type' => 'required|string|in:immediate,schedule'
             ]);
+            if(empty($request->infographics) && empty($request->comics)){
+                return response()->json(['success' => false, 'message' => __('Please select at least one infographic or comic')], 422);
+            }
             if ($request->schedule_type === 'immediate') {
                 $scheduledAt = Carbon::now()->toDateTimeString();
             } else {
@@ -158,7 +163,8 @@ class InforgraphicsController extends Controller
                 'campaign_name' => $request->campaign_name,
                 'campaign_id' => Str::random(6),
                 'users_group' => $request->users_group,
-                'inforgraphics' => json_encode($request->infographics),
+                'inforgraphics' => empty($request->infographics) ? null : json_encode($request->infographics),
+                'comics' => empty($request->comics) ? null : json_encode($request->comics),
                 'status' => $status,
                 'scheduled_at' => $scheduledAt,
                 'company_id' => Auth::user()->company_id,
@@ -193,7 +199,8 @@ class InforgraphicsController extends Controller
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
                         'sent' => 0,
-                        'infographic' => collect($request->infographics)->random(),
+                        'infographic' => empty($request->infographics) ? null : collect($request->infographics)->random(),
+                        'comic' => empty($request->comics) ? null : collect($request->comics)->random(),
                         'company_id' => Auth::user()->company_id,
                     ]);
 

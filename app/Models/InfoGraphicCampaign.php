@@ -11,12 +11,13 @@ class InfoGraphicCampaign extends Model
         'campaign_name',
         'users_group',
         'inforgraphics',
+        'comics',
         'status',
         'scheduled_at',
         'company_id',
     ];
     //appends
-    protected $appends = ['groupDetail', 'infoGraphicsData', 'formatted_created_at'];
+    protected $appends = ['groupDetail', 'infoGraphicsData', 'comicsData', 'formatted_created_at'];
     public function getGroupDetailAttribute()
     {
         return UsersGroup::where('group_id', $this->users_group)->first();
@@ -29,11 +30,23 @@ class InfoGraphicCampaign extends Model
 
     public function getInfoGraphicsDataAttribute()
     {
+        if (is_null($this->inforgraphics)) {
+            return collect();
+        }
+        
         $infographicsIds = json_decode($this->inforgraphics);
         return Inforgraphic::whereIn('id', $infographicsIds)->get();
     }
-   
-    
+
+    public function getComicsDataAttribute()
+    {
+        if (is_null($this->comics)) {
+            return collect();
+        }
+
+        $comicsIds = json_decode($this->comics);
+        return Comic::whereIn('id', $comicsIds)->get();
+    }
 
     public function campLive()
     {

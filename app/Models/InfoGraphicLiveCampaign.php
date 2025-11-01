@@ -13,6 +13,7 @@ class InfoGraphicLiveCampaign extends Model
         'user_email',
         'sent',
         'infographic',
+        'comic',
         'company_id',
     ];
 
