@@ -37,7 +37,8 @@ class Company extends Authenticatable implements JWTSubject
         'approve_date',
         'usedemployees',
         'role',
-        'enabled_feature'
+        'enabled_feature',
+        'ip_whitelist'
     ];
 
     /**

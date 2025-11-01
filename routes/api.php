@@ -96,6 +96,8 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
     Route::put('/dashboard/accept-eula', [ApiDashboardController::class, 'acceptEula']);
 
+    Route::put('/dashboard/ip-whitelist', [ApiDashboardController::class, 'ipWhitelist']);
+
     Route::get('/tour-taken/check', [ApiDashboardController::class, 'tourTakenCheck']);
 
     Route::put('/tour-taken', [ApiDashboardController::class, 'tourTaken']);

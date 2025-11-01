@@ -15,6 +15,7 @@ use App\Models\EmailCampActivity;
 use Illuminate\Support\Facades\DB;
 use App\Mail\TrainingAssignedEmail;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -49,6 +50,8 @@ class ApiCampaignController extends Controller
                 ->limit(9)
                 ->get();
 
+            $ipWhitelist = Company::where('company_id', $companyId)->value('ip_whitelist');
+
             log_action("Email Campaign page visited");
             return response()->json([
                 'success' => true,
@@ -61,6 +64,7 @@ class ApiCampaignController extends Controller
                     'daysSinceLastDelivery' => $daysSinceLastDelivery,
                     'all_sent' => $all_sent,
                     'mail_open' => $mail_open,
+                    'ipWhitelist' => $ipWhitelist
                 ],
             ]);
         } catch (\Exception $err) {
@@ -669,7 +673,7 @@ class ApiCampaignController extends Controller
                     'message' => __('Campaign ID is required')
                 ], 422);
             }
-    
+
             $request->validate([
                 'schedule_type' => 'required|in:immediately,scheduled',
                 "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',

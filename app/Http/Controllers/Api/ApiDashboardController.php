@@ -88,6 +88,28 @@ class ApiDashboardController extends Controller
         ], 200);
     }
 
+    public function ipWhitelist(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+
+        $request->validate([
+            'ip_whitelist' => 'required|boolean',
+        ]);
+
+        if ($request->ip_whitelist === 1) {
+            
+            Company::where('company_id', $companyId)
+                ->update(['ip_whitelist' => true]);
+
+            log_action("IP whitelisted successfully for company ID: {$companyId}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'IP whitelisted successfully.',
+            ], 200);
+        }
+    }
+
     public function tourTakenCheck(Request $request)
     {
         $companyId = Auth::user()->company_id;

@@ -12,6 +12,7 @@ use App\Models\TrainingModule;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use Carbon\Carbon;
@@ -38,6 +39,7 @@ class ApiQuishingController extends Controller
             $qshTemplate = QshTemplate::where('company_id', $company_id)
                 ->orWhere('company_id', 'default')
                 ->get();
+            $ipWhitelist = Company::where('company_id', $company_id)->value('ip_whitelist');
 
             return response()->json([
                 'success' => true,
@@ -47,6 +49,7 @@ class ApiQuishingController extends Controller
                     'qshTemplate' => $qshTemplate,
                     'total_sent' => $campLive->where('sent', '1')->count(),
                     'total_opened' => $campLive->where('mail_open', '1')->count(),
+                    'ipWhitelist' => $ipWhitelist
                 ]
             ]);
         } catch (\Exception $e) {
