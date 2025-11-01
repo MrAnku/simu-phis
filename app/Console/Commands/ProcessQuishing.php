@@ -84,6 +84,7 @@ class ProcessQuishing extends Command
                 foreach ($runningCampaigns as $camp) {
                     $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
 
+                    // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
                     date_default_timezone_set($campaignTimezone);
                     config(['app.timezone' => $campaignTimezone]);
 
@@ -95,87 +96,48 @@ class ProcessQuishing extends Command
                         ->where('send_time', '<=', $currentDateTime->toDateTimeString())
                         ->get();
 
-                    if ($campaigns) {
-                        foreach ($campaigns as $campaign) {
-                            $scheduleDate = Carbon::parse($campaign->schedule_date);
-
-                            $currentDate = Carbon::today();
-
-                            if ($scheduleDate->lte($currentDate)) {
-
-                                $this->makeCampaignLive($campaign->campaign_id);
-
-                                $campaign->update(['status' => 'running']);
-                            }
-                        }
-                    }
-
-                    $runningCampaigns = QuishingCamp::where('company_id', $company->company_id)
-                        ->where('status', 'running')
-                        ->get();
-
-                    if ($runningCampaigns->isEmpty()) {
-                        continue;
-                    }
-
-                    foreach ($runningCampaigns as $camp) {
-                        $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
-
-                        // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
-                        date_default_timezone_set($campaignTimezone);
-                        config(['app.timezone' => $campaignTimezone]);
-
-                        $currentDateTime = Carbon::now();
-
-                        // fetch due live campaigns for this campaign using campaign-local now
-                        $dueLiveCamps = QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
-                            ->where('sent', '0')
-                            ->where('send_time', '<=', $currentDateTime->toDateTimeString())
-                            ->get();
-
-                        foreach ($dueLiveCamps as $liveCamp) {
-                            try {
-                                // get template and website
-                                $quishingTemplate = $liveCamp->templateData()->first();
-                                if ($quishingTemplate === null || $quishingTemplate->website === null) {
-                                    continue;
-                                }
-
-                                $phishingWebsite = $quishingTemplate->website()->first();
-                                $websiteUrl = getWebsiteUrl($phishingWebsite, $liveCamp, 'qsh');
-
-                                // get qrcode link
-                                $qrcodeLink = $this->getQRlink($liveCamp->user_email, $websiteUrl, $liveCamp->id);
-
-                                // check if the campaign has sender profile
-                                if ($liveCamp->sender_profile !== null) {
-                                    $senderProfile = SenderProfile::find($liveCamp->sender_profile);
-                                } else {
-                                    $senderProfile = $quishingTemplate->senderProfile()->first();
-                                }
-
-                                $mailData = $this->prepareMailBody(
-                                    $liveCamp,
-                                    $senderProfile,
-                                    $quishingTemplate,
-                                    $qrcodeLink
-                                );
-
-                                //send mail
-                                $mailSent = sendPhishingMail($mailData);
-
-                                if ($mailSent) {
-                                    QuishingActivity::where('campaign_live_id', $liveCamp->id)->update(['email_sent_at' => now()]);
-                                    echo "Mail sent to {$liveCamp->user_email} \n";
-                                    $liveCamp->sent = '1';
-                                    $liveCamp->save();
-                                } else {
-                                    continue;
-                                }
-                            } catch (\Exception $e) {
-                                echo "Error: " . $e->getMessage() . "\n";
+                    foreach ($dueLiveCamps as $liveCamp) {
+                        try {
+                            // get template and website
+                            $quishingTemplate = $liveCamp->templateData()->first();
+                            if ($quishingTemplate === null || $quishingTemplate->website === null) {
                                 continue;
                             }
+
+                            $phishingWebsite = $quishingTemplate->website()->first();
+                            $websiteUrl = getWebsiteUrl($phishingWebsite, $liveCamp, 'qsh');
+
+                            // get qrcode link
+                            $qrcodeLink = $this->getQRlink($liveCamp->user_email, $websiteUrl, $liveCamp->id);
+
+                            // check if the campaign has sender profile
+                            if ($liveCamp->sender_profile !== null) {
+                                $senderProfile = SenderProfile::find($liveCamp->sender_profile);
+                            } else {
+                                $senderProfile = $quishingTemplate->senderProfile()->first();
+                            }
+
+                            $mailData = $this->prepareMailBody(
+                                $liveCamp,
+                                $senderProfile,
+                                $quishingTemplate,
+                                $qrcodeLink
+                            );
+
+                            //send mail
+                            $mailSent = sendPhishingMail($mailData);
+
+                            if ($mailSent) {
+                                QuishingActivity::where('campaign_live_id', $liveCamp->id)->update(['email_sent_at' => now()]);
+                                echo "Mail sent to {$liveCamp->user_email} \n";
+                                $liveCamp->sent = '1';
+                                $liveCamp->save();
+                            } else {
+                                continue;
+                            }
+                        } catch (\Exception $e) {
+                            echo "Error: " . $e->getMessage() . "\n";
+                            continue;
                         }
                     }
                 }
@@ -230,7 +192,6 @@ class ProcessQuishing extends Command
                 $randomSendTime = Carbon::createFromTimestamp($randomTimestamp, $timeZone);
 
                 $camp_live = QuishingLiveCamp::create([
-
                     'campaign_id' => $campaign->campaign_id,
                     'campaign_name' => $campaign->campaign_name,
                     'user_id' => $user->id,
@@ -294,12 +255,8 @@ class ProcessQuishing extends Command
 
     private function getRandomQuishingMaterial($campaign)
     {
-
-        if ($campaign->campaign_type == "quishing") {
-            return null;
-        }
-
         $quishingMaterials = json_decode($campaign->quishing_material, true);
+
         return $quishingMaterials[array_rand($quishingMaterials)];
     }
 
@@ -437,8 +394,6 @@ class ProcessQuishing extends Command
 
         return $qrCodeUrl;
     }
-
-
 
     private function checkCompletedCampaigns()
     {

@@ -167,7 +167,7 @@ class ProcessAiCampaigns extends Command
 
             foreach ($campaigns as $campaign) {
                 // Scheduled campaign: insert into live table only when launch_time passes
-                if ($campaign->launch_type === 'schedule' && $campaign->status === 'pending') {
+                if ($campaign->launch_type === 'scheduled' && $campaign->status === 'pending') {
                     $scheduleDate = Carbon::parse($campaign->schedule_date);
 
                     $currentDateTime = Carbon::now();
