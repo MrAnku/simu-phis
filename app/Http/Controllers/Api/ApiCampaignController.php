@@ -315,13 +315,6 @@ class ApiCampaignController extends Controller
 
     private function handleScheduledLaunch($data, $campId, $companyId)
     {
-        // $launchTime = $this->generateRandomDate(
-        //     $data['schBetRange'],
-        //     $data['schTimeStart'],
-        //     $data['schTimeEnd'],
-        //     config('app.timezone', 'Asia/Kolkata')
-        // );
-
         Campaign::create([
             'campaign_id' => $campId,
             'campaign_name' => $data['camp_name'],
@@ -362,37 +355,6 @@ class ApiCampaignController extends Controller
             'message' => __('Campaign created and scheduled!')
         ]);
     }
-
-    // public function generateRandomDate($dateS, $timeS, $timeE, $timeZone = 'Asia/Kolkata')
-    // {
-    //     $dateString = $dateS;
-    //     $timeStart = $timeS;
-    //     $timeEnd = $timeE;
-
-    //     // Create a Carbon instance from the date string
-    //     $date = Carbon::createFromFormat('Y-m-d', $dateString, $timeZone);
-
-    //     // Parse the start and end times
-    //     $startTime = Carbon::createFromFormat('H:i', $timeStart, $timeZone);
-    //     $endTime = Carbon::createFromFormat('H:i', $timeEnd, $timeZone);
-
-    //     // Calculate the total minutes in the range
-    //     $totalMinutes = $startTime->diffInMinutes($endTime);
-
-    //     // Generate a random number of minutes to add to the start time
-    //     $randomMinutes = rand(0, $totalMinutes);
-
-    //     // Add the random minutes to the start time
-    //     $randomTime = $startTime->copy()->addMinutes($randomMinutes);
-
-    //     // Combine the date with the random time
-    //     $date->setTime($randomTime->hour, $randomTime->minute);
-
-    //     // Format the date and time as requested
-    //     $formattedDate = $date->format('m/d/Y h:i A');
-
-    //     return $formattedDate;
-    // }
 
     private function handleLaterLaunch($data, $campId, $companyId)
     {
@@ -753,8 +715,10 @@ class ApiCampaignController extends Controller
                 'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
             ]);
 
+            $companyId = Auth::user()->company_id;
+
             $campaign = Campaign::where('campaign_id', $campaignId)
-                ->where('company_id', Auth::user()->company_id)
+                ->where('company_id', $companyId)
                 ->first();
             if (!$campaign) {
                 return response()->json([
@@ -768,12 +732,6 @@ class ApiCampaignController extends Controller
                 $launchTime = now();
                 $email_freq = $request->email_freq;
                 $expire_after = $request->expire_after;
-
-
-                // ==============
-                $companyId = Auth::user()->company_id;
-                // Retrieve the campaign instance
-                $campaign = Campaign::where('campaign_id', $campaignId)->where('company_id', $companyId)->first();
 
                 $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
                 if (!$groupExists) {
@@ -792,10 +750,6 @@ class ApiCampaignController extends Controller
                 if ($users->isEmpty()) {
                     return ['status' => 0, 'msg' => __('No employees available in this group')];
                 }
-                // ==============
-
-
-
 
                 $isLive = $this->makeCampaignLive($campaignId, $users);
 
@@ -805,7 +759,6 @@ class ApiCampaignController extends Controller
                         'message' => $isLive['msg']
                     ], 422);
                 }
-
                 // Update the campaign status to 'running'
                 $campaign->update([
                     'status' => 'running',
@@ -856,24 +809,6 @@ class ApiCampaignController extends Controller
         // Retrieve the campaign instance
         $campaign = Campaign::where('campaign_id', $campaignid)->where('company_id', $companyId)->first();
 
-        // $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
-        // if (!$groupExists) {
-        //     return ['status' => 0, 'msg' => __('Group not found')];
-        // }
-
-        // // Retrieve the users in the specified group
-        // $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
-        //     ->where('company_id', $companyId)
-        //     ->value('users');
-
-        // $userIds = json_decode($userIdsJson, true);
-        // $users = Users::whereIn('id', $userIds)->get();
-
-        // // Check if users exist in the group
-        // if ($users->isEmpty()) {
-        //     return ['status' => 0, 'msg' => __('No employees available in this group')];
-        // }
-
         // Iterate through the users and create CampaignLive entries
         foreach ($users as $user) {
             $camp_live = CampaignLive::create([
@@ -911,18 +846,8 @@ class ApiCampaignController extends Controller
             );
         }
 
-        // // Update the campaign status to 'running'
-        // $campaign->update([
-        //     'status' => 'running',
-        //     'launch_type' => 'immediately',
-        //     'launch_time' => $launch_time,
-        //     'email_freq' => $email_freq,
-        //     'expire_after' => $expire_after
-
-        // ]);
-
         log_action("Email Campaign running");
-        return ['status' => 1, 'campaign' => $campaign, 'msg' => __('Campaign is now live')];
+        return ['status' => 1, 'msg' => __('Campaign is now live')];
     }
 
     public function sendTrainingReminder(Request $request)
