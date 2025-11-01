@@ -92,7 +92,7 @@ class ApiWaCampaignController extends Controller
                 'compromise_on_click' => 'required|string|in:true,false',
                 'template_name' => 'required|string|max:255',
                 'users_group' => 'required|string|max:255',
-                'schedule_type' => 'required|in:immediately,scheduled',
+                'schedule_type' => 'required|in:immediately,scheduled,schLater',
                 'launch_time' => 'nullable|date',
                 'variables' => 'required|array',
                 'selected_users' => 'nullable|string',
@@ -127,11 +127,28 @@ class ApiWaCampaignController extends Controller
                 }
             }
 
+            $campId = Str::random(6);
+
             if ($validated['schedule_type'] == 'immediately') {
-                return $this->handleImmediateCampaign($validated);
-            } else {
-                return $this->handleScheduledCampaign($validated);
+                log_action("WhatsApp campaign created");
+                return $this->handleImmediateCampaign($validated, $campId);
             }
+
+            if ($validated['schedule_type'] === 'scheduled') {
+                log_action("WhatsApp campaign scheduled");
+                return $this->handleScheduledCampaign($validated, $campId);
+            }
+
+            if ($validated['schedule_type'] === 'schLater') {
+                log_action("WhatsApp campaign saved for scheduling later");
+                return $this->handleLaterLaunch($validated, $campId);
+            }
+
+            log_action("WhatsApp campaign launched with invalid launch type");
+            return response()->json([
+                'success' => false,
+                'message' => __('Invalid launch type')
+            ], 422);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -147,12 +164,11 @@ class ApiWaCampaignController extends Controller
 
 
 
-    private function handleImmediateCampaign($validated)
+    private function handleImmediateCampaign($validated, $campId)
     {
         try {
-            $campaign_id = Str::random(6);
             WaCampaign::create([
-                'campaign_id' => $campaign_id,
+                'campaign_id' => $campId,
                 'campaign_name' => $validated['campaign_name'],
                 'campaign_type' => $validated['campaign_type'],
                 'employee_type' => $validated['employee_type'],
@@ -206,48 +222,58 @@ class ApiWaCampaignController extends Controller
                 ], 422);
             }
 
-            foreach ($users as $user) {
+            // foreach ($users as $user) {
 
-                if (!$user->whatsapp) {
-                    continue;
-                }
-                $camp_live = WaLiveCampaign::create([
-                    'campaign_id' => $campaign_id,
-                    'campaign_name' => $validated['campaign_name'],
-                    'campaign_type' => $validated['campaign_type'],
-                    'employee_type' => $validated['employee_type'],
-                    'user_name' => $user->user_name,
-                    'user_id' => $user->id,
-                    'user_email' => $user->user_email ?? null,
-                    'user_phone' => $user->whatsapp,
-                    'phishing_website' => $validated['phishing_website'],
-                    'training_module' => ($validated['campaign_type'] == 'phishing') || empty($validated['training_module']) ? null : $validated['training_module'][array_rand($validated['training_module'])],
-                    'scorm_training' => ($validated['campaign_type'] == 'phishing') || empty($validated['scorm_training']) ? null : $validated['scorm_training'][array_rand($validated['scorm_training'])],
-                    'training_assignment' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_assignment'],
+            //     if (!$user->whatsapp) {
+            //         continue;
+            //     }
+            //     $camp_live = WaLiveCampaign::create([
+            //         'campaign_id' => $campId,
+            //         'campaign_name' => $validated['campaign_name'],
+            //         'campaign_type' => $validated['campaign_type'],
+            //         'employee_type' => $validated['employee_type'],
+            //         'user_name' => $user->user_name,
+            //         'user_id' => $user->id,
+            //         'user_email' => $user->user_email ?? null,
+            //         'user_phone' => $user->whatsapp,
+            //         'phishing_website' => $validated['phishing_website'],
+            //         'training_module' => ($validated['campaign_type'] == 'phishing') || empty($validated['training_module']) ? null : $validated['training_module'][array_rand($validated['training_module'])],
+            //         'scorm_training' => ($validated['campaign_type'] == 'phishing') || empty($validated['scorm_training']) ? null : $validated['scorm_training'][array_rand($validated['scorm_training'])],
+            //         'training_assignment' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_assignment'],
 
-                    'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
-                    'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
-                    'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
-                    'template_name' => $validated['template_name'],
-                    'variables' => json_encode($validated['variables']),
-                    'company_id' => Auth::user()->company_id,
-                ]);
+            //         'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
+            //         'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
+            //         'training_type' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_type'],
+            //         'template_name' => $validated['template_name'],
+            //         'variables' => json_encode($validated['variables']),
+            //         'company_id' => Auth::user()->company_id,
+            //     ]);
 
-                WhatsappActivity::create([
-                    'campaign_id' => $camp_live->campaign_id,
-                    'campaign_live_id' => $camp_live->id,
-                    'company_id' => $camp_live->company_id,
-                ]);
+            //     WhatsappActivity::create([
+            //         'campaign_id' => $camp_live->campaign_id,
+            //         'campaign_live_id' => $camp_live->id,
+            //         'company_id' => $camp_live->company_id,
+            //     ]);
 
-                // Audit log
-                audit_log(
-                    Auth::user()->company_id,
-                    $user->user_email ?? null,
-                    $user->whatsapp ?? null,
-                    'WHATSAPP_CAMPAIGN_SIMULATED',
-                    "The campaign ‘{$validated['campaign_name']}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
-                    $validated['employee_type']
-                );
+            //     // Audit log
+            //     audit_log(
+            //         Auth::user()->company_id,
+            //         $user->user_email ?? null,
+            //         $user->whatsapp ?? null,
+            //         'WHATSAPP_CAMPAIGN_SIMULATED',
+            //         "The campaign ‘{$validated['campaign_name']}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
+            //         $validated['employee_type']
+            //     );
+            // }
+
+
+            $isLive = $this->makeCampaignLive($campId, $users);
+
+            if ($isLive['status'] === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $isLive['msg']
+                ], 422);
             }
 
             log_action("Whatsapp Campaign Created");
@@ -255,7 +281,7 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign created successfully'),
-                'campaign_id' => $campaign_id
+                'campaign_id' => $campId
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -265,19 +291,17 @@ class ApiWaCampaignController extends Controller
         }
     }
 
-    private function handleScheduledCampaign($validated)
+    private function handleScheduledCampaign($validated, $campId)
     {
         try {
-            $campaign_id = Str::random(6);
             WaCampaign::create([
-                'campaign_id' => $campaign_id,
+                'campaign_id' => $campId,
                 'campaign_name' => $validated['campaign_name'],
                 'campaign_type' => $validated['campaign_type'],
                 'employee_type' => $validated['employee_type'],
                 'phishing_website' => $validated['phishing_website'],
                 'training_module' => $validated['campaign_type'] == 'phishing' || empty($validated['training_module']) ? null : json_encode($validated['training_module']),
                 'scorm_training' => $validated['campaign_type'] == 'phishing' || empty($validated['scorm_training']) ? null : json_encode($validated['scorm_training']),
-
                 'training_assignment' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_assignment'],
                 'days_until_due' => $validated['campaign_type'] == 'phishing' ? null : $validated['days_until_due'],
                 'training_lang' => $validated['campaign_type'] == 'phishing' ? null : $validated['training_lang'],
@@ -307,7 +331,7 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign created successfully'),
-                'campaign_id' => $campaign_id
+                'campaign_id' => $campId
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -315,6 +339,48 @@ class ApiWaCampaignController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function handleLaterLaunch($data, $campId)
+    {
+        WaCampaign::create([
+            'campaign_id' => $campId,
+            'campaign_name' => $data['campaign_name'],
+            'campaign_type' => $data['campaign_type'],
+            'employee_type' => $data['employee_type'],
+            'phishing_website' => $data['phishing_website'],
+            'training_module' => $data['campaign_type'] == 'phishing' || empty($data['training_module']) ? null : json_encode($data['training_module']),
+            'scorm_training' => $data['campaign_type'] == 'phishing' || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
+            'training_assignment' => $data['campaign_type'] == 'phishing' ? null : $data['training_assignment'],
+            'days_until_due' => $data['campaign_type'] == 'phishing' ? null : $data['days_until_due'],
+            'training_lang' => $data['campaign_type'] == 'phishing' ? null : $data['training_lang'],
+            'training_type' => $data['campaign_type'] == 'phishing' ? null : $data['training_type'],
+            'policies' => (is_array($data['policies']) && !empty($data['policies'])) ? json_encode($data['policies']) : null,
+            'training_on_click' => $data['training_on_click'] == 'false' ? 0 : 1,
+            'compromise_on_click' => $data['compromise_on_click'] == 'false' ? 0 : 1,
+            'template_name' => $data['template_name'],
+            'users_group' => $data['users_group'],
+            'selected_users' => $data['selected_users'] != 'null' ? $data['selected_users'] : null,
+            'schedule_type' => $data['schedule_type'],
+            'launch_time' => now(),
+            'status' => 'not_scheduled',
+            'variables' => json_encode($data['variables']),
+            'company_id' => Auth::user()->company_id,
+            'schedule_date'      => $data['schedule_date'],
+            'time_zone'      => $data['time_zone'],
+            'start_time'      => $data['start_time'],
+            'end_time'      => $data['end_time'],
+            'launch_date' => $data['schedule_date'],
+            'msg_freq' => $data['msg_freq'],
+            'expire_after' => $data['expire_after'] ?? null,
+        ]);
+
+        log_action('WhatsApp campaign created for schedule later');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Campaign saved successfully!')
+        ]);
     }
 
     public function deleteCampaign(Request $request)
@@ -959,5 +1025,182 @@ class ApiWaCampaignController extends Controller
                 'message' => __('Failed to delete template: ') . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function rescheduleCampaign(Request $request)
+    {
+        try {
+            $campaignId = $request->route('campaign_id', null);
+            if (!$campaignId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required')
+                ], 422);
+            }
+
+            $request->validate([
+                'schedule_type' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "msg_freq" => 'required|in:once,weekly,monthly,quarterly',
+                "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
+                'start_time' => [
+                    'nullable',
+                    'required_if:schedule_type,scheduled',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time',
+                'expire_after' => 'required_if:msg_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+
+            $campaign = WaCampaign::where('campaign_id', $campaignId)
+                ->where('company_id', $companyId)
+                ->first();
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found')
+                ], 404);
+            }
+
+            if ($request->schedule_type == 'immediately') {
+                $msg_freq = $request->msg_freq;
+                $expire_after = $request->expire_after;
+
+                // Retrieve the campaign instance
+                $campaign = WaCampaign::where('campaign_id', $campaignId)->where('company_id', $companyId)->first();
+
+                $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
+                if (!$groupExists) {
+                    return ['status' => 0, 'msg' => __('Group not found')];
+                }
+
+                // Retrieve the users in the specified group
+                $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
+                    ->where('company_id', $companyId)
+                    ->value('users');
+
+                $userIds = json_decode($userIdsJson, true);
+                $users = Users::whereIn('id', $userIds)->get();
+
+                // Check if users exist in the group
+                if ($users->isEmpty()) {
+                    return ['status' => 0, 'msg' => __('No employees available in this group')];
+                }
+
+                $isLive = $this->makeCampaignLive($campaignId, $users);
+
+                if ($isLive['status'] === 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $isLive['msg']
+                    ], 422);
+                }
+
+                // Update the campaign status to 'running'
+                $campaign->update([
+                    'status' => 'running',
+                    'schedule_type' => 'immediately',
+                    'launch_time' => now(),
+                    'msg_freq' => $msg_freq,
+                    'expire_after' => $expire_after
+                ]);
+            }
+
+            if ($request->schedule_type == 'scheduled') {
+                $campaign->launch_time =  now();
+                $campaign->schedule_type = 'scheduled';
+                $campaign->schedule_date = $request->schedule_date;
+                $campaign->launch_date = $request->schedule_date;
+                $campaign->msg_freq = $request->msg_freq;
+                $campaign->start_time = $request->start_time;
+                $campaign->end_time = $request->end_time;
+                $campaign->time_zone = $request->time_zone;
+                $campaign->expire_after = $request->expire_after;
+                $campaign->status = 'pending';
+                $campaign->save();
+            }
+
+            log_action('Email campaign rescheduled');
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign rescheduled successfully!')
+            ]);
+        } catch (ValidationException $e) {
+            log_action('Validation error occured while creating email campaign');
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function makeCampaignLive($campaignId, $users)
+    {
+        $companyId = Auth::user()->company_id;
+        // Retrieve the campaign instance
+        $campaign = WaCampaign::where('campaign_id', $campaignId)->where('company_id', $companyId)->first();
+
+        // Iterate through the users and create CampaignLive entries
+        foreach ($users as $user) {
+            if (!$user->whatsapp) {
+                continue;
+            }
+            $camp_live = WaLiveCampaign::create([
+                'campaign_id' => $campaignId,
+                'campaign_name' => $campaign->campaign_name,
+                'campaign_type' => $campaign->campaign_type,
+                'employee_type' => $campaign->employee_type,
+                'user_name' => $user->user_name,
+                'user_id' => $user->id,
+                'user_email' => $user->user_email ?? null,
+                'user_phone' => $user->whatsapp,
+                'phishing_website' => $campaign->phishing_website,
+                'training_module' => $campaign->training_module !== null ? json_decode($campaign->training_module)[array_rand(json_decode($campaign->training_module))] : null,
+                'scorm_training' => $campaign->scorm_training !== null ? json_decode($campaign->scorm_training)[array_rand(json_decode($campaign->scorm_training))] : null,
+                'training_assignment' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_assignment,
+                'days_until_due' => $campaign->campaign_type == 'phishing' ? null : $campaign->days_until_due,
+                'training_lang' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_lang,
+                'training_type' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_type,
+                'template_name' => $campaign->template_name,
+                'variables' => $campaign->variables,
+                'company_id' => Auth::user()->company_id,
+            ]);
+
+
+            WhatsappActivity::create([
+                'campaign_id' => $camp_live->campaign_id,
+                'campaign_live_id' => $camp_live->id,
+                'company_id' => $camp_live->company_id,
+            ]);
+
+            // Audit log
+            audit_log(
+                Auth::user()->company_id,
+                $user->user_email ?? null,
+                $user->whatsapp ?? null,
+                'WHATSAPP_CAMPAIGN_SIMULATED',
+                "The campaign ‘{$campaign->campaign_name}’ has been sent to " . ($user->user_email ?? $user->whatsapp),
+                $campaign->employee_type
+            );
+        }
+
+        log_action("WhatsApp Campaign running");
+        return ['status' => 1, 'msg' => __('Campaign is now live')];
     }
 }

@@ -222,13 +222,10 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/group-employees/{employee_type?}', [ApiWaCampaignController::class, 'groupUsers']);
         Route::post('/new-template', [ApiWaCampaignController::class, 'newTemplate']);
         Route::post('/request-new-template', [ApiWaCampaignController::class, 'requestNewTemplate']);
-
         Route::get('/requested-templates', [ApiWaCampaignController::class, 'requestedTemplates']);
-
         Route::get('/requested-template/check/{template_id}', [ApiWaCampaignController::class, 'checkTemplateStatus']);
-
+        Route::post('/reschedule/{campaign_id?}', [ApiWaCampaignController::class, 'rescheduleCampaign']);
         Route::put('/relaunch/{campaign_id?}', [ApiWaCampaignController::class, 'relaunchCampaign']);
-
         Route::delete('/delete-template', [ApiWaCampaignController::class, 'deleteTemplate']);
     });
 

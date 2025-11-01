@@ -728,8 +728,6 @@ class ApiCampaignController extends Controller
             }
 
             if ($request->schedule_type == 'immediately') {
-
-                $launchTime = now();
                 $email_freq = $request->email_freq;
                 $expire_after = $request->expire_after;
 
@@ -763,7 +761,7 @@ class ApiCampaignController extends Controller
                 $campaign->update([
                     'status' => 'running',
                     'launch_type' => 'immediately',
-                    'launch_time' => $launchTime,
+                    'launch_time' => now(),
                     'email_freq' => $email_freq,
                     'expire_after' => $expire_after
                 ]);
