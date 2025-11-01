@@ -481,4 +481,99 @@ class ApiQuishingController extends Controller
             ], 500);
         }
     }
+
+    public function rescheduleCampaign(Request $request)
+    {
+        try {
+            $campaignId = $request->route('campaign_id', null);
+            if (!$campaignId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign ID is required')
+                ], 422);
+            }
+    
+            $request->validate([
+                'schedule_type' => 'required|in:immediately,scheduled',
+                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "email_freq" => 'required|in:once,weekly,monthly,quarterly',
+                "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
+                'start_time' => [
+                    'nullable',
+                    'required_if:schedule_type,scheduled',
+                    'date_format:Y-m-d H:i:s',
+                    function ($attribute, $value, $fail) {
+                        $inputDate = Carbon::parse($value)->startOfDay();
+                        $today = Carbon::today();
+
+                        if ($inputDate->lt($today)) {
+                            $fail('The ' . $attribute . ' must not be a past date.');
+                        }
+                    },
+                ],
+                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time',
+                'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
+            ]);
+
+            if ($request->schedule_type == 'immediately') {
+
+                $launchTime = now();
+                $email_freq = $request->email_freq;
+                $expire_after = $request->expire_after;
+
+                $isLive = $this->makeCampaignLive($campaignId, $launchTime, $email_freq, $expire_after);
+
+                if ($isLive['status'] === 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $isLive['msg']
+                    ], 422);
+                }
+
+                $campaign = $isLive['campaign'];
+            }
+
+            if ($request->schedule_type == 'scheduled') {
+                $campaign = QuishingCamp::where('campaign_id', $campaignId)
+                    ->where('company_id', Auth::user()->company_id)
+                    ->first();
+                if (!$campaign) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Campaign not found')
+                    ], 404);
+                }
+
+                $campaign->launch_time =  now();
+                $campaign->launch_type = 'scheduled';
+                $campaign->schedule_date = $request->schedule_date;
+                $campaign->launch_date = $request->schedule_date;
+                $campaign->email_freq = $request->email_freq;
+                $campaign->startTime = $request->start_time;
+                $campaign->endTime = $request->end_time;
+                $campaign->timeZone = $request->time_zone;
+                $campaign->expire_after = $request->expire_after;
+                $campaign->status = 'pending';
+                $campaign->save();
+            }
+
+            log_action('Email campaign rescheduled');
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Campaign rescheduled successfully!')
+            ]);
+        } catch (ValidationException $e) {
+            log_action('Validation error occured while creating email campaign');
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
 }

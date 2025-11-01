@@ -209,9 +209,6 @@ class ApiCampaignController extends Controller
 
     private function handleImmediateLaunch($data, $campId, $companyId)
     {
-        // $scheduledDate = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time']);
-        // $launchTimeFormatted = Carbon::now()->format("m/d/Y g:i A");
-
         $groupExists = UsersGroup::where('group_id', $data['users_group'])->exists();
         if (!$groupExists) {
             return response()->json([
@@ -228,9 +225,6 @@ class ApiCampaignController extends Controller
             $users = Users::whereIn('id', $data['selected_users'])->get();
         }
 
-
-        // $users = User::where('group_id', $data['users_group'])->get();
-
         if ($users->isEmpty()) {
             return response()->json([
                 'success' => false,
@@ -238,44 +232,42 @@ class ApiCampaignController extends Controller
             ], 422);
         }
 
-        foreach ($users as $user) {
-            $camp_live = CampaignLive::create([
-                'campaign_id' => $campId,
-                'campaign_name' => $data['camp_name'],
-                'user_id' => $user->id,
-                'user_name' => $user->user_name,
-                'user_email' => $user->user_email,
-                'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : $data['training_mod'][array_rand($data['training_mod'])],
-                'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : $data['scorm_training'][array_rand($data['scorm_training'])],
-                'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
-                'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
-                'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
-                'launch_time' => now(),
-                'phishing_material' => ($data['campaign_type'] == 'Training') ? null : $data['phish_material'][array_rand($data['phish_material'])],
-                'sender_profile' => $data['sender_profile'] ?? null,
-                'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
-                'sent' => '0',
-                'company_id' => $companyId,
-            ]);
+        // foreach ($users as $user) {
+        //     $camp_live = CampaignLive::create([
+        //         'campaign_id' => $campId,
+        //         'campaign_name' => $data['camp_name'],
+        //         'user_id' => $user->id,
+        //         'user_name' => $user->user_name,
+        //         'user_email' => $user->user_email,
+        //         'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : $data['training_mod'][array_rand($data['training_mod'])],
+        //         'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : $data['scorm_training'][array_rand($data['scorm_training'])],
+        //         'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
+        //         'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
+        //         'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
+        //         'launch_time' => now(),
+        //         'phishing_material' => ($data['campaign_type'] == 'Training') ? null : $data['phish_material'][array_rand($data['phish_material'])],
+        //         'sender_profile' => $data['sender_profile'] ?? null,
+        //         'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
+        //         'sent' => '0',
+        //         'company_id' => $companyId,
+        //     ]);
 
-            EmailCampActivity::create([
-                'campaign_id' => $campId,
-                'campaign_live_id' => $camp_live->id,
-                'company_id' => $companyId,
-            ]);
+        //     EmailCampActivity::create([
+        //         'campaign_id' => $campId,
+        //         'campaign_live_id' => $camp_live->id,
+        //         'company_id' => $companyId,
+        //     ]);
 
-            // Audit log
-            audit_log(
-                $companyId,
-                $user->user_email,
-                null,
-                'EMAIL_CAMPAIGN_SIMULATED',
-                "The campaign ‘{$data['camp_name']}’ has been sent to {$user->user_email}",
-                'normal'
-            );
-        }
-
-
+        //     // Audit log
+        //     audit_log(
+        //         $companyId,
+        //         $user->user_email,
+        //         null,
+        //         'EMAIL_CAMPAIGN_SIMULATED',
+        //         "The campaign ‘{$data['camp_name']}’ has been sent to {$user->user_email}",
+        //         'normal'
+        //     );
+        // }
 
         Campaign::create([
             'campaign_id' => $campId,
@@ -303,6 +295,15 @@ class ApiCampaignController extends Controller
             'status' => 'running',
             'company_id' => $companyId,
         ]);
+
+        $isLive = $this->makeCampaignLive($campId, $users);
+
+        if ($isLive['status'] === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => $isLive['msg']
+            ], 422);
+        }
 
         log_action('Email campaign created');
 
@@ -752,13 +753,51 @@ class ApiCampaignController extends Controller
                 'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
             ]);
 
+            $campaign = Campaign::where('campaign_id', $campaignId)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+            if (!$campaign) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign not found')
+                ], 404);
+            }
+
             if ($request->schedule_type == 'immediately') {
 
                 $launchTime = now();
                 $email_freq = $request->email_freq;
                 $expire_after = $request->expire_after;
 
-                $isLive = $this->makeCampaignLive($campaignId, $launchTime, $email_freq, $expire_after);
+
+                // ==============
+                $companyId = Auth::user()->company_id;
+                // Retrieve the campaign instance
+                $campaign = Campaign::where('campaign_id', $campaignId)->where('company_id', $companyId)->first();
+
+                $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
+                if (!$groupExists) {
+                    return ['status' => 0, 'msg' => __('Group not found')];
+                }
+
+                // Retrieve the users in the specified group
+                $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
+                    ->where('company_id', $companyId)
+                    ->value('users');
+
+                $userIds = json_decode($userIdsJson, true);
+                $users = Users::whereIn('id', $userIds)->get();
+
+                // Check if users exist in the group
+                if ($users->isEmpty()) {
+                    return ['status' => 0, 'msg' => __('No employees available in this group')];
+                }
+                // ==============
+
+
+
+
+                $isLive = $this->makeCampaignLive($campaignId, $users);
 
                 if ($isLive['status'] === 0) {
                     return response()->json([
@@ -767,20 +806,17 @@ class ApiCampaignController extends Controller
                     ], 422);
                 }
 
-                $campaign = $isLive['campaign'];
+                // Update the campaign status to 'running'
+                $campaign->update([
+                    'status' => 'running',
+                    'launch_type' => 'immediately',
+                    'launch_time' => $launchTime,
+                    'email_freq' => $email_freq,
+                    'expire_after' => $expire_after
+                ]);
             }
 
             if ($request->schedule_type == 'scheduled') {
-                $campaign = Campaign::where('campaign_id', $campaignId)
-                    ->where('company_id', Auth::user()->company_id)
-                    ->first();
-                if (!$campaign) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => __('Campaign not found')
-                    ], 404);
-                }
-
                 $campaign->launch_time =  now();
                 $campaign->launch_type = 'scheduled';
                 $campaign->schedule_date = $request->schedule_date;
@@ -814,37 +850,33 @@ class ApiCampaignController extends Controller
         }
     }
 
-    private function makeCampaignLive($campaignid, $launch_time, $email_freq, $expire_after)
+    private function makeCampaignLive($campaignid, $users)
     {
         $companyId = Auth::user()->company_id;
         // Retrieve the campaign instance
-        $campaign = Campaign::where('campaign_id', $campaignid)->where('company_id', Auth::user()->company_id)->first();
-        if (!$campaign) {
-            return ['status' => 0, 'msg' => __('Campaign not found')];
-        }
+        $campaign = Campaign::where('campaign_id', $campaignid)->where('company_id', $companyId)->first();
 
-        $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', Auth::user()->company_id)->exists();
-        if (!$groupExists) {
-            return ['status' => 0, 'msg' => __('Group not found')];
-        }
-        // Retrieve the users in the specified group
-        $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
-            ->where('company_id', Auth::user()->company_id)
-            ->value('users');
+        // $groupExists = UsersGroup::where('group_id', $campaign->users_group)->where('company_id', $companyId)->exists();
+        // if (!$groupExists) {
+        //     return ['status' => 0, 'msg' => __('Group not found')];
+        // }
 
-        $userIds = json_decode($userIdsJson, true);
-        $users = Users::whereIn('id', $userIds)->get();
+        // // Retrieve the users in the specified group
+        // $userIdsJson = UsersGroup::where('group_id', $campaign->users_group)
+        //     ->where('company_id', $companyId)
+        //     ->value('users');
 
-        // $users = Users::where('group_id', $campaign->users_group)->get();
+        // $userIds = json_decode($userIdsJson, true);
+        // $users = Users::whereIn('id', $userIds)->get();
 
-        // Check if users exist in the group
-        if ($users->isEmpty()) {
-            return ['status' => 0, 'msg' => __('No employees available in this group')];
-        }
+        // // Check if users exist in the group
+        // if ($users->isEmpty()) {
+        //     return ['status' => 0, 'msg' => __('No employees available in this group')];
+        // }
 
         // Iterate through the users and create CampaignLive entries
         foreach ($users as $user) {
-            CampaignLive::create([
+            $camp_live = CampaignLive::create([
                 'campaign_id' => $campaign->campaign_id,
                 'campaign_name' => $campaign->campaign_name,
                 'user_id' => $user->id,
@@ -855,27 +887,42 @@ class ApiCampaignController extends Controller
                 'days_until_due' => $campaign->days_until_due ?? null,
                 'training_lang' => $campaign->training_lang ?? null,
                 'training_type' => $campaign->training_type ?? null,
-                'launch_time' => $launch_time,
+                'launch_time' => now(),
                 'phishing_material' => $campaign->phishing_material !== null ? json_decode($campaign->phishing_material)[array_rand(json_decode($campaign->phishing_material))] : null,
                 'sender_profile' => $campaign->sender_profile ?? null,
                 'email_lang' => $campaign->email_lang ?? null,
                 'sent' => '0',
                 'company_id' => $companyId,
             ]);
+            EmailCampActivity::create([
+                'campaign_id' => $campaignid,
+                'campaign_live_id' => $camp_live->id,
+                'company_id' => $companyId,
+            ]);
+
+            // Audit log
+            audit_log(
+                $companyId,
+                $user->user_email,
+                null,
+                'EMAIL_CAMPAIGN_SIMULATED',
+                "The campaign ‘{$campaign->campaign_name}’ has been sent to {$user->user_email}",
+                'normal'
+            );
         }
 
-        // Update the campaign status to 'running'
-        $campaign->update([
-            'status' => 'running',
-            'launch_type' => 'immediately',
-            'launch_time' => $launch_time,
-            'email_freq' => $email_freq,
-            'expire_after' => $expire_after
+        // // Update the campaign status to 'running'
+        // $campaign->update([
+        //     'status' => 'running',
+        //     'launch_type' => 'immediately',
+        //     'launch_time' => $launch_time,
+        //     'email_freq' => $email_freq,
+        //     'expire_after' => $expire_after
 
-        ]);
+        // ]);
 
         log_action("Email Campaign running");
-        return ['status' => 1, 'campaign' => $campaign];
+        return ['status' => 1, 'campaign' => $campaign, 'msg' => __('Campaign is now live')];
     }
 
     public function sendTrainingReminder(Request $request)

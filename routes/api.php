@@ -180,6 +180,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
     Route::prefix('quishing-campaign')->group(function () {
         Route::get('/', [ApiQuishingController::class, 'index']);
         Route::post('/create-campaign', [ApiQuishingController::class, 'createCampaign']);
+        Route::post('/reschedule/{campaign_id?}', [ApiQuishingController::class, 'rescheduleCampaign']);
         Route::put('/relaunch/{campaign_id?}', [ApiQuishingController::class, 'relaunchCampaign']);
         Route::delete('/delete-campaign/{campaign_id?}', [ApiQuishingController::class, 'deleteCampaign']);
         Route::get('/detail/{campaign_id?}', [ApiQuishingController::class, 'campaignDetail']);
@@ -268,7 +269,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         // enable phishing reply
         Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
 
-         // enable overall reporting
+        // enable overall reporting
         Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
 
         Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
