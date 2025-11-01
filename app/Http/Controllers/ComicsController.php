@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comic;
+use App\Models\ComicQueue;
+use COM;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -23,14 +25,13 @@ class ComicsController extends Controller
     public function generateComic(Request $request)
     {
         try {
-            ini_set('max_execution_time', 30000); // 5 minutes
-            set_time_limit(30000);
+            
             $request->validate([
                 'topic' => 'required|string|max:255',
             ]);
             $companyId = Auth::user()->company_id;
 
-            $response = Http::post('http://91.98.162.246:5555/api/v1/generate', [
+            $response = Http::post('http://91.98.162.246:5555/generate_comic', [
                 'topic' => $request->input('topic'),
                 'company_id' => $companyId,
             ]);
@@ -40,12 +41,16 @@ class ComicsController extends Controller
                     'message' => __('Failed to generate comics') . $response->body(),
                 ], 500);
             }
-            $generatedComicUrl = $response->json('comic_url');
+            $taskId = $response->json()['task_id'];
+            ComicQueue::create([
+                'topic' => $request->input('topic'),
+                'task_id' => $taskId,
+                'company_id' => $companyId,
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => __('Comic generated successfully'),
-                'data' => ['comic_url' => $generatedComicUrl],
+                'message' => __('Comic generation initiated successfully'),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -59,6 +64,26 @@ class ComicsController extends Controller
             ], 500);
         }
     }
+
+    public function comicsInQueue(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $comicsInQueue = ComicQueue::where('company_id', $companyId)
+                ->get();
+            return response()->json([
+                'success' => true,
+                'message' => __('Comics in queue retrieved successfully'),
+                'data' => $comicsInQueue,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
     public function saveComic(Request $request)
     {

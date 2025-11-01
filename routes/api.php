@@ -196,6 +196,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
     Route::prefix('comics')->group(function () {
         Route::get('/', [ComicsController::class, 'index']);
         Route::post('/generate', [ComicsController::class, 'generateComic']);
+        Route::get('/generate/in-queue', [ComicsController::class, 'comicsInQueue']);
         Route::post('/save', [ComicsController::class, 'saveComic']);
         Route::delete('/delete/{encodedId?}', [ComicsController::class, 'deleteComic']);
     });
