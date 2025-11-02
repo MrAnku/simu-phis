@@ -12,6 +12,7 @@ class InfoGraphicCampaign extends Model
         'users_group',
         'inforgraphics',
         'comics',
+        'comic_assignment',
         'status',
         'scheduled_at',
         'company_id',

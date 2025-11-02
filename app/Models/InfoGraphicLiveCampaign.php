@@ -9,6 +9,7 @@ class InfoGraphicLiveCampaign extends Model
     protected $fillable = [
         'campaign_id',
         'campaign_name',
+        'user_id',
         'user_name',
         'user_email',
         'sent',
@@ -16,6 +17,11 @@ class InfoGraphicLiveCampaign extends Model
         'comic',
         'company_id',
     ];
+
+    public function camp()
+    {
+        return $this->belongsTo(InfoGraphicCampaign::class, 'campaign_id', 'campaign_id');
+    }
 
     public function infographicData()
     {

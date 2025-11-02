@@ -196,6 +196,7 @@ class InforgraphicsController extends Controller
                     $campaign->campLive()->create([
                         'campaign_id' => $campaign->campaign_id,
                         'campaign_name' => $campaign->campaign_name,
+                        'user_id' => $user->id,
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
                         'sent' => 0,

@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\ComicAssignMail;
 use App\Mail\InfographicsEmail;
+use App\Models\ComicAssignedUser;
 use Carbon\Carbon;
 use App\Models\Users;
 use App\Models\Company;
@@ -42,7 +44,6 @@ class SendInfographics extends Command
         } catch (\Exception $e) {
             echo 'Error occurred: ' . $e->getMessage() . "\n";
         }
-        
     }
 
     private function processScheduledCampaigns()
@@ -105,10 +106,12 @@ class SendInfographics extends Command
                 $camp_live = InfoGraphicLiveCampaign::create([
                     'campaign_id' => $campaign->campaign_id,
                     'campaign_name' => $campaign->campaign_name,
+                    'user_id' => $user->id,
                     'user_name' => $user->user_name,
                     'user_email' => $user->user_email,
                     'sent' => 0,
-                    'infographic' => $this->getRandom($campaign->inforgraphics),
+                    'infographic' => $campaign->inforgraphics != null ? $this->getRandom($campaign->inforgraphics) : null,
+                    'comic' => $campaign->comics != null ? $this->getRandom($campaign->comics) : null,
                     'company_id' => $campaign->company_id,
                 ]);
 
@@ -127,14 +130,14 @@ class SendInfographics extends Command
         }
     }
 
-    private function getRandom($infographics)
+    private function getRandom($arrayInString)
     {
-        $infographicIds = json_decode($infographics, true);
-        if (empty($infographicIds)) {
+        $array = json_decode($arrayInString, true);
+        if (empty($array)) {
             return null;
         }
-        $randomIndex = array_rand($infographicIds);
-        return $infographicIds[$randomIndex];
+        $randomIndex = array_rand($array);
+        return $array[$randomIndex];
     }
 
     private function sendCampaignLiveEmails()
@@ -164,44 +167,124 @@ class SendInfographics extends Command
                 $whiteLableData = $isWhitelabeled->getWhiteLabelData();
                 $companyName = $whiteLableData->company_name;
                 $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-
+                $learningPortalUrl = $whiteLableData->learn_domain;
                 $isWhitelabeled->updateSmtpConfig();
             } else {
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
+                $learningPortalUrl = env('SIMUPHISH_LEARNING_URL');
             }
 
             foreach ($campaigns as $campaign) {
+                if ($campaign->infographic != null) {
+                    $this->sendInfographicEmail($campaign, $companyName, $companyLogo);
+                }
+                if ($campaign->comic != null) {
+                    $this->assignComic($campaign);
+                    try {
+                        Mail::to($campaign->user_email)->send(new ComicAssignMail(
+                            $campaign->user_name,
+                            $companyName,
+                            $companyLogo,
+                            $learningPortalUrl
+                        ));
+                    } catch (\Exception $e) {
+                        echo 'Failed to send comic assignment email to ' . $campaign->user_email . "\n";
+                        continue;
+                    }
+                }
+                $campaign->update(['sent' => 1]);
+            }
+        }
+    }
 
-                if($campaign->infographic == null){
-                    echo 'No infographic assigned for user ' . $campaign->user_email . "\n";
-                    $campaign->update(['sent' => 1]);
+    private function sendInfographicEmail($campaign, $companyName, $companyLogo)
+    {
+        if ($campaign->infographic == null) {
+            echo 'No infographic assigned for user ' . $campaign->user_email . "\n";
+
+            return;
+        }
+
+        $infographic = Inforgraphic::where('id', $campaign->infographic)->first();
+
+
+        if ($campaign->infographic == null) {
+            echo 'No infographic assigned for user ' . $campaign->user_email . "\n";
+
+            return;
+        }
+
+        $infographic = Inforgraphic::where('id', $campaign->infographic)->first();
+
+        if (!$infographic) {
+            echo 'Infographic not found for user ' . $campaign->user_email . "\n";
+
+            return;
+        }
+
+        $mailData = [
+            'user_name' => $campaign->user_name,
+            'company_name' => $companyName,
+            'infographic' => env('CLOUDFRONT_URL') . $infographic->file_path,
+            'logo' => $companyLogo
+        ];
+
+        $isMailSent = Mail::to($campaign->user_email)->send(new InfographicsEmail($mailData));
+
+        if ($isMailSent) {
+            echo 'Infographic sent to ' . $campaign->user_email . "\n";
+        } else {
+            echo 'Failed to send infographic to ' . $campaign->user_email . "\n";
+        }
+    }
+
+    private function assignComic($campaign)
+    {
+        //check assignment
+        $assignment = $campaign->camp?->comic_assignment;
+        if ($assignment == 'random') {
+            //check if this comic to this user is already assigned
+            $alreadyAssigned = ComicAssignedUser::where('comic', $campaign->comic)
+                ->where('user_email', $campaign->user_email)
+                ->first();
+            if ($alreadyAssigned) {
+                // Comic is already assigned to this user
+                echo 'Comic is already assigned to user ' . $campaign->user_email . "\n";
+                return;
+            }
+            ComicAssignedUser::create([
+                'campaign_id' => $campaign->campaign_id,
+                'user_id' => $campaign->user_id,
+                'user_name' => $campaign->user_name,
+                'user_email' => $campaign->user_email,
+                'comic' => $campaign->comic,
+                'assigned_at' => Carbon::now(),
+                'seen_at' => null,
+                'company_id' => $campaign->company_id,
+            ]);
+        } else {
+            $allComics = json_decode($campaign->camp?->comics, true);
+            foreach ($allComics as $comicId) {
+                //check if this comic to this user is already assigned
+                $alreadyAssigned = ComicAssignedUser::where('comic', $comicId)
+                    ->where('user_email', $campaign->user_email)
+                    ->first();
+                if ($alreadyAssigned) {
+                    // Comic is already assigned to this user
+                    echo 'Comic is already assigned to user ' . $campaign->user_email . "\n";
                     continue;
                 }
-
-                $infographic = Inforgraphic::where('id', $campaign->infographic)->first();
-
-                if (!$infographic) {
-                    echo 'Infographic not found for user ' . $campaign->user_email . "\n";
-                    $campaign->update(['sent' => 1]);
-                    continue;
-                }
-
-                $mailData = [
+                ComicAssignedUser::create([
+                    'campaign_id' => $campaign->campaign_id,
+                    'user_id' => $campaign->user_id,
                     'user_name' => $campaign->user_name,
-                    'company_name' => $companyName,
-                    'infographic' => env('CLOUDFRONT_URL') . $infographic->file_path,
-                    'logo' => $companyLogo
-                ];
-
-                $isMailSent = Mail::to($campaign->user_email)->send(new InfographicsEmail($mailData));
-
-                if ($isMailSent) {
-                    echo 'Infographic sent to ' . $campaign->user_email . "\n";
-                    $campaign->update(['sent' => 1]);
-                } else {
-                    echo 'Failed to send infographic to ' . $campaign->user_email . "\n";
-                }
+                    'user_email' => $campaign->user_email,
+                    'comic' => $comicId,
+                    'assigned_at' => Carbon::now(),
+                    'seen_at' => null,
+                    'company_id' => $campaign->company_id,
+                ]);
             }
         }
     }

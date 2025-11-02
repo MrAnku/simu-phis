@@ -12,6 +12,7 @@ $everyMinuteCommands = [
     'app:process-tprm-campaigns',
     'app:process-whatsapp-campaign',
     'app:send-infographics',
+    'app:comic-status-checker',
     'app:company-management',
     'app:process-triggers',
     'app:send-overall-report',
