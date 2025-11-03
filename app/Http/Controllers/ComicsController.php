@@ -42,7 +42,7 @@ class ComicsController extends Controller
                 ], 500);
             }
             $taskId = $response->json()['task_id'];
-            ComicQueue::create([
+            $comic = ComicQueue::create([
                 'topic' => $request->input('topic'),
                 'task_id' => $taskId,
                 'company_id' => $companyId,
@@ -51,12 +51,43 @@ class ComicsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Comic generation initiated successfully'),
+                'data' => ['comic_queue_id' => $comic->id],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Validation error: ') . $e->validator->errors()->first(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function checkComicStatus($comic_queue_id)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $comic_queue_id = base64_decode($comic_queue_id);
+            $comicQueue = ComicQueue::where('id', $comic_queue_id)
+                ->where('company_id', $companyId)
+                ->first();
+            if (!$comicQueue) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Comic queue not found'),
+                ], 404);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => __('Comic queue status retrieved successfully'),
+                'data' => [
+                    'topic' => $comicQueue->topic,
+                    'status' => $comicQueue->status
+                ],
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
