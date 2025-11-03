@@ -527,57 +527,59 @@ class ApiEmployeesController extends Controller
         $companyId = Auth::user()->company_id;
 
         // Email Campaigns
-        $emailTotal = CampaignLive::where('user_email', $email)->count();
-        $emailCompromised = CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count();
-        $emailPayloadClicked = CampaignLive::where('user_email', $email)->where('payload_clicked', 1)->count();
-        $emailRisky = CampaignLive::where('user_email', $email)
-            ->where(function ($q) {
-                $q->where('emp_compromised', 1)->orWhere('payload_clicked', 1);
-            })->count();
+        // $emailTotal = CampaignLive::where('user_email', $email)->count();
+        // $emailCompromised = CampaignLive::where('user_email', $email)->where('emp_compromised', 1)->count();
+        // $emailPayloadClicked = CampaignLive::where('user_email', $email)->where('payload_clicked', 1)->count();
+        // $emailRisky = CampaignLive::where('user_email', $email)
+        //     ->where(function ($q) {
+        //         $q->where('emp_compromised', 1)->orWhere('payload_clicked', 1);
+        //     })->count();
 
-        // Quishing Campaigns
-        $quishingTotal = QuishingLiveCamp::where('user_email', $email)->count();
-        $quishingCompromised = QuishingLiveCamp::where('user_email', $email)->where('compromised', 1)->count();
-        $quishingPayloadClicked = QuishingLiveCamp::where('user_email', $email)->where('qr_scanned', '1')->count();
-        $quishingRisky = QuishingLiveCamp::where('user_email', $email)
-            ->where(function ($q) {
-                $q->where('compromised', 1)->orWhere('qr_scanned', '1');
-            })->count();
+        // // Quishing Campaigns
+        // $quishingTotal = QuishingLiveCamp::where('user_email', $email)->count();
+        // $quishingCompromised = QuishingLiveCamp::where('user_email', $email)->where('compromised', 1)->count();
+        // $quishingPayloadClicked = QuishingLiveCamp::where('user_email', $email)->where('qr_scanned', '1')->count();
+        // $quishingRisky = QuishingLiveCamp::where('user_email', $email)
+        //     ->where(function ($q) {
+        //         $q->where('compromised', 1)->orWhere('qr_scanned', '1');
+        //     })->count();
 
-        // WhatsApp Campaigns
-        $waTotal = WaLiveCampaign::where('user_email', $email)->count();
-        $waCompromised = WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count();
-        $waPayloadClicked = WaLiveCampaign::where('user_email', $email)->where('payload_clicked', 1)->count();
-        $waRisky = WaLiveCampaign::where('user_email', $email)
-            ->where(function ($q) {
-                $q->where('compromised', 1)->orWhere('payload_clicked', 1);
-            })->count();
+        // // WhatsApp Campaigns
+        // $waTotal = WaLiveCampaign::where('user_email', $email)->count();
+        // $waCompromised = WaLiveCampaign::where('user_email', $email)->where('compromised', 1)->count();
+        // $waPayloadClicked = WaLiveCampaign::where('user_email', $email)->where('payload_clicked', 1)->count();
+        // $waRisky = WaLiveCampaign::where('user_email', $email)
+        //     ->where(function ($q) {
+        //         $q->where('compromised', 1)->orWhere('payload_clicked', 1);
+        //     })->count();
 
-        // AI Call Campaigns
-        $aiTotal = AiCallCampLive::where('user_email', $email)->count();
-        $aiCompromised = AiCallCampLive::where('user_email', $email)->where('compromised', 1)->count();
-        $aiRisky = $aiCompromised; // Only compromised is risky for AI calls
+        // // AI Call Campaigns
+        // $aiTotal = AiCallCampLive::where('user_email', $email)->count();
+        // $aiCompromised = AiCallCampLive::where('user_email', $email)->where('compromised', 1)->count();
+        // $aiRisky = $aiCompromised; // Only compromised is risky for AI calls
 
-        $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
-        $compromisedSimulations = $emailCompromised + $quishingCompromised + $waCompromised + $aiCompromised;
-        $payloadClickedSimulations = $emailPayloadClicked + $quishingPayloadClicked + $waPayloadClicked;
-        $totalRiskyActions = $emailRisky + $quishingRisky + $waRisky + $aiRisky;
+        // $totalSimulations = $emailTotal + $quishingTotal + $waTotal + $aiTotal;
+        // $compromisedSimulations = $emailCompromised + $quishingCompromised + $waCompromised + $aiCompromised;
+        // $payloadClickedSimulations = $emailPayloadClicked + $quishingPayloadClicked + $waPayloadClicked;
+        // $totalRiskyActions = $emailRisky + $quishingRisky + $waRisky + $aiRisky;
 
-        if ($totalSimulations > 0) {
-            $safeSimulations = $totalSimulations - $totalRiskyActions;
-            $percentage = round(($safeSimulations / $totalSimulations) * 100, 2);
-            $riskScore = round(($totalRiskyActions / $totalSimulations) * 100, 2);
-        } else {
-            $percentage = 100;
-            $riskScore = 0;
-        }
+        // if ($totalSimulations > 0) {
+        //     $safeSimulations = $totalSimulations - $totalRiskyActions;
+        //     $percentage = round(($safeSimulations / $totalSimulations) * 100, 2);
+        //     $riskScore = round(($totalRiskyActions / $totalSimulations) * 100, 2);
+        // } else {
+        //     $percentage = 100;
+        //     $riskScore = 0;
+        // }
+
+        $employeeReport = new EmployeeReport($email, $companyId);
 
         return [
-            'security_score' => $percentage, // out of 100
-            'risk_score' => $riskScore,      // out of 100
-            'total_simulations' => $totalSimulations,
-            'compromised_simulations' => $compromisedSimulations,
-            'payload_clicked' => $payloadClickedSimulations
+            'security_score' => $employeeReport->calculateSecurityScore(), // out of 100
+            'risk_score' => $employeeReport->calculateOverallRiskScore(), 
+            'total_simulations' => $employeeReport->totalSimulations(),
+            'compromised_simulations' => $employeeReport->compromised(),
+            'payload_clicked' => $employeeReport->payloadClicked()
         ];
     }
 

@@ -68,6 +68,28 @@ class EmployeeReport
     }
 
 
+
+    public function calculateSecurityScore(): float
+    {
+        $trainingCompletionRate = $this->trainingCompletionRate();
+        $policiesAcceptanceRate = $this->policiesAssigned() > 0 ?
+            ($this->policiesAccepted() / $this->policiesAssigned()) * 100 : 0;
+        $emailReportRate = $this->totalSimulations() > 0 ?
+            ($this->emailReported() / $this->totalSimulations()) * 100 : 0;
+        $riskScore = $this->calculateOverallRiskScore();
+
+        // Security score considers positive security behaviors
+        $securityScore = (
+            ($trainingCompletionRate * 0.4) +  // 40% weight for training completion
+            ($policiesAcceptanceRate * 0.3) +  // 30% weight for policy compliance
+            ($emailReportRate * 0.2) +         // 20% weight for reporting threats
+            ((100 - $riskScore) * 0.1)         // 10% weight for avoiding compromise
+        );
+
+        return round(min(100, max(0, $securityScore)), 2);
+    }
+
+
     public function payloadClicked($email = null): int
     {
         $email =  CampaignLive::where('user_email', $email ?? $this->email)
