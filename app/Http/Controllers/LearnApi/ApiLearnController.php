@@ -245,53 +245,29 @@ class ApiLearnController extends Controller
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No user found with this email.')
+                    'message' => 'No user found with this email.'
                 ], 404);
             }
 
-            $allTrainings = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $request->email)
-                ->where('training_type', '!=', 'games')->get();
-
-            $completedTrainings = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $request->email)
-                ->where('completed', 1)->where('training_type', '!=', 'games')->get();
-
-            $inProgressTrainings = TrainingAssignedUser::with('trainingData')
-                ->where('user_email', $request->email)
-                ->where('training_started', 1)
-                ->where('completed', 0)->where('training_type', '!=', 'games')->get();
+            // Use service to get training data
+            $trainingData = $this->normalEmpLearnService->getNormalEmpTrainings($request->email);
 
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'email' => $request->email,
-                    'all_trainings' => $allTrainings,
-                    'completed_trainings' => $completedTrainings,
-                    'in_progress_trainings' => $inProgressTrainings,
-                    'total_trainings' => TrainingAssignedUser::with('trainingData')
-                        ->where('user_email', $request->email)->count(),
-                    'total_trainings' => $allTrainings->count(),
-                    'total_completed_trainings' => $completedTrainings->count(),
-                    'total_in_progress_trainings' => $inProgressTrainings->count(),
-                    'avg_in_progress_trainings' => round(TrainingAssignedUser::with('trainingData')
-                        ->where('user_email', $request->email)
-                        ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best')),
-                ],
-                'message' => __('Courses fetched successfully for :email', ['email' => $request->email])
+                'data' => $trainingData,
+                'message' =>  __('Courses fetched successfully for :email', ['email' => $request->email])
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
             return response()->json([
                 'success' => false,
-                'message' => __('Validation error: ') . $e->getMessage()
+                'message' => 'Validation error: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->json([
                 'success' => false,
-                'message' => __('An error occurred: ') . $e->getMessage()
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Mail\TrainingCompleteMail;
 use App\Models\Badge;
 use App\Models\CampaignLive;
 use App\Models\CertificateTemplate;
@@ -11,13 +12,14 @@ use App\Models\TprmCampaignLive;
 use App\Models\TrainingAssignedUser;
 use App\Models\Users;
 use App\Models\WaLiveCampaign;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class NormalEmpLearnService
 {
     public function calculateRiskLevel($riskScore)
     {
-          $riskScoreRanges = [
+        $riskScoreRanges = [
             'poor' => [0, 20],
             'fair' => [21, 40],
             'good' => [41, 60],
@@ -25,7 +27,7 @@ class NormalEmpLearnService
             'excellent' => [81, 100],
         ];
 
-         foreach ($riskScoreRanges as $label => [$min, $max]) {
+        foreach ($riskScoreRanges as $label => [$min, $max]) {
             if ($riskScore >= $min && $riskScore <= $max) {
                 $riskLevel = $label;
                 break;
@@ -268,5 +270,54 @@ class NormalEmpLearnService
         Storage::disk('s3')->put($relativePath, $pdfContent);
         $certificate_full_path = Storage::disk('s3')->path($relativePath);
         $trainingData->certificate_path = '/' . $certificate_full_path;
+    }
+
+    public function getNormalEmpTrainings($email)
+    {
+        // Get all non-game trainings
+        $allTrainings = TrainingAssignedUser::with('trainingData')
+            ->where('user_email', $email)
+            ->where('training_type', '!=', 'games')
+            ->get();
+
+        // Get completed trainings
+        $completedTrainings = TrainingAssignedUser::with('trainingData')
+            ->where('user_email', $email)
+            ->where('completed', 1)
+            ->where('training_type', '!=', 'games')
+            ->get();
+
+        // Get in-progress trainings
+        $inProgressTrainings = TrainingAssignedUser::with('trainingData')
+            ->where('user_email', $email)
+            ->where('training_started', 1)
+            ->where('completed', 0)
+            ->where('training_type', '!=', 'games')
+            ->get();
+
+        // Calculate average score for in-progress trainings
+        $avgInProgressTrainings = round(
+            TrainingAssignedUser::where('user_email', $email)
+                ->where('training_started', 1)
+                ->where('completed', 0)
+                ->where('training_type', '!=', 'games')
+                ->avg('personal_best') ?? 0
+        );
+
+        // Get total training count
+        $totalTrainings = TrainingAssignedUser::where('user_email', $email)
+            ->where('training_type', '!=', 'games')
+            ->count();
+
+        return [
+            'email' => $email,
+            'all_trainings' => $allTrainings,
+            'completed_trainings' => $completedTrainings,
+            'in_progress_trainings' => $inProgressTrainings,
+            'total_trainings' => $totalTrainings,
+            'total_completed_trainings' => $completedTrainings->count(),
+            'total_in_progress_trainings' => $inProgressTrainings->count(),
+            'avg_in_progress_trainings' => $avgInProgressTrainings,
+        ];
     }
 }
