@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\AssignedPolicy;
 use App\Models\TrainingModule;
 use Illuminate\Support\Carbon;
+use App\Models\ComicAssignedUser;
 use App\Models\ScormAssignedUser;
 use App\Mail\TrainingCompleteMail;
 use App\Models\TranslatedTraining;
@@ -1707,5 +1708,28 @@ class ApiLearnController extends Controller
                 "languages" => $languages
             ],
         ], 200);
+    }
+
+    public function fetchAssignedComics(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            $assignedComics = ComicAssignedUser::with('comicData')
+                ->where('user_email', $request->email)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Assigned comics retrieved successfully'),
+                'data' => $assignedComics
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
     }
 }

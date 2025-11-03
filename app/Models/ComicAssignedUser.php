@@ -16,4 +16,9 @@ class ComicAssignedUser extends Model
         'seen_at',
         'company_id',
     ];
+
+    public function comicData()
+    {
+        return $this->belongsTo(Comic::class, 'comic', 'id');
+    }
 }

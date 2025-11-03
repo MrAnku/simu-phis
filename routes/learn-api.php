@@ -36,6 +36,10 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
         Route::get('/policy-login-with-token', [ApiLearnPolicyController::class, 'policyLoginWithToken']);
         Route::get('/fetch-accepted-policies', [ApiLearnPolicyController::class, 'fetchAcceptedPolicies']);
 
+        // Assigned Comics
+        Route::get('/fetch-assigned-comics', [ApiLearnController::class, 'fetchAssignedComics']);
+        
+
         // Translate traning lang
         Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
 
