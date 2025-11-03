@@ -17,10 +17,11 @@ class checkBlueCollarLearnToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-         $token = $request->header('Authorization'); // Get token from header
+        $token = $request->header('Authorization'); // Get token from header
 
         $session = DB::table('blue_collar_learner_login_sessions')
             ->where('token', $token)
+            ->where('whatsapp_number', $request->query('user_whatsapp'))
             ->orderBy('created_at', 'desc')
             ->first();
 

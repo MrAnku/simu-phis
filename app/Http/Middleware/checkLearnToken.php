@@ -21,6 +21,7 @@ class checkLearnToken
 
         $session = DB::table('learnerloginsession')
             ->where('token', $token)
+            ->where('email', $request->query('email'))
             ->orderBy('created_at', 'desc')
             ->first();
 
