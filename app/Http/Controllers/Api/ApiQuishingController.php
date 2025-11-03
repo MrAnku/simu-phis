@@ -192,10 +192,6 @@ class ApiQuishingController extends Controller
             'status'             => 'running',
             'company_id'         => $companyId,
             'schedule_type'      => $data['schedule_type'],
-            'schedule_date'      => $data['schedule_type'] === 'scheduled' ? $data['schedule_date'] : null,
-            'time_zone'      => $data['schedule_type'] === 'scheduled' ? $data['time_zone'] : null,
-            'start_time'      => $data['schedule_type'] === 'scheduled' ? $data['start_time'] : null,
-            'end_time'      => $data['schedule_type'] === 'scheduled' ? $data['end_time'] : null,
             'launch_date' => now(),
             'email_freq' => $data['email_freq'],
             'expire_after' => $data['expire_after'] ?? null,
@@ -282,14 +278,7 @@ class ApiQuishingController extends Controller
             'quishing_lang'      => $data['quishing_language'] ?? null,
             'status' => 'not_scheduled',
             'company_id'         => $companyId,
-            'schedule_type'      => 'schLater',
-            'schedule_date'      => $data['schedule_date'],
-            'time_zone'      => $data['time_zone'],
-            'start_time'      => $data['start_time'],
-            'end_time'      => $data['end_time'],
-            'launch_date' => $data['schedule_date'],
-            'email_freq' => $data['email_freq'],
-            'expire_after' => $data['expire_after'] ?? null
+            'schedule_type'      => 'schLater'
         ]);
 
         log_action('Quishing campaign created for schedule later');
@@ -577,6 +566,7 @@ class ApiQuishingController extends Controller
                 // Update the campaign status to 'running'
                 $campaign->update([
                     'status' => 'running',
+                    'launch_date' => Carbon::parse(now())->toDateString(),
                     'schedule_type' => 'immediately',
                     'email_freq' => $email_freq,
                     'expire_after' => $expire_after

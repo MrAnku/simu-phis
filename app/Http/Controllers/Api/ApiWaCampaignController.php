@@ -318,14 +318,7 @@ class ApiWaCampaignController extends Controller
             'launch_time' => now(),
             'status' => 'not_scheduled',
             'variables' => json_encode($data['variables']),
-            'company_id' => Auth::user()->company_id,
-            'schedule_date'      => $data['schedule_date'],
-            'time_zone'      => $data['time_zone'],
-            'start_time'      => $data['start_time'],
-            'end_time'      => $data['end_time'],
-            'launch_date' => $data['schedule_date'],
-            'msg_freq' => $data['msg_freq'],
-            'expire_after' => $data['expire_after'] ?? null,
+            'company_id' => Auth::user()->company_id
         ]);
 
         log_action('WhatsApp campaign created for schedule later');
@@ -435,13 +428,6 @@ class ApiWaCampaignController extends Controller
             $campaigns->each(function ($campaign) use ($training_modules_data) {
                 $campaign->training_modules = $training_modules_data;
             });
-
-            // if ($campaigns->isEmpty()) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => __('Campaign not found!'),
-            //     ], 404);
-            // }
 
             return response()->json([
                 'success' => true,
@@ -1064,6 +1050,7 @@ class ApiWaCampaignController extends Controller
                 // Update the campaign status to 'running'
                 $campaign->update([
                     'status' => 'running',
+                    'launch_date' => Carbon::parse(now())->toDateString(),
                     'schedule_type' => 'immediately',
                     'launch_time' => now(),
                     'msg_freq' => $msg_freq,

@@ -263,7 +263,6 @@ class ProcessWhatsappCampaign extends Command
                     'training_module' => $this->getTraining($campaign),
                     'scorm_training' => $this->getScormTraining($campaign),
                     'training_assignment' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_assignment,
-
                     'days_until_due' => $campaign->campaign_type == 'phishing' ? null : $campaign->days_until_due,
                     'training_lang' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_lang,
                     'training_type' => $campaign->campaign_type == 'phishing' ? null : $campaign->training_type,

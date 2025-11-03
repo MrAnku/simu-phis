@@ -232,43 +232,6 @@ class ApiCampaignController extends Controller
             ], 422);
         }
 
-        // foreach ($users as $user) {
-        //     $camp_live = CampaignLive::create([
-        //         'campaign_id' => $campId,
-        //         'campaign_name' => $data['camp_name'],
-        //         'user_id' => $user->id,
-        //         'user_name' => $user->user_name,
-        //         'user_email' => $user->user_email,
-        //         'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : $data['training_mod'][array_rand($data['training_mod'])],
-        //         'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : $data['scorm_training'][array_rand($data['scorm_training'])],
-        //         'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
-        //         'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
-        //         'training_type' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_type'],
-        //         'launch_time' => now(),
-        //         'phishing_material' => ($data['campaign_type'] == 'Training') ? null : $data['phish_material'][array_rand($data['phish_material'])],
-        //         'sender_profile' => $data['sender_profile'] ?? null,
-        //         'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
-        //         'sent' => '0',
-        //         'company_id' => $companyId,
-        //     ]);
-
-        //     EmailCampActivity::create([
-        //         'campaign_id' => $campId,
-        //         'campaign_live_id' => $camp_live->id,
-        //         'company_id' => $companyId,
-        //     ]);
-
-        //     // Audit log
-        //     audit_log(
-        //         $companyId,
-        //         $user->user_email,
-        //         null,
-        //         'EMAIL_CAMPAIGN_SIMULATED',
-        //         "The campaign ‘{$data['camp_name']}’ has been sent to {$user->user_email}",
-        //         'normal'
-        //     );
-        // }
-
         Campaign::create([
             'campaign_id' => $campId,
             'campaign_name' => $data['camp_name'],
@@ -368,7 +331,6 @@ class ApiCampaignController extends Controller
             'selected_users' => $data['selected_users'] != null ? json_encode($data['selected_users']) : null,
             'training_module' => ($data['campaign_type'] == 'Phishing') || empty($data['training_mod']) ? null : json_encode($data['training_mod']),
             'scorm_training' => ($data['campaign_type'] == 'Phishing') || empty($data['scorm_training']) ? null : json_encode($data['scorm_training']),
-
             'training_assignment' => ($data['campaign_type'] == 'Phishing') ? null : $data['training_assignment'],
             'days_until_due' => ($data['campaign_type'] == 'Phishing') ? null : $data['days_until_due'],
             'training_lang' => ($data['campaign_type'] == 'Phishing') ? null : $data['trainingLang'],
@@ -381,11 +343,6 @@ class ApiCampaignController extends Controller
             'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
             'launch_time' => $launchTime,
             'launch_type' => 'schLater',
-            'email_freq' => $data['emailFreq'],
-            'startTime' => $data['schTimeStart'],
-            'endTime' => $data['schTimeEnd'],
-            'timeZone' => $data['schTimeZone'],
-            'expire_after' => $data['expire_after'],
             'status' => 'Not Scheduled',
             'company_id' => $companyId,
         ]);
@@ -415,8 +372,6 @@ class ApiCampaignController extends Controller
             CampaignLive::where('campaign_id', $campid)
                 ->where('company_id', $companyId)
                 ->delete();
-
-
 
             EmailCampActivity::where('campaign_id', $campid)
                 ->where('company_id', $companyId)
@@ -762,6 +717,7 @@ class ApiCampaignController extends Controller
                 // Update the campaign status to 'running'
                 $campaign->update([
                     'status' => 'running',
+                    'launch_date' => Carbon::parse(now())->toDateString(),
                     'launch_type' => 'immediately',
                     'launch_time' => now(),
                     'email_freq' => $email_freq,

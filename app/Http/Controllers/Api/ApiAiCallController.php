@@ -505,59 +505,6 @@ class ApiAiCallController extends Controller
                 'message' => __('Invalid launch type')
             ], 422);
 
-
-
-
-
-
-
-
-            // if ($request->schedule_type === 'immediately') {
-            //     $scheduledAt = Carbon::now()->toDateTimeString();
-            // } else {
-            //     $scheduledAt = Carbon::parse($request->scheduled_at)->toDateTimeString();
-            // }
-
-            // $status = $request->schedule_type === 'immediately' ? 'running' : 'pending';
-
-            // AiCallCampaign::create([
-            //     'campaign_id' => $campId,
-            //     'campaign_name' => $request->camp_name,
-            //     'employee_type' => $request->employee_type,
-            //     'users_group' => $request->users_group,
-            //     'selected_users' => $request->selected_users != null ? json_encode($request->selected_users) : null,
-            //     'users_grp_name' => $request->users_grp_name,
-            //     'training_module' => $request->campaign_type == 'phishing' || empty($request->training_module) ? null : json_encode($request->training_module),
-            //     'scorm_training' => $request->campaign_type == 'phishing' || empty($request->scorm_training) ? null : json_encode($request->scorm_training),
-            //     'training_assignment' => ($request->campaign_type == 'phishing') ? null : $request->training_assignment,
-            //     'training_lang' => $request->campaign_type == 'phishing' ? null : $request->training_lang,
-            //     'training_type' => $request->campaign_type == 'phishing' ? null : $request->training_type,
-            //     'policies' => (is_array($request->policies) && !empty($request->policies)) ? json_encode($request->policies) : null,
-            //     'ai_agent' => $request->ai_agent,
-            //     'ai_agent_name' => $request->ai_agent_name,
-            //     'phone_no' => $request->ai_phone,
-            //     'status' => $status,
-            //     'launch_time' => $scheduledAt,
-            //     'launch_type' => $request->schedule_type,
-            //     'company_id' => $companyId,
-            //     'schedule_date' => $request->schedule_type === 'scheduled' ? $request->schedule_date : null,
-            //     'time_zone'      => $request->schedule_type === 'scheduled' ? $request->time_zone : null,
-            //     'start_time'      => $request->schedule_type === 'scheduled' ? $request->start_time : null,
-            //     'end_time'      => $request->schedule_type === 'scheduled' ? $request->end_time : null,
-            //     'launch_date' => $request->schedule_type === 'immediately' ? now() : $request->schedule_date,
-            //     'call_freq' => $request->call_freq,
-            //     'expire_after' => $request->expire_after ?? null,
-            // ]);
-
-            // if ($status === 'running') {
-            //     $this->makeCampaignLive($campId);
-            // }
-
-
-
-            // log_action('Campaign for AI Vishing simulation created');
-
-            // return response()->json(['success' => true, 'message' => __('Campaign created successfully.')], 201);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
@@ -589,11 +536,7 @@ class ApiAiCallController extends Controller
                 'launch_time' => now(),
                 'launch_type' => $validated['schedule_type'],
                 'company_id' => Auth::user()->company_id,
-                'schedule_date' => $validated['schedule_type'] === 'scheduled' ? $validated['schedule_date'] : null,
-                'time_zone'      => $validated['schedule_type'] === 'scheduled' ? $validated['time_zone'] : null,
-                'start_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['start_time'] : null,
-                'end_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['end_time'] : null,
-                'launch_date' => $validated['schedule_type'] === 'immediately' ? now() : $validated['schedule_date'],
+                'launch_date' => now(),
                 'call_freq' => $validated['call_freq'],
                 'expire_after' => $validated['expire_after'] ?? null,
             ]);
@@ -637,11 +580,11 @@ class ApiAiCallController extends Controller
                 'launch_time' => now(),
                 'launch_type' => $validated['schedule_type'],
                 'company_id' => Auth::user()->company_id,
-                'schedule_date' => $validated['schedule_type'] === 'scheduled' ? $validated['schedule_date'] : null,
-                'time_zone'      => $validated['schedule_type'] === 'scheduled' ? $validated['time_zone'] : null,
-                'start_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['start_time'] : null,
-                'end_time'      => $validated['schedule_type'] === 'scheduled' ? $validated['end_time'] : null,
-                'launch_date' => $validated['schedule_type'] === 'immediately' ? now() : $validated['schedule_date'],
+                'schedule_date' => $validated['schedule_date'],
+                'time_zone'      => $validated['time_zone'],
+                'start_time'      => $validated['start_time'],
+                'end_time'      => $validated['end_time'],
+                'launch_date' => $validated['schedule_date'],
                 'call_freq' => $validated['call_freq'],
                 'expire_after' => $validated['expire_after'] ?? null,
             ]);
@@ -682,14 +625,7 @@ class ApiAiCallController extends Controller
             'status' => 'not_scheduled',
             'launch_time' => now(),
             'launch_type' => $data['schedule_type'],
-            'company_id' => Auth::user()->company_id,
-            'schedule_date' => $data['schedule_type'] === 'scheduled' ? $data['schedule_date'] : null,
-            'time_zone'      => $data['schedule_type'] === 'scheduled' ? $data['time_zone'] : null,
-            'start_time'      => $data['schedule_type'] === 'scheduled' ? $data['start_time'] : null,
-            'end_time'      => $data['schedule_type'] === 'scheduled' ? $data['end_time'] : null,
-            'launch_date' => $data['schedule_type'] === 'immediately' ? now() : $data['schedule_date'],
-            'call_freq' => $data['call_freq'],
-            'expire_after' => $data['expire_after'] ?? null,
+            'company_id' => Auth::user()->company_id
         ]);
 
         log_action('AI campaign created for schedule later');
@@ -1187,6 +1123,7 @@ class ApiAiCallController extends Controller
                 // Update the campaign status to 'running'
                 $campaign->update([
                     'status' => 'running',
+                    'launch_date' => Carbon::parse(now())->toDateString(),
                     'launch_type' => 'immediately',
                     'launch_time' => now(),
                     'call_freq' => $call_freq,
@@ -1196,7 +1133,7 @@ class ApiAiCallController extends Controller
                 $isRescheduled = true;
             }
 
-        if ($request->schedule_type == 'scheduled') {
+            if ($request->schedule_type == 'scheduled') {
                 $campaign->launch_time =  now();
                 $campaign->launch_type = 'scheduled';
                 $campaign->schedule_date = $request->schedule_date;
