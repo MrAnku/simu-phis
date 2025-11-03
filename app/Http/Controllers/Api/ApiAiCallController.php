@@ -1155,6 +1155,8 @@ class ApiAiCallController extends Controller
                 ], 404);
             }
 
+            $isRescheduled = false;
+
             if ($request->schedule_type == 'immediately') {
                 $call_freq = $request->call_freq;
                 $expire_after = $request->expire_after;
@@ -1190,9 +1192,11 @@ class ApiAiCallController extends Controller
                     'call_freq' => $call_freq,
                     'expire_after' => $expire_after
                 ]);
+
+                $isRescheduled = true;
             }
 
-            if ($request->launch_type == 'scheduled') {
+        if ($request->schedule_type == 'scheduled') {
                 $campaign->launch_time =  now();
                 $campaign->launch_type = 'scheduled';
                 $campaign->schedule_date = $request->schedule_date;
@@ -1204,6 +1208,15 @@ class ApiAiCallController extends Controller
                 $campaign->expire_after = $request->expire_after;
                 $campaign->status = 'pending';
                 $campaign->save();
+
+                $isRescheduled = true;
+            }
+
+            if (!$isRescheduled) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign could not be rescheduled')
+                ], 422);
             }
 
             log_action('AI campaign rescheduled');
@@ -1211,7 +1224,7 @@ class ApiAiCallController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign rescheduled successfully!')
-            ]);
+            ], 200);
         } catch (ValidationException $e) {
             log_action('Validation error occured while creating AI campaign');
             return response()->json([

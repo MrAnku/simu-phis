@@ -538,6 +538,8 @@ class ApiQuishingController extends Controller
                 ], 404);
             }
 
+            $isRescheduled = false;
+
             if ($request->schedule_type == 'immediately') {
                 $email_freq = $request->email_freq;
                 $expire_after = $request->expire_after;
@@ -579,6 +581,7 @@ class ApiQuishingController extends Controller
                     'email_freq' => $email_freq,
                     'expire_after' => $expire_after
                 ]);
+                $isRescheduled = true;
             }
 
             if ($request->schedule_type == 'scheduled') {
@@ -592,14 +595,23 @@ class ApiQuishingController extends Controller
                 $campaign->expire_after = $request->expire_after;
                 $campaign->status = 'pending';
                 $campaign->save();
+
+                $isRescheduled = true;
             }
 
             log_action('Email campaign rescheduled');
 
+            if (!$isRescheduled) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign could not be rescheduled')
+                ], 422);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign rescheduled successfully!')
-            ]);
+            ], 200);
         } catch (ValidationException $e) {
             log_action('Validation error occured while creating email campaign');
             return response()->json([

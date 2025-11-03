@@ -262,6 +262,8 @@ class ProcessAiCampaigns extends Command
                         'normal'
                     );
                 }
+
+                echo "Campaign is live \n";
             }
         }
     }

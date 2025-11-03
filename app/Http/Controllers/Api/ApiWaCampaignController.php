@@ -1025,6 +1025,8 @@ class ApiWaCampaignController extends Controller
                 ], 404);
             }
 
+            $isRescheduled = false;
+
             if ($request->schedule_type == 'immediately') {
                 $msg_freq = $request->msg_freq;
                 $expire_after = $request->expire_after;
@@ -1067,6 +1069,7 @@ class ApiWaCampaignController extends Controller
                     'msg_freq' => $msg_freq,
                     'expire_after' => $expire_after
                 ]);
+                $isRescheduled = true;
             }
 
             if ($request->schedule_type == 'scheduled') {
@@ -1081,6 +1084,15 @@ class ApiWaCampaignController extends Controller
                 $campaign->expire_after = $request->expire_after;
                 $campaign->status = 'pending';
                 $campaign->save();
+
+                $isRescheduled = true;
+            }
+
+            if (!$isRescheduled) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Campaign could not be rescheduled')
+                ], 422);
             }
 
             log_action('Email campaign rescheduled');
@@ -1088,7 +1100,7 @@ class ApiWaCampaignController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('Campaign rescheduled successfully!')
-            ]);
+            ], 200);
         } catch (ValidationException $e) {
             log_action('Validation error occured while creating email campaign');
             return response()->json([
