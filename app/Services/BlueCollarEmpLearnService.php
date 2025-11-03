@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\AiCallCampLive;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\CertificateTemplate;
+use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Storage;
 
 class BlueCollarEmpLearnService
@@ -117,5 +119,72 @@ class BlueCollarEmpLearnService
         Storage::disk('s3')->put($relativePath, $pdfContent);
         $certificate_full_path = Storage::disk('s3')->path($relativePath);
         $trainingData->certificate_path = '/' . $certificate_full_path;
+    }
+
+    public function calculateRiskScore($user)
+    {
+        $riskScoreRanges = [
+            'poor' => [0, 20],
+            'fair' => [21, 40],
+            'good' => [41, 60],
+            'veryGood' => [61, 80],
+            'excellent' => [81, 100],
+        ];
+
+        $payloadClicked = $this->payloadClicked($user);
+        $compromised = $this->compromised($user);
+        $totalSimulations = $this->totalSimulations($user);
+
+        // Risk score calculation
+        $riskScore = null;
+        $riskLevel = null;
+
+        $totalCompromised = $compromised + $payloadClicked;
+        
+        $riskScore = $totalSimulations > 0 ? 100 - round(($totalCompromised / $totalSimulations) * 100) : 100;
+
+        // Determine risk level
+        foreach ($riskScoreRanges as $label => [$min, $max]) {
+            if ($riskScore >= $min && $riskScore <= $max) {
+                $riskLevel = $label;
+                break;
+            }
+        }
+
+        return [
+            'riskScore' => $riskScore,
+            'riskLevel' => $riskLevel,
+        ];
+    }
+
+    private function payloadClicked($user)
+    {
+        $whatsapp = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->where('payload_clicked', 1)->count();
+
+        return $whatsapp;
+    }
+
+
+    private function compromised($user)
+    {
+        $whatsapp = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->where('compromised', 1)->count();
+
+        $ai = AiCallCampLive::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->where('compromised', 1)->count();
+
+        return $whatsapp + $ai;
+    }
+
+    private function totalSimulations($user)
+    {
+        $whatsapp = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->count();
+
+        $ai = AiCallCampLive::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->count();
+
+        return $whatsapp + $ai;
     }
 }

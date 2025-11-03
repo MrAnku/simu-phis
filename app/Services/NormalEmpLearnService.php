@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Storage;
 
 class NormalEmpLearnService
 {
-    public function calculateRiskScore($user)
+    public function calculateRiskLevel($riskScore)
     {
-        $riskScoreRanges = [
+          $riskScoreRanges = [
             'poor' => [0, 20],
             'fair' => [21, 40],
             'good' => [41, 60],
@@ -25,52 +25,13 @@ class NormalEmpLearnService
             'excellent' => [81, 100],
         ];
 
-        // Campaigns
-        $emailCampaigns = CampaignLive::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $quishingCampaigns = QuishingLiveCamp::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $tprmCampaigns = TprmCampaignLive::where('user_email', $user->user_email)
-            ->where('company_id', $user->company_id);
-
-        $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-            ->where('company_id', $user->company_id);
-
-        $totalSimulations = $emailCampaigns->count();
-        $compromisedSimulations = $emailCampaigns->where('emp_compromised', 1)->count();
-
-        $totalQuishing = $quishingCampaigns->count();
-        $compromisedQuishing = $quishingCampaigns->where('compromised', '1')->count();
-
-        $totalTprm = $tprmCampaigns->count();
-        $compromisedTprm = $tprmCampaigns->where('emp_compromised', 1)->count();
-
-        $totalWhatsapp = $whatsappCampaigns->count();
-        $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-        // Risk score calculation
-        $riskScore = null;
-        $riskLevel = null;
-
-        $totalAll = $totalSimulations + $totalQuishing + $totalTprm + $totalWhatsapp;
-        $compromisedAll = $compromisedSimulations + $compromisedQuishing + $compromisedTprm + $compromisedWhatsapp;
-
-        $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-        // Determine risk level
-        foreach ($riskScoreRanges as $label => [$min, $max]) {
+         foreach ($riskScoreRanges as $label => [$min, $max]) {
             if ($riskScore >= $min && $riskScore <= $max) {
                 $riskLevel = $label;
                 break;
             }
         }
-
-        return [
-            'riskScore' => $riskScore,
-            'riskLevel' => $riskLevel,
-        ];
+        return $riskLevel;
     }
 
     public function calculateLeaderboardRank($email)

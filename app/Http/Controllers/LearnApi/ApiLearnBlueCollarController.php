@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LearnApi;
 
 use App\Http\Controllers\Controller;
+use App\Models\AiCallCampLive;
 use App\Models\Badge;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
@@ -168,8 +169,10 @@ class ApiLearnBlueCollarController extends Controller
 
             $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
 
+            $blueCollarService = new BlueCollarEmpLearnService();
+
             // Calculate Risk score
-            $riskData = $this->calculateRiskScore($user);
+            $riskData = $blueCollarService->calculateRiskScore($user);
             $riskScore = $riskData['riskScore'];
             $riskLevel = $riskData['riskLevel'];
 
@@ -238,46 +241,6 @@ class ApiLearnBlueCollarController extends Controller
         return [
             'leaderboard' => $leaderboard,
             'current_user_rank' => $currentUserRank,
-        ];
-    }
-
-
-    private function calculateRiskScore($user)
-    {
-        $riskScoreRanges = [
-            'poor' => [0, 20],
-            'fair' => [21, 40],
-            'good' => [41, 60],
-            'veryGood' => [61, 80],
-            'excellent' => [81, 100],
-        ];
-
-        $whatsappCampaigns = WaLiveCampaign::where('user_id', $user->id)
-            ->where('company_id', $user->company_id);
-
-        $totalWhatsapp = $whatsappCampaigns->count();
-        $compromisedWhatsapp = $whatsappCampaigns->where('compromised', 1)->count();
-
-        // Risk score calculation
-        $riskScore = null;
-        $riskLevel = null;
-
-        $totalAll = $totalWhatsapp;
-        $compromisedAll = $compromisedWhatsapp;
-
-        $riskScore = $totalAll > 0 ? 100 - round(($compromisedAll / $totalAll) * 100) : 100;
-
-        // Determine risk level
-        foreach ($riskScoreRanges as $label => [$min, $max]) {
-            if ($riskScore >= $min && $riskScore <= $max) {
-                $riskLevel = $label;
-                break;
-            }
-        }
-
-        return [
-            'riskScore' => $riskScore,
-            'riskLevel' => $riskLevel,
         ];
     }
 

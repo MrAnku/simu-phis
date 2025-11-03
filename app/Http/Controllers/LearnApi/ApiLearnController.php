@@ -22,6 +22,7 @@ use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Services\EmployeeReport;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
@@ -200,9 +201,10 @@ class ApiLearnController extends Controller
             $user = Users::where('user_email', $request->email)->first();
 
             // Calculate Risk score
-            $riskData = $this->normalEmpLearnService->calculateRiskScore($user);
-            $riskScore = $riskData['riskScore'];
-            $riskLevel = $riskData['riskLevel'];
+            $employeeReport = new EmployeeReport($request->email, $user->company_id);
+            $riskScore = $employeeReport->calculateOverallRiskScore();
+
+            $riskLevel = $this->normalEmpLearnService->calculateRiskLevel($riskScore);
 
             // Calculate current rank
             $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
