@@ -139,9 +139,15 @@ class BlueCollarEmpLearnService
         $riskScore = null;
         $riskLevel = null;
 
-        $totalCompromised = $compromised + $payloadClicked;
-        
-        $riskScore = $totalSimulations > 0 ? 100 - round(($totalCompromised / $totalSimulations) * 100) : 100;
+        $totalCompromised = $payloadClicked + $compromised;
+
+        if ($totalSimulations > 0) {
+            $rawScore = 100 - (($totalCompromised / $totalSimulations) * 100);
+            $clamped = max(0, min(100, $rawScore));
+            $riskScore = round($clamped, 2); // ensures values like 2.1099999 become 2.11
+        } else {
+            $riskScore = 100.00;
+        }
 
         // Determine risk level
         foreach ($riskScoreRanges as $label => [$min, $max]) {
@@ -162,7 +168,10 @@ class BlueCollarEmpLearnService
         $whatsapp = WaLiveCampaign::where('user_id', $user->id)
             ->where('company_id', $user->company_id)->where('payload_clicked', 1)->count();
 
-        return $whatsapp;
+        $ai = AiCallCampLive::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->where('compromised', 1)->count();
+
+        return $whatsapp + $ai;
     }
 
 
