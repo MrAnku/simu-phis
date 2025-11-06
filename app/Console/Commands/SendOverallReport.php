@@ -247,18 +247,18 @@ class SendOverallReport extends Command
 
     private function sendReportEmail($company, $data, $pdfContent)
     {
-        // Get email from company table
-        $email = $company->email;
+        $emails = $company->company_settings->report_emails ?? [$company->email];
 
-        if (!$email) {
+        if (empty($emails)) {
             echo "No email found for company: {$company->company_name}";
             return;
         }
 
         // Send email using Mailable class
-        Mail::to($email)->send(new OverallReportMail($data, $pdfContent));
-
-        echo "Report sent to: {$email}\n";
+        foreach ($emails as $email) {
+            Mail::to($email)->send(new OverallReportMail($data, $pdfContent));
+            echo "Report sent to: {$email}\n";
+        }
     }
 
     private function saveReport($company, $pdfContent)

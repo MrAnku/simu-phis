@@ -1268,6 +1268,8 @@ class ApiSettingsController extends Controller
         try {
             $request->validate([
                 'overall_report' => 'required|string|in:weekly,monthly,quarterly,annually,semi_annually',
+                'report_emails' => 'array|max:4',
+                'report_emails.*' => 'email',
             ]);
 
             $companyId = Auth::user()->company_id;
@@ -1280,7 +1282,7 @@ class ApiSettingsController extends Controller
 
             CompanySettings::where('company_id', $companyId)
                 ->first()
-                ->update(['overall_report' => $request->overall_report]);
+                ->update(['overall_report' => $request->overall_report, 'report_emails' => $request->report_emails]);
 
             return response()->json(['success' => true, 'message' => __('Overall reporting updated successfully')], 200);
         } catch (ValidationException $e) {
@@ -1302,7 +1304,7 @@ class ApiSettingsController extends Controller
             }
 
             CompanySettings::where('company_id', $companyId)
-                ->update(['overall_report' => null]);
+                ->update(['overall_report' => null, 'report_emails' => null]);
 
             return response()->json(['success' => true, 'message' => __('Overall reporting disabled successfully')], 200);
         } catch (\Exception $e) {

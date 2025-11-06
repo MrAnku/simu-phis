@@ -29,6 +29,11 @@ class CompanySettings extends Model
         'training_assign_remind_freq_days',
         'time_to_click',
         'phish_reply',
-        'overall_report'
+        'overall_report',
+        'report_emails'
+    ];
+
+    protected $casts = [
+        'report_emails' => 'array',
     ];
 }
