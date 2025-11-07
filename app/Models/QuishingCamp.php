@@ -52,7 +52,7 @@ class QuishingCamp extends Model
     public function quishingMaterials()
     {
         $ids = json_decode($this->quishing_material, true);
-        return QshTemplate::whereIn('id', $ids ?? []);
+        return QshTemplate::select('name', 'file')->whereIn('id', $ids ?? []);
     }
 
     public function userGroupData()

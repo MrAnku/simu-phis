@@ -385,7 +385,34 @@ class ApiWaCampaignController extends Controller
             $campaign = WaCampaign::where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
-            $training_modules_data = $campaign->trainingModules()->get();
+
+            $training_modules_data = collect(); // default empty collection
+
+            $training_modules_data = $campaign->trainingModules()
+                ->select('name', 'json_quiz')
+                ->get()
+                ->map(function ($module) use ($campaign) {
+                    $videoUrl = null;
+
+                    $data = json_decode($module->json_quiz, true);
+
+                    if (isset($data['videoUrl'])) {
+                        $videoUrl = $data['videoUrl'];
+                    } elseif (is_array($data)) {
+                        foreach ($data as $item) {
+                            if (!empty($item['videoUrl'])) {
+                                $videoUrl = $item['videoUrl'];
+                                break;
+                            }
+                        }
+                    }
+
+                    return [
+                        'name' => $module->name,
+                        'video_url' => $videoUrl,
+                    ];
+                });
+
             $campaigns->each(function ($campaign) use ($training_modules_data) {
                 $campaign->training_modules = $training_modules_data;
             });

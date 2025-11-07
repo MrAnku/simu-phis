@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
+use App\Models\TrainingGame;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -346,7 +347,60 @@ class ApiQuishingController extends Controller
                     'message' => __('Campaign not found'),
                 ], 404);
             }
-            $trainingModules = $campaign->trainingModules()->get();
+
+            $trainingModules = collect(); // default empty collection
+
+            if ($campaign->training_type === 'games') {
+                $gameIds = json_decode($campaign->training_module, true);
+
+                if (is_array($gameIds) && count($gameIds) > 0) {
+                    $trainingModules = TrainingGame::whereIn('id', $gameIds)
+                        ->select('id', 'name', 'cover_image')
+                        ->get()
+                        ->map(function ($game) {
+                            return [
+                                'name' => $game->name,
+                                'video_url' => null,
+                                'cover_img' => $game->cover_image,
+                            ];
+                        });
+                }
+            } else {
+                $trainingModules = $campaign->trainingModules()
+                    ->select('name', 'json_quiz', 'cover_image')
+                    ->get()
+                    ->map(function ($module) use ($campaign) {
+                        $videoUrl = null;
+                        $coverImg = null;
+
+                        // 💬 Conversational training
+                        if ($campaign->training_type === 'conversational_training') {
+                            $coverImg = $module->cover_image ?? null;
+                        }
+                        // 🎥 Other types: extract video URL from json_quiz
+                        else {
+                            $data = json_decode($module->json_quiz, true);
+
+                            if (isset($data['videoUrl'])) {
+                                $videoUrl = $data['videoUrl'];
+                            } elseif (is_array($data)) {
+                                foreach ($data as $item) {
+                                    if (!empty($item['videoUrl'])) {
+                                        $videoUrl = $item['videoUrl'];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        return [
+                            'name' => $module->name,
+                            'video_url' => $videoUrl,
+                            'cover_img' => $coverImg,
+                        ];
+                    });
+            }
+
             $quishingMaterials = $campaign->quishingMaterials()->get();
             $campaign->training_modules_data = $trainingModules;
             $campaign->quishing_materials_data = $quishingMaterials;

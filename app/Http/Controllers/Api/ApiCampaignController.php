@@ -490,7 +490,7 @@ class ApiCampaignController extends Controller
 
                 if (is_array($gameIds) && count($gameIds) > 0) {
                     $trainingModules = TrainingGame::whereIn('id', $gameIds)
-                        ->select('id', 'name', 'cover_image')
+                        ->select('name', 'cover_image')
                         ->get()
                         ->map(function ($game) {
                             return [
@@ -502,7 +502,7 @@ class ApiCampaignController extends Controller
                 }
             } else {
                 $trainingModules = $campaign->trainingModules()
-                    ->select('id', 'name', 'json_quiz', 'cover_image')
+                    ->select('name', 'json_quiz', 'cover_image')
                     ->get()
                     ->map(function ($module) use ($campaign) {
                         $videoUrl = null;
