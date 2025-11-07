@@ -58,7 +58,7 @@ class Campaign extends Model
     public function phishingMaterials()
     {
         $ids = json_decode($this->phishing_material, true);
-        return PhishingEmail::whereIn('id', $ids ?? []);
+        return PhishingEmail::select('name', 'mailBodyFilePath')->whereIn('id', $ids ?? []);
     }
 
     public function campLive()
