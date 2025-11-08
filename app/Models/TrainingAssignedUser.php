@@ -31,7 +31,8 @@ class TrainingAssignedUser extends Model
         'grade',
         'badge',
         'certificate_path',
-        'feedback'
+        'feedback',
+        'alt_training'
     ];
 
     public function trainingData()

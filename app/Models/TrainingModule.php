@@ -31,7 +31,8 @@ class TrainingModule extends Model
         'industry',
         'json_quiz',
         'module_language',
-        'company_id'
+        'company_id',
+        'alternative_training'
     ];
 
     public function trainingAssigned()

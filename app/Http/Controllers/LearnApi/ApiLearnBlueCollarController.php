@@ -8,10 +8,12 @@ use App\Models\Badge;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarEmpLearnService;
 use App\Services\BlueCollarWhatsappService;
 use App\Services\CheckWhitelabelService;
+use App\Services\TrainingAssignedService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -327,6 +329,62 @@ class ApiLearnBlueCollarController extends Controller
 
             $blueCollarEmpLearnService = new BlueCollarEmpLearnService();
 
+
+            // If user fails then assign alternative training if exists
+            $passingScore = (int)$rowData->trainingData->passing_score;
+
+            if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
+
+                $alterTrainingId = $rowData->trainingData->alternative_training;
+
+                if ($alterTrainingId !== null) {
+                    $alterTraining = TrainingModule::find($alterTrainingId);
+                    if (!$alterTraining) {
+                        return response()->json(['success' => false, 'message' => 'No Alternative Training Found'], 404);
+                    }
+
+                    $isAlterTrainingAssigned = BlueCollarTrainingUser::where('user_whatsapp', $rowData->user_whatsapp)
+                        ->where('training', $alterTrainingId)
+                        ->first();
+
+                    if (!$isAlterTrainingAssigned) {
+                        $campData = [
+                            'campaign_id' => $rowData->campaign_id,
+                            'user_id' => $rowData->user_id,
+                            'user_name' => $rowData->user_name,
+                            'user_whatsapp' => $rowData->user_whatsapp,
+                            'training' => $alterTrainingId,
+                            'training_lang' => $rowData->training_lang,
+                            'training_type' => 'ai_training',
+                            'assigned_date' => $rowData->assigned_date,
+                            'training_due_date' => $rowData->training_due_date,
+                            'company_id' => $rowData->company_id,
+                            'alt_training' => 1
+                        ];
+
+                        $trainingAssignedService = new TrainingAssignedService();
+
+                        $trainingAssigned = $trainingAssignedService->assignNewBlueCollarTraining($campData);
+
+                        if ($trainingAssigned['status'] == 1) {
+                            $rowData->alt_training = 1;
+                            $rowData->save();
+
+                            $module = TrainingModule::find($alterTrainingId);
+                            // Audit log
+                            audit_log(
+                                $rowData->company_id,
+                                null,
+                                $rowData->user_whatsapp,
+                                'ALTER_TRAINING_ASSIGNED',
+                                "{$rowData->user_whatsapp} has been assigned an alternative training : '{$module->name}'.",
+                                'bluecollar'
+                            );
+                        }
+                    }
+                }
+            }
+
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
@@ -346,8 +404,6 @@ class ApiLearnBlueCollarController extends Controller
                 setCompanyTimezone($rowData->company_id);
 
                 log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
-
-                $passingScore = (int)$rowData->trainingData->passing_score;
 
                 if ($request->trainingScore >= $passingScore) {
                     $rowData->completed = 1;

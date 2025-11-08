@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
 use App\Services\EmployeeReport;
+use App\Services\TrainingAssignedService;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
@@ -294,6 +295,61 @@ class ApiLearnController extends Controller
             }
             $normalEmpLearnService = new NormalEmpLearnService();
 
+            // If user fails then assign alternative training if exists
+            $passingScore = (int)$rowData->trainingData->passing_score;
+
+            if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
+
+                $alterTrainingId = $rowData->trainingData->alternative_training;
+
+                if ($alterTrainingId !== null) {
+                    $alterTraining = TrainingModule::find($alterTrainingId);
+                    if (!$alterTraining) {
+                        return response()->json(['success' => false, 'message' => 'No Alternative Training Found'], 404);
+                    }
+
+                    $isAlterTrainingAssigned = TrainingAssignedUser::where('user_email', $rowData->user_email)
+                        ->where('training', $alterTrainingId)
+                        ->first();
+
+                    if (!$isAlterTrainingAssigned) {
+                        $campData = [
+                            'campaign_id' => $rowData->campaign_id,
+                            'user_id' => $rowData->user_id,
+                            'user_name' => $rowData->user_name,
+                            'user_email' => $rowData->user_email,
+                            'training' => $alterTrainingId,
+                            'training_lang' => $rowData->training_lang,
+                            'training_type' => 'ai_training',
+                            'assigned_date' => $rowData->assigned_date,
+                            'training_due_date' => $rowData->training_due_date,
+                            'company_id' => $rowData->company_id,
+                            'alt_training' => 1
+                        ];
+
+                        $trainingAssignedService = new TrainingAssignedService();
+
+                        $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+                        if ($trainingAssigned['status'] == 1) {
+                            $rowData->alt_training = 1;
+                            $rowData->save();
+
+                            $module = TrainingModule::find($alterTrainingId);
+                            // Audit log
+                            audit_log(
+                                $rowData->company_id,
+                                $rowData->user_email,
+                                null,
+                                'ALTER_TRAINING_ASSIGNED',
+                                "{$module->name} has been assigned to {$rowData->user_email}",
+                                'normal'
+                            );
+                        }
+                    }
+                }
+            }
+
             if ($rowData && $request->trainingScore > $rowData->personal_best) {
                 // Update the column if the current value is greater
                 $rowData->personal_best = $request->trainingScore;
@@ -313,8 +369,6 @@ class ApiLearnController extends Controller
                 setCompanyTimezone($rowData->company_id);
 
                 log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
-
-                $passingScore = (int)$rowData->trainingData->passing_score;
 
                 if ($request->trainingScore >= $passingScore) {
                     $rowData->completed = 1;
