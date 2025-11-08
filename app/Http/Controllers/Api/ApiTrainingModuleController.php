@@ -267,6 +267,7 @@ class ApiTrainingModuleController extends Controller
                 'json_quiz' => $jsonData,
                 'module_language' => $mModuleLang,
                 'company_id' => $companyId,
+                'alternative_training' => $request->input('alternative_training')
             ]);
 
             if ($trainingModule->save()) {
@@ -561,6 +562,7 @@ class ApiTrainingModuleController extends Controller
                 'tags' => $request->input('tags') === 'null' ? null : $request->input('tags'),
                 'language' =>  null,
                 'program_resources' => $programResources,
+                'alternative_training' => $request->input('alternative_training')
             ];
 
             $trainingModule = TrainingModule::find($trainingModuleId);
