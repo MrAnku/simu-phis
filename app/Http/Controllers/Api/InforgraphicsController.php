@@ -21,6 +21,7 @@ class InforgraphicsController extends Controller
     {
         try {
             $infographics = Inforgraphic::where('company_id', Auth::user()->company_id)
+            ->orWhere('company_id', 'default')
                 ->orderBy('created_at', 'desc')
                 ->get();
             return response()->json([

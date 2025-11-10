@@ -14,7 +14,10 @@ class ComicsController extends Controller
 {
     public function index()
     {
-        $comics = Comic::where('company_id', Auth::user()->company_id)->get();
+        $comics = Comic::where('company_id', Auth::user()->company_id)
+        ->orWhere('company_id', 'default')
+        ->orderBy('created_at', 'desc')
+        ->get();
         return response()->json([
             'success' => true,
             'message' => 'Comics retrieved successfully',
