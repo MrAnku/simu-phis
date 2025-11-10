@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AssignedPolicy;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\ComicAssignedUser;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -24,7 +27,13 @@ class ApiAssignedTrainingsController extends Controller
             // Get all SCORM assignments
             $scorms = ScormAssignedUser::where('company_id', $companyId)->get();
 
-            $employees = $this->buildEmployeeTrainingSummary($trainings, $scorms);
+            // Get all Comic assignments
+            $comics = ComicAssignedUser::where('company_id', $companyId)->get();
+
+            // Get all Policies assignments
+            $policies = AssignedPolicy::where('company_id', $companyId)->get();
+
+            $employees = $this->buildEmployeeTrainingSummary($trainings, $scorms, $comics, $policies);
 
             return response()->json([
                 'success' => true,
@@ -44,7 +53,7 @@ class ApiAssignedTrainingsController extends Controller
         }
     }
 
-    private function buildEmployeeTrainingSummary($trainings, $scorms)
+    private function buildEmployeeTrainingSummary($trainings, $scorms, $comics, $policies)
     {
         $employees = [];
 
@@ -57,6 +66,8 @@ class ApiAssignedTrainingsController extends Controller
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
+                    'comics' => 0,
+                    'policies' => 0,
                 ];
             }
             if ($training->training_type === 'games') {
@@ -75,9 +86,43 @@ class ApiAssignedTrainingsController extends Controller
                     'trainings' => 0,
                     'games' => 0,
                     'scorms' => 0,
+                    'comics' => 0,
+                    'policies' => 0,
                 ];
             }
             $employees[$email]['scorms']++;
+        }
+
+        foreach ($comics as $comic) {
+            $email = $comic->user_email;
+            if (!isset($employees[$email])) {
+                $employees[$email] = [
+                    'user_email' => $email,
+                    'user_name' => $comic->user_name,
+                    'trainings' => 0,
+                    'games' => 0,
+                    'scorms' => 0,
+                    'comics' => 0,
+                    'policies' => 0,
+                ];
+            }
+            $employees[$email]['comics']++;
+        }
+
+        foreach ($policies as $policy) {
+            $email = $policy->user_email;
+            if (!isset($employees[$email])) {
+                $employees[$email] = [
+                    'user_email' => $email,
+                    'user_name' => $policy->user_name,
+                    'trainings' => 0,
+                    'games' => 0,
+                    'scorms' => 0,
+                    'comics' => 0,
+                    'policies' => 0,
+                ];
+            }
+            $employees[$email]['policies']++;
         }
 
         return $employees;
@@ -340,6 +385,94 @@ class ApiAssignedTrainingsController extends Controller
         }
     }
 
+    public function fetchComicDetails(Request $request)
+    {
+        try {
+            $request->validate([
+                'identifier' => 'required'
+            ]);
+
+            $companyId = Auth::user()->company_id;
+            $identifier = $request->identifier;
+
+            $comics = ComicAssignedUser::where('company_id', $companyId)
+                ->where('user_email', $identifier)
+                ->with('comicData')
+                ->get();
+
+            $result = [];
+            foreach ($comics as $comic) {
+                $result[] = [
+                    'id'    => $comic->id,
+                    'comic_name'    => $comic->comicData->name ?? null,
+                    'assigned_at'    => Carbon::parse($comic->assigned_at)->toDateString(),
+                    'seen_at' => $comic->seen_at,
+                    'status' => $comic->seen_at ? 'seen' : 'unseen'
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Comic details fetched successfully.'),
+                'data' => $result
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation error: ') . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchPolicyDetails(Request $request)
+    {
+        try {
+            $request->validate([
+                'identifier' => 'required'
+            ]);
+
+            $companyId = Auth::user()->company_id;
+            $identifier = $request->identifier;
+
+            $policies = AssignedPolicy::where('company_id', $companyId)
+                ->where('user_email', $identifier)
+                ->with('policyData')
+                ->get();
+
+            $result = [];
+            foreach ($policies as $policy) {
+                $result[] = [
+                    'id'    => $policy->id,
+                    'policy_name'    => $policy->policyData->policy_name ?? null,
+                    'accepted_at'    => $policy->accepted_at,
+                    'reading_time' => $policy->reading_time,
+                    'status' => $policy->accepted == 1 ? 'accepted' : 'not_accepted',
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Policy details fetched successfully.'),
+                'data' => $result
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation error: ') . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function deleteTraining(Request $request)
     {
         try {
@@ -409,12 +542,90 @@ class ApiAssignedTrainingsController extends Controller
             if ($trainingDeleted) {
                 return response()->json([
                     'success' => true,
-                    'message' => __('Scorm deleted successfully.')
+                    'message' => __('Assigned Scorm deleted successfully.')
                 ], 200);
             } else {
                 return response()->json([
                     'success' => false,
                     'message' => __('Assigned Scorm not found.')
+                ], 404);
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation error: ') . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteComic(Request $request)
+    {
+        try {
+            $request->validate([
+                'comic_id' => 'required'
+            ]);
+
+            $comic_id = $request->query('comic_id');
+
+            $companyId = Auth::user()->company_id;
+
+            $comicDeleted = ComicAssignedUser::where('company_id', $companyId)
+                ->where('id', $comic_id)
+                ->delete();
+
+            if ($comicDeleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Comic deleted successfully.')
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Assigned Comic not found.')
+                ], 404);
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation error: ') . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deletePolicy(Request $request)
+    {
+        try {
+            $request->validate([
+                'policy_id' => 'required'
+            ]);
+
+            $policy_id = $request->query('policy_id');
+
+            $companyId = Auth::user()->company_id;
+
+            $policyDeleted = AssignedPolicy::where('company_id', $companyId)
+                ->where('id', $policy_id)
+                ->delete();
+
+            if ($policyDeleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Assigned Policy deleted successfully.')
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Assigned Policy not found.')
                 ], 404);
             }
         } catch (ValidationException $e) {

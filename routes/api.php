@@ -612,8 +612,12 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('training-details', [ApiAssignedTrainingsController::class, 'fetchTrainingDetails']);
         Route::get('game-details', [ApiAssignedTrainingsController::class, 'fetchGameDetails']);
         Route::get('scorm-details', [ApiAssignedTrainingsController::class, 'fetchScormDetails']);
+        Route::get('comic-details', [ApiAssignedTrainingsController::class, 'fetchComicDetails']);
+        Route::get('policy-details', [ApiAssignedTrainingsController::class, 'fetchPolicyDetails']);
         Route::delete('delete-training', [ApiAssignedTrainingsController::class, 'deleteTraining']);
         Route::delete('delete-scorm', [ApiAssignedTrainingsController::class, 'deleteScorm']);
+        Route::delete('delete-comic', [ApiAssignedTrainingsController::class, 'deleteComic']);
+        Route::delete('delete-policy', [ApiAssignedTrainingsController::class, 'deletePolicy']);
 
         Route::prefix('normal-emp')->group(function () {
             Route::put('/start-training', [ApiLearnController::class, 'startTrainingModule']);
