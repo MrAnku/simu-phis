@@ -166,6 +166,7 @@ class InforgraphicsController extends Controller
                 'users_group' => $request->users_group,
                 'inforgraphics' => empty($request->infographics) ? null : json_encode($request->infographics),
                 'comics' => empty($request->comics) ? null : json_encode($request->comics),
+                'comic_assignment' => $request->comic_assignment,
                 'status' => $status,
                 'scheduled_at' => $scheduledAt,
                 'company_id' => Auth::user()->company_id,
