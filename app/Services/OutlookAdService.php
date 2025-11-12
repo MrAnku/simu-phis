@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\OutlookAdToken;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class OutlookAdService
@@ -19,10 +20,12 @@ class OutlookAdService
 
     public static function authenticateUrl(): string
     {
+        $company = new CheckWhitelabelService(Auth::user()->company_id);
+
         $authUrl = env('MS_AUTHORITY') . "authorize?" . http_build_query([
             "client_id" => env('MS_CLIENT_ID'),
             "response_type" => "code",
-            "redirect_uri" => env('MS_REDIRECT_URI'),
+            "redirect_uri" => $company->platformDomain() . "/integration",
             "response_mode" => "query",
             "scope" => "offline_access openid profile email User.Read Directory.Read.All",
             "state" => csrf_token() // Use CSRF token for security

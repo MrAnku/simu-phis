@@ -427,10 +427,12 @@ class PhishTriageController extends Controller
         if ($cache) {
             return response()->json(['auth_url' => null], 200);
         }
+        $company = new CheckWhitelabelService(Auth::user()->company_id);
+
         $params = [
             'client_id' => env('PT_MS_CLIENT_ID'),
             'response_type' => 'code',
-            'redirect_uri' => env('PT_MS_REDIRECT_URI'),
+            'redirect_uri' => $company->platformDomain() . "/phish-triage",
             'response_mode' => 'query',
             'scope' => 'offline_access Mail.ReadWrite Mail.Send MailboxSettings.Read User.Read',
         ];
@@ -447,11 +449,13 @@ class PhishTriageController extends Controller
         $code = $request->code;
         $companyId = Auth::user()->company_id;
 
+        $company = new CheckWhitelabelService($companyId);
+
         $response = Http::asForm()->post("https://login.microsoftonline.com/" . env('PT_MS_TENANT_ID') . "/oauth2/v2.0/token", [
             'client_id' => env('PT_MS_CLIENT_ID'),
             'scope' => 'https://graph.microsoft.com/.default', // Use .default for application permissions
             'code' => $code,
-            'redirect_uri' => env('PT_MS_REDIRECT_URI'),
+            'redirect_uri' => $company->platformDomain() . "/phish-triage",
             'grant_type' => 'authorization_code',
             'client_secret' => env('PT_MS_CLIENT_SECRET'),
         ]);

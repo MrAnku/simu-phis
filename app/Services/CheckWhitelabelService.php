@@ -65,4 +65,16 @@ class CheckWhitelabelService
         return WhiteLabelledWhatsappConfig::where('company_id', $this->companyId)
             ->first();
     }
+
+    public function platformDomain(): string
+    {
+        $domain = WhiteLabelledCompany::where('company_id', $this->companyId)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->value('domain');
+        if($domain){
+            return "https://" .$domain;
+        }
+        return env('NEXT_APP_URL');
+    }
 }
