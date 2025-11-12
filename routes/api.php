@@ -685,6 +685,9 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('fetch-audit-actions', [ApiAuditLogsController::class, 'fetchAuditActions']);
         Route::get('search-users', [ApiAuditLogsController::class, 'searchUsers']);
     });
+
+    // PPP Reduction Over Time API
+    Route::get('ppp-reduction-over-time', [ApiDashboardController::class, 'getPppReductionOverTime']);
 });
 
 require __DIR__ . '/learn-api.php';

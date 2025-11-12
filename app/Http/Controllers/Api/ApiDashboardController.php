@@ -25,6 +25,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Services\CompanyReport;
+use App\Models\MonthlyPpp;
+use App\Services\PppCalculationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -97,7 +99,7 @@ class ApiDashboardController extends Controller
         ]);
 
         if ($request->ip_whitelist === 1) {
-            
+
             Company::where('company_id', $companyId)
                 ->update(['ip_whitelist' => true]);
 
@@ -2188,5 +2190,89 @@ class ApiDashboardController extends Controller
         });
 
         return $leaderboard;
+    }
+
+    public function getPppReductionOverTime(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $months = $request->get('months', 12); // Default to 12 months
+
+            // Get PPP data from database - sorted chronologically (oldest first)
+            $pppData = MonthlyPpp::where('company_id', $companyId)
+                ->orderBy('created_at', 'asc')
+                ->limit($months)
+                ->get();
+
+            // If no data found, try to calculate historical data first
+            if ($pppData->isEmpty()) {
+                $pppService = new PppCalculationService();
+                $pppService->calculateHistoricalPppForCompany($companyId);
+
+                // Retry getting the data - sorted chronologically
+                $pppData = MonthlyPpp::where('company_id', $companyId)
+                    ->orderBy('created_at', 'asc')
+                    ->limit($months)
+                    ->get();
+            }
+
+            if ($pppData->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No PPP data found for this company. Please ensure simulations have been conducted.'
+                ], 404);
+            }
+
+            // Format monthly data
+            $monthlyPpp = $pppData->map(function ($record) {
+                return [
+                    'month' => $record->month_year,
+                    'ppp' => $record->ppp_percentage
+                ];
+            });
+
+            // Calculate reduction metrics
+            $firstRecord = $pppData->first(); // (initial)
+            $lastRecord = $pppData->last();   //(current)
+
+            $initialPpp = $firstRecord->ppp_percentage;
+            $currentPpp = $lastRecord->ppp_percentage;
+
+            // PPP Reduction = ((Initial PPP - Current PPP) / Initial PPP) × 100
+            $improvementPercentage = $initialPpp > 0 ?
+                round((($initialPpp - $currentPpp) / $initialPpp) * 100, 2) : 0;
+
+            // Calculate reduction from previous month and get previous month PPP
+            $previousMonthPpp = null;
+            $previousMonthReduction = null;
+            if (count($pppData) >= 2) {
+                $previousRecord = $pppData[count($pppData) - 2]; // Second to last record
+                $previousMonthPpp = $previousRecord->ppp_percentage;
+
+                // Previous month reduction = ((Previous PPP - Current PPP) / Previous PPP) × 100
+                $previousMonthReduction = $previousMonthPpp > 0 ?
+                    round((($previousMonthPpp - $currentPpp) / $previousMonthPpp) * 100, 2) : 0;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'monthly_ppp_trend' => $monthlyPpp,
+                    'ppp_summary' => [
+                        'initial_ppp' => $initialPpp,
+                        'current_ppp' => $currentPpp,
+                        'overall_reduction_percentage' => $improvementPercentage,
+                        'previous_month_ppp' => $previousMonthPpp,
+                        'monthly_reduction_percentage' => $previousMonthReduction
+                    ]
+                ],
+                'message' => 'PPP reduction data fetched successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error fetching PPP reduction data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

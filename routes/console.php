@@ -45,3 +45,9 @@ Schedule::command('app:sync-logs')
     ->runInBackground()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/cron/sync-logs.log'));
+
+Schedule::command('ppp:calculate-monthly')
+    ->monthlyOn(-1, '23:30')
+    ->runInBackground()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/cron/ppp-calculate-monthly.log'));
