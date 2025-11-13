@@ -17,7 +17,7 @@ class ApiCustomTrainingEmailController extends Controller
         $templates = CustomTrainingEmail::where('company_id', Auth::user()->company_id)->get();
         return response()->json([
             'success' => true,
-            'message' => 'Custom training email templates fetched successfully',
+            'message' => __('Custom training email templates fetched successfully'),
             'data' => $templates
         ], 200);
     }
