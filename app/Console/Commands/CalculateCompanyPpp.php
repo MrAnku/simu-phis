@@ -6,12 +6,12 @@ use Illuminate\Console\Command;
 use App\Services\PppCalculationService;
 use App\Models\Company;
 
-class CalculateMonthlyPpp extends Command
+class CalculateCompanyPpp extends Command
 {
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'ppp:calculate-monthly';
+    protected $signature = 'ppp:calculate-company';
 
     /**
      * The console command description.
@@ -37,9 +37,7 @@ class CalculateMonthlyPpp extends Command
      */
     public function handle()
     {
-        // Run for all companies (cron behavior)
         $this->calculatePppForAllCompanies();
-
         return 0;
     }
 
@@ -47,53 +45,52 @@ class CalculateMonthlyPpp extends Command
      * Calculate PPP for all approved companies
      */
     private function calculatePppForAllCompanies()
-    {        
+    {
         $companies = Company::where('approved', 1)
             ->where('role', null)
             ->where('service_status', 1)
             ->get();
 
         if ($companies->isEmpty()) {
-            echo 'No companies found for PPP calculation.';
+            $this->warn('No companies found for PPP calculation.');
             return;
-        }        
-        $totalCompanies = count($companies);
+        }
         $successCount = 0;
         $failedCount = 0;
         $totalNewCalculations = 0;
 
         foreach ($companies as $company) {
             try {
-                echo "Processing company: {$company->company_name} (ID: {$company->company_id})\n";                
+                $this->line("Processing company: {$company->company_name} (ID: {$company->company_id})");
+
                 $results = $this->pppService->calculateHistoricalPppForCompany($company->company_id);
-                
+
                 if ($results !== false && !empty($results)) {
                     $newCalculations = 0;
                     $skippedCalculations = 0;
-                    
+
                     // Check each result to see if it was newly calculated or already existed
                     foreach ($results as $result) {
                         if ($result->wasRecentlyCreated) {
                             $newCalculations++;
                             $totalNewCalculations++;
-                            echo "PPP calculated for {$company->company_name} - {$result->month_year}: {$result->ppp_percentage}%\n";
+                            $this->info("✓ PPP calculated for {$company->company_name} - {$result->month_year}: {$result->ppp_percentage}%");
                         } else {
                             $skippedCalculations++;
                         }
                     }
-                    
-                    if ($newCalculations > 0) {
-                        echo "Success: {$company->company_name} - {$newCalculations} new months calculated, {$skippedCalculations} months already existed\n";
-                    } else {
-                        echo "{$company->company_name} - All PPP data already exists\n";
+
+                    if ($newCalculations == 0) {
+                        $this->line("{$company->company_name} - All PPP data already exists");
                     }
+
                     $successCount++;
                 } else {
-                    echo "{$company->company_name} - No data to calculate\n";
+                    $this->line("{$company->company_name} - No data to calculate");
                     $failedCount++;
                 }
             } catch (\Exception $e) {
-                echo "{$company->company_name} - Error: " . $e->getMessage() . "\n";
+                $this->error("{$company->company_name} - Error: " . $e->getMessage());
                 $failedCount++;
                 continue;
             }

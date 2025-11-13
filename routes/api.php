@@ -688,6 +688,9 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
     // PPP Reduction Over Time API
     Route::get('ppp-reduction-over-time', [ApiDashboardController::class, 'getPppReductionOverTime']);
+    
+    // User PPP Reduction Over Time API (single comprehensive route)
+    Route::get('user-ppp-reduction-over-time', [ApiDashboardController::class, 'getUserPppReductionOverTime']);
 });
 
 require __DIR__ . '/learn-api.php';

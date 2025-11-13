@@ -46,8 +46,21 @@ Schedule::command('app:sync-logs')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/cron/sync-logs.log'));
 
-Schedule::command('ppp:calculate-monthly')
-    ->monthlyOn(-1, '23:30')
+// PPP Calculation Commands - Run separately at end of month
+Schedule::command('ppp:calculate-company')
+    ->cron('20 23 28-31 * *')
+    ->skip(function () {
+        return \Carbon\Carbon::now()->addDay()->day !== 1;
+    })
     ->runInBackground()
     ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/cron/ppp-calculate-monthly.log'));
+    ->appendOutputTo(storage_path('logs/cron/ppp-calculate-company.log'));
+
+Schedule::command('ppp:calculate-users')
+    ->cron('40 23 28-31 * *')
+    ->skip(function () {
+        return \Carbon\Carbon::now()->addDay()->day !== 1;
+    })
+    ->runInBackground()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/cron/ppp-calculate-users.log'));

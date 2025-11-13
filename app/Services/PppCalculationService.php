@@ -18,11 +18,11 @@ class PppCalculationService
     public function calculateMonthlyPpp($companyId, $month, $year)
     {
         // Calculate PPP using your formula: (employees who clicked / total employees who received) * 100
-        $totalSimulations = $this->getTotalSimulations($companyId, $month, $year);
-        $totalClicked = $this->getTotalClicked($companyId, $month, $year);
+        $totalSimulations = $this->totalSimulations($companyId, $month, $year);
+        $totalClicked = $this->payloadClicked($companyId, $month, $year);
 
         // Your PPP Formula: (clicked / total received) * 100
-        $pppPercentage = $totalSimulations > 0 ? 
+        $pppPercentage = $totalSimulations > 0 ?
             round(($totalClicked / $totalSimulations) * 100, 2) : 0;
 
         // Ensure PPP percentage never exceeds 100%
@@ -35,7 +35,7 @@ class PppCalculationService
         $existingPpp = MonthlyPpp::where('company_id', $companyId)
             ->where('month_year', $monthYear)
             ->first();
-            
+
         if ($existingPpp) {
             // Return existing record without any updates to preserve historical data
             return $existingPpp;
@@ -61,19 +61,19 @@ class PppCalculationService
 
         $startDate = Carbon::parse($company->created_at)->startOfMonth();
         $currentDate = Carbon::now()->startOfMonth();
-        
+
         $results = [];
-        
+
         while ($startDate <= $currentDate) {
             $month = $startDate->month;
             $year = $startDate->year;
             $monthYear = Carbon::create($year, $month, 1)->format('F Y');
-            
+
             // Check if PPP already exists for this month to preserve historical data
             $existingPpp = MonthlyPpp::where('company_id', $companyId)
                 ->where('month_year', $monthYear)
                 ->first();
-            
+
             if ($existingPpp) {
                 // PPP already exists for this month, skip calculation to preserve historical data
                 $results[] = $existingPpp;
@@ -82,7 +82,7 @@ class PppCalculationService
                 $result = $this->calculateMonthlyPpp($companyId, $month, $year);
                 $results[] = $result;
             }
-            
+
             $startDate->addMonth();
         }
 
@@ -92,7 +92,7 @@ class PppCalculationService
     /**
      * Get total simulations for a month (using your existing logic)
      */
-    private function getTotalSimulations($companyId, $month, $year)
+    private function totalSimulations($companyId, $month, $year)
     {
         $email = CampaignLive::where('company_id', $companyId)
             ->whereMonth('created_at', $month)
@@ -120,7 +120,7 @@ class PppCalculationService
     /**
      * Get total clicked for a month (using your existing logic)
      */
-    private function getTotalClicked($companyId, $month, $year)
+    private function payloadClicked($companyId, $month, $year)
     {
         $emailClicked = CampaignLive::where('company_id', $companyId)
             ->where('payload_clicked', 1)
@@ -140,6 +140,12 @@ class PppCalculationService
             ->whereYear('created_at', $year)
             ->count();
 
-        return $emailClicked + $quishingClicked + $whatsappClicked;
+        $ai = AiCallCampLive::where('company_id', $companyId)
+            ->where('compromised', 1)
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
+
+        return $emailClicked + $quishingClicked + $whatsappClicked + $ai;
     }
 }

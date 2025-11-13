@@ -26,7 +26,9 @@ use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Services\CompanyReport;
 use App\Models\MonthlyPpp;
+use App\Models\UserMonthlyPpp;
 use App\Services\PppCalculationService;
+use App\Services\UserPppCalculationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -2198,9 +2200,9 @@ class ApiDashboardController extends Controller
             $companyId = Auth::user()->company_id;
             $months = $request->get('months', 12); // Default to 12 months
 
-            // Get PPP data from database - sorted chronologically (oldest first)
+            // Get PPP data from database - sorted by newest first (current month to previous months)
             $pppData = MonthlyPpp::where('company_id', $companyId)
-                ->orderBy('created_at', 'asc')
+                ->orderBy('id', 'desc')
                 ->limit($months)
                 ->get();
 
@@ -2209,9 +2211,8 @@ class ApiDashboardController extends Controller
                 $pppService = new PppCalculationService();
                 $pppService->calculateHistoricalPppForCompany($companyId);
 
-                // Retry getting the data - sorted chronologically
                 $pppData = MonthlyPpp::where('company_id', $companyId)
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'desc')
                     ->limit($months)
                     ->get();
             }
@@ -2232,11 +2233,19 @@ class ApiDashboardController extends Controller
             });
 
             // Calculate reduction metrics
-            $firstRecord = $pppData->first(); // (initial)
-            $lastRecord = $pppData->last();   //(current)
+            $lastRecord = $pppData->first(); // (current - newest)
 
-            $initialPpp = $firstRecord->ppp_percentage;
-            $currentPpp = $lastRecord->ppp_percentage;
+            $firstRecord = $pppData->last();   // (oldest in returned data)
+
+            $currentPpp = $lastRecord->ppp_percentage; // Newest record is current
+            
+            // When only 1 month requested, both initial and current are the same
+            if (count($pppData) == 1) {
+                $initialPpp = $currentPpp;  // Only record available, so initial = current
+            } else {
+                // Use the oldest record from the returned results (not entire database)
+                $initialPpp = $firstRecord->ppp_percentage;
+            }
 
             // PPP Reduction = ((Initial PPP - Current PPP) / Initial PPP) × 100
             $improvementPercentage = $initialPpp > 0 ?
@@ -2246,7 +2255,7 @@ class ApiDashboardController extends Controller
             $previousMonthPpp = null;
             $previousMonthReduction = null;
             if (count($pppData) >= 2) {
-                $previousRecord = $pppData[count($pppData) - 2]; // Second to last record
+                $previousRecord = $pppData[1]; // Second record in desc order is previous month
                 $previousMonthPpp = $previousRecord->ppp_percentage;
 
                 // Previous month reduction = ((Previous PPP - Current PPP) / Previous PPP) × 100
@@ -2257,6 +2266,110 @@ class ApiDashboardController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => [
+                    'monthly_ppp_trend' => $monthlyPpp,
+                    'ppp_summary' => [
+                        'initial_ppp' => $initialPpp,
+                        'current_ppp' => $currentPpp,
+                        'overall_reduction_percentage' => $improvementPercentage,
+                        'previous_month_ppp' => $previousMonthPpp,
+                        'monthly_reduction_percentage' => $previousMonthReduction
+                    ]
+                ],
+                'message' => 'PPP reduction data fetched successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error fetching PPP reduction data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserPppReductionOverTime(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $userEmail = $request->get('user_email');
+            $months = $request->get('months', 12); // Default to 12 months
+
+            // If no user_email provided, return error
+            if (!$userEmail) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User email is required to fetch individual user PPP data.'
+                ], 422);
+            }
+
+            // Get PPP data from database - sorted by newest first (current month to previous months)
+            $pppData = UserMonthlyPpp::where('company_id', $companyId)
+                ->where('user_email', $userEmail)
+                ->orderBy('id', 'desc')
+                ->limit($months)
+                ->get();
+
+            // If no data found, try to calculate historical data first
+            if ($pppData->isEmpty()) {
+                $userPppService = new UserPppCalculationService();
+                
+                $userPppService->calculateHistoricalPppForUser($companyId, $userEmail);
+
+                // Retry getting the data - sorted by newest first
+                $pppData = UserMonthlyPpp::where('company_id', $companyId)
+                    ->where('user_email', $userEmail)
+                    ->orderBy('id', 'desc')
+                    ->limit($months)
+                    ->get();
+            }
+
+            if ($pppData->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No PPP data found for this user. Please ensure simulations have been conducted.'
+                ], 404);
+            }
+
+            // Format monthly data
+            $monthlyPpp = $pppData->map(function ($record) {
+                return [
+                    'month' => $record->month_year,
+                    'ppp' => $record->ppp_percentage
+                ];
+            });
+
+            // Calculate reduction metrics
+            $lastRecord = $pppData->first(); // (current - newest)
+            $firstRecord = $pppData->last();   // (oldest in returned data)
+
+            $currentPpp = $lastRecord->ppp_percentage; // Newest record is current
+            
+            // When only 1 month requested, both initial and current are the same
+            if (count($pppData) == 1) {
+                $initialPpp = $currentPpp;  // Only record available, so initial = current
+            } else {
+                // Use the oldest record from the returned results (not entire database)
+                $initialPpp = $firstRecord->ppp_percentage;
+            }
+
+            // PPP Reduction = ((Initial PPP - Current PPP) / Initial PPP) × 100
+            $improvementPercentage = $initialPpp > 0 ?
+                round((($initialPpp - $currentPpp) / $initialPpp) * 100, 2) : 0;
+
+            // Calculate reduction from previous month and get previous month PPP
+            $previousMonthPpp = null;
+            $previousMonthReduction = null;
+            if (count($pppData) >= 2) {
+                $previousRecord = $pppData[1]; // Second record in desc order is previous month
+                $previousMonthPpp = $previousRecord->ppp_percentage;
+
+                // Previous month reduction = ((Previous PPP - Current PPP) / Previous PPP) × 100
+                $previousMonthReduction = $previousMonthPpp > 0 ?
+                    round((($previousMonthPpp - $currentPpp) / $previousMonthPpp) * 100, 2) : 0;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'user_email' => $userEmail,
                     'monthly_ppp_trend' => $monthlyPpp,
                     'ppp_summary' => [
                         'initial_ppp' => $initialPpp,
