@@ -2270,9 +2270,9 @@ class ApiDashboardController extends Controller
                     'ppp_summary' => [
                         'initial_ppp' => $initialPpp,
                         'current_ppp' => $currentPpp,
-                        'overall_reduction_percentage' => $improvementPercentage,
+                        'ppp_reduction' => $improvementPercentage,
                         'previous_month_ppp' => $previousMonthPpp,
-                        'monthly_reduction_percentage' => $previousMonthReduction
+                        'prev_month_ppp_reduction' => $previousMonthReduction
                     ]
                 ],
                 'message' => 'PPP reduction data fetched successfully!'
@@ -2374,9 +2374,9 @@ class ApiDashboardController extends Controller
                     'ppp_summary' => [
                         'initial_ppp' => $initialPpp,
                         'current_ppp' => $currentPpp,
-                        'overall_reduction_percentage' => $improvementPercentage,
+                        'ppp_reduction' => $improvementPercentage,
                         'previous_month_ppp' => $previousMonthPpp,
-                        'monthly_reduction_percentage' => $previousMonthReduction
+                        'prev_month_ppp_reduction' => $previousMonthReduction
                     ]
                 ],
                 'message' => 'PPP reduction data fetched successfully!'
