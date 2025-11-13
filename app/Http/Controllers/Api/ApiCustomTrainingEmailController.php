@@ -22,6 +22,32 @@ class ApiCustomTrainingEmailController extends Controller
         ], 200);
     }
 
+    public function getTemplateById($id)
+    {
+        try {
+            $id = base64_decode($id);
+            $template = CustomTrainingEmail::where('company_id', Auth::user()->company_id)->where('id', $id)->first();
+
+            if (!$template) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training email template not found.'),
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Custom training email template fetched successfully.'),
+                'data' => $template
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function addTemplate(Request $request)
     {
         try {
