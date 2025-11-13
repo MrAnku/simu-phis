@@ -656,6 +656,9 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
     Route::prefix('custom-training-email')->group(function () {
         Route::get('/', [ApiCustomTrainingEmailController::class, 'index']);
         Route::post('/add', [ApiCustomTrainingEmailController::class, 'addTemplate']);
+        Route::put('/select-deselect-template/{id}', [ApiCustomTrainingEmailController::class, 'selectDeselectTemplate']);
+        Route::post('/update/{id}', [ApiCustomTrainingEmailController::class, 'updateTemplate']);
+        Route::delete('/delete/{id}', [ApiCustomTrainingEmailController::class, 'deleteTemplate']);
         
     });
 
