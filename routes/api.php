@@ -55,6 +55,7 @@ use App\Http\Controllers\LearnApi\ApiLearnPolicyController;
 use App\Http\Controllers\Api\ApiAssignedTrainingsController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
 Route::middleware('throttle:limiter')->group(function () {
@@ -649,6 +650,13 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('fetch-certificate-templates', [ApiCustomCertificate::class, 'fetchCertificateTemplates']);
         Route::delete('delete-certificate-template/{id?}', [ApiCustomCertificate::class, 'deleteCertificateTemplate']);
         Route::post('update-custom-certificate', [ApiCustomCertificate::class, 'updateCustomCertificate']);
+    });
+
+    // Custom Training Email Templates
+    Route::prefix('custom-training-email')->group(function () {
+        Route::get('/', [ApiCustomTrainingEmailController::class, 'index']);
+        Route::post('/add', [ApiCustomTrainingEmailController::class, 'addTemplate']);
+        
     });
 
     // Audit Logs
