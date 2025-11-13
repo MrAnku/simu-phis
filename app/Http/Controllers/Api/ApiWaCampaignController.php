@@ -87,7 +87,7 @@ class ApiWaCampaignController extends Controller
                 'training_assignment' => 'nullable|in:all,random',
                 'days_until_due' => 'nullable|integer|min:1',
                 'training_lang' => 'nullable|string|size:2',
-                'training_type' => 'nullable',
+                'training_type' => 'required|in:static_training,ai_training,gamified',
                 'training_on_click' => 'required|string|in:true,false',
                 'compromise_on_click' => 'required|string|in:true,false',
                 'template_name' => 'required|string|max:255',

@@ -113,7 +113,7 @@ class ApiCampaignController extends Controller
                 'training_assignment' => 'nullable|in:all,random',
                 'days_until_due' => 'nullable|integer|min:1',
                 'trainingLang' => 'nullable|string',
-                'training_type' => 'nullable',
+                'training_type' => 'required|in:static_training,ai_training,games,gamified,conversational_training',
                 'training_on_click' => 'required',
                 'compromise_on_click' => 'required',
                 "phish_material" => 'nullable|array',
