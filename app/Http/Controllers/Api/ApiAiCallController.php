@@ -431,7 +431,7 @@ class ApiAiCallController extends Controller
                     'scorm_training' => 'nullable|array',
                     'training_lang' => 'nullable|string',
                     'campaign_type' => 'required|in:phishing_and_training,phishing',
-                    'training_type' =>  'required|in:static_training,gamified,conversational_training',
+                    'training_type' =>  'nullable|in:static_training,gamified,conversational_training',
                     'employee_type' => 'required|in:normal,bluecollar',
                     'users_grp_name' => 'required|string',
                     'ai_agent_name' => 'required|string',

@@ -30,6 +30,15 @@ class EmailInteractionHandler
             $campaignLive->mail_open = 1;
             $campaignLive->save();
 
+            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+
+            $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
+
+            $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+
+            date_default_timezone_set($campaignTimezone);
+            config(['app.timezone' => $campaignTimezone]);
+
             EmailCampActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("Phishing email payload clicked by {$campaignLive->user_email} in email simulation.", 'company', $companyId);
 
@@ -97,6 +106,15 @@ class EmailInteractionHandler
             'isDesktop' => $agent->isDesktop(),
 
         ];
+
+        // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
+
+        $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+
+        date_default_timezone_set($campaignTimezone);
+        config(['app.timezone' => $campaignTimezone]);
+
         EmailCampActivity::where('campaign_live_id', $this->campLiveId)
             ->update([
                 'compromised_at' => now(),

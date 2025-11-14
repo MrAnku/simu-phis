@@ -30,6 +30,13 @@ class QuishingInteractionHandler
             $campaignLive->mail_open = '1';
             $campaignLive->save();
 
+            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $camp = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->first();
+            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+
+            date_default_timezone_set($campaignTimezone);
+            config(['app.timezone' => $campaignTimezone]);
+
             QuishingActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("QR Scanned and visited to phishing link by {$campaignLive->user_email} in QR simulation.", 'company', $companyId);
 
@@ -98,6 +105,13 @@ class QuishingInteractionHandler
 
             ];
 
+            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $camp = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->first();
+            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+
+            date_default_timezone_set($campaignTimezone);
+            config(['app.timezone' => $campaignTimezone]);
+
             QuishingActivity::where('campaign_live_id', $this->campLiveId)->update([
                 'compromised_at' => now(),
                 'client_details' => json_encode($clientData)
@@ -148,7 +162,6 @@ class QuishingInteractionHandler
 
                 $policyService->assignPolicies($campaign->camp?->policies);
             } catch (\Exception $e) {
-                
             }
         }
 

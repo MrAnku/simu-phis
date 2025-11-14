@@ -28,6 +28,13 @@ class WaInteractionHandler
             $campaignLive->payload_clicked = 1;
             $campaignLive->save();
 
+             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $camp = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->first();
+            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+
+            date_default_timezone_set($campaignTimezone);
+            config(['app.timezone' => $campaignTimezone]);
+
             WhatsappActivity::where('campaign_live_id', $this->campLiveId)->update(['payload_clicked_at' => now()]);
             log_action("Visited to phishing website by {$campaignLive->user_name} in WhatsApp simulation.", 'company', $companyId);
 
@@ -95,6 +102,14 @@ class WaInteractionHandler
             'isDesktop' => $agent->isDesktop(),
 
         ];
+
+        // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        $camp = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->first();
+        $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+
+        date_default_timezone_set($campaignTimezone);
+        config(['app.timezone' => $campaignTimezone]);
+
         WhatsappActivity::where('campaign_live_id', $this->campLiveId)
             ->update([
                 'compromised_at' => now(),

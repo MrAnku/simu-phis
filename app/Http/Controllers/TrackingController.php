@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
 use App\Models\CampaignLive;
 use App\Models\TprmActivity;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
 use App\Models\EmailCampActivity;
+use App\Models\QuishingCamp;
 use App\Models\TprmCampaignReport;
 use Illuminate\Support\Facades\Log;
 
@@ -30,13 +32,16 @@ class TrackingController extends Controller
                 $campaignLive->mail_open = 1;
                 $campaignLive->save();
 
-                setCompanyTimezone($campaignLive->company_id);
-                
+                // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
+                $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+
+                date_default_timezone_set($campaignTimezone);
+                config(['app.timezone' => $campaignTimezone]);
 
                 EmailCampActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
                 log_action("Phishing email opened by {$campaignLive->user_email} in email simulation", 'company', $campaignLive->company_id);
-                
             }
         }
 
@@ -64,7 +69,6 @@ class TrackingController extends Controller
                 TprmActivity::where('campaign_live_id', $campid)->update(['email_viewed_at' => now()]);
 
                 log_action("Phishing email opened by {$campaignLive->user_email} in TPRM simulation", 'company', $campaignLive->company_id);
-                
             }
         }
 
@@ -117,7 +121,7 @@ class TrackingController extends Controller
     {
         // Log the details to a specific log file
         Log::info('Google Phish Report', [
-           
+
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
             'timestamp' => now()->toDateTimeString(),
@@ -134,10 +138,10 @@ class TrackingController extends Controller
 
         if (file_exists($path)) {
             if ($employeeid) {
-                     
+
                 $quishingLive = QuishingLiveCamp::where('id', $employeeid)
-                ->where('mail_open', '0')
-                ->first();
+                    ->where('mail_open', '0')
+                    ->first();
                 if ($quishingLive) {
                     if (clickedByBot($quishingLive->company_id, $quishingLive->id, 'quishing')) {
                         return;
@@ -145,8 +149,13 @@ class TrackingController extends Controller
                     $quishingLive->mail_open = '1';
                     $quishingLive->save();
 
-                    setCompanyTimezone($quishingLive->company_id);
-                    
+                    // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                    $camp = QuishingCamp::where('campaign_id', $quishingLive->campaign_id)->first();
+                    $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+
+                    date_default_timezone_set($campaignTimezone);
+                    config(['app.timezone' => $campaignTimezone]);
+
                     log_action("Quishing QR code scanned by {$quishingLive->user_email}", 'company', $quishingLive->company_id);
                     QuishingActivity::where('campaign_live_id', $employeeid)->update(['email_viewed_at' => now()]);
                 }
