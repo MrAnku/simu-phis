@@ -515,9 +515,9 @@ class ApiLearnController extends Controller
                 $normalEmpLearnService = new NormalEmpLearnService();
 
                 // Assign Grade based on score
-                assignGrade($rowData, $request->trainingScore);
+                assignGrade($rowData, $request->scormTrainingScore);
 
-                $badge = getMatchingBadge('score', $request->trainingScore);
+                $badge = getMatchingBadge('score', $request->scormTrainingScore);
                 // This helper function accepts a criteria type and value, and returns the first matching badge
 
                 if ($badge) {
