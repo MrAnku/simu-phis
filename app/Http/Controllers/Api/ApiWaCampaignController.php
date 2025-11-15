@@ -393,7 +393,7 @@ class ApiWaCampaignController extends Controller
                 ->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
-                
+
             $campaign = WaCampaign::with('phishingWebsite')->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
@@ -878,6 +878,18 @@ class ApiWaCampaignController extends Controller
                     'payload_clicked' => '0',
                     'compromised' => '0',
                     'training_assigned' => '0',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            // Update whatsapp camp activity table
+            WhatsappActivity::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'whatsapp_sent_at' => null,
+                    'payload_clicked_at' => null,
+                    'compromised_at' => null,
+                    'client_details' => null,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
