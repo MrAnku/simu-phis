@@ -55,6 +55,12 @@ class QuishingCamp extends Model
         return QshTemplate::select('name', 'file')->whereIn('id', $ids ?? []);
     }
 
+    public function scormTrainings()
+    {
+        $ids = json_decode($this->scorm_training, true);
+        return ScormTraining::select('name', 'file_path')->whereIn('id', $ids ?? []);
+    }
+
     public function userGroupData()
     {
         return $this->hasOne(UsersGroup::class, 'group_id', 'users_group');

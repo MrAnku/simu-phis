@@ -404,6 +404,7 @@ class ApiQuishingController extends Controller
             $quishingMaterials = $campaign->quishingMaterials()->get();
             $campaign->training_modules_data = $trainingModules;
             $campaign->quishing_materials_data = $quishingMaterials;
+            $campaign->scorm_trainings_data = $campaign->scormTrainings()->get();
 
             $trainingAssigned = TrainingAssignedUser::with('trainingData')->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)

@@ -61,6 +61,12 @@ class Campaign extends Model
         return PhishingEmail::select('name', 'mailBodyFilePath')->whereIn('id', $ids ?? []);
     }
 
+    public function scormTrainings()
+    {
+        $ids = json_decode($this->scorm_training, true);
+        return ScormTraining::select('name', 'file_path')->whereIn('id', $ids ?? []);
+    }
+
     public function campLive()
     {
         return $this->hasMany(CampaignLive::class, 'campaign_id', 'campaign_id');
@@ -76,7 +82,7 @@ class Campaign extends Model
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
     }
 
-      public function scormAssignedUsers()
+    public function scormAssignedUsers()
     {
         return $this->hasMany(ScormAssignedUser::class, 'campaign_id', 'campaign_id');
     }

@@ -46,12 +46,22 @@ class WaCampaign extends Model
         return Policy::whereIn('id', $ids ?? [])->select('policy_name', 'policy_description')->get();
     }
 
+      public function phishingWebsite()
+    {
+        return $this->belongsTo(PhishingWebsite::class, 'phishing_website', 'id');
+    }
+
     public function trainingModules()
     {
         $ids = json_decode($this->training_module, true);
         return TrainingModule::whereIn('id', $ids ?? []);
     }
 
+    public function scormTrainings()
+    {
+        $ids = json_decode($this->scorm_training, true);
+        return ScormTraining::select('name', 'file_path')->whereIn('id', $ids ?? []);
+    }
 
     public function trainingData()
     {

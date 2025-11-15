@@ -459,6 +459,7 @@ class ApiCampaignController extends Controller
             $phishingMaterials = $campaign->phishingMaterials()->get();
             $campaign->training_modules_data = $trainingModules;
             $campaign->phishing_materials_data = $phishingMaterials;
+            $campaign->scorm_trainings_data = $campaign->scormTrainings()->get();
 
             if (!$campaign) {
                 return response()->json([

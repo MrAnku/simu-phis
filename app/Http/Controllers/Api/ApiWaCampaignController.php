@@ -386,7 +386,6 @@ class ApiWaCampaignController extends Controller
 
             $campaigns = WaLiveCampaign::with([
                 'whatsTrainingData',
-                'phishingWebsite',
                 'whatsTrainingData.trainingData',
                 'scormTrainingData.scormTrainingData',
                 'campaignActivity'
@@ -394,7 +393,8 @@ class ApiWaCampaignController extends Controller
                 ->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->get();
-            $campaign = WaCampaign::where('campaign_id', $campaign_id)
+                
+            $campaign = WaCampaign::with('phishingWebsite')->where('campaign_id', $campaign_id)
                 ->where('company_id', Auth::user()->company_id)
                 ->first();
 
@@ -425,9 +425,8 @@ class ApiWaCampaignController extends Controller
                     ];
                 });
 
-            $campaigns->each(function ($campaign) use ($training_modules_data) {
-                $campaign->training_modules = $training_modules_data;
-            });
+            $campaign->training_modules = $training_modules_data;
+            $campaign->scorm_trainings_data = $campaign->scormTrainings()->get();
 
             return response()->json([
                 'success' => true,
