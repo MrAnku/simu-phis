@@ -43,6 +43,7 @@ class ApiPolicyCampaignController extends Controller
                 'users_group' => $request->users_group,
                 'policy' => json_encode($policies),
                 'status' => $status,
+                'schedule_type' => $request->schedule_type,
                 'scheduled_at' => $scheduledAt,
                 'company_id' => Auth::user()->company_id,
             ]);

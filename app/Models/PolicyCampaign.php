@@ -14,6 +14,7 @@ class PolicyCampaign extends Model
         'scheduled_at',
         'company_id',
         'status',
+        'schedule_type'
     ];
 
     protected $appends = ['policy_detail', 'assigned_policies', 'target_employees'];
