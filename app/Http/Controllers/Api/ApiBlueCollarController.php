@@ -264,7 +264,7 @@ class ApiBlueCollarController extends Controller
 
             log_action("Blue Collar group {$groupName} updated");
 
-            return response()->json(['success' => true, 'message' => __('Blue Collar Group updated successfully')], 200);
+            return response()->json(['success' => true, 'message' => __('Blue Collar Division updated successfully')], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {

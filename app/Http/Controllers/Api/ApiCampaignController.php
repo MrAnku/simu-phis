@@ -570,6 +570,19 @@ class ApiCampaignController extends Controller
                     'updated_at' => now()
                 ]);
 
+            // Update email camp activity table
+            EmailCampActivity::where('campaign_id', $campid)
+                ->where('company_id', $company_id)
+                ->update([
+                    'email_sent_at' => null,
+                    'email_viewed_at' => null,
+                    'payload_clicked_at' => null,
+                    'compromised_at' => null,
+                    'client_details' => null,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
             log_action('Email campaign relaunched');
             return response()->json([
                 'success' => true,

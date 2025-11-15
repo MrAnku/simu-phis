@@ -1526,6 +1526,7 @@ class ApiReportingController extends Controller
             $notStartedTrainingRate = $totalAssignedUsers > 0 ? round($notStartedTraining / $totalAssignedUsers * 100) : 0;
 
             $progressTraining = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('training_started', 1)
                 ->where('completed', 0)
                 ->count();
 
@@ -3187,7 +3188,7 @@ class ApiReportingController extends Controller
     public function fetchDomainWiseReport(Request $request)
     {
         try {
-           $domain = $request->route('domain');
+            $domain = $request->route('domain');
             if (!$domain) {
                 return response()->json(['success' => false, 'message' => __('Domain is required')], 422);
             }
