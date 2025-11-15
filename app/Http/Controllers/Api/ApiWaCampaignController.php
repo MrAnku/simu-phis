@@ -14,6 +14,7 @@ use App\Models\WhatsappActivity;
 use App\Models\BlueCollarEmployee;
 use App\Models\WhatsappTempRequest;
 use App\Http\Controllers\Controller;
+use App\Models\BlueCollarTrainingUser;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -351,7 +352,11 @@ class ApiWaCampaignController extends Controller
             }
 
             if ($request->deleteTrainingsAlso == 1) {
-                TrainingAssignedUser::where('campaign_id', $campaign_id)->delete();
+                if ($campaign->employee_type == 'bluecollar') {
+                    BlueCollarTrainingUser::where('campaign_id', $campaign_id)->delete();
+                } else {
+                    TrainingAssignedUser::where('campaign_id', $campaign_id)->delete();
+                }
             }
 
             $campaign->delete();

@@ -86,7 +86,7 @@ class ApiLearnPolicyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Policy accepted and quiz response saved successfully.'
+                'message' => __('Policy accepted and quiz response saved successfully.')
             ], 200);
         } catch (ValidationException $e) {
             // Handle the validation exception
