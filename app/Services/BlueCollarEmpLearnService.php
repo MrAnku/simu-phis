@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\AiCallCampLive;
+use App\Models\BlueCollarEmployee;
+use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\CertificateTemplate;
 use App\Models\WaLiveCampaign;
@@ -195,5 +197,84 @@ class BlueCollarEmpLearnService
             ->where('company_id', $user->company_id)->count();
 
         return $whatsapp + $ai;
+    }
+
+    public function outstandingTrainings($whatsapp_no): int
+    {
+        $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
+
+        $outstandingTrainings = BlueCollarTrainingUser::where('user_whatsapp', $whatsapp_no)
+            ->where('company_id', $user->company_id)
+            ->where('completed', 1)
+            ->where('personal_best', '>=', 90)
+            ->count();
+
+        $outstandingScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $whatsapp_no)
+            ->where('company_id', $user->company_id)
+            ->where('completed', 1)
+            ->where('personal_best', '>=', 90)
+            ->count();
+
+        return $outstandingTrainings + $outstandingScorms;
+    }
+    public function calculateSecurityScore($whatsapp_no): float
+    {
+        $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
+
+        $trainingCompletionRate = $this->trainingCompletionRate($whatsapp_no);  // AI trainings
+        $totalSimulations = $this->totalSimulations($whatsapp_no); // % safe responses
+        $aiSimulationReportRate =  $this->totalSimulations($whatsapp_no) > 0 ?
+            ($this->callReported($whatsapp_no) / $this->totalSimulations($whatsapp_no)) * 100 : 0;
+        $riskScore = $this->calculateRiskScore($user);             // already exists
+        $riskScore = $riskScore['riskScore'];
+
+        $securityScore = (
+            ($trainingCompletionRate * 0.45) +      // 45% weight for training
+            ($totalSimulations * 0.35) +     // 35% safe WhatsApp behaviour
+            ($aiSimulationReportRate * 0.10) +      // 10% reporting behaviour in AI
+            ((100 - $riskScore) * 0.10)             // 10% weight for avoiding compromise
+        );
+
+        return round(min(100, max(0, $securityScore)), 2);
+    }
+
+    public function trainingCompletionRate($whatsapp_no): float
+    {
+        $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
+
+        $assignedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $whatsapp_no)->where('company_id', $user->company_id)->count() + BlueCollarScormAssignedUser::with('scormTrainingData')
+            ->where('user_whatsapp', $whatsapp_no)->where('company_id', $user->company_id)->count();
+
+        $completedTrainings = $this->trainingCompleted($whatsapp_no);
+        return $assignedTrainings > 0 ? round(($completedTrainings / $assignedTrainings) * 100, 2) : 0;
+    }
+
+    public function callReported($whatsapp_no): int
+    {
+        $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
+
+        $ai =  AiCallCampLive::where('to_mobile', '+' . $whatsapp_no)
+            ->where('company_id', $user->company_id)
+            ->whereNotNull('call_report')
+            ->count();
+
+        return $ai;
+    }
+
+    public function trainingCompleted($whatsapp_no): int
+    {
+        $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
+
+        $completedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $whatsapp_no)
+            ->where('company_id', $user->company_id)
+            ->where('completed', 1)
+            ->count();
+
+        $completedScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $whatsapp_no)
+            ->where('company_id', $user->company_id)
+            ->where('completed', 1)
+            ->count();
+
+        return $completedTrainings + $completedScorms;
     }
 }

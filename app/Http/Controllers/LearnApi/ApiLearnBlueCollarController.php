@@ -912,9 +912,9 @@ class ApiLearnBlueCollarController extends Controller
                 'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
             ]);
 
-            $allAssignedTrainingMods = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)->where('training_started', 1)->get();
+            $allAssignedTrainingMods = BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)->get();
 
-            $allAssignedScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)->where('scorm_started', 1)->get();
+            $allAssignedScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)->get();
 
             $allAssignedTrainings = [];
             foreach ($allAssignedTrainingMods as $trainingMod) {
@@ -1046,24 +1046,24 @@ class ApiLearnBlueCollarController extends Controller
             } else {
                 $avgScormGrade = 'D';
             }
+            $blueCollarService = new BlueCollarEmpLearnService();
 
             return response()->json([
                 'success' => true,
                 'message' => __('Training grades retrieved successfully'),
                 'data' => [
                     'assigned_training_modules' => $assignedTrainingModules ?? [],
-                    'total_assigned_training_mod' => count($assignedTrainingModules),
+                    'total_assigned_training_mod' => count($assignedTrainingModules) + count($assignedScormModules),
                     'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
                     'avg_training_grade' => $avgTrainingGrade,
                     'assigned_scorm_modules' => $assignedScormModules ?? [],
-                    'total_assigned_scorm_mod' => count($assignedScormModules),
                     'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
                     'avg_scorm_grade' => $avgScormGrade,
                     'total_trainings' => count($assignedTrainingModules) + count($assignedScormModules),
                     'total_passed_trainings' => BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
                         ->where('completed', 1)->count() + BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
                         ->where('completed', 1)->count(),
-                    'current_avg' => (
+                    'current_avg' => round((
                         BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
                         ->where('training_started', 1)
                         ->sum('personal_best')
@@ -1079,7 +1079,9 @@ class ApiLearnBlueCollarController extends Controller
                         BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
                         ->where('scorm_started', 1)
                         ->count()
-                    )),
+                    ))),
+                    'security_score' => $blueCollarService->calculateSecurityScore($request->user_whatsapp),
+                    'outstanding_trainings' => $blueCollarService->outstandingTrainings($request->user_whatsapp),
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -1155,11 +1157,13 @@ class ApiLearnBlueCollarController extends Controller
 
             $scormGoals = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $request->user_whatsapp)->where('personal_best', '<', 70)->get();
 
-            $activeNonGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+            $activeNonGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type', '!=', 'games')->where('completed', 0)->where('training_started', 1)->get();
 
-            $activeGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type',  'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+            $activeGameGoals =  BlueCollarTrainingUser::with('trainingData')->where('user_whatsapp', $request->user_whatsapp)->where('training_type',  'games')->where('completed', 0)->where('training_started', 1)->get();
 
             $activeGoals = $activeNonGameGoals->concat($activeGameGoals);
+
+            $blueCollarEmpService = new BlueCollarEmpLearnService();
 
             return response()->json([
                 'success' => true,
@@ -1169,13 +1173,13 @@ class ApiLearnBlueCollarController extends Controller
                     'all_scorm_goals' => $scormGoals ?? [],
                     'active_goals' => $activeGoals ?? [],
                     'total_active_goals' => count($activeGoals),
-                    'avg_progress_training' => round(BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
-                        ->where('training_started', 1)
-                        ->where('completed', 1)->avg('personal_best')),
                     'total_training_goals' => count($trainingGoals) + count($scormGoals),
                     'avg_in_progress_trainings' => round(BlueCollarTrainingUser::where('user_whatsapp', $request->user_whatsapp)
                         ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best')),
+                        ->where('completed', 0)->avg('personal_best') + BlueCollarScormAssignedUser::where('user_whatsapp', $request->user_whatsapp)
+                        ->where('training_started', 1)
+                        ->where('completed', 0)->avg('personal_best') / 2),
+                    'completed_trainings' => $blueCollarEmpService->trainingCompleted($request->user_whatsapp) ?? 0
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -1242,6 +1246,8 @@ class ApiLearnBlueCollarController extends Controller
                     ];
                 });
 
+            $blueCollarEmpService = new BlueCollarEmpLearnService();
+
             return response()->json([
                 'success' => true,
                 'message' => __('Training achivements retrieved successfully'),
@@ -1250,7 +1256,8 @@ class ApiLearnBlueCollarController extends Controller
                     'certificates' => [
                         'certificates' => $certificates,
                         'scorm_certificates' => $scormCertificates
-                    ]
+                    ],
+                    'completion_rate' => $blueCollarEmpService->trainingCompletionRate($request->user_whatsapp),
                 ]
             ], 200);
         } catch (ValidationException $e) {
