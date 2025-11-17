@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
+use App\Models\CompanyBranding;
 use Illuminate\Http\Request;
 use App\Models\WhiteLabelledSmtp;
 use App\Models\WhiteLabelledCompany;
@@ -10,10 +12,11 @@ use Illuminate\Support\Facades\Storage;
 
 class WhiteLabelController extends Controller
 {
-    public function check(Request $request){
+    public function check(Request $request)
+    {
         $host = $request->query('host');
 
-        $companyBranding = WhiteLabelledCompany::where(function ($query) use ($host) {
+        $companyWhitelabeled = WhiteLabelledCompany::where(function ($query) use ($host) {
             $query->where('domain', $host)
                 ->orWhere('learn_domain', $host);
         })
@@ -21,35 +24,49 @@ class WhiteLabelController extends Controller
             ->where('service_status', 1)
             ->first();
 
-        $cloudFrontUrl = env('CLOUDFRONT_URL');
+        $companyLogoLight = "/assets/images/simu-logo.png";
+        $companyLogoDark =  "/assets/images/simu-logo-dark.png";
+        $companyFavicon = "/assets/images/simu-icon.png";
+        $companyName = env('APP_NAME');
+        $companyDomain = env('NEXT_APP_URL');
+        $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');
 
 
-        if ($companyBranding) {
-            $companyLogoDark = $cloudFrontUrl . $companyBranding->dark_logo;
-            $companyLogoLight = $cloudFrontUrl . $companyBranding->light_logo;
-            $companyFavicon = $cloudFrontUrl . $companyBranding->favicon;
-            $companyName = $companyBranding->company_name;
-            $companyDomain = "https://" . $companyBranding->domain . "/";
-            $companyLearnDomain = "https://" . $companyBranding->learn_domain . "/";
-        } else {
-            $companyLogoLight = $cloudFrontUrl . "/assets/images/simu-logo.png";
-            $companyLogoDark =  $cloudFrontUrl . "/assets/images/simu-logo-dark.png";
-            $companyFavicon = $cloudFrontUrl ."/assets/images/simu-icon.png";
-            $companyName = env('APP_NAME');
-            $companyDomain = env('NEXT_APP_URL');
-            $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');
+        if ($companyWhitelabeled) {
+            
+            $companyDomain = "https://" . $companyWhitelabeled->domain . "/";
+            $companyLearnDomain = "https://" . $companyWhitelabeled->learn_domain . "/";
+
+            //check branding
+            $branding = CompanyBranding::where('company_id', $companyWhitelabeled->company_id)->first();
+            if ($branding) {
+                $companyLogoDark = $branding->dark_logo;
+                $companyLogoLight = $branding->light_logo;
+                $companyFavicon = $branding->favicon;
+                $companyName = $branding->company_name;
+            }
         }
+        if(Auth::guard('api')->check()){
+            $authCompanyBranding = CompanyBranding::where('company_id', Auth::guard('api')->user()->company_id)->first();
+            if($authCompanyBranding){
+                $companyLogoDark = $authCompanyBranding->dark_logo;
+                $companyLogoLight = $authCompanyBranding->light_logo;
+                $companyFavicon = $authCompanyBranding->favicon;
+                $companyName = $authCompanyBranding->company_name;
+            }
+        }
+
+      
 
         // Share branding information with all views
         return response()->json([
-            'companyLogoDark' => $companyLogoDark,
-            'companyLogoLight' => $companyLogoLight,
-            'companyFavicon' => $companyFavicon,
+            'companyLogoDark' => env('CLOUDFRONT_URL') . $companyLogoDark,
+            'companyLogoLight' => env('CLOUDFRONT_URL') . $companyLogoLight,
+            'companyFavicon' => env('CLOUDFRONT_URL') . $companyFavicon,
             'companyName' => $companyName,
             'companyDomain' => $companyDomain,
             'companyLearnDomain' => $companyLearnDomain
         ]);
-
     }
     public function saveWhiteLabel(Request $request)
     {
@@ -71,17 +88,17 @@ class WhiteLabelController extends Controller
         ]);
 
         $domainExists = WhiteLabelledCompany::where('domain', $request->domain)->exists();
-        if($domainExists) {
+        if ($domainExists) {
             return redirect()->back()->with('error', 'Domain already added by another company.');
         }
 
         $learnDomainExists = WhiteLabelledCompany::where('learn_domain', $request->learn_domain)->exists();
-        if($learnDomainExists) {
+        if ($learnDomainExists) {
             return redirect()->back()->with('error', 'Learn domain already added by another company.');
         }
 
         $smtpUsernameExists = WhiteLabelledSmtp::where('smtp_username', $request->smtp_username)->exists();
-        if($smtpUsernameExists) {
+        if ($smtpUsernameExists) {
             return redirect()->back()->with('error', 'SMTP username already added by another company.');
         }
 
@@ -100,7 +117,7 @@ class WhiteLabelController extends Controller
 
         $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $lightLogoFilename, 's3');
 
-         $randomName = generateRandom(10);
+        $randomName = generateRandom(10);
         $extension = $request->file('favicon')->getClientOriginalExtension();
         $faviconLogoFilename = $randomName . '.' . $extension;
 
@@ -112,9 +129,9 @@ class WhiteLabelController extends Controller
             'company_email' => $request->company_email,
             'domain' => $request->domain,
             'learn_domain' => $request->learn_domain,
-            'dark_logo' => "/".$darkLogoPath,
-            'light_logo' => "/".$lightLogoPath,
-            'favicon' => "/".$faviconLogoPath,
+            'dark_logo' => "/" . $darkLogoPath,
+            'light_logo' => "/" . $lightLogoPath,
+            'favicon' => "/" . $faviconLogoPath,
             'company_name' => $request->company_name,
         ]);
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ApiCustomCertificate;
 use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTriggerController;
 use App\Http\Controllers\Api\ApiAuditLogController;
+use App\Http\Controllers\Api\ApiBrandingController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
 use App\Http\Controllers\Api\ApiSettingsController;
@@ -236,6 +237,15 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/', [ApiPhishingEmailsController::class, 'index']);
         Route::get('/search', [ApiPhishingEmailsController::class, 'searchPhishingMaterial']);
     });
+
+    // Branding  routes
+    Route::prefix('branding')->group(function () {
+        Route::get('/', [ApiBrandingController::class, 'index']);
+        Route::post('/add', [ApiBrandingController::class, 'addBranding']);
+        Route::post('/update', [ApiBrandingController::class, 'updateBranding']);
+        Route::delete('/delete', [ApiBrandingController::class, 'deleteBranding']);
+    });
+
     // Settings routes
     Route::prefix('settings')->group(function () {
         Route::get('/', [ApiSettingsController::class, 'index']);
