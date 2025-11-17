@@ -101,6 +101,8 @@ class EmailBreachCheck extends Command
                     $isWhitelabeled = new CheckWhitelabelService($company->company_id);
                     if ($isWhitelabeled->isCompanyWhitelabeled()) {
                         $isWhitelabeled->updateSmtpConfig();
+                    }else{
+                        $isWhitelabeled->clearSmtpConfig();
                     }
                     Mail::to($employee->user_email)->send(new BreachAlertEmployeeMail($employee, $breachData));
                     echo "Breach Alert sent successfully to " . $employee->user_email . "\n";

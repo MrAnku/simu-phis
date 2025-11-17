@@ -170,6 +170,7 @@ class SendInfographics extends Command
                 $learningPortalUrl = $whiteLableData->learn_domain;
                 $isWhitelabeled->updateSmtpConfig();
             } else {
+                $isWhitelabeled->clearSmtpConfig();
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
                 $learningPortalUrl = env('SIMUPHISH_LEARNING_URL');

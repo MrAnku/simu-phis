@@ -798,6 +798,7 @@ class ApiSettingsController extends Controller
 
                 $isWhitelabeled->updateSmtpConfig();
             } else {
+                $isWhitelabeled->clearSmtpConfig();
                 $companyName = env('APP_NAME');
                 $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
                 $portalDomain = env('NEXT_APP_URL');

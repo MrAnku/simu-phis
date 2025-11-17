@@ -100,6 +100,8 @@ class PhishTriageController extends Controller
             $isWhitelabeled = new CheckWhitelabelService($companyId);
             if ($isWhitelabeled->isCompanyWhitelabeled()) {
                 $isWhitelabeled->updateSmtpConfig();
+            }else{
+                $isWhitelabeled->clearSmtpConfig();
             }
 
             Mail::to($company->email)->send(new PhishTriageReportMail($mailData));

@@ -664,6 +664,8 @@ class ApiEmployeesController extends Controller
         $isWhitelabeled = new CheckWhitelabelService($companyId);
         if ($isWhitelabeled->isCompanyWhitelabeled()) {
             $isWhitelabeled->updateSmtpConfig();
+        }else{
+            $isWhitelabeled->clearSmtpConfig();
         }
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
             $message->to($email)->subject('Domain Verification');

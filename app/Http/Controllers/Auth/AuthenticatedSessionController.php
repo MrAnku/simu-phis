@@ -159,6 +159,7 @@ class AuthenticatedSessionController extends Controller
                 $companyName = $whitelabelData->company_name;
                 $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
             } else {
+                $isWhitelabeled->clearSmtpConfig();
                 $companyName = env('APP_NAME');
                 $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
             }

@@ -246,6 +246,7 @@ class LearnerDashController extends Controller
             $companyName = $whitelabelData->company_name;
             $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
         } else {
+            $isWhitelabeled->clearSmtpConfig();
             $learn_domain = env('SIMUPHISH_LEARNING_URL');
             $companyName = env('APP_NAME');
             $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
@@ -817,6 +818,7 @@ class LearnerDashController extends Controller
 
                     $isWhitelabeled->updateSmtpConfig();
                 } else {
+                    $isWhitelabeled->clearSmtpConfig();
                     // return $learnSiteAndLogo['logo'];
                     $mailData = [
                         'user_name' => $rowData->user_name,
@@ -867,6 +869,7 @@ class LearnerDashController extends Controller
             $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
             $isWhitelabeled->updateSmtpConfig();
         } else {
+            $isWhitelabeled->clearSmtpConfig();
             // $companyName = env('APP_NAME');
             $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
             $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';

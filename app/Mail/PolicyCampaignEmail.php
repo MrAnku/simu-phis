@@ -48,6 +48,8 @@ class PolicyCampaignEmail extends Mailable
             $this->companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
             $this->learnDomain = "https://" . $whiteLableData->learn_domain;
             $isWhitelabeled->updateSmtpConfig();
+        }else{
+            $isWhitelabeled->clearSmtpConfig();
         }
     }
 

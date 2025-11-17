@@ -141,6 +141,7 @@ class ApiLearnController extends Controller
                 $companyName = $whitelabelData->company_name;
                 $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
             } else {
+                $isWhitelabeled->clearSmtpConfig();
                 $learn_domain = env('SIMUPHISH_LEARNING_URL');
                 $companyName = env('APP_NAME');
                 $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
@@ -405,6 +406,7 @@ class ApiLearnController extends Controller
                         $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
                         $isWhitelabeled->updateSmtpConfig();
                     } else {
+                        $isWhitelabeled->clearSmtpConfig();
                         $companyName = env('APP_NAME');
                         $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
                         $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
@@ -566,6 +568,7 @@ class ApiLearnController extends Controller
                         $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
                         $isWhitelabeled->updateSmtpConfig();
                     } else {
+                        $isWhitelabeled->clearSmtpConfig();
                         $companyName = env('APP_NAME');
                         $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
                         $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
