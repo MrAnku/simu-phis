@@ -40,6 +40,9 @@ class TrainingAssignedService
             $companyEmail = $whitelabelData->company_email;
 
             $isWhitelabeled->updateSmtpConfig();
+        }else{
+            //reset the smtp config to default if not whitelabeled
+            $isWhitelabeled->clearSmtpConfig();
         }
 
 
