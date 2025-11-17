@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\ApiAssignedTrainingsController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
+use App\Http\Controllers\Api\ApiDeepFakeAudioController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
 Route::middleware('throttle:limiter')->group(function () {
@@ -441,6 +442,11 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
         Route::put('/update/{email?}', [ApiEmployeesController::class, 'updateEmployee']);
     });
+
+    Route::prefix('deep-fake-audio')->group(function () {
+        Route::get('/', [ApiDeepFakeAudioController::class, 'deepFakeAudios']);
+    });
+
     Route::prefix('ai-agents')->group(function () {
         Route::get('/', [ApiAiCallController::class, 'aiAgents']);
         Route::post('/create-agent', [ApiAiCallController::class, 'createAiAgent']);
