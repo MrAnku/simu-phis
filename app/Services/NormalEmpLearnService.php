@@ -115,9 +115,9 @@ class NormalEmpLearnService
 
     public function getAllProgressTrainings($email)
     {
-        $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $email)->where('training_started', 1)->get();
+        $allAssignedTrainingMods = TrainingAssignedUser::where('user_email', $email)->get();
 
-        $allAssignedScorms = ScormAssignedUser::where('user_email', $email)->where('scorm_started', 1)->get();
+        $allAssignedScorms = ScormAssignedUser::where('user_email', $email)->get();
 
         $allAssignedTrainings = [];
         foreach ($allAssignedTrainingMods as $trainingMod) {
@@ -304,20 +304,35 @@ class NormalEmpLearnService
                 ->avg('personal_best') ?? 0
         );
 
-        // Get total training count
-        $totalTrainings = TrainingAssignedUser::where('user_email', $email)
-            ->where('training_type', '!=', 'games')
-            ->count();
+        $user = Users::where('user_email', $email)->first();
+        $employeeReport = new EmployeeReport($email, $user->company_id);
 
         return [
             'email' => $email,
             'all_trainings' => $allTrainings,
             'completed_trainings' => $completedTrainings,
             'in_progress_trainings' => $inProgressTrainings,
-            'total_trainings' => $totalTrainings,
-            'total_completed_trainings' => $completedTrainings->count(),
-            'total_in_progress_trainings' => $inProgressTrainings->count(),
+            'total_trainings' => $employeeReport->assignedTrainings(),
+            'total_completed_trainings' => $employeeReport->trainingCompleted(),
+            'total_in_progress_trainings' => $employeeReport->trainingInProgress(),
             'avg_in_progress_trainings' => $avgInProgressTrainings,
         ];
+    }
+
+    public function calculateCompletionRate($email)
+    {
+        $user = Users::where('user_email', $email)->first();
+        $employeeReport = new EmployeeReport($email, $user->company_id);
+
+        $totalTrainings = $employeeReport->assignedTrainings();
+
+        $completedTrainings = $employeeReport->trainingCompleted();
+
+        if ($totalTrainings === 0) {
+            return 0;
+        }
+
+        $completionRate = ($completedTrainings / $totalTrainings) * 100;
+        return round($completionRate, 2);
     }
 }

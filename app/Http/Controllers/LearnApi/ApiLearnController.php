@@ -23,6 +23,7 @@ use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Services\CompanyReport;
 use App\Services\EmployeeReport;
 use App\Services\TrainingAssignedService;
 use Illuminate\Validation\ValidationException;
@@ -859,23 +860,22 @@ class ApiLearnController extends Controller
 
             $avgScormGrade = $this->normalEmpLearnService->getGrade($avgScormScore);
 
+            $employeeReport = new EmployeeReport($request->email, $user->company_id);
+
             return response()->json([
                 'success' => true,
                 'message' => __('Training grades retrieved successfully'),
                 'data' => [
                     'assigned_training_modules' => $assignedTrainingModules ?? [],
-                    'total_assigned_training_mod' => count($assignedTrainingModules),
+                    'total_assigned_training_mod' => $employeeReport->assignedTrainings(),
                     'avg_training_score' => count($assignedTrainingModules) > 0 ? round(array_sum(array_column($assignedTrainingModules, 'score')) / count($assignedTrainingModules)) : 0,
                     'avg_training_grade' => $avgTrainingGrade,
                     'assigned_scorm_modules' => $assignedScormModules ?? [],
-                    'total_assigned_scorm_mod' => count($assignedScormModules),
                     'avg_scorm_score' => count($assignedScormModules) > 0 ? round(array_sum(array_column($assignedScormModules, 'score')) / count($assignedScormModules)) : 0,
                     'avg_scorm_grade' => $avgScormGrade,
-                    'total_trainings' => TrainingAssignedUser::where('user_email', $request->email)->count() + ScormAssignedUser::where('user_email', $request->email)->count(),
-                    'total_passed_trainings' => TrainingAssignedUser::where('user_email', $request->email)
-                        ->where('completed', 1)->count() + ScormAssignedUser::where('user_email', $request->email)
-                        ->where('completed', 1)->count(),
-                    'current_avg' => (
+                    'total_trainings' => $employeeReport->assignedTrainings(),
+                    'total_passed_trainings' => $employeeReport->trainingCompleted(),
+                    'current_avg' => round((
                         TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
                         ->sum('personal_best')
@@ -891,7 +891,9 @@ class ApiLearnController extends Controller
                         ScormAssignedUser::where('user_email', $request->email)
                         ->where('scorm_started', 1)
                         ->count()
-                    )),
+                    ))),
+                    'security_score' => $employeeReport->calculateSecurityScore(),
+                    'outstanding_trainings' => $employeeReport->outstandingTrainings(),
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -943,11 +945,15 @@ class ApiLearnController extends Controller
 
             $scormGoals = ScormAssignedUser::with('scormTrainingData')->where('user_email', $request->email)->where('personal_best', '<', 70)->get();
 
-            $activeNonGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type', '!=', 'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+            $activeNonGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type', '!=', 'games')->where('completed', 0)->where('training_started', 1)->get();
 
-            $activeGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type',  'games')->where('personal_best', '<', 70)->where('training_started', 1)->get();
+            $activeGameGoals =  TrainingAssignedUser::with('trainingData')->where('user_email', $request->email)->where('training_type',  'games')->where('completed', 0)->where('training_started', 1)->get();
 
             $activeGoals = $activeNonGameGoals->concat($activeGameGoals);
+
+            $user = Users::where('user_email', $request->email)->first();
+
+            $employeeReport = new EmployeeReport($request->email, $user->company_id);
 
             return response()->json([
                 'success' => true,
@@ -957,13 +963,14 @@ class ApiLearnController extends Controller
                     'all_scorm_goals' => $scormGoals ?? [],
                     'active_goals' => $activeGoals ?? [],
                     'total_active_goals' => count($activeGoals),
-                    'avg_progress_training' => round(TrainingAssignedUser::where('user_email', $request->email)
-                        ->where('training_started', 1)
-                        ->where('completed', 1)->avg('personal_best')),
                     'total_training_goals' => count($trainingGoals) + count($scormGoals),
-                    'avg_in_progress_trainings' => round(TrainingAssignedUser::where('user_email', $request->email)
+                    'avg_in_progress_trainings' => round((TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best')),
+                        ->where('completed', 0)->avg('personal_best') + 
+                        ScormAssignedUser::where('user_email', $request->email)
+                        ->where('scorm_started', 1)
+                        ->where('completed', 0)->avg('personal_best')) / 2),
+                    'completed_trainings' => $employeeReport->trainingCompleted() ?? 0
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -979,7 +986,6 @@ class ApiLearnController extends Controller
             $request->validate([
                 'email' => 'required|email|exists:users,user_email',
             ]);
-
             $allBadgeIds = [];
 
             // Collect badge IDs from training
@@ -1037,7 +1043,8 @@ class ApiLearnController extends Controller
                     'certificates' => [
                         'certificates' => $certificates,
                         'scorm_certificates' => $scormCertificates
-                    ]
+                    ],
+                    'completion_rate' => $this->normalEmpLearnService->calculateCompletionRate($request->email),
                 ]
             ], 200);
         } catch (ValidationException $e) {

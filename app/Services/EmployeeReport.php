@@ -621,4 +621,27 @@ class EmployeeReport
             })
             ->count();
     }
+
+    public function outstandingTrainings(): int
+    {
+        $outstandingTrainings = TrainingAssignedUser::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 1)
+            ->where('personal_best', '>=', 90)
+            ->when(!empty($this->dateRange), function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+            
+        $outstandingScorms = ScormAssignedUser::where('user_email', $this->email)
+            ->where('company_id', $this->companyId)
+            ->where('completed', 1)
+            ->where('personal_best', '>=', 90)
+            ->when(!empty($this->dateRange), function ($query) {
+                return $query->whereBetween('created_at', $this->dateRange);
+            })
+            ->count();
+
+        return $outstandingTrainings + $outstandingScorms;
+    }
 }
