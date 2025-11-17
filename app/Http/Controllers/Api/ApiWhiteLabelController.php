@@ -19,13 +19,13 @@ class ApiWhiteLabelController extends Controller
     {
         try {
             $request->validate([
-                'company_name' => 'required|string|max:255',
+                // 'company_name' => 'required|string|max:255',
                 'company_email' => 'required|email',
                 'domain' => 'required|string',
                 'learn_domain' => 'required|string',
-                'dark_logo' => 'required|mimes:png',
-                'light_logo' => 'required|mimes:png',
-                'favicon' => 'required|mimes:png',
+                // 'dark_logo' => 'required|mimes:png',
+                // 'light_logo' => 'required|mimes:png',
+                // 'favicon' => 'required|mimes:png',
                 'managed_smtp' => 'required|boolean',
                 'from_address' => 'required',
                 'from_name' => 'required|string|max:255',
@@ -90,41 +90,44 @@ class ApiWhiteLabelController extends Controller
                 ], 422);
             }
 
-            // Check SMTP connection
-            $smtpCredentials = [
-                'smtp_host' => $request->smtp_host,
-                'smtp_port' => $request->smtp_port,
-                'smtp_username' => $request->smtp_username,
-                'smtp_password' => $request->smtp_password,
-                'smtp_encryption' => $request->smtp_encryption,
-                'from_address' => $request->from_address,
-                'from_name' => $request->from_name,
-            ];
-            if (!$this->checkSmtpConnection($smtpCredentials)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Invalid SMTP credentials.')
-                ], 422);
+            // Check SMTP connection is managed_smtp is false
+            if ($request->managed_smtp == false) {
+                $smtpCredentials = [
+                    'smtp_host' => $request->smtp_host,
+                    'smtp_port' => $request->smtp_port,
+                    'smtp_username' => $request->smtp_username,
+                    'smtp_password' => $request->smtp_password,
+                    'smtp_encryption' => $request->smtp_encryption,
+                    'from_address' => $request->from_address,
+                    'from_name' => $request->from_name,
+                ];
+                if (!$this->checkSmtpConnection($smtpCredentials)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Invalid SMTP credentials.')
+                    ], 422);
+                }
             }
+
 
             $companyId = Auth::user()->company_id;
 
-            $randomName = generateRandom(10);
-            $extension = $request->file('dark_logo')->getClientOriginalExtension();
-            $darkLogoFilename = $randomName . '.' . $extension;
-            $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $darkLogoFilename, 's3');
+            // $randomName = generateRandom(10);
+            // $extension = $request->file('dark_logo')->getClientOriginalExtension();
+            // $darkLogoFilename = $randomName . '.' . $extension;
+            // $darkLogoPath = $request->file('dark_logo')->storeAs("whiteLabel/{$companyId}", $darkLogoFilename, 's3');
 
-            $randomName = generateRandom(10);
-            $extension = $request->file('light_logo')->getClientOriginalExtension();
-            $lightLogoFilename = $randomName . '.' . $extension;
+            // $randomName = generateRandom(10);
+            // $extension = $request->file('light_logo')->getClientOriginalExtension();
+            // $lightLogoFilename = $randomName . '.' . $extension;
 
-            $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $lightLogoFilename, 's3');
+            // $lightLogoPath = $request->file('light_logo')->storeAs("whiteLabel/{$companyId}", $lightLogoFilename, 's3');
 
-            $randomName = generateRandom(10);
-            $extension = $request->file('favicon')->getClientOriginalExtension();
-            $faviconLogoFilename = $randomName . '.' . $extension;
+            // $randomName = generateRandom(10);
+            // $extension = $request->file('favicon')->getClientOriginalExtension();
+            // $faviconLogoFilename = $randomName . '.' . $extension;
 
-            $faviconLogoPath = $request->file('favicon')->storeAs("whiteLabel/{$companyId}", $faviconLogoFilename, 's3');
+            // $faviconLogoPath = $request->file('favicon')->storeAs("whiteLabel/{$companyId}", $faviconLogoFilename, 's3');
 
             $isCreatedWhitLabel = WhiteLabelledCompany::create([
                 'company_id' => Auth::user()->company_id,
@@ -132,10 +135,10 @@ class ApiWhiteLabelController extends Controller
                 'company_email' => $request->company_email,
                 'domain' => $request->domain,
                 'learn_domain' => $request->learn_domain,
-                'dark_logo' => "/" . $darkLogoPath,
-                'light_logo' => "/" . $lightLogoPath,
-                'favicon' => "/" . $faviconLogoPath,
-                'company_name' => $request->company_name,
+                // 'dark_logo' => "/" . $darkLogoPath,
+                // 'light_logo' => "/" . $lightLogoPath,
+                // 'favicon' => "/" . $faviconLogoPath,
+                // 'company_name' => $request->company_name,
                 'managed_smtp' => $request->managed_smtp,
             ]);
 
