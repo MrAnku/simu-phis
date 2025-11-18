@@ -149,6 +149,10 @@ class EmailInteractionHandler
 
         setCompanyTimezone($campaign->company_id);
 
+        if(clickedByBot($campaign->company_id, $this->campLiveId, 'email')) {
+            return;
+        }
+
         //checking assignment
         $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
 

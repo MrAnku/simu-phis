@@ -140,6 +140,9 @@ class QuishingInteractionHandler
         }
 
         setCompanyTimezone($campaign->company_id);
+        if(clickedByBot($campaign->company_id, $this->campLiveId, 'quishing')) {
+            return;
+        }
 
         $allCamp = QuishingCamp::where('campaign_id', $campaign->campaign_id)->first();
 

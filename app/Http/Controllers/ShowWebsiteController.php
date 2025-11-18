@@ -255,6 +255,9 @@ class ShowWebsiteController extends Controller
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
+                if(clickedByBot($companyId, $campid, 'quishing')) {
+                    return;
+                }
                 $handler = new QuishingInteractionHandler($campid);
                 return $handler->handleCompromisedEmail($companyId);
             } else if ($smi == 1) {
@@ -265,9 +268,15 @@ class ShowWebsiteController extends Controller
                 $handler = new WaInteractionHandler($campid);
                 return $handler->handleCompromisedMsg($companyId);
             } else if ($tprm == 1) {
+                if(clickedByBot($companyId, $campid, 'tprm')) {
+                    return;
+                }
                 $handler = new TprmInteractionHandler($campid);
                 return $handler->handleCompromisedEmail($companyId);
             } else {
+                if(clickedByBot($companyId, $campid, 'email')) {
+                    return;
+                }
                 $handler = new EmailInteractionHandler($campid);
                 return $handler->handleCompromisedEmail($companyId);
             }
@@ -296,6 +305,9 @@ class ShowWebsiteController extends Controller
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
+                if(clickedByBot($companyId, $campid, 'quishing')) {
+                    return;
+                }
 
                 $handler = new QuishingInteractionHandler($campid);
                 $handler->updatePayloadClick($companyId);
@@ -310,9 +322,15 @@ class ShowWebsiteController extends Controller
 
                 return;
             } else if ($tprm == 1) {
+                if(clickedByBot($companyId, $campid, 'tprm')) {
+                    return;
+                }
                 $handler = new TprmInteractionHandler($campid);
                 $handler->updatePayloadClick($companyId);
             } else {
+                if(clickedByBot($companyId, $campid, 'email')) {
+                    return;
+                }
                 $handler = new EmailInteractionHandler($campid);
                 $handler->updatePayloadClick($companyId);
             }
