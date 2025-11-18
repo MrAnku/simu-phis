@@ -6,6 +6,7 @@ use App\Models\Company;
 use InvalidArgumentException;
 use App\Models\WhiteLabelledSmtp;
 use App\Models\WhiteLabelledCompany;
+use Illuminate\Support\Facades\Config;
 use App\Models\WhiteLabelledWhatsappConfig;
 
 class CheckWhitelabelService
@@ -62,15 +63,19 @@ class CheckWhitelabelService
 
     public function clearSmtpConfig(): void
     {
-        config([
-            'mail.mailers.smtp.host' => env('MAIL_HOST'),
-            'mail.mailers.smtp.port' => env('MAIL_PORT'),
-            'mail.mailers.smtp.username' => env('MAIL_USERNAME'),
-            'mail.mailers.smtp.password' => env('MAIL_PASSWORD'),
-            'mail.mailers.smtp.encryption' => env('MAIL_ENCRYPTION'),
-            'mail.from.address' => env('MAIL_FROM_ADDRESS'),
-            'mail.from.name' => env('MAIL_FROM_NAME'),
-        ]);
+         //reset the smtp config to default if not whitelabeled
+            Config::set([
+                'mail.mailers.smtp.host' => env('MAIL_HOST'),
+                'mail.mailers.smtp.port' => env('MAIL_PORT'),
+                'mail.mailers.smtp.username' => env('MAIL_USERNAME'),
+                'mail.mailers.smtp.password' => env('MAIL_PASSWORD'),
+                'mail.mailers.smtp.encryption' => env('MAIL_ENCRYPTION'),
+                'mail.from.address' => env('MAIL_FROM_ADDRESS'),
+                'mail.from.name' => env('MAIL_FROM_NAME'),
+            ]);
+            
+            // Refresh the mail manager to apply new configuration
+            app('mail.manager')->purge();
     }
 
     public function geṭWhatsappConfig(): object

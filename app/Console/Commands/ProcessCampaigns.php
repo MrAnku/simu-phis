@@ -666,7 +666,7 @@ class ProcessCampaigns extends Command
       ];
       $trainingAssignedService->sendTrainingEmail($mailData);
 
-      echo "Reminder email sent to: " . $assignedUser->user_email . "\n";
+      echo "Reminder email sent to: " . $assignedUser->user_email . " at " . now() . "\n";
     } catch (\Exception $e) {
       echo "Error sending reminder email: " . $e->getMessage() . "\n";
     }
