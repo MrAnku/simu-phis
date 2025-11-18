@@ -102,7 +102,7 @@ class ApiCampaignController extends Controller
             //xss check end
 
             $validated = $request->validate([
-                'camp_name' => 'required|string|max:255',
+                'camp_name' => 'required|string|min:5|max:255',
                 'campaign_type' => 'required|in:Phishing & Training,Phishing,Training',
                 "users_group" => 'required|string',
                 "email_lang" => 'nullable|string',
@@ -121,11 +121,11 @@ class ApiCampaignController extends Controller
                 'selected_users' => 'nullable',
                 'policies' => 'nullable|array',
                 'schType' => 'required|in:immediately,scheduled,schLater',
-                "schedule_date" => 'nullable|required_if:schType,scheduled|date|after_or_equal:today',
+                "schedule_date" => "exclude_unless:schType,scheduled|required|date|after_or_equal:today",
                 "schTimeZone" => 'nullable|string|required_if:schType,scheduled',
                 'schTimeStart' => [
-                    'nullable',
-                    'required_if:schType,scheduled',
+                    'exclude_unless:schType,scheduled',
+                    'required',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -136,13 +136,11 @@ class ApiCampaignController extends Controller
                         }
                     },
                 ],
-                'schTimeEnd'   => 'nullable|required_if:schType,scheduled|date_format:Y-m-d H:i:s|after:schTimeStart'
+                'schTimeEnd'   => 'exclude_unless:schType,scheduled|required|date_format:Y-m-d H:i:s|after:schTimeStart'
             ]);
 
             // Validate request input
             $validated = $request->all();
-
-            // return print_r($validated['phish_material']);
 
             $companyId = Auth::user()->company_id;
 
@@ -321,8 +319,6 @@ class ApiCampaignController extends Controller
 
     private function handleLaterLaunch($data, $campId, $companyId)
     {
-        $launchTime = Carbon::createFromFormat("m/d/Y H:i", $data['launch_time'])->format("m/d/Y g:i A");
-
         Campaign::create([
             'campaign_id' => $campId,
             'campaign_name' => $data['camp_name'],
@@ -341,7 +337,7 @@ class ApiCampaignController extends Controller
             'phishing_material' => ($data['campaign_type'] == 'Training') ? null : json_encode($data['phish_material']),
             'sender_profile' => $data['sender_profile'] ?? null,
             'email_lang' => ($data['campaign_type'] == 'Training') ? null : $data['email_lang'],
-            'launch_time' => $launchTime,
+            'launch_time' => now(),
             'launch_type' => 'schLater',
             'status' => 'Not Scheduled',
             'company_id' => $companyId,

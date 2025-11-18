@@ -444,11 +444,11 @@ class ApiAiCallController extends Controller
                     "call_freq" => 'required|in:once,weekly,monthly,quarterly',
                     'expire_after' => 'required_if:call_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                     'policies' => 'nullable|array',
-                    "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                    "schedule_date" => "exclude_unless:schedule_type,scheduled|required|date|after_or_equal:today",
                     "time_zone" => 'nullable|required_if:schedule_type,scheduled|string',
                     'start_time' => [
-                        'nullable',
-                        'required_if:schedule_type,scheduled',
+                        'exclude_unless:schedule_type,scheduled',
+                        'required',
                         'date_format:Y-m-d H:i:s',
                         function ($attribute, $value, $fail) {
                             $inputDate = Carbon::parse($value)->startOfDay();
@@ -459,7 +459,7 @@ class ApiAiCallController extends Controller
                             }
                         },
                     ],
-                    'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
+                    'end_time'   => 'exclude_unless:schedule_type,scheduled|required|date_format:Y-m-d H:i:s|after:start_time'
                 ],
                 [
                     "camp_name.min" => __('Campaign Name must be at least 5 Characters')
@@ -504,7 +504,6 @@ class ApiAiCallController extends Controller
                 'success' => false,
                 'message' => __('Invalid launch type')
             ], 422);
-
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {

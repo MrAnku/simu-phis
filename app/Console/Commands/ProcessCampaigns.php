@@ -169,7 +169,6 @@ class ProcessCampaigns extends Command
       // Update the campaign status to 'running'
       $campaign->update(['status' => 'running']);
 
-
       echo "Campaign is live \n";
     }
   }
@@ -552,7 +551,7 @@ class ProcessCampaigns extends Command
             'status' => 'running',
           ]);
 
-          echo "Relaunching whatsapp campaign of id {$recurr->campaign_id}\n";
+          echo "Relaunching Email campaign of id {$recurr->campaign_id}\n";
 
           // reset live rows for this campaign
           $liveRows = CampaignLive::where('campaign_id', $recurr->campaign_id)->get();

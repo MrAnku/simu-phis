@@ -79,7 +79,7 @@ class ApiWaCampaignController extends Controller
     {
         try {
             $validated = $request->validate([
-                'campaign_name' => 'required|string|max:255',
+                'campaign_name' => 'required|string|min:5|max:255',
                 'campaign_type' => 'required|in:phishing_and_training,phishing',
                 'employee_type' => 'required|in:normal,bluecollar',
                 'phishing_website' => 'required|integer',
@@ -100,11 +100,11 @@ class ApiWaCampaignController extends Controller
                 'policies' => 'nullable|array',
                 "msg_freq" => 'required|in:once,weekly,monthly,quarterly',
                 'expire_after' => 'required_if:msg_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
-                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "schedule_date" => "exclude_unless:schedule_type,scheduled|required|date|after_or_equal:today",
                 "time_zone" => 'nullable|required_if:schedule_type,scheduled|string',
                 'start_time' => [
-                    'nullable',
-                    'required_if:schedule_type,scheduled',
+                    'exclude_unless:schedule_type,scheduled',
+                    'required',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -115,7 +115,7 @@ class ApiWaCampaignController extends Controller
                         }
                     },
                 ],
-                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
+                'end_time'   => 'exclude_unless:schedule_type,scheduled|required|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 
             //check if the selected users group has users has whatsapp number

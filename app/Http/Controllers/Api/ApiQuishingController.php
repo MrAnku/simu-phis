@@ -8,7 +8,6 @@ use App\Models\QshTemplate;
 use Illuminate\Support\Str;
 use App\Models\QuishingCamp;
 use Illuminate\Http\Request;
-use App\Models\TrainingModule;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Http\Controllers\Controller;
@@ -77,7 +76,7 @@ class ApiQuishingController extends Controller
             }
 
             $validated = $request->validate([
-                'campaign_name' => 'required|string|max:255',
+                'campaign_name' => 'required|string|min:5|max:255',
                 'campaign_type' => 'required|in:quishing-training,quishing',
                 "employee_group" => 'required|string',
                 "training_modules" => 'nullable|array',
@@ -96,11 +95,11 @@ class ApiQuishingController extends Controller
                 "email_freq" => 'required|in:once,weekly,monthly,quarterly',
                 'expire_after' => 'required_if:email_freq,weekly,monthly,quarterly|nullable|date|after_or_equal:tomorrow',
                 'schedule_type' => 'required|in:immediately,scheduled,schLater',
-                "schedule_date" => 'nullable|required_if:schedule_type,scheduled|date|after_or_equal:today',
+                "schedule_date" => "exclude_unless:schedule_type,scheduled|required|date|after_or_equal:today",
                 "time_zone" => 'nullable|string|required_if:schedule_type,scheduled',
                 'start_time' => [
-                    'nullable',
-                    'required_if:schedule_type,scheduled',
+                    'exclude_unless:schedule_type,scheduled',
+                    'required',
                     'date_format:Y-m-d H:i:s',
                     function ($attribute, $value, $fail) {
                         $inputDate = Carbon::parse($value)->startOfDay();
@@ -111,7 +110,7 @@ class ApiQuishingController extends Controller
                         }
                     },
                 ],
-                'end_time'   => 'nullable|required_if:schedule_type,scheduled|date_format:Y-m-d H:i:s|after:start_time'
+                'end_time'   => 'exclude_unless:schedule_type,scheduled|required|date_format:Y-m-d H:i:s|after:start_time'
             ]);
 
             $campaign_id = Str::random(6);
