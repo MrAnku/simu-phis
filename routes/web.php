@@ -126,7 +126,7 @@ Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockG
         abort(404, 'Page not found');
     });
 
-    Route::get('{dynamicvalue}', [ShowWebsiteController::class, 'index']);
+    Route::get('{dynamicvalue}', [ShowWebsiteController::class, 'index'])->middleware('msBotBlocker');
 
     Route::get('/js/gz.js', [ShowWebsiteController::class, 'loadjs']);
 
