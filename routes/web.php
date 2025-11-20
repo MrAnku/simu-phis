@@ -137,10 +137,10 @@ Route::domain("{subdomain}." . checkPhishingWebsiteDomain())->middleware('blockG
     Route::post('/check-where-to-redirect', [ShowWebsiteController::class, 'checkWhereToRedirect']);
 
     //route for assigning training
-    Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining']);
+    Route::post('/assignTraining', [ShowWebsiteController::class, 'assignTraining'])->middleware('msBotBlocker');
 
     //route for email compromise
-    Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail']);
+    Route::post('/emp-compromised', [ShowWebsiteController::class, 'handleCompromisedEmail'])->middleware('msBotBlocker');
 
     //route for updating payload
     Route::post('/update-payload', [ShowWebsiteController::class, 'updatePayloadClick'])->middleware('msBotBlocker');
