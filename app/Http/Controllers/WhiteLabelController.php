@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Users;
 use App\Models\Company;
-use App\Models\CompanyBranding;
 use Illuminate\Http\Request;
+use App\Models\CompanyBranding;
 use App\Models\WhiteLabelledSmtp;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,11 @@ class WhiteLabelController extends Controller
         $companyName = env('APP_NAME');
         $companyDomain = env('NEXT_APP_URL');
         $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');
+        $completelyWhitelabeled = false;
 
 
         if ($companyWhitelabeled) {
-            
+
             $companyDomain = "https://" . $companyWhitelabeled->domain . "/";
             $companyLearnDomain = "https://" . $companyWhitelabeled->learn_domain . "/";
 
@@ -44,11 +46,12 @@ class WhiteLabelController extends Controller
                 $companyLogoLight = $branding->light_logo;
                 $companyFavicon = $branding->favicon;
                 $companyName = $branding->company_name;
+                $completelyWhitelabeled = true;
             }
         }
-        if(Auth::guard('api')->check()){
+        if (Auth::guard('api')->check()) {
             $authCompanyBranding = CompanyBranding::where('company_id', Auth::guard('api')->user()->company_id)->first();
-            if($authCompanyBranding){
+            if ($authCompanyBranding) {
                 $companyLogoDark = $authCompanyBranding->dark_logo;
                 $companyLogoLight = $authCompanyBranding->light_logo;
                 $companyFavicon = $authCompanyBranding->favicon;
@@ -56,7 +59,20 @@ class WhiteLabelController extends Controller
             }
         }
 
-      
+        if ($request->query('learner') && $completelyWhitelabeled == false) {
+            $companyId = Users::where('user_email', $request->query('learner'))->value('company_id');
+            if ($companyId) {
+                $authCompanyBranding = CompanyBranding::where('company_id', $companyId)->first();
+                if ($authCompanyBranding) {
+                    $companyLogoDark = $authCompanyBranding->dark_logo;
+                    $companyLogoLight = $authCompanyBranding->light_logo;
+                    $companyFavicon = $authCompanyBranding->favicon;
+                    $companyName = $authCompanyBranding->company_name;
+                }
+            }
+        }
+
+
 
         // Share branding information with all views
         return response()->json([
