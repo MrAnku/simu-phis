@@ -133,18 +133,15 @@ class ApiLearnController extends Controller
                 $companyId = $hasScormAssigned->company_id;
             }
 
-            $isWhitelabeled = new CheckWhitelabelService($companyId);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                $learn_domain = "https://" . $whitelabelData->learn_domain;
-                $isWhitelabeled->updateSmtpConfig();
-                $companyName = $whitelabelData->company_name;
-                $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            $branding = new CheckWhitelabelService($companyId);
+            $learn_domain = $branding->learningPortalDomain();
+            $companyName = $branding->companyName();
+            $companyDarkLogo = $branding->companyDarkLogo();
+
+            if ($branding->isCompanyWhitelabeled()) {
+                $branding->updateSmtpConfig();
             } else {
-                $isWhitelabeled->clearSmtpConfig();
-                $learn_domain = env('SIMUPHISH_LEARNING_URL');
-                $companyName = env('APP_NAME');
-                $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+                $branding->clearSmtpConfig();
             }
 
             $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
@@ -398,18 +395,16 @@ class ApiLearnController extends Controller
                     $rowData->save();
 
                     // Send email
-                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                        $companyName = $whitelabelData->company_name;
-                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-                        $isWhitelabeled->updateSmtpConfig();
+                    $branding = new CheckWhitelabelService($rowData->company_id);
+                    $companyName = $branding->companyName();
+                    $companyLogo = $branding->companyDarkLogo();
+                    $favIcon = $branding->companyFavicon();
+                    if ($branding->isCompanyWhitelabeled()) {
+                       
+                        $branding->updateSmtpConfig();
                     } else {
-                        $isWhitelabeled->clearSmtpConfig();
-                        $companyName = env('APP_NAME');
-                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+                        $branding->clearSmtpConfig();
+                       
                     }
 
                     $mailData = [
@@ -560,18 +555,16 @@ class ApiLearnController extends Controller
                     $rowData->save();
 
                     // Send email
-                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                        $companyName = $whitelabelData->company_name;
-                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-                        $isWhitelabeled->updateSmtpConfig();
+                    $branding = new CheckWhitelabelService($rowData->company_id);
+                    $companyName = $branding->companyName();
+                    $companyLogo = $branding->companyDarkLogo();
+                    $favIcon = $branding->companyFavicon();
+                    if ($branding->isCompanyWhitelabeled()) {
+                       
+                        $branding->updateSmtpConfig();
                     } else {
-                        $isWhitelabeled->clearSmtpConfig();
-                        $companyName = env('APP_NAME');
-                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+                        $branding->clearSmtpConfig();
+                       
                     }
 
                     $mailData = [
@@ -969,7 +962,7 @@ class ApiLearnController extends Controller
                     'total_training_goals' => count($trainingGoals) + count($scormGoals),
                     'avg_in_progress_trainings' => round((TrainingAssignedUser::where('user_email', $request->email)
                         ->where('training_started', 1)
-                        ->where('completed', 0)->avg('personal_best') + 
+                        ->where('completed', 0)->avg('personal_best') +
                         ScormAssignedUser::where('user_email', $request->email)
                         ->where('scorm_started', 1)
                         ->where('completed', 0)->avg('personal_best')) / 2),

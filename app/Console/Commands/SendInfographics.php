@@ -162,18 +162,25 @@ class SendInfographics extends Command
 
                 continue;
             }
-            $isWhitelabeled = new CheckWhitelabelService($company_id);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whiteLableData = $isWhitelabeled->getWhiteLabelData();
-                $companyName = $whiteLableData->company_name;
-                $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-                $learningPortalUrl = $whiteLableData->learn_domain;
-                $isWhitelabeled->updateSmtpConfig();
+
+            $branding = new CheckWhitelabelService($company_id);
+            $companyName = $branding->companyName();
+            $companyLogo = $branding->companyDarkLogo();
+            $learningPortalUrl = $branding->learningPortalDomain();
+
+
+
+            if ($branding->isCompanyWhitelabeled()) {
+                // $whiteLableData = $branding->getWhiteLabelData();
+                // $companyName = $whiteLableData->company_name;
+                // $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
+                // $learningPortalUrl = $whiteLableData->learn_domain;
+                $branding->updateSmtpConfig();
             } else {
-                $isWhitelabeled->clearSmtpConfig();
-                $companyName = env('APP_NAME');
-                $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-                $learningPortalUrl = env('SIMUPHISH_LEARNING_URL');
+                $branding->clearSmtpConfig();
+                // $companyName = env('APP_NAME');
+                // $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
+                // $learningPortalUrl = env('SIMUPHISH_LEARNING_URL');
             }
 
             foreach ($campaigns as $campaign) {

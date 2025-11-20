@@ -49,8 +49,6 @@ class TrainingAssignedEmail extends Mailable
         $subject = $this->customTemplateData['subject'] ?? 
                   $this->mailData['company_name'] . ' Training';
         
-        $fromName = $this->mailData['company_name'];
-        $fromEmail = $this->mailData['company_email'];
         
         return new Envelope(
             subject: $subject,

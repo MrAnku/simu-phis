@@ -788,20 +788,17 @@ class ApiSettingsController extends Controller
                 'training_assign_remind_freq_days' => '1',
             ]);
 
-            $isWhitelabeled = new CheckWhitelabelService($admin->company_id);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whiteLableData = $isWhitelabeled->getWhiteLabelData();
-                $companyName = $whiteLableData->company_name;
-                $companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-                $pass_create_link = "https://" . $whiteLableData->domain . "/company/create-password/" . $token;
-                $portalDomain = "https://" . $whiteLableData->domain;
+            $branding = new CheckWhitelabelService($admin->company_id);
+            $companyName = $branding->companyName();
+            $companyLogo = $branding->companyDarkLogo();
+            $portalDomain = $branding->platformDomain();
 
-                $isWhitelabeled->updateSmtpConfig();
+            if ($branding->isCompanyWhitelabeled()) {
+               
+                $pass_create_link = $branding->platformDomain() . "/company/create-password/" . $token;
+                $branding->updateSmtpConfig();
             } else {
-                $isWhitelabeled->clearSmtpConfig();
-                $companyName = env('APP_NAME');
-                $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-                $portalDomain = env('NEXT_APP_URL');
+                $branding->clearSmtpConfig();
             }
 
             // Send email with company creation link

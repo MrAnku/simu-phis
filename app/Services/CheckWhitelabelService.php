@@ -3,19 +3,21 @@
 namespace App\Services;
 
 use App\Models\Company;
+use App\Models\CompanyBranding;
 use InvalidArgumentException;
 use App\Models\WhiteLabelledSmtp;
 use App\Models\WhiteLabelledCompany;
 use Illuminate\Support\Facades\Config;
 use App\Models\WhiteLabelledWhatsappConfig;
 
-class CheckWhitelabelService
+class CheckWhitelabelService extends BrandingService
 {
     public $companyId;
 
     public function __construct($companyId)
     {
         $this->companyId = $companyId;
+        parent::__construct($companyId);
     }
     /**
      * Check if a company is whitelabeled.
@@ -38,10 +40,13 @@ class CheckWhitelabelService
 
     public function getWhiteLabelData(): object
     {
-        return WhiteLabelledCompany::where('company_id', $this->companyId)
+        $domainDetails = WhiteLabelledCompany::where('company_id', $this->companyId)
             ->where('approved_by_partner', 1)
             ->where('service_status', 1)
             ->first();
+        $brandingDetails = CompanyBranding::where('company_id', $this->companyId)
+            ->first();
+        return $domainDetails->merge($brandingDetails);
     }
 
     public function updateSmtpConfig(): void
@@ -94,5 +99,17 @@ class CheckWhitelabelService
             return "https://" .$domain;
         }
         return env('NEXT_APP_URL');
+    }
+
+    public function learningPortalDomain(): string
+    {
+        $learnDomain = WhiteLabelledCompany::where('company_id', $this->companyId)
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->value('learn_domain');
+        if($learnDomain){
+            return "https://" .$learnDomain;
+        }
+        return env('SIMUPHISH_LEARNING_URL');
     }
 }

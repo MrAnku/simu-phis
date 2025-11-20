@@ -238,18 +238,14 @@ class LearnerDashController extends Controller
             $companyId = $hasPolicy->company_id;
         }
 
-        $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-            $learn_domain = "https://" . $whitelabelData->learn_domain;
-            $isWhitelabeled->updateSmtpConfig();
-            $companyName = $whitelabelData->company_name;
-            $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+        $branding = new CheckWhitelabelService($companyId);
+        $learn_domain = $branding->learningPortalDomain();
+        $companyName = $branding->companyName();
+        $companyDarkLogo = $branding->companyDarkLogo();
+        if ($branding->isCompanyWhitelabeled()) {
+            $branding->updateSmtpConfig();
         } else {
-            $isWhitelabeled->clearSmtpConfig();
-            $learn_domain = env('SIMUPHISH_LEARNING_URL');
-            $companyName = env('APP_NAME');
-            $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+            $branding->clearSmtpConfig();
         }
 
 
@@ -362,78 +358,78 @@ class LearnerDashController extends Controller
 
 
     public function loadTraining($training_id, $training_lang)
-{
-    try {
-        // Decode the ID
-        $id = decrypt($training_id);
-        
-        // Validate the ID
-        if ($id === false) {
-            return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
-        }
+    {
+        try {
+            // Decode the ID
+            $id = decrypt($training_id);
 
-        // Fetch the training data
-        $trainingData = TrainingModule::find($id);
+            // Validate the ID
+            if ($id === false) {
+                return response()->json(['status' => 0, 'msg' => 'Invalid training module ID.']);
+            }
 
-        // Check if the training module exists
-        if (!$trainingData) {
-            return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
-        }
+            // Fetch the training data
+            $trainingData = TrainingModule::find($id);
 
-        if ($trainingData->training_type == 'static_training') {
-            $moduleLanguage = $training_lang;
+            // Check if the training module exists
+            if (!$trainingData) {
+                return response()->json(['status' => 0, 'msg' => 'Training Module Not Found']);
+            }
 
-            if ($moduleLanguage !== 'en') {
-                try {
-                    $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
-                    $translatedArray = json_decode($translatedJson_quiz, true);
-                    
-                    if ($translatedArray) {
-                        $translatedArray = changeTranslatedQuizVideoUrl($translatedArray, $moduleLanguage);
-                        $trainingData->json_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+            if ($trainingData->training_type == 'static_training') {
+                $moduleLanguage = $training_lang;
+
+                if ($moduleLanguage !== 'en') {
+                    try {
+                        $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
+                        $translatedArray = json_decode($translatedJson_quiz, true);
+
+                        if ($translatedArray) {
+                            $translatedArray = changeTranslatedQuizVideoUrl($translatedArray, $moduleLanguage);
+                            $trainingData->json_quiz = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Translation failed in loadTraining', [
+                            'error' => $e->getMessage(),
+                            'training_id' => $id,
+                            'lang' => $moduleLanguage
+                        ]);
+                        // Continue with original content if translation fails
                     }
-                } catch (\Exception $e) {
-                    Log::error('Translation failed in loadTraining', [
-                        'error' => $e->getMessage(),
-                        'training_id' => $id,
-                        'lang' => $moduleLanguage
-                    ]);
-                    // Continue with original content if translation fails
                 }
+
+                return response()->json(['status' => 1, 'jsonData' => $trainingData]);
             }
 
-            return response()->json(['status' => 1, 'jsonData' => $trainingData]);
-        }
+            if ($trainingData->training_type == 'gamified') {
+                $moduleLanguage = $training_lang;
 
-        if ($trainingData->training_type == 'gamified') {
-            $moduleLanguage = $training_lang;
-
-            if ($moduleLanguage !== 'en') {
-                try {
-                    $quizInArray = json_decode($trainingData->json_quiz, true);
-                    $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
-                    return $this->translateJsonData($quizInArray, $moduleLanguage);
-                } catch (\Exception $e) {
-                    Log::error('Gamified translation failed', [
-                        'error' => $e->getMessage(),
-                        'training_id' => $id,
-                        'lang' => $moduleLanguage
-                    ]);
-                    return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+                if ($moduleLanguage !== 'en') {
+                    try {
+                        $quizInArray = json_decode($trainingData->json_quiz, true);
+                        $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
+                        return $this->translateJsonData($quizInArray, $moduleLanguage);
+                    } catch (\Exception $e) {
+                        Log::error('Gamified translation failed', [
+                            'error' => $e->getMessage(),
+                            'training_id' => $id,
+                            'lang' => $moduleLanguage
+                        ]);
+                        return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+                    }
                 }
-            }
 
-            return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+                return response()->json(['status' => 1, 'jsonData' => $trainingData->json_quiz]);
+            }
+        } catch (\Exception $e) {
+            Log::error('loadTraining failed', [
+                'error' => $e->getMessage(),
+                'training_id' => $training_id,
+                'lang' => $training_lang
+            ]);
+            return response()->json(['status' => 0, 'msg' => 'An error occurred while loading the training module.']);
         }
-    } catch (\Exception $e) {
-        Log::error('loadTraining failed', [
-           'error' => $e->getMessage(),
-            'training_id' => $training_id,
-            'lang' => $training_lang
-        ]);
-        return response()->json(['status' => 0, 'msg' => 'An error occurred while loading the training module.']);
     }
-}
 
     // private function translateJsonData($json, $lang)
     // {
@@ -803,40 +799,29 @@ class LearnerDashController extends Controller
                 $rowData->completion_date = now()->format('Y-m-d');
                 $rowData->save();
 
-                $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                    
-                    $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                    $mailData = [
-                        'user_name' => $rowData->user_name,
-                        'training_name' => $rowData->trainingData->name,
-                        'training_score' => $request->trainingScore,
-                        'company_name' => $whitelabelData->company_name,
-                        'logo' => env('CLOUDFRONT_URL') . $whitelabelData->dark_logo,
-                        'company_id' => $rowData->company_id,
-                    ];
+                $branding = new CheckWhitelabelService($rowData->company_id);
+                $mailData = [
+                    'user_name' => $rowData->user_name,
+                    'training_name' => $rowData->trainingData->name,
+                    'training_score' => $request->trainingScore,
+                    'company_name' => $branding->companyName(),
+                    'logo' => $branding->companyDarkLogo(),
+                    'company_id' => $rowData->company_id,
+                ];
 
-                    $isWhitelabeled->updateSmtpConfig();
+                if ($branding->isCompanyWhitelabeled()) {
+                    $branding->updateSmtpConfig();
                 } else {
-                    $isWhitelabeled->clearSmtpConfig();
-                    // return $learnSiteAndLogo['logo'];
-                    $mailData = [
-                        'user_name' => $rowData->user_name,
-                        'training_name' => $rowData->trainingData->name,
-                        'training_score' => $request->trainingScore,
-                        'company_name' => env('APP_NAME'),
-                        'logo' => env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png',
-                        'company_id' => $rowData->company_id,
-                    ];
+                    $branding->clearSmtpConfig();
                 }
 
 
                 $pdfContent = $this->generateCertificatePdf(
-                    $rowData->user_name, 
-                    $rowData->trainingData->name, 
-                    $rowData->training, 
-                    $rowData->completion_date, 
-                    $rowData->user_email, 
+                    $rowData->user_name,
+                    $rowData->trainingData->name,
+                    $rowData->training,
+                    $rowData->completion_date,
+                    $rowData->user_email,
                     $mailData['logo']
                 );
 
@@ -861,18 +846,14 @@ class LearnerDashController extends Controller
 
         $companyId = TrainingAssignedUser::where('user_email', $userEmail)->value('company_id');
 
-        $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-            // $companyName = $whitelabelData->company_name;
-            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-            $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-            $isWhitelabeled->updateSmtpConfig();
+        $branding = new CheckWhitelabelService($companyId);
+        $companyLogo = $branding->companyDarkLogo();
+        $favIcon = $branding->companyFavicon();
+        if ($branding->isCompanyWhitelabeled()) {
+           
+            $branding->updateSmtpConfig();
         } else {
-            $isWhitelabeled->clearSmtpConfig();
-            // $companyName = env('APP_NAME');
-            $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-            $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
+            $branding->clearSmtpConfig();
         }
 
 

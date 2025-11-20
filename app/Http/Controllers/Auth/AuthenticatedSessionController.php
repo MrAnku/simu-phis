@@ -152,16 +152,13 @@ class AuthenticatedSessionController extends Controller
                 ]);
             }
 
-            $isWhitelabeled = new CheckWhitelabelService($companyId);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                $isWhitelabeled->updateSmtpConfig();
-                $companyName = $whitelabelData->company_name;
-                $companyDarkLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
+            $branding = new CheckWhitelabelService($companyId);
+            $companyName = $branding->companyName();
+            $companyDarkLogo = $branding->companyDarkLogo();
+            if ($branding->isCompanyWhitelabeled()) {
+                $branding->updateSmtpConfig();
             } else {
-                $isWhitelabeled->clearSmtpConfig();
-                $companyName = env('APP_NAME');
-                $companyDarkLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
+                $branding->clearSmtpConfig();
             }
 
             // Prepare email data

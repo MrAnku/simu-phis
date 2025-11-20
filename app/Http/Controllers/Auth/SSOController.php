@@ -166,13 +166,9 @@ class SSOController extends Controller
             if ($hasScormAssigned) {
                 $companyId = $hasScormAssigned->company_id;
             }
-            $isWhitelabeled = new CheckWhitelabelService($companyId);
-            if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                $learn_domain = "https://" . $whitelabelData->learn_domain;
-            } else {
-                $learn_domain = env('SIMUPHISH_LEARNING_URL');
-            }
+            $branding = new CheckWhitelabelService($companyId);
+            $learn_domain = $branding->learningPortalDomain();
+            
             $learning_dashboard_link = $learn_domain . '/training-dashboard/' . $token;
 
             // Insert new record into the database

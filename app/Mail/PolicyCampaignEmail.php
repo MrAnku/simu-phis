@@ -37,19 +37,16 @@ class PolicyCampaignEmail extends Mailable
 
     private function checkWhiteLabel()
     {
-        $this->companyName = env('APP_NAME');
-        $this->companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-        $this->learnDomain = env('SIMUPHISH_LEARNING_URL');
-
-        $isWhitelabeled = new CheckWhitelabelService($this->mailData['company_id']);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-            $whiteLableData = $isWhitelabeled->getWhiteLabelData();
-            $this->companyName = $whiteLableData->company_name;
-            $this->companyLogo = env('CLOUDFRONT_URL') . $whiteLableData->dark_logo;
-            $this->learnDomain = "https://" . $whiteLableData->learn_domain;
-            $isWhitelabeled->updateSmtpConfig();
+       
+        $branding = new CheckWhitelabelService($this->mailData['company_id']);
+        $this->companyName = $branding->companyName();
+        $this->companyLogo = $branding->companyDarkLogo();
+        $this->learnDomain = $branding->learningPortalDomain();
+        if ($branding->isCompanyWhitelabeled()) {
+          
+            $branding->updateSmtpConfig();
         }else{
-            $isWhitelabeled->clearSmtpConfig();
+            $branding->clearSmtpConfig();
         }
     }
 

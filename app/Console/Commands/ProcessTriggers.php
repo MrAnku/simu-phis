@@ -14,7 +14,6 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\CompanyTriggerTraining;
-use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
 use App\Models\BlueCollarScormAssignedUser;
 

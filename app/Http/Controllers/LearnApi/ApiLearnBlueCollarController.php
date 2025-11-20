@@ -441,15 +441,10 @@ class ApiLearnBlueCollarController extends Controller
                     $whatsappService = new BlueCollarWhatsappService($rowData->company_id);
                     $whatsapp_response = $whatsappService->sendTrainingComplete($data);
 
-                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-                    } else {
-                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
-                    }
+                    $branding = new CheckWhitelabelService($rowData->company_id);
+                    $companyLogo = $branding->companyDarkLogo();
+                    $favIcon = $branding->companyFavicon();
+                    
 
                     $pdfContent = $blueCollarEmpLearnService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
 
@@ -734,15 +729,10 @@ class ApiLearnBlueCollarController extends Controller
                     $whatsappService = new BlueCollarWhatsappService($rowData->company_id);
                     $whatsapp_response = $whatsappService->sendTrainingComplete($data);
 
-                    $isWhitelabeled = new CheckWhitelabelService($rowData->company_id);
-                    if ($isWhitelabeled->isCompanyWhitelabeled()) {
-                        $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-                        $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-                        $favIcon = env('CLOUDFRONT_URL') . $whitelabelData->favicon;
-                    } else {
-                        $companyLogo = env('CLOUDFRONT_URL') . '/assets/images/simu-logo-dark.png';
-                        $favIcon = env('CLOUDFRONT_URL') . '/assets/images/simu-icon.png';
-                    }
+                    $branding = new CheckWhitelabelService($rowData->company_id);
+                    $companyLogo = $branding->companyDarkLogo();
+                    $favIcon = $branding->companyFavicon();
+                    
 
                     $pdfContent = $blueCollarEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 

@@ -20,32 +20,6 @@ class TrainingAssignedService
         // $learnSiteAndLogo = checkWhitelabeled($campData['company_id']);
         $token = encrypt($campData['user_email']);
 
-        $learning_dashboard_link = env('SIMUPHISH_LEARNING_URL') . '/training-dashboard/' . $token;
-        $learn_domain = env('SIMUPHISH_LEARNING_URL') . '/';
-        $companyName = env('APP_NAME');
-        $companyLogo = env('CLOUDFRONT_URL') . "/assets/images/simu-logo-dark.png";
-        $companyEmail = env('MAIL_FROM_ADDRESS');
-
-        // Check if the company is whitelabeled
-        $isWhitelabeled = new CheckWhitelabelService($campData['company_id']);
-        if ($isWhitelabeled->isCompanyWhitelabeled()) {
-
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-
-            $learning_dashboard_link = "https://" . $whitelabelData->learn_domain . '/training-dashboard/' . $token;
-
-            $learn_domain = "https://" . $whitelabelData->learn_domain . '/';
-            $companyName = $whitelabelData->company_name;
-            $companyLogo = env('CLOUDFRONT_URL') . $whitelabelData->dark_logo;
-            $companyEmail = $whitelabelData->company_email;
-
-            $isWhitelabeled->updateSmtpConfig();
-        }else{
-            //reset the smtp config to default if not whitelabeled
-            $isWhitelabeled->clearSmtpConfig();
-        }
-
-
         DB::table('learnerloginsession')
             ->insert([
                 'token' => $token,
@@ -53,10 +27,23 @@ class TrainingAssignedService
                 'expiry' => now()->addHours(24), // Ensure it expires in 24 hours
                 'created_at' => now(), // Ensure ordering works properly
             ]);
+
+        $branding = new CheckWhitelabelService($campData['company_id']);
+        $learning_dashboard_link = $branding->learningPortalDomain() . '/training-dashboard/' . $token;
+        $learn_domain = $branding->learningPortalDomain() . '/';
+        $companyName = $branding->companyName();
+        $companyLogo = $branding->companyDarkLogo();
+        if ($branding->isCompanyWhitelabeled()) {
+
+            $branding->updateSmtpConfig();
+        } else {
+            //reset the smtp config to default if not whitelabeled
+            $branding->clearSmtpConfig();
+        }
+        
         $mailData = [
             'user_name' => $campData['user_name'],
             'company_name' => $companyName,
-            'company_email' => $companyEmail,
             'learning_site' =>  $learning_dashboard_link,
             'logo' => $companyLogo,
             'company_id' => $campData['company_id'],

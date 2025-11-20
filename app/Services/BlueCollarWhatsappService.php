@@ -16,17 +16,17 @@ class BlueCollarWhatsappService
 
     public function __construct($companyId)
     {
-        $isWhitelabeled = new CheckWhitelabelService($companyId);
-        if ($isWhitelabeled->isCompanyWhitelabeled() && $isWhitelabeled->geṭWhatsappConfig()) {
-            $whitelabelData = $isWhitelabeled->getWhiteLabelData();
-            $this->learn_domain = "https://" . $whitelabelData->learn_domain;
-            $this->companyName = $whitelabelData->company_name;
-            $whatsappConfig = $isWhitelabeled->geṭWhatsappConfig();
+        $branding = new CheckWhitelabelService($companyId);
+        $this->learn_domain = $branding->learningPortalDomain();
+        $this->companyName = $branding->companyName();
+
+        if ($branding->isCompanyWhitelabeled() && $branding->geṭWhatsappConfig()) {
+            
+            $whatsappConfig = $branding->geṭWhatsappConfig();
             $this->access_token = $whatsappConfig->access_token;
             $this->phone_number_id = $whatsappConfig->from_phone_id;
         } else {
-            $this->learn_domain = env('SIMUPHISH_LEARNING_URL');
-            $this->companyName = env('APP_NAME');
+           
             $this->access_token = env('WHATSAPP_CLOUD_API_TOKEN');
             $this->phone_number_id = env('WHATSAPP_CLOUD_API_PHONE_NUMBER_ID');
         }

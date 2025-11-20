@@ -4,18 +4,13 @@ namespace App\Console\Commands;
 
 use Carbon\Carbon;
 use App\Models\Users;
-use App\Models\Policy;
 use App\Models\Company;
 use App\Models\UsersGroup;
-use App\Models\AssignedPolicy;
 use App\Models\PolicyCampaign;
 use Illuminate\Console\Command;
-use App\Mail\PolicyCampaignEmail;
 use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use App\Services\PolicyAssignedService;
-use App\Services\CheckWhitelabelService;
 
 class ProcessPolicyCampaign extends Command
 {
