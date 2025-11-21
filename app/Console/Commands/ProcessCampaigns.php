@@ -247,7 +247,7 @@ class ProcessCampaigns extends Command
               $this->sendOnlyTraining($campaign);
             } catch (\Exception $e) {
               echo "Error sending training: " . $e->getMessage() . "\n";
-               continue;
+              continue;
             }
           }
           if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
@@ -262,7 +262,7 @@ class ProcessCampaigns extends Command
               $policyService->assignPolicies($campaign->camp->policies);
             } catch (\Exception $e) {
               echo "Error assigning policy: " . $e->getMessage() . "\n";
-               continue;
+              continue;
             }
           }
 
@@ -271,7 +271,7 @@ class ProcessCampaigns extends Command
               $this->sendPhishingEmail($campaign);
             } catch (\Exception $e) {
               echo "Error sending phishing email: " . $e->getMessage() . "\n";
-               continue;
+              continue;
             }
           }
         }
@@ -494,7 +494,12 @@ class ProcessCampaigns extends Command
       }
     }
 
-    // Relaunch completed recurring whatsapp campaigns (weekly/monthly/quarterly)
+    // Relaunch completed recurring campaigns (weekly/monthly/quarterly)
+    $this->relaunchCampaigns();
+  }
+
+  private function relaunchCampaigns()
+  {
     $completedRecurring = Campaign::where('status', 'completed')
       ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
       ->get();
@@ -506,7 +511,6 @@ class ProcessCampaigns extends Command
             // launch_date stores only date; use start of day as last launch
             $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
           } else {
-            Log::error("ProcessEmail: no launch_date for campaign {$recurr->campaign_id}");
             continue;
           }
         } catch (\Exception $e) {
@@ -551,38 +555,44 @@ class ProcessCampaigns extends Command
             'status' => 'running',
           ]);
 
-          echo "Relaunching Email campaign of id {$recurr->campaign_id}\n";
+          echo "Relaunching Email campaign : {$recurr->campaign_name}\n";
 
           // reset live rows for this campaign
-          $liveRows = CampaignLive::where('campaign_id', $recurr->campaign_id)->get();
-          foreach ($liveRows as $live) {
-            try {
-              // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
-              try {
-                $currentSendTime = Carbon::parse($live->send_time);
-                $newSendTime = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSendTime->format('H:i:s'));
-              } catch (\Exception $e) {
-                // fallback: if parsing fails, use nextLaunch at startOfDay
-                $newSendTime = $nextLaunch->copy()->startOfDay();
-              }
-
-              $live->update([
-                'sent' => 0,
-                'mail_open' => 0,
-                'payload_clicked' => 0,
-                'emp_compromised' => 0,
-                'email_reported' => 0,
-                'training_assigned' => 0,
-                'send_time' => $newSendTime,
-              ]);
-            } catch (\Exception $e) {
-              Log::error("ProcessEmail: failed to reset Email {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
-            }
-          }
+          $this->resetLiveCampaigns($recurr->campaign_id, $nextLaunch);
         }
       } catch (\Exception $e) {
         Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
         continue;
+      }
+    }
+  }
+
+  private function resetLiveCampaigns($campaignId, $nextLaunch)
+  {
+    // reset live rows for this campaign
+    $liveRows = CampaignLive::where('campaign_id', $campaignId)->get();
+    foreach ($liveRows as $live) {
+      try {
+        // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
+        try {
+          $currentSendTime = Carbon::parse($live->send_time);
+          $newSendTime = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSendTime->format('H:i:s'));
+        } catch (\Exception $e) {
+          // fallback: if parsing fails, use nextLaunch at startOfDay
+          $newSendTime = $nextLaunch->copy()->startOfDay();
+        }
+
+        $live->update([
+          'sent' => 0,
+          'mail_open' => 0,
+          'payload_clicked' => 0,
+          'emp_compromised' => 0,
+          'email_reported' => 0,
+          'training_assigned' => 0,
+          'send_time' => $newSendTime,
+        ]);
+      } catch (\Exception $e) {
+        Log::error("ProcessEmail: failed to reset Email {$live->id} for campaign {$campaignId} - " . $e->getMessage());
       }
     }
   }
@@ -603,9 +613,7 @@ class ProcessCampaigns extends Command
       try {
         setCompanyTimezone($company->company_id);
 
-
         $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
-
 
         $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
           ->get()
@@ -623,12 +631,10 @@ class ProcessCampaigns extends Command
             $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
 
             if ($reminderDate->isBefore($currentDate)) {
-              echo "Reminder will send";
+              echo "Reminder will send \n";
               $this->freqTrainingReminder($assignedUser);
 
               // Update the last reminder date and save it
-              // $assignedUser->last_reminder_date = $currentDate;
-              // $assignedUser->save();
               TrainingAssignedUser::where('company_id', $company->company_id)
                 ->where('user_email', $assignedUser->user_email)
                 ->update(['last_reminder_date' => $currentDate]);

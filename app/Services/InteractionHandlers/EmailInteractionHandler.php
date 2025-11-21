@@ -5,6 +5,7 @@ namespace App\Services\InteractionHandlers;
 use App\Models\Campaign;
 use Jenssegers\Agent\Agent;
 use App\Models\CampaignLive;
+use App\Models\Company;
 use App\Models\EmailCampActivity;
 use App\Services\PolicyAssignedService;
 use App\Services\CampaignTrainingService;
@@ -31,10 +32,12 @@ class EmailInteractionHandler
             $campaignLive->save();
 
             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $company = Company::where('company_id', $campaignLive->company_id)->first();
+            $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
 
             $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
 
-            $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+            $campaignTimezone = $camp->timeZone ?: $companyTimezone;
 
             date_default_timezone_set($campaignTimezone);
             config(['app.timezone' => $campaignTimezone]);
@@ -108,9 +111,12 @@ class EmailInteractionHandler
         ];
 
         // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        $company = Company::where('company_id', $campaignLive->company_id)->first();
+        $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
         $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
 
-        $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+        $campaignTimezone = $camp->timeZone ?: $companyTimezone;
 
         date_default_timezone_set($campaignTimezone);
         config(['app.timezone' => $campaignTimezone]);
@@ -149,7 +155,7 @@ class EmailInteractionHandler
 
         setCompanyTimezone($campaign->company_id);
 
-        if(clickedByBot($campaign->company_id, $this->campLiveId, 'email')) {
+        if (clickedByBot($campaign->company_id, $this->campLiveId, 'email')) {
             return;
         }
 

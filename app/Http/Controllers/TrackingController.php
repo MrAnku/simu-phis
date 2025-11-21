@@ -7,6 +7,7 @@ use App\Models\CampaignLive;
 use App\Models\TprmActivity;
 use Illuminate\Http\Request;
 use App\Models\CampaignReport;
+use App\Models\Company;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Models\TprmCampaignLive;
@@ -33,8 +34,11 @@ class TrackingController extends Controller
                 $campaignLive->save();
 
                 // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                $company = Company::where('company_id', $campaignLive->company_id)->first();
+                $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
                 $camp = Campaign::where('campaign_id', $campaignLive->campaign_id)->first();
-                $campaignTimezone = $camp->timeZone ?: config('app.timezone');
+                $campaignTimezone = $camp->timeZone ?: $companyTimezone;
 
                 date_default_timezone_set($campaignTimezone);
                 config(['app.timezone' => $campaignTimezone]);
@@ -150,8 +154,11 @@ class TrackingController extends Controller
                     $quishingLive->save();
 
                     // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+                    $company = Company::where('company_id', $quishingLive->company_id)->first();
+                    $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
                     $camp = QuishingCamp::where('campaign_id', $quishingLive->campaign_id)->first();
-                    $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+                    $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 
                     date_default_timezone_set($campaignTimezone);
                     config(['app.timezone' => $campaignTimezone]);

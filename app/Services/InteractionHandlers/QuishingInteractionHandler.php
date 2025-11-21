@@ -2,6 +2,7 @@
 
 namespace App\Services\InteractionHandlers;
 
+use App\Models\Company;
 use Jenssegers\Agent\Agent;
 use App\Models\QuishingCamp;
 use App\Models\QuishingActivity;
@@ -31,8 +32,11 @@ class QuishingInteractionHandler
             $campaignLive->save();
 
             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+               $company = Company::where('company_id', $campaignLive->company_id)->first();
+                $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+                
             $camp = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->first();
-            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+            $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 
             date_default_timezone_set($campaignTimezone);
             config(['app.timezone' => $campaignTimezone]);
@@ -106,8 +110,11 @@ class QuishingInteractionHandler
             ];
 
             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $company = Company::where('company_id', $campaignLive->company_id)->first();
+            $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
             $camp = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->first();
-            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+            $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 
             date_default_timezone_set($campaignTimezone);
             config(['app.timezone' => $campaignTimezone]);
@@ -140,7 +147,7 @@ class QuishingInteractionHandler
         }
 
         setCompanyTimezone($campaign->company_id);
-        if(clickedByBot($campaign->company_id, $this->campLiveId, 'quishing')) {
+        if (clickedByBot($campaign->company_id, $this->campLiveId, 'quishing')) {
             return;
         }
 

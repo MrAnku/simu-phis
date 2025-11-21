@@ -2,6 +2,7 @@
 
 namespace App\Services\InteractionHandlers;
 
+use App\Models\Company;
 use App\Models\WaCampaign;
 use Jenssegers\Agent\Agent;
 use App\Models\WaLiveCampaign;
@@ -28,9 +29,12 @@ class WaInteractionHandler
             $campaignLive->payload_clicked = 1;
             $campaignLive->save();
 
-             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+            $company = Company::where('company_id', $campaignLive->company_id)->first();
+            $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
             $camp = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->first();
-            $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+            $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 
             date_default_timezone_set($campaignTimezone);
             config(['app.timezone' => $campaignTimezone]);
@@ -104,8 +108,11 @@ class WaInteractionHandler
         ];
 
         // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        $company = Company::where('company_id', $campaignLive->company_id)->first();
+        $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
         $camp = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->first();
-        $campaignTimezone = $camp->time_zone ?: config('app.timezone');
+        $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 
         date_default_timezone_set($campaignTimezone);
         config(['app.timezone' => $campaignTimezone]);
