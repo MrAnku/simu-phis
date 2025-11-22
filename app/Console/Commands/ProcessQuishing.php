@@ -410,6 +410,11 @@ class ProcessQuishing extends Command
         }
 
         // Relaunch completed recurring quishing campaigns (weekly/monthly/quarterly)
+        $this->relaunchCampaigns();
+    }
+
+    private function relaunchCampaigns()
+    {
         $completedRecurring = QuishingCamp::where('status', 'completed')
             ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
             ->get();
@@ -472,35 +477,40 @@ class ProcessQuishing extends Command
                     echo "Relaunching Quishing campaign of id {$recurr->campaign_id}\n";
 
                     // reset live rows for this campaign
-                    $liveRows = QuishingLiveCamp::where('campaign_id', $recurr->campaign_id)->get();
-                    foreach ($liveRows as $live) {
-                        try {
-                            // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
-                            try {
-                                $currentSend = Carbon::parse($live->send_time);
-                                $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
-                            } catch (\Exception $e) {
-                                // fallback: if parsing fails, use nextLaunch at startOfDay
-                                $newSend = $nextLaunch->copy()->startOfDay();
-                            }
-
-                            $live->update([
-                                'sent' => '0',
-                                'mail_open' => '0',
-                                'qr_scanned' => '0',
-                                'compromised' => '0',
-                                'email_reported' => '0',
-                                'training_assigned' => '0',
-                                'send_time' => $newSend,
-                            ]);
-                        } catch (\Exception $e) {
-                            Log::error("ProcessQuishing: failed to reset QuishingLiveCamp {$live->id} for campaign {$recurr->campaign_id} - " . $e->getMessage());
-                        }
-                    }
+                    $this->resetLiveCampaigns($recurr->campaign_id, $nextLaunch);
                 }
             } catch (\Exception $e) {
                 Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
                 continue;
+            }
+        }
+    }
+
+    private function resetLiveCampaigns($campaignId, $nextLaunch)
+    {
+        $liveRows = QuishingLiveCamp::where('campaign_id', $campaignId)->get();
+        foreach ($liveRows as $live) {
+            try {
+                // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
+                try {
+                    $currentSend = Carbon::parse($live->send_time);
+                    $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
+                } catch (\Exception $e) {
+                    // fallback: if parsing fails, use nextLaunch at startOfDay
+                    $newSend = $nextLaunch->copy()->startOfDay();
+                }
+
+                $live->update([
+                    'sent' => '0',
+                    'mail_open' => '0',
+                    'qr_scanned' => '0',
+                    'compromised' => '0',
+                    'email_reported' => '0',
+                    'training_assigned' => '0',
+                    'send_time' => $newSend,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("ProcessQuishing: failed to reset QuishingLiveCamp {$live->id} for campaign {$campaignId} - " . $e->getMessage());
             }
         }
     }

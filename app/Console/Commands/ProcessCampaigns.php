@@ -8,17 +8,12 @@ use App\Models\Company;
 use App\Models\Campaign;
 use App\Models\UsersGroup;
 use App\Models\CampaignLive;
-use App\Models\SenderProfile;
-use App\Models\OutlookDmiToken;
-use Illuminate\Console\Command;
 use App\Models\EmailCampActivity;
-use Illuminate\Support\Facades\Log;
-use App\Models\PhishingEmail;
-use App\Models\PhishingWebsite;
 use App\Models\TrainingAssignedUser;
-use App\Services\CampaignTrainingService;
-use App\Services\PolicyAssignedService;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use App\Services\TrainingAssignedService;
+use App\Services\CampaignProcessing\EmailCampaignService;
 
 class ProcessCampaigns extends Command
 {
@@ -34,13 +29,29 @@ class ProcessCampaigns extends Command
    *
    * @var string
    */
-  protected $description = 'Command description';
+  protected $description = 'Process email campaigns, send emails, and manage campaign lifecycle';
+
+  /**
+   * Email campaign service instance
+   *
+   * @var EmailCampaignService
+   */
+  protected $emailCampaignService;
+
+  /**
+   * Create a new command instance.
+   *
+   * @param EmailCampaignService $emailCampaignService
+   */
+  public function __construct(EmailCampaignService $emailCampaignService)
+  {
+    parent::__construct();
+    $this->emailCampaignService = $emailCampaignService;
+  }
 
   /**
    * Execute the console command.
    */
-
-
   public function handle()
   {
     $this->processScheduledCampaigns();
@@ -49,6 +60,9 @@ class ProcessCampaigns extends Command
     $this->sendReminderMail();
   }
 
+  /**
+   * Process scheduled campaigns and make them live
+   */
   private function processScheduledCampaigns()
   {
     $companies = Company::where('approved', 1)
@@ -59,6 +73,7 @@ class ProcessCampaigns extends Command
     if ($companies->isEmpty()) {
       return;
     }
+
     foreach ($companies as $company) {
       try {
 
@@ -88,6 +103,12 @@ class ProcessCampaigns extends Command
     }
   }
 
+  /**
+   * Create campaign live records for all users in the campaign group
+   *
+   * @param int $campaignid
+   * @return void
+   */
   private function makeCampaignLive($campaignid)
   {
     $campaign = Campaign::where('campaign_id', $campaignid)->first();
@@ -173,6 +194,9 @@ class ProcessCampaigns extends Command
     }
   }
 
+  /**
+   * Get random training module from campaign configuration
+   */
   private function getRandomTrainingModule($campaign)
   {
     if ($campaign->campaign_type == "Phishing" || $campaign->training_module == null) {
@@ -182,6 +206,9 @@ class ProcessCampaigns extends Command
     return $trainingModules[array_rand($trainingModules)];
   }
 
+  /**
+   * Get random SCORM training from campaign configuration
+   */
   private function getRandomScormTraining($campaign)
   {
     if ($campaign->campaign_type == "Phishing" || $campaign->scorm_training == null) {
@@ -192,6 +219,9 @@ class ProcessCampaigns extends Command
     return $scormTrainings[array_rand($scormTrainings)];
   }
 
+  /**
+   * Get random phishing material from campaign configuration
+   */
   private function getRandomPhishingMaterial($campaign)
   {
 
@@ -203,6 +233,10 @@ class ProcessCampaigns extends Command
     return $phishingMaterials[array_rand($phishingMaterials)];
   }
 
+  /**
+   * Process and send emails for running campaigns
+   * Fetches due campaigns and delegates email sending to EmailCampaignService
+   */
   private function sendCampaignLiveEmails()
   {
     $companies = Company::where('approved', 1)
@@ -224,255 +258,35 @@ class ProcessCampaigns extends Command
         continue;
       }
 
-      foreach ($runningCampaigns as $camp) {
-        $campaignTimezone = $camp->timeZone ?: $company->company_settings->time_zone;
+      foreach ($runningCampaigns as $campaign) {
+        $campaignTimezone = $campaign->timeZone ?: $company->company_settings->time_zone;
 
-        // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
+        // Set process timezone to campaign timezone
         date_default_timezone_set($campaignTimezone);
         config(['app.timezone' => $campaignTimezone]);
 
         $currentDateTime = Carbon::now();
 
-        // fetch due live campaigns for this campaign using campaign-local now
-        $dueLiveCamps = CampaignLive::where('campaign_id', $camp->campaign_id)
+        // Fetch due live campaigns for this campaign using campaign-local time
+        $dueLiveCamps = CampaignLive::where('campaign_id', $campaign->campaign_id)
           ->where('sent', 0)
           ->where('send_time', '<=', $currentDateTime->toDateTimeString())
           ->take(5)
           ->get();
 
-        foreach ($dueLiveCamps as $campaign) {
-
-          if ($campaign->phishing_material == null) {
-            try {
-              $this->sendOnlyTraining($campaign);
-            } catch (\Exception $e) {
-              echo "Error sending training: " . $e->getMessage() . "\n";
-              continue;
-            }
-          }
-          if ($campaign->phishing_material == null && $campaign->camp?->policies != null) {
-            try {
-              $policyService = new PolicyAssignedService(
-                $campaign->campaign_id,
-                $campaign->user_name,
-                $campaign->user_email,
-                $campaign->company_id
-              );
-
-              $policyService->assignPolicies($campaign->camp->policies);
-            } catch (\Exception $e) {
-              echo "Error assigning policy: " . $e->getMessage() . "\n";
-              continue;
-            }
-          }
-
-          if ($campaign->phishing_material) {
-            try {
-              $this->sendPhishingEmail($campaign);
-            } catch (\Exception $e) {
-              echo "Error sending phishing email: " . $e->getMessage() . "\n";
-              continue;
-            }
+        // Process each due campaign
+        foreach ($dueLiveCamps as $liveCampaign) {
+          try {
+            // Delegate email processing to service
+            $this->emailCampaignService->processLiveCampaign($liveCampaign);
+          } catch (\Exception $e) {
+            echo "Error processing campaign live {$liveCampaign->id}: " . $e->getMessage() . "\n";
+            Log::error("Error processing campaign live {$liveCampaign->id}: " . $e->getMessage());
+            continue;
           }
         }
       }
     }
-  }
-
-  private function sendOnlyTraining($campaign)
-  {
-    $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
-
-    if ($all_camp->training_assignment == 'all') {
-
-      $trainingModules = [];
-      $scormTrainings = [];
-
-      if ($all_camp->training_module !== null) {
-        $trainingModules = json_decode($all_camp->training_module, true);
-      }
-
-      if ($all_camp->scorm_training !== null) {
-        $scormTrainings = json_decode($all_camp->scorm_training, true);
-      }
-
-      // $this->assignTraining($campaign, $trainings);
-      $sent = CampaignTrainingService::assignTraining($campaign, $trainingModules, false, $scormTrainings);
-
-      if ($sent) {
-        echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
-      } else {
-        echo 'Failed to assign training to ' . $campaign->user_email . "\n";
-      }
-
-      $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-    } else {
-
-      //incase if the assignment is random
-
-      $sent = CampaignTrainingService::assignTraining($campaign);
-
-      if ($sent) {
-        echo 'Training assigned successfully to ' . $campaign->user_email . "\n";
-      } else {
-        echo 'Failed to assign training to ' . $campaign->user_email . "\n";
-      }
-      $campaign->update(['sent' => 1, 'training_assigned' => 1]);
-    }
-  }
-
-  private function sendPhishingEmail($campaign)
-  {
-    if ($campaign->phishing_material) {
-      $phishingMaterial = PhishingEmail::where('id', $campaign->phishing_material)
-        ->where('website', '!=', 0)
-        ->where('senderProfile', '!=', 0)
-        ->first();
-
-      if (!$phishingMaterial) {
-        return;
-      }
-
-      if ($campaign->sender_profile !== null) {
-        $senderProfile = SenderProfile::find($campaign->sender_profile);
-      } else {
-        // If sender_profile is not set in campaign, use the one from phishing material
-        $senderProfile = SenderProfile::find($phishingMaterial->senderProfile);
-      }
-
-      $website = PhishingWebsite::find($phishingMaterial->website);
-
-      if (!$senderProfile || !$website) {
-        echo "Sender profile or website is not associated with the phishing material.\n";
-        return;
-      }
-
-      $mailBody = $this->prepareMailBody(
-        $website,
-        $phishingMaterial,
-        $campaign
-      );
-
-      $mailData = [
-        'email' => $campaign->user_email,
-        'from_name' => $senderProfile->from_name,
-        'email_subject' => $phishingMaterial->email_subject,
-        'mailBody' => $mailBody,
-        'from_email' => $senderProfile->from_email,
-        'sendMailHost' => $senderProfile->host,
-        'sendMailUserName' => $senderProfile->username,
-        'sendMailPassword' => $senderProfile->password,
-        'company_id' => $campaign->company_id,
-        'campaign_id' => $campaign->campaign_id,
-        'campaign_type' => 'email'
-      ];
-
-      // $this->sendMailConditionally($mailData, $campaign, $company_id);
-
-      if (sendPhishingMail($mailData)) {
-
-        $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-        echo "Email sent to: " . $campaign->user_email . "\n";
-      } else {
-        echo "Email not sent to: " . $campaign->user_email . "\n";
-        throw new \Exception("Failed to send email to " . $campaign->user_email);
-      }
-
-      $campaign->update(['sent' => 1]);
-    }
-  }
-
-  private function prepareMailBody($website, $phishingMaterial, $campaign)
-  {
-    $websiteUrl =  getWebsiteUrl($website, $campaign);
-
-    try {
-      $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $phishingMaterial->mailBodyFilePath);
-    } catch (\Exception $e) {
-      echo "Error fetching mail body: " . $e->getMessage() . "\n";
-    }
-
-    $companyName = Company::where('company_id', $campaign->company_id)->value('company_name');
-
-    $mailBody = str_replace('{{website_url}}', $websiteUrl, $mailBody);
-    $mailBody = str_replace(
-      '{{tracker_img}}',
-      '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">' .
-        '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
-        '<input type="hidden" id="campaign_type" value="email">',
-      $mailBody
-    );
-
-    if ($campaign->email_lang !== 'en' && $campaign->email_lang !== 'am') {
-      $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
-      $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
-      $mailBody = changeEmailLang($mailBody, $campaign->email_lang);
-      $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-      $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
-    } else if ($campaign->email_lang == 'am') {
-      $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
-      $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
-      $mailBody = translateHtmlToAmharic($mailBody);
-      $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-      $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
-    } else {
-      $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-      $mailBody = str_replace('{{company_name}}', $companyName, $mailBody);
-    }
-
-    return $mailBody;
-  }
-
-
-  private function sendMailConditionally($mailData, $campaign, $company_id)
-  {
-    $sent = false;
-    // check user email domain is outlook email
-    $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
-    if ($isOutlookEmail) {
-
-      echo "Outlook email detected: " . $campaign->user_email . "\n";
-
-      $accessToken = OutlookDmiToken::where('company_id', $company_id)
-        ->where('created_at', '>', now()->subMinutes(60))->first();
-      if ($accessToken) {
-
-        echo "Access token found for company ID: " . $company_id . "\n";
-
-        $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
-        if ($sent['success'] == true) {
-
-          $sent = true;
-        } else {
-          $sent = false;
-        }
-      } else {
-        OutlookDmiToken::where('company_id', $company_id)->delete();
-        echo "Access token expired or not found for company ID: " . $company_id . "\n";
-        if (sendPhishingMail($mailData)) {
-          $sent = true;
-        } else {
-          $sent = false;
-        }
-      }
-    } else {
-      echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-      if (sendPhishingMail($mailData)) {
-
-        $sent = true;
-      } else {
-        $sent = false;
-      }
-    }
-
-    if ($sent) {
-      echo "Email sent successfully to: " . $campaign->user_email . "\n";
-    } else {
-      echo "Email not sent to: " . $campaign->user_email . "\n";
-    }
-
-    $activity = EmailCampActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
   }
 
   private function checkCompletedCampaigns()
@@ -494,109 +308,9 @@ class ProcessCampaigns extends Command
       }
     }
 
-    // Relaunch completed recurring campaigns (weekly/monthly/quarterly)
-    $this->relaunchCampaigns();
+    // Relaunch completed recurring campaigns
+    $this->emailCampaignService->relaunchRecurringCampaigns();
   }
-
-  private function relaunchCampaigns()
-  {
-    $completedRecurring = Campaign::where('status', 'completed')
-      ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
-      ->get();
-
-    foreach ($completedRecurring as $recurr) {
-      try {
-        try {
-          if (!empty($recurr->launch_date)) {
-            // launch_date stores only date; use start of day as last launch
-            $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
-          } else {
-            continue;
-          }
-        } catch (\Exception $e) {
-          Log::error("ProcessEmail: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
-          continue;
-        }
-
-        $nextLaunch = $lastLaunch->copy();
-
-        switch ($recurr->email_freq) {
-          case 'weekly':
-            $nextLaunch->addWeek();
-            break;
-          case 'monthly':
-            $nextLaunch->addMonth();
-            break;
-          case 'quarterly':
-            $nextLaunch->addMonths(3);
-            break;
-          default:
-            continue 2;
-        }
-
-        // check expiry
-        if ($recurr->expire_after !== null) {
-          try {
-            $expireAt = Carbon::parse($recurr->expire_after);
-          } catch (\Exception $e) {
-            Log::error("ProcessEmail: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
-            $recurr->update(['status' => 'completed']);
-            continue;
-          }
-
-          if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
-            continue;
-          }
-        }
-
-        if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
-          $recurr->update([
-            'launch_date' => $nextLaunch->toDateString(),
-            'status' => 'running',
-          ]);
-
-          echo "Relaunching Email campaign : {$recurr->campaign_name}\n";
-
-          // reset live rows for this campaign
-          $this->resetLiveCampaigns($recurr->campaign_id, $nextLaunch);
-        }
-      } catch (\Exception $e) {
-        Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
-        continue;
-      }
-    }
-  }
-
-  private function resetLiveCampaigns($campaignId, $nextLaunch)
-  {
-    // reset live rows for this campaign
-    $liveRows = CampaignLive::where('campaign_id', $campaignId)->get();
-    foreach ($liveRows as $live) {
-      try {
-        // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
-        try {
-          $currentSendTime = Carbon::parse($live->send_time);
-          $newSendTime = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSendTime->format('H:i:s'));
-        } catch (\Exception $e) {
-          // fallback: if parsing fails, use nextLaunch at startOfDay
-          $newSendTime = $nextLaunch->copy()->startOfDay();
-        }
-
-        $live->update([
-          'sent' => 0,
-          'mail_open' => 0,
-          'payload_clicked' => 0,
-          'emp_compromised' => 0,
-          'email_reported' => 0,
-          'training_assigned' => 0,
-          'send_time' => $newSendTime,
-        ]);
-      } catch (\Exception $e) {
-        Log::error("ProcessEmail: failed to reset Email {$live->id} for campaign {$campaignId} - " . $e->getMessage());
-      }
-    }
-  }
-
 
   private function sendReminderMail()
   {
