@@ -69,7 +69,7 @@ class ProcessQuishing extends Command
                 $this->schedulePendingCampaigns($company->company_id);
 
                 // Send quishing emails for running campaigns
-                $this->sendQuishingCampaignEmails($company);
+                $this->sendCampaignLiveEmails($company);
             } catch (\Exception $e) {
                 echo "Error: " . $e->getMessage() . "\n";
                 continue;
@@ -99,7 +99,7 @@ class ProcessQuishing extends Command
         }
     }
 
-    private function sendQuishingCampaignEmails(Company $company): void
+    private function sendCampaignLiveEmails(Company $company): void
     {
         $runningCampaigns = QuishingCamp::where('company_id', $company->company_id)
             ->where('status', 'running')
@@ -122,6 +122,7 @@ class ProcessQuishing extends Command
             $dueLiveCamps = QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
                 ->where('sent', '0')
                 ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+                ->take(5)
                 ->get();
 
             foreach ($dueLiveCamps as $liveCamp) {
@@ -135,7 +136,7 @@ class ProcessQuishing extends Command
             }
         }
     }
-    
+
     private function checkCompletedCampaigns(): void
     {
         $campaigns = QuishingCamp::where('status', 'running')->get();

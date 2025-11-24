@@ -54,17 +54,6 @@ class ProcessCampaigns extends Command
    */
   public function handle()
   {
-    $this->processScheduledCampaigns();
-    $this->sendCampaignLiveEmails();
-    $this->checkCompletedCampaigns();
-    $this->sendReminderMail();
-  }
-
-  /**
-   * Process scheduled campaigns and make them live
-   */
-  private function processScheduledCampaigns()
-  {
     $companies = Company::where('approved', 1)
       ->where('role', null)
       ->where('service_status', 1)
@@ -76,29 +65,41 @@ class ProcessCampaigns extends Command
 
     foreach ($companies as $company) {
       try {
-
         setCompanyTimezone($company->company_id);
 
-        $campaigns = Campaign::where('status', 'pending')
-          ->where('company_id', $company->company_id)
-          ->get();
+        // Schedule pending campaigns
+        $this->schedulePendingCampaigns($company->company_id);
 
-        if ($campaigns) {
-          foreach ($campaigns as $campaign) {
-            $scheduleDate = Carbon::parse($campaign->schedule_date);
-            $currentDateTime =  Carbon::today();
+        // Send campaign emails for running campaigns
+        $this->sendCampaignLiveEmails($company);
 
-            if ($scheduleDate->lte($currentDateTime)) {
-
-              $this->makeCampaignLive($campaign->campaign_id);
-
-              $campaign->update(['status' => 'running']);
-            }
-          }
-        }
+        // Send training reminder emails
+        $this->sendReminderMail($company);
       } catch (\Exception $e) {
-        echo "Error while making campaign live: " . $e->getMessage();
+        echo "Error: " . $e->getMessage() . "\n";
         continue;
+      }
+    }
+
+    // Check and complete finished campaigns
+    $this->checkCompletedCampaigns();
+  }
+  
+  private function schedulePendingCampaigns(string $companyId): void
+  {
+    $campaigns = Campaign::where('status', 'pending')
+      ->where('company_id', $companyId)
+      ->get();
+
+    if ($campaigns) {
+      foreach ($campaigns as $campaign) {
+        $scheduleDate = Carbon::parse($campaign->schedule_date);
+        $currentDateTime = Carbon::today();
+
+        if ($scheduleDate->lte($currentDateTime)) {
+          $this->makeCampaignLive($campaign->campaign_id);
+          $campaign->update(['status' => 'running']);
+        }
       }
     }
   }
@@ -218,53 +219,41 @@ class ProcessCampaigns extends Command
     return $phishingMaterials[array_rand($phishingMaterials)];
   }
 
-  private function sendCampaignLiveEmails()
+  private function sendCampaignLiveEmails(Company $company): void
   {
-    $companies = Company::where('approved', 1)
-      ->where('role', null)
-      ->where('service_status', 1)
+    $runningCampaigns = Campaign::where('company_id', $company->company_id)
+      ->where('status', 'running')
       ->get();
 
-    if ($companies->isEmpty()) {
+    if ($runningCampaigns->isEmpty()) {
       return;
     }
-    foreach ($companies as $company) {
-      setCompanyTimezone($company->company_id);
 
-      $runningCampaigns = Campaign::where('company_id', $company->company_id)
-        ->where('status', 'running')
+    foreach ($runningCampaigns as $campaign) {
+      $campaignTimezone = $campaign->timeZone ?: $company->company_settings->time_zone;
+
+      // Set process timezone to campaign timezone
+      date_default_timezone_set($campaignTimezone);
+      config(['app.timezone' => $campaignTimezone]);
+
+      $currentDateTime = Carbon::now();
+
+      // Fetch due live campaigns for this campaign using campaign-local time
+      $dueLiveCamps = CampaignLive::where('campaign_id', $campaign->campaign_id)
+        ->where('sent', 0)
+        ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+        ->take(5)
         ->get();
 
-      if ($runningCampaigns->isEmpty()) {
-        continue;
-      }
-
-      foreach ($runningCampaigns as $campaign) {
-        $campaignTimezone = $campaign->timeZone ?: $company->company_settings->time_zone;
-
-        // Set process timezone to campaign timezone
-        date_default_timezone_set($campaignTimezone);
-        config(['app.timezone' => $campaignTimezone]);
-
-        $currentDateTime = Carbon::now();
-
-        // Fetch due live campaigns for this campaign using campaign-local time
-        $dueLiveCamps = CampaignLive::where('campaign_id', $campaign->campaign_id)
-          ->where('sent', 0)
-          ->where('send_time', '<=', $currentDateTime->toDateTimeString())
-          ->take(5)
-          ->get();
-
-        // Process each due campaign
-        foreach ($dueLiveCamps as $liveCampaign) {
-          try {
-            // Delegate email processing to service
-            $this->emailCampaignService->processLiveCampaign($liveCampaign);
-          } catch (\Exception $e) {
-            echo "Error processing campaign live {$liveCampaign->id}: " . $e->getMessage() . "\n";
-            Log::error("Error processing campaign live {$liveCampaign->id}: " . $e->getMessage());
-            continue;
-          }
+      // Process each due campaign
+      foreach ($dueLiveCamps as $liveCampaign) {
+        try {
+          // Delegate email processing to service
+          $this->emailCampaignService->processLiveCampaign($liveCampaign);
+        } catch (\Exception $e) {
+          echo "Error processing campaign live {$liveCampaign->id}: " . $e->getMessage() . "\n";
+          Log::error("Error processing campaign live {$liveCampaign->id}: " . $e->getMessage());
+          continue;
         }
       }
     }
@@ -293,65 +282,52 @@ class ProcessCampaigns extends Command
     $this->emailCampaignService->relaunchRecurringCampaigns();
   }
 
-  private function sendReminderMail()
+  private function sendReminderMail(Company $company): void
   {
-    $companies = Company::where('approved', 1)
-      ->where('service_status', 1)
-      ->where('role', null)
-      ->get();
+    try {
+      $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
 
-    if ($companies->isEmpty()) {
-      return;
-    }
+      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
+        ->get()
+        ->unique('user_email')
+        ->values();
 
-    foreach ($companies as $company) {
-      try {
-        setCompanyTimezone($company->company_id);
+      if ($trainingAssignedUsers->isEmpty()) {
+        return;
+      }
 
-        $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
+      $currentDate = Carbon::now();
+      foreach ($trainingAssignedUsers as $assignedUser) {
 
-        $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
-          ->get()
-          ->unique('user_email')
-          ->values();
+        if ($assignedUser->last_reminder_date == null && $assignedUser->personal_best == 0) {
 
-        if ($trainingAssignedUsers->isEmpty()) {
-          continue;
-        }
-        $currentDate = Carbon::now();
-        foreach ($trainingAssignedUsers as $assignedUser) {
+          $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
 
-          if ($assignedUser->last_reminder_date == null && $assignedUser->personal_best == 0) {
+          if ($reminderDate->isBefore($currentDate)) {
+            echo "Reminder will send \n";
+            $this->freqTrainingReminder($assignedUser);
 
-            $reminderDate = Carbon::parse($assignedUser->assigned_date)->addDays($remindFreqDays);
+            // Update the last reminder date and save it
+            TrainingAssignedUser::where('company_id', $company->company_id)
+              ->where('user_email', $assignedUser->user_email)
+              ->update(['last_reminder_date' => $currentDate]);
+          }
+        } else {
+          if ($assignedUser->personal_best == 0) {
+            $lastReminderDate = Carbon::parse($assignedUser->last_reminder_date);
+            $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
+            if ($nextReminderDate->isBefore($currentDate)) {
 
-            if ($reminderDate->isBefore($currentDate)) {
-              echo "Reminder will send \n";
               $this->freqTrainingReminder($assignedUser);
-
-              // Update the last reminder date and save it
               TrainingAssignedUser::where('company_id', $company->company_id)
                 ->where('user_email', $assignedUser->user_email)
                 ->update(['last_reminder_date' => $currentDate]);
             }
-          } else {
-            if ($assignedUser->personal_best == 0) {
-              $lastReminderDate = Carbon::parse($assignedUser->last_reminder_date);
-              $nextReminderDate = $lastReminderDate->addDays($remindFreqDays);
-              if ($nextReminderDate->isBefore($currentDate)) {
-
-                $this->freqTrainingReminder($assignedUser);
-                TrainingAssignedUser::where('company_id', $company->company_id)
-                  ->where('user_email', $assignedUser->user_email)
-                  ->update(['last_reminder_date' => $currentDate]);
-              }
-            }
           }
         }
-      } catch (\Exception $e) {
-        echo "Error while sending reminder email: " . $e->getMessage() . "\n";
-        continue;
       }
+    } catch (\Exception $e) {
+      echo "Error while sending reminder email: " . $e->getMessage() . "\n";
     }
   }
 
