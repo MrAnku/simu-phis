@@ -3,22 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\Company;
-use Endroid\QrCode\QrCode;
 use App\Models\QuishingCamp;
-use App\Models\SenderProfile;
-use App\Models\OutlookDmiToken;
-use Endroid\QrCode\Color\Color;
-use Illuminate\Console\Command;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Models\Users;
 use App\Models\UsersGroup;
 use Carbon\Carbon;
-use Endroid\QrCode\Writer\PngWriter;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Console\Command;
+use App\Services\CampaignProcessing\QuishingCampaignService;
 
 class ProcessQuishing extends Command
 {
@@ -34,14 +26,32 @@ class ProcessQuishing extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Process quishing (QR code phishing) campaigns';
+
+    /**
+     * The quishing campaign service instance.
+     *
+     * @var QuishingCampaignService
+     */
+    protected $quishingService;
+
+    /**
+     * Create a new command instance.
+     *
+     * @param QuishingCampaignService $quishingService
+     * @return void
+     */
+    public function __construct(QuishingCampaignService $quishingService)
+    {
+        parent::__construct();
+        $this->quishingService = $quishingService;
+    }
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //get all pending quishing campaigns
         $companies = Company::where('service_status', 1)
             ->where('approved', 1)
             ->where('role', null)
@@ -50,104 +60,99 @@ class ProcessQuishing extends Command
         if ($companies->isEmpty()) {
             return;
         }
+
         foreach ($companies as $company) {
             try {
                 setCompanyTimezone($company->company_id);
 
-                $campaigns = QuishingCamp::where('status', 'pending')
-                    ->where('company_id', $company->company_id)
-                    ->get();
+                // Schedule pending campaigns
+                $this->schedulePendingCampaigns($company->company_id);
 
-                if ($campaigns) {
-                    foreach ($campaigns as $campaign) {
-                        $scheduleDate = Carbon::parse($campaign->schedule_date);
-
-                        $currentDate = Carbon::today();
-
-                        if ($scheduleDate->lte($currentDate)) {
-
-                            $this->makeCampaignLive($campaign->campaign_id);
-
-                            $campaign->update(['status' => 'running']);
-                        }
-                    }
-                }
-
-                $runningCampaigns = QuishingCamp::where('company_id', $company->company_id)
-                    ->where('status', 'running')
-                    ->get();
-
-                if ($runningCampaigns->isEmpty()) {
-                    continue;
-                }
-
-                foreach ($runningCampaigns as $camp) {
-                    $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
-
-                    // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
-                    date_default_timezone_set($campaignTimezone);
-                    config(['app.timezone' => $campaignTimezone]);
-
-                    $currentDateTime = Carbon::now();
-
-                    // fetch due live campaigns for this campaign using campaign-local now
-                    $dueLiveCamps = QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
-                        ->where('sent', '0')
-                        ->where('send_time', '<=', $currentDateTime->toDateTimeString())
-                        ->get();
-
-                    foreach ($dueLiveCamps as $liveCamp) {
-                        try {
-                            // get template and website
-                            $quishingTemplate = $liveCamp->templateData()->first();
-                            if ($quishingTemplate === null || $quishingTemplate->website === null) {
-                                continue;
-                            }
-
-                            $phishingWebsite = $quishingTemplate->website()->first();
-                            $websiteUrl = getWebsiteUrl($phishingWebsite, $liveCamp, 'qsh');
-
-                            // get qrcode link
-                            $qrcodeLink = $this->getQRlink($liveCamp->user_email, $websiteUrl, $liveCamp->id);
-
-                            // check if the campaign has sender profile
-                            if ($liveCamp->sender_profile !== null) {
-                                $senderProfile = SenderProfile::find($liveCamp->sender_profile);
-                            } else {
-                                $senderProfile = $quishingTemplate->senderProfile()->first();
-                            }
-
-                            $mailData = $this->prepareMailBody(
-                                $liveCamp,
-                                $senderProfile,
-                                $quishingTemplate,
-                                $qrcodeLink
-                            );
-
-                            //send mail
-                            $mailSent = sendPhishingMail($mailData);
-
-                            if ($mailSent) {
-                                QuishingActivity::where('campaign_live_id', $liveCamp->id)->update(['email_sent_at' => now()]);
-                                echo "Mail sent to {$liveCamp->user_email} \n";
-                                $liveCamp->sent = '1';
-                                $liveCamp->save();
-                            } else {
-                                continue;
-                            }
-                        } catch (\Exception $e) {
-                            echo "Error: " . $e->getMessage() . "\n";
-                            continue;
-                        }
-                    }
-                }
+                // Send quishing emails for running campaigns
+                $this->sendQuishingCampaignEmails($company);
             } catch (\Exception $e) {
                 echo "Error: " . $e->getMessage() . "\n";
                 continue;
             }
         }
 
+        // Check and complete finished campaigns
         $this->checkCompletedCampaigns();
+    }
+
+    private function schedulePendingCampaigns(string $companyId): void
+    {
+        $campaigns = QuishingCamp::where('status', 'pending')
+            ->where('company_id', $companyId)
+            ->get();
+
+        if ($campaigns) {
+            foreach ($campaigns as $campaign) {
+                $scheduleDate = Carbon::parse($campaign->schedule_date);
+                $currentDate = Carbon::today();
+
+                if ($scheduleDate->lte($currentDate)) {
+                    $this->makeCampaignLive($campaign->campaign_id);
+                    $campaign->update(['status' => 'running']);
+                }
+            }
+        }
+    }
+
+    private function sendQuishingCampaignEmails(Company $company): void
+    {
+        $runningCampaigns = QuishingCamp::where('company_id', $company->company_id)
+            ->where('status', 'running')
+            ->get();
+
+        if ($runningCampaigns->isEmpty()) {
+            return;
+        }
+
+        foreach ($runningCampaigns as $camp) {
+            $campaignTimezone = $camp->time_zone ?: $company->company_settings->time_zone;
+
+            // Set process timezone to campaign timezone
+            date_default_timezone_set($campaignTimezone);
+            config(['app.timezone' => $campaignTimezone]);
+
+            $currentDateTime = Carbon::now();
+
+            // Fetch due live campaigns for this campaign using campaign-local now
+            $dueLiveCamps = QuishingLiveCamp::where('campaign_id', $camp->campaign_id)
+                ->where('sent', '0')
+                ->where('send_time', '<=', $currentDateTime->toDateTimeString())
+                ->get();
+
+            foreach ($dueLiveCamps as $liveCamp) {
+                try {
+                    // Delegate email processing to service
+                    $this->quishingService->processLiveCampaign($liveCamp);
+                } catch (\Exception $e) {
+                    echo "Error: " . $e->getMessage() . "\n";
+                    continue;
+                }
+            }
+        }
+    }
+    
+    private function checkCompletedCampaigns(): void
+    {
+        $campaigns = QuishingCamp::where('status', 'running')->get();
+        if (!$campaigns) {
+            return;
+        }
+
+        foreach ($campaigns as $campaign) {
+            $campaignLive = $campaign->campLive()->where('sent', '0')->count();
+            if ($campaignLive == 0) {
+                $campaign->status = 'completed';
+                $campaign->save();
+            }
+        }
+
+        // Relaunch completed recurring quishing campaigns
+        $this->quishingService->relaunchRecurringCampaigns();
     }
 
     private function makeCampaignLive($campaignid)
@@ -258,260 +263,5 @@ class ProcessQuishing extends Command
         $quishingMaterials = json_decode($campaign->quishing_material, true);
 
         return $quishingMaterials[array_rand($quishingMaterials)];
-    }
-
-    private function sendMailConditionally($mailData, $campaign, $company_id)
-    {
-        // check user email domain is outlook email
-        $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
-        if ($isOutlookEmail) {
-            echo "Outlook email detected: " . $campaign->user_email . "\n";
-            $accessToken = OutlookDmiToken::where('company_id', $company_id)->first();
-            if ($accessToken) {
-                echo "Access token found for company ID: " . $company_id . "\n";
-
-                $sent = sendMailUsingDmi($accessToken->access_token, $mailData);
-                if ($sent['success'] == true) {
-                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                    echo "Email sent to: " . $campaign->user_email . "\n";
-                } else {
-                    echo "Email not sent to: " . $campaign->user_email . "\n";
-                }
-            } else {
-                echo "No access token found for company ID: " . $company_id . "\n";
-                if (sendPhishingMail($mailData)) {
-
-                    $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                    echo "Email sent to: " . $campaign->user_email . "\n";
-                } else {
-                    echo "Email not sent to: " . $campaign->user_email . "\n";
-                }
-            }
-        } else {
-            echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-            if (sendPhishingMail($mailData)) {
-
-                $activity = QuishingActivity::where('campaign_live_id', $campaign->id)->update(['email_sent_at' => now()]);
-
-                echo "Email sent to: " . $campaign->user_email . "\n";
-            } else {
-                echo "Email not sent to: " . $campaign->user_email . "\n";
-            }
-        }
-    }
-
-    private function prepareMailBody($campaign, $senderProfile, $quishingMaterial, $qrcodeUrl)
-    {
-
-        // $mailBody = Storage::disk('s3')->get($quishingMaterial->file);
-        $mailBody = file_get_contents(env('CLOUDFRONT_URL') . $quishingMaterial->file);
-
-        // if failed to open stream
-        if ($mailBody === false) {
-            echo "Failed to open stream for mail body file: " . $quishingMaterial->file . "\n";
-            return false;
-        }
-
-        $companyName = Company::where('company_id', $campaign->company_id)->value('company_name');
-
-        // $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-        $mailBody = str_replace(
-            '{{qr_code}}',
-            '<img src="' . $qrcodeUrl . '" alt="qr_code" width="300" height="300">' .
-                '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
-                '<input type="hidden" id="campaign_type" value="quishing">',
-            $mailBody
-        );
-
-
-
-        if ($campaign->quishing_lang !== 'en' && $campaign->quishing_lang !== 'am') {
-            $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
-            $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
-            $mailBody = changeEmailLang($mailBody, $campaign->quishing_lang);
-            $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-            $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
-        } else if ($campaign->quishing_lang == 'am') {
-            $mailBody = str_replace('{{user_name}}', '<p id="user_name"></p>', $mailBody);
-            $mailBody = str_replace('{{company_name}}', '<p id="company_name"></p>', $mailBody);
-            $mailBody = translateHtmlToAmharic($mailBody);
-            $mailBody = str_replace('<p id="user_name"></p>', $campaign->user_name, $mailBody);
-            $mailBody = str_replace('<p id="company_name"></p>', $companyName, $mailBody);
-        } else {
-            $mailBody = str_replace('{{user_name}}', $campaign->user_name, $mailBody);
-            $mailBody = str_replace('{{company_name}}', $companyName, $mailBody);
-        }
-
-        $mailData = [
-            'email' => $campaign->user_email,
-            'from_name' => $senderProfile->from_name,
-            'email_subject' => $quishingMaterial->email_subject,
-            'mailBody' => $mailBody,
-            'from_email' => $senderProfile->from_email,
-            'sendMailHost' => $senderProfile->host,
-            'sendMailUserName' => $senderProfile->username,
-            'sendMailPassword' => $senderProfile->password,
-            'company_id' => $campaign->company_id,
-            'campaign_id' => $campaign->campaign_id,
-            'campaign_type' => 'quishing'
-        ];
-
-        return $mailData;
-    }
-
-    private function getQRlink($email, $redirectUrl, $campLiveId)
-    {
-        $email = $email; // Get email from request
-        $redirectUrl = $redirectUrl; // Generate unique redirect link
-
-        $qrCode = new QrCode(
-            data: $redirectUrl,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::Low,
-            size: 300,
-            margin: 10,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin,
-            foregroundColor: new Color(0, 0, 0),
-            backgroundColor: new Color(255, 255, 255)
-        );
-
-        // Convert QR Code to PNG
-        $writer = new PngWriter();
-        $qrCodeImage = $writer->write($qrCode);
-        $fileName = uniqid() . '.png'; // Unique filename
-
-        $storagePath = storage_path('app/qrcodes');
-        if (!is_dir($storagePath)) {
-            mkdir($storagePath, 0755, true);
-        }
-        $filePath = $storagePath . '/' . $fileName;
-        file_put_contents($filePath, $qrCodeImage->getString());
-
-        // Get Public URL
-        $qrCodeUrl = asset('qrcodes/' . $fileName . '?eid=' . $campLiveId);
-
-        return $qrCodeUrl;
-    }
-
-    private function checkCompletedCampaigns()
-    {
-        $campaigns = QuishingCamp::where('status', 'running')->get();
-        if (!$campaigns) {
-            return;
-        }
-        foreach ($campaigns as $campaign) {
-            $campaignLive = $campaign->campLive()->where('sent', '0')->count();
-            if ($campaignLive == 0) {
-                $campaign->status = 'completed';
-                $campaign->save();
-            }
-        }
-
-        // Relaunch completed recurring quishing campaigns (weekly/monthly/quarterly)
-        $this->relaunchCampaigns();
-    }
-
-    private function relaunchCampaigns()
-    {
-        $completedRecurring = QuishingCamp::where('status', 'completed')
-            ->whereIn('email_freq', ['weekly', 'monthly', 'quarterly'])
-            ->get();
-
-        foreach ($completedRecurring as $recurr) {
-            try {
-                // parse last launch_time
-                try {
-                    if (!empty($recurr->launch_date)) {
-                        // launch_date stores only date; use start of day as last launch
-                        $lastLaunch = Carbon::parse($recurr->launch_date)->startOfDay();
-                    } else {
-                        Log::error("ProcessQuishing: no launch_date for campaign {$recurr->campaign_id}");
-                        continue;
-                    }
-                } catch (\Exception $e) {
-                    Log::error("ProcessQuishing: failed to parse launch_date for campaign {$recurr->campaign_id} - " . $e->getMessage());
-                    continue;
-                }
-
-                $nextLaunch = $lastLaunch->copy();
-
-                // echo $nextLaunch;
-                switch ($recurr->email_freq) {
-                    case 'weekly':
-                        $nextLaunch->addWeek();
-                        break;
-                    case 'monthly':
-                        $nextLaunch->addMonth();
-                        break;
-                    case 'quarterly':
-                        $nextLaunch->addMonths(3);
-                        break;
-                    default:
-                        continue 2;
-                }
-
-                // check expiry
-                if ($recurr->expire_after !== null) {
-                    try {
-                        $expireAt = Carbon::parse($recurr->expire_after);
-                    } catch (\Exception $e) {
-                        Log::error("ProcessQuishing: failed to parse expire_after for campaign {$recurr->campaign_id} - " . $e->getMessage());
-                        $recurr->update(['status' => 'completed']);
-                        continue;
-                    }
-
-                    if ($nextLaunch->greaterThanOrEqualTo($expireAt)) {
-                        continue;
-                    }
-                }
-
-                if (Carbon::now()->greaterThanOrEqualTo($nextLaunch)) {
-                    // QuishingCamp stores launch_date (date-only). Update launch_date and status.
-                    $recurr->update([
-                        'launch_date' => $nextLaunch->toDateString(),
-                        'status' => 'running',
-                    ]);
-
-                    echo "Relaunching Quishing campaign of id {$recurr->campaign_id}\n";
-
-                    // reset live rows for this campaign
-                    $this->resetLiveCampaigns($recurr->campaign_id, $nextLaunch);
-                }
-            } catch (\Exception $e) {
-                Log::error("ProcessQuishing: error while relaunching campaign {$recurr->campaign_id} - " . $e->getMessage());
-                continue;
-            }
-        }
-    }
-
-    private function resetLiveCampaigns($campaignId, $nextLaunch)
-    {
-        $liveRows = QuishingLiveCamp::where('campaign_id', $campaignId)->get();
-        foreach ($liveRows as $live) {
-            try {
-                // Preserve the existing time-of-day for each send_time, only update the date to nextLaunch
-                try {
-                    $currentSend = Carbon::parse($live->send_time);
-                    $newSend = Carbon::createFromFormat('Y-m-d H:i:s', $nextLaunch->toDateString() . ' ' . $currentSend->format('H:i:s'));
-                } catch (\Exception $e) {
-                    // fallback: if parsing fails, use nextLaunch at startOfDay
-                    $newSend = $nextLaunch->copy()->startOfDay();
-                }
-
-                $live->update([
-                    'sent' => '0',
-                    'mail_open' => '0',
-                    'qr_scanned' => '0',
-                    'compromised' => '0',
-                    'email_reported' => '0',
-                    'training_assigned' => '0',
-                    'send_time' => $newSend,
-                ]);
-            } catch (\Exception $e) {
-                Log::error("ProcessQuishing: failed to reset QuishingLiveCamp {$live->id} for campaign {$campaignId} - " . $e->getMessage());
-            }
-        }
     }
 }

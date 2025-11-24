@@ -103,12 +103,6 @@ class ProcessCampaigns extends Command
     }
   }
 
-  /**
-   * Create campaign live records for all users in the campaign group
-   *
-   * @param int $campaignid
-   * @return void
-   */
   private function makeCampaignLive($campaignid)
   {
     $campaign = Campaign::where('campaign_id', $campaignid)->first();
@@ -194,9 +188,6 @@ class ProcessCampaigns extends Command
     }
   }
 
-  /**
-   * Get random training module from campaign configuration
-   */
   private function getRandomTrainingModule($campaign)
   {
     if ($campaign->campaign_type == "Phishing" || $campaign->training_module == null) {
@@ -206,9 +197,6 @@ class ProcessCampaigns extends Command
     return $trainingModules[array_rand($trainingModules)];
   }
 
-  /**
-   * Get random SCORM training from campaign configuration
-   */
   private function getRandomScormTraining($campaign)
   {
     if ($campaign->campaign_type == "Phishing" || $campaign->scorm_training == null) {
@@ -219,9 +207,6 @@ class ProcessCampaigns extends Command
     return $scormTrainings[array_rand($scormTrainings)];
   }
 
-  /**
-   * Get random phishing material from campaign configuration
-   */
   private function getRandomPhishingMaterial($campaign)
   {
 
@@ -233,10 +218,6 @@ class ProcessCampaigns extends Command
     return $phishingMaterials[array_rand($phishingMaterials)];
   }
 
-  /**
-   * Process and send emails for running campaigns
-   * Fetches due campaigns and delegates email sending to EmailCampaignService
-   */
   private function sendCampaignLiveEmails()
   {
     $companies = Company::where('approved', 1)
