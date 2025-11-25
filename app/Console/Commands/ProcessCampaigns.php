@@ -659,11 +659,18 @@ class ProcessCampaigns extends Command
   {
     try {
       $trainingAssignedService = new TrainingAssignedService();
+      
+      // Get the latest training record for this user to get the correct due date
+      $latestTraining = TrainingAssignedUser::where('user_email', $assignedUser->user_email)
+        ->where('company_id', $assignedUser->company_id)
+        ->orderBy('id', 'desc')
+        ->first();
+      
       $mailData = [
         'user_email' => $assignedUser->user_email,
         'user_name' => $assignedUser->user_name,
         'company_id' => $assignedUser->company_id,
-        'training_due_date' => $assignedUser->training_due_date ?? null,
+        'training_due_date' => $latestTraining->training_due_date ?? null,
       ];
       $trainingAssignedService->sendTrainingEmail($mailData);
 
