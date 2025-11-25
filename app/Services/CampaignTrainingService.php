@@ -31,6 +31,8 @@ class CampaignTrainingService
             $user_email = $campaign->user_email;
         }
 
+        $trainingNames = []; // Initialize before loops to collect all training names
+
         if (!empty($trainingModules)) {
             foreach ($trainingModules as $training) {
 
@@ -56,7 +58,7 @@ class CampaignTrainingService
 
                     $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
-                    if($trainingAssigned['status'] == 1){
+                    if ($trainingAssigned['status'] == 1) {
                         // echo $trainingAssigned['msg'];
                     }
 
@@ -80,6 +82,10 @@ class CampaignTrainingService
                         ]
                     );
                 }
+
+                // Append training name to array
+                $module = TrainingModule::find($training);
+                $trainingNames[] = $module->name;
             }
         }
 
@@ -102,7 +108,7 @@ class CampaignTrainingService
                     ];
                     $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
-                    if($trainingAssigned['status'] == 1){
+                    if ($trainingAssigned['status'] == 1) {
                         // echo $trainingAssigned['msg'];
                     }
 
@@ -117,6 +123,10 @@ class CampaignTrainingService
                         'normal'
                     );
                 }
+
+                // Append scorm training name to array
+                $module = ScormTraining::find($training);
+                $trainingNames[] = $module->name;
             }
         }
 
@@ -124,9 +134,11 @@ class CampaignTrainingService
         $campData = [
             'user_name' => $campaign->user_name,
             'user_email' => $user_email,
-            'company_id' => $campaign->company_id
+            'company_id' => $campaign->company_id,
+            'training_names' => $trainingNames,
+            'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString()
         ];
-        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
         if ($isMailSent['status'] == true) {
             return true;
@@ -144,6 +156,8 @@ class CampaignTrainingService
         } else {
             $user_email = $campaign->user_email;
         }
+
+        $trainingNames = []; // Initialize array to collect training names
 
         if ($campaign->training_module !== null) {
             $assignedTrainingModule = TrainingAssignedUser::where('user_email', $user_email)
@@ -167,9 +181,9 @@ class CampaignTrainingService
 
                 $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
 
-                if($trainingAssigned['status'] == 1){
-                        // echo $trainingAssigned['msg'];
-                    }
+                if ($trainingAssigned['status'] == 1) {
+                    // echo $trainingAssigned['msg'];
+                }
 
                 $module = TrainingModule::find($campaign->training_module);
                 // Audit log
@@ -191,6 +205,10 @@ class CampaignTrainingService
                     ]
                 );
             }
+
+            // Append training module name to array
+            $module = TrainingModule::find($campaign->training_module);
+            $trainingNames[] = $module->name;
         }
 
         if ($campaign->scorm_training !== null) {
@@ -214,9 +232,9 @@ class CampaignTrainingService
 
                 $trainingAssigned = $trainingAssignedService->assignNewScormTraining($campData);
 
-                if($trainingAssigned['status'] == 1){
-                        // echo $trainingAssigned['msg'];
-                    }
+                if ($trainingAssigned['status'] == 1) {
+                    // echo $trainingAssigned['msg'];
+                }
 
                 $scorm = ScormTraining::find($campaign->scorm_training);
                 // Audit log
@@ -229,15 +247,21 @@ class CampaignTrainingService
                     'normal'
                 );
             }
+
+            // Append scorm training name to array
+            $scorm = ScormTraining::find($campaign->scorm_training);
+            $trainingNames[] = $scorm->name;
         }
 
         //send mail to user
         $campData = [
             'user_name' => $campaign->user_name,
             'user_email' => $user_email,
-            'company_id' => $campaign->company_id
+            'company_id' => $campaign->company_id,
+            'training_names' => $trainingNames,
+            'training_due_date' => now()->addDays($campaign->days_until_due)->toDateString()
         ];
-        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+        $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
         if ($isMailSent['status'] == true) {
             return true;

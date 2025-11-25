@@ -105,6 +105,7 @@ class TrainingAssignedEmail extends Mailable
                 '{{user_name}}' => $this->mailData['user_name'] ?? '',
                 '{{training_link}}' => $this->mailData['learning_site'] ?? '',
                 '{{assigned_trainings}}' => $trainingList,
+                '{{training_due_date}}' => $this->mailData['training_due_date'] ?? '',
             ]);
 
             return [

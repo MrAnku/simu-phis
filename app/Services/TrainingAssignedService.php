@@ -15,7 +15,7 @@ use App\Models\BlueCollarTrainingUser;
 
 class TrainingAssignedService
 {
-    public function sendTrainingEmail($campData)
+    public function sendTrainingEmail($campData, $trainingNames = null)
     {
         // $learnSiteAndLogo = checkWhitelabeled($campData['company_id']);
         $token = encrypt($campData['user_email']);
@@ -40,7 +40,7 @@ class TrainingAssignedService
             //reset the smtp config to default if not whitelabeled
             $branding->clearSmtpConfig();
         }
-        
+
         $mailData = [
             'user_name' => $campData['user_name'],
             'company_name' => $companyName,
@@ -48,41 +48,48 @@ class TrainingAssignedService
             'logo' => $companyLogo,
             'company_id' => $campData['company_id'],
             'learn_domain' => $learn_domain,
+            'training_due_date' => $campData['training_due_date'] ?? null
         ];
 
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
+        if (!$trainingNames) {
+            $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
 
-        $scormTrainings = ScormAssignedUser::with('scormTrainingData')->where('user_email', $campData['user_email'])->get();
+            $scormTrainings = ScormAssignedUser::with('scormTrainingData')->where('user_email', $campData['user_email'])->get();
 
-        $trainingNames = collect();
-        $scormNames = collect();
+            $trainingNames = collect();
+            $scormNames = collect();
 
-        if ($allAssignedTrainings->isNotEmpty()) {
-            $trainingNames = $allAssignedTrainings->map(function ($training) {
-                if ($training->training_type == 'games') {
-                    return $training->trainingGame?->name;
-                }
-                return $training->trainingData?->name;
-            });
+            if ($allAssignedTrainings->isNotEmpty()) {
+                $trainingNames = $allAssignedTrainings->map(function ($training) {
+                    if ($training->training_type == 'games') {
+                        return $training->trainingGame?->name;
+                    }
+                    return $training->trainingData?->name;
+                });
+            }
+
+
+            if ($scormTrainings->isNotEmpty()) {
+                $scormNames = $scormTrainings->map(function ($training) {
+
+                    return $training->scormTrainingData?->name;
+                });
+            }
+
+            $trainingNames = $trainingNames->merge($scormNames)->filter();
         }
 
-
-        if ($scormTrainings->isNotEmpty()) {
-            $scormNames = $scormTrainings->map(function ($training) {
-
-                return $training->scormTrainingData?->name;
-            });
-        }
-
-        $trainingNames = $trainingNames->merge($scormNames)->filter();
-
-
-        $isMailSent = Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
-
-        if ($isMailSent) {
+        try {
+            Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
+            
             return [
-                'status' => 1,
+                'status' => true,
                 'msg' => 'Training assigned and email sent' . "\n"
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => false,
+                'msg' => 'Failed to send email: ' . $e->getMessage() . "\n"
             ];
         }
     }

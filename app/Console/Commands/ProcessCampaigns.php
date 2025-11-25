@@ -663,6 +663,7 @@ class ProcessCampaigns extends Command
         'user_email' => $assignedUser->user_email,
         'user_name' => $assignedUser->user_name,
         'company_id' => $assignedUser->company_id,
+        'training_due_date' => $assignedUser->training_due_date ?? null,
       ];
       $trainingAssignedService->sendTrainingEmail($mailData);
 

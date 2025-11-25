@@ -144,6 +144,7 @@ class ProcessTriggers extends Command
                 'user_email' => $queue->user_email,
                 'user_name' => $queue->user_name,
                 'company_id' => $queue->company_id,
+                'training_due_date' => isset($trainings[0]['days_until_due']) ? now()->addDays($trainings[0]['days_until_due'])->toDateString() : null,
             ];
             $trainingAssignedService = new TrainingAssignedService();
             $isSent = $trainingAssignedService->sendTrainingEmail($mailData);
