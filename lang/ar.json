@@ -1688,5 +1688,7 @@
     "Training Name:": ":اسم التدريب",
     "Training Score:": ":نتيجة التدريب",
     "Assigned Trainings:": ":التدريبات المعينة",
-    "Policy accepted and quiz response saved successfully.": "تم قبول السياسة وحفظ رد الاختبار بنجاح."
+    "Policy accepted and quiz response saved successfully.": "تم قبول السياسة وحفظ رد الاختبار بنجاح.",
+    "Employee removed from group successfully": "تمت إزالة الموظف من المجموعة بنجاح",
+    "Employee not found in this group": "الموظف غير موجود في هذه المجموعة"
 }

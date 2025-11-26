@@ -154,13 +154,6 @@ class EmployeeService
                 'msg' => __('This division is associated with auto-sync, please change the division in auto sync config.')
             ];
         }
-        //delete this group users also
-        if ($group->users !== null) {
-            $usersArray = json_decode($group->users, true);
-            foreach ($usersArray as $userId) {
-                $this->deleteEmployeeById($userId);
-            }
-        }
         $group->delete();
 
         return [
@@ -228,6 +221,53 @@ class EmployeeService
             $user->delete();
         }
     }
+
+    public function removeEmployeeFromGroup($groupId, $employeeId)
+    {
+        $group = UsersGroup::where('group_id', $groupId)
+            ->where('company_id', $this->companyId)
+            ->first();
+        
+        if (!$group) {
+            return [
+                'status' => 0,
+                'msg' => __('Group not found')
+            ];
+        }
+
+        if ($group->users === null) {
+            return [
+                'status' => 0,
+                'msg' => __('Employee not found in this group')
+            ];
+        }
+
+        $usersArray = json_decode($group->users, true);
+        
+        if (!in_array($employeeId, $usersArray)) {
+            return [
+                'status' => 0,
+                'msg' => __('Employee not found in this group')
+            ];
+        }
+
+        $key = array_search($employeeId, $usersArray);
+        unset($usersArray[$key]);
+        
+        if (count($usersArray) >= 1) {
+            $group->users = json_encode(array_values($usersArray));
+            $group->save();
+        } else {
+            $group->users = null;
+            $group->save();
+        }
+
+        return [
+            'status' => 1,
+            'msg' => __('Employee removed from group successfully')
+        ];
+    }
+    
     public function deleteAssignedTrainingAndPolicy($email)
     {
 

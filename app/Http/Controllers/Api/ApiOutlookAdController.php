@@ -236,11 +236,25 @@ class ApiOutlookAdController extends Controller
                 continue;
             }
 
-            //check if this email already exists in table
-            $user = Users::where('user_email', $emp['email'])->where('company_id', Auth::user()->company_id)->exists();
-            if ($user) {
-                array_push($errors, "Email {$emp['email']} already exists.");
-                continue;
+            // Check if user already exists when adding to a group
+            $existingUser = Users::where('user_email', $emp['email'])
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if ($groupId !== null) {
+                if ($existingUser) {
+                    // User exists, just add to group
+                    $addedInGroup = $employee->addEmployeeInGroup($groupId, $existingUser->id);
+                    if ($addedInGroup['status'] == false) {
+                        array_push($errors, $addedInGroup['msg']);
+                    }
+                    continue;
+                }
+            } else {
+                if ($existingUser) {
+                    array_push($errors, "Email {$emp['email']} already exists.");
+                    continue;
+                }
             }
 
             $addedEmployee = $employee->addEmployee(

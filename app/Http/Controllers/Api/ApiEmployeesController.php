@@ -576,7 +576,7 @@ class ApiEmployeesController extends Controller
 
         return [
             'security_score' => $employeeReport->calculateSecurityScore(), // out of 100
-            'risk_score' => $employeeReport->calculateOverallRiskScore(), 
+            'risk_score' => $employeeReport->calculateOverallRiskScore(),
             'total_simulations' => $employeeReport->totalSimulations(),
             'compromised_simulations' => $employeeReport->compromised(),
             'payload_clicked' => $employeeReport->payloadClicked()
@@ -664,7 +664,7 @@ class ApiEmployeesController extends Controller
         $isWhitelabeled = new CheckWhitelabelService($companyId);
         if ($isWhitelabeled->isCompanyWhitelabeled()) {
             $isWhitelabeled->updateSmtpConfig();
-        }else{
+        } else {
             $isWhitelabeled->clearSmtpConfig();
         }
         Mail::send('emails.domainVerification', ['code' => $code], function ($message) use ($email) {
@@ -909,21 +909,10 @@ class ApiEmployeesController extends Controller
                     if ($emailExists) {
                         return response()->json(['success' => false, 'message' => __('This email(s) already exists in this group')], 409);
                     }
-                    $addedEmployee = $employee->addEmployee(
-                        $user->user_name,
-                        $user->user_email,
-                        $user->user_company,
-                        $user->user_job_title,
-                        $user->whatsapp,
-                        true // For all employees
-                    );
-                    if ($addedEmployee['status'] == 1) {
-                        $addedInGroup = $employee->addEmployeeInGroup($request->groupId, $addedEmployee['user_id']);
-                        if ($addedInGroup['status'] == 0) {
-                            return response()->json(['success' => false, 'message' => $addedInGroup['msg']], 409);
-                        }
-                    } else {
-                        return response()->json(['success' => false, 'message' => $addedEmployee['msg']], 403);
+
+                    $addedInGroup = $employee->addEmployeeInGroup($request->groupId, $user->id);
+                    if ($addedInGroup['status'] == 0) {
+                        return response()->json(['success' => false, 'message' => $addedInGroup['msg']], 409);
                     }
                 }
             }
@@ -940,18 +929,32 @@ class ApiEmployeesController extends Controller
         if (!$request->route('user_id')) {
             return response()->json(['success' => false, 'message' => __('User ID is required')], 422);
         }
+
         $user_id = base64_decode($request->route('user_id'));
-        $isUserExists =   Users::where('id', $user_id)->where('company_id', Auth::user()->company_id)->first();
-        $user_name = $isUserExists->user_name;
+        $group_id = $request->input('group_id'); // Get group_id from request
+
+        if (!$group_id) {
+            return response()->json(['success' => false, 'message' => __('Group ID is required')], 422);
+        }
+
+        $isUserExists = Users::where('id', $user_id)->where('company_id', Auth::user()->company_id)->first();
 
         if (!$isUserExists) {
             return response()->json(['success' => false, 'message' => __('User not found')], 404);
         }
+
+        $user_name = $isUserExists->user_name;
         $employee = new EmployeeService(Auth::user()->company_id);
+
         try {
-            $employee->deleteEmployeeById($user_id);
-            log_action("Employee deleted : {$user_name}");
-            return response()->json(['success' => true, 'message' => __('Employee deleted successfully')], 200);
+            $result = $employee->removeEmployeeFromGroup($group_id, $user_id);
+
+            if ($result['status'] == 1) {
+                log_action("Employee {$user_name} removed from group");
+                return response()->json(['success' => true, 'message' => __('Employee removed from group successfully')], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => $result['msg']], 422);
+            }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
@@ -1022,7 +1025,7 @@ class ApiEmployeesController extends Controller
             $validator = Validator::make($request->all(), [
                 'groupId' => 'required',
                 'usrName' => 'required|string|max:255',
-                'usrEmail' => 'required|email|max:255',
+                'usrEmail' => 'required|email|unique:users,user_email|max:255',
                 'usrCompany' => 'nullable|string|max:255',
                 'usrJobTitle' => 'nullable|string|max:255',
                 'usrWhatsapp' => 'nullable|digits_between:11,15',
@@ -1037,11 +1040,7 @@ class ApiEmployeesController extends Controller
             }
 
             $employee = new EmployeeService(Auth::user()->company_id);
-            //if email exists in group
-            $emailExists = $employee->emailExistsInGroup($request->groupId, $request->usrEmail);
-            if ($emailExists) {
-                return response()->json(['success' => false, 'message' => __('This email already exists in this group')], 422);
-            }
+
             $addedEmployee = $employee->addEmployee(
                 $request->usrName,
                 $request->usrEmail,
@@ -1170,7 +1169,18 @@ class ApiEmployeesController extends Controller
                         $emailExists = $employee->emailExistsInGroup($grpId, $email);
                         if ($emailExists) {
                             continue;
+                        }
+
+                        // Check if email already exists in users table for this company
+                        $existingUser = Users::where('user_email', $email)
+                            ->where('company_id', $companyId)
+                            ->first();
+
+                        if ($existingUser) {
+                            // User exists, just add to group
+                            $employee->addEmployeeInGroup($grpId, $existingUser->id);
                         } else {
+                            // User doesn't exist, create new user and add to group
                             $addedEmployee = $employee->addEmployee(
                                 $name,
                                 $email,
@@ -1187,6 +1197,15 @@ class ApiEmployeesController extends Controller
                             }
                         }
                     } else {
+                        // check if user exists before adding
+                        $userExists = Users::where('user_email', $email)
+                            ->where('company_id', $companyId)
+                            ->exists();
+
+                        if ($userExists) {
+                            continue;
+                        }
+
                         $addedEmployee = $employee->addEmployee(
                             $name,
                             $email,
