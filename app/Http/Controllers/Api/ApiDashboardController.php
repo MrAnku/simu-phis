@@ -2252,8 +2252,8 @@ class ApiDashboardController extends Controller
                 round((($initialPpp - $currentPpp) / $initialPpp) * 100, 2) : 0;
 
             // Calculate reduction from previous month and get previous month PPP
-            $previousMonthPpp = null;
-            $previousMonthReduction = null;
+            $previousMonthPpp = 0;
+            $previousMonthReduction = 0;
             if (count($pppData) >= 2) {
                 $previousRecord = $pppData[1]; // Second record in desc order is previous month
                 $previousMonthPpp = $previousRecord->ppp_percentage;
@@ -2355,8 +2355,8 @@ class ApiDashboardController extends Controller
                 round((($initialPpp - $currentPpp) / $initialPpp) * 100, 2) : 0;
 
             // Calculate reduction from previous month and get previous month PPP
-            $previousMonthPpp = null;
-            $previousMonthReduction = null;
+            $previousMonthPpp = 0;
+            $previousMonthReduction = 0;
             if (count($pppData) >= 2) {
                 $previousRecord = $pppData[1]; // Second record in desc order is previous month
                 $previousMonthPpp = $previousRecord->ppp_percentage;
