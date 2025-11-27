@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\ApiCustomNotificationEmailController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
+use App\Http\Controllers\Api\ApiMsspController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
 
@@ -140,6 +141,12 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
         Route::get('/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
         Route::get('/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
+    });
+
+    //mssp routes
+    Route::prefix('mssp')->group(function () {
+        Route::get('/companies', [ApiMsspController::class, 'msspCompanies']);
+        Route::post('/switch-to/{email}', [ApiMsspController::class, 'companyLoginSwitch']);
     });
 
 

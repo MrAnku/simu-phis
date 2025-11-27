@@ -46,6 +46,11 @@ class AuthService
         return $this->company?->company_settings?->mfa == 1;
     }
 
+    public function passwordCreated(): bool
+    {
+        return $this->company?->password !== null;
+    }
+
     public function loginUsingSSO(): JsonResponse
     {
         if (!$this->criteriaFulfilled()) {
@@ -89,6 +94,10 @@ class AuthService
             $this->criteriaMsg = 'Your License has been Expired';
             return false;
         }
+        if (!$this->passwordCreated()) {
+            $this->criteriaMsg = 'Your password has not been created yet.';
+            return false;
+        }
 
         return true;
     }
@@ -128,6 +137,17 @@ class AuthService
         return $this->getLoginResponse();
     }
 
+    public function loginUsingMsspSwitch(): JsonResponse
+    {
+        if (!$this->criteriaFulfilled()) {
+            return response()->json([
+                'message' => $this->criteriaMsg,
+                'success' => false
+            ], 422);
+        }
+        return $this->getLoginResponse();
+    }
+
     public function loginCompany($using): JsonResponse
     {
         if ($using == 'sso') {
@@ -138,6 +158,9 @@ class AuthService
         }
         if ($using == 'mfa') {
             return $this->loginUsingMfa();
+        }
+        if($using == 'mssp_switch'){
+            return $this->loginUsingMsspSwitch();
         }
 
         return response()->json([
