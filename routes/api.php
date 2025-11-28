@@ -59,7 +59,37 @@ use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
 use App\Http\Controllers\Api\ApiDeepFakeAudioController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
+ use GrokPHP\Laravel\Facades\GrokAI;
+        use GrokPHP\Client\Enums\Model;
+        use GrokPHP\Client\Config\ChatOptions;
+
+
 Route::middleware('throttle:limiter')->group(function () {
+
+    Route::get('test-training-translate/{id}/{lang}', function($id, $lang) {
+        // $trainingModule = \App\Models\TrainingModule::find($id);
+        // $translationService = new \App\Services\TranslationService();
+        // $translatedJson = $translationService->translateTraining($trainingModule, $lang);
+        // return response()->json($translatedJson);
+
+    try {
+       
+        $response = GrokAI::chat(
+            messages: [['role' => 'user', 'content' => 'Say hello.']],
+            options: new ChatOptions(model: Model::GROK_BETA)  // ← KEY CHANGE: GROK_BETA
+        );
+        return ['success' => true, 'response' => $response->content()];
+    } catch (\Throwable $e) {
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'trace' => $e->getTraceAsString()
+        ];
+    }
+
+    });
+
 
     Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 

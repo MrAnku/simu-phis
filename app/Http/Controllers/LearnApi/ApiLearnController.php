@@ -1176,6 +1176,9 @@ class ApiLearnController extends Controller
                 return response()->json(['success' => false, 'message' => __('Training Module Not Found')], 422);
             }
 
+
+            
+
             if ($trainingData->training_type == 'static_training') {
                 $moduleLanguage = $training_lang;
 

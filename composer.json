@@ -8,6 +8,8 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
+        "grok-php/client": "^1.1.1",
+        "grok-php/laravel": "^1.0",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
