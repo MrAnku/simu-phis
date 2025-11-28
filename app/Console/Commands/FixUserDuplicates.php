@@ -38,10 +38,6 @@ class FixUserDuplicates extends Command
             return;
         }
 
-
-
-        // $companies = Users::select('company_id')->distinct()->pluck('company_id');
-
         foreach ($companies as $company) {
             $this->processDuplicates($company->company_id);
         }

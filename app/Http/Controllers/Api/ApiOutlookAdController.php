@@ -246,7 +246,7 @@ class ApiOutlookAdController extends Controller
                     // User exists, just add to group
                     $addedInGroup = $employee->addEmployeeInGroup($groupId, $existingUser->id);
                     if ($addedInGroup['status'] == false) {
-                        array_push($errors, $addedInGroup['msg']);
+                        array_push($errors, "Email {$emp['email']} already exists in group.");
                     }
                     continue;
                 }

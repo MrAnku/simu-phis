@@ -1022,14 +1022,20 @@ class ApiEmployeesController extends Controller
 
             //xss check end
 
-            $validator = Validator::make($request->all(), [
-                'groupId' => 'required',
-                'usrName' => 'required|string|max:255',
-                'usrEmail' => 'required|email|unique:users,user_email|max:255',
-                'usrCompany' => 'nullable|string|max:255',
-                'usrJobTitle' => 'nullable|string|max:255',
-                'usrWhatsapp' => 'nullable|digits_between:11,15',
-            ]);
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'groupId' => 'required',
+                    'usrName' => 'required|string|max:255',
+                    'usrEmail' => 'required|email|unique:users,user_email|max:255',
+                    'usrCompany' => 'nullable|string|max:255',
+                    'usrJobTitle' => 'nullable|string|max:255',
+                    'usrWhatsapp' => 'nullable|digits_between:11,15',
+                ],
+                [
+                    'usrEmail.unique' => 'This email already exists',
+                ]
+            );
 
             $request->merge([
                 'usrWhatsapp' => preg_replace('/\D/', '', $request->usrWhatsapp)
