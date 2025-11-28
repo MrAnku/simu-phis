@@ -11,6 +11,7 @@ use App\Models\AssignedPolicy;
 use App\Models\CompanyLicense;
 use App\Models\DeletedEmployee;
 use App\Models\DomainVerified;
+use App\Models\EmpAiRiskAnalysis;
 use App\Models\InfoGraphicCampaign;
 use App\Models\PolicyCampaign;
 use App\Models\ScormAssignedUser;
@@ -217,7 +218,10 @@ class EmployeeService
                 }
             }
 
-
+            EmpAiRiskAnalysis::where('user_email', $user->user_email)   
+                ->where('company_id', $this->companyId)
+                ->delete();
+                
             $user->delete();
         }
     }

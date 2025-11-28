@@ -22,6 +22,7 @@ use App\Models\PolicyCampaignLive;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LearnApi\ApiLearnController;
+use App\Models\EmpAiRiskAnalysis;
 use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -285,6 +286,9 @@ class ApiEmployeesController extends Controller
             if (!$email) {
                 return response()->json(['success' => false, 'message' => __('Email is required')], 422);
             }
+
+            $refresh = $request->query('refresh');   // 1 when user clicks refresh
+
             $companyId = Auth::user()->company_id;
 
             $exist = Users::where('user_email', $email)
@@ -312,7 +316,29 @@ class ApiEmployeesController extends Controller
                 'employee_badges' => $empBadgesData,
             ];
 
-            $aiAnalysis = $this->getAIAnalysis($data);
+            $empAiAnalysis = EmpAiRiskAnalysis::where('company_id', $companyId)
+                ->where('user_email', $email)
+                ->first();
+
+            if (!$empAiAnalysis) {
+                $aiAnalysis = $this->getAIAnalysis($data);
+
+                EmpAiRiskAnalysis::create([
+                    'user_email' => $email,
+                    'company_id' => $companyId,
+                    'ai_analysis' => $aiAnalysis
+                ]);
+            } else if ($refresh) {
+                // Refresh requested → Update existing record
+                $aiAnalysis = $this->getAIAnalysis($data);
+
+                $empAiAnalysis->update([
+                    'ai_analysis' => $aiAnalysis
+                ]);
+            } else {
+                // Use existing value
+                $aiAnalysis = $empAiAnalysis->ai_analysis;
+            }
 
             return response()->json([
                 'success' => true,
