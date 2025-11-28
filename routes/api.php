@@ -146,6 +146,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
     //mssp routes
     Route::prefix('mssp')->group(function () {
         Route::get('/companies', [ApiMsspController::class, 'msspCompanies']);
+        Route::post('/create-company', [ApiMsspController::class, 'createCompany']);
         Route::post('/switch-to/{email}', [ApiMsspController::class, 'companyLoginSwitch']);
     });
 

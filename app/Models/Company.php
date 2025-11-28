@@ -33,6 +33,8 @@ class Company extends Authenticatable implements JWTSubject
         'service_status',
         'password',
         'pass_create_token',
+        'account_type',
+        'mssp_id',
         'created_at',
         'approve_date',
         'usedemployees',
