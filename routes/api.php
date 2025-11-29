@@ -52,6 +52,7 @@ use App\Http\Controllers\Api\ApiPhishingWebsitesController;
 use App\Http\Controllers\Api\ApiSmishingTemplateController;
 use App\Http\Controllers\Api\CustomisedReportingController;
 use App\Http\Controllers\Api\ApiAssignedTrainingsController;
+use App\Http\Controllers\Api\ApiCustomNotificationEmailController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
@@ -674,6 +675,17 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/select-deselect-template/{id}', [ApiCustomTrainingEmailController::class, 'selectDeselectTemplate']);
         Route::post('/update/{id}', [ApiCustomTrainingEmailController::class, 'updateTemplate']);
         Route::delete('/delete/{id}', [ApiCustomTrainingEmailController::class, 'deleteTemplate']);
+        
+    });
+
+     // Custom Notification Email Templates
+    Route::prefix('custom-notification-email')->group(function () {
+        Route::get('/', [ApiCustomNotificationEmailController::class, 'index']);
+        Route::get('/get-template-by-id/{id}', [ApiCustomNotificationEmailController::class, 'getTemplateById']);
+        Route::post('/add', [ApiCustomNotificationEmailController::class, 'addTemplate']);
+        Route::put('/select-deselect-template/{id}', [ApiCustomNotificationEmailController::class, 'selectDeselectTemplate']);
+        Route::post('/update/{id}', [ApiCustomNotificationEmailController::class, 'updateTemplate']);
+        Route::delete('/delete/{id}', [ApiCustomNotificationEmailController::class, 'deleteTemplate']);
         
     });
 
