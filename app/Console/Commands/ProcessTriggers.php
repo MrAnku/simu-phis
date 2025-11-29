@@ -136,6 +136,11 @@ class ProcessTriggers extends Command
 
                 $trainingAssignedService->assignNewTraining($campData);
             }
+
+            $trainingNames = [];
+            // Append training name to array
+            $module = TrainingModule::find($training);
+            $trainingNames[] = $module->name;
         }
         if ($queue->employee_type == 'bluecollar') {
             $this->sendWhatsappNotification($queue);
@@ -147,7 +152,7 @@ class ProcessTriggers extends Command
                 'training_due_date' => isset($trainings[0]['days_until_due']) ? now()->addDays($trainings[0]['days_until_due'])->toDateString() : null,
             ];
             $trainingAssignedService = new TrainingAssignedService();
-            $isSent = $trainingAssignedService->sendTrainingEmail($mailData);
+            $isSent = $trainingAssignedService->sendTrainingEmail($mailData, collect($trainingNames));
             if ($isSent['status'] == 1) {
                 echo "Training assigned to " . $queue->user_name . "\n";
             }
@@ -243,6 +248,11 @@ class ProcessTriggers extends Command
                 $trainingAssignedService = new TrainingAssignedService();
                 $trainingAssignedService->assignNewScormTraining($campData);
             }
+
+            $trainingNames = [];
+            // Append scorm training name to array
+            $module = ScormTraining::find($scormId);
+            $trainingNames[] = $module->name;
         }
         if ($queue->employee_type == 'bluecollar') {
             $this->sendWhatsappNotification($queue);
@@ -254,7 +264,7 @@ class ProcessTriggers extends Command
                 'company_id' => $queue->company_id
             ];
             $trainingAssignedService = new TrainingAssignedService();
-            $isMailSent = $trainingAssignedService->sendTrainingEmail($campData);
+            $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
             if ($isMailSent['status'] == true) {
                 echo "Mail sent successfully to " . $queue->user_name . "\n";

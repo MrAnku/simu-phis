@@ -286,7 +286,7 @@ class ProcessCampaigns extends Command
   {
     try {
       $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
-
+     
       $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
         ->get()
         ->unique('user_email')
@@ -348,7 +348,7 @@ class ProcessCampaigns extends Command
         'company_id' => $assignedUser->company_id,
         'training_due_date' => $latestTraining->training_due_date ?? null,
       ];
-      $trainingAssignedService->sendTrainingEmail($mailData);
+      $trainingAssignedService->sendTrainingRemindEmail($mailData);
 
       echo "Reminder email sent to: " . $assignedUser->user_email . " at " . now() . "\n";
     } catch (\Exception $e) {
