@@ -1188,21 +1188,18 @@ class ApiLearnController extends Controller
                 TranslatedTraining::create([
                     'training_id' => $id,
                     'language' => $training_lang,
-                    'json_quiz' => json_encode($trainingData->json_quiz, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
+                    'json_quiz' => json_encode($trainingData->json_quiz, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 ]);
             }
 
             return response()->json(['success' => true, 'message' => __('Training module language changed successfully'), 'data' => $trainingData], 200);
-        }
-
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('loadTraining failed', [
                 'error' => $e->getMessage(),
                 'training_id' => $training_id,
                 'lang' => $training_lang
             ]);
             return response()->json(['success' => false, 'message' => __('An error occurred while loading the training module.')], 422);
-
         }
     }
 
@@ -1414,25 +1411,19 @@ class ApiLearnController extends Controller
 
         if ($request->lang !== 'en') {
 
-            // $translatedArray = translateArrayValues($request->quiz, $request->lang);
-            // $translatedQuizJson = json_encode($translatedArray, JSON_UNESCAPED_UNICODE);
+            $translator = new TranslationService();
+            $quiz = $translator->translateOnlyQuiz($request->quiz, $request->lang);
 
-            //translation using ai
-            $quiz = json_encode($request->quiz, JSON_UNESCAPED_UNICODE);
-            $quiz = translateQuizUsingAi($quiz, $request->lang);
-            // $translatedQuizJson = json_encode($quiz, JSON_UNESCAPED_UNICODE);
-            return response()->json([
-                'success' => true,
-                'message' => 'Quiz is translated successfully',
-                'data' => [
-                    'quiz' => $quiz,
-                ]
-            ], 200);
+        }else{
+            $quiz = $request->quiz;
         }
         return response()->json([
-            'success' => false,
-            'message' => 'Unable to translate in english',
-        ], 422);
+            'success' => true,
+            'message' => 'Quiz is translated successfully',
+            'data' => [
+                'quiz' => $quiz,
+            ]
+        ], 200);
     }
 
     public function fetchLanguages()

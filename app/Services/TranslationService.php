@@ -54,8 +54,37 @@ class TranslationService
         return $trainingModule;
     }
 
+    
 
-    public function extractTranslatableStrings(array $data, array &$flatList = [], array &$pathMap = [], $path = [])
+    public function translateOnlyQuiz(array $quizData, string $lang)
+    {
+        list($flatList, $fieldMap) = $this->extractTranslatableStrings($quizData);
+
+        $response = Http::withHeaders([
+            'Authorization' => env('VANEX_API_KEY'),
+            'Accept' => 'application/json',
+        ])->post('https://api-b2b.backenster.com/b1/api/v3/translate', [
+            'platform' => 'api',
+            'from' => 'en',
+            'to' => $lang,
+            'data' => $flatList,
+            'enableTransliteration' => false,
+        ]);
+
+        if ($response->failed()) {
+            \Log::error('Translation API request failed', ['response' => $response->body()]);
+            return $quizData;
+        }
+
+        $translated = $response->json()['result'] ?? [];
+
+        $translatedQuiz = $this->rebuildTrainingData($quizData, $fieldMap, $translated);
+
+        return $translatedQuiz;
+    }
+
+
+    private function extractTranslatableStrings(array $data, array &$flatList = [], array &$pathMap = [], $path = [])
     {
 
         $translatableKeys = [
@@ -86,7 +115,7 @@ class TranslationService
         return [$flatList, $fieldMap];
     }
 
-    public function rebuildTrainingData(array $data, array $fieldMap, array $translated)
+    private function rebuildTrainingData(array $data, array $fieldMap, array $translated)
     {
         foreach ($fieldMap as $index => $map) {
             $itemIndex = $map['itemIndex'];
@@ -98,7 +127,7 @@ class TranslationService
         return $data;
     }
 
-    public function extractTranslatableFieldsGamified(array $training, array &$flatList = [], array &$fieldMap = [])
+    private function extractTranslatableFieldsGamified(array $training, array &$flatList = [], array &$fieldMap = [])
     {
         if (!isset($training['questions'])) {
             return [$flatList, $fieldMap];
@@ -135,7 +164,7 @@ class TranslationService
         return [$flatList, $fieldMap];
     }
 
-    function rebuildGamifiedTrainingData(array $training, array $fieldMap, array $translatedList)
+    private function rebuildGamifiedTrainingData(array $training, array $fieldMap, array $translatedList)
     {
         $tIndex = 0;
 
