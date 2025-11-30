@@ -35,6 +35,10 @@ class TrainingModule extends Model
         'alternative_training'
     ];
 
+    protected $casts = [
+        'json_quiz' => 'array',
+    ];
+
     public function trainingAssigned()
     {
         return $this->hasMany(TrainingAssignedUser::class, 'training', 'id');

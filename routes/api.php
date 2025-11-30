@@ -13,7 +13,6 @@ use App\Http\Controllers\PhishingReplyController;
 use App\Http\Controllers\Api\ApiCustomCertificate;
 use App\Http\Controllers\Api\ApiSupportController;
 use App\Http\Controllers\Api\ApiTriggerController;
-use App\Http\Controllers\Api\ApiAuditLogController;
 use App\Http\Controllers\Api\ApiBrandingController;
 use App\Http\Controllers\Api\ApiCampaignController;
 use App\Http\Controllers\Api\ApiQuishingController;
@@ -37,6 +36,7 @@ use App\Http\Controllers\Api\ApiCompanyLogsController;
 use App\Http\Controllers\Api\ApiIntegrationController;
 use App\Http\Controllers\Api\ApiNewReportingController;
 use App\Http\Controllers\Api\NoActivityUsersController;
+use App\Http\Controllers\Api\ApiDeepFakeAudioController;
 use App\Http\Controllers\Api\ApiNotificationsController;
 use App\Http\Controllers\Api\ApiQuishingEmailController;
 use App\Http\Controllers\Api\ApiScormTrainingController;
@@ -56,40 +56,10 @@ use App\Http\Controllers\Api\ApiCustomNotificationEmailController;
 use App\Http\Controllers\Api\ApiDarkWebMonitoringController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
-use App\Http\Controllers\Api\ApiDeepFakeAudioController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
-
- use GrokPHP\Laravel\Facades\GrokAI;
-        use GrokPHP\Client\Enums\Model;
-        use GrokPHP\Client\Config\ChatOptions;
 
 
 Route::middleware('throttle:limiter')->group(function () {
-
-    Route::get('test-training-translate/{id}/{lang}', function($id, $lang) {
-        // $trainingModule = \App\Models\TrainingModule::find($id);
-        // $translationService = new \App\Services\TranslationService();
-        // $translatedJson = $translationService->translateTraining($trainingModule, $lang);
-        // return response()->json($translatedJson);
-
-    try {
-       
-        $response = GrokAI::chat(
-            messages: [['role' => 'user', 'content' => 'Say hello.']],
-            options: new ChatOptions(model: Model::GROK_BETA)  // ← KEY CHANGE: GROK_BETA
-        );
-        return ['success' => true, 'response' => $response->content()];
-    } catch (\Throwable $e) {
-        return [
-            'success' => false,
-            'error' => $e->getMessage(),
-            'code' => $e->getCode(),
-            'trace' => $e->getTraceAsString()
-        ];
-    }
-
-    });
-
 
     Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
 
@@ -705,7 +675,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/select-deselect-template/{id}', [ApiCustomTrainingEmailController::class, 'selectDeselectTemplate']);
         Route::post('/update/{id}', [ApiCustomTrainingEmailController::class, 'updateTemplate']);
         Route::delete('/delete/{id}', [ApiCustomTrainingEmailController::class, 'deleteTemplate']);
-        
     });
 
      // Custom Notification Email Templates
@@ -728,7 +697,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
     // PPP Reduction Over Time API
     Route::get('ppp-reduction-over-time', [ApiDashboardController::class, 'getPppReductionOverTime']);
-    
+
     // User PPP Reduction Over Time API (single comprehensive route)
     Route::get('user-ppp-reduction-over-time', [ApiDashboardController::class, 'getUserPppReductionOverTime']);
 });

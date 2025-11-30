@@ -3,74 +3,156 @@
 namespace App\Services;
 
 use App\Models\TrainingModule;
-use GrokPHP\Client\Enums\Model;
-use GrokPHP\Laravel\Facades\GrokAI;
-use GrokPHP\Client\Config\ChatOptions;
-use Exception;
-use GrokPHP\Client\Exceptions\GrokException;
+use Illuminate\Support\Facades\Http;
+
 
 class TranslationService
 {
-    public function translateTraining(TrainingModule $trainingModule, string $targetLanguage): array
+
+    public function translateTraining(TrainingModule $trainingModule, string $lang)
     {
-        $originalJson = $trainingModule->json_quiz;
-        $json = json_encode($originalJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($trainingModule->training_type === 'gamified') {
+            $trainingData = $trainingModule->json_quiz;
 
-        $prompt = "Translate ONLY the text values in this JSON into {$targetLanguage}.
-Do NOT translate JSON keys.
-Do NOT change the structure at all.
-Do NOT add any explanations, comments, or markdown.
-Return ONLY the valid JSON object, nothing else.
+            list($flatList, $fieldMap) = $this->extractTranslatableFieldsGamified($trainingData);
+        } else if ($trainingModule->training_type === 'static_training') {
+            $trainingData = $trainingModule->json_quiz;
+            list($flatList, $fieldMap) = $this->extractTranslatableStrings($trainingData);
+        } else if($lang === 'en') {
+            return $trainingModule;
+        }else {
+            return $trainingModule;
+        }
 
-JSON to translate:
-{$json}";
 
-        try {
-            $response = GrokAI::chat(
-                messages: [
-                    [
-                        'role'    => 'system',
-                        'content' => 'You are a precise JSON-to-JSON translation engine. Always respond with exactly one valid JSON object and nothing else.'
-                    ],
-                    [
-                        'role'    => 'user',
-                        'content' => $prompt
-                    ]
-                ],
-                options: new ChatOptions(
-                    model: Model::GROK_BETA,  // Fixed model
-                    temperature: 0.0,
-                )
-            );
+        $response = Http::withHeaders([
+            'Authorization' => env('VANEX_API_KEY'),
+            'Accept' => 'application/json',
+        ])->post('https://api-b2b.backenster.com/b1/api/v3/translate', [
+            'platform' => 'api',
+            'from' => 'en',
+            'to' => $lang,
+            'data' => $flatList,
+            'enableTransliteration' => false,
+        ]);
 
-            $raw = trim($response->content());
-            $jsonString = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $raw);
-            $translated = json_decode($jsonString, true);
+        if ($response->failed()) {
+            \Log::error('Translation API request failed', ['response' => $response->body()]);
+            return $trainingModule;
+        }
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Invalid JSON in AI response: ' . json_last_error_msg());
+        $translated = $response->json()['result'] ?? [];
+
+        if ($trainingModule->training_type === 'gamified') {
+            $translatedQuiz = $this->rebuildGamifiedTrainingData($trainingData, $fieldMap, $translated);
+            $trainingModule->json_quiz = $translatedQuiz;
+        } else if ($trainingModule->training_type === 'static_training') {
+            $translatedQuiz = $this->rebuildTrainingData($trainingData, $fieldMap, $translated);
+            $trainingModule->json_quiz = $translatedQuiz;
+        }
+
+        return $trainingModule;
+    }
+
+
+    public function extractTranslatableStrings(array $data, array &$flatList = [], array &$pathMap = [], $path = [])
+    {
+
+        $translatableKeys = [
+            "sTitle",
+            "sContent",
+            "question",
+            "option1",
+            "option2",
+            "option3",
+            "option4",
+            "ansDesc"
+        ];
+
+        foreach ($data as $itemIndex => $item) {
+            foreach ($item as $key => $value) {
+                if (in_array($key, $translatableKeys) && is_string($value)) {
+                    $flatList[] = $value;
+
+                    // Store where to insert it back
+                    $fieldMap[] = [
+                        "itemIndex" => $itemIndex,
+                        "key" => $key,
+                    ];
+                }
+            }
+        }
+
+        return [$flatList, $fieldMap];
+    }
+
+    public function rebuildTrainingData(array $data, array $fieldMap, array $translated)
+    {
+        foreach ($fieldMap as $index => $map) {
+            $itemIndex = $map['itemIndex'];
+            $key = $map['key'];
+
+            $data[$itemIndex][$key] = $translated[$index];
+        }
+
+        return $data;
+    }
+
+    public function extractTranslatableFieldsGamified(array $training, array &$flatList = [], array &$fieldMap = [])
+    {
+        if (!isset($training['questions'])) {
+            return [$flatList, $fieldMap];
+        }
+
+        foreach ($training['questions'] as $qIndex => $questionBlock) {
+
+            // Extract "question"
+            if (isset($questionBlock['question']) && is_string($questionBlock['question'])) {
+                $flatList[] = $questionBlock['question'];
+
+                $fieldMap[] = [
+                    'qIndex' => $qIndex,
+                    'type'   => 'question',
+                ];
             }
 
-            return $translated;
+            // Extract each option
+            if (isset($questionBlock['options']) && is_array($questionBlock['options'])) {
+                foreach ($questionBlock['options'] as $optIndex => $optionText) {
+                    if (is_string($optionText)) {
+                        $flatList[] = $optionText;
 
-        } catch (GrokException $e) {
-            // Specific handling for Grok errors (post-update, this won't TypeError)
-            \Log::error('Grok API Error during translation', [
-                'target_language' => $targetLanguage,
-                'module_id' => $trainingModule->id,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'original_json_size' => strlen($json)
-            ]);
-            throw new Exception("Translation failed: {$e->getMessage()} (Check API key/limits)");
-
-        } catch (Exception $e) {
-            \Log::error('Translation service error', [
-                'target_language' => $targetLanguage,
-                'module_id' => $trainingModule->id,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
+                        $fieldMap[] = [
+                            'qIndex'   => $qIndex,
+                            'type'     => 'option',
+                            'optIndex' => $optIndex,
+                        ];
+                    }
+                }
+            }
         }
+
+        return [$flatList, $fieldMap];
+    }
+
+    function rebuildGamifiedTrainingData(array $training, array $fieldMap, array $translatedList)
+    {
+        $tIndex = 0;
+
+        foreach ($fieldMap as $map) {
+
+            $qIndex = $map['qIndex'];
+
+            if ($map['type'] === 'question') {
+                $training['questions'][$qIndex]['question'] = $translatedList[$tIndex++];
+            }
+
+            if ($map['type'] === 'option') {
+                $optIndex = $map['optIndex'];
+                $training['questions'][$qIndex]['options'][$optIndex] = $translatedList[$tIndex++];
+            }
+        }
+
+        return $training;
     }
 }
