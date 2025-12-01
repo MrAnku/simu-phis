@@ -234,7 +234,7 @@ class ApiTrainingModuleController extends Controller
             $mModuleLang = $request->input('mModuleLang', 'en');
             $filePath = 'uploads/trainingModule/defaultTraining.jpg';
             $estimated_time = $request->input('estimated_time');
-            $jsonData = $request->input('jsonData');
+            $jsonData = json_decode($request->input('jsonData'), true);
             $companyId = Auth::user()->company_id;
 
 
@@ -541,7 +541,7 @@ class ApiTrainingModuleController extends Controller
         $mPassingScore = $request->input('mPassingScore');
         $mModuleLang = $request->input('mModuleLang') ?? 'en';
         $estimated_time = $request->input('estimated_time');
-        $jsonData = $request->input('updatedjsonData');
+        $jsonData = json_decode($request->input('updatedjsonData'), true);
         $programResources = $request->input('program_resources') === 'null' ? null : $request->input('program_resources');
         $company_id = Auth::user()->company_id;
 
