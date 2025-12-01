@@ -93,7 +93,7 @@
         <h2>
             {{ __('Hi :name,', ['name' => $mailData['user_name']]) }}
             <br>
-            {{ __('This is a friendly reminder that you have pending training modules that need to be completed.') }}
+            {{ __('This is a reminder that you have pending training modules that need to be completed.') }}
             <br>
             {{ __('Please log in to your training dashboard to complete the assigned trainings:') }}
         </h2>
