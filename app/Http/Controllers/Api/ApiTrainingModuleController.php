@@ -336,7 +336,7 @@ class ApiTrainingModuleController extends Controller
                 'passing_score' => $request->input('passing_score'),
                 'category' => $request->input('category'),
                 'training_type' => 'gamified',
-                'json_quiz' => $request->input('gamifiedJsonData'),
+                'json_quiz' => json_decode($request->input('gamifiedJsonData'), true),
                 'module_language' => 'en',
                 'company_id' => $companyId,
             ]);
@@ -384,7 +384,7 @@ class ApiTrainingModuleController extends Controller
                 'estimated_time' => $request->input('completion_time'),
                 'passing_score' => $request->input('passing_score'),
                 'category' => $request->input('category'),
-                'json_quiz' => $request->input('gamifiedJsonData'),
+                'json_quiz' => json_decode($request->input('gamifiedJsonData'), true),
                 'module_language' => 'en',
             ];
 
