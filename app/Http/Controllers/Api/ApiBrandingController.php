@@ -16,7 +16,7 @@ class ApiBrandingController extends Controller
         $branding = CompanyBranding::where('company_id', Auth::user()->company_id)->first();
         return response()->json([
             'success' => true,
-            'message' => 'Branding material retrieved successfully',
+            'message' => __('Branding material retrieved successfully'),
             'data' => $branding,
         ]);
     }
@@ -36,7 +36,7 @@ class ApiBrandingController extends Controller
             if ($existingBranding) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Branding material already exists for this company',
+                    'message' => __('Branding material already exists for this company'),
                 ], 400);
             }
 
@@ -60,7 +60,7 @@ class ApiBrandingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Branding material added successfully',
+                'message' => __('Branding material added successfully'),
                 'data' => $branding,
             ]);
 
@@ -92,7 +92,7 @@ class ApiBrandingController extends Controller
             if (!$branding) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Branding material not found',
+                    'message' => __('Branding material not found'),
                 ], 404);
             }
 
@@ -119,7 +119,7 @@ class ApiBrandingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Branding material updated successfully',
+                'message' => __('Branding material updated successfully'),
                 'data' => $branding,
             ]);
 
@@ -144,7 +144,7 @@ class ApiBrandingController extends Controller
             if (!$branding) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Branding material not found',
+                    'message' => __('Branding material not found'),
                 ], 404);
             }
 
@@ -163,7 +163,7 @@ class ApiBrandingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Branding material deleted successfully',
+                'message' => __('Branding material deleted successfully'),
             ]);
 
         }catch (ValidationException $e) {
