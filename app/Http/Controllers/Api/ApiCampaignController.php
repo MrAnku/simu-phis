@@ -428,7 +428,7 @@ class ApiCampaignController extends Controller
                         }
                         // 🎥 Other types: extract video URL from json_quiz
                         else {
-                            $data = json_decode($module->json_quiz, true);
+                            $data = $module->json_quiz;
 
                             if (isset($data['videoUrl'])) {
                                 $videoUrl = $data['videoUrl'];

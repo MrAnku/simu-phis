@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\AiCallCampLive;
-use App\Models\BlueCollarTrainingUser;
-use App\Models\CampaignLive;
-use App\Models\QuishingLiveCamp;
-use App\Models\SmishingLiveCampaign;
-use App\Models\TprmCampaignLive;
-use App\Models\TrainingAssignedUser;
-use Illuminate\Http\Request;
-use App\Models\TrainingGame;
-use App\Models\TrainingModule;
-use App\Models\TranslatedTraining;
-use App\Models\WaLiveCampaign;
 use Exception;
+use App\Models\CampaignLive;
+use App\Models\TrainingGame;
+use Illuminate\Http\Request;
+use App\Models\AiCallCampLive;
+use App\Models\TrainingModule;
+use App\Models\WaLiveCampaign;
+use App\Models\QuishingLiveCamp;
+use App\Models\TprmCampaignLive;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Models\TranslatedTraining;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\SmishingLiveCampaign;
+use App\Models\TrainingAssignedUser;
+use App\Services\TranslationService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\BlueCollarTrainingUser;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -754,11 +755,10 @@ class ApiTrainingModuleController extends Controller
             // For Static Trainings
             if ($trainingData->training_type == 'static_training') {
                 if ($moduleLanguage !== 'en') {
-                    $translatedJson_quiz = translateQuizUsingAi($trainingData->json_quiz, $moduleLanguage);
-                    $translatedJson_quiz = json_decode($translatedJson_quiz, true);
-                    $translatedJson_quiz = changeTranslatedQuizVideoUrl($translatedJson_quiz, $moduleLanguage);
 
-                    $trainingData->json_quiz = json_encode($translatedJson_quiz, JSON_UNESCAPED_UNICODE);
+                    $translator = new TranslationService();
+                    $trainingData = $translator->translateTraining($trainingData, $moduleLanguage);
+                    
                 }
 
                 return response()->json([
@@ -771,16 +771,13 @@ class ApiTrainingModuleController extends Controller
             // For Gamified Trainings
             if ($trainingData->training_type == 'gamified') {
                 if ($moduleLanguage !== 'en') {
-                    $quizInArray = json_decode($trainingData->json_quiz, true);
-                    $quizInArray['videoUrl'] = changeVideoLanguage($quizInArray['videoUrl'], $moduleLanguage);
-
-                    // Assuming `translateJsonData` already returns a JSON response
-                    return $this->translateJsonData($quizInArray, $moduleLanguage);
+                     $translator = new TranslationService();
+                    $trainingData = $translator->translateTraining($trainingData, $moduleLanguage);
                 }
 
                 return response()->json([
                     'success' => false,
-                    'jsonData' => $trainingData->json_quiz,
+                    'jsonData' => $trainingData,
                     'message'  => __("Training Data Fetch Successfully")
                 ]);
             }

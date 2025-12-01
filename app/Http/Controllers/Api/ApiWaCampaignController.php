@@ -411,7 +411,7 @@ class ApiWaCampaignController extends Controller
                 ->map(function ($module) use ($campaign) {
                     $videoUrl = null;
 
-                    $data = json_decode($module->json_quiz, true);
+                    $data = $module->json_quiz;
 
                     if (isset($data['videoUrl'])) {
                         $videoUrl = $data['videoUrl'];
