@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MFAController;
 use App\Http\Controllers\ComicsController;
 use App\Http\Controllers\Auth\SSOController;
-use App\Http\Controllers\WhiteLabelController;
 use App\Http\Controllers\Api\ApiTprmController;
 use App\Http\Controllers\PhishTriageController;
 use App\Http\Controllers\Api\ApiAiCallController;
@@ -61,7 +60,7 @@ use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
 
 Route::middleware('throttle:limiter')->group(function () {
 
-    Route::get('checkwhitelabel', [WhiteLabelController::class, 'check']);
+    Route::get('checkwhitelabel', [ApiWhiteLabelController::class, 'check']);
 
 
     Route::post('company/create-password/token-check', [AuthenticatedSessionController::class, 'tokenCheck']);

@@ -2,19 +2,93 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Users;
 use Illuminate\Http\Request;
+use App\Models\CompanyBranding;
 use App\Models\WhiteLabelledSmtp;
 use App\Http\Controllers\Controller;
 use App\Models\WhiteLabelledCompany;
-use App\Models\WhiteLabelledWhatsappConfig;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use App\Models\WhiteLabelledWhatsappConfig;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Mailer\Transport\Smtp\SmtpTransport;
 
 class ApiWhiteLabelController extends Controller
 {
+    public function check(Request $request)
+    {
+        $host = $request->query('host');
+
+        $companyWhitelabeled = WhiteLabelledCompany::where(function ($query) use ($host) {
+            $query->where('domain', $host)
+                ->orWhere('learn_domain', $host);
+        })
+            ->where('approved_by_partner', 1)
+            ->where('service_status', 1)
+            ->first();
+
+        $companyLogoLight = "/assets/images/simu-logo.png";
+        $companyLogoDark =  "/assets/images/simu-logo-dark.png";
+        $companyFavicon = "/assets/images/simu-icon.png";
+        $companyName = env('APP_NAME');
+        $companyDomain = env('NEXT_APP_URL');
+        $companyLearnDomain = env('SIMUPHISH_LEARNING_URL');
+        $completelyWhitelabeled = false;
+
+
+        if ($companyWhitelabeled) {
+
+            $companyDomain = "https://" . $companyWhitelabeled->domain . "/";
+            $companyLearnDomain = "https://" . $companyWhitelabeled->learn_domain . "/";
+
+            //check branding
+            $branding = CompanyBranding::where('company_id', $companyWhitelabeled->company_id)->first();
+            if ($branding) {
+                $companyLogoDark = $branding->dark_logo;
+                $companyLogoLight = $branding->light_logo;
+                $companyFavicon = $branding->favicon;
+                $companyName = $branding->company_name;
+                $completelyWhitelabeled = true;
+            }
+        }
+        if (Auth::guard('api')->check()) {
+            $authCompanyBranding = CompanyBranding::where('company_id', Auth::guard('api')->user()->company_id)->first();
+            if ($authCompanyBranding) {
+                $companyLogoDark = $authCompanyBranding->dark_logo;
+                $companyLogoLight = $authCompanyBranding->light_logo;
+                $companyFavicon = $authCompanyBranding->favicon;
+                $companyName = $authCompanyBranding->company_name;
+            }
+        }
+
+        if ($request->query('learner') && $completelyWhitelabeled == false) {
+            $companyId = Users::where('user_email', $request->query('learner'))->value('company_id');
+            if ($companyId) {
+                $authCompanyBranding = CompanyBranding::where('company_id', $companyId)->first();
+                if ($authCompanyBranding) {
+                    $companyLogoDark = $authCompanyBranding->dark_logo;
+                    $companyLogoLight = $authCompanyBranding->light_logo;
+                    $companyFavicon = $authCompanyBranding->favicon;
+                    $companyName = $authCompanyBranding->company_name;
+                }
+            }
+        }
+
+
+
+        // Share branding information with all views
+        return response()->json([
+            'companyLogoDark' => env('CLOUDFRONT_URL') . $companyLogoDark,
+            'companyLogoLight' => env('CLOUDFRONT_URL') . $companyLogoLight,
+            'companyFavicon' => env('CLOUDFRONT_URL') . $companyFavicon,
+            'companyName' => $companyName,
+            'companyDomain' => $companyDomain,
+            'companyLearnDomain' => $companyLearnDomain
+        ]);
+    }
+    
     public function saveWhiteLabel(Request $request)
     {
         try {

@@ -19,10 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->trustProxies(at: '*');
         //
         $middleware->alias([
-            'isAdminLoggedIn' => \App\Http\Middleware\AdminAuthenticate::class,
-            'isLearnerLoggedIn' => \App\Http\Middleware\LearnerAuthenticate::class,
-            'isValidLearnerToken' => \App\Http\Middleware\LearnerTokenValidator::class,
-            'checkWhiteLabel' => \App\Http\Middleware\CheckWhiteLabelDomain::class,
+            
             'timezone' => \App\Http\Middleware\SetUserTimezone::class,
             'setLocale' => \App\Http\Middleware\SetLocale::class,
             'blockGoogleBots' => \App\Http\Middleware\BlockGoogleBots::class,
