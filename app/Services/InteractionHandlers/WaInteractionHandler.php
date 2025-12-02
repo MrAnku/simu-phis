@@ -10,6 +10,7 @@ use App\Models\WhatsappActivity;
 use App\Services\PolicyAssignedService;
 use App\Services\CampaignTrainingService;
 use App\Services\BlueCollarCampTrainingService;
+use App\Services\CompanyReport;
 
 class WaInteractionHandler
 {
@@ -29,8 +30,13 @@ class WaInteractionHandler
             $campaignLive->payload_clicked = 1;
             $campaignLive->save();
 
-            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
             $company = Company::where('company_id', $campaignLive->company_id)->first();
+
+            $companyReport = new CompanyReport($company->company_id);
+            // Notify admin when  click rate reach 50 % and 100 %
+            $companyReport->notifyClickRateThreshold();
+
+            // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
             $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
 
             $camp = WaCampaign::where('campaign_id', $campaignLive->campaign_id)->first();

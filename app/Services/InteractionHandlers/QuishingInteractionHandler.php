@@ -9,6 +9,7 @@ use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
 use App\Services\PolicyAssignedService;
 use App\Services\CampaignTrainingService;
+use App\Services\CompanyReport;
 
 class QuishingInteractionHandler
 {
@@ -31,10 +32,15 @@ class QuishingInteractionHandler
             $campaignLive->mail_open = '1';
             $campaignLive->save();
 
+            $company = Company::where('company_id', $campaignLive->company_id)->first();
+            
+            $companyReport = new CompanyReport($company->company_id);
+            // Notify admin when  click rate reach 50 % and 100 %
+            $companyReport->notifyClickRateThreshold();
+
             // Set process timezone to campaign timezone so Carbon::now() returns campaign-local time
-               $company = Company::where('company_id', $campaignLive->company_id)->first();
-                $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
-                
+            $companyTimezone = $company->company_settings->time_zone ?: config('app.timezone');
+
             $camp = QuishingCamp::where('campaign_id', $campaignLive->campaign_id)->first();
             $campaignTimezone = $camp->time_zone ?: $companyTimezone;
 

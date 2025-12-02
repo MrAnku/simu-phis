@@ -362,6 +362,10 @@ class ApiLearnController extends Controller
 
                 if ($badge) {
                     assignBadge($rowData, $badge);
+
+                    // Notify admin when badge assigned
+                    $badgeDetails = Badge::find($badge);
+                    sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
                 }
 
                 $rowData->save();
@@ -384,6 +388,9 @@ class ApiLearnController extends Controller
                         'normal'
                     );
 
+                    // Notify admin
+                    sendNotification("{$user} has completed the ‘{$rowData->trainingData->name}’ training with a score of {$request->trainingScore}%", $rowData->company_id);
+
                     $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $rowData->user_email)
                         ->where('completed', 1)->count();
 
@@ -392,6 +399,10 @@ class ApiLearnController extends Controller
 
                     if ($badge) {
                         assignBadge($rowData, $badge);
+
+                        // Notify admin when badge assigned
+                        $badgeDetails = Badge::find($badge);
+                        sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
                     }
                     $rowData->save();
 
@@ -432,7 +443,15 @@ class ApiLearnController extends Controller
                         'normal'
                     );
 
+                    // Notify admin when certificate assigned
+                    sendNotification("Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_email}", $rowData->company_id);
+
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
+                }
+
+                // when user fails then notify admin
+                if ($request->trainingScore < $passingScore) {
+                    sendNotification("{$rowData->user_email} failed the '{$rowData->trainingData->name}' training with a score of {$request->trainingScore}.", $rowData->company_id);
                 }
             }
             return response()->json(['success' => true, 'message' => __('Score updated')], 200);
@@ -520,6 +539,10 @@ class ApiLearnController extends Controller
 
                 if ($badge) {
                     assignBadge($rowData, $badge);
+
+                    // Notify admin when badge assigned
+                    $badgeDetails = Badge::find($badge);
+                    sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
                 }
                 $rowData->save();
 
@@ -543,6 +566,9 @@ class ApiLearnController extends Controller
                         'normal'
                     );
 
+                    // Notify admin
+                    sendNotification("{$user} has completed the ‘{$rowData->scormTrainingData->name}’ training with a score of {$request->scormTrainingScore}%", $rowData->company_id);
+
                     $totalCompletedTrainings = ScormAssignedUser::where('user_email', $rowData->user_email)
                         ->where('completed', 1)->count();
 
@@ -551,6 +577,10 @@ class ApiLearnController extends Controller
 
                     if ($badge) {
                         assignBadge($rowData, $badge);
+
+                        // Notify admin when badge assigned
+                        $badgeDetails  = Badge::find($badge);
+                        sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email} for completing {$totalCompletedTrainings} SCORM courses", $rowData->company_id);
                     }
                     $rowData->save();
 
@@ -591,7 +621,16 @@ class ApiLearnController extends Controller
                         'normal'
                     );
 
+
+                    // Notify admin when certificate assigned
+                    sendNotification("Certificate for {$rowData->scormTrainingData->name} has been awarded to {$rowData->user_email}", $rowData->company_id);
+
                     Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
+                }
+
+                // when user fails then notify admin
+                if ($request->scormTrainingScore < $passingScore) {
+                    sendNotification("{$rowData->user_email} failed the '{$rowData->scormTrainingData->name}' training with a score of {$request->scormTrainingScore}.", $rowData->company_id);
                 }
             }
             return response()->json(['success' => true, 'message' => __('Score updated')], 200);

@@ -862,6 +862,9 @@ class ApiAiCallController extends Controller
                 $localReport->call_report = json_encode($callReport);
                 $localReport->save();
 
+                //Notify admin
+                sendNotification("{$localReport->user_email} report for call ID {$callId}.", $localReport->company_id);
+
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             } else {
                 $callReport = json_decode($localReport->call_report, true);

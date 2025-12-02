@@ -397,6 +397,10 @@ class ApiLearnBlueCollarController extends Controller
 
                 if ($badge) {
                     assignBadge($rowData, $badge);
+
+                    // Notify admin when badge assigned
+                    $badgeDetails = Badge::find($badge);
+                    sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
                 }
 
                 $rowData->save();
@@ -419,6 +423,9 @@ class ApiLearnBlueCollarController extends Controller
                         'bluecollar'
                     );
 
+                    // Notify admin
+                    sendNotification("{$user} has completed the ‘{$rowData->trainingData->name}’ training with a score of {$request->trainingScore}%", $rowData->company_id);
+
                     $totalCompletedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $rowData->user_whatsapp)
                         ->where('completed', 1)->count();
 
@@ -427,6 +434,9 @@ class ApiLearnBlueCollarController extends Controller
 
                     if ($badge) {
                         assignBadge($rowData, $badge);
+                        // Notify admin when badge assigned
+                        $badgeDetails = Badge::find($badge);
+                        sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
                     }
                     $rowData->save();
 
@@ -444,7 +454,7 @@ class ApiLearnBlueCollarController extends Controller
                     $branding = new CheckWhitelabelService($rowData->company_id);
                     $companyLogo = $branding->companyDarkLogo();
                     $favIcon = $branding->companyFavicon();
-                    
+
 
                     $pdfContent = $blueCollarEmpLearnService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
 
@@ -462,6 +472,10 @@ class ApiLearnBlueCollarController extends Controller
                         'bluecollar'
                     );
 
+
+                    // Notify admin when certificate assigned
+                    sendNotification("Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
+
                     if ($whatsapp_response->successful()) {
                         return response()->json(['success' => true, 'message' => __('Score updated')], 200);
                     } else {
@@ -470,6 +484,11 @@ class ApiLearnBlueCollarController extends Controller
                             'message' => __('Failed to send WhatsApp message')
                         ], 422);
                     }
+                }
+
+                // when user fails then notify admin
+                if ($request->trainingScore < $passingScore) {
+                    sendNotification("{$rowData->user_whatsapp} failed the '{$rowData->trainingData->name}' training with a score of {$request->trainingScore}.", $rowData->company_id);
                 }
             }
             return response()->json(['success' => true, 'message' => __('Score updated')], 200);
@@ -683,6 +702,10 @@ class ApiLearnBlueCollarController extends Controller
 
                 if ($badge) {
                     assignBadge($rowData, $badge);
+
+                    // Notify admin when badge assigned
+                    $badgeDetails = Badge::find($badge);
+                    sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
                 }
 
                 $rowData->save();
@@ -707,6 +730,9 @@ class ApiLearnBlueCollarController extends Controller
                         'bluecollar'
                     );
 
+                    // Notify admin
+                    sendNotification("{$user} has completed the ‘{$rowData->scormTrainingData->name}’ training with a score of {$request->scormTrainingScore}%", $rowData->company_id);
+
                     $totalCompletedTrainings = BlueCollarScormAssignedUser::where('user_whatsapp', $rowData->user_whatsapp)
                         ->where('completed', 1)->count();
 
@@ -715,6 +741,10 @@ class ApiLearnBlueCollarController extends Controller
 
                     if ($badge) {
                         assignBadge($rowData, $badge);
+
+                        // Notify admin when badge assigned
+                        $badgeDetails = Badge::find($badge);
+                        sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
                     }
                     $rowData->save();
 
@@ -732,7 +762,7 @@ class ApiLearnBlueCollarController extends Controller
                     $branding = new CheckWhitelabelService($rowData->company_id);
                     $companyLogo = $branding->companyDarkLogo();
                     $favIcon = $branding->companyFavicon();
-                    
+
 
                     $pdfContent = $blueCollarEmpLearnService->generateScormCertificatePdf($rowData, $companyLogo, $favIcon);
 
@@ -750,6 +780,10 @@ class ApiLearnBlueCollarController extends Controller
                         'bluecollar'
                     );
 
+
+                    // Notify admin when certificate assigned
+                    sendNotification("Certificate for {$rowData->scormTrainingData->name} has been awarded to {$rowData->user_whatsapp}", $rowData->company_id);
+
                     if ($whatsapp_response->successful()) {
                         return response()->json(['success' => true, 'message' => __('Score updated')], 200);
                     } else {
@@ -760,6 +794,11 @@ class ApiLearnBlueCollarController extends Controller
                     }
 
                     log_action("{$user} scored {$request->scormTrainingScore}% in training", 'company', $rowData->company_id);
+                }
+
+                // when user fails then notify admin
+                if ($request->scormTrainingScore < $passingScore) {
+                    sendNotification("{$rowData->user_whatsapp} failed the '{$rowData->scormTrainingData->name}' training with a score of {$request->scormTrainingScore}.", $rowData->company_id);
                 }
             }
             return response()->json(['success' => true, 'message' => __('Score updated')], 200);

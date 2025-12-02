@@ -17,6 +17,7 @@ use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
 use App\Models\TrainingAssignedUser;
 use App\Models\UsersGroup;
+use Illuminate\Support\Facades\Cache;
 
 class CompanyReport
 {
@@ -379,6 +380,52 @@ class CompanyReport
         $clickedUsers = $this->payloadClicked();
 
         return $totalUsers > 0 ? round(($clickedUsers / $totalUsers) * 100, 2) : 0;
+    }
+
+    /**
+     * Notify on click-rate threshold transitions (50% and 100%).
+     * Uses cache to remember last state so notifications fire only on transitions.
+     */
+    public function notifyClickRateThreshold()
+    {
+        // Calculate current click rate and determine previous state (per-company cache key)
+        $currentRate = (float) $this->clickRate();
+        $cacheKey = "company:{$this->companyId}:click_rate_state";
+        $previousState = Cache::get($cacheKey, 'below_50');
+
+        // Determine the new state based on the current rate
+        if ($currentRate >= 100) {
+            $newState = '100_reached';
+        } elseif ($currentRate >= 50) {
+            $newState = '50_reached';
+        } else {
+            $newState = 'below_50';
+        }
+
+        // Nothing to do if state didn't change
+        if ($newState === $previousState) {
+            return;
+        }
+
+        // Handle transitions and send simple platform-level notifications
+        switch ($newState) {
+            case '100_reached':
+                sendNotification('Alert: Platform click rate has reached 100%.', $this->companyId);
+                break;
+
+            case '50_reached':
+                if ($previousState !== '50_reached') {
+                    sendNotification('Alert: Platform click rate has reached 50%.', $this->companyId);
+                }
+                break;
+
+            case 'below_50':
+                // reset only; no notification
+                break;
+        }
+
+        // Persist the new state so we only notify on transitions
+        Cache::put($cacheKey, $newState);
     }
 
     public function emailReported($forMonth = null): int

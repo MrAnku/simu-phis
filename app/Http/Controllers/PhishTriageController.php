@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
- use DOMDocument;
+use DOMDocument;
 use App\Models\Users;
 use App\Models\Company;
 use App\Models\CampaignLive;
@@ -42,7 +42,7 @@ class PhishTriageController extends Controller
         } else {
             $companyId = "unknown";
         }
-        if($companyId !== 'unknown'){
+        if ($companyId !== 'unknown') {
             setCompanyTimezone($companyId);
         }
 
@@ -100,7 +100,7 @@ class PhishTriageController extends Controller
             $isWhitelabeled = new CheckWhitelabelService($companyId);
             if ($isWhitelabeled->isCompanyWhitelabeled()) {
                 $isWhitelabeled->updateSmtpConfig();
-            }else{
+            } else {
                 $isWhitelabeled->clearSmtpConfig();
             }
 
@@ -118,7 +118,7 @@ class PhishTriageController extends Controller
 
         $redirectLink = $this->extractRedirectUrls($body, $pattern);
         if (!$redirectLink) {
-           // \Log::info('redirect link not found');
+            // \Log::info('redirect link not found');
             return false; // No simulation email detected
         }
 
@@ -137,7 +137,12 @@ class PhishTriageController extends Controller
             TprmCampaignLive::where('id', $token)->update([
                 'email_reported' => 1
             ]);
-            // \Log::info('tprm token' . $token); 
+            // \Log::info('tprm token' . $token);
+
+            //Notify admin
+            $campaign = TprmCampaignLive::where('id', $token)->first();
+            sendNotification("{$campaign->user_email} has reported a tprm email.", $campaign->company_id);
+
             return true; // Simulation email detected
         } else if (strpos($actualUrl, 'usrid=') !== false && strpos($actualUrl, 'token=') !== false) {
             //get token value from the url
@@ -151,31 +156,40 @@ class PhishTriageController extends Controller
                 'email_reported' => 1
             ]);
             // \Log::info('email token' . $token); 
+
+            //Notify admin
+            $campaign = CampaignLive::where('id', $token)->first();
+            sendNotification("{$campaign->user_email} has reported a phishing email.", $campaign->company_id);
+
             return true; // Simulation email detected
         } else {
-             // \Log::info('not our email'); 
+            // \Log::info('not our email'); 
             return false; // No simulation email detected
         }
     }
 
     private function checkQuishingEmail($body)
-{
-    // \Log::info('checkQuishingEmail inside');
-    // Regex to match src attributes in img tags containing 'qrcodes' and 'eid='
-    $pattern = '/src=["\'](.*?(?:qrcodes).*?eid=\d+.*?)["\']/i';
-    if (preg_match($pattern, $body, $matches)) {
-        // \Log::info('pattern matched');
-        $src = $matches[1];
-        parse_str(parse_url($src, PHP_URL_QUERY) ?? '', $params);
-        if (isset($params['eid'])) {
-            // \Log::info('eid found');
-            QuishingLiveCamp::where('id', $params['eid'])->update(['email_reported' => '1']);
-            return true;
-        }
-    }
+    {
+        // \Log::info('checkQuishingEmail inside');
+        // Regex to match src attributes in img tags containing 'qrcodes' and 'eid='
+        $pattern = '/src=["\'](.*?(?:qrcodes).*?eid=\d+.*?)["\']/i';
+        if (preg_match($pattern, $body, $matches)) {
+            // \Log::info('pattern matched');
+            $src = $matches[1];
+            parse_str(parse_url($src, PHP_URL_QUERY) ?? '', $params);
+            if (isset($params['eid'])) {
+                // \Log::info('eid found');
+                QuishingLiveCamp::where('id', $params['eid'])->update(['email_reported' => '1']);
 
-    return false;
-}
+                //Notify admin
+                $campaign = QuishingLiveCamp::where('id', $params['eid'])->first();
+                sendNotification("{$campaign->user_email} has reported a quishing email.", $campaign->company_id);
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private function extractRedirectUrls($html, $matchPattern = null)
     {
