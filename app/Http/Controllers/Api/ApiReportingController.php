@@ -3109,7 +3109,8 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
-            $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)->get();
+            $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)
+            ->get();
 
             $courseDetails = [];
             $DueDateDetails = [
@@ -3145,24 +3146,29 @@ class ApiReportingController extends Controller
                     'course_title' => $training->name ?? 'Anonymous Course',
                     'users_assigned' => TrainingAssignedUser::where('training', $course->training)
                         ->where('completed', 0)
+                        ->where('training', $training->id)
                         ->where('company_id', $companyId)
                         ->count(),
                     'users_completed' => TrainingAssignedUser::where('training', $course->training)
                         ->where('completed', 1)
+                        ->where('training', $training->id)
                         ->where('company_id', $companyId)
                         ->count(),
                     'users_in_progress' => TrainingAssignedUser::where('training', $course->training)
                         ->where('training_started', 1)
+                        ->where('training', $training->id)
                         ->where('personal_best', '>', 0)
                         ->where('completed', 0)
                         ->where('company_id', $companyId)
                         ->count(),
                     'users_not_started' => TrainingAssignedUser::where('training', $course->training)
                         ->where('training_started', 0)
+                        ->where('training', $training->id)
                         ->where('company_id', $companyId)
                         ->count(),
                     'avg_score' => round(TrainingAssignedUser::where('training', $course->training)
                         ->where('training_started', 1)
+                        ->where('training', $training->id)
                         ->where('company_id', $companyId)
                         ->avg('personal_best') ?? 0),
 
