@@ -1700,5 +1700,8 @@
     "Training Reminder!": "!تذكير بالتدريب",
     "This is a reminder that you have pending training modules that need to be completed.": ".هذا تذكير بأن لديك وحدات تدريبية معلقة تحتاج إلى إكمالها",
     "Please log in to your training dashboard to complete the assigned trainings:": ":يرجى تسجيل الدخول إلى لوحة التدريب الخاصة بك لإكمال التدريبات المعينة",
-    "Continue Training": "متابعة التدريب"
+    "Continue Training": "متابعة التدريب",
+    "User email already exists": "البريد الإلكتروني للمستخدم موجود بالفعل",
+    "Member email domain must match the user email domain": "يجب أن يتطابق نطاق بريد العضو مع نطاق بريد المستخدم", 
+    "All members added successfully": "تمت إضافة جميع الأعضاء بنجاح"  
 }

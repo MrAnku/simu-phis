@@ -17,6 +17,7 @@ use App\Models\PolicyCampaign;
 use App\Models\ScormAssignedUser;
 use App\Models\SmishingCampaign;
 use App\Models\TrainingAssignedUser;
+use App\Models\UserMember;
 use App\Models\WaCampaign;
 
 class EmployeeService
@@ -89,6 +90,44 @@ class EmployeeService
             'msg' => __('Employee added successfully')
         ];
     }
+
+    /**
+     * Add multiple member records for a user.
+     *
+     * @param array $members
+     * @param string $usrEmail
+     * @param int $userId
+     * @return array
+     */
+    public function addMembers(array $members, string $usrEmail, int $userId): array
+    {
+        $userDomain = explode("@", $usrEmail)[1];
+
+        foreach ($members as $member) {
+
+            $memberDomain = explode("@", $member['email'])[1];
+
+            if ($memberDomain !== $userDomain) {
+                return [
+                    'status' => 0,
+                    'msg' => __('Member email domain must match the user email domain')
+                ];
+            }
+
+            UserMember::create([
+                'user_id'    => $userId,
+                'name'       => $member['name'],
+                'email'      => $member['email'],
+                'company_id' => $this->companyId,
+            ]);
+        }
+
+        return [
+            'status' => 1,
+            'msg'    => __('All members added successfully')
+        ];
+    }
+
 
     private function domainVerified($email)
     {
@@ -218,10 +257,10 @@ class EmployeeService
                 }
             }
 
-            EmpAiRiskAnalysis::where('user_email', $user->user_email)   
+            EmpAiRiskAnalysis::where('user_email', $user->user_email)
                 ->where('company_id', $this->companyId)
                 ->delete();
-                
+
             $user->delete();
         }
     }
@@ -231,7 +270,7 @@ class EmployeeService
         $group = UsersGroup::where('group_id', $groupId)
             ->where('company_id', $this->companyId)
             ->first();
-        
+
         if (!$group) {
             return [
                 'status' => 0,
@@ -247,7 +286,7 @@ class EmployeeService
         }
 
         $usersArray = json_decode($group->users, true);
-        
+
         if (!in_array($employeeId, $usersArray)) {
             return [
                 'status' => 0,
@@ -257,7 +296,7 @@ class EmployeeService
 
         $key = array_search($employeeId, $usersArray);
         unset($usersArray[$key]);
-        
+
         if (count($usersArray) >= 1) {
             $group->users = json_encode(array_values($usersArray));
             $group->save();
@@ -271,7 +310,7 @@ class EmployeeService
             'msg' => __('Employee removed from group successfully')
         ];
     }
-    
+
     public function deleteAssignedTrainingAndPolicy($email)
     {
 

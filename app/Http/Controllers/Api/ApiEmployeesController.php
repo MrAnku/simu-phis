@@ -27,6 +27,7 @@ use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Models\InfoGraphicLiveCampaign;
+use App\Models\UserMember;
 use App\Services\CheckWhitelabelService;
 use App\Services\NormalEmpLearnService;
 use Illuminate\Support\Facades\Validator;
@@ -1037,6 +1038,9 @@ class ApiEmployeesController extends Controller
 
             $input = $request->all();
             foreach ($input as $key => $value) {
+                  if (!is_string($value)) {
+                    continue;
+                }
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json(['success' => false, 'message' => __('Invalid input detected.')], 422);
                 }
@@ -1057,9 +1061,14 @@ class ApiEmployeesController extends Controller
                     'usrCompany' => 'nullable|string|max:255',
                     'usrJobTitle' => 'nullable|string|max:255',
                     'usrWhatsapp' => 'nullable|digits_between:11,15',
+                    // Validate members array
+                    'members' => 'nullable|array',
+                    'members.*.name' => 'required|string|max:255',
+                    'members.*.email' => 'required|email|unique:users,user_email|unique:user_members,email|max:255',
                 ],
                 [
-                    'usrEmail.unique' => 'This email already exists',
+                    'usrEmail.unique' => 'User email already exists',
+                    'members.*.email.unique' => 'The member email :input already exists.',
                 ]
             );
 
@@ -1086,6 +1095,13 @@ class ApiEmployeesController extends Controller
                 if ($addedInGroup['status'] == 0) {
                     return response()->json(['success' => false, 'message' => $addedInGroup['msg']]);
                 }
+
+                if ($request->members) {
+                    $addedMembers = $employee->addMembers($request->members, $request->usrEmail, $addedEmployee['user_id']);
+                    if ($addedMembers['status'] == 0) {
+                        return response()->json(['success' => false, 'message' => $addedMembers['msg']], 422);
+                    }
+                }
                 log_action("Employee Added");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
@@ -1102,6 +1118,9 @@ class ApiEmployeesController extends Controller
             // XSS check start
             $input = $request->all();
             foreach ($input as $key => $value) {
+                if (!is_string($value)) {
+                    continue;
+                }
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
                     return response()->json(['success' => false, 'message' => __('Invalid input detected.')], 422);
                 }
@@ -1118,6 +1137,14 @@ class ApiEmployeesController extends Controller
                 'usrCompany' => 'nullable|string|max:255',
                 'usrJobTitle' => 'nullable|string|max:255',
                 'usrWhatsapp' => 'nullable|digits_between:11,15',
+
+                // Validate members array
+                'members' => 'nullable|array',
+                'members.*.name' => 'required|string|max:255',
+                'members.*.email' => 'required|email|unique:users,user_email|unique:user_members,email|max:255',
+
+            ], [
+                'members.*.email.unique' => 'The member email :input already exists.',
             ]);
 
             $request->merge([
@@ -1131,7 +1158,7 @@ class ApiEmployeesController extends Controller
             //check if this email already exists in table
             $user = Users::where('user_email', $request->usrEmail)->where('company_id', Auth::user()->company_id)->exists();
             if ($user) {
-                return response()->json(['success' => false, 'message' => __('This email already exists')], 422);
+                return response()->json(['success' => false, 'message' => __('User email already exists')], 422);
             }
 
             $employee = new EmployeeService(Auth::user()->company_id);
@@ -1143,7 +1170,15 @@ class ApiEmployeesController extends Controller
                 !empty($request->usrJobTitle) ? $request->usrJobTitle : null,
                 !empty($request->usrWhatsapp) ? $request->usrWhatsapp : null
             );
+
             if ($addedEmployee['status'] == 1) {
+
+                if ($request->members) {
+                    $addedMembers = $employee->addMembers($request->members, $request->usrEmail, $addedEmployee['user_id']);
+                    if ($addedMembers['status'] == 0) {
+                        return response()->json(['success' => false, 'message' => $addedMembers['msg']], 422);
+                    }
+                }
                 log_action("Employee Added : { $request->usrName}");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
