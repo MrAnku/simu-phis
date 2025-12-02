@@ -14,10 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
+
     ->withMiddleware(function (Middleware $middleware) {
 
-        // $middleware->trustProxies(at: '*');
-        //
+        // alias middlewares
         $middleware->alias([
             
             'timezone' => \App\Http\Middleware\SetUserTimezone::class,
@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'msBotBlocker' => \App\Http\Middleware\BlockMicrosoftIps::class,
         ]);
 
+        // CSRF exceptions
         $middleware->validateCsrfTokens(except: [
             '/ai-calling/log-call-detail',
             '/phish-triage/log-report',
@@ -36,7 +37,17 @@ return Application::configure(basePath: dirname(__DIR__))
             '/phishing-reply',
             '/googlereport'
         ]);
+
+        // append CORS middleware
         $middleware->append(CorsMiddleware::class);
+
+        // append your maintenance middleware globally
+        
+        $middleware->api([
+        \App\Http\Middleware\CheckMaintenance::class,
+    ]);
+
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
