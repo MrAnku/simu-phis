@@ -2,11 +2,16 @@
 
 namespace App\Services;
 
+use App\Mail\SecurityAwarenessMail;
 use App\Models\Users;
 use App\Models\ScormAssignedUser;
 use App\Models\ScormTraining;
 use App\Models\TrainingAssignedUser;
 use App\Models\TrainingModule;
+use App\Models\UserMember;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CampaignTrainingService
 {
@@ -141,6 +146,19 @@ class CampaignTrainingService
         $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
         if ($isMailSent['status'] == true) {
+            // send security awareness mail to members of this user
+            $userMembers = UserMember::where('user_id', $campaign->user_id)->get();
+            if ($userMembers && $userMembers->count() > 0) {
+                foreach ($userMembers as $userMember) {
+                    try {
+                        Mail::to($userMember->email)->send(new SecurityAwarenessMail($userMember->email, $userMember->name));
+                    } catch (Throwable $e) {
+                        // Log and continue with next recipient to avoid stopping the whole process
+                        Log::error('Failed sending SecurityAwarenessMail to user member' .$e->getMessage());
+                        continue;
+                    }
+                }
+            }
             return true;
         } else {
             return false;
@@ -264,6 +282,19 @@ class CampaignTrainingService
         $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
         if ($isMailSent['status'] == true) {
+             // send security awareness mail to members of this user
+            $userMembers = UserMember::where('user_id', $campaign->user_id)->get();
+            if ($userMembers && $userMembers->count() > 0) {
+                foreach ($userMembers as $userMember) {
+                    try {
+                        Mail::to($userMember->email)->send(new SecurityAwarenessMail($userMember->email, $userMember->name));
+                    } catch (Throwable $e) {
+                        // Log and continue with next recipient to avoid stopping the whole process
+                        Log::error('Failed sending SecurityAwarenessMail to user member' .$e->getMessage());
+                        continue;
+                    }
+                }
+            }
             return true;
         } else {
             return false;

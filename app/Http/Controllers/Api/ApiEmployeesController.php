@@ -1038,7 +1038,7 @@ class ApiEmployeesController extends Controller
 
             $input = $request->all();
             foreach ($input as $key => $value) {
-                  if (!is_string($value)) {
+                if (!is_string($value)) {
                     continue;
                 }
                 if (preg_match('/<[^>]*>|<\?php/', $value)) {
@@ -1060,15 +1060,10 @@ class ApiEmployeesController extends Controller
                     'usrEmail' => 'required|email|unique:users,user_email|max:255',
                     'usrCompany' => 'nullable|string|max:255',
                     'usrJobTitle' => 'nullable|string|max:255',
-                    'usrWhatsapp' => 'nullable|digits_between:11,15',
-                    // Validate members array
-                    'members' => 'nullable|array',
-                    'members.*.name' => 'required|string|max:255',
-                    'members.*.email' => 'required|email|unique:users,user_email|unique:user_members,email|max:255',
+                    'usrWhatsapp' => 'nullable|digits_between:11,15'
                 ],
                 [
-                    'usrEmail.unique' => 'User email already exists',
-                    'members.*.email.unique' => 'The member email :input already exists.',
+                    'usrEmail.unique' => 'User email already exists'
                 ]
             );
 
@@ -1094,13 +1089,6 @@ class ApiEmployeesController extends Controller
 
                 if ($addedInGroup['status'] == 0) {
                     return response()->json(['success' => false, 'message' => $addedInGroup['msg']]);
-                }
-
-                if ($request->members) {
-                    $addedMembers = $employee->addMembers($request->members, $request->usrEmail, $addedEmployee['user_id']);
-                    if ($addedMembers['status'] == 0) {
-                        return response()->json(['success' => false, 'message' => $addedMembers['msg']], 422);
-                    }
                 }
                 log_action("Employee Added");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
@@ -1136,15 +1124,7 @@ class ApiEmployeesController extends Controller
                 'usrEmail' => 'required|email|max:255',
                 'usrCompany' => 'nullable|string|max:255',
                 'usrJobTitle' => 'nullable|string|max:255',
-                'usrWhatsapp' => 'nullable|digits_between:11,15',
-
-                // Validate members array
-                'members' => 'nullable|array',
-                'members.*.name' => 'required|string|max:255',
-                'members.*.email' => 'required|email|unique:users,user_email|unique:user_members,email|max:255',
-
-            ], [
-                'members.*.email.unique' => 'The member email :input already exists.',
+                'usrWhatsapp' => 'nullable|digits_between:11,15'
             ]);
 
             $request->merge([
@@ -1172,13 +1152,6 @@ class ApiEmployeesController extends Controller
             );
 
             if ($addedEmployee['status'] == 1) {
-
-                if ($request->members) {
-                    $addedMembers = $employee->addMembers($request->members, $request->usrEmail, $addedEmployee['user_id']);
-                    if ($addedMembers['status'] == 0) {
-                        return response()->json(['success' => false, 'message' => $addedMembers['msg']], 422);
-                    }
-                }
                 log_action("Employee Added : { $request->usrName}");
                 return response()->json(['success' => true, 'message' => __('Employee Added Successfully')], 201);
             } else {
@@ -1513,8 +1486,8 @@ class ApiEmployeesController extends Controller
             return response()->json(['success' => false, 'message' => __('Email is required')], 422);
         }
         try {
-            $users = Users::where('user_email', $email)->where('company_id', Auth::user()->company_id)->get();
-            if ($users->isEmpty()) {
+            $user = Users::where('user_email', $email)->where('company_id', Auth::user()->company_id)->first();
+            if (!$user) {
                 return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
             }
 
@@ -1525,15 +1498,13 @@ class ApiEmployeesController extends Controller
                 'usrWhatsapp' => 'nullable|digits_between:11,15',
             ]);
 
-            foreach ($users as $user) {
-                $user->user_name = $request->input('usrName');
-                $user->user_company = !empty($request->input('usrCompany')) ? $request->input('usrCompany') : null;
-                $user->user_job_title = !empty($request->input('usrJobTitle')) ? $request->input('usrJobTitle') : null;
-                $user->whatsapp = !empty($request->input('usrWhatsapp')) ? preg_replace('/\D/', '', $request->input('usrWhatsapp')) : null;
+            $user->user_name = $request->input('usrName');
+            $user->user_company = !empty($request->input('usrCompany')) ? $request->input('usrCompany') : null;
+            $user->user_job_title = !empty($request->input('usrJobTitle')) ? $request->input('usrJobTitle') : null;
+            $user->whatsapp = !empty($request->input('usrWhatsapp')) ? preg_replace('/\D/', '', $request->input('usrWhatsapp')) : null;
 
-                // Save the updated user
-                $user->save();
-            }
+            // Save the updated user
+            $user->save();
             //update in ai call camp live
             $this->updateInCampaigns($email, $request->input('usrName'));
 
@@ -1600,5 +1571,128 @@ class ApiEmployeesController extends Controller
             ->update([
                 'user_name' => $name,
             ]);
+    }
+
+    public function addMembers(Request $request)
+    {
+        try {
+            $request->validate(
+                [
+                    'user_email' => 'required|email|exists:users,user_email|max:255',
+                    'user_id' => 'required|integer|exists:users,id',
+                    // Validate members array
+                    'members' => 'required|array',
+                    'members.*.name' => 'required|string|max:255',
+                    'members.*.email' => 'required|email|unique:user_members,email|unique:users,user_email|max:255'
+                ],
+                [
+                    'members.*.email.unique' => 'The member email :input already exists.',
+                ]
+            );
+
+            $user = Users::where('id', $request->user_id)
+                ->where('user_email', $request->user_email)
+                ->where('company_id', Auth::user()->company_id)
+                ->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => __('Employee not found')], 404);
+            }
+
+            $employee = new EmployeeService(Auth::user()->company_id);
+            $addedMembers = $employee->addMembers($request->members, $request->user_email, $request->user_id);
+            if ($addedMembers['status'] == 1) {
+                log_action("Member(s) added");
+                return response()->json(['success' => true, 'message' => __('Member(s) added successfully')], 201);
+            } else {
+                return response()->json(['success' => false, 'message' => $addedMembers['msg']], 422);
+            }
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateMember(Request $request)
+    {
+        try {
+            $member_id = $request->route('member_id');
+            if (!$member_id) {
+                return response()->json(['success' => false, 'message' => __('Member ID is required')], 422);
+            }
+
+            if (!UserMember::where('id', $member_id)->where('company_id', Auth::user()->company_id)->exists()) {
+                return response()->json(['success' => false, 'message' => __('Member not found')], 404);
+            }
+
+            $request->validate(
+                [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|unique:user_members,email,' . $member_id . '|unique:users,user_email|max:255'
+                ],
+                [
+                    'email.unique' => 'The member email :input already exists.',
+                ]
+            );
+
+            $employee = new EmployeeService(Auth::user()->company_id);
+            $updatedMember = $employee->updateMember($member_id, $request->name, $request->email);
+            if ($updatedMember['status'] == 1) {
+                log_action("Member updated");
+                return response()->json(['success' => true, 'message' => __('Member updated successfully')], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => $updatedMember['msg']], 422);
+            }
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteMember(Request $request)
+    {
+        try {
+            $member_id = $request->route('member_id');
+            if (!$member_id) {
+                return response()->json(['success' => false, 'message' => __('Member ID is required')], 422);
+            }
+
+            if (!UserMember::where('id', $member_id)->where('company_id', Auth::user()->company_id)->exists()) {
+                return response()->json(['success' => false, 'message' => __('Member not found')], 404);
+            }
+
+            $employee = new EmployeeService(Auth::user()->company_id);
+            $deletedMember = $employee->deleteMember($member_id);
+            if ($deletedMember['status'] == 1) {
+                log_action("Member deleted");
+                return response()->json(['success' => true, 'message' => __('Member deleted successfully')], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => $deletedMember['msg']], 422);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchMembers(Request $request)
+    {
+        try {
+            $user_id = $request->route('user_id');
+            if (!$user_id) {
+                return response()->json(['success' => false, 'message' => __('User ID is required')], 422);
+            }
+
+            $userId = base64_decode($user_id);
+
+            $members = UserMember::where('user_id', $userId)
+                ->where('company_id', Auth::user()->company_id)
+                ->get();
+
+            return response()->json(['success' => true, 'data' => $members, 'message' => __('Members fetched successfully')], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
     }
 }

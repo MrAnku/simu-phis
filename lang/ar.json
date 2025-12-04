@@ -1703,5 +1703,11 @@
     "Continue Training": "متابعة التدريب",
     "User email already exists": "البريد الإلكتروني للمستخدم موجود بالفعل",
     "Member email domain must match the user email domain": "يجب أن يتطابق نطاق بريد العضو مع نطاق بريد المستخدم", 
-    "All members added successfully": "تمت إضافة جميع الأعضاء بنجاح"  
+    "All members added successfully": "تمت إضافة جميع الأعضاء بنجاح",
+    "Member(s) added successfully": "تمت إضافة العضو/الأعضاء بنجاح",
+    "Member ID is required": "معرف العضو مطلوب",
+    "Member not found": "لم يتم العثور على العضو",
+    "Member updated successfully": "تم تحديث العضو بنجاح",
+    "Member deleted successfully": "تم حذف العضو بنجاح",
+    "Members fetched successfully": "تم جلب الأعضاء بنجاح"
 }

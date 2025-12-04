@@ -457,6 +457,10 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::post('/add-ldap-config', [ApiEmployeesController::class, 'addLdapConfig']);
         Route::get('/sync-ldap-directory', [ApiEmployeesController::class, 'syncLdap']);
         Route::put('/update/{email?}', [ApiEmployeesController::class, 'updateEmployee']);
+        Route::post('/add-members', [ApiEmployeesController::class, 'addMembers']);
+        Route::get('/fetch-members/{user_id?}', [ApiEmployeesController::class, 'fetchMembers']);
+        Route::put('/update-member/{member_id?}', [ApiEmployeesController::class, 'updateMember']);
+        Route::delete('/delete-member/{member_id?}', [ApiEmployeesController::class, 'deleteMember']);
     });
 
     Route::prefix('deep-fake-audio')->group(function () {

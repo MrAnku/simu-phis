@@ -128,6 +128,61 @@ class EmployeeService
         ];
     }
 
+    public function updateMember(int $memberId, string $name, string $email): array
+    {
+        $member = UserMember::where('id', $memberId)
+            ->where('company_id', $this->companyId)
+            ->first();
+
+        if (!$member) {
+            return [
+                'status' => 0,
+                'msg' => __('Member not found')
+            ];
+        }
+
+        $memberDomain = explode("@", $email)[1];
+        $user = Users::where('id', $member->user_id)->first();
+        $userDomain = explode("@", $user->user_email)[1];
+
+        if ($memberDomain !== $userDomain) {
+            return [
+                'status' => 0,
+                'msg' => __('Member email domain must match the user email domain')
+            ];
+        }
+
+        $member->name = $name;
+        $member->email = $email;
+        $member->save();
+
+        return [
+            'status' => 1,
+            'msg' => __('Member updated successfully')
+        ];
+    }
+
+    public function deleteMember(int $memberId): array
+    {
+        $member = UserMember::where('id', $memberId)
+            ->where('company_id', $this->companyId)
+            ->first();
+
+        if (!$member) {
+            return [
+                'status' => 0,
+                'msg' => __('Member not found')
+            ];
+        }
+
+        $member->delete();
+
+        return [
+            'status' => 1,
+            'msg' => __('Member deleted successfully')
+        ];
+    }
+
 
     private function domainVerified($email)
     {
@@ -262,6 +317,10 @@ class EmployeeService
                 ->delete();
 
             $user->delete();
+
+            UserMember::where('user_id', $employeeId)
+                ->where('company_id', $this->companyId)
+                ->delete();
         }
     }
 
