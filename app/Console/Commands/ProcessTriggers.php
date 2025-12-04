@@ -103,7 +103,9 @@ class ProcessTriggers extends Command
         }
         foreach ($trainings as $training) {
 
-            if (TrainingModule::where('id', $training['training'])->doesntExist()) {
+            $trainingId = $training['training'];
+
+            if (TrainingModule::where('id', $trainingId)->doesntExist()) {
                 continue;
             }
             if ($employeeType == 'bluecollar') {
@@ -114,7 +116,7 @@ class ProcessTriggers extends Command
             echo "Assigning training to " . $employeeType . "\n";
             //sending training
             $assignedTraining = TrainingAssignedUser::where('user_email', $queue->user_email)
-                ->where('training', $training['training'])
+                ->where('training', $trainingId)
                 ->first();
 
             if (!$assignedTraining) {
@@ -124,7 +126,7 @@ class ProcessTriggers extends Command
                     'user_id' => $queue->user_id,
                     'user_name' => $queue->user_name,
                     'user_email' => $queue->user_email,
-                    'training' => $training['training'],
+                    'training' => $trainingId,
                     'training_lang' => $training['training_lang'],
                     'training_type' => $training['training_type'],
                     'assigned_date' => now()->toDateString(),
@@ -139,7 +141,7 @@ class ProcessTriggers extends Command
 
             $trainingNames = [];
             // Append training name to array
-            $module = TrainingModule::find($training);
+            $module = TrainingModule::find($trainingId);
             $trainingNames[] = $module->name;
         }
         if ($queue->employee_type == 'bluecollar') {
@@ -149,7 +151,7 @@ class ProcessTriggers extends Command
                 'user_email' => $queue->user_email,
                 'user_name' => $queue->user_name,
                 'company_id' => $queue->company_id,
-                'training_due_date' => isset($trainings[0]['days_until_due']) ? now()->addDays($trainings[0]['days_until_due'])->toDateString() : null,
+                'training_due_date' => isset($training['days_until_due']) ? now()->addDays($training['days_until_due'])->toDateString() : null,
             ];
             $trainingAssignedService = new TrainingAssignedService();
             $isSent = $trainingAssignedService->sendTrainingEmail($mailData, collect($trainingNames));
@@ -261,7 +263,7 @@ class ProcessTriggers extends Command
             $campData = [
                 'user_name' => $queue->user_name,
                 'user_email' => $queue->user_email,
-                'company_id' => $queue->company_id
+                'company_id' => $queue->company_id,
             ];
             $trainingAssignedService = new TrainingAssignedService();
             $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
@@ -276,8 +278,10 @@ class ProcessTriggers extends Command
 
     private function assignTrainingToBluecollar($training, $queue)
     {
+        $trainingId = $training['training'];
+
         $assignedTrainingModule = BlueCollarTrainingUser::where('user_whatsapp', $queue->user_whatsapp)
-            ->where('training', $training['training'])
+            ->where('training', $trainingId)
             ->first();
 
         if (!$assignedTrainingModule) {
@@ -287,7 +291,7 @@ class ProcessTriggers extends Command
                 'user_id' => $queue->user_id,
                 'user_name' => $queue->user_name,
                 'user_whatsapp' => $queue->user_whatsapp,
-                'training' => $training['training'],
+                'training' => $trainingId,
                 'training_lang' => $training['training_lang'],
                 'training_type' => $training['training_type'],
                 'assigned_date' => now()->toDateString(),
