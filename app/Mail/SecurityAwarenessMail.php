@@ -83,6 +83,7 @@ class SecurityAwarenessMail extends Mailable
 
             // Keep contentData as array with 'body' key so view access remains stable.
             $this->contentData = $body;
+            $this->templateSubject = $template->subject;
         } else {
             // No template found — use a default HTML fallback similar to templates
             $this->templateSubject = 'Security Tips: Keep Your Inbox Safe';
@@ -97,16 +98,14 @@ class SecurityAwarenessMail extends Mailable
                 '<p><strong>Separate Personal and Work:</strong><br>' .
                 'Keep personal and work information separate in your communications to maintain security boundaries.</p>' .
                 '<p>Remember, staying safe online is simply about being mindful. You\'re doing great!</p>' .
-                '<p>Warm regards,<br>IT Support Team</p>';
+                '<p>Warm regards,<br>simUphish Team</p>';
 
             // If we have member name, replace placeholder
             if (!empty($this->memberName)) {
                 $body = str_replace(['{{user_name}}','{user_name}','[[user_name]]'], $this->memberName, $body);
             }
 
-            $this->contentData = [
-                'body' => $body,
-            ];
+            $this->contentData = $body;
         }
         // No placeholder replacement: render the stored HTML exactly as saved in DB.
     }
