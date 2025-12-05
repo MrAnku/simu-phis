@@ -19,7 +19,6 @@ use App\Models\ScormTraining;
 use App\Models\AiCallCampaign;
 use App\Models\AiCallCampLive;
 use App\Models\AssignedPolicy;
-use App\Models\CampaignReport;
 use App\Models\CompanyLicense;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
@@ -47,91 +46,6 @@ use Illuminate\Validation\ValidationException;
 
 class ApiReportingController extends Controller
 {
-    //
-    public function index()
-    {
-        try {
-            $companyId = Auth::user()->company_id;
-
-            $camps = CampaignReport::where('company_id', $companyId)->get();
-            $emails_delivered = $camps->sum('emails_delivered');
-            $training_assigned = $camps->sum('training_assigned');
-
-            $whatsapp_campaigns = WhatsappCampaign::with('targetUsers')
-                ->where('company_id', $companyId)->get();
-
-            $tprmcamps = TprmCampaignReport::where('company_id', $companyId)->get();
-            $tprm_campaigns = TprmCampaign::with('tprmReport')
-                ->where('company_id', $companyId)->get();
-
-            $tprmemails_delivered = $tprmcamps->sum('emails_delivered');
-            $tprmemails_reported = $tprmcamps->sum('email_reported');
-            $emp_compromised_reported = $tprmcamps->sum('emp_compromised');
-            $payloads_clicked_reported = $tprmcamps->sum('payloads_clicked');
-
-            Session::forget('campaign_details');
-
-            $Arraydetails = [
-                'Emails Delivered' => $tprmemails_delivered ?? 0,
-                'TPRM Email Report' => $tprmemails_reported ?? 0,
-                'Emp Compromised' => $emp_compromised_reported ?? 0,
-                'Payload Clicked' => $payloads_clicked_reported ?? 0
-            ];
-
-            $ai_calls = AiCallCampaign::with('individualCamps')
-                ->where('company_id', $companyId)->get();
-
-            $ai_calls_individual = AiCallCampLive::where('company_id', $companyId)->get();
-
-            $wcamps = WhatsappCampaign::where('company_id', $companyId)->get();
-            $ccamps = AiCallCampaign::with('individualCamps')
-                ->where('company_id', $companyId)->get();
-
-            $msg_delivered = WhatsAppCampaignUser::where('company_id', $companyId)
-                ->where('status', 'sent')->count();
-
-            $call_delivered = $ccamps->where('status', 'completed')->count();
-
-            $wtraining_assigned = DB::table('whatsapp_camp_users')
-                ->where('company_id', $companyId)->sum('training_assigned');
-
-            $ctraining_assigned = $ccamps->sum('training_assigned');
-
-            return response()->json([
-                'success' => true,
-                'message' => __('Campaign data fetched successfully'),
-                'data' => [
-                    'campaign_reports' => $camps,
-                    'emails_delivered' => $emails_delivered,
-                    'training_assigned' => $training_assigned,
-                    'msg_delivered' => $msg_delivered,
-                    'whatsapp_campaigns' => $whatsapp_campaigns,
-                    'wcamps' => $wcamps,
-                    'wtraining_assigned' => $wtraining_assigned,
-                    'call_delivered' => $call_delivered,
-                    'ccamps' => $ccamps,
-                    'ctraining_assigned' => $ctraining_assigned,
-                    'ai_calls' => $ai_calls,
-                    'ai_calls_individual' => $ai_calls_individual,
-                    'tprm_campaigns' => $tprm_campaigns,
-                    'tprm_stats' => $Arraydetails
-                ]
-            ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-
     public function getChartData()
     {
         try {
@@ -337,84 +251,6 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
-
-
-    public function fetchCampaignReport(Request $request)
-    {
-        try {
-            // Fetch campaignId from route parameter
-            $campId = $request->route('campaignId');
-
-            // Check if campaignId exists
-            if (!$campId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Campaign ID is required.')
-                ], 400);
-            }
-
-            // Ensure the user is authenticated
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Unauthorized user.')
-                ], 401);
-            }
-
-            $companyId = $user->company_id;
-
-            // Fetch campaign report
-            $reportRow = CampaignReport::where('campaign_id', $campId)
-                ->where('company_id', $companyId)
-                ->first();
-
-            // Fetch user group ID
-            $userGroup = Campaign::where('campaign_id', $campId)
-                ->where('company_id', $companyId)
-                ->first();
-
-            if ($reportRow && $userGroup) {
-                // Count the number of users in the group
-                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
-
-                // Prepare the response
-                $response = [
-                    'campaign_name' => $reportRow->campaign_name,
-                    'campaign_type' => $reportRow->campaign_type,
-                    'emails_delivered' => $reportRow->emails_delivered,
-                    'emails_viewed' => $reportRow->emails_viewed,
-                    'payloads_clicked' => $reportRow->payloads_clicked,
-                    'emp_compromised' => $reportRow->emp_compromised,
-                    'email_reported' => $reportRow->email_reported,
-                    'status' => $reportRow->status,
-                    'no_of_users' => $no_of_users,
-                ];
-
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Campaign report fetched successfully.'),
-                    'data' => $response
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Campaign report or user group not found.')
-                ], 404);
-            }
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
-            ], 500);
-        }
-    }
-
 
     public function whatsappfetchCampaignReport(Request $request)
     {
@@ -922,78 +758,6 @@ class ApiReportingController extends Controller
             ], 500);
         }
     }
-
-    public function fetchCampTrainingDetails(Request $request)
-    {
-        try {
-
-            $campId = $request->route('campaignId');
-
-            // Check if campaignId exists
-            if (!$campId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('Campaign ID is required.')
-                ], 400);
-            }
-
-            $companyId = Auth::user()->company_id;
-
-            // Fetch campaign report
-            $reportRow = CampaignReport::where('campaign_id', $campId)
-                ->where('company_id', $companyId)
-                ->first();
-
-            // Fetch user group ID
-            $userGroup = Campaign::where('campaign_id', $campId)
-                ->where('company_id', $companyId)
-                ->first();
-
-            if ($reportRow && $userGroup) {
-                // Count users
-                $no_of_users = Users::where('group_id', $userGroup->users_group)->count();
-
-                // Prepare status flags
-                $isAssigned = (int) $reportRow->training_assigned > 0 ? true : false;
-                $isCompleted = (int) $reportRow->training_completed > 0 ? true : false;
-
-                // Campaign status
-                $status = $reportRow->status ?? 'unknown';
-
-                // Prepare JSON response
-                return response()->json([
-                    'success' => true,
-                    'message' => __('Training details fetched successfully'),
-                    'data' => [
-                        'campaign_name' => $reportRow->campaign_name,
-                        'campaign_status' => ucfirst($status),
-                        'total_users' => $no_of_users,
-                        'training_assigned_count' => (int) $reportRow->training_assigned,
-                        'training_completed_count' => (int) $reportRow->training_completed,
-                        'training_assigned' => $isAssigned ? 'Yes' : 'No',
-                        'training_completed' => $isCompleted ? 'Yes' : 'No',
-                    ]
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No records found',
-                    'data' => []
-                ], 404);
-            }
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->validator->errors()->first()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Error: ') . $e->getMessage()
-            ], 500);
-        }
-    }
-
 
     public function whatsappfetchCampTrainingDetails(Request $request)
     {
@@ -3110,7 +2874,7 @@ class ApiReportingController extends Controller
             $companyId = Auth::user()->company_id;
 
             $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)
-            ->get();
+                ->get();
 
             $courseDetails = [];
             $DueDateDetails = [

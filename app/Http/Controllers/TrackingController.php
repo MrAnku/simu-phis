@@ -6,7 +6,6 @@ use App\Models\Campaign;
 use App\Models\CampaignLive;
 use App\Models\TprmActivity;
 use Illuminate\Http\Request;
-use App\Models\CampaignReport;
 use App\Models\Company;
 use App\Models\QuishingActivity;
 use App\Models\QuishingLiveCamp;
@@ -113,8 +112,6 @@ class TrackingController extends Controller
                     if ($campaign) {
                         $campaign->email_reported = 1; // Optional: Set initial value, if needed
                         $campaign->save();
-
-                        CampaignReport::where('campaign_id', $campaign->campaign_id)->increment('email_reported');
                     }
                 }
             }

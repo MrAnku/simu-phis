@@ -72,11 +72,6 @@ class Campaign extends Model
         return $this->hasMany(CampaignLive::class, 'campaign_id', 'campaign_id');
     }
 
-    public function campReport()
-    {
-        return $this->hasOne(CampaignReport::class, 'campaign_id', 'campaign_id');
-    }
-
     public function trainingAssignedUsers()
     {
         return $this->hasMany(TrainingAssignedUser::class, 'campaign_id', 'campaign_id');
