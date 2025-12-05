@@ -1587,6 +1587,7 @@ class ApiEmployeesController extends Controller
                 ],
                 [
                     'members.*.email.unique' => 'The member email :input already exists.',
+                    'members.*.email.email' => 'The member email :input must be a valid email address.',
                 ]
             );
 
