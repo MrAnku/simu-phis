@@ -367,6 +367,58 @@ class CompanyReport
         return 0.00;
     }
 
+    /**
+     * Get training completion trend for the last 6 months
+     * Returns an array with month names, assigned counts and completion counts
+     * 
+     * @return array
+     */
+    public function getTrainingCompletionTrend(): array
+    {
+        $trend = [];
+        $now = now();
+
+        for ($i = 5; $i >= 0; $i--) {
+            $month = $now->copy()->subMonths($i);
+            $monthNumber = $month->month;
+            $monthName = $month->format('M Y'); // e.g., "Jan 2025"
+
+            $trainingAssigned = TrainingAssignedUser::where('company_id', $this->companyId)
+                ->whereMonth('created_at', $monthNumber)
+                ->whereYear('created_at', $month->year)
+                ->count();
+
+            $scormAssigned = ScormAssignedUser::where('company_id', $this->companyId)
+                ->whereMonth('created_at', $monthNumber)
+                ->whereYear('created_at', $month->year)
+                ->count();
+
+            $trainingCompleted = TrainingAssignedUser::where('company_id', $this->companyId)
+                ->where('completed', 1)
+                ->whereMonth('updated_at', $monthNumber)
+                ->whereYear('updated_at', $month->year)
+                ->count();
+
+            $scormCompleted = ScormAssignedUser::where('company_id', $this->companyId)
+                ->where('completed', 1)
+                ->whereMonth('updated_at', $monthNumber)
+                ->whereYear('updated_at', $month->year)
+                ->count();
+
+            $totalAssigned = $trainingAssigned + $scormAssigned;
+            $totalCompleted = $trainingCompleted + $scormCompleted;
+
+            $trend[] = [
+                'month' => $monthName,
+                'assigned' => $totalAssigned,
+                'completed' => $totalCompleted,
+                'completion_rate' => $totalAssigned > 0 ? round(($totalCompleted / $totalAssigned) * 100, 2) : 0
+            ];
+        }
+
+        return $trend;
+    }
+
     public function compromiseRate(): float
     {
         $totalUsers = $this->totalSimulations();

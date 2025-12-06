@@ -2873,78 +2873,178 @@ class ApiReportingController extends Controller
         try {
             $companyId = Auth::user()->company_id;
 
-            $assignedCourses = TrainingAssignedUser::where('company_id', $companyId)
-                ->get();
+            $totalCourses = TrainingModule::where('company_id', $companyId)
+                ->orWhere('company_id', 'default')
+                ->count();
 
-            $courseDetails = [];
-            $DueDateDetails = [
-                'count_of_training_due_date' => 0
+            $totalScormCourses = ScormTraining::where('company_id', $companyId)
+                ->count();
+
+            //  Get assigned courses and scorm courses
+            $assignedCourses = [
+                'assigned_courses' => TrainingAssignedUser::where('company_id', $companyId)
+                    ->where('completed', 0)
+                    ->count(),
+                'assigned_scorm_courses' => ScormAssignedUser::where('company_id', $companyId)
+                    ->where('completed', 0)
+                    ->count()
             ];
 
-            if ($assignedCourses->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => __('No course assignments found'),
-                    'data' => [
-                        'courses' => [],
-                        'training_due_date_details' => $DueDateDetails
-                    ]
-                ], 200);
-            }
+            $mostAssignedCourses = TrainingAssignedUser::where('company_id', $companyId)
+                ->select('training', DB::raw('COUNT(*) as assignment_count'))
+                ->groupBy('training')
+                ->having('assignment_count', '>', 4)
+                ->orderBy('assignment_count', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'assignment_count' => $item->assignment_count
+                    ];
+                });
 
-            foreach ($assignedCourses as $course) {
-                $trainingId = (int) $course->training;
+            $courseDetails = TrainingAssignedUser::where('company_id', $companyId)
+                ->select(
+                    'training',
+                    DB::raw('SUM(CASE WHEN completed = 0 THEN 1 ELSE 0 END) as total_assigned'),
+                    DB::raw('SUM(CASE WHEN training_started = 1 AND completed = 0 THEN 1 ELSE 0 END) as total_in_progress'),
+                    DB::raw('SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as total_completed'),
+                    DB::raw('AVG(CASE WHEN personal_best > 0 THEN personal_best ELSE NULL END) as avg_score')
+                )
+                ->groupBy('training')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'total_assigned' => $item->total_assigned,
+                        'total_in_progress' => $item->total_in_progress,
+                        'total_completed' => $item->total_completed,
+                        'average_score' => round($item->avg_score ?? 0, 2)
+                    ];
+                });
 
-                $training = TrainingModule::find($trainingId);
-                $DueDateDetails = [
-                    'count_of_training_due_date' => TrainingAssignedUser::where('training', $course->training)
-                        ->where('training_started', 0)
-                        ->where('training_due_date', '<', date('Y-m-d'))
-                        ->where('company_id', $companyId)
-                        ->count(),
+            $totalOverDueCourses = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 0)
+                ->where('training_due_date', '<', date('Y-m-d'))
+                ->count();
 
-                ];
+            $totalComplete = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 1)
+                ->count();
 
-                $courseDetails[] = [
+            $companyReport = new CompanyReport($companyId);
 
-                    'course_title' => $training->name ?? 'Anonymous Course',
-                    'users_assigned' => TrainingAssignedUser::where('training', $course->training)
-                        ->where('completed', 0)
-                        ->where('training', $course->training)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'users_completed' => TrainingAssignedUser::where('training', $course->training)
-                        ->where('completed', 1)
-                        ->where('training', $course->training)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'users_in_progress' => TrainingAssignedUser::where('training', $course->training)
-                        ->where('training_started', 1)
-                        ->where('training', $course->training)
-                        ->where('personal_best', '>', 0)
-                        ->where('completed', 0)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'users_not_started' => TrainingAssignedUser::where('training', $course->training)
-                        ->where('training_started', 0)
-                        ->where('training', $course->training)
-                        ->where('company_id', $companyId)
-                        ->count(),
-                    'avg_score' => round(TrainingAssignedUser::where('training', $course->training)
-                        ->where('training_started', 1)
-                        ->where('training', $course->training)
-                        ->where('company_id', $companyId)
-                        ->avg('personal_best') ?? 0),
+            $completionRate =  $companyReport->trainingCompletionRate();
 
-                ];
-            }
+            $completionTrendOverTime = $companyReport->getTrainingCompletionTrend();
+
+            $topPerformedCourses = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 1)
+                ->where('personal_best', '>', 90)
+                ->select('training', DB::raw('AVG(personal_best) as average_score'))
+                ->groupBy('training')
+                ->having('average_score', '>=', 90)
+                ->orderBy('average_score', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'average_score' => round($item->average_score ?? 0, 2)
+                    ];
+                });
+
+            $worstPerformedCourses = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('personal_best', '<', 30)
+                ->select('training', DB::raw('AVG(personal_best) as average_score'))
+                ->groupBy('training')
+                ->having('average_score', '<=', 30)
+                ->orderBy('average_score', 'asc')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'average_score' => round($item->average_score ?? 0, 2)
+                    ];
+                });
+
+            $quicklyCompletedCourses = TrainingAssignedUser::where('company_id', $companyId)
+                ->where('completed', 1)
+                ->select('training', DB::raw('AVG(TIMESTAMPDIFF(SECOND, assigned_date, completion_date)) as avg_completion_time'))
+                ->groupBy('training')
+                ->orderBy('avg_completion_time', 'asc')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course'
+                    ];
+                });
+
+            $certificatesAwarded = TrainingAssignedUser::where('company_id', $companyId)
+                ->whereNotNull('certificate_id')
+                ->whereNotNull('certificate_path')
+                ->select('training', DB::raw('COUNT(*) as certificate_count'))
+                ->groupBy('training')
+                ->orderBy('certificate_count', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    $training = TrainingModule::find($item->training);
+                    return [
+                        'training_id' => $item->training,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'certificate_count' => $item->certificate_count
+                    ];
+                });
+
+            $badgesAwarded = TrainingAssignedUser::where('company_id', $companyId)
+                ->whereNotNull('badge')
+                ->whereNotIn('badge', ['', '[]', 'null'])
+                ->get()
+                ->groupBy('training')
+                ->map(function ($rows, $trainingId) {
+
+                    $uniqueBadges = $rows
+                        ->flatMap(fn($row) => json_decode($row->badge, true) ?? [])
+                        ->unique();
+
+                    $training = TrainingModule::find($trainingId);
+
+                    return [
+                        'training_id'   => $trainingId,
+                        'training_name' => $training ? $training->name : 'Anonymous Course',
+                        'badge_count'   => $uniqueBadges->count(),
+                    ];
+                })
+                ->sortByDesc('badge_count')
+                ->values();
 
             return response()->json([
                 'success' => true,
                 'message' => __('Course summary report fetched successfully'),
                 'data' => [
-                    'courses' => $courseDetails,
-                    'training_due_date_details' => $DueDateDetails
+                    'total_courses' => $totalCourses,
+                    'total_scorm_courses' => $totalScormCourses,
+                    'assigned_courses' => $assignedCourses,
+                    'most_assigned_courses' => $mostAssignedCourses,
+                    'course_details' => $courseDetails,
+                    'total_overdue_courses' => $totalOverDueCourses,
+                    'total_completed' => $totalComplete,
+                    'completion_rate' => $completionRate,
+                    'completion_trend_over_time' => $completionTrendOverTime,
+                    'top_performed_courses' => $topPerformedCourses,
+                    'worst_performed_courses' => $worstPerformedCourses,
+                    'quickly_completed_courses' => $quicklyCompletedCourses,
+                    'certificates_awarded' => $certificatesAwarded,
+                    'badges_awarded' => $badgesAwarded
                 ]
             ], 200);
         } catch (\Exception $e) {
