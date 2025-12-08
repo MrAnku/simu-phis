@@ -82,10 +82,10 @@ Route::middleware('throttle:limiter')->group(function () {
     Route::post('mfa/verify', [MFAController::class, 'verifyOTP']);
     Route::post('logout', [AuthenticatedSessionController::class, 'logout'])->middleware('auth:api');
 
-    Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
-    Route::post('/add-quishing-template-bulk', [ApiQuishingEmailController::class, 'addQuishingTemplateBulk']);
+    // Route::post('/add-email-template-bulk', [ApiPhishingEmailsController::class, 'addEmailTemplateBulk']);
+    // Route::post('/add-quishing-template-bulk', [ApiQuishingEmailController::class, 'addQuishingTemplateBulk']);
 
-    Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
+    // Route::get('me', [AuthenticatedSessionController::class, 'me'])->middleware('auth:api');
 });
 
 
