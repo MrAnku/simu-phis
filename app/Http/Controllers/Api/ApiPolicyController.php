@@ -10,7 +10,7 @@ use App\Models\PolicyCampaignLive;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Services\OpenAIService;
+use App\Services\PolicyGenerateService;
 use Illuminate\Validation\ValidationException;
 
 
@@ -33,68 +33,46 @@ class ApiPolicyController extends Controller
             ], 500);
         }
     }
-  
 
+    public function addPolicy(Request $request)
+    {
+        try {
+            $request->validate([
+                'policy_name' => 'required|string|max:255',
+                'policy_description' => 'required|string',
+                'policy_file' => 'required|file|mimes:pdf|max:10240',
+                'has_quiz' => 'required|boolean',
+                'json_quiz' => 'nullable|json',
+            ]);
 
+            //  Upload File
+            $file = $request->file('policy_file');
+            $randomName = generateRandom(32);
+            $newFilename = $randomName . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('/uploads/policyFile', $newFilename, 's3');
 
+            // Create Policy Record
+            Policy::create([
+                'policy_name' => $request->policy_name,
+                'policy_description' => $request->policy_description,
+                'policy_file' => "/" . $filePath,
+                'has_quiz' => $request->has_quiz,
+                'json_quiz' => $request->json_quiz,
+                'company_id' => Auth::user()->company_id,
+            ]);
 
-public function addPolicy(Request $request)
-{
-    try {
-        $request->validate([
-            'policy_name' => 'required|string|max:255',
-            'policy_description' => 'required|string',
-            'policy_file' => 'required|file|mimes:pdf|max:10240',
-            'policy_prompt' => 'nullable|string',
-            'has_quiz' => 'required|boolean',
-            'json_quiz' => 'nullable|json',
-        ]);
-
-        // 1️⃣ Upload File
-        $file = $request->file('policy_file');
-        $randomName = generateRandom(32);
-        $newFilename = $randomName . '.' . $file->getClientOriginalExtension();
-        $filePath = $file->storeAs('/uploads/policyFile', $newFilename, 's3');
-
-        // 2️⃣ Generate Text from OpenAI
-        $generatedText = null;
-        if (!empty($request->policy_prompt)) {
-            $generatedText = OpenAIService::generateText($request->policy_prompt);
+            // Return response
+            return response()->json([
+                'success' => true,
+                'message' => 'Policy added successfully'
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
-
-        // 3️⃣ Store in DB
-        Policy::create([
-            'policy_name' => $request->policy_name,
-            'policy_description' => $request->policy_description,
-            'policy_file' => "/" . $filePath,
-            'policy_prompt' => $request->policy_prompt,
-            'generated_text' => $generatedText,
-            'has_quiz' => $request->has_quiz,
-            'json_quiz' => $request->json_quiz,
-            'company_id' => Auth::user()->company_id,
-        ]);
-
-        // 4️⃣ Return response
-        return response()->json([
-            'success' => true,
-            'message' => 'Policy added successfully',
-            'generated_text' => $generatedText
-        ], 201);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage()
-        ], 500);
     }
-}
-
-
-
-
-
-
-
     public function editPolicy(Request $request)
     {
         try {
@@ -341,4 +319,29 @@ public function addPolicy(Request $request)
             ], 500);
         }
     }
+
+public function generatePolicy(Request $request)
+{
+    try {
+        $request->validate([
+            'prompt' => 'required|string',
+        ]);
+
+        // OpenAI se text generate
+        $generatedText = PolicyGenerateService::generateText($request->prompt);
+
+        return response()->json([
+            'success' => true,
+            'generated_text' => $generatedText,
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+
 }

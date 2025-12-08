@@ -604,6 +604,8 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/fetch-assigned-policy', [ApiPolicyController::class, 'fetchAssignedPolicy']);
         Route::put('/accept-policy', [ApiPolicyController::class, 'acceptPolicy']);
         Route::delete('/delete-policy/{encoded_id?}', [ApiPolicyController::class, 'deletePolicy']);
+        Route::post('/generate-policy', [ApiPolicyController::class, 'generatePolicy']);
+
     });
 
     //policy campaign
