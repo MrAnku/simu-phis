@@ -2910,6 +2910,7 @@ class ApiReportingController extends Controller
                     'training',
                     DB::raw('SUM(CASE WHEN completed = 0 THEN 1 ELSE 0 END) as total_assigned'),
                     DB::raw('SUM(CASE WHEN training_started = 1 AND completed = 0 THEN 1 ELSE 0 END) as total_in_progress'),
+                    DB::raw('SUM(CASE WHEN training_started = 0 AND completed = 0 THEN 1 ELSE 0 END) as total_not_started'),
                     DB::raw('SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as total_completed'),
                     DB::raw('AVG(CASE WHEN personal_best > 0 THEN personal_best ELSE NULL END) as avg_score')
                 )
@@ -2922,6 +2923,7 @@ class ApiReportingController extends Controller
                         'training_name' => $training ? $training->name : 'Anonymous Course',
                         'total_assigned' => $item->total_assigned,
                         'total_in_progress' => $item->total_in_progress,
+                        'total_not_started' => $item->total_not_started,
                         'total_completed' => $item->total_completed,
                         'average_score' => round($item->avg_score ?? 0, 2)
                     ];
