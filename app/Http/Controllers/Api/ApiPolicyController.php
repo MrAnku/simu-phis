@@ -320,6 +320,7 @@ class ApiPolicyController extends Controller
         }
     }
 
+
 public function generatePolicy(Request $request)
 {
     try {
@@ -327,13 +328,16 @@ public function generatePolicy(Request $request)
             'prompt' => 'required|string',
         ]);
 
-        // OpenAI se text generate
-        $generatedText = PolicyGenerateService::generateText($request->prompt);
+        // Generate HTML from service
+        $generatedHtml = PolicyGenerateService::generateText($request->prompt);
+
+        // Remove ```html ... ``` if present
+        $cleanHtml = preg_replace('/^```html\s+|```$/', '', trim($generatedHtml));
 
         return response()->json([
             'success' => true,
-            'generated_text' => $generatedText,
-        ], 200);
+            'generated_text' => $cleanHtml,
+        ]);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -342,6 +346,7 @@ public function generatePolicy(Request $request)
         ], 500);
     }
 }
+
 
 
 }

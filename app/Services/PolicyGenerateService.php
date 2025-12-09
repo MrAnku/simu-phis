@@ -14,7 +14,10 @@ class PolicyGenerateService
             ->post('https://api.openai.com/v1/chat/completions', [
                 "model" => "gpt-4o-mini",
                 "messages" => [
-                    ["role" => "user", "content" => $prompt]
+                    [
+                        "role" => "user",
+                        "content" => "Return the output strictly in clean HTML format using <h2>, <p>, <ul>, <li> tags only.\n\n" . $prompt
+                    ]
                 ]
             ]);
 
