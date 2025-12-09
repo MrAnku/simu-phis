@@ -49,9 +49,11 @@ class ShowWebsiteController extends Controller
                 if ($website) {
                     if ($this->compromiseOnClick($queryParams)) {
 
-                        return $this->showAlertPage(request()->merge([
+                        $newRequest = new Request([
                             'lang' => $usrid != null ? defaultNotificationLang($queryParams) : 'en'
-                        ]));
+                        ]);
+
+                        return $this->showAlertPage($newRequest);
                     }
                     $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
                     return response($content)->header('Content-Type', 'text/html');
@@ -105,7 +107,6 @@ class ShowWebsiteController extends Controller
                 return true;
             }
             return false;
-
         } else if (array_key_exists('wsh', $queryParams)) {
             $campLiveId = $queryParams['token'] ?? null;
             $handler = new WaInteractionHandler($campLiveId);
@@ -113,7 +114,6 @@ class ShowWebsiteController extends Controller
                 return true;
             }
             return false;
-            
         } else {
 
             $handler = new EmailInteractionHandler($campLiveId);
@@ -255,7 +255,7 @@ class ShowWebsiteController extends Controller
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
-                if(clickedByBot($companyId, $campid, 'quishing')) {
+                if (clickedByBot($companyId, $campid, 'quishing')) {
                     return;
                 }
                 $handler = new QuishingInteractionHandler($campid);
@@ -268,13 +268,13 @@ class ShowWebsiteController extends Controller
                 $handler = new WaInteractionHandler($campid);
                 return $handler->handleCompromisedMsg($companyId);
             } else if ($tprm == 1) {
-                if(clickedByBot($companyId, $campid, 'tprm')) {
+                if (clickedByBot($companyId, $campid, 'tprm')) {
                     return;
                 }
                 $handler = new TprmInteractionHandler($campid);
                 return $handler->handleCompromisedEmail($companyId);
             } else {
-                if(clickedByBot($companyId, $campid, 'email')) {
+                if (clickedByBot($companyId, $campid, 'email')) {
                     return;
                 }
                 $handler = new EmailInteractionHandler($campid);
@@ -305,7 +305,7 @@ class ShowWebsiteController extends Controller
             setCompanyTimezone($companyId);
 
             if ($qsh == 1) {
-                if(clickedByBot($companyId, $campid, 'quishing')) {
+                if (clickedByBot($companyId, $campid, 'quishing')) {
                     return;
                 }
 
@@ -322,13 +322,13 @@ class ShowWebsiteController extends Controller
 
                 return;
             } else if ($tprm == 1) {
-                if(clickedByBot($companyId, $campid, 'tprm')) {
+                if (clickedByBot($companyId, $campid, 'tprm')) {
                     return;
                 }
                 $handler = new TprmInteractionHandler($campid);
                 $handler->updatePayloadClick($companyId);
             } else {
-                if(clickedByBot($companyId, $campid, 'email')) {
+                if (clickedByBot($companyId, $campid, 'email')) {
                     return;
                 }
                 $handler = new EmailInteractionHandler($campid);
