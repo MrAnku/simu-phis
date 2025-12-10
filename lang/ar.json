@@ -1715,5 +1715,7 @@
     "Phishing test results retrieved successfully": "تم استرجاع نتائج اختبار التصيد الاحتيالي بنجاح",
     "Phishing test results are disable for employees.": "تم تعطيل نتائج اختبار التصيد الاحتيالي للموظفين.",
     "Risk information visibility updated successfully": "تم تحديث رؤية معلومات المخاطر بنجاح",
-    "Showing Risk Information is disabled for employees.": "تم تعطيل عرض معلومات المخاطر للموظفين."
+    "Showing Risk Information is disabled for employees.": "تم تعطيل عرض معلومات المخاطر للموظفين.",
+    "Survey enabled successfully" : "تم تفعيل الاستبيان بنجاح",
+    "Survey disabled, questions cannot be added" : "تم تعطيل الاستبيان، لا يمكن إضافة أسئلة"
 }

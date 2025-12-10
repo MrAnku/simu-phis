@@ -32,7 +32,8 @@ class TrainingAssignedUser extends Model
         'badge',
         'certificate_path',
         'feedback',
-        'alt_training'
+        'alt_training',
+        'survey_response'
     ];
 
     public function trainingData()

@@ -17,6 +17,7 @@ use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\WhiteLabelledCompany;
+use App\Models\TrainingSetting;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -1355,4 +1356,61 @@ class ApiSettingsController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+public function updateSurvey(Request $request)
+{
+    try {
+        $request->validate([
+            'content_survey' => 'required|boolean',
+            'survey_questions' => 'nullable|array', // JSON array expected
+        ]);
+
+        $companyId = Auth::user()->company_id;
+        $companyEmail = Auth::user()->email; // company email fetch
+
+        // Update or create survey setting
+        $surveySetting = TrainingSetting::updateOrCreate(
+            ['company_id' => $companyId],
+            [
+                'content_survey' => $request->content_survey,
+                'company_email' => $companyEmail, // save company email
+            ]
+        );
+
+        if ($request->content_survey) {
+            if ($request->has('survey_questions')) {
+                // Filter only valid question objects
+                $questionsArray = array_filter($request->survey_questions, function ($q) {
+                    return is_array($q) || is_object($q);
+                });
+
+                $surveySetting->survey_questions = array_values($questionsArray);
+                $surveySetting->save();
+            }
+            $message = 'Survey enabled successfully';
+        } else {
+            $surveySetting->survey_questions = null;
+            $surveySetting->save();
+            $message = 'Survey disabled, questions cannot be added';
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __($message),
+        ], 200);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json(['success' => false,
+            'message' => __('Validation error: ') . $e->getMessage()
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false, 'message' => __("Something went wrong: ") . $e->getMessage()
+        ], 500);
+    }
+}
+
+
+
+
 }

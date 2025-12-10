@@ -271,7 +271,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::delete('/sub-admins/delete-sub-admin', [ApiSettingsController::class, 'deleteSubAdmin']);
         Route::post('/add-sub-admin', [ApiSettingsController::class, 'addSubAdmin']);
         Route::put('/update-sub-admin', [ApiSettingsController::class, 'updateSubAdmin']);
-
         Route::get('/smart-groups', [ApiSettingsController::class, 'smartGroups']);
         Route::post('/smart-groups/add', [ApiSettingsController::class, 'addSmartGroup']);
         Route::delete('/smart-groups/delete/{id}', [ApiSettingsController::class, 'deleteSmartGroup']);
@@ -281,7 +280,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::delete('/auto-syncing/delete/{id}', [ApiSettingsController::class, 'deleteAutoSync']);
         Route::put('/auto-syncing/update/{id}', [ApiSettingsController::class, 'updateAutoSync']);
         Route::put('/time-to-click', [ApiSettingsController::class, 'updateTimeToClick']);
-
         // enable phishing reply
         Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
 
@@ -291,6 +289,11 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
         Route::put('/update-phish-results', [ApiSettingsController::class, 'updatePhishResults']);
         Route::put('/update-risk-information', [ApiSettingsController::class, 'updateRiskInformation']);
+         Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
+         // enable overall reporting
+          Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
+          Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
+           Route::put('/survey-update', [ApiSettingsController::class, 'updateSurvey']);
     });
 
     Route::prefix('triggers')->group(function () {
