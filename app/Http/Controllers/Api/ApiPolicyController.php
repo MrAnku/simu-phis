@@ -329,7 +329,7 @@ public function generatePolicy(Request $request)
         ]);
 
         // Generate HTML from service
-        $generatedHtml = PolicyGenerateService::generateText($request->prompt);
+        $generatedHtml =PolicyGenerateService::generateText($request->prompt);
 
         // Remove ```html ... ``` if present
         $cleanHtml = preg_replace('/^```html\s+|```$/', '', trim($generatedHtml));
