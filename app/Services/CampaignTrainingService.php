@@ -26,7 +26,7 @@ class CampaignTrainingService
         }
     }
 
-    private static function assignAllTrainings($campaign, $trainingModules = null, $smishing, $scormTrainings = null)
+    private static function assignAllTrainings($campaign, $trainingModules = null, $smishing=false, $scormTrainings = null)
     {
         $trainingAssignedService = new TrainingAssignedService();
 
