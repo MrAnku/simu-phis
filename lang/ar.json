@@ -1709,5 +1709,7 @@
     "Member not found": "لم يتم العثور على العضو",
     "Member updated successfully": "تم تحديث العضو بنجاح",
     "Member deleted successfully": "تم حذف العضو بنجاح",
-    "Members fetched successfully": "تم جلب الأعضاء بنجاح"
+    "Members fetched successfully": "تم جلب الأعضاء بنجاح",
+    "Phishing settings not found": "لم يتم العثور على إعدادات التصيد الاحتيالي",
+    "Phishing results updated successfully": "تم تحديث نتائج التصيد الاحتيالي بنجاح"
 }

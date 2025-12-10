@@ -27,6 +27,7 @@ use App\Services\CheckWhitelabelService;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Models\PhishSetting;
 use Illuminate\Validation\ValidationException;
 
 class ApiSettingsController extends Controller
@@ -794,7 +795,7 @@ class ApiSettingsController extends Controller
             $portalDomain = $branding->platformDomain();
 
             if ($branding->isCompanyWhitelabeled()) {
-               
+
                 $pass_create_link = $branding->platformDomain() . "/company/create-password/" . $token;
                 $branding->updateSmtpConfig();
             } else {
@@ -1305,6 +1306,29 @@ class ApiSettingsController extends Controller
                 ->update(['overall_report' => null, 'report_emails' => null]);
 
             return response()->json(['success' => true, 'message' => __('Overall reporting disabled successfully')], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updatePhishResults(Request $request)
+    {
+        try {
+            $request->validate([
+                'phish_results_visible' => 'required|boolean',
+            ]);
+            $companyEmail = Auth::user()->email;
+
+            $settings = PhishSetting::where('email', $companyEmail)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Phishing settings not found')], 404);
+            }
+
+            PhishSetting::where('email', $companyEmail)
+                ->update(['phish_results_visible' => $request->phish_results_visible]);
+
+            return response()->json(['success' => true, 'message' => __('Phishing results updated successfully')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

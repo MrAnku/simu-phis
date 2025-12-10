@@ -288,6 +288,8 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
 
         Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
+
+        Route::put('/update-phish-results', [ApiSettingsController::class, 'updatePhishResults']);
     });
 
     Route::prefix('triggers')->group(function () {
