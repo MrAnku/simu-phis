@@ -90,7 +90,9 @@ class CampaignTrainingService
 
                 // Append training name to array
                 $module = TrainingModule::find($training);
-                $trainingNames[] = $module->name;
+                if ($module) {
+                    $trainingNames[] = $module->name;
+                }
             }
         }
 
@@ -131,7 +133,9 @@ class CampaignTrainingService
 
                 // Append scorm training name to array
                 $module = ScormTraining::find($training);
-                $trainingNames[] = $module->name;
+                if($module) {
+                    $trainingNames[] = $module->name;
+                }
             }
         }
 
@@ -154,7 +158,7 @@ class CampaignTrainingService
                         Mail::to($userMember->email)->send(new SecurityAwarenessMail($userMember->email, $userMember->name));
                     } catch (Throwable $e) {
                         // Log and continue with next recipient to avoid stopping the whole process
-                        Log::error('Failed sending SecurityAwarenessMail to user member' .$e->getMessage());
+                        Log::error('Failed sending SecurityAwarenessMail to user member' . $e->getMessage());
                         continue;
                     }
                 }
@@ -226,7 +230,9 @@ class CampaignTrainingService
 
             // Append training module name to array
             $module = TrainingModule::find($campaign->training_module);
-            $trainingNames[] = $module->name;
+            if ($module) {
+                $trainingNames[] = $module->name;
+            }
         }
 
         if ($campaign->scorm_training !== null) {
@@ -268,7 +274,9 @@ class CampaignTrainingService
 
             // Append scorm training name to array
             $scorm = ScormTraining::find($campaign->scorm_training);
-            $trainingNames[] = $scorm->name;
+            if ($scorm) {
+                $trainingNames[] = $scorm->name;
+            }
         }
 
         //send mail to user
@@ -282,7 +290,7 @@ class CampaignTrainingService
         $isMailSent = $trainingAssignedService->sendTrainingEmail($campData, collect($trainingNames));
 
         if ($isMailSent['status'] == true) {
-             // send security awareness mail to members of this user
+            // send security awareness mail to members of this user
             $userMembers = UserMember::where('user_id', $campaign->user_id)->get();
             if ($userMembers && $userMembers->count() > 0) {
                 foreach ($userMembers as $userMember) {
@@ -290,7 +298,7 @@ class CampaignTrainingService
                         Mail::to($userMember->email)->send(new SecurityAwarenessMail($userMember->email, $userMember->name));
                     } catch (Throwable $e) {
                         // Log and continue with next recipient to avoid stopping the whole process
-                        Log::error('Failed sending SecurityAwarenessMail to user member' .$e->getMessage());
+                        Log::error('Failed sending SecurityAwarenessMail to user member' . $e->getMessage());
                         continue;
                     }
                 }
