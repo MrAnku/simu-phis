@@ -80,9 +80,11 @@ class ShowWebsiteController extends Controller
 
                 if ($this->compromiseOnClick($queryParams)) {
 
-                    return $this->showAlertPage(request()->merge([
+                    $newRequest = new Request([
                         'lang' => $usrid != null ? defaultNotificationLang($queryParams) : 'en'
-                    ]));
+                    ]);
+
+                    return $this->showAlertPage($newRequest);
                 }
 
                 $content = file_get_contents(env('CLOUDFRONT_URL') . $website->file);
