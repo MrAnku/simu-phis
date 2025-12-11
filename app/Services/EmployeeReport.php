@@ -208,7 +208,7 @@ class EmployeeReport
 
     public function totalSimulations($email = null): int
     {
-        $email =  CampaignLive::where('user_email', $email ?? $this->email)
+        $emailSimulations =  CampaignLive::where('user_email', $email ?? $this->email)
             ->where('company_id', $this->companyId)
             ->when(!empty($this->dateRange), function ($query) {
                 return $query->whereBetween('created_at', $this->dateRange);
@@ -233,7 +233,7 @@ class EmployeeReport
             })
             ->count();
 
-        return $email + $quishing + $whatsapp + $ai;
+        return $emailSimulations + $quishing + $whatsapp + $ai;
     }
 
     public function clickRate($campaign = null): int

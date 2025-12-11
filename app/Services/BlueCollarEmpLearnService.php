@@ -165,7 +165,7 @@ class BlueCollarEmpLearnService
         ];
     }
 
-    private function payloadClicked($user)
+    public function payloadClicked($user)
     {
         $whatsapp = WaLiveCampaign::where('user_id', $user->id)
             ->where('company_id', $user->company_id)->where('payload_clicked', 1)->count();
@@ -177,7 +177,7 @@ class BlueCollarEmpLearnService
     }
 
 
-    private function compromised($user)
+    public function compromised($user)
     {
         $whatsapp = WaLiveCampaign::where('user_id', $user->id)
             ->where('company_id', $user->company_id)->where('compromised', 1)->count();
@@ -188,7 +188,7 @@ class BlueCollarEmpLearnService
         return $whatsapp + $ai;
     }
 
-    private function totalSimulations($user)
+    public function totalSimulations($user)
     {
         $whatsapp = WaLiveCampaign::where('user_id', $user->id)
             ->where('company_id', $user->company_id)->count();
@@ -249,6 +249,18 @@ class BlueCollarEmpLearnService
         return $assignedTrainings > 0 ? round(($completedTrainings / $assignedTrainings) * 100, 2) : 0;
     }
 
+    /**
+     * Validates that an email address is not already registered in the database.
+     * 
+     * This method checks if the provided email address exists in the users table
+     * and returns a validation error if a duplicate is found.
+     *
+     * @param string $attribute The name of the attribute being validated
+     * @param mixed $value The email value to be validated
+     * @param array $parameters Additional parameters passed to the validation rule
+     * @param \Illuminate\Validation\Validator $validator The validator instance
+     * @return bool Returns true if email is unique, false otherwise
+     */
     public function callReported($whatsapp_no): int
     {
         $user = BlueCollarEmployee::where('whatsapp', $whatsapp_no)->first();
@@ -276,5 +288,55 @@ class BlueCollarEmpLearnService
             ->count();
 
         return $completedTrainings + $completedScorms;
+    }
+
+    public function assignedTrainings($user)
+    {
+        $assignedTrainings = BlueCollarTrainingUser::where('user_whatsapp', $user->whatsapp)
+            ->where('company_id', $user->company_id)->count();
+
+        $assignedScorms = BlueCollarScormAssignedUser::where('user_whatsapp', $user->whatsapp)
+            ->where('company_id', $user->company_id)->count();
+
+        return $assignedTrainings + $assignedScorms;
+    }
+
+    public function compromiseRate($user)
+    {
+        $totalUsers = $this->totalSimulations($user);
+        $compromisedUsers = $this->compromised($user);
+
+        return $totalUsers > 0 ? round(($compromisedUsers / $totalUsers) * 100, 2) : 0;
+    }
+
+    public function totalIgnored($user)
+    {
+        $totalSimulations = $this->totalSimulations($user);
+        $payloadClicked = $this->payloadClicked($user);
+        $compromised = $this->compromised($user);
+        $callReported = $this->callReported($user->whatsapp);
+
+        return $totalSimulations - ($payloadClicked + $compromised + $callReported);
+    }
+
+    public function ignoreRate($user)
+    {
+        $totalSimulations = $this->totalSimulations($user);
+        $totalIgnored = $this->totalIgnored($user);
+
+        return $totalSimulations > 0 ? round(($totalIgnored / $totalSimulations) * 100, 2) : 0;
+    }
+
+    public function clickRate($user)
+    {
+        // Overall click rate calculation
+        $totalCampaigns = WaLiveCampaign::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->count()
+            + AiCallCampLive::where('user_id', $user->id)
+            ->where('company_id', $user->company_id)->count();
+
+        $totalClicks = $this->payloadClicked($user) + $this->compromised($user);
+
+        return $totalCampaigns > 0 ? round(($totalClicks / $totalCampaigns) * 100) : 0;
     }
 }

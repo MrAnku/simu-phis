@@ -8,6 +8,7 @@ use App\Models\Badge;
 use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
+use App\Models\PhishSetting;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarEmpLearnService;
@@ -1459,6 +1460,57 @@ class ApiLearnBlueCollarController extends Controller
                 'success' => false,
                 'message' => __('An error occurred: ') . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function fetchPhishTestResults(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required',
+            ]);
+
+            $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('No user found with this number.')
+                ], 404);
+            }
+
+            // check whether phishing test results is enabled from company or not
+            $phishResultsVisible = PhishSetting::where('company_id', $user->company_id)->value('phish_results_visible');
+
+            if (!$phishResultsVisible) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing test results are disable for employees.')
+                ], 403);
+            }
+
+            $blueCollarEmpService = new BlueCollarEmpLearnService();
+
+            $phishTestResults = [
+                'total_simulations' => $blueCollarEmpService->totalSimulations($user),
+                'payload_clicked' => $blueCollarEmpService->payloadClicked($user),
+                'compromised' => $blueCollarEmpService->compromised($user),
+                'compromise_rate' => $blueCollarEmpService->compromiseRate($user),
+                'total_reported' => $blueCollarEmpService->callReported($user->whatsapp),
+                'assigned_trainings' => $blueCollarEmpService->assignedTrainings($user),
+                'total_ignored' => $blueCollarEmpService->totalIgnored($user),
+                'ignore_rate' => $blueCollarEmpService->ignoreRate($user),
+                'click_rate' => $blueCollarEmpService->clickRate($user),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Phishing test results retrieved successfully'),
+                'data' => $phishTestResults
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

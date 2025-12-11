@@ -38,7 +38,7 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
 
         // Assigned Comics
         Route::get('/fetch-assigned-comics', [ApiLearnController::class, 'fetchAssignedComics']);
-        
+
 
         // Translate traning lang
         Route::get('/change-training-lang', [ApiLearnController::class, 'changeTrainingLang']);
@@ -94,6 +94,9 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
             Route::get('/load-ai-training', [ApiLearnController::class, 'generateAiTraining']);
             Route::post('/translate-ai-training-quiz', [ApiLearnController::class, 'translateAiTraining']);
             Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
+
+            // Fetch phish test results
+            Route::get('/fetch-phish-test-results', [ApiLearnBlueCollarController::class, 'fetchPhishTestResults']);
         });
     });
 });

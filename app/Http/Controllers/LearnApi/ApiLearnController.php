@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Session;
 use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
 use App\Mail\LearnerSessionRegenerateMail;
+use App\Models\PhishSetting;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
@@ -1508,23 +1509,33 @@ class ApiLearnController extends Controller
             ]);
             $user = Users::where('user_email', $request->email)->first();
 
+            // check whether phishing test results is enabled from company or not
+            $phishResultsVisible = PhishSetting::where('company_id', $user->company_id)->value('phish_results_visible');
+
+            if (!$phishResultsVisible) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Phishing test results are disable for employees.')
+                ], 403);
+            }
+
             $empReport = new EmployeeReport($request->email, $user->company_id);
 
             $phishTestResults = [
                 'total_simulations' => $empReport->totalSimulations(),
                 'payload_clicked' => $empReport->payloadClicked(),
                 'compromised' => $empReport->compromised(),
-                'email_reported' => $empReport->emailReported(),
+                'compromise_rate' => $empReport->compromiseRate(),
+                'total_reported' => $empReport->emailReported(),
                 'assigned_trainings' => $empReport->assignedTrainings(),
                 'total_ignored' => $empReport->totalIgnored(),
                 'ignore_rate' => $empReport->ignoreRate(),
                 'click_rate' => $empReport->clickRate(),
-                'compromise_rate' => $empReport->compromiseRate(),
             ];
 
             return response()->json([
                 'success' => true,
-                'message' => __('Phish test results retrieved successfully'),
+                'message' => __('Phishing test results retrieved successfully'),
                 'data' => $phishTestResults
             ], 200);
         } catch (ValidationException $e) {
