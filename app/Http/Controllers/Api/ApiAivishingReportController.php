@@ -11,6 +11,7 @@ use App\Models\UsersGroup;
 use App\Models\AiCallCampLive;
 use App\Http\Controllers\Controller;
 use App\Models\AiCallAgent;
+use App\Models\AiCallLikelifeAgent;
 use Illuminate\Support\Facades\Auth;
 
 class ApiAivishingReportController extends Controller
@@ -240,7 +241,7 @@ class ApiAivishingReportController extends Controller
 
         // Return all agents with their call counts and names
         return $agentStats->map(function ($stat) {
-            $agent = AiCallAgent::where('agent_id', $stat->agent_id)->first();
+            $agent = AiCallLikelifeAgent::where('agent_id', $stat->agent_id)->first();
             return [
                 'agent_id' => $stat->agent_id,
                 'agent_name' => $agent ? $agent->agent_name : null,
