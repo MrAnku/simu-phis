@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('company_id');
             $table->string('email');
             $table->boolean('phish_results_visible')->default(false);
+            $table->boolean('risk_information')->default(false);
             $table->timestamps();
         });
 
@@ -27,6 +28,7 @@ return new class extends Migration
                 'company_id' => $company->company_id,
                 'email' => $company->email,
                 'phish_results_visible' => false,
+                'risk_information' => false,
             ]);
         }
     }

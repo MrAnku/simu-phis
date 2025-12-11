@@ -284,12 +284,12 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         // enable phishing reply
         Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
 
-        // enable overall reporting
+        // overall reporting
         Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
-
         Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
 
         Route::put('/update-phish-results', [ApiSettingsController::class, 'updatePhishResults']);
+        Route::put('/update-risk-information', [ApiSettingsController::class, 'updateRiskInformation']);
     });
 
     Route::prefix('triggers')->group(function () {

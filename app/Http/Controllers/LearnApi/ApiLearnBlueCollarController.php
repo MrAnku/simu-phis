@@ -174,10 +174,15 @@ class ApiLearnBlueCollarController extends Controller
 
             $blueCollarService = new BlueCollarEmpLearnService();
 
-            // Calculate Risk score
-            $riskData = $blueCollarService->calculateRiskScore($user);
-            $riskScore = $riskData['riskScore'];
-            $riskLevel = $riskData['riskLevel'];
+            // check if risk information is enabled from company or not
+            $riskInfoEnabled = PhishSetting::where('company_id', $user->company_id)->value('risk_information');
+
+            if ($riskInfoEnabled) {
+                // Calculate Risk score
+                $riskData = $blueCollarService->calculateRiskScore($user);
+                $riskScore = $riskData['riskScore'];
+                $riskLevel = $riskData['riskLevel'];
+            }
 
             // Calculate current rank
 
@@ -187,8 +192,8 @@ class ApiLearnBlueCollarController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'riskScore' => $riskScore,
-                    'riskLevel' => $riskLevel,
+                    'riskScore' => $riskScore ?? null,
+                    'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                 ],
                 'message' => __('Fetched dashboard metrics successfully')

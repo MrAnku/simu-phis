@@ -203,11 +203,16 @@ class ApiLearnController extends Controller
 
             $user = Users::where('user_email', $request->email)->first();
 
-            // Calculate Risk score
             $employeeReport = new EmployeeReport($request->email, $user->company_id);
-            $riskScore = $employeeReport->calculateOverallRiskScore();
 
-            $riskLevel = $this->normalEmpLearnService->calculateRiskLevel($riskScore);
+            // check if risk information is enabled from company or not
+            $riskInfoEnabled = PhishSetting::where('company_id', $user->company_id)->value('risk_information');
+
+            if ($riskInfoEnabled) {
+                // Calculate Risk score
+                $riskScore = $employeeReport->calculateOverallRiskScore();
+                $riskLevel = $this->normalEmpLearnService->calculateRiskLevel($riskScore);
+            }
 
             // Calculate current rank
             $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
@@ -216,8 +221,8 @@ class ApiLearnController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'riskScore' => $riskScore,
-                    'riskLevel' => $riskLevel,
+                    'riskScore' => $riskScore ?? null,
+                    'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                 ],
                 'message' => __('Fetched dashboard metrics successfully')

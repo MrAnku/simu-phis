@@ -1319,16 +1319,38 @@ class ApiSettingsController extends Controller
             ]);
             $companyEmail = Auth::user()->email;
 
-            $settings = PhishSetting::where('email', $companyEmail)->first();
+            $settings = PhishSetting::where('company_id', Auth::user()->company_id)->where('email', $companyEmail)->first();
 
             if (!$settings) {
                 return response()->json(['success' => false, 'message' => __('Phishing settings not found')], 404);
             }
 
-            PhishSetting::where('email', $companyEmail)
+            PhishSetting::where('company_id', Auth::user()->company_id)->where('email', $companyEmail)
                 ->update(['phish_results_visible' => $request->phish_results_visible]);
 
             return response()->json(['success' => true, 'message' => __('Phishing results updated successfully')], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updateRiskInformation(Request $request)
+    {
+        try {
+            $request->validate([
+                'risk_information' => 'required|boolean',
+            ]);
+            $companyEmail = Auth::user()->email;
+            $settings = PhishSetting::where('company_id', Auth::user()->company_id)->where('email', $companyEmail)->first();
+
+            if (!$settings) {
+                return response()->json(['success' => false, 'message' => __('Phishing settings not found')], 404);
+            }
+
+            PhishSetting::where('company_id', Auth::user()->company_id)->where('email', $companyEmail)
+                ->update(['risk_information' => $request->risk_information]);
+
+            return response()->json(['success' => true, 'message' => __('Risk information visibility updated successfully')], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
