@@ -1452,8 +1452,7 @@ class ApiLearnController extends Controller
 
             $translator = new TranslationService();
             $quiz = $translator->translateOnlyQuiz($request->quiz, $request->lang);
-
-        }else{
+        } else {
             $quiz = $request->quiz;
         }
         return response()->json([
@@ -1493,6 +1492,40 @@ class ApiLearnController extends Controller
                 'success' => true,
                 'message' => __('Assigned comics retrieved successfully'),
                 'data' => $assignedComics
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchPhishTestResults(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+            $user = Users::where('user_email', $request->email)->first();
+
+            $empReport = new EmployeeReport($request->email, $user->company_id);
+
+            $phishTestResults = [
+                'total_simulations' => $empReport->totalSimulations(),
+                'payload_clicked' => $empReport->payloadClicked(),
+                'compromised' => $empReport->compromised(),
+                'email_reported' => $empReport->emailReported(),
+                'assigned_trainings' => $empReport->assignedTrainings(),
+                'total_ignored' => $empReport->totalIgnored(),
+                'ignore_rate' => $empReport->ignoreRate(),
+                'click_rate' => $empReport->clickRate(),
+                'compromise_rate' => $empReport->compromiseRate(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Phish test results retrieved successfully'),
+                'data' => $phishTestResults
             ], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);

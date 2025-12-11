@@ -55,6 +55,9 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
         // Scorm Training
         Route::get('view-scorm-training', [ApiScormTrainingController::class, 'viewScormTraining']);
         Route::get('/fetch-languages', [ApiLearnController::class, 'fetchLanguages']);
+
+        // Fetch phish test results
+        Route::get('/fetch-phish-test-results', [ApiLearnController::class, 'fetchPhishTestResults']);
     });
 
     // For Blue Collar

@@ -1711,5 +1711,6 @@
     "Member deleted successfully": "تم حذف العضو بنجاح",
     "Members fetched successfully": "تم جلب الأعضاء بنجاح",
     "Phishing settings not found": "لم يتم العثور على إعدادات التصيد الاحتيالي",
-    "Phishing results updated successfully": "تم تحديث نتائج التصيد الاحتيالي بنجاح"
+    "Phishing results updated successfully": "تم تحديث نتائج التصيد الاحتيالي بنجاح",
+    "Phish test results retrieved successfully": "تم استرجاع نتائج اختبار التصيد الاحتيالي بنجاح"
 }
