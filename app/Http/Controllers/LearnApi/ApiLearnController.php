@@ -281,92 +281,226 @@ class ApiLearnController extends Controller
         }
     }
 
-public function updateTrainingScore(Request $request)
-{
-    try {
-        // Validate the request
-        $request->validate([
-            'trainingScore' => 'required|integer',
-            'encoded_id' => 'required',
-            'survey_response' => 'nullable|array', // frontend user responses
-        ]);
+    public function updateTrainingScore(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'trainingScore' => 'required|integer',
+                'encoded_id' => 'required',
+                'survey_response' => 'nullable|json',
+            ]);
 
-        $row_id = base64_decode($request->encoded_id);
-        $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+            $row_id = base64_decode($request->encoded_id);
 
-        if (!$rowData) {
-            return response()->json(['success' => false, 'message' => 'Training record not found'], 404);
-        }
+            $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
 
-        $user = $rowData->user_email;
-        $normalEmpLearnService = new NormalEmpLearnService();
-        $passingScore = (int)$rowData->trainingData->passing_score;
+            $user = $rowData->user_email;
 
-        // Store survey responses if sent
-        if ($request->has('survey_response') && is_array($request->survey_response)) {
-            // Fetch training settings for the company
+            if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
+                $rowData->grade = 'F';
+                $rowData->save();
+            }
+            $normalEmpLearnService = new NormalEmpLearnService();
+
+            // If user fails then assign alternative training if exists
+            $passingScore = (int)$rowData->trainingData->passing_score;
+
+            // Survey questions + user answers merged
             $surveySetting = TrainingSetting::where('company_id', $rowData->company_id)->first();
+            $surveyResponses = [];
 
-            if ($surveySetting && $surveySetting->content_survey) {
-                $validResponses = [];
+            if ($surveySetting && $surveySetting->content_survey && !empty($surveySetting->survey_questions) && $request->survey_response) {
+                $surveyQuestions = json_decode($surveySetting->survey_questions, true);
+                $userAnswers = json_decode($request->survey_response, true);
 
-                foreach ($request->survey_response as $response) {
-                    if (isset($response['question']) && isset($response['answer'])) {
-                        $validResponses[] = [
-                            'question' => $response['question'],
-                            'answer' => $response['answer']
+                if (is_array($surveyQuestions) && is_array($userAnswers)) {
+                    foreach ($surveyQuestions as $index => $question) {
+                        $answer = isset($userAnswers[$index]['answer']) ? $userAnswers[$index]['answer'] : null;
+                        $surveyResponses[] = [
+                            'question' => $question['question'] ?? $question,
+                            'answer' => $answer
                         ];
                     }
                 }
-
-                $rowData->survey_response = $validResponses;
-                $rowData->save();
             }
-        }
 
-        // Existing logic for updating score, grade, badges, certificates...
-        if ($request->trainingScore == 0 && $rowData->personal_best == 0) {
-            $rowData->grade = 'F';
+            $rowData->survey_response = $surveyResponses;
             $rowData->save();
-        }
 
-        if ($request->trainingScore > $rowData->personal_best) {
-            $rowData->personal_best = $request->trainingScore;
-            assignGrade($rowData, $request->trainingScore);
 
-            $badge = getMatchingBadge('score', $request->trainingScore);
-            if ($badge) {
-                assignBadge($rowData, $badge);
-                $badgeDetails = Badge::find($badge);
-                sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
+
+            if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
+
+                $alterTrainingId = $rowData->trainingData->alternative_training;
+
+                if ($alterTrainingId !== null) {
+                    $alterTraining = TrainingModule::find($alterTrainingId);
+                    if (!$alterTraining) {
+                        return response()->json(['success' => false, 'message' => 'No Alternative Training Found'], 404);
+                    }
+
+                    $isAlterTrainingAssigned = TrainingAssignedUser::where('user_email', $rowData->user_email)
+                        ->where('training', $alterTrainingId)
+                        ->first();
+
+                    if (!$isAlterTrainingAssigned) {
+                        $campData = [
+                            'campaign_id' => $rowData->campaign_id,
+                            'user_id' => $rowData->user_id,
+                            'user_name' => $rowData->user_name,
+                            'user_email' => $rowData->user_email,
+                            'training' => $alterTrainingId,
+                            'training_lang' => $rowData->training_lang,
+                            'training_type' => 'ai_training',
+                            'assigned_date' => $rowData->assigned_date,
+                            'training_due_date' => $rowData->training_due_date,
+                            'company_id' => $rowData->company_id,
+                            'alt_training' => 1
+                        ];
+
+                        $trainingAssignedService = new TrainingAssignedService();
+
+                        $trainingAssigned = $trainingAssignedService->assignNewTraining($campData);
+
+                        if ($trainingAssigned['status'] == 1) {
+                            $rowData->alt_training = 1;
+                            $rowData->save();
+
+                            $module = TrainingModule::find($alterTrainingId);
+                            // Audit log
+                            audit_log(
+                                $rowData->company_id,
+                                $rowData->user_email,
+                                null,
+                                'ALTER_TRAINING_ASSIGNED',
+                                "{$module->name} has been assigned to {$rowData->user_email}",
+                                'normal'
+                            );
+                        }
+                    }
+                }
             }
 
-            $rowData->save();
-            setCompanyTimezone($rowData->company_id);
-            log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
+            if ($rowData && $request->trainingScore > $rowData->personal_best) {
+                // Update the column if the current value is greater
+                $rowData->personal_best = $request->trainingScore;
 
-            // Check passing score logic...
-            if ($request->trainingScore >= $passingScore) {
-                $rowData->completed = 1;
-                $rowData->completion_date = now()->format('Y-m-d');
+                // Assign Grade based on score
+                assignGrade($rowData, $request->trainingScore);
+
+                $badge = getMatchingBadge('score', $request->trainingScore);
+                // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                if ($badge) {
+                    assignBadge($rowData, $badge);
+
+                    // Notify admin when badge assigned
+                    $badgeDetails = Badge::find($badge);
+                    sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
+                }
+
                 $rowData->save();
+
+                setCompanyTimezone($rowData->company_id);
+
+                log_action("{$user} scored {$request->trainingScore}% in training", 'company', $rowData->company_id);
+
+                if ($request->trainingScore >= $passingScore) {
+                    $rowData->completed = 1;
+                    $rowData->completion_date = now()->format('Y-m-d');
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        $user,
+                        null,
+                        'TRAINING_COMPLETED',
+                        "{$user} completed training : '{$rowData->trainingData->name}'.",
+                        'normal'
+                    );
+
+                    // Notify admin
+                    sendNotification("{$user} has completed the ‘{$rowData->trainingData->name}’ training with a score of {$request->trainingScore}%", $rowData->company_id);
+
+                    $totalCompletedTrainings = TrainingAssignedUser::where('user_email', $rowData->user_email)
+                        ->where('completed', 1)->count();
+
+                    $badge = getMatchingBadge('courses_completed', $totalCompletedTrainings);
+                    // This helper function accepts a criteria type and value, and returns the first matching badge
+
+                    if ($badge) {
+                        assignBadge($rowData, $badge);
+
+                        // Notify admin when badge assigned
+                        $badgeDetails = Badge::find($badge);
+                        sendNotification("Badge '{$badgeDetails->name}' has been awarded to {$rowData->user_email}", $rowData->company_id);
+                    }
+                    $rowData->save();
+
+                    // Send email
+                    $branding = new CheckWhitelabelService($rowData->company_id);
+                    $companyName = $branding->companyName();
+                    $companyLogo = $branding->companyDarkLogo();
+                    $favIcon = $branding->companyFavicon();
+                    if ($branding->isCompanyWhitelabeled()) {
+
+                        $branding->updateSmtpConfig();
+                    } else {
+                        $branding->clearSmtpConfig();
+                    }
+
+                    $mailData = [
+                        'user_name' => $rowData->user_name,
+                        'training_name' => $rowData->trainingData->name,
+                        'training_score' => $request->trainingScore,
+                        'company_name' => $companyName,
+                        'logo' => $companyLogo,
+                        'company_id' => $rowData->company_id
+                    ];
+
+                    $pdfContent = $normalEmpLearnService->generateCertificatePdf($rowData, $companyLogo, $favIcon);
+
+                    $normalEmpLearnService->saveCertificatePdf($pdfContent, $rowData);
+
+                    $rowData->save();
+
+                    // Audit log
+                    audit_log(
+                        $rowData->company_id,
+                        $rowData->user_email,
+                        null,
+                        'CERTIFICATE_AWARDED',
+                        "Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_email}",
+                        'normal'
+                    );
+
+                    // Notify admin when certificate assigned
+                    sendNotification("Certificate for {$rowData->trainingData->name} has been awarded to {$rowData->user_email}", $rowData->company_id);
+
+                    Mail::to($user)->send(new TrainingCompleteMail($mailData, $pdfContent));
+                }
+
+                // when user fails then notify admin
+                if ($request->trainingScore < $passingScore) {
+                    sendNotification("{$rowData->user_email} failed the '{$rowData->trainingData->name}' training with a score of {$request->trainingScore}.", $rowData->company_id);
+                }
             }
+            return response()->json(['success' => true, 'message' => __('Score updated')], 200);
+        } catch (ValidationException $e) {
+            // Handle the validation exception
+            return response()->json([
+                'success' => false,
+                'message' => __('Validation error: ') . $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle the exception
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['success' => true, 'message' => __('Score updated')], 200);
-
-    } catch (ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => __('Validation error: ') . $e->getMessage()
-        ], 422);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => __('An error occurred: ') . $e->getMessage()
-        ], 500);
     }
-}
 
 
 

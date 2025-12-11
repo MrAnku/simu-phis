@@ -1360,56 +1360,60 @@ class ApiSettingsController extends Controller
 public function updateSurvey(Request $request)
 {
     try {
+        // Validate input
         $request->validate([
             'content_survey' => 'required|boolean',
-            'survey_questions' => 'nullable|array', // JSON array expected
+            'survey_questions' => 'required_if:content_survey,true|json',
+        ], [
+            'survey_questions.required_if' => 'Survey questions are required.',
+            'survey_questions.json' => 'Survey questions must be a valid JSON string.',
         ]);
 
         $companyId = Auth::user()->company_id;
-        $companyEmail = Auth::user()->email; // company email fetch
+        $email = Auth::user()->email;
 
-        // Update or create survey setting
-        $surveySetting = TrainingSetting::updateOrCreate(
-            ['company_id' => $companyId],
-            [
-                'content_survey' => $request->content_survey,
-                'company_email' => $companyEmail, // save company email
-            ]
-        );
+        // Fetch existing setting
+        $surveySetting = TrainingSetting::where('company_id', $companyId)->first();
+
+        if (!$surveySetting) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Survey setting not found for this company.')
+            ], 404);
+        }
+
+        // Update fields
+        $surveySetting->content_survey = $request->content_survey;
+        $surveySetting->email = $email;
 
         if ($request->content_survey) {
-            if ($request->has('survey_questions')) {
-                // Filter only valid question objects
-                $questionsArray = array_filter($request->survey_questions, function ($q) {
-                    return is_array($q) || is_object($q);
-                });
-
-                $surveySetting->survey_questions = array_values($questionsArray);
-                $surveySetting->save();
-            }
-            $message = 'Survey enabled successfully';
+            $surveySetting->survey_questions = $request->survey_questions;
+            $message = __('Survey enabled successfully');
         } else {
             $surveySetting->survey_questions = null;
-            $surveySetting->save();
-            $message = 'Survey disabled, questions cannot be added';
+            $message = __('Survey disabled successfully');
         }
+
+        $surveySetting->save();
 
         return response()->json([
             'success' => true,
-            'message' => __($message),
+            'message' => $message,
         ], 200);
 
     } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json(['success' => false,
-            'message' => __('Validation error: ') . $e->getMessage()
+        return response()->json([
+            'success' => false,
+            'message' => $e->errors()
         ], 422);
+
     } catch (\Exception $e) {
         return response()->json([
-            'success' => false, 'message' => __("Something went wrong: ") . $e->getMessage()
+            'success' => false,
+            'message' => "Something went wrong: " . $e->getMessage()
         ], 500);
     }
 }
-
 
 
 

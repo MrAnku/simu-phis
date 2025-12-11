@@ -1717,5 +1717,6 @@
     "Risk information visibility updated successfully": "تم تحديث رؤية معلومات المخاطر بنجاح",
     "Showing Risk Information is disabled for employees.": "تم تعطيل عرض معلومات المخاطر للموظفين.",
     "Survey enabled successfully" : "تم تفعيل الاستبيان بنجاح",
-    "Survey disabled, questions cannot be added" : "تم تعطيل الاستبيان، لا يمكن إضافة أسئلة"
+    "Survey disabled successfully" : "تم تعطيل الاستبيان بنجاح"
+   
 }
