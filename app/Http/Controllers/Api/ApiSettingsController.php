@@ -1505,8 +1505,40 @@ public function updateHelpRedirect(Request $request)
     }
 }
 
+public function updateTourPrompt(Request $request)
+    {
+        try {
+            $request->validate([
+                'tour_prompt' => 'required|boolean',
+            ]);
 
+            $tourPrompt = CompanySettings::where('company_id', Auth::user()->company_id)->first();
 
+            if (!$tourPrompt) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Company not found')
+                ], 404);
+            }
 
+            // Update tour_prompt
+           $tourPrompt->tour_prompt = $request->tour_prompt;
+            $tourPrompt->save();
+
+            $message = $tourPrompt->tour_prompt ? __('Tour prompt enabled successfully') : __('Tour prompt disabled successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'tour_prompt' =>  $tourPrompt->tour_prompt
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: '.$e->getMessage()
+            ], 500);
+        }
+    }
 
 }

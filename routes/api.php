@@ -297,6 +297,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         
           Route::put('/notification-languages', [ApiSettingsController::class, 'getNotificationLanguages']);
           Route::put('/update-help-redirect', [ApiSettingsController::class, 'updateHelpRedirect']);
+          Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
 
     });
 

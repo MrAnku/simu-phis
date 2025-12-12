@@ -9,6 +9,7 @@ use App\Models\BlueCollarEmployee;
 use App\Models\BlueCollarScormAssignedUser;
 use App\Models\BlueCollarTrainingUser;
 use App\Models\PhishSetting;
+use App\Models\CompanySettings;
 use App\Models\TrainingModule;
 use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarEmpLearnService;
@@ -189,12 +190,19 @@ class ApiLearnBlueCollarController extends Controller
             $leaderboardRank = $this->calculateLeaderboardRank($request->user_whatsapp);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
+            // tour_prompt status 
+
+            $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
+             $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
+
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'riskScore' => $riskScore ?? null,
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
+                    'tour_prompt' => $tourPrompt
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);

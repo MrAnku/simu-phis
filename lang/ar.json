@@ -1722,7 +1722,9 @@
     "Please enter a valid email or URL": "يرجى إدخال بريد إلكتروني صالح أو رابط صحيح",
       "Training settings not found": "إعدادات التدريب غير موجودة",
         "Localized notification enabled successfully": "تم تفعيل الإشعارات المترجمة بنجاح",
-         "Localized notification disabled successfully": "تم تعطيل الإشعارات المترجمة بنجاح"
+         "Localized notification disabled successfully": "تم تعطيل الإشعارات المترجمة بنجاح",
+          "Tour prompt enabled successfully": "تم تفعيل جولة الإرشاد بنجاح",
+          "Tour prompt disabled successfully": "تم تعطيل جولة الإرشاد بنجاح"
 
 
 

@@ -28,6 +28,7 @@ use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
 use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\PhishSetting;
+use App\Models\CompanySettings;
 use App\Models\TrainingSetting;
 use Illuminate\Validation\ValidationException;
 
@@ -219,12 +220,17 @@ class ApiLearnController extends Controller
             $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
-            return response()->json([
+               // Get tour_prompt status
+                 $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
+                   $tourPrompt = $tourPromptSettings  ? (int)$tourPromptSettings ->tour_prompt : 0;
+
+                 return response()->json([
                 'success' => true,
                 'data' => [
                     'riskScore' => $riskScore ?? null,
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
+                    'tour_prompt' => $tourPrompt,
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);

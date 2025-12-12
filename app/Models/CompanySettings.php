@@ -30,10 +30,12 @@ class CompanySettings extends Model
         'time_to_click',
         'phish_reply',
         'overall_report',
-        'report_emails'
+        'report_emails',
+        'tour_prompt'
     ];
 
     protected $casts = [
         'report_emails' => 'array',
+        'tour_prompt' => 'boolean'
     ];
 }
