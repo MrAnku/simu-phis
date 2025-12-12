@@ -39,7 +39,7 @@ class ApiSettingsController extends Controller
             $companyEmail = Auth::user()->email;
 
             $all_settings = Company::where('email', $companyEmail)
-                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig')
+                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig', 'phish_settings')
                 ->first();
 
             if (!$all_settings) {

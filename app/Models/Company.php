@@ -127,7 +127,13 @@ class Company extends Authenticatable implements JWTSubject
         return $this->hasOne(CompanyLicense::class, 'company_id', 'company_id');
     }
 
-    public function alert(){
+    public function alert()
+    {
         return $this->hasOne(CompanyAlertMail::class, 'company_id', 'company_id');
+    }
+
+    public function phish_settings()
+    {
+        return $this->hasOne(PhishSetting::class, 'email', 'email');
     }
 }
