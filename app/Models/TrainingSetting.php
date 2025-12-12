@@ -15,9 +15,13 @@ class TrainingSetting extends Model
         'email',
     ];
 
-    protected $casts = [
-        'content_survey' => 'boolean',
-        'localized_notification' => 'boolean',
-        'survey_questions' => 'json',
-    ];
+   protected $casts = [
+    'content_survey' => 'boolean',
+    'localized_notification' => 'boolean',
+    'survey_questions' => 'array',   
+];
+
 }
+
+
+

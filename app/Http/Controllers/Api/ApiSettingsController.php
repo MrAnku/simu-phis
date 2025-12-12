@@ -1363,10 +1363,9 @@ public function updateSurvey(Request $request)
         // Validate input
         $request->validate([
             'content_survey' => 'required|boolean',
-            'survey_questions' => 'required_if:content_survey,true|json',
+            'survey_questions' => 'required_if:content_survey,true|array',
         ], [
             'survey_questions.required_if' => 'Survey questions are required.',
-            'survey_questions.json' => 'Survey questions must be a valid JSON string.',
         ]);
 
         $companyId = Auth::user()->company_id;
@@ -1387,7 +1386,7 @@ public function updateSurvey(Request $request)
         $surveySetting->email = $email;
 
         if ($request->content_survey) {
-            $surveySetting->survey_questions = $request->survey_questions;
+            $surveySetting->survey_questions = $request->survey_questions; // array
             $message = __('Survey enabled successfully');
         } else {
             $surveySetting->survey_questions = null;
@@ -1414,6 +1413,7 @@ public function updateSurvey(Request $request)
         ], 500);
     }
 }
+
 
 public function getNotificationLanguages(Request $request)
 {
@@ -1512,9 +1512,9 @@ public function updateTourPrompt(Request $request)
                 'tour_prompt' => 'required|boolean',
             ]);
 
-            $tourPrompt = CompanySettings::where('company_id', Auth::user()->company_id)->first();
+            $companySettings = CompanySettings::where('company_id', Auth::user()->company_id)->first();
 
-            if (!$tourPrompt) {
+            if (!$companySettings) {
                 return response()->json([
                     'success' => false,
                     'message' => __('Company not found')
@@ -1522,15 +1522,15 @@ public function updateTourPrompt(Request $request)
             }
 
             // Update tour_prompt
-           $tourPrompt->tour_prompt = $request->tour_prompt;
-            $tourPrompt->save();
+            $companySettings->tour_prompt = $request->tour_prompt;
+             $companySettings->save();
 
-            $message = $tourPrompt->tour_prompt ? __('Tour prompt enabled successfully') : __('Tour prompt disabled successfully');
+            $message =  $companySettings->tour_prompt ? __('Tour prompt enabled successfully') : __('Tour prompt disabled successfully');
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'tour_prompt' =>  $tourPrompt->tour_prompt
+                'tour_prompt' => $companySettings->tour_prompt
             ]);
 
         } catch (\Exception $e) {
