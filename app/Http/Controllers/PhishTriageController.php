@@ -141,7 +141,7 @@ class PhishTriageController extends Controller
 
             //Notify admin
             $campaign = TprmCampaignLive::where('id', $token)->first();
-            sendNotification("{$campaign->user_email} has reported a tprm email.", $campaign->company_id);
+            sendNotification("{$campaign->user_email} reported a tprm email.", $campaign->company_id);
 
             return true; // Simulation email detected
         } else if (strpos($actualUrl, 'usrid=') !== false && strpos($actualUrl, 'token=') !== false) {
@@ -159,7 +159,7 @@ class PhishTriageController extends Controller
 
             //Notify admin
             $campaign = CampaignLive::where('id', $token)->first();
-            sendNotification("{$campaign->user_email} has reported a phishing email.", $campaign->company_id);
+            sendNotification("{$campaign->user_email} reported a phishing email.", $campaign->company_id);
 
             return true; // Simulation email detected
         } else {
@@ -183,7 +183,7 @@ class PhishTriageController extends Controller
 
                 //Notify admin
                 $campaign = QuishingLiveCamp::where('id', $params['eid'])->first();
-                sendNotification("{$campaign->user_email} has reported a quishing email.", $campaign->company_id);
+                sendNotification("{$campaign->user_email} reported a quishing email.", $campaign->company_id);
                 return true;
             }
         }

@@ -863,7 +863,7 @@ class ApiAiCallController extends Controller
                 $localReport->save();
 
                 //Notify admin
-                sendNotification("{$localReport->user_email} report for call ID {$callId}.", $localReport->company_id);
+                sendNotification("{$localReport->user_email} reported an AI call.", $localReport->company_id);
 
                 return response()->json(['success' => true, 'data' => $callReport], 200);
             } else {
