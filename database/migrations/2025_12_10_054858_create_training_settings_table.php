@@ -39,10 +39,7 @@ class CreateTrainingSettingsTable extends Migration
                 'role',
                 'enabled_feature',
                 'ip_whitelist'
-            )
-            ->where('approved', 1)
-            ->where('service_status', 1)
-            ->get();
+            )->get();
 
         if ($records->isNotEmpty()) {
             foreach ($records as $record) {
