@@ -220,17 +220,24 @@ class ApiLearnController extends Controller
             $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
-               // Get tour_prompt status
-                 $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
-                   $tourPrompt = $tourPromptSettings  ? (int)$tourPromptSettings ->tour_prompt : 0;
+            // Get tour_prompt status
+            $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
+            $tourPrompt = $tourPromptSettings  ? (int)$tourPromptSettings->tour_prompt : 0;
 
-                 return response()->json([
+            // fetch help redirect link from company settings
+            $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
+            if (!$helpRedirectTo) {
+                $helpRedirectTo = "https://help.simuphish.com";
+            }
+
+            return response()->json([
                 'success' => true,
                 'data' => [
                     'riskScore' => $riskScore ?? null,
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                     'tour_prompt' => $tourPrompt,
+                    'helpRedirectTo' => $helpRedirectTo,
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);

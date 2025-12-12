@@ -11,6 +11,7 @@ use App\Models\BlueCollarTrainingUser;
 use App\Models\PhishSetting;
 use App\Models\CompanySettings;
 use App\Models\TrainingModule;
+use App\Models\TrainingSetting;
 use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarEmpLearnService;
 use App\Services\BlueCollarWhatsappService;
@@ -195,6 +196,11 @@ class ApiLearnBlueCollarController extends Controller
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
              $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
 
+            // fetch help redirect link from company settings
+            $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
+            if (!$helpRedirectTo) {
+                $helpRedirectTo = "https://help.simuphish.com";
+            }
 
             return response()->json([
                 'success' => true,
@@ -202,7 +208,8 @@ class ApiLearnBlueCollarController extends Controller
                     'riskScore' => $riskScore ?? null,
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
-                    'tour_prompt' => $tourPrompt
+                    'tour_prompt' => $tourPrompt,
+                    'helpRedirectTo' => $helpRedirectTo,
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);
