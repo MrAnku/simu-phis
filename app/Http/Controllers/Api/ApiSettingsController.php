@@ -1415,6 +1415,98 @@ public function updateSurvey(Request $request)
     }
 }
 
+public function getNotificationLanguages(Request $request)
+{
+    try {
+        $companyId = Auth::user()->company_id;
+
+        $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
+
+        if (!$trainingSetting) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training settings not found')
+            ]);
+        }
+
+         if ($request->has('localized_notification')) {
+            $trainingSetting->localized_notification = $request->localized_notification;
+            $trainingSetting->save();
+        }
+
+          $message = $trainingSetting->localized_notification == 1
+            ? __(' localized  Notification enabled successfully')
+            : __('localized  Notification disabled successfully');
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'localized_notification' => $trainingSetting->localized_notification,
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Server Error: '.$e->getMessage()
+        ], 500);
+    }
+}
+
+
+
+public function updateHelpRedirect(Request $request)
+{
+    try {
+
+        $request->validate([
+            'help_redirect_to' => 'required|string|max:255'
+        ]);
+
+        $value = $request->help_redirect_to;
+
+        // Accept only email or valid http/https URL
+        $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+        $isUrl   = filter_var($value, FILTER_VALIDATE_URL) && 
+                   (str_starts_with($value, 'http://') || str_starts_with($value, 'https://'));
+
+        if (!$isEmail && !$isUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Please enter a valid email or URL')
+            ], 422);
+        }
+
+        $companyId = Auth::user()->company_id;
+
+        $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
+
+        if (!$trainingSetting) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training settings not found')
+            ], 404);
+        }
+
+        $trainingSetting->help_redirect_to = $value;
+        $trainingSetting->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Help redirect updated successfully'),
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Server Error: '.$e->getMessage()
+        ], 500);
+    }
+}
+
+
+
 
 
 }

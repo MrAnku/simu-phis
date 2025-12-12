@@ -10,11 +10,14 @@ class TrainingSetting extends Model
         'company_id',
         'content_survey',
         'survey_questions',
+        'localized_notification',
+        'help_redirect_to',
         'email',
     ];
 
     protected $casts = [
         'content_survey' => 'boolean',
-        'survey_questions' => 'array',
+        'localized_notification' => 'boolean',
+        'survey_questions' => 'json',
     ];
 }

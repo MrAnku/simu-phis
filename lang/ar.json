@@ -1717,6 +1717,14 @@
     "Risk information visibility updated successfully": "تم تحديث رؤية معلومات المخاطر بنجاح",
     "Showing Risk Information is disabled for employees.": "تم تعطيل عرض معلومات المخاطر للموظفين.",
     "Survey enabled successfully" : "تم تفعيل الاستبيان بنجاح",
-    "Survey disabled successfully" : "تم تعطيل الاستبيان بنجاح"
+    "Survey disabled successfully" : "تم تعطيل الاستبيان بنجاح",
+    "Help redirect updated successfully": "تم تحديث إعادة التوجيه بنجاح",
+    "Please enter a valid email or URL": "يرجى إدخال بريد إلكتروني صالح أو رابط صحيح",
+      "Training settings not found": "إعدادات التدريب غير موجودة",
+        "Localized notification enabled successfully": "تم تفعيل الإشعارات المترجمة بنجاح",
+         "Localized notification disabled successfully": "تم تعطيل الإشعارات المترجمة بنجاح"
+
+
+
    
 }
