@@ -136,4 +136,9 @@ class Company extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(PhishSetting::class, 'email', 'email');
     }
+    public function training_settings()
+    {
+
+        return $this->hasOne(TrainingSetting::class, 'email', 'email');
+    }
 }

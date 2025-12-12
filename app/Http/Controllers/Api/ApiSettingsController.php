@@ -40,7 +40,7 @@ class ApiSettingsController extends Controller
             $companyEmail = Auth::user()->email;
 
             $all_settings = Company::where('email', $companyEmail)
-                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig', 'phish_settings')
+                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig', 'phish_settings','training_settings')
                 ->first();
 
             if (!$all_settings) {
@@ -1357,155 +1357,151 @@ class ApiSettingsController extends Controller
         }
     }
 
-public function updateSurvey(Request $request)
-{
-    try {
-        // Validate input
-        $request->validate([
-            'content_survey' => 'required|boolean',
-            'survey_questions' => 'required_if:content_survey,true|array',
-        ], [
-            'survey_questions.required_if' => 'Survey questions are required.',
-        ]);
-
-        $companyId = Auth::user()->company_id;
-        $email = Auth::user()->email;
-
-        // Fetch existing setting
-        $surveySetting = TrainingSetting::where('company_id', $companyId)->first();
-
-        if (!$surveySetting) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Survey setting not found for this company.')
-            ], 404);
-        }
-
-        // Update fields
-        $surveySetting->content_survey = $request->content_survey;
-        $surveySetting->email = $email;
-
-        if ($request->content_survey) {
-            $surveySetting->survey_questions = $request->survey_questions; // array
-            $message = __('Survey enabled successfully');
-        } else {
-            $surveySetting->survey_questions = null;
-            $message = __('Survey disabled successfully');
-        }
-
-        $surveySetting->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-        ], 200);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->errors()
-        ], 422);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => "Something went wrong: " . $e->getMessage()
-        ], 500);
-    }
-}
-
-
-public function getNotificationLanguages(Request $request)
-{
-    try {
-        $companyId = Auth::user()->company_id;
-
-        $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
-
-        if (!$trainingSetting) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Training settings not found')
+    public function updateSurvey(Request $request)
+    {
+        try {
+            // Validate input
+            $request->validate([
+                'content_survey' => 'required|boolean',
+                'survey_questions' => 'required_if:content_survey,true|array',
+            ], [
+                'survey_questions.required_if' => 'Survey questions are required.',
             ]);
-        }
 
-         if ($request->has('localized_notification')) {
-            $trainingSetting->localized_notification = $request->localized_notification;
-            $trainingSetting->save();
-        }
+            $companyId = Auth::user()->company_id;
+            $email = Auth::user()->email;
 
-          $message = $trainingSetting->localized_notification == 1
-            ? __(' localized  Notification enabled successfully')
-            : __('localized  Notification disabled successfully');
+            // Fetch existing setting
+            $surveySetting = TrainingSetting::where('company_id', $companyId)->first();
 
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'localized_notification' => $trainingSetting->localized_notification,
-        ]);
+            if (!$surveySetting) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Survey setting not found for this company.')
+                ], 404);
+            }
 
-    } catch (\Exception $e) {
+            // Update fields
+            $surveySetting->content_survey = $request->content_survey;
+            $surveySetting->email = $email;
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Server Error: '.$e->getMessage()
-        ], 500);
-    }
-}
+            if ($request->content_survey) {
+                $surveySetting->survey_questions = $request->survey_questions; // array
+                $message = __('Survey enabled successfully');
+            } else {
+                $surveySetting->survey_questions = null;
+                $message = __('Survey disabled successfully');
+            }
 
+            $surveySetting->save();
 
-
-public function updateHelpRedirect(Request $request)
-{
-    try {
-
-        $request->validate([
-            'help_redirect_to' => 'required|string|max:255'
-        ]);
-
-        $value = $request->help_redirect_to;
-
-        // Accept only email or valid http/https URL
-        $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
-        $isUrl   = filter_var($value, FILTER_VALIDATE_URL) && 
-                   (str_starts_with($value, 'http://') || str_starts_with($value, 'https://'));
-
-        if (!$isEmail && !$isUrl) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Please enter a valid email or URL')
+                'message' => $e->errors()
             ], 422);
-        }
-
-        $companyId = Auth::user()->company_id;
-
-        $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
-
-        if (!$trainingSetting) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Training settings not found')
-            ], 404);
+                'message' => "Something went wrong: " . $e->getMessage()
+            ], 500);
         }
-
-        $trainingSetting->help_redirect_to = $value;
-        $trainingSetting->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => __('Help redirect updated successfully'),
-        ]);
-
-    } catch (\Exception $e) {
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Server Error: '.$e->getMessage()
-        ], 500);
     }
-}
 
-public function updateTourPrompt(Request $request)
+
+    public function getNotificationLanguages(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
+
+            if (!$trainingSetting) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training settings not found')
+                ]);
+            }
+
+            if ($request->has('localized_notification')) {
+                $trainingSetting->localized_notification = $request->localized_notification;
+                $trainingSetting->save();
+            }
+
+            $message = $trainingSetting->localized_notification == 1
+                ? __(' localized  Notification enabled successfully')
+                : __('localized  Notification disabled successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'localized_notification' => $trainingSetting->localized_notification,
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function updateHelpRedirect(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'help_redirect_to' => 'required|string|max:255'
+            ]);
+
+            $value = $request->help_redirect_to;
+
+            // Accept only email or valid http/https URL
+            $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+            $isUrl   = filter_var($value, FILTER_VALIDATE_URL) &&
+                (str_starts_with($value, 'http://') || str_starts_with($value, 'https://'));
+
+            if (!$isEmail && !$isUrl) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Please enter a valid email or URL')
+                ], 422);
+            }
+
+            $companyId = Auth::user()->company_id;
+
+            $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
+
+            if (!$trainingSetting) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training settings not found')
+                ], 404);
+            }
+
+            $trainingSetting->help_redirect_to = $value;
+            $trainingSetting->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Help redirect updated successfully'),
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateTourPrompt(Request $request)
     {
         try {
             $request->validate([
@@ -1523,7 +1519,7 @@ public function updateTourPrompt(Request $request)
 
             // Update tour_prompt
             $companySettings->tour_prompt = $request->tour_prompt;
-             $companySettings->save();
+            $companySettings->save();
 
             $message =  $companySettings->tour_prompt ? __('Tour prompt enabled successfully') : __('Tour prompt disabled successfully');
 
@@ -1532,13 +1528,11 @@ public function updateTourPrompt(Request $request)
                 'message' => $message,
                 'tour_prompt' => $companySettings->tour_prompt
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Server Error: '.$e->getMessage()
+                'message' => 'Server Error: ' . $e->getMessage()
             ], 500);
         }
     }
-
 }
