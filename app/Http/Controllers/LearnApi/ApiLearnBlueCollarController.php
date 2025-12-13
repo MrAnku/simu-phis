@@ -187,12 +187,10 @@ class ApiLearnBlueCollarController extends Controller
             }
 
             // Calculate current rank
-
             $leaderboardRank = $this->calculateLeaderboardRank($request->user_whatsapp);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
-            // tour_prompt status 
-
+            // tour_prompt status
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
 

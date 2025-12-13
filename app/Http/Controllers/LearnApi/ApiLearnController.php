@@ -234,6 +234,13 @@ class ApiLearnController extends Controller
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int)$tourPromptSettings->tour_prompt : 0;
 
+            // check if help redirect destination is set or not
+            $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
+
+            if (!$helpRedirectTo) {
+                $helpRedirectTo = 'https://help.simuphish.com';
+            }
+
 
             return response()->json([
                 'success' => true,
