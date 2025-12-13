@@ -5,7 +5,7 @@
 /public/storage
 /public/assets
 /public/dist
-/storage/*.key
+/storage
 /vendor
 .well-known
 .htaccess
