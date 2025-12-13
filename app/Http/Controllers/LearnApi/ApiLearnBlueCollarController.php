@@ -194,7 +194,7 @@ class ApiLearnBlueCollarController extends Controller
             // tour_prompt status 
 
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
-             $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
+            $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
 
             // fetch help redirect link from company settings
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
@@ -1526,6 +1526,37 @@ class ApiLearnBlueCollarController extends Controller
                 'success' => true,
                 'message' => __('Phishing test results retrieved successfully'),
                 'data' => $phishTestResults
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+    public function fetchSurveyQuestions(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
+            ]);
+
+            $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
+
+            $training_settings = TrainingSetting::where('company_id', $user->company_id)->first();
+
+            if (!$training_settings->content_survey) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Content survey is disabled from company.'),
+                ], 404);
+            }
+
+            $surveyQuestions = $training_settings->survey_questions;
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Survey questions retrieved successfully.'),
+                'data' => $surveyQuestions,
             ], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);

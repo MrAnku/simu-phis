@@ -325,7 +325,7 @@ class ApiLearnController extends Controller
             // If user fails then assign alternative training if exists
             $passingScore = (int)$rowData->trainingData->passing_score;
 
-    
+
             // Save survey response 
             if ($request->has('survey_response')) {
                 $rowData->survey_response = $request->survey_response;
@@ -1635,6 +1635,38 @@ class ApiLearnController extends Controller
                 'message' => __('Something went wrong'),
                 'error'   => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function fetchSurveyQuestions(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,user_email',
+            ]);
+
+            $user = Users::where('user_email', $request->email)->first();
+
+            $training_settings = TrainingSetting::where('company_id', $user->company_id)->first();
+
+            if (!$training_settings->content_survey) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Content survey is disabled from company.'),
+                ], 404);
+            }
+
+            $surveyQuestions = $training_settings->survey_questions;
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Survey questions retrieved successfully.'),
+                'data' => $surveyQuestions,
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
 }

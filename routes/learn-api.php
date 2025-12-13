@@ -60,6 +60,9 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
         Route::get('/fetch-phish-test-results', [ApiLearnController::class, 'fetchPhishTestResults']);
         // Tour Complete
         Route::post('/tour-complete', [ApiLearnController::class, 'tourComplete']);
+        
+        //  fetch survey questions
+        Route::get('/fetch-survey-questions', [ApiLearnController::class, 'fetchSurveyQuestions']);
     });
 
     // For Blue Collar
@@ -99,6 +102,8 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
 
             // Fetch phish test results
             Route::get('/fetch-phish-test-results', [ApiLearnBlueCollarController::class, 'fetchPhishTestResults']);
+            //  fetch survey questions
+            Route::get('/fetch-survey-questions', [ApiLearnBlueCollarController::class, 'fetchSurveyQuestions']);
         });
     });
 });
