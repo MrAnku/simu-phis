@@ -173,15 +173,15 @@ class ProcessTriggers extends Command
             return;
         }
 
-        $policyNames = '';
+        $policyNames = [];
 
         foreach ($policies as $policyId) {
-            echo "Assigning policy to " . $employeeType;
+            echo "Assigning policy to " . $queue->user_email . "\n";
             $policyName = Policy::where('id', $policyId)->value('policy_name') ?? null;
             if (!$policyName) {
                 continue;
             }
-            $policyNames .= $policyName . ', ';
+            $policyNames[] = $policyName;
 
             $isPolicyExists = AssignedPolicy::where('user_email', $queue->user_email)
                 ->where('policy', $policyId)
@@ -203,7 +203,7 @@ class ProcessTriggers extends Command
         $mailData = [
             'user_name' => $queue->user_name,
             'assigned_at' => now(),
-            'policy_name' => rtrim($policyNames, ', '),
+            'policy_names' => $policyNames,
             'company_id' => $queue->company_id,
         ];
         try {
