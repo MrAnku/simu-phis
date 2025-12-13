@@ -327,10 +327,12 @@ class ApiLearnController extends Controller
 
 
             // Save survey response 
-            if ($request->has('survey_response')) {
+
+             if ($request->has('survey_response')) {
                 $rowData->survey_response = $request->survey_response;
                 $rowData->save();
             }
+           
 
             if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
 
