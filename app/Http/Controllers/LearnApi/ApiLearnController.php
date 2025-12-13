@@ -325,30 +325,12 @@ class ApiLearnController extends Controller
             // If user fails then assign alternative training if exists
             $passingScore = (int)$rowData->trainingData->passing_score;
 
-            // Survey questions + user answers merged
-            $surveySetting = TrainingSetting::where('company_id', $rowData->company_id)->first();
-            $surveyResponses = [];
-
-            if ($surveySetting && $surveySetting->content_survey && !empty($surveySetting->survey_questions) && $request->survey_response) {
-                $surveyQuestions = json_decode($surveySetting->survey_questions, true);
-                $userAnswers = json_decode($request->survey_response, true);
-
-                if (is_array($surveyQuestions) && is_array($userAnswers)) {
-                    foreach ($surveyQuestions as $index => $question) {
-                        $answer = isset($userAnswers[$index]['answer']) ? $userAnswers[$index]['answer'] : null;
-                        $surveyResponses[] = [
-                            'question' => $question['question'] ?? $question,
-                            'answer' => $answer
-                        ];
-                    }
-                }
+    
+            // Save survey response 
+            if ($request->has('survey_response')) {
+                $rowData->survey_response = $request->survey_response;
+                $rowData->save();
             }
-
-            $rowData->survey_response = $surveyResponses;
-            $rowData->save();
-
-
-
 
             if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
 
