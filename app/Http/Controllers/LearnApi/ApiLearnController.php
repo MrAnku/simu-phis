@@ -1590,62 +1590,45 @@ class ApiLearnController extends Controller
         }
     }
 
+
+
     public function tourComplete(Request $request)
-    {
-        try {
-            $user = Auth::user();
+{
+    try {
+        $request->validate([
+            'company_id' => 'required',
+            'user_email' => 'required|email',
+        ]);
 
-            // optional param: complete = true/false
-            $request->validate([
-                'complete' => 'nullable|boolean',
-            ]);
+        // get user tour record
+        $tour = UserTour::where('company_id', (string) $request->company_id)
+            ->where('user_email', $request->user_email)
+            ->first();
 
-            // check record
-            $tour = UserTour::where('company_id', (string) $user->company_id)
-                ->where('user_email', $user->email)
-                ->first();
+        return response()->json([
+            'success' => true,
+            'message' => __('Tour status fetched successfully'),
+            'data' => [
+                'company_id'     => (string) $request->company_id,
+                'user_email'     => $request->user_email,
+                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+            ]
+        ], 200);
 
-            // if record not exists → create with not completed
-            if (!$tour) {
-                $tour = UserTour::create([
-                    'company_id'     => (string) $user->company_id,
-                    'user_email'     => $user->email,
-                    'tour_completed' => 0
-                ]);
-            }
-
-            // if frontend says complete = true → mark completed
-            if ($request->has('complete') && $request->complete === true) {
-                $tour->update([
-                    'tour_completed' => 1
-                ]);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => __('Tour status updated successfully'),
-                'data' => [
-                    'company_id'     => $tour->company_id,
-                    'user_email'     => $tour->user_email,
-                    'tour_completed' => (bool) $tour->tour_completed
-                ]
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Validation error
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-                'errors'  => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            // General error
-            return response()->json([
-                'success' => false,
-                'message' => __('Something went wrong'),
-                'error'   => $e->getMessage()
-            ], 500);
-        }
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => __('Something went wrong'),
+            'error'   => $e->getMessage()
+        ], 500);
     }
+}
+
 
     public function fetchSurveyQuestions(Request $request)
     {

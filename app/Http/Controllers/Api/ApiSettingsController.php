@@ -1413,7 +1413,7 @@ class ApiSettingsController extends Controller
     }
 
 
-    public function getNotificationLanguages(Request $request)
+    public function updateNotificationLanguages(Request $request)
     {
         try {
             $companyId = Auth::user()->company_id;
@@ -1513,7 +1513,8 @@ class ApiSettingsController extends Controller
             if (!$companySettings) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Company not found')
+                    'message' => __('Company settings not found
+                      ')
                 ], 404);
             }
 
