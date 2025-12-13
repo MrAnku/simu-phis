@@ -36,6 +36,11 @@ class TrainingAssignedUser extends Model
         'survey_response'
     ];
 
+    protected $casts = [
+    'survey_response' => 'array'
+      ];
+
+
     public function trainingData()
     {
         return $this->belongsTo(TrainingModule::class, 'training', 'id');

@@ -58,6 +58,8 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
 
         // Fetch phish test results
         Route::get('/fetch-phish-test-results', [ApiLearnController::class, 'fetchPhishTestResults']);
+        // Tour Complete
+        Route::post('/tour-complete', [ApiLearnController::class, 'tourComplete']);
     });
 
     // For Blue Collar

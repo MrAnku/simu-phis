@@ -30,6 +30,8 @@ use App\Mail\LearnerSessionRegenerateMail;
 use App\Models\PhishSetting;
 use App\Models\CompanySettings;
 use App\Models\TrainingSetting;
+use App\Models\UserTour;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ApiLearnController extends Controller
@@ -229,6 +231,9 @@ class ApiLearnController extends Controller
             if (!$helpRedirectTo) {
                 $helpRedirectTo = "https://help.simuphish.com";
             }
+            $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
+            $tourPrompt =  $tourPromptSettings ? (int)$tourPromptSettings->tour_prompt : 0;
+
 
             return response()->json([
                 'success' => true,
@@ -301,7 +306,8 @@ class ApiLearnController extends Controller
             $request->validate([
                 'trainingScore' => 'required|integer',
                 'encoded_id' => 'required',
-                'survey_response' => 'nullable|json',
+                'survey_response' => 'nullable|array',
+
             ]);
 
             $row_id = base64_decode($request->encoded_id);
@@ -340,6 +346,7 @@ class ApiLearnController extends Controller
 
             $rowData->survey_response = $surveyResponses;
             $rowData->save();
+
 
 
 
@@ -1589,6 +1596,63 @@ class ApiLearnController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
+        }
+    }
+
+    public function tourComplete(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // optional param: complete = true/false
+            $request->validate([
+                'complete' => 'nullable|boolean',
+            ]);
+
+            // check record
+            $tour = UserTour::where('company_id', (string) $user->company_id)
+                ->where('user_email', $user->email)
+                ->first();
+
+            // if record not exists → create with not completed
+            if (!$tour) {
+                $tour = UserTour::create([
+                    'company_id'     => (string) $user->company_id,
+                    'user_email'     => $user->email,
+                    'tour_completed' => 0
+                ]);
+            }
+
+            // if frontend says complete = true → mark completed
+            if ($request->has('complete') && $request->complete === true) {
+                $tour->update([
+                    'tour_completed' => 1
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Tour status updated successfully'),
+                'data' => [
+                    'company_id'     => $tour->company_id,
+                    'user_email'     => $tour->user_email,
+                    'tour_completed' => (bool) $tour->tour_completed
+                ]
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation error
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // General error
+            return response()->json([
+                'success' => false,
+                'message' => __('Something went wrong'),
+                'error'   => $e->getMessage()
+            ], 500);
         }
     }
 }
