@@ -14,6 +14,8 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
         Route::get('/dashboard/metrics', [ApiLearnController::class, 'getDashboardMetrics']);
         Route::get('/get-normal-emp-tranings', [ApiLearnController::class, 'getNormalEmpTranings']);
         Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
+        Route::post('/save-training-survey', [ApiLearnController::class, 'saveTrainingSurveyResponse']);
+
         Route::put('/update-training-feedback', [ApiLearnController::class, 'updateTrainingFeedback']);
         Route::get('/fetch-normal-emp-scorm-trainings', [ApiLearnController::class, 'fetchNormalEmpScormTrainings']);
         Route::post('/download-training-certificate', [ApiLearnController::class, 'downloadTrainingCertificate']);
@@ -75,6 +77,10 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
             Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
 
             Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
+            Route::post('/save-training-survey', [
+                ApiLearnBlueCollarController::class,
+                'saveTrainingSurveyResponse'
+            ]);
             Route::put('/update-training-feedback', [ApiLearnBlueCollarController::class, 'updateTrainingFeedback']);
             Route::get('/fetch-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchScormTrainings']);
             Route::post('/download-training-certificate', [ApiLearnBlueCollarController::class, 'downloadTrainingCertificate']);
@@ -106,7 +112,7 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
             Route::get('/fetch-survey-questions', [ApiLearnBlueCollarController::class, 'fetchSurveyQuestions']);
 
 
-                Route::post('/tour-complete', [ApiLearnBlueCollarController::class, 'tourComplete']);
+            Route::post('/tour-complete', [ApiLearnBlueCollarController::class, 'tourComplete']);
         });
     });
 });

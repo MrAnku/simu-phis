@@ -236,7 +236,7 @@ class ApiLearnController extends Controller
 
             // tour completed
 
-            $tourCompleted = UserTour::where('company_id', $user->company_id)
+            $tourCompleted = UserTour::where('company_id', $user->company_id)->where('user_email', $request->email)
                ->value('tour_completed');
               $tourCompleted = $tourCompleted ? 1 : 0;
            
@@ -509,6 +509,59 @@ class ApiLearnController extends Controller
         }
     }
 
+
+
+ public function saveTrainingSurveyResponse(Request $request)
+{
+    try {
+        $request->validate([
+            'encoded_id' => 'required',
+            'survey_response' => 'required|array',
+        ]);
+
+      
+        $rowId = base64_decode($request->encoded_id);
+
+        $rowData = TrainingAssignedUser::find($rowId);
+
+        if (!$rowData) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Training record not found')
+            ], 404);
+        }
+
+        $rowData->survey_response = $request->survey_response;
+        $rowData->save();
+
+        
+        audit_log(
+            $rowData->company_id,
+            $rowData->user_email,
+            null,
+            'SURVEY_RESPONSE_SAVED',
+            "Survey response saved for training '{$rowData->trainingData->name}'",
+            'normal'
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Survey response saved successfully')
+        ], 200);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'errors' => $e->errors()
+        ], 422);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => __('An error occurred: ') . $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

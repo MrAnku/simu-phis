@@ -196,10 +196,9 @@ class ApiLearnBlueCollarController extends Controller
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
 
-           // tour completed 
-            $tourCompleted = UserTour::where('company_id', $user->company_id)
-            ->value('tour_completed');
-           $tourCompleted = $tourCompleted ? 1 : 0;
+            // tour completed 
+            $tourCompleted = UserTour::where('company_id', $user->company_id)->where('user_whatsapp', $request->user_whatsapp)->value('tour_completed');
+            $tourCompleted = $tourCompleted ? 1 : 0;
 
             // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
@@ -533,6 +532,9 @@ class ApiLearnBlueCollarController extends Controller
             ], 500);
         }
     }
+
+
+
 
     public function updateTrainingFeedback(Request $request)
     {
@@ -1573,46 +1575,95 @@ class ApiLearnBlueCollarController extends Controller
 
 
 
- public function tourComplete(Request $request)
-{
-    try {
+    public function tourComplete(Request $request)
+    {
+        try {
 
-        $request->validate([
-            'user_whatsapp' => 'required|string'
-        ]);
+            $request->validate([
+                'user_whatsapp' => 'required|string'
+            ]);
 
-        $user = Users::where('user_whatsapp', $request->user_whatsapp)->first();
+            $user = Users::where('user_whatsapp', $request->user_whatsapp)->first();
 
-        if (!$user) {
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('User with this WhatsApp number does not exist')
+                ], 404);
+            }
+
+            $tour = UserTour::where('company_id', (string) $user->company_id)
+                ->where('user_whatsapp', $user->user_whatsapp)
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Tour status fetched successfully'),
+                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('User with this WhatsApp number does not exist')
-            ], 404);
+                'message' => 'Validation error',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
         }
-
-        $tour = UserTour::where('company_id', (string) $user->company_id)
-                        ->where('user_whatsapp', $user->user_whatsapp)
-                        ->first();
-
-        return response()->json([
-            'success' => true,
-            'message' => __('Tour status fetched successfully'),
-            'tour_completed' => $tour ? (bool) $tour->tour_completed : false
-        ], 200);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation error',
-            'errors'  => $e->errors()
-        ], 422);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Server error: ' . $e->getMessage()
-        ], 500);
     }
-}
 
+
+    public function saveTrainingSurveyResponse(Request $request)
+    {
+        try {
+            $request->validate([
+                'encoded_id' => 'required',
+                'survey_response' => 'required|array',
+            ]);
+
+
+            $rowId = base64_decode($request->encoded_id);
+
+            $rowData = BlueCollarTrainingUser::find($rowId);
+
+            if (!$rowData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training record not found'
+                ], 404);
+            }
+
+
+            $rowData->survey_response = $request->survey_response;
+            $rowData->save();
+
+
+            audit_log(
+                $rowData->company_id,
+                null,
+                $rowData->user_whatsapp,
+                'SURVEY_RESPONSE_SAVED',
+                "Survey response saved for training '{$rowData->trainingData->name}'",
+                'bluecollar'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Survey response saved successfully')
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
