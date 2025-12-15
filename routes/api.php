@@ -57,6 +57,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\ApiCustomTrainingEmailController;
 use App\Http\Controllers\Api\ApiMsspController;
 use App\Http\Controllers\LearnApi\ApiLearnBlueCollarController;
+use App\Http\Controllers\Api\ApiReportController;
 
 
 Route::middleware('throttle:limiter')->group(function () {
@@ -353,7 +354,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         // Division Reporting
         Route::get('/fetch-division-users-report', [ApiReportingController::class, 'fetchDivisionUsersReport']);
 
-        Route::get('/fetch-division-users-reporting', [ApiReportingController::class, 'fetchDivisionUsersReporting']);
+        Route::get('/fetch-division-users-reporting', [ApiReportController::class, 'fetchDivisionUsersReporting']);
 
         // Users Reporting
         Route::get('/fetch-users-report/{email}', [ApiReportingController::class, 'fetchUsersReport']);
