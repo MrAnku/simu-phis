@@ -196,7 +196,12 @@ class ApiLearnBlueCollarController extends Controller
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int) $tourPromptSettings->tour_prompt : 0;
 
-            // fetch help redirect link from company settings
+           // tour completed 
+            $tourCompleted = UserTour::where('company_id', $user->company_id)
+            ->value('tour_completed');
+           $tourCompleted = $tourCompleted ? 1 : 0;
+
+            // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
             if (!$helpRedirectTo) {
                 $helpRedirectTo = "https://help.simuphish.com";
@@ -209,7 +214,8 @@ class ApiLearnBlueCollarController extends Controller
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                     'tour_prompt' => $tourPrompt,
-                    'helpRedirectTo' => $helpRedirectTo,
+                    'tour_completed' => $tourCompleted,
+                    'help_redirect_to' => $helpRedirectTo
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);

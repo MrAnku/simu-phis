@@ -663,7 +663,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::prefix('normal-emp')->group(function () {
             Route::put('/start-training', [ApiLearnController::class, 'startTrainingModule']);
             Route::post('/update-training-score', [ApiLearnController::class, 'updateTrainingScore']);
-
             Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
             Route::post('/update-scorm-score', [ApiLearnController::class, 'updateScormTrainingScore']);
             Route::post('/update-game-score', [ApiLearnController::class, 'updateGameScore']);

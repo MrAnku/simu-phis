@@ -234,7 +234,14 @@ class ApiLearnController extends Controller
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int)$tourPromptSettings->tour_prompt : 0;
 
-            // check if help redirect destination is set or not
+            // tour completed
+
+            $tourCompleted = UserTour::where('company_id', $user->company_id)
+               ->value('tour_completed');
+              $tourCompleted = $tourCompleted ? 1 : 0;
+           
+           
+              // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
 
             if (!$helpRedirectTo) {
@@ -249,7 +256,8 @@ class ApiLearnController extends Controller
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                     'tour_prompt' => $tourPrompt,
-                    'helpRedirectTo' => $helpRedirectTo,
+                     'tour_completed' => $tourCompleted,
+                    'help_redirect_to' => $helpRedirectTo
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);
@@ -313,13 +321,10 @@ class ApiLearnController extends Controller
             $request->validate([
                 'trainingScore' => 'required|integer',
                 'encoded_id' => 'required',
-                'survey_response' => 'nullable|array',
-
-            ]);
+              ]);
 
             $row_id = base64_decode($request->encoded_id);
-
-            $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+           $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
 
             $user = $rowData->user_email;
 
@@ -331,15 +336,6 @@ class ApiLearnController extends Controller
 
             // If user fails then assign alternative training if exists
             $passingScore = (int)$rowData->trainingData->passing_score;
-
-
-            // Save survey response 
-
-             if ($request->has('survey_response')) {
-                $rowData->survey_response = $request->survey_response;
-                $rowData->save();
-            }
-           
 
             if ($request->trainingScore < $passingScore && $rowData->alt_training != 1) {
 
