@@ -14,15 +14,12 @@ return new class extends Migration {
             $table->string('company_id', 255);
 
             // VARCHAR(255)
-            $table->string('user_email', 255);
+            $table->string('user_email', 255)->nullable();
 
             // BOOLEAN: 0 = not completed, 1 = completed
             $table->boolean('tour_completed')->default(0);
 
             $table->timestamps();
-
-            $table->index('company_id');
-            $table->index('user_email');
         });
     }
 

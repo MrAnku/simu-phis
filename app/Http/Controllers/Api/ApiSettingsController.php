@@ -1535,8 +1535,7 @@ class ApiSettingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message,
-                'tour_prompt' => $companySettings->tour_prompt
+                'message' => $message
             ]);
         } catch (\Exception $e) {
             return response()->json([

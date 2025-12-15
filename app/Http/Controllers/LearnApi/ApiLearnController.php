@@ -222,24 +222,14 @@ class ApiLearnController extends Controller
             $leaderboardRank = $this->normalEmpLearnService->calculateLeaderboardRank($request->email);
             $currentUserRank = $leaderboardRank['current_user_rank'];
 
-            // Get tour_prompt status
-            $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
-            $tourPrompt = $tourPromptSettings  ? (int)$tourPromptSettings->tour_prompt : 0;
-
-            // fetch help redirect link from company settings
-            $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
-            if (!$helpRedirectTo) {
-                $helpRedirectTo = "https://help.simuphish.com";
-            }
+            //  tour_prompt status
             $tourPromptSettings = CompanySettings::where('company_id', $user->company_id)->first();
             $tourPrompt =  $tourPromptSettings ? (int)$tourPromptSettings->tour_prompt : 0;
 
             // tour completed
-
             $tourCompleted = UserTour::where('company_id', $user->company_id)->where('user_email', $request->email)
                 ->value('tour_completed');
             $tourCompleted = $tourCompleted ? 1 : 0;
-
 
             // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
@@ -247,7 +237,6 @@ class ApiLearnController extends Controller
             if (!$helpRedirectTo) {
                 $helpRedirectTo = 'https://help.simuphish.com';
             }
-
 
             return response()->json([
                 'success' => true,
@@ -565,7 +554,7 @@ class ApiLearnController extends Controller
             ], 500);
         }
     }
-    
+
     public function updateTrainingFeedback(Request $request)
     {
         try {
@@ -1647,11 +1636,10 @@ class ApiLearnController extends Controller
         try {
 
             $request->validate([
-                'user_email' => 'required|email'
+                'email' => 'required|email'
             ]);
 
-
-            $user = Users::where('user_email', $request->user_email)->first();
+            $user = Users::where('user_email', $request->email)->first();
 
             if (!$user) {
                 return response()->json([
@@ -1660,17 +1648,17 @@ class ApiLearnController extends Controller
                 ], 404);
             }
 
-            $tour = UserTour::where('company_id', (string) $user->company_id)
-                ->where('user_email', $user->user_email)
-                ->first();
-
+            UserTour::create([
+                'company_id' => (string) $user->company_id,
+                'user_email' => $user->user_email,
+                'tour_completed' => 1
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => __('Tour status fetched successfully'),
-                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+                'message' => __('Tour Completed successfully')
             ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -1683,7 +1671,6 @@ class ApiLearnController extends Controller
             ], 500);
         }
     }
-
 
     public function fetchSurveyQuestions(Request $request)
     {

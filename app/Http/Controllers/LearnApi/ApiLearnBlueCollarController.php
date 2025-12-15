@@ -1578,12 +1578,11 @@ class ApiLearnBlueCollarController extends Controller
     public function tourComplete(Request $request)
     {
         try {
-
             $request->validate([
                 'user_whatsapp' => 'required|string'
             ]);
 
-            $user = Users::where('user_whatsapp', $request->user_whatsapp)->first();
+            $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
 
             if (!$user) {
                 return response()->json([
@@ -1592,16 +1591,17 @@ class ApiLearnBlueCollarController extends Controller
                 ], 404);
             }
 
-            $tour = UserTour::where('company_id', (string) $user->company_id)
-                ->where('user_whatsapp', $user->user_whatsapp)
-                ->first();
-
+            UserTour::create([
+                'company_id' => (string) $user->company_id,
+                'user_whatsapp' => $user->whatsapp,
+                'tour_completed' => 1
+            ]);
+            
             return response()->json([
                 'success' => true,
-                'message' => __('Tour status fetched successfully'),
-                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+                'message' => __('Tour Completed successfully')
             ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
