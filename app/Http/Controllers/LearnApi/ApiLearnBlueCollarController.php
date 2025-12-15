@@ -12,6 +12,8 @@ use App\Models\PhishSetting;
 use App\Models\CompanySettings;
 use App\Models\TrainingModule;
 use App\Models\TrainingSetting;
+use App\Models\Users;
+use App\Models\UserTour;
 use App\Models\WaLiveCampaign;
 use App\Services\BlueCollarEmpLearnService;
 use App\Services\BlueCollarWhatsappService;
@@ -1562,4 +1564,49 @@ class ApiLearnBlueCollarController extends Controller
             return response()->json(['success' => false, 'message' => __('Error: ') . $e->getMessage()], 500);
         }
     }
+
+
+
+ public function tourComplete(Request $request)
+{
+    try {
+
+        $request->validate([
+            'user_whatsapp' => 'required|string'
+        ]);
+
+        $user = Users::where('user_whatsapp', $request->user_whatsapp)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => __('User with this WhatsApp number does not exist')
+            ], 404);
+        }
+
+        $tour = UserTour::where('company_id', (string) $user->company_id)
+                        ->where('user_whatsapp', $user->user_whatsapp)
+                        ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Tour status fetched successfully'),
+            'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+        ], 200);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation error',
+            'errors'  => $e->errors()
+        ], 422);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Server error: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 }

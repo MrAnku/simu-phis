@@ -10,7 +10,8 @@ class UserTour extends Model
     protected $fillable = [
         'company_id',
         'user_email',
-        'tour_completed'
+        'tour_completed',
+        'user_whatsapp'
     ];
 
     protected $casts = [

@@ -1592,39 +1592,46 @@ class ApiLearnController extends Controller
 
 
 
-    public function tourComplete(Request $request)
+public function tourComplete(Request $request)
 {
     try {
+       
         $request->validate([
-            'company_id' => 'required',
-            'user_email' => 'required|email',
+            'user_email' => 'required|email'
         ]);
 
-        // get user tour record
-        $tour = UserTour::where('company_id', (string) $request->company_id)
-            ->where('user_email', $request->user_email)
-            ->first();
+       
+        $user = Users::where('user_email', $request->user_email)->first();
 
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => __('User with this email does not exist')
+            ], 404);
+        }
+
+        $tour = UserTour::where('company_id', (string) $user->company_id)
+                        ->where('user_email', $user->user_email)
+                        ->first();
+
+       
         return response()->json([
             'success' => true,
             'message' => __('Tour status fetched successfully'),
-            'data' => [
-                'company_id'     => (string) $request->company_id,
-                'user_email'     => $request->user_email,
-                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
-            ]
+            'tour_completed' => $tour ? (bool) $tour->tour_completed : false
         ], 200);
 
     } catch (\Illuminate\Validation\ValidationException $e) {
         return response()->json([
             'success' => false,
-            'message' => $e->errors()
+            'message' => 'Validation error',
+            'errors'  => $e->errors()
         ], 422);
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => __('Something went wrong'),
-            'error'   => $e->getMessage()
+            'message' => 'Server error: ' . $e->getMessage()
         ], 500);
     }
 }
