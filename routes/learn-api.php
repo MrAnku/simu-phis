@@ -77,9 +77,7 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
             Route::get('/get-tranings', [ApiLearnBlueCollarController::class, 'getTranings']);
 
             Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
-            Route::post('/save-training-survey', [
-                ApiLearnBlueCollarController::class,
-                'saveTrainingSurveyResponse'
+            Route::post('/save-training-survey', [ApiLearnBlueCollarController::class, 'saveTrainingSurveyResponse'
             ]);
             Route::put('/update-training-feedback', [ApiLearnBlueCollarController::class, 'updateTrainingFeedback']);
             Route::get('/fetch-scorm-trainings', [ApiLearnBlueCollarController::class, 'fetchScormTrainings']);
@@ -110,8 +108,7 @@ Route::prefix('learn')->middleware('throttle:learner-limiter')->group(function (
             Route::get('/fetch-phish-test-results', [ApiLearnBlueCollarController::class, 'fetchPhishTestResults']);
             //  fetch survey questions
             Route::get('/fetch-survey-questions', [ApiLearnBlueCollarController::class, 'fetchSurveyQuestions']);
-
-
+            
             Route::post('/tour-complete', [ApiLearnBlueCollarController::class, 'tourComplete']);
         });
     });

@@ -1622,12 +1622,18 @@ class ApiLearnBlueCollarController extends Controller
             $request->validate([
                 'encoded_id' => 'required',
                 'survey_response' => 'required|array',
+                'type' => 'required|in:training,scorm'
             ]);
-
 
             $rowId = base64_decode($request->encoded_id);
 
-            $rowData = BlueCollarTrainingUser::find($rowId);
+            if ($request->type === 'training') {
+                $rowData = BlueCollarTrainingUser::find($rowId);
+                $trainingName = $rowData ? $rowData->trainingData->name : null;
+            } else {
+                $rowData = BlueCollarScormAssignedUser::find($rowId);
+                $trainingName = $rowData ? $rowData->scormTrainingData->name : null;
+            }
 
             if (!$rowData) {
                 return response()->json([
@@ -1636,17 +1642,15 @@ class ApiLearnBlueCollarController extends Controller
                 ], 404);
             }
 
-
             $rowData->survey_response = $request->survey_response;
             $rowData->save();
-
 
             audit_log(
                 $rowData->company_id,
                 null,
                 $rowData->user_whatsapp,
                 'SURVEY_RESPONSE_SAVED',
-                "Survey response saved for training '{$rowData->trainingData->name}'",
+                "Survey response saved for training '{$trainingName}'",
                 'bluecollar'
             );
 

@@ -237,11 +237,11 @@ class ApiLearnController extends Controller
             // tour completed
 
             $tourCompleted = UserTour::where('company_id', $user->company_id)->where('user_email', $request->email)
-               ->value('tour_completed');
-              $tourCompleted = $tourCompleted ? 1 : 0;
-           
-           
-              // check if help redirect destination is set or not
+                ->value('tour_completed');
+            $tourCompleted = $tourCompleted ? 1 : 0;
+
+
+            // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
 
             if (!$helpRedirectTo) {
@@ -256,7 +256,7 @@ class ApiLearnController extends Controller
                     'riskLevel' => $riskLevel ?? null,
                     'currentUserRank' => $currentUserRank,
                     'tour_prompt' => $tourPrompt,
-                     'tour_completed' => $tourCompleted,
+                    'tour_completed' => $tourCompleted,
                     'help_redirect_to' => $helpRedirectTo
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
@@ -321,10 +321,10 @@ class ApiLearnController extends Controller
             $request->validate([
                 'trainingScore' => 'required|integer',
                 'encoded_id' => 'required',
-              ]);
+            ]);
 
             $row_id = base64_decode($request->encoded_id);
-           $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
+            $rowData = TrainingAssignedUser::with('trainingData')->find($row_id);
 
             $user = $rowData->user_email;
 
@@ -511,60 +511,61 @@ class ApiLearnController extends Controller
 
 
 
- public function saveTrainingSurveyResponse(Request $request)
-{
-    try {
-        $request->validate([
-            'encoded_id' => 'required',
-            'survey_response' => 'required|array',
-        ]);
+    public function saveTrainingSurveyResponse(Request $request)
+    {
+        try {
+            $request->validate([
+                'encoded_id' => 'required',
+                'survey_response' => 'required|array',
+                'type' => 'required|in:training,scorm'
+            ]);
 
-      
-        $rowId = base64_decode($request->encoded_id);
+            $rowId = base64_decode($request->encoded_id);
 
-        $rowData = TrainingAssignedUser::find($rowId);
+            if ($request->type === 'training') {
+                $rowData = TrainingAssignedUser::find($rowId);
+                $trainingName = $rowData ? $rowData->trainingData->name : null;
+            } else {
+                $rowData = ScormAssignedUser::find($rowId);
+                $trainingName = $rowData ? $rowData->scormTrainingData->name : null;
+            }
 
-        if (!$rowData) {
+            if (!$rowData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training record not found')
+                ], 404);
+            }
+
+            $rowData->survey_response = $request->survey_response;
+            $rowData->save();
+
+            audit_log(
+                $rowData->company_id,
+                $rowData->user_email,
+                null,
+                'SURVEY_RESPONSE_SAVED',
+                "Survey response saved for training '{$trainingName}'",
+                'normal'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Survey response saved successfully')
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Training record not found')
-            ], 404);
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('An error occurred: ') . $e->getMessage()
+            ], 500);
         }
-
-        $rowData->survey_response = $request->survey_response;
-        $rowData->save();
-
-        
-        audit_log(
-            $rowData->company_id,
-            $rowData->user_email,
-            null,
-            'SURVEY_RESPONSE_SAVED',
-            "Survey response saved for training '{$rowData->trainingData->name}'",
-            'normal'
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => __('Survey response saved successfully')
-        ], 200);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'errors' => $e->errors()
-        ], 422);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => __('An error occurred: ') . $e->getMessage()
-        ], 500);
     }
-}
-
-
-
+    
     public function updateTrainingFeedback(Request $request)
     {
         try {
@@ -1641,49 +1642,47 @@ class ApiLearnController extends Controller
 
 
 
-public function tourComplete(Request $request)
-{
-    try {
-       
-        $request->validate([
-            'user_email' => 'required|email'
-        ]);
+    public function tourComplete(Request $request)
+    {
+        try {
 
-       
-        $user = Users::where('user_email', $request->user_email)->first();
+            $request->validate([
+                'user_email' => 'required|email'
+            ]);
 
-        if (!$user) {
+
+            $user = Users::where('user_email', $request->user_email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('User with this email does not exist')
+                ], 404);
+            }
+
+            $tour = UserTour::where('company_id', (string) $user->company_id)
+                ->where('user_email', $user->user_email)
+                ->first();
+
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Tour status fetched successfully'),
+                'tour_completed' => $tour ? (bool) $tour->tour_completed : false
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('User with this email does not exist')
-            ], 404);
+                'message' => 'Validation error',
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
         }
-
-        $tour = UserTour::where('company_id', (string) $user->company_id)
-                        ->where('user_email', $user->user_email)
-                        ->first();
-
-       
-        return response()->json([
-            'success' => true,
-            'message' => __('Tour status fetched successfully'),
-            'tour_completed' => $tour ? (bool) $tour->tour_completed : false
-        ], 200);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation error',
-            'errors'  => $e->errors()
-        ], 422);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Server error: ' . $e->getMessage()
-        ], 500);
     }
-}
 
 
     public function fetchSurveyQuestions(Request $request)

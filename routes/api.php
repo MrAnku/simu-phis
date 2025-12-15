@@ -614,7 +614,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/accept-policy', [ApiPolicyController::class, 'acceptPolicy']);
         Route::delete('/delete-policy/{encoded_id?}', [ApiPolicyController::class, 'deletePolicy']);
         Route::post('/generate-policy', [ApiPolicyController::class, 'generatePolicy']);
-
     });
 
     //policy campaign
@@ -666,14 +665,13 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
             Route::put('/start-scorm', [ApiLearnController::class, 'startScorm']);
             Route::post('/update-scorm-score', [ApiLearnController::class, 'updateScormTrainingScore']);
             Route::post('/update-game-score', [ApiLearnController::class, 'updateGameScore']);
-            
         });
 
         Route::prefix('blue-collar')->group(function () {
             Route::put('/start-training', [ApiLearnBlueCollarController::class, 'startTrainingModule']);
             Route::post('/update-training-score', [ApiLearnBlueCollarController::class, 'updateTrainingScore']);
 
-            
+
             Route::put('/start-scorm', [ApiLearnBlueCollarController::class, 'startScorm']);
             Route::post('/update-scorm-score', [ApiLearnBlueCollarController::class, 'updateScormTrainingScore']);
         });
