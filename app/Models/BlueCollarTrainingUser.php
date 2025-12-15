@@ -31,8 +31,11 @@ class BlueCollarTrainingUser extends Model
         'badge',
         'certificate_path',
         'feedback',
-        'alt_training'
+        'alt_training',
+        'survey_response',
     ];
+
+    
 
     public function trainingModule()
     {
@@ -47,4 +50,7 @@ class BlueCollarTrainingUser extends Model
     {
         return $this->belongsTo(TrainingGame::class, 'training', 'id');
     }
+
+
+    
 }

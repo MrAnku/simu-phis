@@ -27,7 +27,8 @@ class ScormAssignedUser extends Model
     'last_reminder_date',
     'badge',
     'certificate_path',
-    'feedback'
+    'feedback',
+    'survey_response',
   ];
 
   public function scormTrainingData()
