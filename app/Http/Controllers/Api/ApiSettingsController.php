@@ -1416,6 +1416,9 @@ class ApiSettingsController extends Controller
     public function updateNotificationLanguages(Request $request)
     {
         try {
+            $request->validate([
+                'localized_notification' => 'required|boolean',
+            ]);
             $companyId = Auth::user()->company_id;
 
             $trainingSetting = TrainingSetting::where('company_id', $companyId)->first();
@@ -1430,6 +1433,12 @@ class ApiSettingsController extends Controller
             if ($request->has('localized_notification')) {
                 $trainingSetting->localized_notification = $request->localized_notification;
                 $trainingSetting->save();
+                // Update company settings default_notifications_lang if localized_notification is disabled
+                if ($request->localized_notification == 0) {
+                    CompanySettings::where('company_id', $companyId)
+                        ->where('email', Auth::user()->email)
+                        ->update(['default_notifications_lang' => 'en']);
+                }
             }
 
             $message = $trainingSetting->localized_notification == 1
