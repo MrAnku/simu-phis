@@ -349,7 +349,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         // Awareness and Education Reporting
         Route::get('/fetch-awareness-edu-report', [ApiReportingController::class, 'fetchAwarenessEduReport']);
 
-        Route::get('/fetch-awareness-edu-reporting', [ApiReportingController::class, 'fetchAwarenessEduReporting']);
+        Route::get('/fetch-awareness-edu-reporting', [ApiReportController::class, 'fetchAwarenessEduReporting']);
 
         // Division Reporting
         Route::get('/fetch-division-users-report', [ApiReportingController::class, 'fetchDivisionUsersReport']);
@@ -359,7 +359,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         // Users Reporting
         Route::get('/fetch-users-report/{email}', [ApiReportingController::class, 'fetchUsersReport']);
 
-        Route::get('/fetch-users-report', [ApiReportingController::class, 'fetchUsersReport']);
+        Route::get('/fetch-users-report', [ApiReportController::class, 'fetchUsersReport']);
 
         Route::get('/fetch-users-reporting', [ApiReportingController::class, 'fetchUsersReporting']);
 

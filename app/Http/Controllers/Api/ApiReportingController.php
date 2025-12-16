@@ -1134,8 +1134,9 @@ class ApiReportingController extends Controller
         }
     }
 
-    public function fetchAwarenessEduReport()
+    public function fetchAwarenessEduReport()    //not in used
     {
+
         try {
             $companyId = Auth::user()->company_id;
             $totalAssignedUsers = TrainingAssignedUser::where('company_id', $companyId)->count();
@@ -1274,6 +1275,7 @@ class ApiReportingController extends Controller
 
     public function fetchAwarenessEduReporting()
     {
+
         try {
             $companyId = Auth::user()->company_id ?? null;
             if (!$companyId) {
@@ -2131,6 +2133,7 @@ class ApiReportingController extends Controller
 
     public function fetchUsersReporting()
     {
+        dd("called");
         try {
             $companyId = Auth::user()->company_id;
 

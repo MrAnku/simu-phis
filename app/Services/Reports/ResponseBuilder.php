@@ -35,11 +35,45 @@ class ResponseBuilder
         ], 200);
     }
 
-    public static function error(string $message, int $statusCode = 500): JsonResponse
+
+    public static function awarenessSuccess(
+        array $trainingStats,
+        array $generalStats,
+        array $durationStats,
+        array $onboardingDetails
+    ): JsonResponse {
+        return response()->json([
+            'success' => true,
+            'message' => __('Awareness and Education report fetched successfully'),
+            'data' => [
+                'training_statistics' => $trainingStats,
+                'general_statistics' => $generalStats,
+                'education_duration_statistics' => $durationStats,
+                'onboardingTrainingDetails' => $onboardingDetails,
+            ]
+        ], 200);
+    }
+
+    public static function awarenessEmpty(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('No data found'),
+            'data' => [
+                'training_statistics' => [],
+                'general_statistics' => [],
+                'education_duration_statistics' => [],
+                'onboardingTrainingDetails' => [],
+            ]
+        ], 200);
+    }
+
+    public static function error(string $msg): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'message' => $message,
-        ], $statusCode);
+            'message' => __('Error: ') . $msg,
+            'data' => []
+        ], 500);
     }
 }
