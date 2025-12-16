@@ -1393,7 +1393,6 @@
     "Profile updated": "تم تحديث الملف الشخصي",
     "Failed to update profile": "فشل في تحديث الملف الشخصي",
     "Entered current password is wrong": "كلمة المرور الحالية المدخلة غير صحيحة",
-    "Please set a strong password": "يرجى تعيين كلمة مرور قوية",
     "Password Updated": "تم تحديث كلمة المرور",
     "Failed to enable MFA": "فشل في تفعيل المصادقة متعددة العوامل",
     "Multi-Factor Authentication is disabled": "تم تعطيل المصادقة متعددة العوامل",
@@ -1724,5 +1723,7 @@
     "Tour prompt disabled successfully": "تم تعطيل جولة الإرشاد بنجاح",
     "Content survey is disabled from company.": "تم تعطيل استبيان المحتوى من الشركة.",
     "Survey questions retrieved successfully.": "تم استرجاع أسئلة الاستبيان بنجاح.",
-    "Tour Completed successfully": "تم إكمال الجولة بنجاح"
+    "Tour Completed successfully": "تم إكمال الجولة بنجاح",
+    "Training Notification disabled successfully": "تم تعطيل إشعار التدريب بنجاح",
+    "Training Notification enabled successfully": "تم تفعيل إشعار التدريب بنجاح"
 }

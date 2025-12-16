@@ -1413,7 +1413,7 @@ class ApiSettingsController extends Controller
     }
 
 
-    public function updateNotificationLanguages(Request $request)
+    public function toggleTrainingNotification(Request $request)
     {
         try {
             $request->validate([
@@ -1442,13 +1442,12 @@ class ApiSettingsController extends Controller
             }
 
             $message = $trainingSetting->localized_notification == 1
-                ? __(' localized  Notification enabled successfully')
-                : __('localized  Notification disabled successfully');
+                ? __('Training Notification enabled successfully')
+                : __('Training Notification disabled successfully');
 
             return response()->json([
                 'success' => true,
-                'message' => $message,
-                'localized_notification' => $trainingSetting->localized_notification,
+                'message' => $message
             ]);
         } catch (\Exception $e) {
 

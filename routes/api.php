@@ -295,7 +295,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
           Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
           Route::put('/survey-update', [ApiSettingsController::class, 'updateSurvey']);
         
-          Route::put('/notification-languages', [ApiSettingsController::class, 'updateNotificationLanguages']);
+        Route::put('/training-notifications/toggle', [ApiSettingsController::class, 'toggleTrainingNotification']);
 
           Route::put('/update-help-redirect', [ApiSettingsController::class, 'updateHelpRedirect']);
           Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
