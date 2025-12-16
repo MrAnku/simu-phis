@@ -364,7 +364,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/fetch-users-reporting', [ApiReportingController::class, 'fetchUsersReporting']);
 
         // Training Reporting
-        Route::get('/fetch-training-report', [ApiReportingController::class, 'fetchTrainingReport']);
+        Route::get('/fetch-training-report', [ApiReportController::class, 'fetchTrainingReport']);
 
         Route::get('/fetch-training-reporting', [ApiReportingController::class, 'fetchTrainingReporting']);
 
@@ -691,7 +691,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::delete('/delete/{id}', [ApiCustomTrainingEmailController::class, 'deleteTemplate']);
     });
 
-     // Custom Notification Email Templates
+    // Custom Notification Email Templates
     Route::prefix('custom-notification-email')->group(function () {
         Route::get('/', [ApiCustomNotificationEmailController::class, 'index']);
         Route::get('/get-template-by-id/{id}', [ApiCustomNotificationEmailController::class, 'getTemplateById']);
@@ -699,7 +699,6 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/select-deselect-template/{id}', [ApiCustomNotificationEmailController::class, 'selectDeselectTemplate']);
         Route::post('/update/{id}', [ApiCustomNotificationEmailController::class, 'updateTemplate']);
         Route::delete('/delete/{id}', [ApiCustomNotificationEmailController::class, 'deleteTemplate']);
-        
     });
 
     // Audit Logs

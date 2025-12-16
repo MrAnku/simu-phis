@@ -3,27 +3,36 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\Reports\BaseReportService;
+use App\Services\Reports\DivisionReportService;
+use App\Services\Reports\AwarenessReportService;
+use App\Services\Reports\TrainingReportService;
 use Illuminate\Http\Request;
 use App\Services\Reports\OverallNormalEmployeeReport;
 use Illuminate\Support\Facades\Auth;
 
 class ApiReportController extends Controller
 {
-    protected $baseReportService;
+    protected DivisionReportService $divisionService;
+    protected AwarenessReportService $awarenessService;
+    protected TrainingReportService $trainingService;
 
-    public function __construct(BaseReportService $baseReportService)
-    {
-        $this->baseReportService = $baseReportService;
+    public function __construct(
+        DivisionReportService $divisionService,
+        AwarenessReportService $awarenessService,
+        TrainingReportService $trainingService
+    ) {
+        $this->divisionService = $divisionService;
+        $this->awarenessService = $awarenessService;
+        $this->trainingService = $trainingService;
     }
 
     public function fetchDivisionUsersReporting(Request $request)
     {
-        return  $this->baseReportService->fetchDivisionUsersReporting($request);
+        return $this->divisionService->fetchDivisionUsersReporting();
     }
     public function fetchAwarenessEduReporting()
     {
-        return $this->baseReportService->fetchAwarenessEduReporting();
+        return $this->awarenessService->fetchAwarenessEduReporting();
     }
     public function fetchUsersReport()
     {
@@ -42,5 +51,10 @@ class ApiReportController extends Controller
                 'message' => __('Error: ') . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function fetchTrainingReport()
+    {
+        return $this->trainingService->fetchTrainingReport();
     }
 }

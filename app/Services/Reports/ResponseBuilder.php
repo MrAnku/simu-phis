@@ -67,13 +67,31 @@ class ResponseBuilder
             ]
         ], 200);
     }
+    public static function trainingReportSuccess(
+        array $overall,
+        array $modules,
+        array $games,
+        $recent,
+        array $summary
+    ): JsonResponse {
+        return response()->json([
+            'success' => true,
+            'message' => 'Advanced training report fetched successfully',
+            'data' => [
+                'overall_statistics' => $overall,
+                'training_modules' => $modules,
+                'game_trainings' => $games,
+                'recent_activities' => $recent,
+                'summary' => $summary,
+            ]
+        ], 200);
+    }
 
     public static function error(string $msg): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'message' => __('Error: ') . $msg,
-            'data' => []
+            'message' => $msg,
         ], 500);
     }
 }

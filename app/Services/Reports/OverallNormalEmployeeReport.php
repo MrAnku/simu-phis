@@ -15,15 +15,26 @@ use App\Models\ScormAssignedUser;
 use App\Models\Badge;
 use App\Models\WaLiveCampaign;
 
+/**
+ * Service for generating overall report for a normal employee (or admin view of all employees).
+ */
 class OverallNormalEmployeeReport
 {
     protected $companyId;
-    //constructor
+
+    /**
+     * @param string $companyId
+     */
     public function __construct($companyId)
     {
         $this->companyId = $companyId;
     }
 
+    /**
+     * Generate the complete report as an array.
+     *
+     * @return array
+     */
     public function generateReport(): array
     {
         $apiDashboardController = new ApiDashboardController();
@@ -48,12 +59,22 @@ class OverallNormalEmployeeReport
 
         ];
     }
+    /**
+     * Calculate total number of employees in the company.
+     *
+     * @return int
+     */
     private function totalEmployees(): int
     {
         $companyReport = new CompanyReport($this->companyId);
         return $companyReport->employees()->count();
     }
 
+    /**
+     * Count employees involved in any simulations.
+     *
+     * @return int
+     */
     private function employeesInSimulation(): int
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -74,6 +95,11 @@ class OverallNormalEmployeeReport
         return $email + $quishing + $whatsapp + $ai_vishing;
     }
 
+    /**
+     * Calculate overall risk score.
+     *
+     * @return float
+     */
     private function overallRiskScore(): float
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -81,6 +107,11 @@ class OverallNormalEmployeeReport
         return $companyReport->calculateOverallRiskScore();
     }
 
+    /**
+     * Count total breached emails.
+     *
+     * @return int
+     */
     private function emailsBreached(): int
     {
         $breachedEmails = BreachedEmail::where('company_id', $this->companyId)->count();
@@ -88,6 +119,11 @@ class OverallNormalEmployeeReport
         return $breachedEmails;
     }
 
+    /**
+     * Analyze risk levels of employees.
+     *
+     * @return array
+     */
     public function riskAnalysis(): array
     {
 
@@ -115,6 +151,11 @@ class OverallNormalEmployeeReport
         ];
     }
 
+    /**
+     * Analyze training progress.
+     *
+     * @return array
+     */
     private function trainingAnalysis(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -128,6 +169,11 @@ class OverallNormalEmployeeReport
         ];
     }
 
+    /**
+     * Analyze game training progress.
+     *
+     * @return array
+     */
     private function gameAnalysis(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -139,6 +185,11 @@ class OverallNormalEmployeeReport
         ];
     }
 
+    /**
+     * Calculate interaction averages (open rate, click rate, etc.).
+     *
+     * @return array
+     */
     private function interactionAverage(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -151,6 +202,11 @@ class OverallNormalEmployeeReport
         ];
     }
 
+    /**
+     * Calculate score averages for different training types.
+     *
+     * @return array
+     */
     public function scoreAverage(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -163,6 +219,11 @@ class OverallNormalEmployeeReport
         ];
     }
 
+    /**
+     * Get the most assigned training modules.
+     *
+     * @return array
+     */
     private function mostAssignedTrainings(): array
     {
         $trainingIds = TrainingModule::whereIn('company_id', ['default', $this->companyId])->pluck('id')->toArray();
@@ -185,6 +246,11 @@ class OverallNormalEmployeeReport
         return $mostAssignedTrainingIds;
     }
 
+    /**
+     * Get the most completed training modules.
+     *
+     * @return array
+     */
     private function mostCompletedTrainings(): array
     {
         $trainingIds = TrainingModule::whereIn('company_id', ['default', $this->companyId])->pluck('id')->toArray();
@@ -208,6 +274,11 @@ class OverallNormalEmployeeReport
         return $mostCompletedTrainingIds;
     }
 
+    /**
+     * Identify most compromised employees.
+     *
+     * @return array
+     */
     public function mostCompromisedEmployees(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -226,6 +297,11 @@ class OverallNormalEmployeeReport
         return $compromiseData;
     }
 
+    /**
+     * Identify most clicked employees.
+     *
+     * @return array
+     */
     public function mostClickedEmployees(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -244,6 +320,11 @@ class OverallNormalEmployeeReport
         return $clickData;
     }
 
+    /**
+     * Identify most ignored employees (who ignored simulations).
+     *
+     * @return array
+     */
     private function mostIgnoredEmployees(): array
     {
         $companyReport = new CompanyReport($this->companyId);
@@ -262,6 +343,11 @@ class OverallNormalEmployeeReport
         return $ignoreData;
     }
 
+    /**
+     * Get employee badges details.
+     * 
+     * @return \Illuminate\Support\Collection
+     */
     private function empBadges()
     {
         // Build a map of badge id => ['name' => ..., 'description' => ...]
