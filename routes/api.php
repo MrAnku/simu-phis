@@ -274,6 +274,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/smart-groups', [ApiSettingsController::class, 'smartGroups']);
         Route::post('/smart-groups/add', [ApiSettingsController::class, 'addSmartGroup']);
         Route::delete('/smart-groups/delete/{id}', [ApiSettingsController::class, 'deleteSmartGroup']);
+        Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
         //auto syncing
         Route::get('/auto-syncing', [ApiSettingsController::class, 'autoSyncing']);
         Route::post('/auto-syncing/add', [ApiSettingsController::class, 'addAutoSync']);
@@ -287,19 +288,23 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
         Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
 
+        // ===== Enable or disable phish results visibility to allow emp to view their phish results ========
         Route::put('/update-phish-results', [ApiSettingsController::class, 'updatePhishResults']);
+
+        // ===== Enable or disable risk info visibility to allow emp to view their risk info =========
         Route::put('/update-risk-information', [ApiSettingsController::class, 'updateRiskInformation']);
-         Route::put('/phish-reply', [ApiSettingsController::class, 'phishingReply']);
-         // enable overall reporting
-          Route::put('/enable-report', [ApiSettingsController::class, 'enableReport']);
-          Route::put('/disable-report', [ApiSettingsController::class, 'disableReport']);
-          Route::put('/survey-update', [ApiSettingsController::class, 'updateSurvey']);
-        
+
+        // ======== Enable or disable Survey to take survey after training =========
+        Route::put('/survey-update', [ApiSettingsController::class, 'updateSurvey']);
+
+        // ======== Enable or disable training notifications =========
         Route::put('/training-notifications/toggle', [ApiSettingsController::class, 'toggleTrainingNotification']);
 
-          Route::put('/update-help-redirect', [ApiSettingsController::class, 'updateHelpRedirect']);
-          Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
+        // ======== Update Help Redirect URL or Email =========  
+        Route::put('/update-help-redirect', [ApiSettingsController::class, 'updateHelpRedirect']);
 
+        // ======== Enable or disable Tour Prompt Settings for learners =========
+        Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
     });
 
     Route::prefix('triggers')->group(function () {
