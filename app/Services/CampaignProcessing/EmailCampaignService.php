@@ -11,6 +11,7 @@ use App\Models\PhishingWebsite;
 use App\Models\SenderProfile;
 use App\Models\EmailCampActivity;
 use App\Models\OutlookDmiToken;
+use App\Models\TrainingAssignedUser;
 use Illuminate\Support\Facades\Log;
 use App\Services\CampaignTrainingService;
 use App\Services\PolicyAssignedService;
@@ -52,6 +53,14 @@ class EmailCampaignService
      */
     private function sendOnlyTraining(CampaignLive $campaign): void
     {
+        $allCompleted = TrainingAssignedUser::where('user_email', $campaign->user_email)
+            ->where('completed', 0)
+            ->doesntExist();
+
+        if ($allCompleted) {
+            echo "All trainings completed – no mail triggered for " . $campaign->user_email . "\n";
+            return;
+        }
         $all_camp = Campaign::where('campaign_id', $campaign->campaign_id)->first();
 
         if ($all_camp->training_assignment == 'all') {
@@ -203,8 +212,8 @@ class EmailCampaignService
         $mailBody = str_replace(
             '{{tracker_img}}',
             '<img src="' . env('APP_URL') . '/trackEmailView/' . $campaign->id . '" alt="" width="1" height="1" style="display:none;">' .
-            '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
-            '<input type="hidden" id="campaign_type" value="email">',
+                '<input type="hidden" id="campaign_id" value="' . $campaign->campaign_id . '">' .
+                '<input type="hidden" id="campaign_type" value="email">',
             $mailBody
         );
 
@@ -357,13 +366,13 @@ class EmailCampaignService
         $sent = false;
         // check user email domain is outlook email
         $isOutlookEmail = checkIfOutlookDomain($campaign->user_email);
-        
+
         if ($isOutlookEmail) {
             echo "Outlook email detected: " . $campaign->user_email . "\n";
 
             $accessToken = OutlookDmiToken::where('company_id', $company_id)
                 ->where('created_at', '>', now()->subMinutes(60))->first();
-            
+
             if ($accessToken) {
                 echo "Access token found for company ID: " . $company_id . "\n";
 
@@ -376,7 +385,7 @@ class EmailCampaignService
             } else {
                 OutlookDmiToken::where('company_id', $company_id)->delete();
                 echo "Access token expired or not found for company ID: " . $company_id . "\n";
-                
+
                 if (sendPhishingMail($mailData)) {
                     $sent = true;
                 } else {
@@ -385,7 +394,7 @@ class EmailCampaignService
             }
         } else {
             echo "Non-Outlook email detected: " . $campaign->user_email . "\n";
-            
+
             if (sendPhishingMail($mailData)) {
                 $sent = true;
             } else {

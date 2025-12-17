@@ -269,9 +269,9 @@ class BlueCollarCampTrainingService
 
     private static function getAllTrainingNames($user_phone)
     {
-        $allAssignedTrainings = BlueCollarTrainingUser::with('trainingData', 'trainingGame')->where('user_whatsapp', $user_phone)->get();
+        $allAssignedTrainings = BlueCollarTrainingUser::with('trainingData', 'trainingGame')->where('user_whatsapp', $user_phone)->where('completed', 0)->get();
 
-        $scormTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $user_phone)->get();
+        $scormTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')->where('user_whatsapp', $user_phone)->where('completed', 0)->get();
 
         $trainingNames = collect();
         $scormNames = collect();

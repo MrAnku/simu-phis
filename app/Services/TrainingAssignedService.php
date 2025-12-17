@@ -27,7 +27,7 @@ class TrainingAssignedService
             'learn_domain' => $mailMeta['learn_domain'],
             'training_due_date' => $campData['training_due_date'] ?? null
         ];
-        
+
         try {
             Mail::to($campData['user_email'])->send(new TrainingAssignedEmail($mailData, $trainingNames));
 
@@ -58,9 +58,32 @@ class TrainingAssignedService
             'training_due_date' => $campData['training_due_date'] ?? null
         ];
 
-        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')->where('user_email', $campData['user_email'])->get();
+        // check if overdue training disable or not
+        $trainingSetting = new TrainingSettingService;
 
-        $scormTrainings = ScormAssignedUser::with('scormTrainingData')->where('user_email', $campData['user_email'])->get();
+        $allAssignedTrainings = TrainingAssignedUser::with('trainingData', 'trainingGame')
+            ->where('user_email', $campData['user_email'])
+            ->where('completed', 0)
+            ->when(
+                $trainingSetting->checkDisableOverdueTraining($campData['company_id']),
+                fn($q) => $q->where(function ($q2) {
+                    $q2->whereNull('training_due_date')
+                        ->orWhereDate('training_due_date', '>=', now());
+                })
+            )
+            ->get();
+
+        $scormTrainings = ScormAssignedUser::with('scormTrainingData')
+            ->where('user_email', $campData['user_email'])
+            ->where('completed', 0)
+            ->when(
+                $trainingSetting->checkDisableOverdueTraining($campData['company_id']),
+                fn($q) => $q->where(function ($q2) {
+                    $q2->whereNull('scorm_due_date')
+                        ->orWhereDate('scorm_due_date', '>=', now());
+                })
+            )
+            ->get();
 
         $trainingNames = collect();
         $scormNames = collect();

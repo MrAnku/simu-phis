@@ -26,7 +26,7 @@ class CampaignTrainingService
         }
     }
 
-    private static function assignAllTrainings($campaign, $trainingModules = null, $smishing=false, $scormTrainings = null)
+    private static function assignAllTrainings($campaign, $trainingModules = null, $smishing = false, $scormTrainings = null)
     {
         $trainingAssignedService = new TrainingAssignedService();
 
@@ -88,10 +88,17 @@ class CampaignTrainingService
                     );
                 }
 
-                // Append training name to array
-                $module = TrainingModule::find($training);
-                if ($module) {
-                    $trainingNames[] = $module->name;
+                // Append training name to array of incompleted trainings
+                $isIncompleted = TrainingAssignedUser::where('user_email', $user_email)
+                    ->where('training', $training)
+                    ->where('completed', 0)
+                    ->exists();
+
+                if ($isIncompleted) {
+                    $module = TrainingModule::find($training);
+                    if ($module) {
+                        $trainingNames[] = $module->name;
+                    }
                 }
             }
         }
@@ -131,10 +138,17 @@ class CampaignTrainingService
                     );
                 }
 
-                // Append scorm training name to array
-                $module = ScormTraining::find($training);
-                if($module) {
-                    $trainingNames[] = $module->name;
+                // Append scorm training name to array of incompleted trainings
+                $isIncompleted = ScormAssignedUser::where('user_email', $user_email)
+                    ->where('scorm', $training)
+                    ->where('completed', 0)
+                    ->exists();
+
+                if ($isIncompleted) {
+                    $module = ScormTraining::find($training);
+                    if ($module) {
+                        $trainingNames[] = $module->name;
+                    }
                 }
             }
         }
@@ -228,10 +242,17 @@ class CampaignTrainingService
                 );
             }
 
-            // Append training module name to array
-            $module = TrainingModule::find($campaign->training_module);
-            if ($module) {
-                $trainingNames[] = $module->name;
+            // Append training name to array of incompleted trainings
+            $isIncompleted = TrainingAssignedUser::where('user_email', $user_email)
+                ->where('training', $campaign->training_module)
+                ->where('completed', 0)
+                ->exists();
+
+            if ($isIncompleted) {
+                $module = TrainingModule::find($campaign->training_module);
+                if ($module) {
+                    $trainingNames[] = $module->name;
+                }
             }
         }
 
@@ -272,10 +293,17 @@ class CampaignTrainingService
                 );
             }
 
-            // Append scorm training name to array
-            $scorm = ScormTraining::find($campaign->scorm_training);
-            if ($scorm) {
-                $trainingNames[] = $scorm->name;
+            // Append training name to array of incompleted trainings
+            $isIncompleted = ScormAssignedUser::where('user_email', $user_email)
+                ->where('scorm', $campaign->scorm_training)
+                ->where('completed', 0)
+                ->exists();
+
+            if ($isIncompleted) {
+                $scorm = ScormTraining::find($campaign->scorm_training);
+                if ($scorm) {
+                    $trainingNames[] = $scorm->name;
+                }
             }
         }
 
