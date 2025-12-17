@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Services\Reports\OverallNormalEmployeeReport;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Reports\CourseSummaryReportService;
+use App\Services\Reports\PoliciesReportService;
+use App\Services\Reports\GamesReportService;
 use App\Services\Reports\ResponseBuilder;
 
 class ApiReportController extends Controller
@@ -18,17 +20,23 @@ class ApiReportController extends Controller
     protected AwarenessReportService $awarenessService;
     protected TrainingReportService $trainingService;
     protected CourseSummaryReportService $courseSummaryService;
+    protected PoliciesReportService $policiesService;
+    protected GamesReportService $gamesService;
 
     public function __construct(
         DivisionReportService $divisionService,
         AwarenessReportService $awarenessService,
         TrainingReportService $trainingService,
-        CourseSummaryReportService $courseSummaryService
+        CourseSummaryReportService $courseSummaryService,
+        PoliciesReportService $policiesService,
+        GamesReportService $gamesService
     ) {
         $this->divisionService = $divisionService;
         $this->awarenessService = $awarenessService;
         $this->trainingService = $trainingService;
         $this->courseSummaryService = $courseSummaryService;
+        $this->policiesService = $policiesService;
+        $this->gamesService = $gamesService;
     }
 
     public function fetchDivisionUsersReporting(Request $request)
@@ -69,6 +77,33 @@ class ApiReportController extends Controller
             $companyId = Auth::user()->company_id;
             $data = $this->courseSummaryService->fetchCourseSummaryReport($companyId);
             return ResponseBuilder::courseSummarySuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function fetchPoliciesReporting()
+    {
+
+        try {
+            $companyId = Auth::user()->company_id;
+            $data = $this->policiesService->fetchPoliciesReport($companyId);
+            return ResponseBuilder::policiesReportSuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function fetchGamesReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $data = $this->gamesService->fetchGamesReport($companyId);
+            return ResponseBuilder::gamesReportSuccess($data);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

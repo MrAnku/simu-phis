@@ -457,4 +457,52 @@ class MetricCalculator
             ->values()
             ->toArray();
     }
+
+    public static function formatAverageTimeToAccept($timeInSeconds)
+    {
+        return $timeInSeconds
+            ? ($timeInSeconds < 60
+                ? round($timeInSeconds, 2) . ' seconds'
+                : round($timeInSeconds / 60, 2) . ' minutes')
+            : 'N/A';
+    }
+
+    public static function formatAssignedPolicyDetails($assignedPolicies): array
+    {
+        $details = [];
+        foreach ($assignedPolicies as $assignedPolicy) {
+            $policy = \App\Models\Policy::find($assignedPolicy->policy);
+            $details[] = [
+                'policy_name' => $policy ? $policy->policy_name : 'N/A',
+                'accepted' => $assignedPolicy->accepted == 1 ? 'Yes' : 'No',
+                'accepted_date' => $assignedPolicy->accepted_at
+                    ? \Carbon\Carbon::parse($assignedPolicy->accepted_at)->format('Y-m-d')
+                    : 'Not Accepted',
+                'reading_time' => self::formatAverageTimeToAccept($assignedPolicy->reading_time),
+                'user_email' => $assignedPolicy->user_email,
+                'user_name' => $assignedPolicy->user_name,
+                'json_quiz_response' => $assignedPolicy->json_quiz_response ? json_decode($assignedPolicy->json_quiz_response, true) : null,
+            ];
+        }
+        return $details;
+    }
+
+    public static function formatGamesReport($trainingGames): array
+    {
+        $games = [];
+        foreach ($trainingGames as $trainingGame) {
+            $games[] = [
+                'name' => $trainingGame->name,
+                'total_assigned_games' => \App\Models\TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->count(),
+                'games_completed' => \App\Models\TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->where('completed', 1)->count(),
+                'in_progress_games' => \App\Models\TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->where('training_started', 1)->count(),
+                'total_no_of_simulations' => \App\Models\CampaignLive::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                'total_no_of_quish_camp' => \App\Models\QuishingLiveCamp::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                'total_no_of_ai_camp' => \App\Models\AiCallCampLive::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                'total_no_of_wa_camp' => \App\Models\WaLiveCampaign::where('training_type', 'games')->where('training_module', $trainingGame->id)->count(),
+                'game_completion_time_in_seconds' => \App\Models\TrainingAssignedUser::where('training_type', 'games')->where('training', $trainingGame->id)->value('game_time') ?: 0,
+            ];
+        }
+        return $games;
+    }
 }

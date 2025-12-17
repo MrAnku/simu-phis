@@ -103,4 +103,22 @@ class ResponseBuilder
             'data' => $data
         ], 200);
     }
+
+    public static function policiesReportSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Policies report fetched successfully'),
+            'data' => $data
+        ], 200);
+    }
+
+    public static function gamesReportSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Games report fetched successfully'),
+            'data' => $data
+        ], 200);
+    }
 }
