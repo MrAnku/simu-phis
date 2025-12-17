@@ -31,6 +31,7 @@ use App\Models\PhishSetting;
 use App\Models\CompanySettings;
 use App\Models\TrainingSetting;
 use App\Models\UserTour;
+use App\Services\TrainingSettingService;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -842,6 +843,8 @@ class ApiLearnController extends Controller
             ]);
 
             $email = $request->query('email');
+            $user = Users::where('user_email', $email)->first();
+            $trainingSettingService = new TrainingSettingService();
 
             $allTrainings = ScormAssignedUser::with('scormTrainingData')
                 ->where('user_email', $request->email)->get();
@@ -872,6 +875,7 @@ class ApiLearnController extends Controller
                         ->where('user_email', $email)
                         ->where('scorm_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
+                    'disable_overdue_training' => $trainingSettingService->checkDisableOverdueTraining($user->company_id)
                 ]
             ], 200);
         } catch (ValidationException $e) {

@@ -305,6 +305,9 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
         // ======== Enable or disable Tour Prompt Settings for learners =========
         Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
+        
+        // Enable or disable Overdue Training so that users can/cannot access training after due date
+        Route::put('/update-overdue-training', [ApiSettingsController::class, 'updateOverdueTraining']);
     });
 
     Route::prefix('triggers')->group(function () {

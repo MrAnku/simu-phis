@@ -282,12 +282,12 @@ class ProcessCampaigns extends Command
     $this->emailCampaignService->relaunchRecurringCampaigns();
   }
 
-  private function sendReminderMail(Company $company): void
+   private function sendReminderMail(Company $company): void
   {
     try {
       $remindFreqDays = (int) $company->company_settings->training_assign_remind_freq_days;
      
-      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)
+      $trainingAssignedUsers = TrainingAssignedUser::where('company_id', $company->company_id)->where('completed', 0)
         ->get()
         ->unique('user_email')
         ->values();
@@ -332,27 +332,35 @@ class ProcessCampaigns extends Command
   }
 
   private function freqTrainingReminder($assignedUser)
-  {
+{
     try {
-      $trainingAssignedService = new TrainingAssignedService();
-      
-      // Get the latest training record for this user to get the correct due date
-      $latestTraining = TrainingAssignedUser::where('user_email', $assignedUser->user_email)
-        ->where('company_id', $assignedUser->company_id)
-        ->orderBy('id', 'desc')
-        ->first();
-      
-      $mailData = [
-        'user_email' => $assignedUser->user_email,
-        'user_name' => $assignedUser->user_name,
-        'company_id' => $assignedUser->company_id,
-        'training_due_date' => $latestTraining->training_due_date ?? null,
-      ];
-      $trainingAssignedService->sendTrainingRemindEmail($mailData);
+        // Check if the training is already completed
+        $latestTraining = TrainingAssignedUser::where('user_email', $assignedUser->user_email)
+            ->where('company_id', $assignedUser->company_id)
+            ->orderBy('id', 'desc')
+            ->first();
 
-      echo "Reminder email sent to: " . $assignedUser->user_email . " at " . now() . "\n";
+        if (!$latestTraining || $latestTraining->complete == 1) {
+            // Training already completed, skip sending reminder
+            echo "Training already completed for: " . $assignedUser->user_email . " - Skipping reminder.\n";
+            return;
+        }
+
+        $trainingAssignedService = new TrainingAssignedService();
+
+        $mailData = [
+            'user_email' => $assignedUser->user_email,
+            'user_name' => $assignedUser->user_name,
+            'company_id' => $assignedUser->company_id,
+            'training_due_date' => $latestTraining->training_due_date ?? null,
+        ];
+
+        $trainingAssignedService->sendTrainingRemindEmail($mailData);
+
+        echo "Reminder email sent to: " . $assignedUser->user_email . " at " . now() . "\n";
     } catch (\Exception $e) {
-      echo "Error sending reminder email: " . $e->getMessage() . "\n";
+        echo "Error sending reminder email: " . $e->getMessage() . "\n";
     }
-  }
+}
+
 }

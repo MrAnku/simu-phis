@@ -19,6 +19,7 @@ use App\Services\BlueCollarEmpLearnService;
 use App\Services\BlueCollarWhatsappService;
 use App\Services\CheckWhitelabelService;
 use App\Services\TrainingAssignedService;
+use App\Services\TrainingSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -279,6 +280,9 @@ class ApiLearnBlueCollarController extends Controller
                 'user_whatsapp' => 'required|integer|exists:blue_collar_employees,whatsapp',
             ]);
 
+            $trainingSettingService = new TrainingSettingService();
+            $user = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
+
             $blueCollarUser = BlueCollarEmployee::where('whatsapp', $request->user_whatsapp)->first();
             if (!$blueCollarUser) {
                 return response()->json([
@@ -315,6 +319,7 @@ class ApiLearnBlueCollarController extends Controller
                         ->where('user_whatsapp', $request->user_whatsapp)
                         ->where('training_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
+                    'disable_overdue_training' => $trainingSettingService->checkDisableOverdueTraining($user->company_id)
                 ],
                 'message' => __('Courses fetched successfully for blue collar employee')
             ], 200);
@@ -586,6 +591,8 @@ class ApiLearnBlueCollarController extends Controller
             ]);
 
             $user_whatsapp = $request->query('user_whatsapp');
+            $trainingSettingService = new TrainingSettingService();
+            $user = BlueCollarEmployee::where('whatsapp', $user_whatsapp)->first();
 
             $allTrainings = BlueCollarScormAssignedUser::with('scormTrainingData')
                 ->where('user_whatsapp', $request->user_whatsapp)->get();
@@ -623,6 +630,7 @@ class ApiLearnBlueCollarController extends Controller
                         ->where('user_whatsapp', $user_whatsapp)
                         ->where('scorm_started', 1)
                         ->where('completed', 0)->avg('personal_best')),
+                    'disable_overdue_training' => $trainingSettingService->checkDisableOverdueTraining($user->company_id)
                 ]
             ], 200);
         } catch (ValidationException $e) {
@@ -1596,7 +1604,7 @@ class ApiLearnBlueCollarController extends Controller
                 'user_whatsapp' => $user->whatsapp,
                 'tour_completed' => 1
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => __('Tour Completed successfully')

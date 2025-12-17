@@ -40,7 +40,7 @@ class ApiSettingsController extends Controller
             $companyEmail = Auth::user()->email;
 
             $all_settings = Company::where('email', $companyEmail)
-                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig', 'phish_settings','training_settings')
+                ->with('company_settings', 'company_whiteLabel', 'company_whiteLabel.smtp', 'company_whiteLabel.whatsappConfig', 'siemConfig', 'phish_settings', 'training_settings')
                 ->first();
 
             if (!$all_settings) {
@@ -1540,6 +1540,46 @@ class ApiSettingsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function updateOverdueTraining(Request $request)
+    {
+        try {
+            $request->validate([
+                'disable_overdue_training' => 'required|boolean',
+            ]);
+
+            $companyId = Auth::user()->company_id;
+            $companyEmail = Auth::user()->email;
+
+            $settings = TrainingSetting::where('company_id', $companyId)
+                ->where('email', $companyEmail)
+                ->first();
+
+            if (!$settings) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Training settings not found')
+                ], 404);
+            }
+
+            $settings->disable_overdue_training = $request->disable_overdue_training;
+            $settings->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('Overdue training setting updated successfully')
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

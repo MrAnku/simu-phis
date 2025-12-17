@@ -13,15 +13,13 @@ class TrainingSetting extends Model
         'localized_notification',
         'help_redirect_to',
         'email',
+        'disable_overdue_training'
     ];
 
-   protected $casts = [
-    'content_survey' => 'boolean',
-    'localized_notification' => 'boolean',
-    'survey_questions' => 'array',   
-];
-
+    protected $casts = [
+        'content_survey' => 'boolean',
+        'localized_notification' => 'boolean',
+        'survey_questions' => 'array',
+        'disable_overdue_training' => 'boolean'
+    ];
 }
-
-
-

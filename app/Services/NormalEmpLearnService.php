@@ -10,6 +10,7 @@ use App\Models\QuishingLiveCamp;
 use App\Models\ScormAssignedUser;
 use App\Models\TprmCampaignLive;
 use App\Models\TrainingAssignedUser;
+use App\Models\TrainingSetting;
 use App\Models\Users;
 use App\Models\WaLiveCampaign;
 use Illuminate\Support\Facades\Mail;
@@ -274,6 +275,10 @@ class NormalEmpLearnService
 
     public function getNormalEmpTrainings($email)
     {
+        $user = Users::where('user_email', $email)->first();
+        $employeeReport = new EmployeeReport($email, $user->company_id);
+        $trainingSettingService = new TrainingSettingService();
+
         // Get all non-game trainings
         $allTrainings = TrainingAssignedUser::with('trainingData')
             ->where('user_email', $email)
@@ -304,9 +309,6 @@ class NormalEmpLearnService
                 ->avg('personal_best') ?? 0
         );
 
-        $user = Users::where('user_email', $email)->first();
-        $employeeReport = new EmployeeReport($email, $user->company_id);
-
         return [
             'email' => $email,
             'all_trainings' => $allTrainings,
@@ -316,6 +318,7 @@ class NormalEmpLearnService
             'total_completed_trainings' => $employeeReport->trainingCompleted(),
             'total_in_progress_trainings' => $employeeReport->trainingInProgress(),
             'avg_in_progress_trainings' => $avgInProgressTrainings,
+            'disable_overdue_training' => $trainingSettingService->checkDisableOverdueTraining($user->company_id),
         ];
     }
 
