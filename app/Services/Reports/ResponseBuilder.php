@@ -94,4 +94,13 @@ class ResponseBuilder
             'message' => $msg,
         ], 500);
     }
+
+    public static function courseSummarySuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Course summary report fetched successfully'),
+            'data' => $data
+        ], 200);
+    }
 }

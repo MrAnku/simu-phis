@@ -373,4 +373,88 @@ class MetricCalculator
             'lowest_completion_rate' => collect($trainings)->min('completion_rate') ?? 0
         ];
     }
+
+    public static function formatMostAssignedCourses($collection): array
+    {
+        return $collection->map(function ($item) {
+            $training = \App\Models\TrainingModule::find($item->training);
+            return [
+                'training_id' => $item->training,
+                'training_name' => $training ? $training->name : 'Anonymous Course',
+                'assignment_count' => $item->assignment_count
+            ];
+        })->toArray();
+    }
+
+    public static function formatCourseDetails($collection): array
+    {
+        return $collection->map(function ($item) {
+            $training = \App\Models\TrainingModule::find($item->training);
+            return [
+                'training_id' => $item->training,
+                'training_name' => $training ? $training->name : 'Anonymous Course',
+                'total_assigned' => $item->total_assigned,
+                'total_in_progress' => $item->total_in_progress,
+                'total_not_started' => $item->total_not_started,
+                'total_completed' => $item->total_completed,
+                'average_score' => round($item->avg_score ?? 0, 2)
+            ];
+        })->toArray();
+    }
+
+    public static function formatPerformedCourses($collection): array
+    {
+        return $collection->map(function ($item) {
+            $training = \App\Models\TrainingModule::find($item->training);
+            return [
+                'training_id' => $item->training,
+                'training_name' => $training ? $training->name : 'Anonymous Course',
+                'average_score' => round($item->average_score ?? 0, 2)
+            ];
+        })->toArray();
+    }
+
+    public static function formatQuicklyCompletedCourses($collection): array
+    {
+        return $collection->map(function ($item) {
+            $training = \App\Models\TrainingModule::find($item->training);
+            return [
+                'training_id' => $item->training,
+                'training_name' => $training ? $training->name : 'Anonymous Course'
+            ];
+        })->toArray();
+    }
+
+    public static function formatCertificatesAwarded($collection): array
+    {
+        return $collection->map(function ($item) {
+            $training = \App\Models\TrainingModule::find($item->training);
+            return [
+                'training_id' => $item->training,
+                'training_name' => $training ? $training->name : 'Anonymous Course',
+                'certificate_count' => $item->certificate_count
+            ];
+        })->toArray();
+    }
+
+    public static function formatBadgesAwarded($collection): array
+    {
+        return $collection->groupBy('training')
+            ->map(function ($rows, $trainingId) {
+                $uniqueBadges = $rows
+                    ->flatMap(fn($row) => json_decode($row->badge, true) ?? [])
+                    ->unique();
+
+                $training = \App\Models\TrainingModule::find($trainingId);
+
+                return [
+                    'training_id'   => $trainingId,
+                    'training_name' => $training ? $training->name : 'Anonymous Course',
+                    'badge_count'   => $uniqueBadges->count(),
+                ];
+            })
+            ->sortByDesc('badge_count')
+            ->values()
+            ->toArray();
+    }
 }

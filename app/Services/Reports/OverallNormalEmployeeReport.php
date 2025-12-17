@@ -37,6 +37,7 @@ class OverallNormalEmployeeReport
      */
     public function generateReport(): array
     {
+
         $apiDashboardController = new ApiDashboardController();
         // Logic to generate overall normal employee report
         return [
@@ -192,13 +193,17 @@ class OverallNormalEmployeeReport
      */
     private function interactionAverage(): array
     {
+
         $companyReport = new CompanyReport($this->companyId);
         // Logic to calculate interaction averages
+        $totalSent = $companyReport->emailSent();
+        $totalSimulations = $companyReport->totalSimulations();
+
         return [
-            'open_rate' => round($companyReport->emailViewed() / $companyReport->emailSent() * 100, 2),
+            'open_rate' => $totalSent > 0 ? round($companyReport->emailViewed() / $totalSent * 100, 2) : 0,
             'click_rate' => round($companyReport->clickRate(), 2),
-            'compromise_rate' => round($companyReport->compromised() / $companyReport->totalSimulations() * 100, 2),
-            'ignore_rate' => round($companyReport->emailIgnored() / $companyReport->emailSent() * 100, 2),
+            'compromise_rate' => $totalSimulations > 0 ? round($companyReport->compromised() / $totalSimulations * 100, 2) : 0,
+            'ignore_rate' => $totalSent > 0 ? round($companyReport->emailIgnored() / $totalSent * 100, 2) : 0,
         ];
     }
 

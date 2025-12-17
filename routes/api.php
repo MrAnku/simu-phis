@@ -377,7 +377,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/fetch-policies-reporting', [ApiReportingController::class, 'fetchPoliciesReporting']);
 
         // Course Summary Reporting
-        Route::get('/fetch-course-summary-report', [ApiReportingController::class, 'fetchCourseSummaryReport']);
+        Route::get('/fetch-course-summary-report', [ApiReportController::class, 'fetchCourseSummaryReport']);
 
         Route::prefix('compliance')->group(function () {
 

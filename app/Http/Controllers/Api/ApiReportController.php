@@ -9,21 +9,26 @@ use App\Services\Reports\TrainingReportService;
 use Illuminate\Http\Request;
 use App\Services\Reports\OverallNormalEmployeeReport;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Reports\CourseSummaryReportService;
+use App\Services\Reports\ResponseBuilder;
 
 class ApiReportController extends Controller
 {
     protected DivisionReportService $divisionService;
     protected AwarenessReportService $awarenessService;
     protected TrainingReportService $trainingService;
+    protected CourseSummaryReportService $courseSummaryService;
 
     public function __construct(
         DivisionReportService $divisionService,
         AwarenessReportService $awarenessService,
-        TrainingReportService $trainingService
+        TrainingReportService $trainingService,
+        CourseSummaryReportService $courseSummaryService
     ) {
         $this->divisionService = $divisionService;
         $this->awarenessService = $awarenessService;
         $this->trainingService = $trainingService;
+        $this->courseSummaryService = $courseSummaryService;
     }
 
     public function fetchDivisionUsersReporting(Request $request)
@@ -56,5 +61,19 @@ class ApiReportController extends Controller
     public function fetchTrainingReport()
     {
         return $this->trainingService->fetchTrainingReport();
+    }
+
+    public function fetchCourseSummaryReport()
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $data = $this->courseSummaryService->fetchCourseSummaryReport($companyId);
+            return ResponseBuilder::courseSummarySuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
     }
 }
