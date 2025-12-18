@@ -235,10 +235,6 @@ class ApiLearnController extends Controller
             // check if help redirect destination is set or not
             $helpRedirectTo = TrainingSetting::where('company_id', $user->company_id)->value('help_redirect_to');
 
-            if (!$helpRedirectTo) {
-                $helpRedirectTo = env('NEED_HELP_URL', 'https://help.simuphish.com');
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -247,7 +243,7 @@ class ApiLearnController extends Controller
                     'currentUserRank' => $currentUserRank,
                     'tour_prompt' => $tourPrompt,
                     'tour_completed' => $tourCompleted,
-                    'help_redirect_to' => $helpRedirectTo
+                    'help_redirect_to' => $helpRedirectTo ?? null
                 ],
                 'message' => __('Fetched dashboard metrics successfully')
             ], 200);
