@@ -140,7 +140,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
         Route::get('/email', [ApiReportController::class, 'fetchEmailSimulationReport']);
         Route::get('/quishing', [ApiReportController::class, 'fetchQuishingSimulationReport']);
         //Route::get('/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
-        Route::get('/whatsapp', [ApiWhatsappReportController::class, 'WhatsappSimulationReport']);
+        Route::get('/whatsapp', [ApiReportController::class, 'fetchWhatsappSimulationReport']);
         Route::get('/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
         Route::get('/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
     });
@@ -306,7 +306,7 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
         // ======== Enable or disable Tour Prompt Settings for learners =========
         Route::put('/tour-prompt', [ApiSettingsController::class, 'updateTourPrompt']);
-        
+
         // Enable or disable Overdue Training so that users can/cannot access training after due date
         Route::put('/update-overdue-training', [ApiSettingsController::class, 'updateOverdueTraining']);
     });

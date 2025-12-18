@@ -27,6 +27,7 @@ class ApiReportController extends Controller
     protected GamesReportService $gamesService;
     protected EmailSimulationService $emailSimulationService;
     protected QuishingReportService $quishingService;
+    protected WhatsappReportService $whatsappService;
 
 
 
@@ -38,7 +39,8 @@ class ApiReportController extends Controller
         PoliciesReportService $policiesService,
         GamesReportService $gamesService,
         EmailSimulationService $emailSimulationService,
-        QuishingReportService $quishingService
+        QuishingReportService $quishingService,
+        WhatsappReportService $whatsappService
 
 
     ) {
@@ -50,6 +52,7 @@ class ApiReportController extends Controller
         $this->gamesService = $gamesService;
         $this->emailSimulationService = $emailSimulationService;
         $this->quishingService = $quishingService;
+        $this->whatsappService = $whatsappService;
     }
 
     public function fetchDivisionUsersReporting(Request $request)
@@ -151,6 +154,23 @@ class ApiReportController extends Controller
 
             $data = $this->quishingService->getQuishingSimulationReport($companyId, $group, $months);
             return ResponseBuilder::quishingReportSuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchWhatsappSimulationReport(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $group = $request->query('users_group');
+            $months = $request->query('months');
+
+            $data = $this->whatsappService->getWhatsappSimulationReport($companyId, $group, $months);
+            return ResponseBuilder::whatsappReportSuccess($data);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
