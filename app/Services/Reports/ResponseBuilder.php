@@ -121,4 +121,40 @@ class ResponseBuilder
             'data' => $data
         ], 200);
     }
+
+    public static function emailSimulationSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Email simulation report retrieved successfully'),
+            'data' => $data
+        ], 200);
+    }
+
+    public static function quishingReportSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Quishing simulation report retrieved successfully'),
+            'data' => $data
+        ], 200);
+    }
+
+    public static function whatsappReportSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Whatsapp simulation report retrieved successfully'),
+            'data' => $data
+        ], 200);
+    }
+
+    public static function tprmReportSuccess(array $data): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => __('Tprm simulation report retrieved successfully'),
+            'data' => $data
+        ], 200);
+    }
 }

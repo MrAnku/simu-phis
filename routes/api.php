@@ -137,9 +137,10 @@ Route::middleware(['auth:api', 'timezone', 'throttle:limiter', 'setLocale'])->gr
 
     //card reports
     Route::prefix('simulation-report')->group(function () {
-        Route::get('/email', [ApiDashboardController::class, 'emailSimulationReport']);
-        Route::get('/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
-        Route::get('/whatsapp', [ApiWhatsappReportController::class, 'whatsappSimulationReport']);
+        Route::get('/email', [ApiReportController::class, 'fetchEmailSimulationReport']);
+        Route::get('/quishing', [ApiReportController::class, 'fetchQuishingSimulationReport']);
+        //Route::get('/quishing', [ApiQuishingReportController::class, 'quishingSimulationReport']);
+        Route::get('/whatsapp', [ApiWhatsappReportController::class, 'WhatsappSimulationReport']);
         Route::get('/tprm', [ApiTprmReportController::class, 'tprmSimulationReport']);
         Route::get('/aivishing', [ApiAivishingReportController::class, 'aivishingSimulationReport']);
     });

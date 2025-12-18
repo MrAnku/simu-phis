@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\Reports\CourseSummaryReportService;
 use App\Services\Reports\PoliciesReportService;
 use App\Services\Reports\GamesReportService;
+use App\Services\Reports\EmailSimulationService;
+use App\Services\Reports\QuishingReportService;
+use App\Services\Reports\WhatsappReportService;
 use App\Services\Reports\ResponseBuilder;
 
 class ApiReportController extends Controller
@@ -22,6 +25,10 @@ class ApiReportController extends Controller
     protected CourseSummaryReportService $courseSummaryService;
     protected PoliciesReportService $policiesService;
     protected GamesReportService $gamesService;
+    protected EmailSimulationService $emailSimulationService;
+    protected QuishingReportService $quishingService;
+
+
 
     public function __construct(
         DivisionReportService $divisionService,
@@ -29,7 +36,11 @@ class ApiReportController extends Controller
         TrainingReportService $trainingService,
         CourseSummaryReportService $courseSummaryService,
         PoliciesReportService $policiesService,
-        GamesReportService $gamesService
+        GamesReportService $gamesService,
+        EmailSimulationService $emailSimulationService,
+        QuishingReportService $quishingService
+
+
     ) {
         $this->divisionService = $divisionService;
         $this->awarenessService = $awarenessService;
@@ -37,6 +48,8 @@ class ApiReportController extends Controller
         $this->courseSummaryService = $courseSummaryService;
         $this->policiesService = $policiesService;
         $this->gamesService = $gamesService;
+        $this->emailSimulationService = $emailSimulationService;
+        $this->quishingService = $quishingService;
     }
 
     public function fetchDivisionUsersReporting(Request $request)
@@ -104,6 +117,40 @@ class ApiReportController extends Controller
             $companyId = Auth::user()->company_id;
             $data = $this->gamesService->fetchGamesReport($companyId);
             return ResponseBuilder::gamesReportSuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchEmailSimulationReport(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $group = $request->query('users_group');
+            $months = $request->query('months');
+
+            $data = $this->emailSimulationService->getEmailSimulationReport($companyId, $group, $months);
+            return ResponseBuilder::emailSimulationSuccess($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Error: ') . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchQuishingSimulationReport(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+            $group = $request->query('users_group');
+            $months = $request->query('months');
+
+            $data = $this->quishingService->getQuishingSimulationReport($companyId, $group, $months);
+            return ResponseBuilder::quishingReportSuccess($data);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
